@@ -12,10 +12,13 @@ import {
   User,
   Share2,
   Sparkles,
+  ArrowRightLeft,
   type LucideIcon
 } from "lucide-react";
 
-import { WorkflowNode, isUserInputNode, isBrokerRelayNode, isBaseNode } from "@/features/workflows/types";
+import { DbNodeData, isUserInputNode, isBrokerRelayNode, isBaseFunctionNode, DbFunctionNode } from "@/features/workflows/types";
+import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
+import { getIconComponent } from "@/components/common/IconResolver";
 
 /**
  * Mapping of specific function IDs to their custom icons
@@ -51,26 +54,32 @@ const KEYWORD_ICON_MAP: Array<{ keywords: string[], icon: LucideIcon }> = [
  * 3. Keyword matching on step name and function type
  * 4. Default icon (lowest priority)
  */
-export function getWorkflowNodeIcon(nodeData: WorkflowNode): LucideIcon {
+export function getWorkflowNodeIcon(nodeData: DbNodeData, type: string): LucideIcon {
   // Check for specific node types first
-  if (isUserInputNode(nodeData)) {
+  if (type === "userInput") {
     return User;
   }
   
-  if (isBrokerRelayNode(nodeData)) {
-    return Share2;
+  if (type === "brokerRelay") {
+    return ArrowRightLeft;
   }
   
   // For BaseNode types, check function ID mapping first
-  if (isBaseNode(nodeData)) {
-    // Priority 1: Check for specific function ID mapping
-    if (nodeData.data.function_id && FUNCTION_ID_ICON_MAP[nodeData.data.function_id]) {
-      return FUNCTION_ID_ICON_MAP[nodeData.data.function_id];
+  if (type === "workflowNode" || type === "functionNode" || type === "recipeNode" || type === "registeredFunction") {
+    const functionNodeData = nodeData as DbFunctionNode;
+    const { combinedFunctions } = useCombinedFunctionsWithArgs();
+    const coreFunction = combinedFunctions.find(func => func.id === functionNodeData.function_id);
+    const icon = coreFunction?.icon;
+    if (icon) {
+      return getIconComponent(icon);
+    }
+    if (functionNodeData.function_id && FUNCTION_ID_ICON_MAP[functionNodeData.function_id]) {
+      return FUNCTION_ID_ICON_MAP[functionNodeData.function_id];
     }
     
     // Priority 2: Check keyword matching
-    const stepName = (nodeData.data.step_name || '').toLowerCase();
-    const funcType = (nodeData.data.function_type || '').toLowerCase();
+    const stepName = (functionNodeData.step_name || '').toLowerCase();
+    const funcType = (functionNodeData.function_type || '').toLowerCase();
     
     for (const mapping of KEYWORD_ICON_MAP) {
       const hasMatch = mapping.keywords.some(keyword => 
@@ -81,6 +90,10 @@ export function getWorkflowNodeIcon(nodeData: WorkflowNode): LucideIcon {
         return mapping.icon;
       }
     }
+  }
+
+  else {
+    console.error(`Invalid node type: ${type}`);
   }
   
   // Default fallback

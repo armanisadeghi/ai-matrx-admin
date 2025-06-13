@@ -15,9 +15,9 @@ import ReactFlow, {
     MarkerType,
     XYPosition,
 } from "reactflow";
-import QuickAccessPanel from "@/features/workflows/react-flow/quick-access-panel/QuickAccessPanel";
+import QuickAccessPanel from "@/features/workflows/components/access-panel/QuickAccessPanel";
 import CustomEdge from "@/features/workflows/react-flow/edges/CustomEdge";
-import { EdgeDetailOverlay } from "@/features/workflows/react-flow/common/EdgeDetailOverlay";
+import { EdgeDetailOverlay } from "@/features/workflows/components/common/EdgeDetailOverlay";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { DbFunctionNode } from "@/features/workflows/types";
 

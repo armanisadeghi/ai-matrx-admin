@@ -34,12 +34,15 @@ export function userInputToReactFlow(dbInput: DbUserInput): UserInputNode {
         metadata: dbInput.metadata || {},
     };
 
+    // Ensure type is always "userInput" for user input nodes
+    const ensuredType = (!nodeData.type || nodeData.type !== "userInput") ? "userInput" : nodeData.type;
+
     // Build ReactFlow node
     const reactFlowNode: UserInputNode = {
         id: dbInput.id,
         position: nodeData.position || { x: 0, y: 0 },
         data: userInputData,
-        type: nodeData.type || DEFAULT_UI_METADATA.type,
+        type: ensuredType,
         sourcePosition: nodeData.sourcePosition,
         targetPosition: nodeData.targetPosition,
         hidden: nodeData.hidden ?? DEFAULT_UI_METADATA.hidden,
@@ -76,10 +79,13 @@ export function batchUserInputsToReactFlow(dbUserInputs: DbUserInput[]): UserInp
 export function reactFlowToUserInput(reactFlowNode: UserInputNode): Partial<DbUserInput> {
     const userInputData = reactFlowNode.data;
 
+    // Ensure type is always "userInput" for user input nodes
+    const ensuredType = (!reactFlowNode.type || reactFlowNode.type !== "userInput") ? "userInput" : reactFlowNode.type;
+
     // Build metadata object with all ReactFlow UI fields
     const nodeData: ReactFlowUIMetadata = {
         position: reactFlowNode.position,
-        type: reactFlowNode.type,
+        type: ensuredType,
         sourcePosition: reactFlowNode.sourcePosition,
         targetPosition: reactFlowNode.targetPosition,
         hidden: reactFlowNode.hidden,
@@ -100,6 +106,9 @@ export function reactFlowToUserInput(reactFlowNode: UserInputNode): Partial<DbUs
 
     // Remove undefined fields from metadata
     const cleanNodeData = Object.fromEntries(Object.entries(nodeData).filter(([_, value]) => value !== undefined)) as ReactFlowUIMetadata;
+    
+    // Ensure ui_node_data always has type as "userInput"
+    cleanNodeData.type = "userInput";
 
     // Build database userInput - map fields back exactly as they are
     const dbUserInput: Partial<DbUserInput> = {

@@ -1,12 +1,15 @@
 "use client";
 import React, { useEffect } from "react";
-import { NodeProps, Handle, Position, useUpdateNodeInternals } from "reactflow";
+import { NodeProps, Handle, Position, useUpdateNodeInternals, Connection } from "reactflow";
 import WorkflowNode from "@/features/workflows/react-flow/nodes/WorkflowNode";
 import UserInputNode from "@/features/workflows/react-flow/nodes/UserInputNode";
 import BrokerRelayNode from "@/features/workflows/react-flow/nodes/BrokerRelayNode";
 import NodeFloatingIcon from "@/features/workflows/react-flow/nodes/NodeFloatingIcon";
 import { EnrichedBroker } from "@/features/workflows/utils/edge-generator";
 import { DataBrokerData } from "@/types";
+import { DbNodeData, DbUserInput, DbBrokerRelayData, DbFunctionNode } from "@/features/workflows/types";
+import { getNodePotentialInputsAndOutputs, parseEdge } from "../../utils/node-utils";
+import { useTheme } from "@/styles/themes";
 
 // TypeScript declaration for window object
 declare global {
@@ -22,8 +25,14 @@ declare global {
     }
 }
 
-export const NodeWrapper: React.FC<NodeProps> = ({ data, selected, id, type }) => {
+interface NodeWrapperProps extends NodeProps {
+    data: DbNodeData;
+}
+
+export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, type }) => {
     const updateNodeInternals = useUpdateNodeInternals();
+    const { mode } = useTheme();
+    const inputsAndOutputs = getNodePotentialInputsAndOutputs(data, type);
 
     const handleDelete = (nodeId: string) => {
         window.workflowSystemRef?.deleteNode?.(nodeId);
@@ -44,84 +53,106 @@ export const NodeWrapper: React.FC<NodeProps> = ({ data, selected, id, type }) =
         updateNodeInternals(id);
     }, [id, updateNodeInternals, type]);
 
-    // Route to appropriate node component based on type
-    if (type === "userInput") {
-        return (
-            <div className="relative">
-                <UserInputNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} onDuplicate={handleDuplicate} />
-                <NodeFloatingIcon nodeData={data} selected={selected} />
-                {/* Output handle for user inputs */}
-                <Handle
-                    type="source"
-                    position={Position.Right}
-                    id="output"
-                    style={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "#10b981",
-                        border: "2px solid white",
-                        right: -6,
-                        zIndex: 1000,
-                    }}
-                />
-            </div>
-        );
-    }
+    const borderColorHandles = () => {
+        if (mode === "dark") {
+            return "0.5px solid white";
+        }
+        return "0.5px solid black";
+    };
 
-    if (type === "brokerRelay") {
+    const handleOnConnect = (connection: Connection) => {
+        console.log("connection", JSON.stringify(connection, null, 2));
+        const matrxEdge = parseEdge(connection);
+        console.log("matrxEdge", JSON.stringify(matrxEdge, null, 2));
+    };
+
+    if (type === "userInput") {
+        const userInputData = data as DbUserInput;
         return (
             <div className="relative">
-                <BrokerRelayNode
-                    data={data}
+                <UserInputNode
+                    data={userInputData}
                     selected={selected}
                     onDelete={handleDelete}
                     onEdit={handleEdit}
                     onDuplicate={handleDuplicate}
                 />
-                <NodeFloatingIcon nodeData={data} selected={selected} />
-                {/* Input and output handles for relays */}
-                <Handle
-                    type="target"
-                    position={Position.Left}
-                    id="input"
-                    style={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "#3b82f6",
-                        border: "2px solid white",
-                        left: -6,
-                        zIndex: 1000,
-                    }}
+                <NodeFloatingIcon nodeData={userInputData} type={type} selected={selected} />
+                {/* Output handle for user inputs */}
+
+                {inputsAndOutputs.outputs.length > 0 && (
+                    <Handle
+                        key={inputsAndOutputs.outputs[0].handleId}
+                        type="source"
+                        position={Position.Right}
+                        id={inputsAndOutputs.outputs[0].handleId}
+                        isConnectableEnd={false}
+                        isConnectableStart={true}
+                        onConnect={handleOnConnect}
+                        style={{
+                            width: "8px",
+                            height: "8px",
+                            backgroundColor: "#22c55e",
+                            border: borderColorHandles(),
+                            right: -4,
+                        }}
+                    />
+                )}
+            </div>
+        );
+    }
+
+    if (type === "brokerRelay") {
+        const brokerRelayData = data as DbBrokerRelayData;
+        return (
+            <div className="relative">
+                <BrokerRelayNode
+                    data={brokerRelayData}
+                    inputsAndOutputs={inputsAndOutputs}
+                    selected={selected}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    onDuplicate={handleDuplicate}
+                    onConnect={handleOnConnect}
                 />
-                <Handle
-                    type="source"
-                    position={Position.Right}
-                    id="output"
-                    style={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "#22c55e",
-                        border: "2px solid white",
-                        right: -6,
-                        zIndex: 1000,
-                    }}
+                <NodeFloatingIcon nodeData={brokerRelayData} type={type} selected={selected} />
+            </div>
+        );
+    }
+
+    if (type === "workflowNode") {
+        const functionNodeData = data as DbFunctionNode;
+        return (
+            <div className="relative">
+                <WorkflowNode
+                    data={functionNodeData}
+                    inputsAndOutputs={inputsAndOutputs}
+                    selected={selected}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    onDuplicate={handleDuplicate}
+                    userInputs={userInputs}
+                    onConnect={handleOnConnect}
                 />
+                <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
             </div>
         );
     }
 
     // Default to workflow node for registered functions
+    const functionNodeData = data as DbFunctionNode;
     return (
         <div className="relative">
             <WorkflowNode
-                data={data}
+                data={functionNodeData}
+                inputsAndOutputs={inputsAndOutputs}
                 selected={selected}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
                 onDuplicate={handleDuplicate}
                 userInputs={userInputs}
             />
-            <NodeFloatingIcon nodeData={data} selected={selected} />
+            <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
         </div>
     );
 };

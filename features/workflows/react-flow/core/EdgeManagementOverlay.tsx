@@ -16,7 +16,7 @@ import {
     getDuplicateSummary,
     DuplicateEdgeGroup,
 } from "@/features/workflows/utils/edgeCleanup";
-import { useWorkflowData } from "@/features/workflows/react-flow/hooks/useWorkflowData";
+import { useWorkflowData } from "@/features/workflows/hooks/useWorkflowData";
 import { ConvertedWorkflowData } from "@/features/workflows/types";
 
 interface EdgeManagementOverlayProps {

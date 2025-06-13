@@ -1,4 +1,14 @@
-import { DbFunctionNode, ArgumentOverride, ArgumentMapping } from "@/features/workflows/types";
+import {
+    DbFunctionNode,
+    ArgumentOverride,
+    ArgumentMapping,
+    DbNodeData,
+    isUserInputNode,
+    isBrokerRelayNode,
+    isBaseFunctionNode,
+    DbUserInput,
+    DbBrokerRelayData,
+} from "@/features/workflows/types";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
 import {
@@ -6,8 +16,7 @@ import {
     ALL_HIDDEN_CONNECTIONS,
     getRegisteredFunctions,
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
-
-
+import { Connection } from "reactflow";
 
 export function getNormalizedRegisteredFunctionNode(function_id: string, workflowId?: string): DbFunctionNode {
     const function_data = getRegisteredFunctions().find((f) => f.id === function_id);
@@ -201,6 +210,22 @@ export function isNodeConnected(node: DbFunctionNode): boolean {
 export interface Input {
     id: string;
     label: string;
+    type: "direct_broker" | "argument" | "dependency" | "arg_mapping";
+    node_id?: string;
+    handleId?: string;
+}
+
+export interface Output {
+    id: string;
+    label: string;
+    type: "direct_broker" | "dependency" | "return_broker" | "modified_return_broker";
+    node_id?: string;
+    handleId?: string;
+}
+
+export interface MatrxEdge {
+    source: Output;
+    target: Input;
 }
 
 /**
@@ -214,13 +239,13 @@ function formatInputLabel(inputId: string, fallbackLabel?: string): string {
     if (fallbackLabel && fallbackLabel !== inputId) {
         return fallbackLabel;
     }
-    
+
     // Check if it's a plain UUID (pattern: 8-4-4-4-12 hexadecimal digits)
     const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidPattern.test(inputId)) {
         return inputId;
     }
-    
+
     // Check if it's a UUID followed by underscore and text (UUID_text pattern)
     const uuidWithTextPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_(.+)$/i;
     const uuidMatch = inputId.match(uuidWithTextPattern);
@@ -228,26 +253,25 @@ function formatInputLabel(inputId: string, fallbackLabel?: string): string {
         // Extract the part after the UUID and underscore
         const namePart = uuidMatch[1];
         const formatted = namePart
-            .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
+            .replace(/[-_]/g, " ") // Replace hyphens and underscores with spaces
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(" ");
         return formatted || inputId;
     }
-    
+
     // For regular argument names, convert snake_case/SNAKE_CASE/kabob-case to Title Case
     const formatted = inputId
-        .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-    
+        .replace(/[-_]/g, " ") // Replace hyphens and underscores with spaces
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+
     return formatted || inputId;
 }
 
 export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
     const inputs: Input[] = [];
-
 
     // Process dependencies
     node.additional_dependencies?.forEach((dep) => {
@@ -255,6 +279,8 @@ export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
             inputs.push({
                 id: dep.source_broker_id,
                 label: formatInputLabel(dep.source_broker_id, dep.source_broker_name),
+                type: "dependency",
+                handleId: `input--dependency--${dep.source_broker_id}`,
             });
         }
     });
@@ -265,6 +291,8 @@ export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
             inputs.push({
                 id: mapping.source_broker_id,
                 label: formatInputLabel(mapping.target_arg_name),
+                type: "arg_mapping",
+                handleId: `input--arg_mapping--${mapping.source_broker_id}`,
             });
         }
     });
@@ -275,16 +303,13 @@ export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
             inputs.push({
                 id: argName,
                 label: formatInputLabel(argName),
+                type: "argument",
+                handleId: `input--argument--${argName}`,
             });
         }
     });
 
     return inputs;
-}
-
-export interface Output {
-    id: string;
-    label: string;
 }
 
 /**
@@ -295,7 +320,7 @@ export interface Output {
  */
 function formatBrokerLabel(brokerId: string, index: number): string {
     // Check if the broker ID contains an underscore
-    const underscoreIndex = brokerId.indexOf('_');
+    const underscoreIndex = brokerId.indexOf("_");
     if (underscoreIndex === -1) {
         // Check if it's a UUID (pattern: 8-4-4-4-12 hexadecimal digits)
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -304,22 +329,22 @@ function formatBrokerLabel(brokerId: string, index: number): string {
         }
         return `Result ${index + 1}`;
     }
-    
+
     // Extract the part after the first underscore
     const namePart = brokerId.substring(underscoreIndex + 1);
-    
+
     // If the name part is empty, fall back to default
     if (!namePart.trim()) {
         return `Result ${index + 1}`;
     }
-    
+
     // Convert snake_case, SNAKE_CASE, and kabob-case to Title Case
     const formatted = namePart
-        .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-    
+        .replace(/[-_]/g, " ") // Replace hyphens and underscores with spaces
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+
     return formatted || `Result ${index + 1}`;
 }
 
@@ -332,6 +357,8 @@ export function getNodePotentialOutputs(node: DbFunctionNode): Output[] {
             outputs.push({
                 id: dep.target_broker_id,
                 label: dep.target_broker_name || dep.target_broker_id,
+                type: "dependency",
+                handleId: `input--dependency--${dep.target_broker_id}`,
             });
         }
     });
@@ -341,16 +368,60 @@ export function getNodePotentialOutputs(node: DbFunctionNode): Output[] {
         outputs.push({
             id: brokerId,
             label: formatBrokerLabel(brokerId, index),
+            type: "return_broker",
+            handleId: `output--return_broker--${brokerId}`,
         });
     });
     return outputs;
 }
 
-export function getNodePotentialInputsAndOutputs(node: DbFunctionNode): { inputs: Input[]; outputs: Output[] } {
-    return {
-        inputs: getNodePotentialInputs(node),
-        outputs: getNodePotentialOutputs(node),
-    };
+export function getNodePotentialInputsAndOutputs(node: DbNodeData, type: string): { inputs: Input[]; outputs: Output[] } {
+    if (type === "userInput") {
+        const userInputData = node as DbUserInput;
+        return {
+            inputs: [],
+            outputs: [
+                {
+                    id: userInputData.broker_id,
+                    label: userInputData.label,
+                    type: "direct_broker",
+                    handleId: `output--direct_broker--${userInputData.broker_id}`,
+                },
+            ],
+        };
+    }
+
+    if (type === "brokerRelay") {
+        const brokerRelayData = node as DbBrokerRelayData;
+        return {
+            inputs: [
+                {
+                    id: brokerRelayData.source_broker_id,
+                    label: formatInputLabel(brokerRelayData.source_broker_id),
+                    type: "direct_broker",
+                    handleId: `input--direct_broker--${brokerRelayData.source_broker_id}`,
+                },
+            ],
+            outputs: brokerRelayData.target_broker_ids.map((brokerId) => ({
+                id: brokerId,
+                label: formatInputLabel(brokerId),
+                type: "direct_broker",
+                handleId: `output--direct_broker--${brokerId}`,
+            })),
+        };
+    } else if (type === "workflowNode" || type === "functionNode" || type === "recipeNode" || type === "registeredFunction") {
+        const functionNodeData = node as DbFunctionNode;
+        return {
+            inputs: getNodePotentialInputs(functionNodeData),
+            outputs: getNodePotentialOutputs(functionNodeData),
+        };
+    } else {
+        console.error(`Invalid node type: ${JSON.stringify(node, null, 2)}`);
+        return {
+            inputs: [],
+            outputs: [],
+        };
+    }
 }
 
 export interface NodeWithInputsAndOutputs extends DbFunctionNode {
@@ -366,3 +437,31 @@ export function getNodeWithInputsAndOutputs(node: DbFunctionNode): NodeWithInput
     };
 }
 
+export function parseEdge(data: Connection): MatrxEdge {
+    const sourceParts = data.sourceHandle.split("--");
+    const targetParts = data.targetHandle.split("--");
+
+    if (sourceParts.length !== 3 || targetParts.length !== 3) {
+        throw new Error("Invalid handle format");
+    }
+
+    const [, sourceLabel, sourceId] = sourceParts;
+    const [, targetLabel, targetId] = targetParts;
+
+    return {
+        source: {
+            id: sourceId,
+            label: sourceLabel,
+            type: sourceLabel as Output["type"],
+            handleId: data.sourceHandle,
+            node_id: data.source,
+        },
+        target: {
+            id: targetId,
+            label: targetLabel,
+            type: targetLabel as Input["type"],
+            handleId: data.targetHandle,
+            node_id: data.target,
+        },
+    };
+}

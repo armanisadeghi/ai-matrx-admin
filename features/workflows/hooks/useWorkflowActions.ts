@@ -58,14 +58,14 @@ export const useWorkflowActions = ({
             }
 
             try {
-                if (type === "registeredFunction") {
+                if (type === "registeredFunction" || type === "workflowNode") {
                     const baseNode = getNormalizedRegisteredFunctionNode(id, workflowId);
                     const position = getCenterPosition();
                     const newId = uuidv4();
 
                     const nodeStructure: Node = {
                         id: newId,
-                        type: "functionNode",
+                        type: "workflowNode",
                         position,
                         data: {
                             id: newId,
@@ -78,7 +78,7 @@ export const useWorkflowActions = ({
                         function_id: baseNode.function_id,
                         function_type: baseNode.function_type,
                         step_name: baseNode.step_name,
-                        node_type: "functionNode",
+                        node_type: "workflowNode",
                         execution_required: baseNode.execution_required,
                         additional_dependencies: baseNode.additional_dependencies,
                         arg_mapping: baseNode.arg_mapping,
@@ -94,7 +94,7 @@ export const useWorkflowActions = ({
 
                     const finalNode: Node = {
                         id: savedNode.id,
-                        type: "functionNode",
+                        type: "workflowNode",
                         position,
                         data: savedNodeWithoutMetadata,
                     };

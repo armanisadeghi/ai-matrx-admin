@@ -9,10 +9,7 @@ import { FunctionNode } from "./functionNodeTypes";
 import { UserInputNode } from "./userInputNodeTypes";
 import { BrokerRelayNode } from "./relaynodeTypes";
 import { DbWorkflowEdge } from "./edgeTypes";
-import { WorkflowEdge,  } from "./edgeTypes";
-
-
-
+import { WorkflowEdge } from "./edgeTypes";
 
 export * from "./coreWorkflowTypes";
 export * from "./functionNodeTypes";
@@ -62,7 +59,6 @@ export interface ConvertedWorkflowData {
 
 export type DbNodeData = DbFunctionNode | DbUserInput | DbBrokerRelayData;
 
-
 export type WorkflowNode = FunctionNode | UserInputNode | BrokerRelayNode;
 
 export interface TabComponentProps {
@@ -70,20 +66,25 @@ export interface TabComponentProps {
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
 }
 
-export function isUserInputNode(node: WorkflowNode): node is UserInputNode {
-    return node.type === "userInput";
+export function isUserInputNode(data: DbNodeData): data is DbUserInput {
+    return data.ui_node_data?.type === "userInput";
 }
 
 /**
  * Type guard to check if a node is a BrokerRelay node
  */
-export function isBrokerRelayNode(node: WorkflowNode): node is BrokerRelayNode {
-    return node.type === "brokerRelay";
+export function isBrokerRelayNode(data: DbNodeData): data is DbBrokerRelayData {
+    return data.ui_node_data?.type === "brokerRelay";
 }
 
 /**
  * Type guard to check if a node is a BaseNode (workflow function node)
  */
-export function isBaseNode(node: WorkflowNode): node is FunctionNode {
-    return node.type === "functionNode" || node.type === "recipeNode" || node.type === "workflowNode";
+export function isBaseFunctionNode(data: DbNodeData): data is DbFunctionNode {
+    return (
+        data.ui_node_data?.type === "functionNode" ||
+        data.ui_node_data?.type === "recipeNode" ||
+        data.ui_node_data?.type === "registeredFunction" ||
+        data.ui_node_data?.type === "workflowNode"
+    );
 }

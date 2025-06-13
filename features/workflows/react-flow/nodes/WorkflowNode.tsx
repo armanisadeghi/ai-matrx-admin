@@ -2,88 +2,29 @@
 
 import React, { useState, useEffect } from "react";
 import { Connection, Handle, Position } from "reactflow";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { NodeContextMenu } from "@/features/workflows/components/menus/NodeContextMenu";
+import { NodeDropdownMenu } from "@/features/workflows/components/menus/NodeDropdownMenu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
-import { SocketExecuteButton } from "@/components/socket-io/presets/preset-manager/triggers/SocketExecuteButton";
 import { SocketResultsOverlay } from "@/components/socket-io/presets/preset-manager/responses/SocketResultsOverlay";
-import {
-    Play,
-    Database,
-    Video,
-    List,
-    FileText,
-    Workflow,
-    Brain,
-    Code,
-    Settings,
-    Zap,
-    Globe,
-    Trash2,
-    Edit,
-    TestTube,
-    MessageCircle,
-    Copy,
-} from "lucide-react";
 import { DbFunctionNode, ArgumentOverride } from "@/features/workflows/types";
-import { getNodePotentialInputsAndOutputs, isNodeConnected } from "@/features/workflows/utils/node-utils";
-import { workflowNodeCustomTabs } from "@/features/workflows/react-flow/common/workflow-results-tab-config";
-import { CiEdit } from "react-icons/ci";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
-import { PiShieldWarningFill } from "react-icons/pi";
+import { isNodeConnected, Input, Output, parseEdge } from "@/features/workflows/utils/node-utils";
+import { workflowNodeCustomTabs } from "@/features/workflows/components/common/workflow-results-tab-config";
+import { BsThreeDots } from "react-icons/bs";
 
 interface WorkflowNodeProps {
     data: DbFunctionNode;
+    inputsAndOutputs: { inputs: Input[]; outputs: Output[] };
     selected: boolean;
-    onDelete?: (nodeId: string) => void;
-    onEdit?: (nodeData: DbFunctionNode) => void;
-    onDuplicate?: (nodeId: string) => void;
-    userInputs?: Array<{ broker_id: string; default_value: any }>; // Optional user inputs from the workflow
+    onDelete: (nodeId: string) => void;
+    onEdit: (nodeData: DbFunctionNode) => void;
+    onDuplicate: (nodeId: string) => void;
+    userInputs?: Array<{ broker_id: string; default_value: any; value?: any }>;
+    onConnect?: (connection: Connection) => void;
 }
 
-// Function to get icon based on function name
-const getFunctionIcon = (funcName: string) => {
-    const name = funcName.toLowerCase();
-
-    if (name.includes("recipe") || name.includes("run")) return Play;
-    if (name.includes("database") || name.includes("schema")) return Database;
-    if (name.includes("video") || name.includes("youtube")) return Video;
-    if (name.includes("pdf") || name.includes("document")) return FileText;
-    if (name.includes("workflow") || name.includes("orchestrator")) return Workflow;
-    if (name.includes("ai") || name.includes("brain")) return Brain;
-    if (name.includes("code") || name.includes("function")) return Code;
-    if (name.includes("web") || name.includes("url")) return Globe;
-    if (name.includes("process") || name.includes("execute")) return Zap;
-
-    // Default icon
-    return Settings;
-};
-
-// Function to get status badge color
-const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-        case "pending":
-            return "secondary";
-        case "initialized":
-            return "outline";
-        case "ready_to_execute":
-            return "default";
-        case "executing":
-            return "default";
-        case "execution_complete":
-            return "default";
-        case "execution_failed":
-            return "destructive";
-        default:
-            return "secondary";
-    }
-};
-
-const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, userInputs }) => {
+const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, userInputs, onConnect }) => {
     const functionData = getRegisteredFunctions().find((f) => f.id === data.function_id);
     const hasRequiredInputs = functionData?.args.some((arg) => {
         const override = data.arg_overrides?.find((o: ArgumentOverride) => o.name === arg.name);
@@ -94,33 +35,24 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
     const [showResults, setShowResults] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
 
-    const { inputs, outputs } = getNodePotentialInputsAndOutputs(data);
-    // Default status if not provided
-    const status = data.status || "pending";
+    const { inputs, outputs } = inputsAndOutputs;
 
-    // Check if node is guaranteed to fail (has required args that aren't ready or mapped)
-    const nodeConnected = isNodeConnected(data);
-    const willFail = !nodeConnected;
-
-    // Calculate handle positions
     const calculateHandlePosition = (index: number, total: number, isOutput: boolean = false) => {
         // Account for header height, padding, and spacing
-        const headerHeight = 40; // Approximate header height in pixels
-        const contentPadding = 0; // p-1 = 4px
-        const itemHeight = 16; // Approximate height of each input/output item (text-[8px] + spacing)
-        const itemSpacing = 1; // space-y-1 = 4px
-        const separatorHeight = 1; // h-px
-        const separatorMargin = 10; // space-y-2 = 8px
+        const headerHeight = 40;
+        const contentPadding = 0;
+        const itemHeight = 16;
+        const itemSpacing = 1;
+        const separatorHeight = 1;
+        const separatorMargin = 10;
 
         let baseOffset = headerHeight + contentPadding;
 
         if (isOutput) {
-            // For outputs, add the height of inputs section, separator, and its margin
             const inputsSectionHeight = Math.max(1, inputs.length) * (itemHeight + itemSpacing);
             baseOffset += inputsSectionHeight + separatorHeight + separatorMargin;
         }
 
-        // Position for this specific item
         const itemOffset = index * (itemHeight + itemSpacing) + itemHeight / 2;
 
         return baseOffset + itemOffset;
@@ -142,10 +74,10 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
         };
     }, [mode]);
 
-    const cardClassName = `min-w-44 max-w-52 transition-all duration-200 ${
+    const cardClassName = `min-w-52 max-w-52 transition-all duration-200 ${
         selected ? "ring-2 ring-primary shadow-lg" : "hover:shadow-md"
     } ${
-        willFail
+        !isNodeConnected(data)
             ? "border-red-500 dark:border-red-400 ring-2 ring-red-200 dark:ring-red-800 bg-red-50 dark:bg-red-950/50"
             : data.execution_required
             ? "bg-destructive/5 border-destructive/20"
@@ -159,24 +91,8 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
         return "0.5px solid black";
     };
 
-    const handleOnConnect = (connection: Connection) => {
-        console.log("onConnect", connection);
-    };
-
     const nodeContent = (
         <div className="relative">
-            {/* Results Overlay */}
-            <SocketResultsOverlay
-                taskId={currentTaskId}
-                isOpen={showResults}
-                onClose={() => {
-                    setShowResults(false);
-                }}
-                customTabs={workflowNodeCustomTabs}
-                overlayTitle="Workflow Step Results"
-                overlayDescription={`Results for: ${data.step_name || "Unnamed Step"}`}
-            />
-
             <Card className={cardClassName}>
                 <CardHeader>
                     <div className="space-y-2 border-b border-gray-200 dark:border-gray-600 pb-1">
@@ -192,39 +108,22 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                                         : data.step_name || "Unnamed Step"}
                                 </h3>
                             </div>
-                            {/* Three dots menu - only show if we have menu options */}
-                            {(onDelete || onEdit || onDuplicate) && (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors duration-200">
-                                            <BsThreeDots className="h-3 w-3 text-gray-600 dark:text-gray-400" />
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="min-w-[160px]">
-                                        {onEdit && (
-                                            <DropdownMenuItem onClick={() => onEdit(data)}>
-                                                <Edit className="h-4 w-4 mr-2" />
-                                                Edit
-                                            </DropdownMenuItem>
-                                        )}
-                                        {onDuplicate && (
-                                            <DropdownMenuItem onClick={() => onDuplicate(data.id)}>
-                                                <Copy className="h-4 w-4 mr-2" />
-                                                Duplicate
-                                            </DropdownMenuItem>
-                                        )}
-                                        {onDelete && (
-                                            <DropdownMenuItem
-                                                onClick={() => onDelete(data.id)}
-                                                className="text-destructive focus:text-destructive"
-                                            >
-                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                Delete
-                                            </DropdownMenuItem>
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            )}
+                            {/* Three dots menu */}
+                            <NodeDropdownMenu
+                                data={data}
+                                userInputs={userInputs}
+                                onEditFunctionNode={onEdit}
+                                onDuplicate={onDuplicate}
+                                onDelete={onDelete}
+                                onExecuteComplete={(taskId) => {
+                                    setCurrentTaskId(taskId);
+                                    setShowResults(true);
+                                }}
+                            >
+                                <button className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors duration-200">
+                                    <BsThreeDots className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+                                </button>
+                            </NodeDropdownMenu>
                         </div>
                     </div>
                 </CardHeader>
@@ -258,61 +157,18 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="p-0.5 border-t border-gray-200 dark:border-gray-600 mx-1">
-                    {/* Execute and Edit buttons */}
-                    <div className="w-full flex justify-between items-center">
-                        <SocketExecuteButton
-                            presetName="workflow_step_to_execute_single_step"
-                            sourceData={{
-                                ...data,
-                                user_inputs: userInputs || [],
-                            }}
-                            tooltipText="Execute only this step with user inputs"
-                            onExecuteComplete={(taskId) => {
-                                setCurrentTaskId(taskId);
-                                setShowResults(true);
-                            }}
-                        />
-                        {willFail && (
-                            <Tooltip>
-                            <TooltipTrigger asChild>
-                                <PiShieldWarningFill className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-                            </TooltipTrigger>
-                            <TooltipContent className="px-2 py-1">This node has no mapped brokers as inputs</TooltipContent>
-                        </Tooltip>
-                    )}
-
-                        {onEdit && (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onEdit(data);
-                                        }}
-                                        className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="Edit node"
-                                    >
-                                        <CiEdit className="h-4 w-4" />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent className="px-2 py-1">Edit node</TooltipContent>
-                            </Tooltip>
-                        )}
-                    </div>
-                </CardFooter>
             </Card>
 
             {/* Individual Input Handles - aligned with each input */}
             {inputs.slice(0, 8).map((input, index) => (
                 <Handle
-                    key={`input-${input.id}`}
+                    key={input.handleId}
                     type="target"
                     position={Position.Left}
-                    id={`input-${input.id}`}
+                    id={input.handleId}
                     isConnectableEnd={true}
                     isConnectableStart={false}
-                    onConnect={handleOnConnect}
+                    onConnect={onConnect}
                     style={{
                         top: `${calculateHandlePosition(index, inputs.length, false)}px`,
                         width: "8px",
@@ -327,13 +183,13 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
             {/* Individual Output Handles - aligned with each output */}
             {outputs.slice(0, 8).map((output, index) => (
                 <Handle
-                    key={`output-${output.id}`}
+                    key={output.handleId}
                     type="source"
                     position={Position.Right}
-                    id={`output-${output.id}`}
+                    id={output.handleId}
                     isConnectableEnd={false}
                     isConnectableStart={true}
-                    onConnect={handleOnConnect}
+                    onConnect={onConnect}
                     style={{
                         top: `${calculateHandlePosition(index, outputs.length, true)}px`,
                         width: "8px",
@@ -344,41 +200,34 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                     }}
                 />
             ))}
+            <SocketResultsOverlay
+                taskId={currentTaskId}
+                isOpen={showResults}
+                onClose={() => {
+                    setShowResults(false);
+                }}
+                customTabs={workflowNodeCustomTabs}
+                overlayTitle="Workflow Step Results"
+                overlayDescription={`Results for: ${data.step_name || "Unnamed Step"}`}
+            />
         </div>
     );
 
-    // Only wrap in ContextMenu if we have delete/edit/duplicate handlers
-    if (onDelete || onEdit || onDuplicate) {
-        return (
-            <>
-                <ContextMenu>
-                    <ContextMenuTrigger asChild>{nodeContent}</ContextMenuTrigger>
-                    <ContextMenuContent>
-                        {onEdit && (
-                            <ContextMenuItem onClick={() => onEdit(data)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                            </ContextMenuItem>
-                        )}
-                        {onDuplicate && (
-                            <ContextMenuItem onClick={() => onDuplicate(data.id)}>
-                                <Copy className="h-4 w-4 mr-2" />
-                                Duplicate
-                            </ContextMenuItem>
-                        )}
-                        {onDelete && (
-                            <ContextMenuItem onClick={() => onDelete(data.id)} className="text-destructive focus:text-destructive">
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                            </ContextMenuItem>
-                        )}
-                    </ContextMenuContent>
-                </ContextMenu>
-            </>
-        );
-    }
-
-    return nodeContent;
+    return (
+        <NodeContextMenu
+            data={data}
+            userInputs={userInputs}
+            onEditFunctionNode={onEdit}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+            onExecuteComplete={(taskId) => {
+                setCurrentTaskId(taskId);
+                setShowResults(true);
+            }}
+        >
+            {nodeContent}
+        </NodeContextMenu>
+    );
 };
 
 export default WorkflowNode;

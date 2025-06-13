@@ -1,6 +1,6 @@
 import { DataBrokerData } from "@/types";
 import { UserInputNodeData, BrokerRelayNodeData, FunctionNodeData } from "@/features/workflows/types";
-import { DEFAULT_TO_ARGUMENT_EDGE, DEFAULT_TO_RELAY_EDGE, DEFAULT_TO_DEPENDENCY_EDGE } from "@/features/workflows/utils/default-edges";
+// import { DEFAULT_TO_ARGUMENT_EDGE, DEFAULT_TO_RELAY_EDGE, DEFAULT_TO_DEPENDENCY_EDGE } from "@/features/workflows/utils/default-edges";
 import { createVirtualEdgeFingerprint } from "../service/edgeService";
 
 interface BrokerSource {
@@ -31,7 +31,7 @@ export interface GeneratedEdge {
     target: string;
     sourceHandle: string;
     targetHandle: string;
-    type: string;
+    type?: string;
     animated: boolean;
     isVirtual: boolean;
     style: {
@@ -53,6 +53,87 @@ export interface GeneratedEdge {
         label: string;
     };
 }
+
+// Default object for to_argument connection type
+export const DEFAULT_TO_ARGUMENT_EDGE = {
+    id: "",
+    source: "",
+    target: "",
+    sourceHandle: "output",
+    targetHandle: "input",
+    // type: "custom",
+    animated: true,
+    isVirtual: true,
+    style: {
+        stroke: "#10b981",
+        strokeWidth: 2,
+        strokeDasharray: "5,5",
+    },
+    data: {
+        connectionType: "to_argument",
+        sourceBrokerId: "",
+        sourceBrokerName: "",
+        targetBrokerId: "",
+        targetBrokerName: "",
+        metadata: {
+            isKnownBroker: false,
+        },
+        label: "",
+    },
+} as const;
+
+// Default object for to_relay connection type
+export const DEFAULT_TO_RELAY_EDGE = {
+    id: "",
+    source: "",
+    target: "",
+    sourceHandle: "output",
+    targetHandle: "input", // input--direct_broker--${brokerRelayData.source_broker_id}
+    // type: "custom",
+    animated: false,
+    isVirtual: true,
+    style: {
+        stroke: "#3b82f6",
+        strokeWidth: 2,
+    },
+    data: {
+        sourceBrokerId: "",
+        sourceBrokerName: "",
+        targetBrokerId: "",
+        targetBrokerName: "",
+        metadata: {
+            isKnownBroker: false,
+        },
+        label: "Relay",
+    },
+} as const;
+
+// Default object for to_dependency connection type
+export const DEFAULT_TO_DEPENDENCY_EDGE = {
+    id: "",
+    source: "",
+    target: "",
+    sourceHandle: "output",
+    targetHandle: "input",
+    // type: "custom",
+    animated: true,
+    isVirtual: true,
+    style: {
+        stroke: "#8b5cf6",
+        strokeWidth: 1,
+        strokeDasharray: "2,2",
+    },
+    data: {
+        sourceBrokerId: "",
+        sourceBrokerName: "",
+        targetBrokerId: "",
+        targetBrokerName: "",
+        metadata: {
+            isKnownBroker: false,
+        },
+        label: "Dependency",
+    },
+} as const;
 
 export type DataBrokerRecords = Record<string, DataBrokerData>;
 
@@ -143,14 +224,14 @@ export class EdgeGenerator {
 
         targets.forEach((target) => {
             const matchingSources = sources.filter((source) => source.brokerId === target.brokerId);
-            
+
             matchingSources.forEach((source) => {
                 const edgeKey = `${source.nodeId}-${target.nodeId}-${target.brokerId}`;
-                
+
                 if (!edgeSet.has(edgeKey)) {
                     edgeSet.add(edgeKey);
-                    const connectionType = target.label === "Relay" ? "to_relay" : 
-                                         target.label === "Dependency" ? "to_dependency" : "to_argument";
+                    const connectionType =
+                        target.label === "Relay" ? "to_relay" : target.label === "Dependency" ? "to_dependency" : "to_argument";
                     edges.push(this.createEdge(source, target, connectionType));
                 }
             });
@@ -159,30 +240,95 @@ export class EdgeGenerator {
         return edges;
     }
 
+    private findNodeType(nodeId: string): { type: string; data: any } | null {
+        const userInput = this.userInputs.find((ui) => ui.id === nodeId);
+        if (userInput) return { type: "userInput", data: userInput };
+
+        const relay = this.relays.find((r) => r.id === nodeId);
+        if (relay) return { type: "brokerRelay", data: relay };
+
+        const functionNode = this.functionNodes.find((fn) => fn.id === nodeId);
+        if (functionNode) return { type: "functionNode", data: functionNode };
+
+        return null;
+    }
+
     private createEdge(source: BrokerSource, target: BrokerTarget, connectionType: string): GeneratedEdge {
         const fingerprint = createVirtualEdgeFingerprint(source.nodeId, target.nodeId, target.brokerId, connectionType);
         const edgeId = `virtual_${source.nodeId}_${target.nodeId}_${target.brokerId}`;
-        
+
         let baseEdge;
         let displayLabel = target.label;
-        
-        if (target.label === "Relay") {
-            baseEdge = DEFAULT_TO_RELAY_EDGE;
-        } else if (target.label === "Dependency") {
-            baseEdge = DEFAULT_TO_DEPENDENCY_EDGE;
+
+        // Determine source and target node types
+        const sourceNode = this.findNodeType(source.nodeId);
+        const targetNode = this.findNodeType(target.nodeId);
+
+        // Default handles (to be overridden)
+        let sourceHandle = "output--direct_broker--" + source.brokerId;
+        let targetHandle = "input--direct_broker--" + target.brokerId;
+
+        if (!sourceNode || !targetNode) {
+            console.warn(`Unknown node type for source: ${source.nodeId} or target: ${target.nodeId}`);
         } else {
-            baseEdge = DEFAULT_TO_ARGUMENT_EDGE;
-            displayLabel = this.formatArgumentName(target.label);
+            // Set sourceHandle based on source node type
+            if (sourceNode.type === "userInput") {
+                sourceHandle = `output--direct_broker--${source.brokerId}`;
+            } else if (sourceNode.type === "brokerRelay") {
+                sourceHandle = `output--direct_broker--${source.brokerId}`;
+            } else if (sourceNode.type === "functionNode") {
+                const fnData = sourceNode.data as FunctionNodeData;
+                // Check if brokerId is a return broker or dependency
+                if (fnData.return_broker_overrides?.includes(source.brokerId)) {
+                    sourceHandle = `output--return_broker--${source.brokerId}`;
+                } else if (fnData.additional_dependencies?.some((dep) => dep.target_broker_id === source.brokerId)) {
+                    sourceHandle = `output--dependency--${source.brokerId}`;
+                }
+            }
+
+            // Set targetHandle based on connectionType and target node type
+            if (connectionType === "to_relay" && targetNode.type === "brokerRelay") {
+                baseEdge = DEFAULT_TO_RELAY_EDGE;
+                targetHandle = `input--direct_broker--${target.brokerId}`;
+            } else if (connectionType === "to_dependency" && targetNode.type === "functionNode") {
+                baseEdge = DEFAULT_TO_DEPENDENCY_EDGE;
+                targetHandle = `input--dependency--${target.brokerId}`;
+            } else if (connectionType === "to_argument" && targetNode.type === "functionNode") {
+                baseEdge = DEFAULT_TO_ARGUMENT_EDGE;
+                displayLabel = this.formatArgumentName(target.label);
+                const fnData = targetNode.data as FunctionNodeData;
+                // Check if label is an argument name or part of arg_mapping
+                if (fnData.arg_overrides?.some((arg) => arg.name === target.label)) {
+                    targetHandle = `input--argument--${target.label}`;
+                } else if (
+                    fnData.arg_mapping?.some(
+                        (mapping) => mapping.source_broker_id === target.brokerId && mapping.target_arg_name === target.label
+                    )
+                ) {
+                    targetHandle = `input--arg_mapping--${target.brokerId}`;
+                } else {
+                    // Fallback: assume argument if label is provided
+                    targetHandle = `input--argument--${target.label}`;
+                }
+            }
         }
 
         const knownBrokerData = this.findKnownBroker(target.brokerId);
         const isKnownBroker = !!knownBrokerData;
+
+        // Ensure baseEdge is set if not assigned
+        if (!baseEdge) {
+            baseEdge = DEFAULT_TO_ARGUMENT_EDGE;
+            displayLabel = this.formatArgumentName(target.label);
+        }
 
         return {
             ...baseEdge,
             id: edgeId,
             source: source.nodeId,
             target: target.nodeId,
+            sourceHandle,
+            targetHandle,
             data: {
                 ...baseEdge.data,
                 sourceBrokerId: source.brokerId,
@@ -246,20 +392,18 @@ export class EdgeGenerator {
     // Method to merge generated virtual edges with existing edges
     mergeWithExistingEdges(existingEdges: any[]): any[] {
         const savedFingerprints = new Set<string>();
-        
-        const nonVirtualEdges = existingEdges.filter(edge => {
-            if (edge.id.startsWith('virtual_')) return false;
-            
+
+        const nonVirtualEdges = existingEdges.filter((edge) => {
+            if (edge.id.startsWith("virtual_")) return false;
+
             if (edge.data?.metadata?.virtualEdgeFingerprint) {
                 savedFingerprints.add(edge.data.metadata.virtualEdgeFingerprint);
             }
             return true;
         });
-        
-        const virtualEdges = this.generateEdges().filter(edge => 
-            !savedFingerprints.has(edge.data.metadata.virtualEdgeFingerprint)
-        );
-        
+
+        const virtualEdges = this.generateEdges().filter((edge) => !savedFingerprints.has(edge.data.metadata.virtualEdgeFingerprint));
+
         return [...nonVirtualEdges, ...virtualEdges];
     }
 
@@ -299,31 +443,28 @@ export class EdgeGenerator {
         const allBrokerIds = this.getAllBrokers();
         const sources = this.getSources();
         const targets = this.getTargets();
-        
-        return allBrokerIds.map(brokerId => {
-            const brokerSources = sources.filter(s => s.brokerId === brokerId);
-            const brokerTargets = targets.filter(t => t.brokerId === brokerId);
+
+        return allBrokerIds.map((brokerId) => {
+            const brokerSources = sources.filter((s) => s.brokerId === brokerId);
+            const brokerTargets = targets.filter((t) => t.brokerId === brokerId);
             const knownBrokerData = this.findKnownBroker(brokerId);
-            
+
             return {
                 id: brokerId,
                 name: knownBrokerData?.name || brokerId,
                 isKnown: !!knownBrokerData,
                 knownBrokerData,
-                usageType: brokerSources.length > 0 && brokerTargets.length > 0 ? 'both' :
-                          brokerSources.length > 0 ? 'source' : 'target',
-                sourceNodes: brokerSources.map(s => s.nodeId),
-                targetNodes: brokerTargets.map(t => t.nodeId),
-                targetLabels: brokerTargets.map(t => t.label)
+                usageType: brokerSources.length > 0 && brokerTargets.length > 0 ? "both" : brokerSources.length > 0 ? "source" : "target",
+                sourceNodes: brokerSources.map((s) => s.nodeId),
+                targetNodes: brokerTargets.map((t) => t.nodeId),
+                targetLabels: brokerTargets.map((t) => t.label),
             };
         });
     }
 
     // Get enriched brokers for a specific node
     getEnrichedBrokersForNode(nodeId: string): EnrichedBroker[] {
-        return this.getEnrichedBrokers().filter(broker => 
-            broker.sourceNodes.includes(nodeId) || broker.targetNodes.includes(nodeId)
-        );
+        return this.getEnrichedBrokers().filter((broker) => broker.sourceNodes.includes(nodeId) || broker.targetNodes.includes(nodeId));
     }
 
     // Get all known brokers (not just ones in this workflow)

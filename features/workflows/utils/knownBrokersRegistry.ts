@@ -1,6 +1,5 @@
 import { DbFunctionNode, FunctionNode, WorkflowNodeMetadata } from "@/features/workflows/types";
 import { RECIPE_NODE_DEFINITION } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
-import { FunctionNodeData } from "../types/backendTypes";
 
 export interface KnownBroker {
     id: string;

@@ -6,11 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Database, History } from "lucide-react";
 import { SocketExecuteButton } from "@/components/socket-io/presets/preset-manager/triggers/SocketExecuteButton";
-import DebugOverlay from "@/features/workflows/react-flow/admin/DebugOverlay";
+import DebugOverlay from "@/features/workflows/components/admin/DebugOverlay";
 import EdgeManagementOverlay from "@/features/workflows/react-flow/core/EdgeManagementOverlay";
-import { BrokerOverlay } from "@/features/workflows/react-flow/common/BrokerOverlay";
+import { BrokerOverlay } from "@/features/workflows/components/common/BrokerOverlay";
 import { getRegisteredFunctionSelectOptions } from "@/features/workflows/utils/node-utils";
-import { workflowNodeCustomTabs } from "@/features/workflows/react-flow/common/workflow-results-tab-config";
+import { workflowNodeCustomTabs } from "@/features/workflows/components/common/workflow-results-tab-config";
 import { SocketResultsOverlay } from "@/components/socket-io/presets/preset-manager/responses/SocketResultsOverlay";
 import {
     UserInputNode,

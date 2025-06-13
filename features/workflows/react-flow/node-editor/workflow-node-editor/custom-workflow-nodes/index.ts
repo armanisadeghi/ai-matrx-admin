@@ -24,7 +24,7 @@ export type {
 } from './types';
 
 // Utility exports
-export { createNodeDataMethods } from './utils/node-data-methods';
+export { createNodeDataMethods } from '../utils/node-data-methods';
 
 // Component exports
 export { default as ErrorDisplay } from './components/ErrorDisplay';

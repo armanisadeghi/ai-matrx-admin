@@ -1,7 +1,7 @@
 'use client';
 
 import { FunctionNode } from '@/features/workflows/types';
-import { NodeDataMethods, ValidationMode } from '../types';
+import { NodeDataMethods, ValidationMode } from '../custom-workflow-nodes/types';
 import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 
 // Import our centralized utilities
@@ -16,21 +16,21 @@ import {
     getBrokerMappingsForArg,
     getArgumentsWithData,
     getAllReturnBrokers,
-} from '../../utils';
+} from '.';
 
 // Import dependency utilities
 import {
     addWorkflowDependency,
     updateWorkflowDependency,
     removeWorkflowDependency,
-} from '../../utils/dependency-utils';
+} from './dependency-utils';
 
 // Import mapping utilities
 import {
     addArgumentMapping,
     updateArgumentMapping,
     removeArgumentMapping,
-} from '../../utils/mapping-utils';
+} from './mapping-utils';
 
 /**
  * Creates a comprehensive set of methods for manipulating node data

@@ -1,18 +1,22 @@
 "use client";
 import React from "react";
-import { FunctionNodeData } from "@/features/workflows/types";
-import { getWorkflowNodeIcon } from "@/features/workflows/react-flow/common/workflowIcons";
+import { DbNodeData } from "@/features/workflows/types";
+import { getWorkflowNodeIcon } from "@/features/workflows/components/common/workflowIcons";
+
 
 interface NodeFloatingIconProps {
-  nodeData: FunctionNodeData;
+  nodeData: DbNodeData;
+  type: string;
   selected?: boolean;
 }
 
 export const NodeFloatingIcon: React.FC<NodeFloatingIconProps> = ({ 
   nodeData, 
+  type,
   selected = false 
 }) => {
-  const IconComponent = getWorkflowNodeIcon(nodeData);
+
+  const IconComponent = getWorkflowNodeIcon(nodeData, type);
 
   return (
     <div className={`workflow-node-icon ${selected ? 'selected' : ''}`}>

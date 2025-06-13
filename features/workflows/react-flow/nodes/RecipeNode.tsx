@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Handle, Position } from "reactflow";
 import { Card, CardContent } from "@/components/ui/card";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { NodeContextMenu } from "@/features/workflows/components/menus/NodeContextMenu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { SocketExecuteButton } from "@/components/socket-io/presets/preset-manager/triggers/SocketExecuteButton";
@@ -11,7 +11,7 @@ import { SocketResultsOverlay } from "@/components/socket-io/presets/preset-mana
 import { Trash2, Edit, Copy } from "lucide-react";
 import { DbFunctionNode } from "@/features/workflows/types";
 import { getNodeWithInputsAndOutputs, isNodeConnected } from "@/features/workflows/utils/node-utils";
-import { workflowNodeCustomTabs } from "@/features/workflows/react-flow/common/workflow-results-tab-config";
+import { workflowNodeCustomTabs } from "@/features/workflows/components/common/workflow-results-tab-config";
 
 interface Input {
     id: string;
@@ -30,9 +30,9 @@ interface NodeWithInputsAndOutputs extends DbFunctionNode {
 interface WorkflowNodeProps {
     data: DbFunctionNode;
     selected: boolean;
-    onDelete?: (nodeId: string) => void;
-    onEdit?: (nodeData: DbFunctionNode) => void;
-    onDuplicate?: (nodeId: string) => void;
+    onDelete: (nodeId: string) => void;
+    onEdit: (nodeData: DbFunctionNode) => void;
+    onDuplicate: (nodeId: string) => void;
     userInputs?: Array<{ broker_id: string; default_value: any }>; // Optional user inputs from the workflow
 }
 
@@ -117,18 +117,16 @@ const RecipeNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onE
                                     setShowResults(true);
                                 }}
                             />
-                            {onEdit && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onEdit(data);
-                                    }}
-                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
-                                    title="Edit node"
-                                >
-                                    <Edit className="h-3 w-3" />
-                                </button>
-                            )}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit(data);
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                                title="Edit node"
+                            >
+                                <Edit className="h-3 w-3" />
+                            </button>
                         </div>
                     </div>
                 </CardContent>
@@ -162,38 +160,21 @@ const RecipeNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onE
         </div>
     );
 
-    // Only wrap in ContextMenu if we have delete/edit/duplicate handlers
-    if (onDelete || onEdit || onDuplicate) {
-        return (
-            <>
-                <ContextMenu>
-                    <ContextMenuTrigger asChild>{nodeContent}</ContextMenuTrigger>
-                    <ContextMenuContent>
-                        {onEdit && (
-                            <ContextMenuItem onClick={() => onEdit(data)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit Node
-                            </ContextMenuItem>
-                        )}
-                        {onDuplicate && (
-                            <ContextMenuItem onClick={() => onDuplicate(data.id)}>
-                                <Copy className="h-4 w-4 mr-2" />
-                                Duplicate Node
-                            </ContextMenuItem>
-                        )}
-                        {onDelete && (
-                            <ContextMenuItem onClick={() => onDelete(data.id)} className="text-destructive focus:text-destructive">
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete Node
-                            </ContextMenuItem>
-                        )}
-                    </ContextMenuContent>
-                </ContextMenu>
-            </>
-        );
-    }
-
-    return nodeContent;
+    return (
+        <NodeContextMenu
+            data={data}
+            userInputs={userInputs}
+            onEdit={onEdit}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+            onExecuteComplete={(taskId) => {
+                setCurrentTaskId(taskId);
+                setShowResults(true);
+            }}
+        >
+            {nodeContent}
+        </NodeContextMenu>
+    );
 };
 
 export default RecipeNode;
