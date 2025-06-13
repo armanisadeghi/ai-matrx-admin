@@ -11,6 +11,7 @@ import ReactFlow, {
     Node,
     Edge,
     NodeTypes,
+    EdgeTypes,
     Connection,
     useReactFlow,
 } from "reactflow";
@@ -27,6 +28,7 @@ import { useAppSelector } from "@/lib/redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { DataBrokerRecords, EdgeGenerator, EnrichedBroker } from "@/features/workflows/utils/edge-generator";
 import { useEntityRecords } from "@/lib/redux/entity/hooks/useAllData";
+import { EdgeDetailOverlay } from "@/features/workflows/components/common/EdgeDetailOverlay";
 import {
     ConvertedWorkflowData,
     DbWorkflow,
@@ -36,6 +38,7 @@ import {
     WorkflowNode,
     DbNodeData,
 } from "@/features/workflows/types";
+import CustomEdge from "@/features/workflows/react-flow/edges/CustomEdge";
 
 interface WorkflowSystemProps {
     workflowId?: string;
@@ -61,6 +64,10 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
     const [selectedFunction, setSelectedFunction] = useState<string>("");
     const [deleteDialogNode, setDeleteDialogNode] = useState<Node | null>(null);
     const [isDeletionProcessing, setIsDeletionProcessing] = useState(false);
+
+    // Edge overlay state
+    const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+    const [isEdgeOverlayOpen, setIsEdgeOverlayOpen] = useState(false);
 
     const [refresh, setRefresh] = useState(false);
 
@@ -108,6 +115,31 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
             window.workflowAllKnownBrokers = allKnownBrokers ? Object.values(allKnownBrokers) : [];
         }
     }, [enrichedBrokers, allKnownBrokers]);
+
+    // Handle edge click - stable function that doesn't depend on edges array
+    const handleEdgeClick = useCallback(
+        (edgeData: any) => {
+            // Find the full edge object from the edges array
+            const fullEdge = edges.find((edge) => edge.id === edgeData.id);
+            if (fullEdge) {
+                setSelectedEdge(fullEdge);
+                setIsEdgeOverlayOpen(true);
+            }
+        },
+        [edges]
+    );
+
+    const handleCloseEdgeOverlay = useCallback(() => {
+        setIsEdgeOverlayOpen(false);
+        setSelectedEdge(null);
+    }, []);
+
+    const handleEdgeUpdated = useCallback(() => {
+        // Force re-render by updating the edges state
+        // This will ensure any edge label changes are reflected
+        setSelectedEdge(null);
+        setIsEdgeOverlayOpen(false);
+    }, []);
 
     useEffect(() => {
         if (workflowId) {
@@ -198,6 +230,14 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
             default: NodeWrapper,
         }),
         []
+    );
+
+    // Create stable edge types to avoid React Flow warning
+    const edgeTypes: EdgeTypes = useMemo(
+        () => ({
+            virtual: (props: any) => <CustomEdge {...props} onEdgeClick={handleEdgeClick} />,
+        }),
+        [handleEdgeClick]
     );
 
     const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
@@ -305,11 +345,16 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 onAddNode={handleAddNode}
                 onAddCustomNode={handleAddCustomNode}
                 onFinalizeNode={handleFinalizeRecipeNode}
                 mode={mode}
                 workflowId={workflowId}
+                selectedEdge={selectedEdge}
+                isEdgeOverlayOpen={isEdgeOverlayOpen}
+                onCloseEdgeOverlay={handleCloseEdgeOverlay}
+                onEdgeUpdated={handleEdgeUpdated}
             />
 
             <NodeEditorManager
@@ -330,6 +375,15 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onRemoveFromWorkflow={handleRemoveFromWorkflowWithDialog}
                 onPermanentDelete={handlePermanentDeleteWithDialog}
                 isProcessing={isDeletionProcessing}
+            />
+
+            {/* Edge Detail Overlay */}
+            <EdgeDetailOverlay
+                edge={selectedEdge}
+                isOpen={isEdgeOverlayOpen}
+                onClose={handleCloseEdgeOverlay}
+                onEdgeUpdated={handleEdgeUpdated}
+                workflowId={workflowId}
             />
         </div>
     );

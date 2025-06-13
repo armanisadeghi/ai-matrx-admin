@@ -14,23 +14,23 @@ import {
     hasReturnBrokerOverrides,
 } from "./utils/broker-utils";
 
-const BrokersTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
+const BrokersTab: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
     return (
         <div className="mt-4 space-y-6">
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Return Broker Overrides</CardTitle>
-                        <Button onClick={() => addReturnBrokerOverride(node, onNodeUpdate)} size="sm">
+                        <Button onClick={() => addReturnBrokerOverride(nodeData, onNodeUpdate)} size="sm">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Override
                         </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {hasReturnBrokerOverrides(node) ? (
+                    {hasReturnBrokerOverrides(nodeData) ? (
                         <div className="space-y-3">
-                            {node.return_broker_overrides.map((brokerId: string, index: number) => (
+                            {nodeData.return_broker_overrides.map((brokerId: string, index: number) => (
                                 <Card key={index} className="border-border">
                                     <CardContent className="p-4">
                                         <div className="flex items-center gap-4">
@@ -38,14 +38,14 @@ const BrokersTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                                 <Label>Broker ID</Label>
                                                 <Input
                                                     value={brokerId}
-                                                    onChange={(e) => updateReturnBrokerOverride(node, onNodeUpdate, index, e.target.value)}
+                                                    onChange={(e) => updateReturnBrokerOverride(nodeData, onNodeUpdate, index, e.target.value)}
                                                     placeholder="Enter broker ID"
                                                 />
                                             </div>
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                onClick={() => removeReturnBrokerOverride(node, onNodeUpdate, index)}
+                                                onClick={() => removeReturnBrokerOverride(nodeData, onNodeUpdate, index)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>

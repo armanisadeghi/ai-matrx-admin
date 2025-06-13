@@ -16,7 +16,6 @@ import ReactFlow, {
     XYPosition,
 } from "reactflow";
 import QuickAccessPanel from "@/features/workflows/components/access-panel/QuickAccessPanel";
-import CustomEdge from "@/features/workflows/react-flow/edges/CustomEdge";
 import { EdgeDetailOverlay } from "@/features/workflows/components/common/EdgeDetailOverlay";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { DbFunctionNode } from "@/features/workflows/types";
@@ -29,11 +28,16 @@ interface WorkflowCanvasProps {
     onConnect: (connection: Connection) => void;
     onNodeClick: (event: React.MouseEvent, node: Node) => void;
     nodeTypes: NodeTypes;
+    edgeTypes: EdgeTypes;
     onAddNode: (id: string, type?: string) => void;
     onAddCustomNode: (id: string, type?: string) => Promise<{ nodeData: Omit<DbFunctionNode, "user_id">; position: XYPosition } | null | void>;
     onFinalizeNode: (configuredNodeData: Omit<DbFunctionNode, "user_id"> | DbFunctionNode, position: XYPosition) => void;
     mode?: "edit" | "view" | "execute";
     workflowId?: string;
+    selectedEdge: Edge | null;
+    isEdgeOverlayOpen: boolean;
+    onCloseEdgeOverlay: () => void;
+    onEdgeUpdated: () => void;
 }
 
 export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
@@ -44,64 +48,24 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     onConnect,
     onNodeClick,
     nodeTypes,
+    edgeTypes,
     onAddNode,
     onAddCustomNode,
     onFinalizeNode,
     mode = "edit",
     workflowId,
+    selectedEdge,
+    isEdgeOverlayOpen,
+    onCloseEdgeOverlay,
+    onEdgeUpdated,
 }) => {
     const { mode: themeMode } = useTheme();
-    const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
-    const [isEdgeOverlayOpen, setIsEdgeOverlayOpen] = useState(false);
-
-    // Handle edge click
-    const handleEdgeClick = useCallback(
-        (edgeData: any) => {
-            // Find the full edge object from the edges array
-            const fullEdge = edges.find((edge) => edge.id === edgeData.id);
-            if (fullEdge) {
-                setSelectedEdge(fullEdge);
-                setIsEdgeOverlayOpen(true);
-            }
-        },
-        [edges]
-    );
-
-    const handleCloseEdgeOverlay = useCallback(() => {
-        setIsEdgeOverlayOpen(false);
-        setSelectedEdge(null);
-    }, []);
-
-    const handleEdgeUpdated = useCallback(() => {
-        // Force re-render by updating the edges state
-        // This will ensure any edge label changes are reflected
-        setSelectedEdge(null);
-        setIsEdgeOverlayOpen(false);
-    }, []);
-
-    // Create custom edge component with click handler
-    const CustomEdgeWithClick = useCallback(
-        (props: any) => {
-            return <CustomEdge {...props} onEdgeClick={handleEdgeClick} />;
-        },
-        [handleEdgeClick]
-    );
-
-    // Define edge types outside component to avoid memoization warning
-    const edgeTypes: EdgeTypes = useMemo(
-        () => ({
-            custom: CustomEdgeWithClick,
-        }),
-        [CustomEdgeWithClick]
-    );
-
-    // Debug: Log edges and nodes to console
 
     // Default edge options - memoized to avoid recreating
     const defaultEdgeOptions = useMemo(
         () => ({
             animated: false,
-            type: "custom",
+            type: "virtual",
             markerEnd: {
                 type: MarkerType.ArrowClosed,
                 color: "hsl(var(--primary))",
@@ -203,8 +167,8 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
             <EdgeDetailOverlay
                 edge={selectedEdge}
                 isOpen={isEdgeOverlayOpen}
-                onClose={handleCloseEdgeOverlay}
-                onEdgeUpdated={handleEdgeUpdated}
+                onClose={onCloseEdgeOverlay}
+                onEdgeUpdated={onEdgeUpdated}
                 workflowId={workflowId}
             />
         </>

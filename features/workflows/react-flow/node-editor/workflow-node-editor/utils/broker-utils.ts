@@ -9,6 +9,11 @@ export const addReturnBrokerOverride = (
     nodeData: DbFunctionNode,
     onNodeUpdate: (updatedNode: DbFunctionNode) => void
 ) => {
+    if (!nodeData) {
+        console.warn('nodeData is undefined in addReturnBrokerOverride');
+        return;
+    }
+    
     const updated = cloneDeep(nodeData);
     if (!updated.return_broker_overrides) updated.return_broker_overrides = [];
     updated.return_broker_overrides.push('');
@@ -25,6 +30,11 @@ export const updateReturnBrokerOverride = (
     index: number,
     value: string
 ) => {
+    if (!nodeData) {
+        console.warn('nodeData is undefined in updateReturnBrokerOverride');
+        return;
+    }
+    
     const updated = cloneDeep(nodeData);
     if (!updated.return_broker_overrides) return;
     updated.return_broker_overrides[index] = value;
@@ -40,6 +50,11 @@ export const removeReturnBrokerOverride = (
     onNodeUpdate: (updatedNode: DbFunctionNode) => void,
     index: number
 ) => {
+    if (!nodeData) {
+        console.warn('nodeData is undefined in removeReturnBrokerOverride');
+        return;
+    }
+    
     const updated = cloneDeep(nodeData);
     if (!updated.return_broker_overrides) return;
     updated.return_broker_overrides.splice(index, 1);
@@ -61,24 +76,39 @@ export const overwriteReturnBrokerOverridesFromDefinition = (
     nodeDefinition: NodeDefinitionType,
     dynamicValues: Record<string, string> = {}
 ): DbFunctionNode => {
+    if (!nodeData) {
+        console.warn('nodeData is undefined in overwriteReturnBrokerOverridesFromDefinition');
+        return {} as DbFunctionNode; // Return empty object as fallback
+    }
+    
+    if (!nodeDefinition) {
+        console.warn('nodeDefinition is undefined in overwriteReturnBrokerOverridesFromDefinition');
+        return cloneDeep(nodeData);
+    }
+    
     const updated = cloneDeep(nodeData);
     
     // Process predefined brokers to create return broker overrides
     const brokerOverrides: string[] = [];
     
-    for (const broker of nodeDefinition.predefined_brokers) {
-        let brokerId = broker.id;
-        
-        // If this is a dynamic broker, replace placeholders with actual values
-        if (broker.dynamic_id) {
-            // Replace all placeholders in the format {key} with corresponding values
-            for (const [key, value] of Object.entries(dynamicValues)) {
-                const placeholder = `{${key}}`;
-                brokerId = brokerId.replace(placeholder, value);
+    // Check if predefined_brokers exists
+    if (nodeDefinition.predefined_brokers) {
+        for (const broker of nodeDefinition.predefined_brokers) {
+            if (!broker) continue; // Skip null/undefined brokers
+            
+            let brokerId = broker.id || '';
+            
+            // If this is a dynamic broker, replace placeholders with actual values
+            if (broker.dynamic_id) {
+                // Replace all placeholders in the format {key} with corresponding values
+                for (const [key, value] of Object.entries(dynamicValues)) {
+                    const placeholder = `{${key}}`;
+                    brokerId = brokerId.replace(placeholder, value);
+                }
             }
+            
+            brokerOverrides.push(brokerId);
         }
-        
-        brokerOverrides.push(brokerId);
     }
     
     // Overwrite the return broker overrides
@@ -94,14 +124,26 @@ export const overwriteReturnBrokerOverridesFromDefinitionWithCallback = (
     nodeDefinition: NodeDefinitionType,
     dynamicValues: Record<string, string> = {}
 ) => {
+    if (!nodeData) {
+        console.warn('nodeData is undefined in overwriteReturnBrokerOverridesFromDefinitionWithCallback');
+        return;
+    }
+    
+    if (!onNodeUpdate) {
+        console.warn('onNodeUpdate callback is undefined in overwriteReturnBrokerOverridesFromDefinitionWithCallback');
+        return;
+    }
+    
     const updated = overwriteReturnBrokerOverridesFromDefinition(
         nodeData,
         nodeDefinition,
         dynamicValues
     );
-    if (onNodeUpdate) {
+    
+    if (updated) {
         onNodeUpdate(updated);
     }
+    
     return updated;
 };
 
@@ -110,6 +152,11 @@ export const clearReturnBrokerOverrides = (
     nodeData: DbFunctionNode,
     onNodeUpdate: (updatedNode: DbFunctionNode) => void
 ) => {
+    if (!nodeData) {
+        console.warn('nodeData is undefined in clearReturnBrokerOverrides');
+        return;
+    }
+    
     const updated = cloneDeep(nodeData);
     updated.return_broker_overrides = [];
     if (onNodeUpdate) {

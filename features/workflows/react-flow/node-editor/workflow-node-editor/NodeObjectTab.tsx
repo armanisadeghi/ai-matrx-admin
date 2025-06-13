@@ -16,7 +16,7 @@ import {
     copyToClipboard,
 } from "./utils/node-object-utils";
 
-const NodeObjectTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
+const NodeObjectTab: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
     const [state, setState] = useState<NodeObjectState>({
         jsonString: '',
         error: null,
@@ -29,14 +29,14 @@ const NodeObjectTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     };
 
     useEffect(() => {
-        const jsonString = initializeJsonFromNode(node);
+        const jsonString = initializeJsonFromNode(nodeData);
         setState({
             jsonString,
             hasChanges: false,
             error: null,
             warnings: []
         });
-    }, [node]);
+    }, [nodeData]);
 
     const handleJsonChangeWrapper = (value: string) => {
         handleJsonChange(value, updateState);
@@ -51,7 +51,7 @@ const NodeObjectTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     };
 
     const resetChangesWrapper = () => {
-        resetChanges(node, updateState);
+        resetChanges(nodeData, updateState);
     };
 
     const copyToClipboardWrapper = async () => {

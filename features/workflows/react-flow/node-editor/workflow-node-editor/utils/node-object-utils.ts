@@ -1,4 +1,4 @@
-import { FunctionNode } from '@/features/workflows/types';
+import { DbFunctionNode, FunctionNode } from '@/features/workflows/types';
 import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json-utils';
 import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ export interface NodeObjectState {
 }
 
 // Function to initialize JSON string from node
-export const initializeJsonFromNode = (node: FunctionNode): string => {
+export const initializeJsonFromNode = (node: any): string => {
     return JSON.stringify(node, null, 2);
 };
 
@@ -76,7 +76,7 @@ export const applyChanges = (
     }
 
     try {
-        const parsedNode = parseResult.data as FunctionNode;
+        const parsedNode = parseResult.data as DbFunctionNode;
         
         // Validate using our custom node validation
         validateNodeUpdate(parsedNode);
@@ -101,7 +101,7 @@ export const applyChanges = (
 
 // Function to reset changes
 export const resetChanges = (
-    node: FunctionNode,
+    node: any,
     setState: (updates: Partial<NodeObjectState>) => void
 ) => {
     setState({

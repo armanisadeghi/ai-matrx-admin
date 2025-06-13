@@ -35,7 +35,7 @@ interface RecipeNodeInitializerProps {
     open: boolean;
 }
 
-const DEBUG = true;
+const DEBUG = false;
 
 const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData, nodeDefinition, onConfirm, onCancel, open }) => {
     const [currentNodeData, setCurrentNodeData] = useState<DbFunctionNode>(nodeData);

@@ -14,23 +14,23 @@ import {
     hasWorkflowDependencies,
 } from "./utils/dependency-utils";
 
-const Dependencies: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
+const Dependencies: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
     return (
         <div className="mt-4 space-y-6">
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Workflow Dependencies</CardTitle>
-                        <Button onClick={() => addWorkflowDependency(node, onNodeUpdate)} size="sm">
+                        <Button onClick={() => addWorkflowDependency(nodeData, onNodeUpdate)} size="sm">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Dependency
                         </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {hasWorkflowDependencies(node) ? (
+                    {hasWorkflowDependencies(nodeData) ? (
                         <div className="space-y-3">
-                            {node.additional_dependencies.map((dependency: any, index: number) => (
+                            {nodeData.additional_dependencies.map((dependency: any, index: number) => (
                                 <Card key={index} className="border-border">
                                     <CardContent className="p-4">
                                         <div className="flex items-center gap-4">
@@ -38,7 +38,7 @@ const Dependencies: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                                 <Label>Source Broker ID</Label>
                                                 <Input
                                                     value={dependency.source_broker_id}
-                                                    onChange={(e) => updateWorkflowDependency(node, onNodeUpdate, index, 'source_broker_id', e.target.value)}
+                                                    onChange={(e) => updateWorkflowDependency(nodeData, onNodeUpdate, index, 'source_broker_id', e.target.value)}
                                                     placeholder="Enter source broker ID"
                                                 />
                                             </div>
@@ -46,14 +46,14 @@ const Dependencies: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                                 <Label>Target Broker ID (Optional)</Label>
                                                 <Input
                                                     value={dependency.target_broker_id || ''}
-                                                    onChange={(e) => updateWorkflowDependency(node, onNodeUpdate, index, 'target_broker_id', e.target.value)}
+                                                    onChange={(e) => updateWorkflowDependency(nodeData, onNodeUpdate, index, 'target_broker_id', e.target.value)}
                                                     placeholder="Enter target broker ID"
                                                 />
                                             </div>
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                onClick={() => removeWorkflowDependency(node, onNodeUpdate, index)}
+                                                onClick={() => removeWorkflowDependency(nodeData, onNodeUpdate, index)}
                                                 className="mt-6"
                                             >
                                                 <Trash2 className="h-4 w-4" />
