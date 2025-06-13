@@ -1,20 +1,16 @@
 'use client';
 
 import React from 'react';
-import { BaseNode } from '@/features/workflows/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { FileText, AlertCircle } from "lucide-react";
 import { getFunctionDataForOverview } from "./utils";
+import { DbFunctionNode, TabComponentProps } from '@/features/workflows/types';
 
-export interface TabComponentProps {
-    node: BaseNode;
-    onNodeUpdate: (updatedNode: BaseNode) => void;
-}
 
-const DescriptionTab: React.FC<TabComponentProps> = ({ node }) => {
-    const functionData = getFunctionDataForOverview(node.function_id);
+const DescriptionTab: React.FC<TabComponentProps> = ({ nodeData }) => {
+    const functionData = getFunctionDataForOverview(nodeData.function_id);
 
     return (
         <div className="h-full p-4">

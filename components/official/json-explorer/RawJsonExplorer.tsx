@@ -2,7 +2,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { formatJson } from "@/utils/json-cleaner-utility";
 import { copyToClipboard } from "@/features/scraper/utils/scraper-utils";
-import { createPathBookmark, saveBookmarks, loadBookmarks, getValueByBookmark, exportBookmarks } from "@/features/scraper/utils/json-path-navigation-util";
+import {
+    createPathBookmark,
+    saveBookmarks,
+    loadBookmarks,
+    getValueByBookmark,
+    exportBookmarks,
+} from "@/features/scraper/utils/json-path-navigation-util";
 import { getDataAtPath, generateAccessPath, generatePathDescription } from "./json-utils";
 import { PathArray, Bookmark } from "./types";
 
@@ -10,10 +16,17 @@ import { PathArray, Bookmark } from "./types";
 import BookmarkDialog from "./BookmarkDialog";
 import BookmarksDialog from "./BookmarksDialog";
 import NavigationRows from "./NavigationRows";
+import NavigationSelects from "./NavigationSelects";
 import ActionButtons from "./ActionButtons";
 import CopyPathObjectDialog from "./CopyPathObjectDialog";
 
-const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
+interface RawJsonExplorerProps {
+    pageData: string;
+    ignorePrefix?: string;
+    withSelect?: boolean;
+}
+
+const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefix = undefined, withSelect = false }) => {
     // Initialize with cleaned data
     const [originalData, setOriginalData] = useState(null);
     const [currentPath, setCurrentPath] = useState<PathArray>([[0, "All"]]); // [[rowIndex, selectedKey], ...]
@@ -59,53 +72,57 @@ const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
     }, [pageData]);
 
     // Process data with hidden paths
-    const processDataWithHiddenPaths = useCallback((data, currentFullPath = "data") => {
-        // Check if the current path itself should be hidden
-        if (hiddenPaths.includes(currentFullPath)) {
-            return Array.isArray(data) ? [{ "hidden": true }] : (typeof data === 'object' && data !== null ? { "hidden": true } : data);
-        }
-        
-        // Handle primitive values
-        if (typeof data !== 'object' || data === null) {
-            return data;
-        }
-        
-        // For arrays and objects, process each item
-        if (Array.isArray(data)) {
-            return data.map((item, idx) => {
-                // For array items, we need to use bracket notation
-                const childPath = `${currentFullPath}[${idx}]`;
-                return processDataWithHiddenPaths(item, childPath);
-            });
-        } else {
-            const result = {};
-            
-            // Process object properties
-            for (const key in data) {
-                // For object properties, use dot notation
-                const childPath = `${currentFullPath}.${key}`;
-                
-                // Check if this specific property is hidden
-                if (hiddenPaths.includes(childPath)) {
-                    // Replace with placeholder indicating content is hidden
-                    result[key] = Array.isArray(data[key]) ? [{ "hidden": true }] : 
-                                 (typeof data[key] === 'object' && data[key] !== null ? { "hidden": true } : data[key]);
-                } else {
-                    // Process recursively
-                    result[key] = processDataWithHiddenPaths(data[key], childPath);
-                }
+    const processDataWithHiddenPaths = useCallback(
+        (data, currentFullPath = "data") => {
+            // Check if the current path itself should be hidden
+            if (hiddenPaths.includes(currentFullPath)) {
+                return Array.isArray(data) ? [{ hidden: true }] : typeof data === "object" && data !== null ? { hidden: true } : data;
             }
-            return result;
-        }
-    }, [hiddenPaths]);
+
+            // Handle primitive values
+            if (typeof data !== "object" || data === null) {
+                return data;
+            }
+
+            // For arrays and objects, process each item
+            if (Array.isArray(data)) {
+                return data.map((item, idx) => {
+                    // For array items, we need to use bracket notation
+                    const childPath = `${currentFullPath}[${idx}]`;
+                    return processDataWithHiddenPaths(item, childPath);
+                });
+            } else {
+                const result = {};
+
+                // Process object properties
+                for (const key in data) {
+                    // For object properties, use dot notation
+                    const childPath = `${currentFullPath}.${key}`;
+
+                    // Check if this specific property is hidden
+                    if (hiddenPaths.includes(childPath)) {
+                        // Replace with placeholder indicating content is hidden
+                        result[key] = Array.isArray(data[key])
+                            ? [{ hidden: true }]
+                            : typeof data[key] === "object" && data[key] !== null
+                            ? { hidden: true }
+                            : data[key];
+                    } else {
+                        // Process recursively
+                        result[key] = processDataWithHiddenPaths(data[key], childPath);
+                    }
+                }
+                return result;
+            }
+        },
+        [hiddenPaths]
+    );
 
     // Handle key selection in any row
     const handleKeySelect = (rowIndex: number, key: string) => {
         // Create a new path array by keeping all rows up to the current one
         // and updating the selection for the current row
-        const newPath: PathArray = currentPath.slice(0, rowIndex + 1).map((item, idx) => 
-            idx === rowIndex ? [rowIndex, key] : item
-        );
+        const newPath: PathArray = currentPath.slice(0, rowIndex + 1).map((item, idx) => (idx === rowIndex ? [rowIndex, key] : item));
 
         // Calculate path for data extraction (exclude 'All' selections)
         const dataPath = newPath.map(([_, key]) => key).filter((k) => k !== "All");
@@ -130,33 +147,31 @@ const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
     // Context menu handlers
     const handleContextMenu = (e, path) => {
         e.preventDefault();
-        
+
         // Get the key name from the path
         const keyName = path[path.length - 1][1];
-        
+
         // Generate path in the simple dot notation format that matches our processing
         const relativePath = `data.${keyName}`;
-        
+
         setContextMenu({
             open: true,
             x: e.clientX,
             y: e.clientY,
-            path: relativePath
+            path: relativePath,
         });
     };
 
     const handleHideToggle = () => {
         if (!contextMenu.path) return;
-        
+
         const isCurrentlyHidden = hiddenPaths.includes(contextMenu.path);
-        
-        setHiddenPaths(prev => {
-            const newPaths = isCurrentlyHidden
-                ? prev.filter(p => p !== contextMenu.path)
-                : [...prev, contextMenu.path];
+
+        setHiddenPaths((prev) => {
+            const newPaths = isCurrentlyHidden ? prev.filter((p) => p !== contextMenu.path) : [...prev, contextMenu.path];
             return newPaths;
         });
-        
+
         setContextMenu({ open: false, x: 0, y: 0, path: null });
     };
 
@@ -167,10 +182,10 @@ const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
                 setContextMenu({ open: false, x: 0, y: 0, path: null });
             }
         };
-        
-        document.addEventListener('click', handleClickOutside);
+
+        document.addEventListener("click", handleClickOutside);
         return () => {
-            document.removeEventListener('click', handleClickOutside);
+            document.removeEventListener("click", handleClickOutside);
         };
     }, [contextMenu.open]);
 
@@ -283,89 +298,91 @@ const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
     };
 
     // Convert any bracket notation paths to dot notation for consistency
-    const normalizedHiddenPaths = hiddenPaths.map(path => {
-        // Convert paths like data["applets"]["ade95b7c-15a1-46c4-9ade-6e6c77cf37f5"].containers 
+    const normalizedHiddenPaths = hiddenPaths.map((path) => {
+        // Convert paths like data["applets"]["ade95b7c-15a1-46c4-9ade-6e6c77cf37f5"].containers
         // to data.containers
-        return path.replace(/\["[^"]+"\]/g, '').replace(/\[\d+\]/g, '');
+        return path.replace(/\["[^"]+"\]/g, "").replace(/\[\d+\]/g, "");
     });
 
     // Use the normalized paths for processing
-    const processDataWithNormalizedPaths = useCallback((data, currentFullPath = "data") => {
-        // Handle primitive values
-        if (typeof data !== 'object' || data === null) {
-            return data;
-        }
-        
-        // Check if this path or any parent path should be hidden
-        if (normalizedHiddenPaths.some(hiddenPath => {
-            // Check exact match
-            if (hiddenPath === currentFullPath) return true;
-            
-            // Check if this is a child of a hidden path (for containers)
-            if (currentFullPath.startsWith(hiddenPath + '.') || 
-                currentFullPath.startsWith(hiddenPath + '[')) return true;
-                
-            return false;
-        })) {
-            return Array.isArray(data) ? [{ "hidden": true }] : { "hidden": true };
-        }
-        
-        // For arrays and objects, process each item
-        if (Array.isArray(data)) {
-            return data.map((item, idx) => {
-                // For array items, we need to use bracket notation
-                const childPath = `${currentFullPath}[${idx}]`;
-                return processDataWithNormalizedPaths(item, childPath);
-            });
-        } else {
-            const result = {};
-            
-            // Process object properties
-            for (const key in data) {
-                // For object properties, use dot notation
-                const childPath = `${currentFullPath}.${key}`;
-                
-                // Process recursively
-                result[key] = processDataWithNormalizedPaths(data[key], childPath);
+    const processDataWithNormalizedPaths = useCallback(
+        (data, currentFullPath = "data") => {
+            // Handle primitive values
+            if (typeof data !== "object" || data === null) {
+                return data;
             }
-            return result;
-        }
-    }, [normalizedHiddenPaths]);
-    
+
+            // Check if this path or any parent path should be hidden
+            if (
+                normalizedHiddenPaths.some((hiddenPath) => {
+                    // Check exact match
+                    if (hiddenPath === currentFullPath) return true;
+
+                    // Check if this is a child of a hidden path (for containers)
+                    if (currentFullPath.startsWith(hiddenPath + ".") || currentFullPath.startsWith(hiddenPath + "[")) return true;
+
+                    return false;
+                })
+            ) {
+                return Array.isArray(data) ? [{ hidden: true }] : { hidden: true };
+            }
+
+            // For arrays and objects, process each item
+            if (Array.isArray(data)) {
+                return data.map((item, idx) => {
+                    // For array items, we need to use bracket notation
+                    const childPath = `${currentFullPath}[${idx}]`;
+                    return processDataWithNormalizedPaths(item, childPath);
+                });
+            } else {
+                const result = {};
+
+                // Process object properties
+                for (const key in data) {
+                    // For object properties, use dot notation
+                    const childPath = `${currentFullPath}.${key}`;
+
+                    // Process recursively
+                    result[key] = processDataWithNormalizedPaths(data[key], childPath);
+                }
+                return result;
+            }
+        },
+        [normalizedHiddenPaths]
+    );
+
     const processedDisplayData = processDataWithNormalizedPaths(displayData);
-    
+
     // Format the current display data for rendering
     const jsonStr = displayData ? formatJson(displayData) : "";
-    
+
     // Create a separate processed copy for display that includes the hidden paths
     const displayJsonStr = processedDisplayData ? formatJson(processedDisplayData) : "";
 
     // Check if a path is hidden
     const isPathHidden = (path) => {
         if (!path || path.length === 0) return false;
-        
+
         // Get the key name from the path
         const keyName = path[path.length - 1][1];
-        
+
         // Generate path in the simple dot notation format
         const relativePath = `data.${keyName}`;
-            
+
         return hiddenPaths.includes(relativePath);
     };
 
     return (
         <div className="w-full">
-            <div className="mb-4 flex flex-col">
+            <div className="mb-2 p-2 flex flex-col">
                 <div className="flex justify-between items-center mb-2">
-                    <div className="flex-1">
-                        {generatePathDescription(currentPath) !== "Root object" && (
-                            <div className="text-sm text-gray-600 dark:text-gray-400 pl-2">
-                                <span className="font-medium">Path:</span> {generatePathDescription(currentPath)}
-                            </div>
-                        )}
-                    </div>
-                    
-                    <ActionButtons 
+                    {generateAccessPath(currentPath) !== "data" && (
+                        <div className="mb-2 p-2 pr-4 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono overflow-x-auto border border-red-500">
+                            {generateAccessPath(currentPath)}
+                        </div>
+                    )}
+
+                    <ActionButtons
                         bookmarks={bookmarks}
                         jsonStr={jsonStr}
                         currentPath={currentPath}
@@ -379,22 +396,27 @@ const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
                         onIgnorePrefixChange={setCurrentIgnorePrefix}
                     />
                 </div>
-                
-                {generateAccessPath(currentPath) !== "data" && (
-                    <div className="mb-2 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono overflow-x-auto">
-                        {generateAccessPath(currentPath)}
-                    </div>
-                )}
             </div>
 
-            <NavigationRows 
-                originalData={originalData}
-                currentPath={currentPath}
-                onKeySelect={handleKeySelect}
-                onContextMenu={handleContextMenu}
-                hiddenPaths={hiddenPaths}
-                isPathHidden={isPathHidden}
-            />
+            {withSelect ? (
+                <NavigationSelects
+                    originalData={originalData}
+                    currentPath={currentPath}
+                    onKeySelect={handleKeySelect}
+                    onContextMenu={handleContextMenu}
+                    hiddenPaths={hiddenPaths}
+                    isPathHidden={isPathHidden}
+                />
+            ) : (
+                <NavigationRows
+                    originalData={originalData}
+                    currentPath={currentPath}
+                    onKeySelect={handleKeySelect}
+                    onContextMenu={handleContextMenu}
+                    hiddenPaths={hiddenPaths}
+                    isPathHidden={isPathHidden}
+                />
+            )}
 
             <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 p-4 rounded-md text-sm text-gray-800 dark:text-gray-200 overflow-auto max-h-[60vh]">
                 {displayJsonStr}
@@ -402,15 +424,15 @@ const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
 
             {/* Context Menu */}
             {contextMenu.open && (
-                <div 
+                <div
                     className="fixed bg-white dark:bg-gray-800 shadow-md rounded border border-gray-300 dark:border-gray-700 z-50"
                     style={{ top: contextMenu.y, left: contextMenu.x }}
                 >
-                    <button 
+                    <button
                         className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
                         onClick={handleHideToggle}
                     >
-                        {isPathHidden(contextMenu.path) ? 'Show content' : 'Hide content'}
+                        {isPathHidden(contextMenu.path) ? "Show content" : "Hide content"}
                     </button>
                 </div>
             )}

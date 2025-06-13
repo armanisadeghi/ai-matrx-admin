@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import {
     getFunctionData,
     getArgumentsWithData,
@@ -13,17 +13,17 @@ import {
 } from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
 
 interface ArgumentsMappingsSectionProps {
-    node: BaseNode;
-    onNodeUpdate: (updatedNode: BaseNode) => void;
+    nodeData: DbFunctionNode;
+    onNodeUpdate: (nodeData: DbFunctionNode) => void;
     argsToHide?: string[]; // Optional array of argument names to hide from display
 }
 
 /**
  * ArgumentsMappingsSection - Displays the arguments and mappings table
  */
-const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ node, onNodeUpdate, argsToHide = [] }) => {
-    const functionData = getFunctionData(node.function_id);
-    const argumentsWithData = getArgumentsWithData(node, functionData);
+const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ nodeData, onNodeUpdate, argsToHide = [] }) => {
+    const functionData = getFunctionData(nodeData.function_id);
+    const argumentsWithData = getArgumentsWithData(nodeData, functionData);
 
     // Filter out hidden arguments
     const visibleArgumentsWithData = argumentsWithData.filter((arg) => !argsToHide.includes(arg.name));
@@ -50,9 +50,9 @@ const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ nod
                     </TableHeader>
                     <TableBody>
                         {visibleArgumentsWithData.map((arg, index) => {
-                            const effectiveValue = getEffectiveArgValue(arg, node.arg_overrides);
-                            const mappings = getBrokerMappingsForArg(node, arg.name);
-                            const override = node.arg_overrides?.find(o => o.name === arg.name);
+                            const effectiveValue = getEffectiveArgValue(arg, nodeData.arg_overrides);
+                            const mappings = getBrokerMappingsForArg(nodeData, arg.name);
+                            const override = nodeData.arg_overrides?.find(o => o.name === arg.name);
 
                             return (
                                 <TableRow key={index} className="text-xs">

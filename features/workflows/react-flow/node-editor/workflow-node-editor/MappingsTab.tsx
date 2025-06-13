@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { TabComponentProps } from '@/features/workflows/types';
+import React from "react";
+import { TabComponentProps } from "@/features/workflows/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +16,8 @@ import {
     hasArgumentMappings,
 } from "./utils/mapping-utils";
 
-const MappingsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
-    const functionData = getFunctionDataForMappings(node.function_id);
+const MappingsTab: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
+    const functionData = getFunctionDataForMappings(nodeData.function_id);
 
     return (
         <div className="mt-4 space-y-6">
@@ -25,16 +25,16 @@ const MappingsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Argument Mappings</CardTitle>
-                        <Button onClick={() => addArgumentMapping(node, onNodeUpdate)} size="sm">
+                        <Button onClick={() => addArgumentMapping(nodeData, onNodeUpdate)} size="sm">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Mapping
                         </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {hasArgumentMappings(node) ? (
+                    {hasArgumentMappings(nodeData) ? (
                         <div className="space-y-3">
-                            {node.arg_mapping.map((mapping: any, index: number) => (
+                            {nodeData.arg_mapping.map((mapping: any, index: number) => (
                                 <Card key={index} className="border-border">
                                     <CardContent className="p-4">
                                         <div className="flex items-center gap-4">
@@ -42,15 +42,25 @@ const MappingsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                                 <Label>Source Broker ID</Label>
                                                 <Input
                                                     value={mapping.source_broker_id}
-                                                    onChange={(e) => updateArgumentMapping(node, onNodeUpdate, index, 'source_broker_id', e.target.value)}
+                                                    onChange={(e) =>
+                                                        updateArgumentMapping(
+                                                            nodeData,
+                                                            onNodeUpdate,
+                                                            index,
+                                                            "source_broker_id",
+                                                            e.target.value
+                                                        )
+                                                    }
                                                     placeholder="Enter broker ID"
                                                 />
                                             </div>
                                             <div className="flex-1 space-y-2">
                                                 <Label>Target Argument</Label>
-                                                <Select 
-                                                    value={mapping.target_arg_name} 
-                                                    onValueChange={(value) => updateArgumentMapping(node, onNodeUpdate, index, 'target_arg_name', value)}
+                                                <Select
+                                                    value={mapping.target_arg_name}
+                                                    onValueChange={(value) =>
+                                                        updateArgumentMapping(nodeData, onNodeUpdate, index, "target_arg_name", value)
+                                                    }
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select argument" />
@@ -67,7 +77,7 @@ const MappingsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                onClick={() => removeArgumentMapping(node, onNodeUpdate, index)}
+                                                onClick={() => removeArgumentMapping(nodeData, onNodeUpdate, index)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>

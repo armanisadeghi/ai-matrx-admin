@@ -1,4 +1,4 @@
-import { BaseNode } from '@/features/workflows/types';
+import { FunctionNode } from '@/features/workflows/types';
 import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json-utils';
 import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ export interface NodeObjectState {
 }
 
 // Function to initialize JSON string from node
-export const initializeJsonFromNode = (node: BaseNode): string => {
+export const initializeJsonFromNode = (node: FunctionNode): string => {
     return JSON.stringify(node, null, 2);
 };
 
@@ -76,7 +76,7 @@ export const applyChanges = (
     }
 
     try {
-        const parsedNode = parseResult.data as BaseNode;
+        const parsedNode = parseResult.data as FunctionNode;
         
         // Validate using our custom node validation
         validateNodeUpdate(parsedNode);
@@ -101,7 +101,7 @@ export const applyChanges = (
 
 // Function to reset changes
 export const resetChanges = (
-    node: BaseNode,
+    node: FunctionNode,
     setState: (updates: Partial<NodeObjectState>) => void
 ) => {
     setState({

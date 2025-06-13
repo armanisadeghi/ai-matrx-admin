@@ -4,20 +4,20 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import { getAllReturnBrokers } from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
 
 interface FunctionInfoSectionProps {
-  node: BaseNode;
-  onNodeUpdate: (node: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
 }
 
 /**
  * FunctionInfoSection - Displays function details and return brokers
  */
-const FunctionInfoSection: React.FC<FunctionInfoSectionProps> = ({ node }) => {
-  const functionData = getRegisteredFunctions().find(f => f.id === node.function_id);
-  const allReturnBrokers = getAllReturnBrokers(node, functionData);
+const FunctionInfoSection: React.FC<FunctionInfoSectionProps> = ({ nodeData }) => {
+  const functionData = getRegisteredFunctions().find(f => f.id === nodeData.function_id);
+  const allReturnBrokers = getAllReturnBrokers(nodeData, functionData);
 
   // Don't render if no function data
   if (!functionData) {

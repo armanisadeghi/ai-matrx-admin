@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode, TabComponentProps } from '@/features/workflows/types';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,18 +19,13 @@ import {
     hasReturnBrokers,
 } from "./utils";
 
-export interface TabComponentProps {
-    node: BaseNode;
-    onNodeUpdate: (updatedNode: BaseNode) => void;
-}
+const OverviewTab: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
+    const functionData = getFunctionDataForOverview(nodeData.function_id);
+    const argumentsWithData = getArgumentsWithData(nodeData, functionData);
+    const allReturnBrokers = getAllReturnBrokers(nodeData, functionData);
 
-const OverviewTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
-    const functionData = getFunctionDataForOverview(node.function_id);
-    const argumentsWithData = getArgumentsWithData(node, functionData);
-    const allReturnBrokers = getAllReturnBrokers(node, functionData);
-
-    const handleNodeUpdate = (updates: Partial<BaseNode>) => {
-        updateNode(node, onNodeUpdate, updates);
+    const handleNodeUpdate = (updates: Partial<DbFunctionNode>) => {
+        updateNode(nodeData, onNodeUpdate, updates);
     };
 
     return (
@@ -46,11 +41,11 @@ const OverviewTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                     <Label htmlFor="step-name" className="text-xs font-medium text-muted-foreground">Step Name</Label>
                                     <Input
                                         id="step-name"
-                                        value={node.step_name || ''}
+                                        value={nodeData.step_name || ''}
                                         onChange={(e) => handleNodeUpdate({ step_name: e.target.value })}
                                         placeholder="Enter step name"
                                         className={`h-8 text-sm placeholder:text-muted-foreground/60 ${
-                                            (node.step_name || '') === 'Unnamed Step' 
+                                            (nodeData.step_name || '') === 'Unnamed Step' 
                                                 ? 'text-muted-foreground dark:text-muted-foreground' 
                                                 : ''
                                         }`}
@@ -60,7 +55,7 @@ const OverviewTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                 <div className="space-y-1">
                                     <Label htmlFor="function-type" className="text-xs font-medium text-muted-foreground">Function Type</Label>
                                     <Select
-                                        value={node.function_type || 'registered_function'}
+                                        value={nodeData.function_type || 'registered_function'}
                                         onValueChange={(value) => handleNodeUpdate({ function_type: value })}
                                     >
                                         <SelectTrigger className="h-8">
@@ -78,14 +73,14 @@ const OverviewTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="execution-required"
-                                        checked={node.execution_required || false}
+                                        checked={nodeData.execution_required || false}
                                         onCheckedChange={(checked) => handleNodeUpdate({ execution_required: !!checked })}
                                     />
                                     <Label htmlFor="execution-required" className="text-xs font-medium">Execution Required</Label>
                                 </div>
                                 
-                                <Badge variant={node.status === 'ready_to_execute' ? 'default' : 'secondary'} className="text-xs">
-                                    {node.status || 'pending'}
+                                <Badge variant={nodeData.status === 'ready_to_execute' ? 'default' : 'secondary'} className="text-xs">
+                                    {nodeData.status || 'pending'}
                                 </Badge>
                             </div>
                         </div>
@@ -94,12 +89,12 @@ const OverviewTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                         <div className="space-y-3 text-xs">
                             <div>
                                 <span className="text-muted-foreground font-medium">Node ID:</span>
-                                <div className="font-mono bg-muted px-2 py-1 rounded mt-1 break-all text-xs">{node.id}</div>
+                                <div className="font-mono bg-muted px-2 py-1 rounded mt-1 break-all text-xs">{nodeData.id}</div>
                             </div>
                             <div>
                                 <span className="text-muted-foreground font-medium">Workflow ID:</span>
                                 <div className="font-mono bg-muted px-2 py-1 rounded mt-1 break-all text-xs">
-                                    {node.workflow_id || <span className="text-muted-foreground italic">Not assigned</span>}
+                                    {nodeData.workflow_id || <span className="text-muted-foreground italic">Not assigned</span>}
                                 </div>
                             </div>
                         </div>
@@ -206,7 +201,7 @@ const OverviewTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
             )}
 
             {/* Dependencies */}
-            {hasNodeDependencies(node) && (
+            {hasNodeDependencies(nodeData) && (
                 <Card>
                     <CardContent className="p-4">
                         <h3 className="text-sm font-medium mb-3">Dependencies</h3>
@@ -218,7 +213,7 @@ const OverviewTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {node.additional_dependencies!.map((dep, index) => (
+                                {nodeData.additional_dependencies!.map((dep, index) => (
                                     <TableRow key={index} className="text-xs">
                                         <TableCell className="py-2 font-mono">{dep.source_broker_id}</TableCell>
                                         <TableCell className="py-2 font-mono">

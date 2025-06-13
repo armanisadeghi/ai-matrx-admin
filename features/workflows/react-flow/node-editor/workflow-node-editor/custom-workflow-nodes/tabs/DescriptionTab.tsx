@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +9,12 @@ import { FileText, AlertCircle } from "lucide-react";
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 
 interface DescriptionTabProps {
-  node: BaseNode;
-  onNodeUpdate: (updatedNode: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
 }
 
-const DescriptionTab: React.FC<DescriptionTabProps> = ({ node }) => {
-    const functionData = getRegisteredFunctions().find(f => f.id === node.function_id);
+const DescriptionTab: React.FC<DescriptionTabProps> = ({ nodeData }) => {
+    const functionData = getRegisteredFunctions().find(f => f.id === nodeData.function_id);
 
     return (
         <div className="h-full p-4">

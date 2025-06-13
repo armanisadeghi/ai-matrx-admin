@@ -5,21 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Settings } from "lucide-react";
 import { CustomNodeEditorProps } from './types';
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 
 /**
  * Save button component that handles save logic
  */
 const SaveButton: React.FC<{ 
-  node: BaseNode; 
-  onSave: (node: any) => void; 
+  nodeData: DbFunctionNode; 
+  onSave: (nodeData: DbFunctionNode) => void; 
   onClose: () => void;
   validationErrors?: string[];
-}> = ({ node, onSave, onClose, validationErrors = [] }) => {
+}> = ({ nodeData, onSave, onClose, validationErrors = [] }) => {
   
   const handleSave = () => {
     try {
-      onSave(node);
+      onSave(nodeData);
       onClose();
     } catch (error) {
       console.error('Save error:', error);
@@ -40,7 +40,7 @@ const SaveButton: React.FC<{
  * Main CustomNodeEditor component that provides dialog structure
  */
 const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
-  node,
+  nodeData,
   onSave,
   onClose,
   open,
@@ -49,10 +49,11 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
   validation = 'permissive',
   title,
   width = 'max-w-6xl',
-  height = 'h-[85vh]'
+  height = 'h-[85vh]',
+  nodeDefinition
 }) => {
   const [cancelClicked, setCancelClicked] = useState(false);
-  const [editingNode, setEditingNode] = useState<BaseNode>(node);
+  const [editingNode, setEditingNode] = useState<DbFunctionNode>(nodeData);
 
   const handleCancel = useCallback(() => {
     setCancelClicked(true);
@@ -66,7 +67,8 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
     }
   }, [onClose, cancelClicked]);
 
-  if (!node) return null;
+  if (!nodeData) return null;
+  if (!nodeDefinition) return null;
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
@@ -74,12 +76,12 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            {title || `Edit Node: ${node.step_name || 'Unnamed Step'}`}
+            {title || nodeDefinition.name || `Edit Node: ${nodeData.step_name || 'Unnamed Step'}`}
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <Component node={editingNode} onNodeUpdate={setEditingNode} />
+          <Component nodeData={editingNode} onNodeUpdate={setEditingNode} nodeDefinition={nodeDefinition} />
         </div>
         
         {!autoSave && (
@@ -88,7 +90,7 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
               Cancel
             </Button>
             <SaveButton 
-              node={editingNode} 
+              nodeData={editingNode}
               onSave={onSave} 
               onClose={onClose}
               validationErrors={[]}

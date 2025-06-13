@@ -1,4 +1,4 @@
-import { BaseNode } from "@/features/workflows/types";
+import { DbFunctionNode } from "@/features/workflows/types";
 import { RecipeConfig } from "@/features/workflows/service/recipe-service";
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,14 +9,14 @@ import { addWorkflowDependency, updateWorkflowDependency, removeWorkflowDependen
 
 // New tab component to display recipe details
 const RecipeDetailsTab = ({
-    node,
+    nodeData,
     onNodeUpdate,
     recipeDetails,
     loading,
     error,
 }: {
-    node: BaseNode;
-    onNodeUpdate: (node: BaseNode) => void;
+    nodeData: DbFunctionNode;
+    onNodeUpdate: (nodeData: DbFunctionNode) => void;
     recipeDetails: RecipeConfig | null;
     loading: boolean;
     error: string | null;
@@ -33,7 +33,7 @@ const RecipeDetailsTab = ({
         }
     };
 
-    const currentDependencies = node.additional_dependencies || [];
+    const currentDependencies = nodeData.additional_dependencies || [];
 
     // Helper function to check if a broker is already a dependency
     const isBrokerInDependencies = (brokerId: string): boolean => {
@@ -43,7 +43,7 @@ const RecipeDetailsTab = ({
     // Helper function to add a broker as a dependency
     const addBrokerDependency = (brokerId: string) => {
         // First add an empty dependency
-        addWorkflowDependency(node, (updatedNode) => {
+        addWorkflowDependency(nodeData, (updatedNode) => {
             // Then update the last dependency with the broker ID
             const lastIndex = (updatedNode.additional_dependencies?.length || 1) - 1;
             updateWorkflowDependency(updatedNode, onNodeUpdate, lastIndex, 'source_broker_id', brokerId);
@@ -54,7 +54,7 @@ const RecipeDetailsTab = ({
     const removeBrokerDependency = (brokerId: string) => {
         const dependencyIndex = currentDependencies.findIndex(dep => dep.source_broker_id === brokerId);
         if (dependencyIndex !== -1) {
-            removeWorkflowDependency(node, onNodeUpdate, dependencyIndex);
+            removeWorkflowDependency(nodeData, onNodeUpdate, dependencyIndex);
         }
     };
 

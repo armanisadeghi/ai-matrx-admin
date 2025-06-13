@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
-import { BaseNode, TabComponentProps } from "@/features/workflows/types";
+import { FunctionNode, TabComponentProps } from "@/features/workflows/types";
 
 // Import our centralized utilities
 import {
@@ -24,13 +24,13 @@ import {
  * RecipeSelectionSection - Recipe selection with version control and return brokers
  * Now uses centralized utilities directly instead of context
  */
-const RecipeSelectionSection: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
+const RecipeSelectionSection: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
     const { quickReferenceKeyDisplayPairs } = useFetchQuickRef("recipe");
 
-    const functionData = getFunctionData(node.function_id);
+    const functionData = getFunctionData(nodeData.function_id);
 
     const getArgOverride = (argName: string) => {
-        return node.arg_overrides?.find((o) => o.name === argName);
+        return nodeData.arg_overrides?.find((o) => o.name === argName);
     };
 
     const recipeIdOverride = getArgOverride("recipe_id");
@@ -44,20 +44,20 @@ const RecipeSelectionSection: React.FC<TabComponentProps> = ({ node, onNodeUpdat
     // Handle recipe selection changes
     const handleRecipeChange = (recipeId: string) => {
         if (recipeId) {
-            setArgValueAndReady(node, onNodeUpdate, "recipe_id", recipeId, true);
+            setArgValueAndReady(nodeData, onNodeUpdate, "recipe_id", recipeId, true);
         } else {
-            setArgValueAndReady(node, onNodeUpdate, "recipe_id", "", false);
+            setArgValueAndReady(nodeData, onNodeUpdate, "recipe_id", "", false);
         }
     };
 
     const handleLatestVersionChange = (checked: boolean) => {
         if (checked) {
-            updateMultipleArgOverrides(node, onNodeUpdate, [
+            updateMultipleArgOverrides(nodeData, onNodeUpdate, [
                 { argName: "latest_version", value: true, ready: true },
                 { argName: "version", value: null, ready: false }
             ]);
         } else {
-            setArgValueAndReady(node, onNodeUpdate, "latest_version", false, true);
+            setArgValueAndReady(nodeData, onNodeUpdate, "latest_version", false, true);
         }
     };
 
@@ -65,12 +65,12 @@ const RecipeSelectionSection: React.FC<TabComponentProps> = ({ node, onNodeUpdat
         if (version && !useLatestVersion) {
             const versionNumber = parseInt(version);
             if (!isNaN(versionNumber)) {
-                setArgValueAndReady(node, onNodeUpdate, "version", versionNumber, true);
+                setArgValueAndReady(nodeData, onNodeUpdate, "version", versionNumber, true);
             }
         }
     };
 
-    const allReturnBrokers = getAllReturnBrokers(node, functionData);
+    const allReturnBrokers = getAllReturnBrokers(nodeData, functionData);
 
     return (
         <Card>

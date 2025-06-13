@@ -1,11 +1,11 @@
 import React from 'react';
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import { NeededBroker, RecipeConfig } from '@/features/workflows/service/recipe-service';
 import MessagesTab from './MessagesTab';
 
 interface RecipeMessagesTabProps {
-    node: BaseNode;
-    onNodeUpdate: (node: BaseNode) => void;
+    nodeData: DbFunctionNode;
+    onNodeUpdate: (nodeData: DbFunctionNode) => void;
     recipeDetails: RecipeConfig | null;
     loading: boolean;
     error: string | null;
@@ -13,7 +13,7 @@ interface RecipeMessagesTabProps {
 }
 
 const RecipeMessagesTab: React.FC<RecipeMessagesTabProps> = ({
-    node,
+    nodeData,
     onNodeUpdate,
     recipeDetails,
     loading,

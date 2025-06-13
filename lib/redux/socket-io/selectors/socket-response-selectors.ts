@@ -5,16 +5,20 @@ import { RootState } from "@/lib/redux";
 import { ResponsesState, ResponseState } from "@/lib/redux/socket-io/socket.types";
 import { selectTaskListenerIds, selectTaskById } from "./socket-task-selectors";
 
+// Shared constants to avoid creating new array references
+const EMPTY_ARRAY: any[] = [];
+const EMPTY_RESPONSE_STATE = { text: "", data: EMPTY_ARRAY, info: EMPTY_ARRAY, errors: EMPTY_ARRAY, ended: false };
+
 // ==================== Base Response Selectors ====================
 export const selectAllResponses = createSelector(
     [(state: RootState) => state.socketResponse],
     (responses) => responses
 );
 
-// Fixed: Use createSelector for proper memoization
+// Fixed: Use createSelector for proper memoization and build on selectAllResponses
 export const selectResponseByListenerId = (listenerId: string) =>
     createSelector(
-        [(state: RootState) => state.socketResponse],
+        [selectAllResponses],
         (responses) => responses[listenerId] as ResponseState | undefined
     );
 
@@ -52,7 +56,7 @@ export const selectResponseTextByListenerId = (listenerId: string) =>
 export const selectResponseDataByListenerId = (listenerId: string) =>
     createSelector(
         [selectResponseByListenerId(listenerId)],
-        (response) => response?.data || []
+        (response) => response?.data || EMPTY_ARRAY
     );
 
 export const selectFirstResponseDataByListenerId = (listenerId: string) =>
@@ -64,13 +68,13 @@ export const selectFirstResponseDataByListenerId = (listenerId: string) =>
 export const selectResponseInfoByListenerId = (listenerId: string) =>
     createSelector(
         [selectResponseByListenerId(listenerId)],
-        (response) => response?.info || []
+        (response) => response?.info || EMPTY_ARRAY
     );
 
 export const selectResponseErrorsByListenerId = (listenerId: string) =>
     createSelector(
         [selectResponseByListenerId(listenerId)],
-        (response) => response?.errors || []
+        (response) => response?.errors || EMPTY_ARRAY
     );
 
 export const selectResponseEndedByListenerId = (listenerId: string) =>
@@ -94,7 +98,7 @@ export const selectTaskResponsesByTaskId = (taskId: string) =>
         ],
         (listenerIds, responses) => {
             if (!taskId || !listenerIds || listenerIds.length === 0) {
-                return []; // Return empty array, will be memoized
+                return EMPTY_ARRAY; // Return shared empty array
             }
             
             return listenerIds.map((id) => ({
@@ -112,7 +116,7 @@ export const selectTaskResults = (taskId: string) =>
         ],
         (listenerIds, responses) => {
             if (!listenerIds || listenerIds.length === 0) {
-                return { text: "", data: [], info: [], errors: [], ended: false };
+                return EMPTY_RESPONSE_STATE;
             }
             
             if (listenerIds.length === 1) {
@@ -195,19 +199,19 @@ export const selectPrimaryResponseTextByTaskId = (taskId: string) =>
 export const selectPrimaryResponseDataByTaskId = (taskId: string) =>
     createSelector(
         [selectPrimaryResponseForTask(taskId)],
-        (response) => response?.data || []
+        (response) => response?.data || EMPTY_ARRAY
     );
 
 export const selectPrimaryResponseInfoByTaskId = (taskId: string) =>
     createSelector(
         [selectPrimaryResponseForTask(taskId)],
-        (response) => response?.info || []
+        (response) => response?.info || EMPTY_ARRAY
     );
 
 export const selectPrimaryResponseErrorsByTaskId = (taskId: string) =>
     createSelector(
         [selectPrimaryResponseForTask(taskId)],
-        (response) => response?.errors || []
+        (response) => response?.errors || EMPTY_ARRAY
     );
 
 export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>

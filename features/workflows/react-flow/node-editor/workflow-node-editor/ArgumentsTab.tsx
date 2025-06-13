@@ -25,8 +25,8 @@ import {
 import { flexibleJsonParse, formatJson, valueToString, hasContent } from "@/utils/json-utils";
 import { cleanJson } from "@/utils/json-cleaner-utility";
 
-const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
-    const functionData = getFunctionData(node.function_id);
+const ArgumentsTab: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
+    const functionData = getFunctionData(nodeData.function_id);
     const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
     const [localValues, setLocalValues] = useState<Record<string, string>>({});
 
@@ -54,7 +54,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                 // Find the argument and update its value
                 const arg = [...requiredArgs, ...optionalArgs].find((a) => a.name === argName);
                 if (arg) {
-                    handleArgValueChange(node, onNodeUpdate, arg, formattedJson);
+                    handleArgValueChange(nodeData, onNodeUpdate, arg, formattedJson);
                     // Also update local state so the textarea shows the cleaned value
                     setLocalValues((prev) => ({ ...prev, [argName]: formattedJson }));
                 }
@@ -108,7 +108,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                     <div className="flex items-center space-x-2">
                         <Checkbox
                             checked={effective.value === true || effective.value === "true"}
-                            onCheckedChange={(checked) => handleArgValueChange(node, onNodeUpdate, arg, String(checked))}
+                            onCheckedChange={(checked) => handleArgValueChange(nodeData, onNodeUpdate, arg, String(checked))}
                         />
                         <span className="text-sm">{effective.value === true || effective.value === "true" ? "True" : "False"}</span>
                     </div>
@@ -122,7 +122,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                         value={String(effective.value || "")}
                         onChange={(e) => {
                             const val = e.target.value === "" ? "" : parseInt(e.target.value) || 0;
-                            handleArgValueChange(node, onNodeUpdate, arg, String(val));
+                            handleArgValueChange(nodeData, onNodeUpdate, arg, String(val));
                         }}
                         placeholder="Enter integer value"
                         className="text-sm h-10"
@@ -135,7 +135,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                         type="number"
                         step="any"
                         value={String(effective.value || "")}
-                        onChange={(e) => handleArgValueChange(node, onNodeUpdate, arg, e.target.value)}
+                        onChange={(e) => handleArgValueChange(nodeData, onNodeUpdate, arg, e.target.value)}
                         placeholder="Enter decimal value"
                         className="text-sm h-10"
                     />
@@ -170,7 +170,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                 setLocalValues((prev) => ({ ...prev, [arg.name]: e.target.value }));
                             }}
                             onBlur={(e) => {
-                                handleArgValueChange(node, onNodeUpdate, arg, e.target.value);
+                                handleArgValueChange(nodeData, onNodeUpdate, arg, e.target.value);
                                 validateJsonOnBlur(arg.name, e.target.value);
                                 // Clear local state after committing to node
                                 setLocalValues((prev) => {
@@ -200,7 +200,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                         <Label className="text-xs">Text value:</Label>
                         <Textarea
                             value={String(effective.value || "")}
-                            onChange={(e) => handleArgValueChange(node, onNodeUpdate, arg, e.target.value)}
+                            onChange={(e) => handleArgValueChange(nodeData, onNodeUpdate, arg, e.target.value)}
                             placeholder={dataType === "url" ? "https://example.com" : "Enter text value"}
                             className="text-sm resize-y"
                             rows={3}
@@ -211,8 +211,8 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     };
 
     const renderArgument = (arg: any) => {
-        const effective = getEffectiveArgValue(arg, node.arg_overrides);
-        const mappings = getBrokerMappingsForArg(node, arg.name);
+        const effective = getEffectiveArgValue(arg, nodeData.arg_overrides);
+        const mappings = getBrokerMappingsForArg(nodeData, arg.name);
 
         return (
             <Card key={arg.name} className="border-border">
@@ -240,7 +240,9 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                     <span className="text-sm font-medium text-green-700 dark:text-green-300">Option 1: Direct Value</span>
                                     <Checkbox
                                         checked={effective.ready}
-                                        onCheckedChange={(checked) => updateArgOverride(node, onNodeUpdate, arg.name, "ready", !!checked)}
+                                        onCheckedChange={(checked) =>
+                                            updateArgOverride(nodeData, onNodeUpdate, arg.name, "ready", !!checked)
+                                        }
                                     />
                                 </div>
 
@@ -258,7 +260,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Option 2: Broker Mapping</span>
                                     <Button
-                                        onClick={() => addBrokerMapping(node, onNodeUpdate, arg.name)}
+                                        onClick={() => addBrokerMapping(nodeData, onNodeUpdate, arg.name)}
                                         size="sm"
                                         variant="outline"
                                         className="h-7 px-2 text-xs"
@@ -273,7 +275,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                         <Label className="text-xs">Broker sources:</Label>
                                         {mappings.map((mapping, mappingIndex) => {
                                             const globalIndex =
-                                                node.arg_mapping?.findIndex(
+                                                nodeData.arg_mapping?.findIndex(
                                                     (m: any) =>
                                                         m.source_broker_id === mapping.source_broker_id &&
                                                         m.target_arg_name === mapping.target_arg_name
@@ -283,10 +285,12 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                                 <DeleteInput
                                                     key={mappingIndex}
                                                     value={mapping.source_broker_id}
-                                                    onChange={(e) => updateBrokerMapping(node, onNodeUpdate, globalIndex, e.target.value)}
+                                                    onChange={(e) =>
+                                                        updateBrokerMapping(nodeData, onNodeUpdate, globalIndex, e.target.value)
+                                                    }
                                                     placeholder="Enter broker ID"
                                                     className="font-mono text-sm h-10"
-                                                    onDelete={() => removeBrokerMapping(node, onNodeUpdate, globalIndex)}
+                                                    onDelete={() => removeBrokerMapping(nodeData, onNodeUpdate, globalIndex)}
                                                 />
                                             );
                                         })}

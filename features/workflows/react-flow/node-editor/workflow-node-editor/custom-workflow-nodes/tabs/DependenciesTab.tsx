@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import {
     addWorkflowDependency,
     updateWorkflowDependency,
@@ -14,12 +14,12 @@ import {
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
 
 interface DependenciesTabProps {
-    node: BaseNode;
-    onNodeUpdate: (updatedNode: BaseNode) => void;
+    nodeData: DbFunctionNode;
+    onNodeUpdate: (nodeData: DbFunctionNode) => void;
 }
 
-const DependenciesTab: React.FC<DependenciesTabProps> = ({ node, onNodeUpdate }) => {
-    const dependencies = node.additional_dependencies || [];
+const DependenciesTab: React.FC<DependenciesTabProps> = ({ nodeData, onNodeUpdate }) => {
+    const dependencies = nodeData.additional_dependencies || [];
 
     return (
         <div className="mt-4 space-y-6">
@@ -27,7 +27,7 @@ const DependenciesTab: React.FC<DependenciesTabProps> = ({ node, onNodeUpdate })
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Workflow Dependencies</CardTitle>
-                        <Button onClick={() => addWorkflowDependency(node, onNodeUpdate)} size="sm">
+                        <Button onClick={() => addWorkflowDependency(nodeData, onNodeUpdate)} size="sm">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Dependency
                         </Button>
@@ -44,7 +44,7 @@ const DependenciesTab: React.FC<DependenciesTabProps> = ({ node, onNodeUpdate })
                                                 <Label>Source Broker ID</Label>
                                                 <Input
                                                     value={dependency.source_broker_id}
-                                                    onChange={(e) => updateWorkflowDependency(node, onNodeUpdate, index, 'source_broker_id', e.target.value)}
+                                                    onChange={(e) => updateWorkflowDependency(nodeData, onNodeUpdate, index, 'source_broker_id', e.target.value)}
                                                     placeholder="Enter source broker ID"
                                                 />
                                             </div>
@@ -52,14 +52,14 @@ const DependenciesTab: React.FC<DependenciesTabProps> = ({ node, onNodeUpdate })
                                                 <Label>Target Broker ID (Optional)</Label>
                                                 <Input
                                                     value={dependency.target_broker_id || ''}
-                                                    onChange={(e) => updateWorkflowDependency(node, onNodeUpdate, index, 'target_broker_id', e.target.value)}
+                                                    onChange={(e) => updateWorkflowDependency(nodeData, onNodeUpdate, index, 'target_broker_id', e.target.value)}
                                                     placeholder="Enter target broker ID"
                                                 />
                                             </div>
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                onClick={() => removeWorkflowDependency(node, onNodeUpdate, index)}
+                                                onClick={() => removeWorkflowDependency(nodeData, onNodeUpdate, index)}
                                                 className="mt-6"
                                             >
                                                 <Trash2 className="h-4 w-4" />

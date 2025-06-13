@@ -1,10 +1,15 @@
-import { BaseNode, ArgumentOverride, ArgumentMapping } from "@/features/workflows/types";
+import { DbFunctionNode, ArgumentOverride, ArgumentMapping } from "@/features/workflows/types";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
-import { DEFAULT_EXCLUDE_ARG_NAMES, getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
+import {
+    DEFAULT_EXCLUDE_ARG_NAMES,
+    ALL_HIDDEN_CONNECTIONS,
+    getRegisteredFunctions,
+} from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 
 
-export function getNormalizedRegisteredFunctionNode(function_id: string): BaseNode {
+
+export function getNormalizedRegisteredFunctionNode(function_id: string, workflowId?: string): DbFunctionNode {
     const function_data = getRegisteredFunctions().find((f) => f.id === function_id);
     if (!function_data) {
         throw new Error(`Function with id ${function_id} not found`);
@@ -19,23 +24,26 @@ export function getNormalizedRegisteredFunctionNode(function_id: string): BaseNo
             required: arg.required,
         }));
 
-    const node: BaseNode = {
+    const node: DbFunctionNode = {
         id: uuidv4(),
         function_id: function_data.id,
         function_type: "registered_function",
-        step_name: "Unnamed Step",
-        execution_required: false,
+        step_name: `New ${function_data.name} Step`,
+        execution_required: true,
         additional_dependencies: [],
         arg_mapping: [],
         return_broker_overrides: [function_data.return_broker],
         arg_overrides: arg_overrides,
-        workflow_id: null,
+        workflow_id: workflowId || null,
+        status: "pending",
+        node_type: "functionNode",
+        user_id: null,
+        metadata: {},
     };
-
     return node;
 }
 
-export function validateNodeUpdate(node: BaseNode): boolean {
+export function validateNodeUpdate(node: DbFunctionNode): boolean {
     // Ensure function_id exists and is valid
     if (!node.function_id) {
         throw new Error("Node must have a valid function_id");
@@ -90,7 +98,7 @@ export function validateNodeUpdate(node: BaseNode): boolean {
 }
 
 // Adds a broker mapping to a node for a specific argument
-export function addBrokerMapping(node: BaseNode, brokerId: string, argName: string): BaseNode {
+export function addBrokerMapping(node: DbFunctionNode, brokerId: string, argName: string): DbFunctionNode {
     if (!node.function_id) {
         throw new Error("Node must have a valid function_id");
     }
@@ -154,7 +162,7 @@ export function getRegisteredFunctionSelectOptions(): SelectOption[] {
     }));
 }
 
-export function isNodeConnected(node: BaseNode): boolean {
+export function isNodeConnected(node: DbFunctionNode): boolean {
     // If node or arg_overrides is missing, return false
     if (!node || !node.arg_overrides) {
         return false;
@@ -189,3 +197,171 @@ export function isNodeConnected(node: BaseNode): boolean {
     // All arguments are either ready or have valid mappings
     return true;
 }
+
+export interface Input {
+    id: string;
+    label: string;
+}
+
+/**
+ * Formats an input identifier into a human-readable label.
+ * For argument names, converts from snake_case/SNAKE_CASE/kabob-case to Title Case.
+ * For broker IDs with UUID_text pattern, extracts and formats the text part.
+ * Shows UUID directly if it's a plain UUID with no additional text.
+ */
+function formatInputLabel(inputId: string, fallbackLabel?: string): string {
+    // If we have a fallback label, use it
+    if (fallbackLabel && fallbackLabel !== inputId) {
+        return fallbackLabel;
+    }
+    
+    // Check if it's a plain UUID (pattern: 8-4-4-4-12 hexadecimal digits)
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidPattern.test(inputId)) {
+        return inputId;
+    }
+    
+    // Check if it's a UUID followed by underscore and text (UUID_text pattern)
+    const uuidWithTextPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_(.+)$/i;
+    const uuidMatch = inputId.match(uuidWithTextPattern);
+    if (uuidMatch) {
+        // Extract the part after the UUID and underscore
+        const namePart = uuidMatch[1];
+        const formatted = namePart
+            .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+        return formatted || inputId;
+    }
+    
+    // For regular argument names, convert snake_case/SNAKE_CASE/kabob-case to Title Case
+    const formatted = inputId
+        .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    
+    return formatted || inputId;
+}
+
+export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
+    const inputs: Input[] = [];
+
+    // Process dependencies
+    node.additional_dependencies.forEach((dep) => {
+        if (dep.source_broker_id) {
+            inputs.push({
+                id: dep.source_broker_id,
+                label: formatInputLabel(dep.source_broker_id, dep.source_broker_name),
+            });
+        }
+    });
+
+    // Process argument mappings
+    node.arg_mapping.forEach((mapping) => {
+        if (mapping.source_broker_id && mapping.target_arg_name) {
+            inputs.push({
+                id: mapping.source_broker_id,
+                label: formatInputLabel(mapping.target_arg_name),
+            });
+        }
+    });
+
+    node.arg_overrides.forEach((arg) => {
+        const argName = arg.name;
+        if (!inputs.some((input) => input.label === formatInputLabel(argName)) && !ALL_HIDDEN_CONNECTIONS.includes(argName)) {
+            inputs.push({
+                id: argName,
+                label: formatInputLabel(argName),
+            });
+        }
+    });
+
+    return inputs;
+}
+
+export interface Output {
+    id: string;
+    label: string;
+}
+
+/**
+ * Formats a broker ID into a human-readable label.
+ * Extracts text after the first underscore and converts from snake_case/SNAKE_CASE/kabob-case to Title Case.
+ * Shows UUID directly if it's a valid UUID with no additional text.
+ * Falls back to "Result {index + 1}" if no underscore or invalid pattern.
+ */
+function formatBrokerLabel(brokerId: string, index: number): string {
+    // Check if the broker ID contains an underscore
+    const underscoreIndex = brokerId.indexOf('_');
+    if (underscoreIndex === -1) {
+        // Check if it's a UUID (pattern: 8-4-4-4-12 hexadecimal digits)
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (uuidPattern.test(brokerId)) {
+            return brokerId;
+        }
+        return `Result ${index + 1}`;
+    }
+    
+    // Extract the part after the first underscore
+    const namePart = brokerId.substring(underscoreIndex + 1);
+    
+    // If the name part is empty, fall back to default
+    if (!namePart.trim()) {
+        return `Result ${index + 1}`;
+    }
+    
+    // Convert snake_case, SNAKE_CASE, and kabob-case to Title Case
+    const formatted = namePart
+        .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    
+    return formatted || `Result ${index + 1}`;
+}
+
+export function getNodePotentialOutputs(node: DbFunctionNode): Output[] {
+    const outputs: Output[] = [];
+
+    // Process workflow dependencies
+    node.additional_dependencies.forEach((dep) => {
+        if (dep.target_broker_id) {
+            outputs.push({
+                id: dep.target_broker_id,
+                label: dep.target_broker_name || dep.target_broker_id,
+            });
+        }
+    });
+
+    // Process return broker overrides
+    node.return_broker_overrides.forEach((brokerId, index) => {
+        outputs.push({
+            id: brokerId,
+            label: formatBrokerLabel(brokerId, index),
+        });
+    });
+    return outputs;
+}
+
+export function getNodePotentialInputsAndOutputs(node: DbFunctionNode): { inputs: Input[]; outputs: Output[] } {
+    return {
+        inputs: getNodePotentialInputs(node),
+        outputs: getNodePotentialOutputs(node),
+    };
+}
+
+export interface NodeWithInputsAndOutputs extends DbFunctionNode {
+    inputs: Input[];
+    outputs: Output[];
+}
+
+export function getNodeWithInputsAndOutputs(node: DbFunctionNode): NodeWithInputsAndOutputs {
+    return {
+        ...node,
+        inputs: getNodePotentialInputs(node),
+        outputs: getNodePotentialOutputs(node),
+    };
+}
+

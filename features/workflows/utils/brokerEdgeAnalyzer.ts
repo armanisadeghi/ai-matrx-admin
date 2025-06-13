@@ -1,12 +1,82 @@
-import { Edge, Viewport } from "reactflow";
-import { CompleteWorkflowData } from "../types";
-import { getAllKnownBrokers, getGlobalBrokers } from "./knownBrokersRegistry";
+import { ConvertedWorkflowData, FunctionNode } from "../types";
+import { getAllKnownBrokers } from "./knownBrokersRegistry";
+
+// Local type definitions - only what we need
+export interface Edge {
+    id: string;
+    source: string;
+    target: string;
+    sourceHandle?: string;
+    targetHandle?: string;
+    type?: string;
+    animated?: boolean;
+    isVirtual: boolean; // Direct flag to identify virtual vs database edges
+    style?: {
+        stroke?: string;
+        strokeWidth?: number;
+        strokeDasharray?: string;
+    };
+    data?: {
+        connectionType: string;
+        sourceBrokerId: string;
+        metadata: {
+            targetArgName?: string;
+            relayLabel?: string;
+            dependencyHasTarget?: boolean;
+            knownBrokerLabel?: string;
+            knownBrokerDescription?: string;
+            isKnownBroker?: boolean;
+        };
+        label: string;
+    };
+}
+
+interface UserInput {
+    id: string;
+    broker_id: string;
+}
+
+interface Relay {
+    id: string;
+    source_broker_id?: string;
+    target_broker_ids?: string[];
+    label?: string;
+}
+
+interface ArgMapping {
+    source_broker_id: string;
+    target_arg_name: string;
+}
+
+interface Dependency {
+    source_broker_id: string;
+    target_broker_id?: string;
+}
+
+interface ArgOverride {
+    name: string;
+    default_value?: unknown;
+}
+
+interface WorkflowNode {
+    id: string;
+    return_broker_overrides?: string[];
+    additional_dependencies?: Dependency[];
+    arg_mapping?: ArgMapping[];
+    arg_overrides?: ArgOverride[];
+}
+
+interface DatabaseEdge {
+    id: string;
+    source_node_id: string;
+    target_node_id: string;
+}
+
 
 function toTitleCase(snakeCase: string): string {
     if (!snakeCase || typeof snakeCase !== "string") {
         return snakeCase || "";
     }
-
     return snakeCase
         .split("_")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -30,27 +100,28 @@ interface BrokerConnection {
 /**
  * Enhanced broker connection analyzer that considers known brokers
  * Starting with user inputs and now including runtime-generated brokers
+ * Also processes basic database edges alongside virtual broker connections
  */
-export function analyzeBrokerConnections(completeData: CompleteWorkflowData): Edge[] {
+export function analyzeBrokerConnections(completeData: ConvertedWorkflowData): Edge[] {
     const connections: BrokerConnection[] = [];
 
     // Start with user inputs - they are always SOURCES (inputs only)
     completeData.userInputs.forEach((userInput) => {
-        const userInputConnections = traceUserInputBroker(userInput.broker_id, userInput.id, completeData);
+        const userInputConnections = traceUserInputBroker(userInput.data.broker_id, userInput.id, completeData);
         connections.push(...userInputConnections);
     });
 
     // Trace from relay outputs to find subsequent connections
     completeData.relays.forEach((relay) => {
-        relay.target_broker_ids?.forEach((targetBrokerId) => {
+        relay.data.target_broker_ids?.forEach((targetBrokerId) => {
             const relayOutputConnections = traceRelayOutputBroker(targetBrokerId, relay.id, completeData);
             connections.push(...relayOutputConnections);
         });
     });
 
     // Trace from workflow node return brokers to find subsequent connections
-    completeData.nodes.forEach((node) => {
-        node.return_broker_overrides?.forEach((returnBrokerId) => {
+    completeData.functionNodes.forEach((node) => {
+        node.data.return_broker_overrides?.forEach((returnBrokerId) => {
             const returnBrokerConnections = traceReturnBroker(returnBrokerId, node.id, completeData);
             connections.push(...returnBrokerConnections);
         });
@@ -67,8 +138,8 @@ export function analyzeBrokerConnections(completeData: CompleteWorkflowData): Ed
     });
 
     // Also trace from dependency target brokers (internal relays) to find subsequent connections
-    completeData.nodes.forEach((node) => {
-        node.additional_dependencies?.forEach((dependency) => {
+    completeData.functionNodes.forEach((node) => {
+        node.data.additional_dependencies?.forEach((dependency) => {
             if (dependency.target_broker_id && dependency.target_broker_id.trim() !== "") {
                 const dependencyTargetConnections = traceDependencyTarget(dependency.target_broker_id, node.id, completeData);
                 connections.push(...dependencyTargetConnections);
@@ -78,32 +149,40 @@ export function analyzeBrokerConnections(completeData: CompleteWorkflowData): Ed
 
     // Deduplicate connections before converting to edges
     const uniqueConnections = connections.filter((connection, index, self) => {
-        return self.findIndex(c => 
+        return (
+            self.findIndex(
+                (c) =>
             c.sourceNodeId === connection.sourceNodeId &&
             c.targetNodeId === connection.targetNodeId &&
             c.connectionType === connection.connectionType &&
             c.sourceBrokerId === connection.sourceBrokerId
-        ) === index;
+        ) === index
+        );
     });
 
-    // Convert connections to ReactFlow edges
-    return uniqueConnections.map((connection, index) => createVirtualEdge(connection, index));
+    // Convert broker connections to virtual edges
+    const virtualEdges = uniqueConnections.map((connection, index) => createVirtualEdge(connection, index));
+
+    // Convert database edges to basic edges
+    const basicEdges = completeData.edges.map((edge) => createBasicEdge(edge));
+
+    // Combine and return all edges
+    return [...basicEdges, ...virtualEdges];
 }
 
 /**
  * Helper function to determine if a broker ID is generated by a specific node
  * This handles patterns like recipe_id based brokers
  */
-function isNodeGeneratedBroker(brokerId: string, node: any): boolean {
+function isNodeGeneratedBroker(brokerId: string, node: WorkflowNode): boolean {
     // For recipe nodes, check if broker ID starts with the recipe_id
-    const recipeIdArg = node.arg_overrides?.find((arg: any) => arg.name === "recipe_id");
+    const recipeIdArg = node.arg_overrides?.find((arg) => arg.name === "recipe_id");
     if (recipeIdArg?.default_value) {
         const recipeId = recipeIdArg.default_value as string;
         if (brokerId.startsWith(recipeId + "_")) {
             return true;
         }
     }
-
     // Add more patterns here for other node types
     // For example, if you have nodes that generate brokers based on their ID:
     // if (brokerId.startsWith(node.id + "_")) return true;
@@ -115,19 +194,19 @@ function isNodeGeneratedBroker(brokerId: string, node: any): boolean {
  * NEW: Traces where a known broker can go
  * Similar to other trace functions but includes known broker metadata
  */
-function traceKnownBroker(brokerId: string, sourceNodeId: string, completeData: CompleteWorkflowData, knownBroker: any): BrokerConnection[] {
+function traceKnownBroker(brokerId: string, sourceNodeId: string, completeData: ConvertedWorkflowData, knownBroker: any): BrokerConnection[] {
     const connections: BrokerConnection[] = [];
 
     // Check if this known broker goes to any relays
     completeData.relays.forEach((relay) => {
-        if (relay.source_broker_id === brokerId) {
+        if (relay.data.source_broker_id === brokerId) {
             connections.push({
                 sourceBrokerId: brokerId,
                 sourceNodeId: sourceNodeId,
                 targetNodeId: relay.id,
                 connectionType: "to_relay",
                 metadata: {
-                    relayLabel: relay.label || undefined,
+                    relayLabel: relay.data.label || undefined,
                     knownBrokerLabel: knownBroker.label,
                     knownBrokerDescription: knownBroker.description,
                 },
@@ -136,12 +215,12 @@ function traceKnownBroker(brokerId: string, sourceNodeId: string, completeData: 
     });
 
     // Check if this known broker goes to any workflow nodes
-    completeData.nodes.forEach((node) => {
+    completeData.functionNodes.forEach((node) => {
         // Skip the same node (can't connect to itself)
         if (node.id === sourceNodeId) return;
 
         // Check if it's used as a dependency
-        node.additional_dependencies?.forEach((dependency) => {
+        node.data.additional_dependencies?.forEach((dependency) => {
             if (dependency.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -158,7 +237,7 @@ function traceKnownBroker(brokerId: string, sourceNodeId: string, completeData: 
         });
 
         // Check if it's used as an argument
-        node.arg_mapping?.forEach((mapping) => {
+        node.data.arg_mapping?.forEach((mapping) => {
             if (mapping.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -185,31 +264,30 @@ function traceKnownBroker(brokerId: string, sourceNodeId: string, completeData: 
  * Option B1: To a workflow node as a dependency
  * Option B2: To a workflow node as an argument (most common)
  */
-function traceUserInputBroker(brokerId: string, sourceNodeId: string, completeData: CompleteWorkflowData): BrokerConnection[] {
+function traceUserInputBroker(brokerId: string, sourceNodeId: string, completeData: ConvertedWorkflowData): BrokerConnection[] {
     const connections: BrokerConnection[] = [];
 
     // Option A: Check if this broker goes to any relays
     completeData.relays.forEach((relay) => {
-        if (relay.source_broker_id === brokerId) {
+        if (relay.data.source_broker_id === brokerId) {
             connections.push({
                 sourceBrokerId: brokerId,
                 sourceNodeId: sourceNodeId,
                 targetNodeId: relay.id,
                 connectionType: "to_relay",
                 metadata: {
-                    relayLabel: relay.label || undefined,
+                    relayLabel: relay.data.label || undefined,
                 },
             });
-
             // TODO: Next step would be to follow each relay.target_broker_ids
             // but let's start with just identifying the immediate connection
         }
     });
 
     // Option B: Check if this broker goes to any workflow nodes
-    completeData.nodes.forEach((node) => {
+    completeData.functionNodes.forEach((node) => {
         // Option B1: Check if it's used as a dependency
-        node.additional_dependencies?.forEach((dependency) => {
+        node.data.additional_dependencies?.forEach((dependency) => {
             if (dependency.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -220,13 +298,12 @@ function traceUserInputBroker(brokerId: string, sourceNodeId: string, completeDa
                         dependencyHasTarget: !!dependency.target_broker_id,
                     },
                 });
-
                 // TODO: If dependency.target_broker_id exists, we need to follow that too
             }
         });
 
         // Option B2: Check if it's used as an argument (most common)
-        node.arg_mapping?.forEach((mapping) => {
+        node.data.arg_mapping?.forEach((mapping) => {
             if (mapping.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -248,13 +325,13 @@ function traceUserInputBroker(brokerId: string, sourceNodeId: string, completeDa
  * Traces where a relay output broker_id can go
  * Similar to traceUserInputBroker but for relay target broker IDs
  */
-function traceRelayOutputBroker(brokerId: string, sourceNodeId: string, completeData: CompleteWorkflowData): BrokerConnection[] {
+function traceRelayOutputBroker(brokerId: string, sourceNodeId: string, completeData: ConvertedWorkflowData): BrokerConnection[] {
     const connections: BrokerConnection[] = [];
    
     // Check if this relay output broker goes to any workflow nodes
-    completeData.nodes.forEach((node) => {
+    completeData.functionNodes.forEach((node) => {
         // Check if it's used as a dependency
-        node.additional_dependencies?.forEach((dependency) => {
+        node.data.additional_dependencies?.forEach((dependency) => {
             if (dependency.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -269,7 +346,7 @@ function traceRelayOutputBroker(brokerId: string, sourceNodeId: string, complete
         });
 
         // Check if it's used as an argument (most common case)
-        node.arg_mapping?.forEach((mapping) => {
+        node.data.arg_mapping?.forEach((mapping) => {
             if (mapping.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -286,14 +363,14 @@ function traceRelayOutputBroker(brokerId: string, sourceNodeId: string, complete
 
     // Check if this relay output goes to other relays (relay chains)
     completeData.relays.forEach((targetRelay) => {
-        if (targetRelay.source_broker_id === brokerId && targetRelay.id !== sourceNodeId) {
+        if (targetRelay.data.source_broker_id === brokerId && targetRelay.id !== sourceNodeId) {
             connections.push({
                 sourceBrokerId: brokerId,
                 sourceNodeId: sourceNodeId,
                 targetNodeId: targetRelay.id,
                 connectionType: "to_relay",
                 metadata: {
-                    relayLabel: targetRelay.label || undefined,
+                    relayLabel: targetRelay.data.label || undefined,
                 },
             });
         }
@@ -309,31 +386,31 @@ function traceRelayOutputBroker(brokerId: string, sourceNodeId: string, complete
  * 2. Other nodes' arg_mapping
  * 3. Other nodes' dependencies
  */
-function traceReturnBroker(brokerId: string, sourceNodeId: string, completeData: CompleteWorkflowData): BrokerConnection[] {
+function traceReturnBroker(brokerId: string, sourceNodeId: string, completeData: ConvertedWorkflowData): BrokerConnection[] {
     const connections: BrokerConnection[] = [];
 
     // Check if this return broker goes to any relays
     completeData.relays.forEach((relay) => {
-        if (relay.source_broker_id === brokerId) {
+        if (relay.data.source_broker_id === brokerId) {
             connections.push({
                 sourceBrokerId: brokerId,
                 sourceNodeId: sourceNodeId,
                 targetNodeId: relay.id,
                 connectionType: "to_relay",
                 metadata: {
-                    relayLabel: relay.label || undefined,
+                    relayLabel: relay.data.label || undefined,
                 },
             });
         }
     });
 
     // Check if this return broker goes to any workflow nodes
-    completeData.nodes.forEach((node) => {
+    completeData.functionNodes.forEach((node) => {
         // Skip the same node (can't connect to itself)
         if (node.id === sourceNodeId) return;
 
         // Check if it's used as a dependency
-        node.additional_dependencies?.forEach((dependency) => {
+        node.data.additional_dependencies?.forEach((dependency) => {
             if (dependency.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -348,7 +425,7 @@ function traceReturnBroker(brokerId: string, sourceNodeId: string, completeData:
         });
 
         // Check if it's used as an argument
-        node.arg_mapping?.forEach((mapping) => {
+        node.data.arg_mapping?.forEach((mapping) => {
             if (mapping.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -371,7 +448,7 @@ function traceReturnBroker(brokerId: string, sourceNodeId: string, completeData:
  * Dependency targets act like internal relays - they receive data from the source
  * and can then distribute it to other consumers
  */
-function traceDependencyTarget(brokerId: string, sourceNodeId: string, completeData: CompleteWorkflowData): BrokerConnection[] {
+function traceDependencyTarget(brokerId: string, sourceNodeId: string, completeData: ConvertedWorkflowData): BrokerConnection[] {
     const connections: BrokerConnection[] = [];
 
     if (!brokerId || typeof brokerId !== "string" || brokerId.trim() === "") {
@@ -380,26 +457,26 @@ function traceDependencyTarget(brokerId: string, sourceNodeId: string, completeD
 
     // Check if this dependency target goes to any relays (as source_broker_id)
     completeData.relays.forEach((relay) => {
-        if (relay.source_broker_id === brokerId) {
+        if (relay.data.source_broker_id === brokerId) {
             connections.push({
                 sourceBrokerId: brokerId,
                 sourceNodeId: sourceNodeId,
                 targetNodeId: relay.id,
                 connectionType: "to_relay",
                 metadata: {
-                    relayLabel: relay.label || undefined,
+                    relayLabel: relay.data.label || undefined,
                 },
             });
         }
     });
 
     // Check if this dependency target goes to any workflow nodes
-    completeData.nodes.forEach((node) => {
+    completeData.functionNodes.forEach((node) => {
         // Skip the same node (can't connect to itself)
         if (node.id === sourceNodeId) return;
 
         // Check if it's used as a dependency source
-        node.additional_dependencies?.forEach((dependency) => {
+        node.data.additional_dependencies?.forEach((dependency) => {
             if (dependency.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -414,7 +491,7 @@ function traceDependencyTarget(brokerId: string, sourceNodeId: string, completeD
         });
 
         // Check if it's used as an argument source
-        node.arg_mapping?.forEach((mapping) => {
+        node.data.arg_mapping?.forEach((mapping) => {
             if (mapping.source_broker_id === brokerId) {
                 connections.push({
                     sourceBrokerId: brokerId,
@@ -432,7 +509,7 @@ function traceDependencyTarget(brokerId: string, sourceNodeId: string, completeD
     // Check if this dependency target could theoretically go to user inputs
     // (This would set the default value for the user input)
     completeData.userInputs.forEach((userInput) => {
-        if (userInput.broker_id === brokerId) {
+        if (userInput.data.broker_id === brokerId) {
             connections.push({
                 sourceBrokerId: brokerId,
                 sourceNodeId: sourceNodeId,
@@ -446,6 +523,31 @@ function traceDependencyTarget(brokerId: string, sourceNodeId: string, completeD
     });
 
     return connections;
+}
+
+/**
+ * Creates a basic ReactFlow Edge from a database edge
+ */
+function createBasicEdge(dbEdge: Edge): Edge {
+    return {
+        id: dbEdge.id,
+        source: dbEdge.source,
+        target: dbEdge.target,
+        sourceHandle: "output",
+        targetHandle: "input",
+        type: "default", // Use default edge type for basic edges
+        isVirtual: false, // Database edges are NOT virtual
+        style: {
+            stroke: "#6b7280", // Gray color for basic edges
+            strokeWidth: 2,
+        },
+        data: {
+            connectionType: "basic",
+            sourceBrokerId: "", // No broker for basic edges
+            metadata: {},
+            label: "", // No label for basic edges
+        },
+    };
 }
 
 /**
@@ -499,6 +601,7 @@ function createVirtualEdge(connection: BrokerConnection, index: number): Edge {
         targetHandle: "input", // Default input handle for target node
         type: "custom", // Use our custom edge type
         animated: connection.connectionType === "to_dependency",
+        isVirtual: true, // Virtual edges are created from broker connections
         style: edgeStyles[connection.connectionType],
         data: {
             connectionType: connection.connectionType,

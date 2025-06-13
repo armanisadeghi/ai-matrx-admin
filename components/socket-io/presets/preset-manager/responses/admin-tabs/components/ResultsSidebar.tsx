@@ -159,10 +159,6 @@ const TextResponseItem: React.FC<{
     isSelected: boolean;
     onClick: () => void;
 }> = ({ text, isSelected, onClick }) => {
-    const throttledCharCount = useMemo(() => {
-        // Simple throttling - update every 500ms worth of renders
-        return text ? text.length : 0;
-    }, [text]);
 
     return (
         <div
@@ -180,7 +176,7 @@ const TextResponseItem: React.FC<{
                 <div className="flex items-center gap-1">
                     <MessageSquare className={`w-3 h-3 ${isSelected ? "text-primary-foreground" : "text-green-500"}`} />
                     <span className={`text-[10px] ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                        {throttledCharCount.toLocaleString()} chars
+                        {text ? text.length : 0} chars
                     </span>
                 </div>
             </div>
@@ -440,11 +436,11 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
     const [errorTimeout, setErrorTimeout] = useState<NodeJS.Timeout | null>(null);
     const [showLoadingOverride, setShowLoadingOverride] = useState(false);
 
-    const textResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseTextByTaskId(selectedTaskId)(state) : ""));
-    const dataResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseDataByTaskId(selectedTaskId)(state) : []));
-    const infoResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseInfoByTaskId(selectedTaskId)(state) : []));
-    const errorsResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseErrorsByTaskId(selectedTaskId)(state) : []));
-    const taskEnded = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseEndedByTaskId(selectedTaskId)(state) : false));
+    const textResponse = useAppSelector((state) => (selectPrimaryResponseTextByTaskId(selectedTaskId)(state)));
+    const dataResponse = useAppSelector((state) => (selectPrimaryResponseDataByTaskId(selectedTaskId)(state)));
+    const infoResponse = useAppSelector((state) => (selectPrimaryResponseInfoByTaskId(selectedTaskId)(state)));
+    const errorsResponse = useAppSelector((state) => (selectPrimaryResponseErrorsByTaskId(selectedTaskId)(state)));
+    const taskEnded = useAppSelector((state) => (selectPrimaryResponseEndedByTaskId(selectedTaskId)(state)));
 
     const hasAnyData = textResponse.length > 0 || dataResponse.length > 0 || infoResponse.length > 0 || errorsResponse.length > 0;
     const hasErrors = errorsResponse.length > 0;

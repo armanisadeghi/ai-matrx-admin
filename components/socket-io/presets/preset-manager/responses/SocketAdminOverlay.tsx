@@ -124,11 +124,11 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
     const [responseIndex, setResponseIndex] = useState<number>(0);
 
     // Get response data based on selected task (not just the initial taskId)
-    const textResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseTextByTaskId(selectedTaskId)(state) : ""));
-    const dataResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseDataByTaskId(selectedTaskId)(state) : []));
-    const infoResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseInfoByTaskId(selectedTaskId)(state) : []));
-    const errorsResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseErrorsByTaskId(selectedTaskId)(state) : []));
-    const taskEnded = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseEndedByTaskId(selectedTaskId)(state) : false));
+    const textResponse = useAppSelector((state) => (selectPrimaryResponseTextByTaskId(selectedTaskId)(state)));
+    const dataResponse = useAppSelector((state) => (selectPrimaryResponseDataByTaskId(selectedTaskId)(state)));
+    const infoResponse = useAppSelector((state) => (selectPrimaryResponseInfoByTaskId(selectedTaskId)(state)));
+    const errorsResponse = useAppSelector((state) => (selectPrimaryResponseErrorsByTaskId(selectedTaskId)(state)));
+    const taskEnded = useAppSelector((state) => (selectPrimaryResponseEndedByTaskId(selectedTaskId)(state)));
 
     // Use showOverlay prop to control visibility
     const isOverlayOpen = showOverlay;

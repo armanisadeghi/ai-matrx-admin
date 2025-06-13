@@ -7,19 +7,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 
 interface BasicInfoSectionProps {
-    node: BaseNode;
-    onNodeUpdate: (updatedNode: BaseNode) => void;
+    nodeData: DbFunctionNode;
+    onNodeUpdate: (nodeData: DbFunctionNode) => void;
 }
 
 /**
  * BasicInfoSection - Handles step name, function type, execution required, and node/workflow IDs
  */
-const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ node, onNodeUpdate }) => {
-    const updateNodeField = (field: keyof BaseNode, value: any) => {
-        onNodeUpdate({ ...node, [field]: value });
+const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ nodeData, onNodeUpdate }) => {
+    const updateNodeField = (field: keyof DbFunctionNode, value: any) => {
+        onNodeUpdate({ ...nodeData, [field]: value });
     };
 
     return (
@@ -33,11 +33,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ node, onNodeUpdate 
                                 <Label htmlFor="step-name" className="text-xs font-medium text-muted-foreground">Step Name</Label>
                                 <Input
                                     id="step-name"
-                                    value={node.step_name || ''}
+                                    value={nodeData.step_name || ''}
                                     onChange={(e) => updateNodeField('step_name', e.target.value)}
                                     placeholder="Enter step name"
                                     className={`h-8 text-sm placeholder:text-muted-foreground/60 ${
-                                        (node.step_name || '') === 'Unnamed Step' 
+                                        (nodeData.step_name || '') === 'Unnamed Step' 
                                             ? 'text-muted-foreground dark:text-muted-foreground' 
                                             : ''
                                     }`}
@@ -47,7 +47,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ node, onNodeUpdate 
                             <div className="space-y-1">
                                 <Label htmlFor="function-type" className="text-xs font-medium text-muted-foreground">Function Type</Label>
                                 <Select
-                                    value={node.function_type || 'registered_function'}
+                                    value={nodeData.function_type || 'registered_function'}
                                     onValueChange={(value) => updateNodeField('function_type', value)}
                                 >
                                     <SelectTrigger className="h-8">
@@ -65,14 +65,14 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ node, onNodeUpdate 
                             <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="execution-required"
-                                    checked={node.execution_required || false}
+                                    checked={nodeData.execution_required || false}
                                     onCheckedChange={(checked) => updateNodeField('execution_required', !!checked)}
                                 />
                                 <Label htmlFor="execution-required" className="text-xs font-medium">Execution Required</Label>
                             </div>
                             
-                            <Badge variant={node.status === 'ready_to_execute' ? 'default' : 'secondary'} className="text-xs">
-                                {node.status || 'pending'}
+                            <Badge variant={nodeData.status === 'ready_to_execute' ? 'default' : 'secondary'} className="text-xs">
+                                {nodeData.status || 'pending'}
                             </Badge>
                         </div>
                     </div>
@@ -81,12 +81,12 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ node, onNodeUpdate 
                     <div className="space-y-3 text-xs">
                         <div>
                             <span className="text-muted-foreground font-medium">Node ID:</span>
-                            <div className="font-mono bg-muted px-2 py-1 rounded mt-1 break-all text-xs">{node.id}</div>
+                            <div className="font-mono bg-muted px-2 py-1 rounded mt-1 break-all text-xs">{nodeData.id}</div>
                         </div>
                         <div>
                             <span className="text-muted-foreground font-medium">Workflow ID:</span>
                             <div className="font-mono bg-muted px-2 py-1 rounded mt-1 break-all text-xs">
-                                {node.workflow_id || <span className="text-muted-foreground italic">Not assigned</span>}
+                                {nodeData.workflow_id || <span className="text-muted-foreground italic">Not assigned</span>}
                             </div>
                         </div>
                     </div>

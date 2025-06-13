@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import {
   BasicInfoSection,
   FunctionInfoSection,
@@ -13,10 +13,10 @@ import {
 export type OverviewSectionId = 'basic-info' | 'function-info' | 'arguments-mappings' | 'dependencies';
 
 export interface OverviewTabProps {
-  node: BaseNode;
-  onNodeUpdate: (updatedNode: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
   hiddenSections?: OverviewSectionId[];
-  customSections?: Partial<Record<OverviewSectionId, React.ComponentType<{ node: BaseNode; onNodeUpdate: (updatedNode: BaseNode) => void }>>>;
+  customSections?: Partial<Record<OverviewSectionId, React.ComponentType<{ nodeData: DbFunctionNode; onNodeUpdate: (updatedNode: DbFunctionNode) => void }>>>;
   argsToHide?: string[]; // Optional array of argument names to hide from display
 }
 
@@ -29,19 +29,19 @@ export interface OverviewTabProps {
  * - Used as-is for default behavior
  */
 const OverviewTab: React.FC<OverviewTabProps> = ({ 
-  node,
+  nodeData,
   onNodeUpdate,
   hiddenSections = [],
   customSections = {},
   argsToHide = []
 }) => {
   // Create a wrapper for ArgumentsMappingsSection to pass argsToHide
-  const ArgumentsMappingsSectionWithHiddenArgs = ({ node, onNodeUpdate }: { node: BaseNode; onNodeUpdate: (updatedNode: BaseNode) => void }) => (
-    <ArgumentsMappingsSection node={node} onNodeUpdate={onNodeUpdate} argsToHide={argsToHide} />
+  const ArgumentsMappingsSectionWithHiddenArgs = ({ nodeData, onNodeUpdate }: { nodeData: DbFunctionNode; onNodeUpdate: (updatedNode: DbFunctionNode) => void }) => (
+    <ArgumentsMappingsSection nodeData={nodeData} onNodeUpdate={onNodeUpdate} argsToHide={argsToHide} />
   );
 
   // Define default sections
-  const defaultSections: Record<OverviewSectionId, React.ComponentType<{ node: BaseNode; onNodeUpdate: (updatedNode: BaseNode) => void }>> = {
+  const defaultSections: Record<OverviewSectionId, React.ComponentType<{ nodeData: DbFunctionNode; onNodeUpdate: (updatedNode: DbFunctionNode) => void }>> = {
     'basic-info': BasicInfoSection,
     'function-info': FunctionInfoSection,
     'arguments-mappings': ArgumentsMappingsSectionWithHiddenArgs,
@@ -62,7 +62,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   return (
     <div className="space-y-4 p-4">
       {finalSections.map(({ id, Component }) => (
-        <Component key={id} node={node} onNodeUpdate={onNodeUpdate} />
+        <Component key={id} nodeData={nodeData} onNodeUpdate={onNodeUpdate} />
       ))}
     </div>
   );

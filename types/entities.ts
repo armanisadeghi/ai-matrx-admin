@@ -364,6 +364,7 @@ export type DataBroker = {
     isPublic?: boolean;
     authenticatedRead?: boolean;
     publicRead?: boolean;
+    defaultScope?: string;
 }
 
 export type DataInputComponent = {
@@ -734,8 +735,8 @@ export type RegisteredFunction = {
     returnBroker: string;
     name: string;
     tags?: Record<string, unknown>;
-    category?: string;
-    icon?: string;
+    category?: "API" | "Agents" | "Commands" | "Database" | "Documents" | "Executors" | "Extractors" | "Files" | "Integrations" | "Media" | "Other" | "Processors" | "Prompts" | "Recipes" | "Web" | undefined;
+    icon?: "Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "Bookmark" | "BookmarkPlus" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined;
     nodeDescription?: string;
 }
 

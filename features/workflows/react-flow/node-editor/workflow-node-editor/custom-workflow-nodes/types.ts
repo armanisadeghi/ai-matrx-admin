@@ -1,6 +1,7 @@
 'use client';
 
-import { BaseNode, ArgumentOverride, ArgumentMapping, WorkflowDependency } from '@/features/workflows/types';
+import { DbFunctionNode, ArgumentOverride, ArgumentMapping, WorkflowDependency } from '@/features/workflows/types';
+import { NodeDefinitionType } from './custom-nodes/custom-node-definitions';
 
 /**
  * Core interface for all node data operations
@@ -45,7 +46,7 @@ export interface NodeDataMethods {
   // Utility methods
   validateNode: () => boolean;
   resetNode: () => void;
-  getNodeSnapshot: () => BaseNode;
+  getNodeSnapshot: () => DbFunctionNode;
   hasUnsavedChanges: () => boolean;
   
   // Computed properties helpers
@@ -63,7 +64,7 @@ export interface NodeDataMethods {
  * Context value interface for node data management
  */
 export interface NodeDataContextValue {
-  node: BaseNode;
+  nodeData: DbFunctionNode;
   methods: NodeDataMethods;
   validationErrors: string[];
   hasChanges: boolean;
@@ -73,8 +74,9 @@ export interface NodeDataContextValue {
  * Props for custom node editor components
  */
 export interface CustomNodeEditorComponentProps {
-  node: BaseNode;
-  onNodeUpdate: (node: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
+  nodeDefinition: NodeDefinitionType;
 }
 
 /**
@@ -86,11 +88,12 @@ export type ValidationMode = 'strict' | 'permissive';
  * Props for the main CustomNodeEditor wrapper
  */
 export interface CustomNodeEditorProps {
-  node: BaseNode | null;
-  onSave: (updatedNode: BaseNode) => void;
+  nodeData: DbFunctionNode | null;
+  onSave: (updatedNodeData: DbFunctionNode) => void;
   onClose: () => void;
   open: boolean;
   component: React.ComponentType<CustomNodeEditorComponentProps>;
+  nodeDefinition: NodeDefinitionType;
   autoSave?: boolean;
   validation?: ValidationMode;
   title?: string;
@@ -102,8 +105,8 @@ export interface CustomNodeEditorProps {
  * Props for the CustomNodeEditorManager
  */
 export interface CustomNodeEditorManagerProps {
-  node: BaseNode;
-  onSave: (updatedNode: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onSave: (updatedNodeData: DbFunctionNode) => void;
   onClose: () => void;
   open: boolean;
   children: React.ReactNode;

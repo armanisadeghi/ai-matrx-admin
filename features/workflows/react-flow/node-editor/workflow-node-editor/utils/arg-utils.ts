@@ -4,7 +4,10 @@ import { flexibleJsonParse } from "@/utils/json-utils";
 import { registeredFunctions } from "@/features/workflows/constants";
 import { getStore } from "@/lib/redux/store";
 
-export const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers", "session_manager"];
+export const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers", "session_manager", "user_id", "stream_handler", "internal_config_object"];
+export const DEFAULT_HIDE_CONNECTIONS = ["recipe_id", "latest_version"];
+
+export const ALL_HIDDEN_CONNECTIONS = [...DEFAULT_HIDE_CONNECTIONS, ...DEFAULT_EXCLUDE_ARG_NAMES];
 
 // Get registered functions from Redux store (primary source)
 export function getRegisteredFunctionsFromStore() {
@@ -67,17 +70,15 @@ export const getEffectiveArgValue = (arg: any, argOverrides?: ArgumentOverride[]
 // Function to update argument override
 export const updateArgOverride = (
     node: any,
-    onNodeUpdate: (updatedNode: any) => void,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
     argName: string,
     field: keyof ArgumentOverride,
     value: any
-) => {
+): any => {
     const functionData = getRegisteredFunctions().find((f) => f.id === node.function_id);
     const updated = cloneDeep(node);
     if (!updated.arg_overrides) updated.arg_overrides = [];
-
     const existingIndex = updated.arg_overrides.findIndex((override) => override.name === argName);
-
     if (existingIndex >= 0) {
         updated.arg_overrides[existingIndex] = {
             ...updated.arg_overrides[existingIndex],
@@ -93,9 +94,16 @@ export const updateArgOverride = (
             [field]: value,
         });
     }
-
-    onNodeUpdate(updated);
+    
+    // Call the callback if provided (for backward compatibility)
+    if (onNodeUpdate) {
+        onNodeUpdate(updated);
+    }
+    
+    // Always return the updated node
+    return updated;
 };
+
 
 // Interface for argument update operations
 export interface ArgUpdate {
@@ -122,7 +130,7 @@ export interface ArgUpdate {
  */
 export const updateMultipleArgOverrides = (
     node: any,
-    onNodeUpdate: (updatedNode: any) => void,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
     updates: ArgUpdate[]
 ) => {
     const functionData = getRegisteredFunctions().find((f) => f.id === node.function_id);
@@ -153,7 +161,10 @@ export const updateMultipleArgOverrides = (
     });
 
     // Call onNodeUpdate once with all changes applied
-    onNodeUpdate(updated);
+    if (onNodeUpdate) {
+        onNodeUpdate(updated);
+    }
+    return updated;
 };
 
 /**
@@ -171,12 +182,12 @@ export const updateMultipleArgOverrides = (
  */
 export const setArgValueAndReady = (
     node: any,
-    onNodeUpdate: (updatedNode: any) => void,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
     argName: string,
     value: any,
     ready: boolean
 ) => {
-    updateMultipleArgOverrides(node, onNodeUpdate, [
+    return updateMultipleArgOverrides(node, onNodeUpdate, [
         { argName, value, ready }
     ]);
 };
@@ -184,7 +195,7 @@ export const setArgValueAndReady = (
 // Function to handle argument value changes with type conversion
 export const handleArgValueChange = (
     node: any,
-    onNodeUpdate: (updatedNode: any) => void,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
     arg: any,
     inputValue: string
 ) => {
@@ -220,13 +231,13 @@ export const handleArgValueChange = (
         }
     }
 
-    updateArgOverride(node, onNodeUpdate, arg.name, "default_value", value);
+    return updateArgOverride(node, onNodeUpdate, arg.name, "default_value", value);
 };
 
 // Function to add broker mapping
 export const addBrokerMapping = (
     node: any,
-    onNodeUpdate: (updatedNode: any) => void,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
     argName: string
 ) => {
     const updated = cloneDeep(node);
@@ -235,13 +246,16 @@ export const addBrokerMapping = (
         source_broker_id: "",
         target_arg_name: argName,
     });
-    onNodeUpdate(updated);
+    if (onNodeUpdate) {
+        onNodeUpdate(updated);
+    }
+    return updated;
 };
 
 // Function to update broker mapping
 export const updateBrokerMapping = (
     node: any,
-    onNodeUpdate: (updatedNode: any) => void,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
     index: number,
     value: string
 ) => {
@@ -251,19 +265,25 @@ export const updateBrokerMapping = (
         ...updated.arg_mapping[index],
         source_broker_id: value,
     };
-    onNodeUpdate(updated);
+    if (onNodeUpdate) {
+        onNodeUpdate(updated);
+    }
+    return updated;
 };
 
 // Function to remove broker mapping
 export const removeBrokerMapping = (
     node: any,
-    onNodeUpdate: (updatedNode: any) => void,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
     index: number
 ) => {
     const updated = cloneDeep(node);
     if (!updated.arg_mapping) return;
     updated.arg_mapping.splice(index, 1);
-    onNodeUpdate(updated);
+    if (onNodeUpdate) {
+        onNodeUpdate(updated);
+    }
+    return updated;
 };
 
 // Function to get function data

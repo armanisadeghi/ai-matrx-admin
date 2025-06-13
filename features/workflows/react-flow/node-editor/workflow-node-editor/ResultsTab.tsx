@@ -1,30 +1,26 @@
 'use client';
 
 import React from 'react';
-import { BaseNode } from '@/features/workflows/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlayCircle, Database, Clock, AlertCircle } from "lucide-react";
+import { DbFunctionNode, TabComponentProps } from '@/features/workflows/types';
 
-export interface TabComponentProps {
-    node: BaseNode;
-    onNodeUpdate: (updatedNode: BaseNode) => void;
-}
 
-const ResultsTab: React.FC<TabComponentProps> = ({ node }) => {
+const ResultsTab: React.FC<TabComponentProps> = ({ nodeData }) => {
     // TODO: Connect to Redux state for execution results
     // const executionResults = useAppSelector(selectNodeExecutionResults(node.id));
     // const workflowResults = useAppSelector(selectWorkflowExecutionResults(node.workflow_id));
 
     const handleRunNode = () => {
         // TODO: Dispatch action to run individual node
-        console.log('Running node:', node.id);
+        console.log('Running node:', nodeData.id);
     };
 
     const handleRunWorkflow = () => {
         // TODO: Dispatch action to run entire workflow
-        console.log('Running workflow:', node.workflow_id);
+        console.log('Running workflow:', nodeData.workflow_id);
     };
 
     return (
@@ -111,8 +107,8 @@ const ResultsTab: React.FC<TabComponentProps> = ({ node }) => {
                             {/* Footer Info */}
                             <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                                    <span>Node ID: {node.id}</span>
-                                    <span>Status: {node.status || 'pending'}</span>
+                                    <span>Node ID: {nodeData.id}</span>
+                                    <span>Status: {nodeData.status || 'pending'}</span>
                                 </div>
                             </div>
                         </CardContent>

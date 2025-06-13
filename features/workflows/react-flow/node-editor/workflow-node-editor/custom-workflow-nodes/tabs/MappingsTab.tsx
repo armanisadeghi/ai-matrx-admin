@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import {
     getFunctionData,
     addArgumentMapping,
@@ -16,13 +16,13 @@ import {
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
 
 interface MappingsTabProps {
-    node: BaseNode;
-    onNodeUpdate: (updatedNode: BaseNode) => void;
+    nodeData: DbFunctionNode;
+    onNodeUpdate: (nodeData: DbFunctionNode) => void;
 }
 
-const MappingsTab: React.FC<MappingsTabProps> = ({ node, onNodeUpdate }) => {
-    const functionData = getFunctionData(node.function_id);
-    const allMappings = node.arg_mapping || [];
+const MappingsTab: React.FC<MappingsTabProps> = ({ nodeData, onNodeUpdate }) => {
+    const functionData = getFunctionData(nodeData.function_id);
+    const allMappings = nodeData.arg_mapping || [];
 
     return (
         <div className="mt-4 space-y-6">
@@ -30,7 +30,7 @@ const MappingsTab: React.FC<MappingsTabProps> = ({ node, onNodeUpdate }) => {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Argument Mappings</CardTitle>
-                        <Button onClick={() => addArgumentMapping(node, onNodeUpdate)} size="sm">
+                        <Button onClick={() => addArgumentMapping(nodeData, onNodeUpdate)} size="sm">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Mapping
                         </Button>
@@ -47,7 +47,7 @@ const MappingsTab: React.FC<MappingsTabProps> = ({ node, onNodeUpdate }) => {
                                                 <Label>Source Broker ID</Label>
                                                 <Input
                                                     value={mapping.source_broker_id}
-                                                    onChange={(e) => updateArgumentMapping(node, onNodeUpdate, index, 'source_broker_id', e.target.value)}
+                                                    onChange={(e) => updateArgumentMapping(nodeData, onNodeUpdate, index, 'source_broker_id', e.target.value)}
                                                     placeholder="Enter broker ID"
                                                 />
                                             </div>
@@ -55,7 +55,7 @@ const MappingsTab: React.FC<MappingsTabProps> = ({ node, onNodeUpdate }) => {
                                                 <Label>Target Argument</Label>
                                                 <Select 
                                                     value={mapping.target_arg_name} 
-                                                    onValueChange={(value) => updateArgumentMapping(node, onNodeUpdate, index, 'target_arg_name', value)}
+                                                    onValueChange={(value) => updateArgumentMapping(nodeData, onNodeUpdate, index, 'target_arg_name', value)}
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select argument" />
@@ -72,7 +72,7 @@ const MappingsTab: React.FC<MappingsTabProps> = ({ node, onNodeUpdate }) => {
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                onClick={() => removeArgumentMapping(node, onNodeUpdate, index)}
+                                                onClick={() => removeArgumentMapping(nodeData, onNodeUpdate, index)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>

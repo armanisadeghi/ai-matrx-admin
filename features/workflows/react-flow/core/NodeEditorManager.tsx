@@ -1,95 +1,119 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import WorkflowNodeEditor from "@/features/workflows/react-flow/node-editor/workflow-node-editor/WorkflowNodeEditor";
 import UserInputEditor from "@/features/workflows/react-flow/node-editor/user-input-node-editor/UserInputEditor";
 import BrokerRelayEditor from "@/features/workflows/react-flow/node-editor/broker-relay-node-editor/BrokerRelayEditor";
-import { BaseNode, UserInputData, BrokerRelayData, CompleteWorkflowData } from "@/features/workflows/types";
-import { CustomNodeEditor, DefaultNodeEditor } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes";
+import {
+    CustomNodeEditor,
+    DefaultNodeEditor,
+} from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes";
 import RecipeNodeEditor from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/recipes/RecipeNodeEditor";
+import { Edge } from "reactflow";
+import {
+    DbWorkflow,
+    ConvertedWorkflowData,
+    UserInputNode,
+    BrokerRelayNode,
+    FunctionNode,
+    DbNodeData,
+    DbUserInput,
+    DbBrokerRelayData,
+    WorkflowNode,
+    DbFunctionNode,
+} from "@/features/workflows/types";
+import { CUSTOM_NODE_REGISTRY } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
 
 interface NodeEditorManagerProps {
-  editingNode: BaseNode | UserInputData | BrokerRelayData | null;
-  onSave: (node: BaseNode | UserInputData | BrokerRelayData) => void;
-  onClose: () => void;
-  mode?: 'edit' | 'view' | 'execute';
-  completeWorkflowData?: CompleteWorkflowData | null;
+    editingNode: DbNodeData | null;
+    onSave: (nodeData: DbNodeData) => void;
+    onClose: () => void;
+    mode?: "edit" | "view" | "execute";
+    nodes: WorkflowNode[];
+    edges: Edge[];
+    coreWorkflowData: DbWorkflow;
+    completeWorkflowData?: ConvertedWorkflowData | null;
 }
 
 export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
-  editingNode,
-  onSave,
-  onClose,
-  mode = 'edit',
-  completeWorkflowData,
+    editingNode,
+    onSave,
+    onClose,
+    mode = "edit",
+    nodes,
+    edges,
+    coreWorkflowData,
+    completeWorkflowData,
 }) => {
-  if (!editingNode) return null;
+    if (!editingNode) return null;
 
-  const isReadOnly = mode === 'view';
+    const isReadOnly = mode === "view";
 
-  if ('type' in editingNode && editingNode.type === 'userInput') {
+    if ("type" in editingNode && editingNode.type === "userInput") {
+        return (
+            <UserInputEditor
+                nodeData={editingNode as DbUserInput}
+                onSave={onSave}
+                onClose={onClose}
+                open={!!editingNode}
+                readOnly={isReadOnly}
+            />
+        );
+    }
+
+    if ("type" in editingNode && editingNode.type === "brokerRelay") {
+        return (
+            <BrokerRelayEditor
+                nodeData={editingNode as DbBrokerRelayData}
+                onSave={onSave}
+                onClose={onClose}
+                open={!!editingNode}
+                readOnly={isReadOnly}
+                completeWorkflowData={completeWorkflowData}
+            />
+        );
+    }
+
+    const baseNode = editingNode as DbFunctionNode;
+
+    // Route to specific custom node editors based on function_id
+    if (baseNode.function_id === "2ac5576b-d1ab-45b1-ab48-4e196629fdd8") {
+        const nodeDefinition = useMemo(() => CUSTOM_NODE_REGISTRY["recipe-node-definition"], []);
+        return (
+            <RecipeNodeEditor
+                nodeData={baseNode}
+                onSave={onSave}
+                onClose={onClose}
+                open={!!editingNode}
+                nodeDefinition={nodeDefinition}
+            />
+        );
+    }
+
+    // Test the new system for other specific functions
+    if (baseNode.function_id === "b42d270b-0627-453c-a4bb-920eb1da6c51") {
+        const nodeDefinition = useMemo(() => CUSTOM_NODE_REGISTRY["text-operations-node-definition"], []);
+        return (
+            <CustomNodeEditor
+                nodeData={baseNode}
+                onSave={onSave}
+                onClose={onClose}
+                open={!!editingNode}
+                component={DefaultNodeEditor}
+                title="Custom Node Editor (Testing)"
+                nodeDefinition={nodeDefinition}
+            />
+        );
+    }
+
     return (
-      <UserInputEditor 
-        node={editingNode as UserInputData} 
-        onSave={onSave} 
-        onClose={onClose} 
-        open={!!editingNode}
-        readOnly={isReadOnly}
-      />
+        <WorkflowNodeEditor
+            nodeData={editingNode as DbFunctionNode}
+            onSave={onSave}
+            onClose={onClose}
+            open={!!editingNode}
+            readOnly={isReadOnly}
+        />
     );
-  }
-
-  if ('type' in editingNode && editingNode.type === 'brokerRelay') {
-    return (
-      <BrokerRelayEditor 
-        node={editingNode as BrokerRelayData} 
-        onSave={onSave} 
-        onClose={onClose} 
-        open={!!editingNode}
-        readOnly={isReadOnly}
-        completeWorkflowData={completeWorkflowData}
-      />
-    );
-  }
-
-
-  const baseNode = editingNode as BaseNode;
-  
-  // Route to specific custom node editors based on function_id
-  if (baseNode.function_id === "2ac5576b-d1ab-45b1-ab48-4e196629fdd8") {
-    // Recipe nodes
-    return (
-      <RecipeNodeEditor
-        node={baseNode}
-        onSave={onSave}
-        onClose={onClose}
-        open={!!editingNode}
-      />
-    );
-  }
-
-  // Test the new system for other specific functions
-  if (baseNode.function_id === "b42d270b-0627-453c-a4bb-920eb1da6c51") {
-    return (
-      <CustomNodeEditor
-        node={baseNode}
-        onSave={onSave}
-        onClose={onClose}
-        open={!!editingNode}
-        component={DefaultNodeEditor}
-        title="Custom Node Editor (Testing)"
-      />
-    );
-  }
-
-  return (
-    <WorkflowNodeEditor 
-      node={editingNode as BaseNode} 
-      onSave={onSave} 
-      onClose={onClose} 
-      open={!!editingNode}
-      readOnly={isReadOnly}
-    />
-  );
 };
 
 export default NodeEditorManager;

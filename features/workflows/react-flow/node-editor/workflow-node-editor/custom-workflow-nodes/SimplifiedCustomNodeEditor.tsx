@@ -1,74 +1,70 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { BaseNode } from '@/features/workflows/types';
+import React, { useState, useEffect } from "react";
+import { DbFunctionNode } from "@/features/workflows/types";
 
 // Import all our centralized utilities
-import * as NodeUtils from '../utils';
+import * as NodeUtils from "../utils";
 
 export interface SimplifiedCustomNodeEditorProps {
-    node: BaseNode;
-    onSave: (updatedNode: BaseNode) => void;
+    nodeData: DbFunctionNode;
+    onSave: (updatedNode: DbFunctionNode) => void;
     onClose: () => void;
     open: boolean;
     children: React.ReactNode;
     autoSave?: boolean;
 }
 
-/**
- * Simplified Custom Node Editor that directly uses our centralized utilities
- * Eliminates the need for context provider and duplicated logic
- */
 const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
-    node,
+    nodeData,
     onSave,
     onClose,
     open,
     children,
-    autoSave = false
+    autoSave = false,
 }) => {
-    const [editingNode, setEditingNode] = useState<BaseNode>(node);
+    const [editingNode, setEditingNode] = useState<DbFunctionNode>(nodeData);
 
     useEffect(() => {
-        setEditingNode(node);
-    }, [node]);
+        setEditingNode(nodeData);
+    }, [nodeData]);
 
     // Create a utilities object that child components can use
     const nodeUtilities = {
         // Pass the current node and update callback to all utility functions
         node: editingNode,
         updateNode: setEditingNode,
-        
+
         // Basic node updates
         updateStepName: (stepName: string) => {
             setEditingNode({ ...editingNode, step_name: stepName });
         },
-        
+
         updateFunctionType: (functionType: string) => {
             setEditingNode({ ...editingNode, function_type: functionType });
         },
-        
+
         updateExecutionRequired: (required: boolean) => {
             setEditingNode({ ...editingNode, execution_required: required });
         },
 
         // Argument utilities - use our centralized functions
-        updateArgOverride: (argName: string, field: keyof import('@/features/workflows/types').ArgumentOverride, value: any) => {
+        updateArgOverride: (argName: string, field: keyof import("@/features/workflows/types").ArgumentOverride, value: any) => {
             NodeUtils.updateArgOverride(editingNode, setEditingNode, argName, field, value);
         },
-        
+
         handleArgValueChange: (arg: any, inputValue: string) => {
             NodeUtils.handleArgValueChange(editingNode, setEditingNode, arg, inputValue);
         },
-        
+
         addBrokerMapping: (argName: string) => {
             NodeUtils.addBrokerMapping(editingNode, setEditingNode, argName);
         },
-        
+
         updateBrokerMapping: (index: number, value: string) => {
             NodeUtils.updateBrokerMapping(editingNode, setEditingNode, index, value);
         },
-        
+
         removeBrokerMapping: (index: number) => {
             NodeUtils.removeBrokerMapping(editingNode, setEditingNode, index);
         },
@@ -77,11 +73,11 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
         addWorkflowDependency: () => {
             NodeUtils.addWorkflowDependency(editingNode, setEditingNode);
         },
-        
-        updateWorkflowDependency: (index: number, field: keyof import('@/features/workflows/types').WorkflowDependency, value: string) => {
+
+        updateWorkflowDependency: (index: number, field: keyof import("@/features/workflows/types").WorkflowDependency, value: string) => {
             NodeUtils.updateWorkflowDependency(editingNode, setEditingNode, index, field, value);
         },
-        
+
         removeWorkflowDependency: (index: number) => {
             NodeUtils.removeWorkflowDependency(editingNode, setEditingNode, index);
         },
@@ -90,11 +86,11 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
         addArgumentMapping: () => {
             NodeUtils.addArgumentMapping(editingNode, setEditingNode);
         },
-        
-        updateArgumentMapping: (index: number, field: keyof import('@/features/workflows/types').ArgumentMapping, value: string) => {
+
+        updateArgumentMapping: (index: number, field: keyof import("@/features/workflows/types").ArgumentMapping, value: string) => {
             NodeUtils.updateArgumentMapping(editingNode, setEditingNode, index, field, value);
         },
-        
+
         removeArgumentMapping: (index: number) => {
             NodeUtils.removeArgumentMapping(editingNode, setEditingNode, index);
         },
@@ -111,9 +107,9 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
             return NodeUtils.getAllReturnBrokers(editingNode, functionData);
         },
         getBrokerMappingsForArg: (argName: string) => NodeUtils.getBrokerMappingsForArg(editingNode, argName),
-        
+
         // Status helpers
-        hasChanges: JSON.stringify(editingNode) !== JSON.stringify(node),
+        hasChanges: JSON.stringify(editingNode) !== JSON.stringify(nodeData),
         hasFunctionArguments: () => {
             const functionData = NodeUtils.getFunctionData(editingNode.function_id);
             return NodeUtils.hasFunctionArguments(functionData);
@@ -125,10 +121,10 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
         save: () => {
             onSave(editingNode);
         },
-        
+
         reset: () => {
-            setEditingNode(node);
-        }
+            setEditingNode(nodeData);
+        },
     };
 
     // Auto-save functionality
@@ -145,18 +141,14 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     if (!open) return null;
 
     // Clone children and pass utilities as props
-    const childrenWithProps = React.Children.map(children, child => {
+    const childrenWithProps = React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
             return React.cloneElement(child, { nodeUtilities } as any);
         }
         return child;
     });
 
-    return (
-        <div className="custom-node-editor">
-            {childrenWithProps}
-        </div>
-    );
+    return <div className="custom-node-editor">{childrenWithProps}</div>;
 };
 
-export default SimplifiedCustomNodeEditor; 
+export default SimplifiedCustomNodeEditor;

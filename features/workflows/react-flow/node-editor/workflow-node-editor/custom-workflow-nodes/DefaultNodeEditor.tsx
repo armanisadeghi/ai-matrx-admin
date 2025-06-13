@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BaseNode, TabComponentProps } from '@/features/workflows/types';
+import { DbFunctionNode, TabComponentProps } from '@/features/workflows/types';
 import ErrorDisplay from './components/ErrorDisplay';
 
 // Import all default tabs
@@ -29,8 +29,8 @@ export interface CustomTabConfig extends TabConfig {
 }
 
 interface DefaultNodeEditorProps {
-  node: BaseNode;
-  onNodeUpdate: (node: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
   customTabs?: CustomTabConfig[]; // Custom tabs to add or replace defaults
   additionalTabs?: TabConfig[]; // Additional tabs to append
   hiddenTabs?: string[]; // Tab IDs to hide
@@ -55,7 +55,7 @@ const DEFAULT_TABS: TabConfig[] = [
  * Now with proper TypeScript typing to ensure all tab components receive correct props
  */
 const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({ 
-  node,
+  nodeData,
   onNodeUpdate,
   customTabs = [],
   additionalTabs = [],
@@ -143,7 +143,7 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
       
       <div className="flex-1 min-h-0 overflow-hidden">
         <Tabs defaultValue={finalTabs[0]?.id} className="w-full h-full flex flex-col">
-          <TabsList className="grid w-full flex-shrink-0" style={{ gridTemplateColumns: `repeat(${finalTabs.length}, minmax(0, 1fr))` }}>
+          <TabsList>
             {finalTabs.map(tab => (
               <TabsTrigger key={tab.id} value={tab.id}>
                 {tab.label}
@@ -156,7 +156,7 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
               const TabComponent = tab.component;
               return (
                 <TabsContent key={tab.id} value={tab.id}>
-                  <TabComponent node={node} onNodeUpdate={onNodeUpdate} />
+                  <TabComponent nodeData={nodeData} onNodeUpdate={onNodeUpdate} />
                 </TabsContent>
               );
             })}

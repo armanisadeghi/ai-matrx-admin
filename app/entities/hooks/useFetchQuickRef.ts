@@ -1,15 +1,13 @@
 // app\entities\hooks\useFetchQuickRef.ts
-'use client';
+"use client";
 
-
-import * as React from 'react';
-import { getRecordIdByRecord, useEntityTools } from '@/lib/redux';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
-import { EntityKeys } from '@/types/entityTypes';
+import * as React from "react";
+import { getRecordIdByRecord, useEntityTools } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { entityDefaultSettings } from "@/lib/redux/entity/constants/defaults";
+import { EntityKeys } from "@/types/entityTypes";
 
 export function useFetchQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
-
     const dispatch = useAppDispatch();
     const { actions, selectors } = useEntityTools(entityKey);
     const loadingState = useAppSelector(selectors.selectLoadingState);
@@ -27,9 +25,12 @@ export function useFetchQuickRef<TEntity extends EntityKeys>(entityKey: TEntity)
 
     const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
     const quickReferenceKeyDisplayPairs = useAppSelector(selectors.selectQuickReferenceKeyDisplayPairs);
+    const quickReferenceSelectOptions = useAppSelector(selectors.selectQuickReferenceSelectOptions);
 
-    return React.useMemo(() => ({ quickReferenceRecords, quickReferenceKeyDisplayPairs, loadingState, getRecordIdByRecord }), [quickReferenceRecords, quickReferenceKeyDisplayPairs, loadingState, getRecordIdByRecord]);
+    return React.useMemo(
+        () => ({ quickReferenceRecords, quickReferenceKeyDisplayPairs, quickReferenceSelectOptions, loadingState, getRecordIdByRecord }),
+        [quickReferenceRecords, quickReferenceKeyDisplayPairs, quickReferenceSelectOptions, loadingState, getRecordIdByRecord]
+    );
 }
 
 export type useQuickRefReturn = ReturnType<typeof useFetchQuickRef>;
-

@@ -8,9 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GitBranch, Copy, Download, Trash2, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { Edge } from "reactflow";
-import { CompleteWorkflowData } from "@/features/workflows/types";
 import { createEdgeValidationList, EdgeValidationItem, analyzeWorkflowEdges } from "@/features/workflows/utils/edgeAnalyzer";
-import { deleteWorkflowEdge } from "@/features/workflows/service/workflowService";
+import { deleteWorkflowEdge } from "@/features/workflows/service";
 import {
     identifyDuplicateEdges,
     removeDuplicateEdges,
@@ -18,6 +17,7 @@ import {
     DuplicateEdgeGroup,
 } from "@/features/workflows/utils/edgeCleanup";
 import { useWorkflowData } from "@/features/workflows/react-flow/hooks/useWorkflowData";
+import { ConvertedWorkflowData } from "@/features/workflows/types";
 
 interface EdgeManagementOverlayProps {
     workflowId: string;
@@ -31,7 +31,7 @@ const EdgeManagementOverlay: React.FC<EdgeManagementOverlayProps> = ({ workflowI
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const [isCleaningDuplicates, setIsCleaningDuplicates] = useState(false);
     const [edges, setEdges] = useState<Edge[]>([]);
-    const [completeWorkflowData, setCompleteWorkflowData] = useState<CompleteWorkflowData | null>(null);
+    const [completeWorkflowData, setCompleteWorkflowData] = useState<ConvertedWorkflowData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const { loadWorkflow } = useWorkflowData();
@@ -45,7 +45,7 @@ const EdgeManagementOverlay: React.FC<EdgeManagementOverlayProps> = ({ workflowI
             const workflowData = await loadWorkflow(workflowId);
             if (workflowData) {
                 setEdges(workflowData.edges || []);
-                setCompleteWorkflowData(workflowData.completeWorkflowData);
+                setCompleteWorkflowData(workflowData);
             }
         } catch (error) {
             console.error("Error loading fresh workflow data:", error);
@@ -145,14 +145,14 @@ const EdgeManagementOverlay: React.FC<EdgeManagementOverlayProps> = ({ workflowI
         if (!completeWorkflowData) return nodeId;
 
         // Try to find node label from workflow data
-        const workflowNode = completeWorkflowData.nodes.find((n) => n.id === nodeId);
-        if (workflowNode) return workflowNode.step_name || "Workflow Node";
+        const workflowNode = completeWorkflowData.functionNodes.find((n) => n.id === nodeId);
+        if (workflowNode) return workflowNode.data.step_name || "Workflow Node";
 
         const userInput = completeWorkflowData.userInputs.find((n) => n.id === nodeId);
-        if (userInput) return userInput.label || "User Input";
+        if (userInput) return userInput.data.label || "User Input";
 
         const relay = completeWorkflowData.relays.find((n) => n.id === nodeId);
-        if (relay) return relay.label || "Relay";
+        if (relay) return relay.data.label || "Relay";
 
         return nodeId;
     };

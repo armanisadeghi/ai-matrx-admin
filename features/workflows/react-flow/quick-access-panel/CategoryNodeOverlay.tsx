@@ -19,17 +19,11 @@ interface CategoryNodeOverlayProps {
     isOpen: boolean;
 }
 
-const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({
-    title,
-    categoryId,
-    nodes,
-    onAddNode,
-    onClose,
-    isOpen,
-}) => {
+const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({ title, categoryId, nodes, onAddNode, onClose, isOpen }) => {
     const handleNodeClick = (node: CategoryNodeDefinition) => {
         onAddNode(node.id, "registeredFunction");
-        onClose(); // Close overlay after selection
+        // Note: onAddNode now handles closing the overlay internally for recipe nodes
+        // For regular nodes, it will close immediately
     };
 
     const handleBackdropClick = (e: React.MouseEvent) => {
@@ -41,20 +35,12 @@ const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={handleBackdropClick}
-        >
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={handleBackdropClick}>
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        {title}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    >
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                         <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     </button>
                 </div>
@@ -95,12 +81,8 @@ const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({
                             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mx-auto mb-4 flex items-center justify-center">
                                 <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                                No {title} Available Yet
-                            </h3>
-                            <p className="text-gray-500 dark:text-gray-400">
-                                {title} will appear here when they're added to the system.
-                            </p>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No {title} Available Yet</h3>
+                            <p className="text-gray-500 dark:text-gray-400">{title} will appear here when they're added to the system.</p>
                         </div>
                     )}
                 </div>
@@ -109,7 +91,9 @@ const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({
                 <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {nodes.length > 0 ? `Choose a ${title.toLowerCase()} to add to your workflow` : `${title} will be available here soon`}
+                            {nodes.length > 0
+                                ? `Choose a ${title.toLowerCase()} to add to your workflow`
+                                : `${title} will be available here soon`}
                         </p>
                         <button
                             onClick={onClose}
@@ -124,4 +108,4 @@ const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({
     );
 };
 
-export default CategoryNodeOverlay; 
+export default CategoryNodeOverlay;

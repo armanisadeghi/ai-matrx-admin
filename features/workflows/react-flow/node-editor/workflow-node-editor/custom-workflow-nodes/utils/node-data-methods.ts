@@ -1,6 +1,6 @@
 'use client';
 
-import { BaseNode } from '@/features/workflows/types';
+import { FunctionNode } from '@/features/workflows/types';
 import { NodeDataMethods, ValidationMode } from '../types';
 import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 
@@ -37,16 +37,16 @@ import {
  * Now uses our centralized utilities to ensure consistency and eliminate duplication
  */
 export function createNodeDataMethods(
-    currentNode: BaseNode,
-    originalNode: BaseNode,
-    updateCallback: (updatedNode: BaseNode) => void,
+    currentNode: FunctionNode,
+    originalNode: FunctionNode,
+    updateCallback: (updatedNode: FunctionNode) => void,
     validationMode: ValidationMode = 'permissive'
 ): NodeDataMethods {
 
     /**
      * Wrapper for validation that respects the validation mode
      */
-    const validateUpdate = (updatedNode: BaseNode): boolean => {
+    const validateUpdate = (updatedNode: FunctionNode): boolean => {
         try {
             validateNodeUpdate(updatedNode);
             return true;
@@ -63,7 +63,7 @@ export function createNodeDataMethods(
     /**
      * Enhanced update callback that includes validation
      */
-    const enhancedUpdateCallback = (updatedNode: BaseNode): void => {
+    const enhancedUpdateCallback = (updatedNode: FunctionNode): void => {
         validateUpdate(updatedNode);
         updateCallback(updatedNode);
     };
@@ -71,27 +71,27 @@ export function createNodeDataMethods(
     return {
         // ===== BASIC NODE PROPERTIES =====
         updateStepName: (stepName: string) => {
-            enhancedUpdateCallback({ ...currentNode, step_name: stepName });
+            enhancedUpdateCallback({ ...currentNode, data: { ...currentNode.data, step_name: stepName } });
         },
 
         updateFunctionType: (functionType: string) => {
-            enhancedUpdateCallback({ ...currentNode, function_type: functionType });
+            enhancedUpdateCallback({ ...currentNode, data: { ...currentNode.data, function_type: functionType } });
         },
 
         updateExecutionRequired: (required: boolean) => {
-            enhancedUpdateCallback({ ...currentNode, execution_required: required });
+            enhancedUpdateCallback({ ...currentNode, data: { ...currentNode.data, execution_required: required } });
         },
 
         updateStatus: (status: string) => {
-            enhancedUpdateCallback({ ...currentNode, status });
+            enhancedUpdateCallback({ ...currentNode, data: { ...currentNode.data, status } });
         },
 
         updateFunctionId: (functionId: string) => {
-            enhancedUpdateCallback({ ...currentNode, function_id: functionId });
+            enhancedUpdateCallback({ ...currentNode, data: { ...currentNode.data, function_id: functionId } });
         },
 
         updateWorkflowId: (workflowId: string) => {
-            enhancedUpdateCallback({ ...currentNode, workflow_id: workflowId });
+            enhancedUpdateCallback({ ...currentNode, data: { ...currentNode.data, workflow_id: workflowId } });
         },
 
         // ===== ARGUMENT OVERRIDES MANAGEMENT =====
@@ -111,17 +111,17 @@ export function createNodeDataMethods(
         removeArgumentOverride: (argName: string) => {
             const updated = { 
                 ...currentNode, 
-                arg_overrides: (currentNode.arg_overrides || []).filter(o => o.name !== argName) 
+                data: { ...currentNode.data, arg_overrides: (currentNode.data.arg_overrides || []).filter(o => o.name !== argName) }
             };
             enhancedUpdateCallback(updated);
         },
 
         getArgumentOverride: (argName: string) => {
-            return currentNode.arg_overrides?.find(o => o.name === argName);
+            return currentNode.data.arg_overrides?.find(o => o.name === argName);
         },
 
         getAllArgumentOverrides: () => {
-            return [...(currentNode.arg_overrides || [])];
+            return [...(currentNode.data.arg_overrides || [])];
         },
 
         // ===== ARGUMENT MAPPINGS MANAGEMENT =====
@@ -131,7 +131,7 @@ export function createNodeDataMethods(
             const tempNode = { ...currentNode };
             addArgumentMapping(tempNode, enhancedUpdateCallback);
             // Then update the specific mapping
-            const mappings = [...(tempNode.arg_mapping || [])];
+            const mappings = [...(tempNode.data.arg_mapping || [])];
             const lastIndex = mappings.length - 1;
             if (lastIndex >= 0) {
                 updateArgumentMapping(tempNode, enhancedUpdateCallback, lastIndex, 'target_arg_name', targetArgName);
@@ -150,7 +150,7 @@ export function createNodeDataMethods(
         removeArgumentMappingsForArg: (argName: string) => {
             const updated = {
                 ...currentNode,
-                arg_mapping: (currentNode.arg_mapping || []).filter(m => m.target_arg_name !== argName)
+                data: { ...currentNode.data, arg_mapping: (currentNode.data.arg_mapping || []).filter(m => m.target_arg_name !== argName) }
             };
             enhancedUpdateCallback(updated);
         },
@@ -159,7 +159,7 @@ export function createNodeDataMethods(
             if (argName) {
                 return getBrokerMappingsForArg(currentNode, argName);
             }
-            return [...(currentNode.arg_mapping || [])];
+            return [...(currentNode.data.arg_mapping || [])];
         },
 
         // ===== DEPENDENCIES MANAGEMENT =====
@@ -167,7 +167,7 @@ export function createNodeDataMethods(
         addDependency: (sourceBrokerId: string, targetBrokerId?: string) => {
             addWorkflowDependency(currentNode, enhancedUpdateCallback);
             // Update the last added dependency with the actual values
-            const dependencies = [...(currentNode.additional_dependencies || [])];
+            const dependencies = [...(currentNode.data.additional_dependencies || [])];
             const lastIndex = dependencies.length - 1;
             if (lastIndex >= 0) {
                 updateWorkflowDependency(currentNode, enhancedUpdateCallback, lastIndex, 'source_broker_id', sourceBrokerId);
@@ -186,7 +186,7 @@ export function createNodeDataMethods(
         },
 
         getDependencies: () => {
-            return [...(currentNode.additional_dependencies || [])];
+            return [...(currentNode.data.additional_dependencies || [])];
         },
 
         // ===== RETURN BROKER OVERRIDES MANAGEMENT =====
@@ -194,16 +194,16 @@ export function createNodeDataMethods(
         addReturnBrokerOverride: (brokerId: string) => {
             const updated = {
                 ...currentNode,
-                return_broker_overrides: [...(currentNode.return_broker_overrides || []), brokerId]
+                data: { ...currentNode.data, return_broker_overrides: [...(currentNode.data.return_broker_overrides || []), brokerId] }
             };
             enhancedUpdateCallback(updated);
         },
 
         updateReturnBrokerOverride: (index: number, brokerId: string) => {
-            const overrides = [...(currentNode.return_broker_overrides || [])];
+            const overrides = [...(currentNode.data.return_broker_overrides || [])];
             if (overrides[index] !== undefined) {
                 overrides[index] = brokerId;
-                const updated = { ...currentNode, return_broker_overrides: overrides };
+                const updated = { ...currentNode, data: { ...currentNode.data, return_broker_overrides: overrides } };
                 enhancedUpdateCallback(updated);
             }
         },
@@ -211,13 +211,13 @@ export function createNodeDataMethods(
         removeReturnBrokerOverride: (index: number) => {
             const updated = {
                 ...currentNode,
-                return_broker_overrides: (currentNode.return_broker_overrides || []).filter((_, i) => i !== index)
+                data: { ...currentNode.data, return_broker_overrides: (currentNode.data.return_broker_overrides || []).filter((_, i) => i !== index) }
             };
             enhancedUpdateCallback(updated);
         },
 
         getReturnBrokerOverrides: () => {
-            return [...(currentNode.return_broker_overrides || [])];
+            return [...(currentNode.data.return_broker_overrides || [])];
         },
 
         // ===== UTILITY METHODS =====
@@ -240,24 +240,24 @@ export function createNodeDataMethods(
         // ===== COMPUTED PROPERTIES HELPERS =====
         // Use our centralized utilities for consistency
         getEffectiveArgumentValue: (argName: string) => {
-            const functionData = getFunctionData(currentNode.function_id);
+            const functionData = getFunctionData(currentNode.data.function_id);
             const arg = functionData?.args.find((a: any) => a.name === argName);
             if (!arg) return { value: null, ready: false };
-            return getEffectiveArgValue(arg, currentNode.arg_overrides);
+            return getEffectiveArgValue(arg, currentNode.data.arg_overrides);
         },
 
         getArgumentsWithMappings: () => {
-            const functionData = getFunctionData(currentNode.function_id);
+            const functionData = getFunctionData(currentNode.data.function_id);
             const argumentsWithData = getArgumentsWithData(currentNode, functionData);
             return argumentsWithData.map(arg => ({
                 arg,
                 mappings: getBrokerMappingsForArg(currentNode, arg.name),
-                override: currentNode.arg_overrides?.find(o => o.name === arg.name)
+                override: currentNode.data.arg_overrides?.find(o => o.name === arg.name)
             }));
         },
 
         getAllReturnBrokers: () => {
-            const functionData = getFunctionData(currentNode.function_id);
+            const functionData = getFunctionData(currentNode.data.function_id);
             return getAllReturnBrokers(currentNode, functionData);
         },
 

@@ -3,18 +3,18 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 
 interface DependenciesSectionProps {
-  node: BaseNode;
-  onNodeUpdate: (node: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
 }
 
 /**
  * DependenciesSection - Displays the dependencies table
  */
-const DependenciesSection: React.FC<DependenciesSectionProps> = ({ node }) => {
-  const dependencies = node.additional_dependencies || [];
+const DependenciesSection: React.FC<DependenciesSectionProps> = ({ nodeData }) => {
+  const dependencies = nodeData.additional_dependencies || [];
 
   // Don't render if no dependencies
   if (dependencies.length === 0) {

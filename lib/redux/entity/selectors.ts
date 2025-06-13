@@ -16,13 +16,17 @@ import {
     RuntimeFilter,
     RuntimeSort,
 } from "@/lib/redux/entity/types/stateTypes";
-import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { createRecordKey, getRecordIdByRecord, parseRecordKey, parseRecordKeys } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import { mapFieldDataToFormField } from "@/lib/redux/entity/utils/tempFormHelper";
 import { uniqBy } from "lodash";
 import { EntityStateType } from "@/types/AutomationSchemaTypes";
 import debounce from 'lodash/debounce';
 
+interface SelectOption {
+    value: string;
+    label: string;
+}
 
 interface FieldNameGroups<TEntity extends EntityKeys> {
     nativeFields: EntityAnyFieldKey<TEntity>[];
@@ -442,6 +446,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             displayValue: record.displayValue,
         }))
     );
+
+    const selectQuickReferenceSelectOptions = createSelector(
+        [selectQuickReference], 
+        (records): SelectOption[] =>
+            records.map((record) => {
+                const parsedKey = parseRecordKey(record.recordKey);
+                const firstPrimaryKeyValue = Object.values(parsedKey)[0] as string;
+                
+                return {
+                    value: firstPrimaryKeyValue,
+                    label: record.displayValue,
+                };
+            })
+    );
+    
     // Selection Selectors ==================================================
 
     const selectSelectionState = createSelector([selectEntity], (entity) => {
@@ -1548,6 +1567,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectQuickReference,
         selectQuickReferenceByPrimaryKey,
         selectQuickReferenceKeyDisplayPairs,
+        selectQuickReferenceSelectOptions,
         selectPaginationInfo,
         selectCurrentPage,
         selectCurrentFilters,

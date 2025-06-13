@@ -1,4 +1,4 @@
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 
 // Interface for argument with additional data
@@ -33,20 +33,20 @@ export const getFunctionDataForOverview = (functionId: string) => {
 
 // Function to update node with partial updates
 export const updateNode = (
-    node: BaseNode,
-    onNodeUpdate: (updatedNode: BaseNode) => void,
-    updates: Partial<BaseNode>
+    nodeData: DbFunctionNode,
+    onNodeUpdate: (updatedNode: DbFunctionNode) => void,
+    updates: Partial<DbFunctionNode>
 ) => {
-    onNodeUpdate({ ...node, ...updates });
+    onNodeUpdate({ ...nodeData, ...updates });
 };
 
 // Function to get arguments with their mappings and overrides
-export const getArgumentsWithData = (node: BaseNode, functionData: any): ArgumentWithData[] => {
+export const getArgumentsWithData = (nodeData: DbFunctionNode, functionData: any): ArgumentWithData[] => {
     if (!functionData) return [];
     
     return functionData.args.map((arg: any) => {
-        const mapping = node.arg_mapping?.find(m => m.target_arg_name === arg.name);
-        const override = node.arg_overrides?.find(o => o.name === arg.name);
+        const mapping = nodeData.arg_mapping?.find(m => m.target_arg_name === arg.name);
+        const override = nodeData.arg_overrides?.find(o => o.name === arg.name);
         
         return {
             ...arg,
@@ -57,13 +57,13 @@ export const getArgumentsWithData = (node: BaseNode, functionData: any): Argumen
 };
 
 // Function to get all return brokers (default + overrides)
-export const getAllReturnBrokers = (node: BaseNode, functionData: any): ReturnBroker[] => {
+export const getAllReturnBrokers = (nodeData: DbFunctionNode, functionData: any): ReturnBroker[] => {
     const brokers: ReturnBroker[] = [];
     const defaultBrokerId = functionData?.return_broker;
     
     // Add override return brokers first
-    if (node.return_broker_overrides) {
-        node.return_broker_overrides.forEach(broker => {
+    if (nodeData.return_broker_overrides) {
+        nodeData.return_broker_overrides.forEach(broker => {
             brokers.push({ 
                 id: broker, 
                 type: broker === defaultBrokerId ? 'default' : 'override' 
@@ -72,7 +72,7 @@ export const getAllReturnBrokers = (node: BaseNode, functionData: any): ReturnBr
     }
     
     // Add default return broker only if it's not already in the overrides
-    if (defaultBrokerId && !node.return_broker_overrides?.includes(defaultBrokerId)) {
+    if (defaultBrokerId && !nodeData.return_broker_overrides?.includes(defaultBrokerId)) {
         brokers.push({ id: defaultBrokerId, type: 'default' });
     }
     
@@ -80,8 +80,8 @@ export const getAllReturnBrokers = (node: BaseNode, functionData: any): ReturnBr
 };
 
 // Function to check if node has dependencies
-export const hasNodeDependencies = (node: BaseNode): boolean => {
-    return !!(node.additional_dependencies && node.additional_dependencies.length > 0);
+export const hasNodeDependencies = (nodeData: DbFunctionNode): boolean => {
+    return !!(nodeData.additional_dependencies && nodeData.additional_dependencies.length > 0);
 };
 
 

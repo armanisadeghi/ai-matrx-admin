@@ -1,5 +1,5 @@
 import { Edge } from "reactflow";
-import { deleteWorkflowEdge } from "@/features/workflows/service/workflowService";
+import { deleteWorkflowEdge } from "@/features/workflows/service";
 
 export interface DuplicateEdgeGroup {
   signature: string;

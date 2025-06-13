@@ -7,26 +7,26 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Copy, RefreshCw } from "lucide-react";
 import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json-utils';
 import { toast } from 'sonner';
-import { BaseNode } from '@/features/workflows/types';
+import { DbFunctionNode } from '@/features/workflows/types';
 
 interface AdminTabProps {
-  node: BaseNode;
-  onNodeUpdate: (node: BaseNode) => void;
+  nodeData: DbFunctionNode;
+  onNodeUpdate: (nodeData: DbFunctionNode) => void;
   validationErrors?: string[];
 }
 
-const AdminTab: React.FC<AdminTabProps> = ({ node, onNodeUpdate, validationErrors = [] }) => {
+const AdminTab: React.FC<AdminTabProps> = ({ nodeData, onNodeUpdate, validationErrors = [] }) => {
   const [jsonString, setJsonString] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonWarnings, setJsonWarnings] = useState<string[]>([]);
   const [hasJsonChanges, setHasJsonChanges] = useState(false);
 
   useEffect(() => {
-    setJsonString(JSON.stringify(node, null, 2));
+    setJsonString(JSON.stringify(nodeData, null, 2));
     setHasJsonChanges(false);
     setJsonError(null);
     setJsonWarnings([]);
-  }, [node]);
+  }, [nodeData]);
 
   const handleJsonChange = (value: string) => {
     setJsonString(value);
@@ -86,7 +86,7 @@ const AdminTab: React.FC<AdminTabProps> = ({ node, onNodeUpdate, validationError
   };
 
   const resetChanges = () => {
-    setJsonString(JSON.stringify(node, null, 2));
+    setJsonString(JSON.stringify(nodeData, null, 2));
     setHasJsonChanges(false);
     setJsonError(null);
     setJsonWarnings([]);

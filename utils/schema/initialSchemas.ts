@@ -21850,6 +21850,70 @@ dataBroker: {
             foreignKeyReference: null,
             description: '"Public Read" field for dataBroker. This is an optional field. Your entry must be an boolean data type.',
         },
+            defaultScope: {
+            fieldNameFormats: {
+    "frontend": "defaultScope",
+    "backend": "default_scope",
+    "database": "default_scope",
+    "pretty": "Default Scope",
+    "component": "DefaultScope",
+    "kebab": "default-scope",
+    "sqlFunctionRef": "p_default_scope",
+    "RestAPI": "defaultScope",
+    "GraphQL": "defaultScope",
+    "custom": "defaultScope"
+} as const,
+            name: 'defaultScope',
+            displayName: 'Default Scope',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:data_broker:default_scope',
+            uniqueFieldId: 'supabase_automation_matrix:dataBroker:defaultScope',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'INPUT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'dataBroker',
+            databaseTable: 'data_broker',
+            foreignKeyReference: null,
+            description: '"Default Scope" field for dataBroker. This is an optional field. Your entry must be an string data type.',
+        },
             dataInputComponentReference: {
     fieldNameFormats: {
     "frontend": "dataInputComponentReference",
@@ -44269,22 +44333,22 @@ registeredFunction: {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: "" as const,
+            defaultValue: "Other" as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: "",
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'INPUT' as const,
+            defaultComponent: 'SELECT' as const,
             componentProps: {
-    "subComponent": "default",
+    "subComponent": "enumSelect",
     "variant": "default",
     "section": "default",
     "placeholder": "default",
     "size": "default",
     "textSize": "default",
     "textColor": "default",
-    "rows": 5,
+    "rows": "default",
     "animation": "default",
     "fullWidthValue": "default",
     "fullWidth": "default",
@@ -44298,13 +44362,74 @@ registeredFunction: {
     "max": "default",
     "step": "default",
     "numberType": "default",
-    "options": "default",
+    "options": [
+        {
+            "label": "A P I",
+            "value": "API"
+        },
+        {
+            "label": "Agents",
+            "value": "Agents"
+        },
+        {
+            "label": "Commands",
+            "value": "Commands"
+        },
+        {
+            "label": "Database",
+            "value": "Database"
+        },
+        {
+            "label": "Documents",
+            "value": "Documents"
+        },
+        {
+            "label": "Executors",
+            "value": "Executors"
+        },
+        {
+            "label": "Extractors",
+            "value": "Extractors"
+        },
+        {
+            "label": "Files",
+            "value": "Files"
+        },
+        {
+            "label": "Integrations",
+            "value": "Integrations"
+        },
+        {
+            "label": "Media",
+            "value": "Media"
+        },
+        {
+            "label": "Other",
+            "value": "Other"
+        },
+        {
+            "label": "Processors",
+            "value": "Processors"
+        },
+        {
+            "label": "Prompts",
+            "value": "Prompts"
+        },
+        {
+            "label": "Recipes",
+            "value": "Recipes"
+        },
+        {
+            "label": "Web",
+            "value": "Web"
+        }
+    ],
     "required": false
 },
             structure: 'single' as const,
             isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            enumValues: null,
+            typeReference: {} as TypeBrand<"API" | "Agents" | "Commands" | "Database" | "Documents" | "Executors" | "Extractors" | "Files" | "Integrations" | "Media" | "Other" | "Processors" | "Prompts" | "Recipes" | "Web" | undefined>,
+            enumValues: ['API', 'Agents', 'Commands', 'Database', 'Documents', 'Executors', 'Extractors', 'Files', 'Integrations', 'Media', 'Other', 'Processors', 'Prompts', 'Recipes', 'Web'] as const,
             entityName: 'registeredFunction',
             databaseTable: 'registered_function',
             foreignKeyReference: null,
@@ -44333,22 +44458,22 @@ registeredFunction: {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: "" as const,
+            defaultValue: "Zap" as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: "",
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'INPUT' as const,
+            defaultComponent: 'SELECT' as const,
             componentProps: {
-    "subComponent": "default",
+    "subComponent": "enumSelect",
     "variant": "default",
     "section": "default",
     "placeholder": "default",
     "size": "default",
     "textSize": "default",
     "textColor": "default",
-    "rows": 5,
+    "rows": "default",
     "animation": "default",
     "fullWidthValue": "default",
     "fullWidth": "default",
@@ -44362,13 +44487,930 @@ registeredFunction: {
     "max": "default",
     "step": "default",
     "numberType": "default",
-    "options": "default",
+    "options": [
+        {
+            "label": "Activity",
+            "value": "Activity"
+        },
+        {
+            "label": "Alert Circle",
+            "value": "AlertCircle"
+        },
+        {
+            "label": "Alert Triangle",
+            "value": "AlertTriangle"
+        },
+        {
+            "label": "Align Center",
+            "value": "AlignCenter"
+        },
+        {
+            "label": "Align Left",
+            "value": "AlignLeft"
+        },
+        {
+            "label": "Align Right",
+            "value": "AlignRight"
+        },
+        {
+            "label": "Archive",
+            "value": "Archive"
+        },
+        {
+            "label": "Arrow Down",
+            "value": "ArrowDown"
+        },
+        {
+            "label": "Arrow Left",
+            "value": "ArrowLeft"
+        },
+        {
+            "label": "Arrow Left Right",
+            "value": "ArrowLeftRight"
+        },
+        {
+            "label": "Arrow Right",
+            "value": "ArrowRight"
+        },
+        {
+            "label": "Arrow Right Left",
+            "value": "ArrowRightLeft"
+        },
+        {
+            "label": "Arrow Up",
+            "value": "ArrowUp"
+        },
+        {
+            "label": "Asterisk",
+            "value": "Asterisk"
+        },
+        {
+            "label": "At Sign",
+            "value": "AtSign"
+        },
+        {
+            "label": "Award",
+            "value": "Award"
+        },
+        {
+            "label": "Banknote",
+            "value": "Banknote"
+        },
+        {
+            "label": "Bar Chart",
+            "value": "BarChart"
+        },
+        {
+            "label": "Battery",
+            "value": "Battery"
+        },
+        {
+            "label": "Battery Low",
+            "value": "BatteryLow"
+        },
+        {
+            "label": "Bell",
+            "value": "Bell"
+        },
+        {
+            "label": "Bell Off",
+            "value": "BellOff"
+        },
+        {
+            "label": "Bike",
+            "value": "Bike"
+        },
+        {
+            "label": "Bitcoin",
+            "value": "Bitcoin"
+        },
+        {
+            "label": "Bold",
+            "value": "Bold"
+        },
+        {
+            "label": "Bookmark",
+            "value": "Bookmark"
+        },
+        {
+            "label": "Bookmark Plus",
+            "value": "BookmarkPlus"
+        },
+        {
+            "label": "Brain",
+            "value": "Brain"
+        },
+        {
+            "label": "Brush",
+            "value": "Brush"
+        },
+        {
+            "label": "Building",
+            "value": "Building"
+        },
+        {
+            "label": "Building2",
+            "value": "Building2"
+        },
+        {
+            "label": "Calculator",
+            "value": "Calculator"
+        },
+        {
+            "label": "Calendar",
+            "value": "Calendar"
+        },
+        {
+            "label": "Calendar Days",
+            "value": "CalendarDays"
+        },
+        {
+            "label": "Camera",
+            "value": "Camera"
+        },
+        {
+            "label": "Car",
+            "value": "Car"
+        },
+        {
+            "label": "Check",
+            "value": "Check"
+        },
+        {
+            "label": "Check Circle",
+            "value": "CheckCircle"
+        },
+        {
+            "label": "Chevron Down",
+            "value": "ChevronDown"
+        },
+        {
+            "label": "Chevron Left",
+            "value": "ChevronLeft"
+        },
+        {
+            "label": "Chevron Right",
+            "value": "ChevronRight"
+        },
+        {
+            "label": "Chevron Up",
+            "value": "ChevronUp"
+        },
+        {
+            "label": "Circle",
+            "value": "Circle"
+        },
+        {
+            "label": "Clock",
+            "value": "Clock"
+        },
+        {
+            "label": "Cloud",
+            "value": "Cloud"
+        },
+        {
+            "label": "Cloud Rain",
+            "value": "CloudRain"
+        },
+        {
+            "label": "Cloud Snow",
+            "value": "CloudSnow"
+        },
+        {
+            "label": "Code",
+            "value": "Code"
+        },
+        {
+            "label": "Compass",
+            "value": "Compass"
+        },
+        {
+            "label": "Copy",
+            "value": "Copy"
+        },
+        {
+            "label": "Cpu",
+            "value": "Cpu"
+        },
+        {
+            "label": "Credit Card",
+            "value": "CreditCard"
+        },
+        {
+            "label": "Database",
+            "value": "Database"
+        },
+        {
+            "label": "Diamond",
+            "value": "Diamond"
+        },
+        {
+            "label": "Divide",
+            "value": "Divide"
+        },
+        {
+            "label": "Dollar Sign",
+            "value": "DollarSign"
+        },
+        {
+            "label": "Dot",
+            "value": "Dot"
+        },
+        {
+            "label": "Download",
+            "value": "Download"
+        },
+        {
+            "label": "Edit",
+            "value": "Edit"
+        },
+        {
+            "label": "Equal",
+            "value": "Equal"
+        },
+        {
+            "label": "Eraser",
+            "value": "Eraser"
+        },
+        {
+            "label": "Euro",
+            "value": "Euro"
+        },
+        {
+            "label": "External Link",
+            "value": "ExternalLink"
+        },
+        {
+            "label": "Eye",
+            "value": "Eye"
+        },
+        {
+            "label": "Fa Brave",
+            "value": "FaBrave"
+        },
+        {
+            "label": "Factory",
+            "value": "Factory"
+        },
+        {
+            "label": "Fc Alphabetical Sorting Az",
+            "value": "FcAlphabeticalSortingAz"
+        },
+        {
+            "label": "Fc Alphabetical Sorting Za",
+            "value": "FcAlphabeticalSortingZa"
+        },
+        {
+            "label": "Fc Area Chart",
+            "value": "FcAreaChart"
+        },
+        {
+            "label": "Fc Assistant",
+            "value": "FcAssistant"
+        },
+        {
+            "label": "Fc Biotech",
+            "value": "FcBiotech"
+        },
+        {
+            "label": "Fc Broken Link",
+            "value": "FcBrokenLink"
+        },
+        {
+            "label": "Fc Business",
+            "value": "FcBusiness"
+        },
+        {
+            "label": "Fc Business Contact",
+            "value": "FcBusinessContact"
+        },
+        {
+            "label": "Fc Calendar",
+            "value": "FcCalendar"
+        },
+        {
+            "label": "Fc Command Line",
+            "value": "FcCommandLine"
+        },
+        {
+            "label": "Fc Conference Call",
+            "value": "FcConferenceCall"
+        },
+        {
+            "label": "Fc Data Protection",
+            "value": "FcDataProtection"
+        },
+        {
+            "label": "Fc Document",
+            "value": "FcDocument"
+        },
+        {
+            "label": "Fc Download",
+            "value": "FcDownload"
+        },
+        {
+            "label": "Fc Electronics",
+            "value": "FcElectronics"
+        },
+        {
+            "label": "Fc Engineering",
+            "value": "FcEngineering"
+        },
+        {
+            "label": "Fc Feedback",
+            "value": "FcFeedback"
+        },
+        {
+            "label": "Fc Film",
+            "value": "FcFilm"
+        },
+        {
+            "label": "Fc Google",
+            "value": "FcGoogle"
+        },
+        {
+            "label": "Fc Graduation Cap",
+            "value": "FcGraduationCap"
+        },
+        {
+            "label": "Fc Library",
+            "value": "FcLibrary"
+        },
+        {
+            "label": "Fc Manager",
+            "value": "FcManager"
+        },
+        {
+            "label": "Fc Multiple Inputs",
+            "value": "FcMultipleInputs"
+        },
+        {
+            "label": "Fc Music",
+            "value": "FcMusic"
+        },
+        {
+            "label": "Fc Parallel Tasks",
+            "value": "FcParallelTasks"
+        },
+        {
+            "label": "Fc Sales Performance",
+            "value": "FcSalesPerformance"
+        },
+        {
+            "label": "Fc Shipped",
+            "value": "FcShipped"
+        },
+        {
+            "label": "Fc Signature",
+            "value": "FcSignature"
+        },
+        {
+            "label": "Fc Sms",
+            "value": "FcSms"
+        },
+        {
+            "label": "Fc Todo List",
+            "value": "FcTodoList"
+        },
+        {
+            "label": "Fc Wikipedia",
+            "value": "FcWikipedia"
+        },
+        {
+            "label": "File",
+            "value": "File"
+        },
+        {
+            "label": "File Text",
+            "value": "FileText"
+        },
+        {
+            "label": "Filter",
+            "value": "Filter"
+        },
+        {
+            "label": "Folder",
+            "value": "Folder"
+        },
+        {
+            "label": "Folder Open",
+            "value": "FolderOpen"
+        },
+        {
+            "label": "Fuel",
+            "value": "Fuel"
+        },
+        {
+            "label": "Gift",
+            "value": "Gift"
+        },
+        {
+            "label": "Git Branch",
+            "value": "GitBranch"
+        },
+        {
+            "label": "Globe",
+            "value": "Globe"
+        },
+        {
+            "label": "Hash",
+            "value": "Hash"
+        },
+        {
+            "label": "Headphones",
+            "value": "Headphones"
+        },
+        {
+            "label": "Heart",
+            "value": "Heart"
+        },
+        {
+            "label": "Help Circle",
+            "value": "HelpCircle"
+        },
+        {
+            "label": "Hexagon",
+            "value": "Hexagon"
+        },
+        {
+            "label": "Highlighter",
+            "value": "Highlighter"
+        },
+        {
+            "label": "Home",
+            "value": "Home"
+        },
+        {
+            "label": "Image",
+            "value": "Image"
+        },
+        {
+            "label": "Inbox",
+            "value": "Inbox"
+        },
+        {
+            "label": "Indent",
+            "value": "Indent"
+        },
+        {
+            "label": "Info",
+            "value": "Info"
+        },
+        {
+            "label": "Italic",
+            "value": "Italic"
+        },
+        {
+            "label": "Key",
+            "value": "Key"
+        },
+        {
+            "label": "Laptop",
+            "value": "Laptop"
+        },
+        {
+            "label": "Layers",
+            "value": "Layers"
+        },
+        {
+            "label": "Line Chart",
+            "value": "LineChart"
+        },
+        {
+            "label": "Link",
+            "value": "Link"
+        },
+        {
+            "label": "List",
+            "value": "List"
+        },
+        {
+            "label": "List Ordered",
+            "value": "ListOrdered"
+        },
+        {
+            "label": "Lock",
+            "value": "Lock"
+        },
+        {
+            "label": "Log In",
+            "value": "LogIn"
+        },
+        {
+            "label": "Log Out",
+            "value": "LogOut"
+        },
+        {
+            "label": "Mail",
+            "value": "Mail"
+        },
+        {
+            "label": "Map",
+            "value": "Map"
+        },
+        {
+            "label": "Map Pin",
+            "value": "MapPin"
+        },
+        {
+            "label": "Menu",
+            "value": "Menu"
+        },
+        {
+            "label": "Message Circle",
+            "value": "MessageCircle"
+        },
+        {
+            "label": "Message Square",
+            "value": "MessageSquare"
+        },
+        {
+            "label": "Mic",
+            "value": "Mic"
+        },
+        {
+            "label": "Mic Off",
+            "value": "MicOff"
+        },
+        {
+            "label": "Minus",
+            "value": "Minus"
+        },
+        {
+            "label": "Monitor",
+            "value": "Monitor"
+        },
+        {
+            "label": "Monitor Speaker",
+            "value": "MonitorSpeaker"
+        },
+        {
+            "label": "Moon",
+            "value": "Moon"
+        },
+        {
+            "label": "More Horizontal",
+            "value": "MoreHorizontal"
+        },
+        {
+            "label": "More Vertical",
+            "value": "MoreVertical"
+        },
+        {
+            "label": "Move",
+            "value": "Move"
+        },
+        {
+            "label": "Music",
+            "value": "Music"
+        },
+        {
+            "label": "Music2",
+            "value": "Music2"
+        },
+        {
+            "label": "Navigation",
+            "value": "Navigation"
+        },
+        {
+            "label": "Octagon",
+            "value": "Octagon"
+        },
+        {
+            "label": "Outdent",
+            "value": "Outdent"
+        },
+        {
+            "label": "Package",
+            "value": "Package"
+        },
+        {
+            "label": "Paintbrush",
+            "value": "Paintbrush"
+        },
+        {
+            "label": "Palette",
+            "value": "Palette"
+        },
+        {
+            "label": "Pause Circle",
+            "value": "PauseCircle"
+        },
+        {
+            "label": "Pen",
+            "value": "Pen"
+        },
+        {
+            "label": "Pen Tool",
+            "value": "PenTool"
+        },
+        {
+            "label": "Pencil",
+            "value": "Pencil"
+        },
+        {
+            "label": "Percent",
+            "value": "Percent"
+        },
+        {
+            "label": "Phone",
+            "value": "Phone"
+        },
+        {
+            "label": "Phone Call",
+            "value": "PhoneCall"
+        },
+        {
+            "label": "Pie Chart",
+            "value": "PieChart"
+        },
+        {
+            "label": "Plane",
+            "value": "Plane"
+        },
+        {
+            "label": "Play",
+            "value": "Play"
+        },
+        {
+            "label": "Play Circle",
+            "value": "PlayCircle"
+        },
+        {
+            "label": "Plus",
+            "value": "Plus"
+        },
+        {
+            "label": "Pound Sterling",
+            "value": "PoundSterling"
+        },
+        {
+            "label": "Power",
+            "value": "Power"
+        },
+        {
+            "label": "Power Off",
+            "value": "PowerOff"
+        },
+        {
+            "label": "Quote",
+            "value": "Quote"
+        },
+        {
+            "label": "Receipt",
+            "value": "Receipt"
+        },
+        {
+            "label": "Refresh Cw",
+            "value": "RefreshCw"
+        },
+        {
+            "label": "Repeat",
+            "value": "Repeat"
+        },
+        {
+            "label": "Repeat1",
+            "value": "Repeat1"
+        },
+        {
+            "label": "Rotate Ccw",
+            "value": "RotateCcw"
+        },
+        {
+            "label": "Ruler",
+            "value": "Ruler"
+        },
+        {
+            "label": "Save",
+            "value": "Save"
+        },
+        {
+            "label": "Scissors",
+            "value": "Scissors"
+        },
+        {
+            "label": "Search",
+            "value": "Search"
+        },
+        {
+            "label": "Send",
+            "value": "Send"
+        },
+        {
+            "label": "Settings",
+            "value": "Settings"
+        },
+        {
+            "label": "Share",
+            "value": "Share"
+        },
+        {
+            "label": "Share2",
+            "value": "Share2"
+        },
+        {
+            "label": "Shield",
+            "value": "Shield"
+        },
+        {
+            "label": "Shield Check",
+            "value": "ShieldCheck"
+        },
+        {
+            "label": "Ship",
+            "value": "Ship"
+        },
+        {
+            "label": "Shopping Bag",
+            "value": "ShoppingBag"
+        },
+        {
+            "label": "Shopping Cart",
+            "value": "ShoppingCart"
+        },
+        {
+            "label": "Shuffle",
+            "value": "Shuffle"
+        },
+        {
+            "label": "Skip Back",
+            "value": "SkipBack"
+        },
+        {
+            "label": "Skip Forward",
+            "value": "SkipForward"
+        },
+        {
+            "label": "Smartphone",
+            "value": "Smartphone"
+        },
+        {
+            "label": "Square",
+            "value": "Square"
+        },
+        {
+            "label": "Star",
+            "value": "Star"
+        },
+        {
+            "label": "Stop Circle",
+            "value": "StopCircle"
+        },
+        {
+            "label": "Store",
+            "value": "Store"
+        },
+        {
+            "label": "Sun",
+            "value": "Sun"
+        },
+        {
+            "label": "Tablet",
+            "value": "Tablet"
+        },
+        {
+            "label": "Tag",
+            "value": "Tag"
+        },
+        {
+            "label": "Tags",
+            "value": "Tags"
+        },
+        {
+            "label": "Target",
+            "value": "Target"
+        },
+        {
+            "label": "Thermometer",
+            "value": "Thermometer"
+        },
+        {
+            "label": "Timer",
+            "value": "Timer"
+        },
+        {
+            "label": "Train",
+            "value": "Train"
+        },
+        {
+            "label": "Trash",
+            "value": "Trash"
+        },
+        {
+            "label": "Trending Down",
+            "value": "TrendingDown"
+        },
+        {
+            "label": "Trending Up",
+            "value": "TrendingUp"
+        },
+        {
+            "label": "Triangle",
+            "value": "Triangle"
+        },
+        {
+            "label": "Trophy",
+            "value": "Trophy"
+        },
+        {
+            "label": "Truck",
+            "value": "Truck"
+        },
+        {
+            "label": "Type",
+            "value": "Type"
+        },
+        {
+            "label": "Umbrella",
+            "value": "Umbrella"
+        },
+        {
+            "label": "Underline",
+            "value": "Underline"
+        },
+        {
+            "label": "Unlink",
+            "value": "Unlink"
+        },
+        {
+            "label": "Unlock",
+            "value": "Unlock"
+        },
+        {
+            "label": "Upload",
+            "value": "Upload"
+        },
+        {
+            "label": "User",
+            "value": "User"
+        },
+        {
+            "label": "User2",
+            "value": "User2"
+        },
+        {
+            "label": "User Minus",
+            "value": "UserMinus"
+        },
+        {
+            "label": "User Plus",
+            "value": "UserPlus"
+        },
+        {
+            "label": "Users",
+            "value": "Users"
+        },
+        {
+            "label": "Video",
+            "value": "Video"
+        },
+        {
+            "label": "Volume2",
+            "value": "Volume2"
+        },
+        {
+            "label": "Volume X",
+            "value": "VolumeX"
+        },
+        {
+            "label": "Wand2",
+            "value": "Wand2"
+        },
+        {
+            "label": "Webhook",
+            "value": "Webhook"
+        },
+        {
+            "label": "Wifi",
+            "value": "Wifi"
+        },
+        {
+            "label": "Wifi Off",
+            "value": "WifiOff"
+        },
+        {
+            "label": "Wrench",
+            "value": "Wrench"
+        },
+        {
+            "label": "X",
+            "value": "X"
+        },
+        {
+            "label": "X Circle",
+            "value": "XCircle"
+        },
+        {
+            "label": "Zap",
+            "value": "Zap"
+        }
+    ],
     "required": false
 },
             structure: 'single' as const,
             isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            enumValues: null,
+            typeReference: {} as TypeBrand<"Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "Bookmark" | "BookmarkPlus" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined>,
+            enumValues: ['Activity', 'AlertCircle', 'AlertTriangle', 'AlignCenter', 'AlignLeft', 'AlignRight', 'Archive', 'ArrowDown', 'ArrowLeft', 'ArrowLeftRight', 'ArrowRight', 'ArrowRightLeft', 'ArrowUp', 'Asterisk', 'AtSign', 'Award', 'Banknote', 'BarChart', 'Battery', 'BatteryLow', 'Bell', 'BellOff', 'Bike', 'Bitcoin', 'Bold', 'Bookmark', 'BookmarkPlus', 'Brain', 'Brush', 'Building', 'Building2', 'Calculator', 'Calendar', 'CalendarDays', 'Camera', 'Car', 'Check', 'CheckCircle', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp', 'Circle', 'Clock', 'Cloud', 'CloudRain', 'CloudSnow', 'Code', 'Compass', 'Copy', 'Cpu', 'CreditCard', 'Database', 'Diamond', 'Divide', 'DollarSign', 'Dot', 'Download', 'Edit', 'Equal', 'Eraser', 'Euro', 'ExternalLink', 'Eye', 'FaBrave', 'Factory', 'FcAlphabeticalSortingAz', 'FcAlphabeticalSortingZa', 'FcAreaChart', 'FcAssistant', 'FcBiotech', 'FcBrokenLink', 'FcBusiness', 'FcBusinessContact', 'FcCalendar', 'FcCommandLine', 'FcConferenceCall', 'FcDataProtection', 'FcDocument', 'FcDownload', 'FcElectronics', 'FcEngineering', 'FcFeedback', 'FcFilm', 'FcGoogle', 'FcGraduationCap', 'FcLibrary', 'FcManager', 'FcMultipleInputs', 'FcMusic', 'FcParallelTasks', 'FcSalesPerformance', 'FcShipped', 'FcSignature', 'FcSms', 'FcTodoList', 'FcWikipedia', 'File', 'FileText', 'Filter', 'Folder', 'FolderOpen', 'Fuel', 'Gift', 'GitBranch', 'Globe', 'Hash', 'Headphones', 'Heart', 'HelpCircle', 'Hexagon', 'Highlighter', 'Home', 'Image', 'Inbox', 'Indent', 'Info', 'Italic', 'Key', 'Laptop', 'Layers', 'LineChart', 'Link', 'List', 'ListOrdered', 'Lock', 'LogIn', 'LogOut', 'Mail', 'Map', 'MapPin', 'Menu', 'MessageCircle', 'MessageSquare', 'Mic', 'MicOff', 'Minus', 'Monitor', 'MonitorSpeaker', 'Moon', 'MoreHorizontal', 'MoreVertical', 'Move', 'Music', 'Music2', 'Navigation', 'Octagon', 'Outdent', 'Package', 'Paintbrush', 'Palette', 'PauseCircle', 'Pen', 'PenTool', 'Pencil', 'Percent', 'Phone', 'PhoneCall', 'PieChart', 'Plane', 'Play', 'PlayCircle', 'Plus', 'PoundSterling', 'Power', 'PowerOff', 'Quote', 'Receipt', 'RefreshCw', 'Repeat', 'Repeat1', 'RotateCcw', 'Ruler', 'Save', 'Scissors', 'Search', 'Send', 'Settings', 'Share', 'Share2', 'Shield', 'ShieldCheck', 'Ship', 'ShoppingBag', 'ShoppingCart', 'Shuffle', 'SkipBack', 'SkipForward', 'Smartphone', 'Square', 'Star', 'StopCircle', 'Store', 'Sun', 'Tablet', 'Tag', 'Tags', 'Target', 'Thermometer', 'Timer', 'Train', 'Trash', 'TrendingDown', 'TrendingUp', 'Triangle', 'Trophy', 'Truck', 'Type', 'Umbrella', 'Underline', 'Unlink', 'Unlock', 'Upload', 'User', 'User2', 'UserMinus', 'UserPlus', 'Users', 'Video', 'Volume2', 'VolumeX', 'Wand2', 'Webhook', 'Wifi', 'WifiOff', 'Wrench', 'X', 'XCircle', 'Zap'] as const,
             entityName: 'registeredFunction',
             databaseTable: 'registered_function',
             foreignKeyReference: null,

@@ -7,18 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { User, Edit, Trash2, Copy } from "lucide-react";
-import { UserInputData } from '@/features/workflows/types';
+import { DbUserInput } from '@/features/workflows/types';
 
 interface UserInputNodeProps {
-  data: UserInputData;
+  data: DbUserInput;
   selected: boolean;
   onDelete?: (nodeId: string) => void;
-  onEdit?: (nodeData: any) => void;
+  onEdit?: (nodeData: DbUserInput) => void;
   onDuplicate?: (nodeId: string) => void;
-  onDuplicateRPC?: (nodeId: string) => void;
 }
 
-const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, onDuplicateRPC }) => {
+const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate }) => {
   const { mode } = useTheme();
   const [mounted, setMounted] = useState(false);
   
@@ -41,9 +40,9 @@ const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete,
   }, [mode]);
 
   const getValueDisplay = () => {
-    if (data.value === null || data.value === undefined) return 'No value';
-    if (typeof data.value === 'object') return JSON.stringify(data.value);
-    return String(data.value);
+    if (data.default_value === null || data.default_value === undefined) return 'No value';
+    if (typeof data.default_value === 'object') return JSON.stringify(data.default_value);
+    return String(data.default_value);
   };
 
   const nodeContent = (
@@ -107,7 +106,7 @@ const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete,
   );
 
   // Only wrap in ContextMenu if we have delete/edit/duplicate handlers
-  if (onDelete || onEdit || onDuplicate || onDuplicateRPC) {
+  if (onDelete || onEdit || onDuplicate) {
     return (
       <ContextMenu>
         <ContextMenuTrigger asChild>
@@ -123,13 +122,7 @@ const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete,
           {onDuplicate && (
             <ContextMenuItem onClick={() => onDuplicate(data.id)}>
               <Copy className="h-4 w-4 mr-2" />
-              Duplicate Input (Custom)
-            </ContextMenuItem>
-          )}
-          {onDuplicateRPC && (
-            <ContextMenuItem onClick={() => onDuplicateRPC(data.id)}>
-              <Copy className="h-4 w-4 mr-2" />
-              Duplicate Input (RPC)
+              Duplicate Input
             </ContextMenuItem>
           )}
           <ContextMenuItem onClick={() => navigator.clipboard.writeText(data.broker_id)}>

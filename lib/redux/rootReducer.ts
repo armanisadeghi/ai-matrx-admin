@@ -43,6 +43,7 @@ import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSli
 // import brokersSlice from "./app-runner/slices/brokerSlice";
 import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
+import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
@@ -128,6 +129,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         broker: brokerSlice, // Concept broker implementation
         overlays: overlaySlice,
+
+        dbFunctionNode: dbFunctionNodeSlice,
 
     });
 };

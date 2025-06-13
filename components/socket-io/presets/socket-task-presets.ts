@@ -415,7 +415,20 @@ export const WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP: TaskPreset = {
         },
         user_inputs: {
             sourceField: "user_inputs",
-            defaultValue: []
+            defaultValue: [],
+            transform: (userInputs: any) => {
+                if (!Array.isArray(userInputs)) return [];
+                return userInputs.map(input => {
+                    // If input doesn't have a 'value' key but has 'default_value', use default_value
+                    if (typeof input === 'object' && input !== null && !('value' in input) && 'default_value' in input) {
+                        return {
+                            ...input,
+                            value: input.default_value
+                        };
+                    }
+                    return input;
+                });
+            }
         }
     },
     validation: (sourceData: any) => {
@@ -493,7 +506,20 @@ export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
         },
         user_inputs: {
             sourceField: "user_inputs",
-            defaultValue: []
+            defaultValue: [],
+            transform: (userInputs: any) => {
+                if (!Array.isArray(userInputs)) return [];
+                return userInputs.map(input => {
+                    // If input doesn't have a 'value' key but has 'default_value', use default_value
+                    if (typeof input === 'object' && input !== null && !('value' in input) && 'default_value' in input) {
+                        return {
+                            ...input,
+                            value: input.default_value
+                        };
+                    }
+                    return input;
+                });
+            }
         },
         relays: {
             sourceField: "relays",

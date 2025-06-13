@@ -5,18 +5,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { ArrowRightLeft, Edit, Trash2, Copy, Plus } from "lucide-react";
-import { BrokerRelayData } from "@/features/workflows/types";
+import { DbBrokerRelayData } from "@/features/workflows/types";
 
 interface BrokerRelayNodeProps {
-    data: BrokerRelayData;
+    data: DbBrokerRelayData;
     selected: boolean;
     onDelete?: (nodeId: string) => void;
-    onEdit?: (nodeData: any) => void;
+    onEdit?: (nodeData: DbBrokerRelayData) => void;
     onDuplicate?: (nodeId: string) => void;
-    onDuplicateRPC?: (nodeId: string) => void;
 }
 
-const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, onDuplicateRPC }) => {
+const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate }) => {
     const { mode } = useTheme();
     const [mounted, setMounted] = useState(false);
 
@@ -50,7 +49,7 @@ const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDel
                     <div className="text-center">
                         <p className="font-medium text-xs text-blue-900 dark:text-blue-100 break-words">{data.label}</p>
                         <p className="text-[9px] text-blue-700 dark:text-blue-300">
-                            {data.targets?.length || 0} → {data.targets?.length || 0}
+                            {data.target_broker_ids?.length || 0} → {data.target_broker_ids?.length || 0}
                         </p>
                     </div>
                 </div>
@@ -63,7 +62,7 @@ const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDel
     );
 
     // Only wrap in ContextMenu if we have delete/edit/duplicate handlers
-    if (onDelete || onEdit || onDuplicate || onDuplicateRPC) {
+    if (onDelete || onEdit || onDuplicate) {
         return (
             <ContextMenu>
                 <ContextMenuTrigger asChild>{nodeContent}</ContextMenuTrigger>
@@ -77,20 +76,14 @@ const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDel
                     {onDuplicate && (
                         <ContextMenuItem onClick={() => onDuplicate(data.id)}>
                             <Copy className="h-4 w-4 mr-2" />
-                            Duplicate Relay (Custom)
+                            Duplicate Relay
                         </ContextMenuItem>
                     )}
-                    {onDuplicateRPC && (
-                        <ContextMenuItem onClick={() => onDuplicateRPC(data.id)}>
-                            <Copy className="h-4 w-4 mr-2" />
-                            Duplicate Relay (RPC)
-                        </ContextMenuItem>
-                    )}
-                    <ContextMenuItem onClick={() => navigator.clipboard.writeText(data.source)}>
+                    <ContextMenuItem onClick={() => navigator.clipboard.writeText(data.source_broker_id)}>
                         <Copy className="h-4 w-4 mr-2" />
                         Copy Source ID
                     </ContextMenuItem>
-                    <ContextMenuItem onClick={() => navigator.clipboard.writeText(JSON.stringify(data.targets))}>
+                    <ContextMenuItem onClick={() => navigator.clipboard.writeText(JSON.stringify(data.target_broker_ids))}>
                         <Copy className="h-4 w-4 mr-2" />
                         Copy Target IDs
                     </ContextMenuItem>

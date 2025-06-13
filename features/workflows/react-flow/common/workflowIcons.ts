@@ -15,7 +15,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 
-import { WorkflowNodeData, isUserInputNode, isBrokerRelayNode, isBaseNode } from "@/features/workflows/types";
+import { WorkflowNode, isUserInputNode, isBrokerRelayNode, isBaseNode } from "@/features/workflows/types";
 
 /**
  * Mapping of specific function IDs to their custom icons
@@ -51,7 +51,7 @@ const KEYWORD_ICON_MAP: Array<{ keywords: string[], icon: LucideIcon }> = [
  * 3. Keyword matching on step name and function type
  * 4. Default icon (lowest priority)
  */
-export function getWorkflowNodeIcon(nodeData: WorkflowNodeData): LucideIcon {
+export function getWorkflowNodeIcon(nodeData: WorkflowNode): LucideIcon {
   // Check for specific node types first
   if (isUserInputNode(nodeData)) {
     return User;
@@ -64,13 +64,13 @@ export function getWorkflowNodeIcon(nodeData: WorkflowNodeData): LucideIcon {
   // For BaseNode types, check function ID mapping first
   if (isBaseNode(nodeData)) {
     // Priority 1: Check for specific function ID mapping
-    if (nodeData.function_id && FUNCTION_ID_ICON_MAP[nodeData.function_id]) {
-      return FUNCTION_ID_ICON_MAP[nodeData.function_id];
+    if (nodeData.data.function_id && FUNCTION_ID_ICON_MAP[nodeData.data.function_id]) {
+      return FUNCTION_ID_ICON_MAP[nodeData.data.function_id];
     }
     
     // Priority 2: Check keyword matching
-    const stepName = (nodeData.step_name || '').toLowerCase();
-    const funcType = (nodeData.function_type || '').toLowerCase();
+    const stepName = (nodeData.data.step_name || '').toLowerCase();
+    const funcType = (nodeData.data.function_type || '').toLowerCase();
     
     for (const mapping of KEYWORD_ICON_MAP) {
       const hasMatch = mapping.keywords.some(keyword => 

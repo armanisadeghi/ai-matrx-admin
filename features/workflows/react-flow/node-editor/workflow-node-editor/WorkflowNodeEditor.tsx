@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BaseNode, TabComponentProps } from '@/features/workflows/types';
+import { DbFunctionNode, TabComponentProps } from '@/features/workflows/types';
 import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -31,8 +31,8 @@ export interface CustomTabConfig extends TabConfig {
 }
 
 interface NodeEditorProps {
-  node: BaseNode | null;
-  onSave: (updatedNode: BaseNode) => void;
+  nodeData: DbFunctionNode | null;
+  onSave: (updatedNodeData: DbFunctionNode) => void;
   onClose: () => void;
   open: boolean;
   customTabs?: CustomTabConfig[]; // Custom tabs to add or replace defaults
@@ -53,7 +53,7 @@ const DEFAULT_TABS: TabConfig[] = [
 ];
 
 const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({ 
-  node, 
+  nodeData, 
   onSave, 
   onClose,
   open,
@@ -61,14 +61,14 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
   additionalTabs = [],
   readOnly = false
 }) => {
-  const [editingNode, setEditingNode] = useState<BaseNode | null>(node);
+  const [editingNode, setEditingNode] = useState<DbFunctionNode | null>(nodeData);
   const [cancelClicked, setCancelClicked] = useState(false);
 
 
   useEffect(() => {
-    setEditingNode(node);
+    setEditingNode(nodeData);
     setCancelClicked(false); // Reset cancel flag when dialog opens
-  }, [node]);
+  }, [nodeData]);
 
   if (!editingNode) return null;
 
@@ -129,8 +129,8 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
     }
   };
 
-  const handleNodeUpdate = (updatedNode: BaseNode) => {
-    setEditingNode(updatedNode);
+  const handleNodeUpdate = (updatedNodeData: DbFunctionNode) => {
+    setEditingNode(updatedNodeData);
   };
 
   return (
@@ -159,7 +159,7 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
                 return (
                   <TabsContent key={tab.id} value={tab.id}>
                     <TabComponent 
-                      node={editingNode} 
+                      nodeData={editingNode} 
                       onNodeUpdate={handleNodeUpdate}
                     />
                   </TabsContent>
