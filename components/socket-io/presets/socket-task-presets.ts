@@ -447,43 +447,6 @@ export const WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP: TaskPreset = {
 
 
 /**
- * Transform recipe data into a RUN_RECIPE task
- */
-export const RECIPE_DATA_TO_RUN_RECIPE: TaskPreset = {
-    name: "recipe_data_to_run_recipe",
-    description: "Convert recipe data to a RUN_RECIPE socket task",
-    targetTask: "run_recipe",
-    service: "ai_chat_service",
-    fieldMappings: {
-        recipe_id: {
-            sourceField: "recipe_id",
-            required: true
-        },
-        broker_values: {
-            sourceField: "brokers",
-            defaultValue: [],
-            transform: (brokers: any) => {
-                if (!Array.isArray(brokers)) return [];
-                return brokers.map(broker => ({
-                    name: broker.name || "",
-                    id: broker.id || "",
-                    value: broker.value || "",
-                    ready: broker.ready !== false // Default to true
-                }));
-            }
-        },
-        overrides: {
-            sourceField: "overrides",
-            defaultValue: null
-        },
-        stream: {
-            sourceField: "stream",
-            defaultValue: true
-        }
-    }
-};
-
-/**
  * Transform workflow flow data into a START_WORKFLOW_WITH_STRUCTURE task
  */
 export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
@@ -526,9 +489,10 @@ export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
             defaultValue: [],
             transform: (relays: any) => {
                 if (!Array.isArray(relays)) return [];
+                console.log("relays", JSON.stringify(relays, null, 2))
                 return relays.map(relay => ({
-                    source: relay.source || "",
-                    targets: relay.targets || []
+                    source: relay.source_broker_id || "",
+                    targets: relay.target_broker_ids || []
                 }));
             }
         }
@@ -548,6 +512,45 @@ export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
             isValid: errors.length === 0,
             errors
         };
+    }
+};
+
+
+
+/**
+ * Transform recipe data into a RUN_RECIPE task
+ */
+export const RECIPE_DATA_TO_RUN_RECIPE: TaskPreset = {
+    name: "recipe_data_to_run_recipe",
+    description: "Convert recipe data to a RUN_RECIPE socket task",
+    targetTask: "run_recipe",
+    service: "ai_chat_service",
+    fieldMappings: {
+        recipe_id: {
+            sourceField: "recipe_id",
+            required: true
+        },
+        broker_values: {
+            sourceField: "brokers",
+            defaultValue: [],
+            transform: (brokers: any) => {
+                if (!Array.isArray(brokers)) return [];
+                return brokers.map(broker => ({
+                    name: broker.name || "",
+                    id: broker.id || "",
+                    value: broker.value || "",
+                    ready: broker.ready !== false // Default to true
+                }));
+            }
+        },
+        overrides: {
+            sourceField: "overrides",
+            defaultValue: null
+        },
+        stream: {
+            sourceField: "stream",
+            defaultValue: true
+        }
     }
 };
 

@@ -24,12 +24,12 @@ export function extractUserInputs(nodes: Node[]): Array<{ broker_id: string; def
 /**
  * Extract relays for socket execution
  */
-export function extractRelays(nodes: Node[]): Array<{ source: string; targets: string[] }> {
+export function extractRelays(nodes: Node[]): Array<{ source_broker_id: string; target_broker_ids: string[] }> {
     return nodes
         .filter((node) => node.data.type === "brokerRelay")
         .map((node) => ({
-            source: node.data.source,
-            targets: node.data.targets || [],
+            source_broker_id: node.data.source_broker_id,
+            target_broker_ids: node.data.target_broker_ids || [],
         }));
 }
 

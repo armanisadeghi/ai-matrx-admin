@@ -248,8 +248,9 @@ function formatInputLabel(inputId: string, fallbackLabel?: string): string {
 export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
     const inputs: Input[] = [];
 
+
     // Process dependencies
-    node.additional_dependencies.forEach((dep) => {
+    node.additional_dependencies?.forEach((dep) => {
         if (dep.source_broker_id) {
             inputs.push({
                 id: dep.source_broker_id,
@@ -259,7 +260,7 @@ export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
     });
 
     // Process argument mappings
-    node.arg_mapping.forEach((mapping) => {
+    node.arg_mapping?.forEach((mapping) => {
         if (mapping.source_broker_id && mapping.target_arg_name) {
             inputs.push({
                 id: mapping.source_broker_id,
@@ -268,7 +269,7 @@ export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
         }
     });
 
-    node.arg_overrides.forEach((arg) => {
+    node.arg_overrides?.forEach((arg) => {
         const argName = arg.name;
         if (!inputs.some((input) => input.label === formatInputLabel(argName)) && !ALL_HIDDEN_CONNECTIONS.includes(argName)) {
             inputs.push({
@@ -326,7 +327,7 @@ export function getNodePotentialOutputs(node: DbFunctionNode): Output[] {
     const outputs: Output[] = [];
 
     // Process workflow dependencies
-    node.additional_dependencies.forEach((dep) => {
+    node.additional_dependencies?.forEach((dep) => {
         if (dep.target_broker_id) {
             outputs.push({
                 id: dep.target_broker_id,
@@ -336,7 +337,7 @@ export function getNodePotentialOutputs(node: DbFunctionNode): Output[] {
     });
 
     // Process return broker overrides
-    node.return_broker_overrides.forEach((brokerId, index) => {
+    node.return_broker_overrides?.forEach((brokerId, index) => {
         outputs.push({
             id: brokerId,
             label: formatBrokerLabel(brokerId, index),
