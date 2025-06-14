@@ -6,16 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { DbFunctionNode } from '@/features/workflows/types';
 import { getAllReturnBrokers } from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface FunctionInfoSectionProps {
   nodeData: DbFunctionNode;
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 /**
  * FunctionInfoSection - Displays function details and return brokers
  */
-const FunctionInfoSection: React.FC<FunctionInfoSectionProps> = ({ nodeData }) => {
+const FunctionInfoSection: React.FC<FunctionInfoSectionProps> = ({ nodeData, enrichedBrokers }) => {
   const functionData = getRegisteredFunctions().find(f => f.id === nodeData.function_id);
   const allReturnBrokers = getAllReturnBrokers(nodeData, functionData);
 

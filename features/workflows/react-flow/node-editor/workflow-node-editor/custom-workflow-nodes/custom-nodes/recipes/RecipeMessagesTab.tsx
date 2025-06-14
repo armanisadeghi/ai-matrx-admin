@@ -2,6 +2,7 @@ import React from 'react';
 import { DbFunctionNode } from '@/features/workflows/types';
 import { NeededBroker, RecipeConfig } from '@/features/workflows/service/recipe-service';
 import MessagesTab from './MessagesTab';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface RecipeMessagesTabProps {
     nodeData: DbFunctionNode;
@@ -10,6 +11,7 @@ interface RecipeMessagesTabProps {
     loading: boolean;
     error: string | null;
     neededBrokers?: NeededBroker[];
+    enrichedBrokers: EnrichedBroker[];
 }
 
 const RecipeMessagesTab: React.FC<RecipeMessagesTabProps> = ({
@@ -19,6 +21,7 @@ const RecipeMessagesTab: React.FC<RecipeMessagesTabProps> = ({
     loading,
     error,
     neededBrokers,
+    enrichedBrokers
 }) => {
     if (loading) {
         return (
@@ -58,7 +61,7 @@ const RecipeMessagesTab: React.FC<RecipeMessagesTabProps> = ({
         );
     }
 
-    return <MessagesTab messages={recipeDetails.messages} neededBrokers={neededBrokers} />;
+    return <MessagesTab messages={recipeDetails.messages} neededBrokers={neededBrokers} enrichedBrokers={enrichedBrokers} />;
 };
 
 export default RecipeMessagesTab; 

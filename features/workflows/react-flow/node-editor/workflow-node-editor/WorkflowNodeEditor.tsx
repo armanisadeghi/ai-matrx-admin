@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings } from "lucide-react";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 // Import default tab components
 import OverviewTab from './OverviewTab';
@@ -38,6 +39,7 @@ interface NodeEditorProps {
   customTabs?: CustomTabConfig[]; // Custom tabs to add or replace defaults
   additionalTabs?: TabConfig[]; // Additional tabs to append
   readOnly?: boolean;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 // Default tab configurations
@@ -59,7 +61,8 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
   open,
   customTabs = [],
   additionalTabs = [],
-  readOnly = false
+  readOnly = false,
+  enrichedBrokers
 }) => {
   const [editingNode, setEditingNode] = useState<DbFunctionNode | null>(nodeData);
   const [cancelClicked, setCancelClicked] = useState(false);
@@ -161,6 +164,7 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
                     <TabComponent 
                       nodeData={editingNode} 
                       onNodeUpdate={handleNodeUpdate}
+                      enrichedBrokers={enrichedBrokers}
                     />
                   </TabsContent>
                 );

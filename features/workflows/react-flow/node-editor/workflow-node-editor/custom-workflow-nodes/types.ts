@@ -2,6 +2,7 @@
 
 import { DbFunctionNode, ArgumentOverride, ArgumentMapping, WorkflowDependency } from '@/features/workflows/types';
 import { NodeDefinitionType } from './custom-nodes/custom-node-definitions';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 /**
  * Core interface for all node data operations
@@ -68,6 +69,7 @@ export interface NodeDataContextValue {
   methods: NodeDataMethods;
   validationErrors: string[];
   hasChanges: boolean;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 /**
@@ -77,6 +79,7 @@ export interface CustomNodeEditorComponentProps {
   nodeData: DbFunctionNode;
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
   nodeDefinition: NodeDefinitionType;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 /**
@@ -99,6 +102,7 @@ export interface CustomNodeEditorProps {
   title?: string;
   width?: string;
   height?: string;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 /**
@@ -112,4 +116,5 @@ export interface CustomNodeEditorManagerProps {
   children: React.ReactNode;
   autoSave?: boolean;
   validation?: ValidationMode;
+  enrichedBrokers: EnrichedBroker[];
 } 

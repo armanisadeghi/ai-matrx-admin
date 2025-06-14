@@ -12,6 +12,7 @@ import { DbFunctionNode, ArgumentOverride } from "@/features/workflows/types";
 import { isNodeConnected, Input, Output, parseEdge } from "@/features/workflows/utils/node-utils";
 import { workflowNodeCustomTabs } from "@/features/workflows/components/common/workflow-results-tab-config";
 import { BsThreeDots } from "react-icons/bs";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface WorkflowNodeProps {
     data: DbFunctionNode;
@@ -22,9 +23,10 @@ interface WorkflowNodeProps {
     onDuplicate: (nodeId: string) => void;
     userInputs?: Array<{ broker_id: string; default_value: any; value?: any }>;
     onConnect?: (connection: Connection) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, userInputs, onConnect }) => {
+const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, userInputs, onConnect, enrichedBrokers }) => {
     const functionData = getRegisteredFunctions().find((f) => f.id === data.function_id);
     const hasRequiredInputs = functionData?.args.some((arg) => {
         const override = data.arg_overrides?.find((o: ArgumentOverride) => o.name === arg.name);

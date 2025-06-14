@@ -10,6 +10,7 @@ import { UserInputNode } from "./userInputNodeTypes";
 import { BrokerRelayNode } from "./relaynodeTypes";
 import { DbWorkflowEdge } from "./edgeTypes";
 import { WorkflowEdge } from "./edgeTypes";
+import { EnrichedBroker } from "../utils/data-flow-manager";
 
 export * from "./coreWorkflowTypes";
 export * from "./functionNodeTypes";
@@ -64,6 +65,7 @@ export type WorkflowNode = FunctionNode | UserInputNode | BrokerRelayNode;
 export interface TabComponentProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
 export function isUserInputNode(data: DbNodeData): data is DbUserInput {

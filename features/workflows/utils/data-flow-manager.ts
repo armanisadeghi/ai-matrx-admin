@@ -136,23 +136,61 @@ export const DEFAULT_TO_DEPENDENCY_EDGE = {
 
 export type DataBrokerRecords = Record<string, DataBrokerData>;
 
-export class EdgeGenerator {
+export class DataFlowManager {
+    private static instance: DataFlowManager | null = null;
+    private static currentWorkflowId: string | null = null;
+
     private sources: Set<string> = new Set();
     private targets: Set<string> = new Set();
     private knownBrokers: DataBrokerRecords = {};
 
-    constructor(
-        private userInputs: UserInputNodeData[],
-        private relays: BrokerRelayNodeData[],
-        private functionNodes: FunctionNodeData[],
-        knownBrokers?: DataBrokerRecords
+    private constructor(
+        private userInputs: UserInputNodeData[] = [],
+        private relays: BrokerRelayNodeData[] = [],
+        private functionNodes: FunctionNodeData[] = [],
+        knownBrokers: DataBrokerRecords = {}
     ) {
-        if (knownBrokers) {
-            this.knownBrokers = knownBrokers;
-        }
+        this.knownBrokers = knownBrokers;
         this.processUserInputs();
         this.processRelays();
         this.processFunctionNodes();
+    }
+
+    public static getInstance(workflowId?: string): DataFlowManager {
+        if (workflowId && DataFlowManager.currentWorkflowId !== workflowId) {
+            DataFlowManager.instance = null;
+            DataFlowManager.currentWorkflowId = workflowId;
+        }
+
+        if (!DataFlowManager.instance) {
+            DataFlowManager.instance = new DataFlowManager();
+        }
+
+        return DataFlowManager.instance;
+    }
+
+    public static initializeForWorkflow(
+        workflowId: string,
+        userInputs: UserInputNodeData[] = [],
+        relays: BrokerRelayNodeData[] = [],
+        functionNodes: FunctionNodeData[] = [],
+        knownBrokers: DataBrokerRecords
+    ): DataFlowManager {
+        const instance = DataFlowManager.getInstance(workflowId);
+        instance.updateDataSources(userInputs, relays, functionNodes);
+        instance.setKnownBrokers(knownBrokers);
+
+        return instance;
+    }
+
+    public static resetInstance(): void {
+        console.log("DataFlowManager: Force resetting instance");
+        DataFlowManager.instance = null;
+        DataFlowManager.currentWorkflowId = null;
+    }
+
+    public static getCurrentWorkflowId(): string | null {
+        return DataFlowManager.currentWorkflowId;
     }
 
     private processUserInputs(): void {
@@ -417,22 +455,24 @@ export class EdgeGenerator {
     }
 
     static generateEdgesForWorkflow(
+        workflowId: string,
         userInputs: UserInputNodeData[],
         relays: BrokerRelayNodeData[],
         functionNodes: FunctionNodeData[],
-        existingEdges: any[] = []
+        existingEdges: any[] = [],
+        knownBrokers: DataBrokerRecords
     ): any[] {
-        const generator = new EdgeGenerator(userInputs, relays, functionNodes);
-        return generator.mergeWithExistingEdges(existingEdges);
+        const instance = DataFlowManager.initializeForWorkflow(workflowId, userInputs, relays, functionNodes, knownBrokers);
+        return instance.mergeWithExistingEdges(existingEdges);
     }
 
-    static processReactFlowNodes(nodes: any[], existingEdges: any[] = []): any[] {
+    static processReactFlowNodes(workflowId: string, nodes: any[], existingEdges: any[] = [], knownBrokers: DataBrokerRecords): any[] {
         const userInputs: UserInputNodeData[] = nodes.filter((node) => node.type === "userInput").map((node) => node.data);
         const relays: BrokerRelayNodeData[] = nodes.filter((node) => node.type === "brokerRelay").map((node) => node.data);
         const functionNodes: FunctionNodeData[] = nodes
             .filter((node) => node.type === "functionNode" || (node.type !== "userInput" && node.type !== "brokerRelay"))
             .map((node) => node.data);
-        return EdgeGenerator.generateEdgesForWorkflow(userInputs, relays, functionNodes, existingEdges);
+        return DataFlowManager.generateEdgesForWorkflow(workflowId, userInputs, relays, functionNodes, existingEdges, knownBrokers);
     }
 
     setKnownBrokers(knownBrokers: DataBrokerRecords): void {
@@ -476,6 +516,7 @@ export class EdgeGenerator {
     }
 
     static processReactFlowNodesWithEnrichment(
+        workflowId: string,
         nodes: any[],
         knownBrokers: DataBrokerRecords,
         existingEdges: any[] = []
@@ -485,9 +526,9 @@ export class EdgeGenerator {
         const functionNodes: FunctionNodeData[] = nodes
             .filter((node) => node.type === "functionNode" || (node.type !== "userInput" && node.type !== "brokerRelay"))
             .map((node) => node.data);
-        const generator = new EdgeGenerator(userInputs, relays, functionNodes, knownBrokers);
-        const edges = generator.mergeWithExistingEdges(existingEdges);
-        const enrichedBrokers = generator.getEnrichedBrokers();
+        const instance = DataFlowManager.initializeForWorkflow(workflowId, userInputs, relays, functionNodes, knownBrokers);
+        const edges = instance.mergeWithExistingEdges(existingEdges);
+        const enrichedBrokers = instance.getEnrichedBrokers();
         return { edges, enrichedBrokers };
     }
 }

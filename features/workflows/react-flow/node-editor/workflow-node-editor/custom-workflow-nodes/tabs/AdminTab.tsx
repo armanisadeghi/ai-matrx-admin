@@ -8,14 +8,16 @@ import { Copy, RefreshCw } from "lucide-react";
 import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json-utils';
 import { toast } from 'sonner';
 import { DbFunctionNode } from '@/features/workflows/types';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface AdminTabProps {
   nodeData: DbFunctionNode;
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
   validationErrors?: string[];
+  enrichedBrokers: EnrichedBroker[];
 }
 
-const AdminTab: React.FC<AdminTabProps> = ({ nodeData, onNodeUpdate, validationErrors = [] }) => {
+const AdminTab: React.FC<AdminTabProps> = ({ nodeData, onNodeUpdate, validationErrors = [], enrichedBrokers }) => {
   const [jsonString, setJsonString] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonWarnings, setJsonWarnings] = useState<string[]>([]);

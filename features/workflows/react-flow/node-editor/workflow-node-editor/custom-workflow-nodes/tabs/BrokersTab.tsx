@@ -9,15 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Zap, Copy } from "lucide-react";
 import { DbFunctionNode } from "@/features/workflows/types";
 import { NodeDefinitionType } from "../custom-nodes/custom-node-definitions";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 // Removed old broker system - using new enriched broker system
 
 interface BrokersTabProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
     nodeDefinition: NodeDefinitionType;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const BrokersTab: React.FC<BrokersTabProps> = ({ nodeData, onNodeUpdate, nodeDefinition }) => {
+const BrokersTab: React.FC<BrokersTabProps> = ({ nodeData, onNodeUpdate, nodeDefinition, enrichedBrokers }) => {
     const returnBrokerOverrides = nodeData.return_broker_overrides || [];
 
     // Get predefined brokers from node definition if available

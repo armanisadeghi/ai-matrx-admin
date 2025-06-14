@@ -25,6 +25,7 @@ import {
 import { useRecipeFetch } from "./useRecipeFetch";
 import { cloneDeep } from "lodash";
 import RecipeCardSelector from "./RecipeCardSelector";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 
 interface RecipeNodeInitializerProps {
@@ -33,11 +34,12 @@ interface RecipeNodeInitializerProps {
     onConfirm: (updatedNodeData: DbFunctionNode) => void;
     onCancel: () => void;
     open: boolean;
+    enrichedBrokers: EnrichedBroker[];
 }
 
 const DEBUG = false;
 
-const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData, nodeDefinition, onConfirm, onCancel, open }) => {
+const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData, nodeDefinition, onConfirm, onCancel, open, enrichedBrokers }) => {
     const [currentNodeData, setCurrentNodeData] = useState<DbFunctionNode>(nodeData);
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -143,6 +145,7 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData,
                 open={open}
                 quickReferenceSelectOptions={quickReferenceSelectOptions}
                 onRecipeSelect={setRecipeId}
+                enrichedBrokers={enrichedBrokers}
             />
         );
     }

@@ -22,6 +22,7 @@ import {
     DbFunctionNode,
 } from "@/features/workflows/types";
 import { CUSTOM_NODE_REGISTRY } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
+import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 
 interface NodeEditorManagerProps {
     editingNode: DbNodeData | null;
@@ -32,6 +33,7 @@ interface NodeEditorManagerProps {
     edges: Edge[];
     coreWorkflowData: DbWorkflow;
     completeWorkflowData?: ConvertedWorkflowData | null;
+    enrichedBrokers: EnrichedBroker[];
 }
 
 export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
@@ -43,6 +45,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
     edges,
     coreWorkflowData,
     completeWorkflowData,
+    enrichedBrokers,
 }) => {
     if (!editingNode) return null;
 
@@ -56,6 +59,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
                 onClose={onClose}
                 open={!!editingNode}
                 readOnly={isReadOnly}
+                enrichedBrokers={enrichedBrokers}
             />
         );
     }
@@ -69,6 +73,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
                 open={!!editingNode}
                 readOnly={isReadOnly}
                 completeWorkflowData={completeWorkflowData}
+                enrichedBrokers={enrichedBrokers}
             />
         );
     }
@@ -85,6 +90,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
                 onClose={onClose}
                 open={!!editingNode}
                 nodeDefinition={nodeDefinition}
+                enrichedBrokers={enrichedBrokers}
             />
         );
     }
@@ -101,6 +107,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
                 component={DefaultNodeEditor}
                 title="Custom Node Editor (Testing)"
                 nodeDefinition={nodeDefinition}
+                enrichedBrokers={enrichedBrokers}
             />
         );
     }
@@ -112,6 +119,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
             onClose={onClose}
             open={!!editingNode}
             readOnly={isReadOnly}
+            enrichedBrokers={enrichedBrokers}
         />
     );
 };

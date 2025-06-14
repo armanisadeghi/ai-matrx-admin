@@ -14,6 +14,7 @@ import BrokersTab from './tabs/BrokersTab';
 import DescriptionTab from './tabs/DescriptionTab';
 import ResultsTab from './tabs/ResultsTab';
 import AdminTab from './tabs/AdminTab';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 // Define the structure for tab configuration with proper typing
 export interface TabConfig {
@@ -35,6 +36,7 @@ interface DefaultNodeEditorProps {
   additionalTabs?: TabConfig[]; // Additional tabs to append
   hiddenTabs?: string[]; // Tab IDs to hide
   validationErrors?: string[];
+  enrichedBrokers: EnrichedBroker[];
 }
 
 // Default tab configurations - now properly typed
@@ -60,7 +62,8 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
   customTabs = [],
   additionalTabs = [],
   hiddenTabs = [],
-  validationErrors = []
+  validationErrors = [],
+  enrichedBrokers
 }) => {
 
   // Build the final tabs configuration
@@ -156,7 +159,7 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
               const TabComponent = tab.component;
               return (
                 <TabsContent key={tab.id} value={tab.id}>
-                  <TabComponent nodeData={nodeData} onNodeUpdate={onNodeUpdate} />
+                  <TabComponent nodeData={nodeData} onNodeUpdate={onNodeUpdate} enrichedBrokers={enrichedBrokers} />
                 </TabsContent>
               );
             })}

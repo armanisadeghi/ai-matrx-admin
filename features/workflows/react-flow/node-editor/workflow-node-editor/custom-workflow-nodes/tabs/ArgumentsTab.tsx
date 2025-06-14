@@ -22,14 +22,16 @@ import {
 } from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
 import { flexibleJsonParse, formatJson, valueToString, hasContent } from "@/utils/json-utils";
 import { cleanJson } from "@/utils/json-cleaner-utility";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface ArgumentsTabProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
     argsToHide?: string[]; // Optional array of argument names to hide from display
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ nodeData, onNodeUpdate, argsToHide = [] }) => {
+const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ nodeData, onNodeUpdate, argsToHide = [], enrichedBrokers }) => {
     const functionData = getRegisteredFunctions().find((f) => f.id === nodeData.function_id);
     const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
     const [localValues, setLocalValues] = useState<Record<string, string>>({});

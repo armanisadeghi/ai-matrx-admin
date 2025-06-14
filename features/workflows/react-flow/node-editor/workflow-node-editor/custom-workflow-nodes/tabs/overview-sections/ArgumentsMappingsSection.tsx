@@ -11,17 +11,19 @@ import {
     getEffectiveArgValue,
     getBrokerMappingsForArg
 } from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface ArgumentsMappingsSectionProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
     argsToHide?: string[]; // Optional array of argument names to hide from display
+    enrichedBrokers: EnrichedBroker[];
 }
 
 /**
  * ArgumentsMappingsSection - Displays the arguments and mappings table
  */
-const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ nodeData, onNodeUpdate, argsToHide = [] }) => {
+const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ nodeData, onNodeUpdate, argsToHide = [], enrichedBrokers }) => {
     const functionData = getFunctionData(nodeData.function_id);
     const argumentsWithData = getArgumentsWithData(nodeData, functionData);
 

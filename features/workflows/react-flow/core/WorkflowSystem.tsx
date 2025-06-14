@@ -26,7 +26,7 @@ import { useWorkflowActions } from "@/features/workflows/hooks/useWorkflowAction
 import { NodeWrapper } from "@/features/workflows/react-flow/nodes/NodeWrapper";
 import { useAppSelector } from "@/lib/redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import { DataBrokerRecords, EdgeGenerator, EnrichedBroker } from "@/features/workflows/utils/edge-generator";
+import { DataBrokerRecords, DataFlowManager, EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 import { useEntityRecords } from "@/lib/redux/entity/hooks/useAllData";
 import { EdgeDetailOverlay } from "@/features/workflows/components/common/EdgeDetailOverlay";
 import {
@@ -35,10 +35,8 @@ import {
     FunctionNode,
     UserInputNode,
     BrokerRelayNode,
-    WorkflowNode,
     DbNodeData,
 } from "@/features/workflows/types";
-import CustomEdge from "@/features/workflows/react-flow/edges/CustomEdge";
 
 interface WorkflowSystemProps {
     workflowId?: string;
@@ -76,37 +74,23 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
 
     const { setViewport, getViewport } = useReactFlow();
 
-    // Auto-generate virtual edges with enrichment when node data changes
-    const previousDataHashRef = useRef<string>("");
 
     useEffect(() => {
-        if (nodes.length > 0) {
-            // Create hash of just the data content to detect actual data changes
-            const dataContent = nodes.map((node) => ({
-                id: node.id,
-                type: node.type,
-                data: node.data,
-            }));
-            const dataHash = JSON.stringify(dataContent);
+        if (nodes.length > 0 && workflowId && allKnownBrokers) {
+            const result = DataFlowManager.processReactFlowNodesWithEnrichment(
+                workflowId,
+                nodes,
+                allKnownBrokers,
+                edges
+            );
 
-            // Only update if the data content changed (not position/UI changes)
-            if (dataHash !== previousDataHashRef.current) {
-                previousDataHashRef.current = dataHash;
-
-                const result = EdgeGenerator.processReactFlowNodesWithEnrichment(
-                    nodes,
-                    allKnownBrokers || {}, // Fallback to empty object if not loaded
-                    edges
-                );
-
-                // Update both edges and enriched brokers
-                if (JSON.stringify(result.edges) !== JSON.stringify(edges)) {
-                    setEdges(result.edges);
-                }
-                setEnrichedBrokers(result.enrichedBrokers);
+            // Update both edges and enriched brokers
+            if (JSON.stringify(result.edges) !== JSON.stringify(edges)) {
+                setEdges(result.edges);
             }
+            setEnrichedBrokers(result.enrichedBrokers);
         }
-    }, [nodes, allKnownBrokers]); // Watch nodes and known brokers
+    }, [nodes, allKnownBrokers, workflowId]);
 
     // Expose enriched brokers globally for workflow components
     useEffect(() => {
@@ -122,8 +106,8 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
             // Create a proper Edge object from the props passed by CustomEdge
             const fullEdge: Edge = {
                 id: edgeProps.id,
-                source: edgeProps.source || '',
-                target: edgeProps.target || '',
+                source: edgeProps.source || "",
+                target: edgeProps.target || "",
                 sourceHandle: edgeProps.sourceHandle,
                 targetHandle: edgeProps.targetHandle,
                 type: edgeProps.type,
@@ -131,9 +115,9 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 style: edgeProps.style,
                 data: edgeProps.data,
                 // Add any other properties that might be needed
-                ...edgeProps
+                ...edgeProps,
             };
-            
+
             setSelectedEdge(fullEdge);
             setIsEdgeOverlayOpen(true);
         },
@@ -338,6 +322,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 functionNodes={functionNodes}
                 editingNode={editingNode}
                 workflowDataForReactFlow={workflowDataForReactFlow}
+                enrichedBrokers={enrichedBrokers}
             />
 
             <WorkflowCanvas
@@ -369,6 +354,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 edges={edges}
                 coreWorkflowData={coreWorkflowData}
                 completeWorkflowData={workflowDataForReactFlow}
+                enrichedBrokers={enrichedBrokers}
             />
 
             <NodeDeleteDialog
@@ -387,6 +373,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onClose={handleCloseEdgeOverlay}
                 onEdgeUpdated={handleEdgeUpdated}
                 workflowId={workflowId}
+                enrichedBrokers={enrichedBrokers}
             />
         </div>
     );

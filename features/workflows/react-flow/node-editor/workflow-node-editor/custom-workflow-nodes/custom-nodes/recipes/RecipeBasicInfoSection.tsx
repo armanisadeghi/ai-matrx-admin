@@ -6,11 +6,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FunctionNode, TabComponentProps } from "@/features/workflows/types";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 /**
  * RecipeBasicInfoSection - Clean, simple basic info for recipe nodes
  */
-const RecipeBasicInfoSection: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
+const RecipeBasicInfoSection: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate, enrichedBrokers }) => {
     const handleStepNameChange = (stepName: string) => {
         onNodeUpdate({ ...nodeData, step_name: stepName });
     };

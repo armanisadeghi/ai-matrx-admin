@@ -12,13 +12,15 @@ import {
     updateWorkflowDependency,
     removeWorkflowDependency,
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface DependenciesTabProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const DependenciesTab: React.FC<DependenciesTabProps> = ({ nodeData, onNodeUpdate }) => {
+const DependenciesTab: React.FC<DependenciesTabProps> = ({ nodeData, onNodeUpdate, enrichedBrokers }) => {
     const dependencies = nodeData.additional_dependencies || [];
 
     return (

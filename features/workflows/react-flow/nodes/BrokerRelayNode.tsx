@@ -9,6 +9,7 @@ import { NodeDropdownMenu } from "../../components/menus/NodeDropdownMenu";
 import { BsThreeDots } from "react-icons/bs";
 import { NodeContextMenu } from "../../components/menus/NodeContextMenu";
 import { Input, Output, parseEdge } from "../../utils/node-utils";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface BrokerRelayNodeProps {
     data: DbBrokerRelayData;
@@ -18,9 +19,10 @@ interface BrokerRelayNodeProps {
     onEdit?: (nodeData: DbBrokerRelayData) => void;
     onDuplicate?: (nodeId: string) => void;
     onConnect?: (connection: Connection) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, onConnect }) => {
+const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, onConnect, enrichedBrokers }) => {
     const { mode } = useTheme();
     const [mounted, setMounted] = useState(false);
     const { inputs, outputs } = inputsAndOutputs;

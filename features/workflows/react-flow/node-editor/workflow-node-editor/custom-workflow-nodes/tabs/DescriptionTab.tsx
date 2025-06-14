@@ -7,13 +7,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { FileText, AlertCircle } from "lucide-react";
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface DescriptionTabProps {
   nodeData: DbFunctionNode;
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
+  enrichedBrokers: EnrichedBroker[];
 }
 
-const DescriptionTab: React.FC<DescriptionTabProps> = ({ nodeData }) => {
+const DescriptionTab: React.FC<DescriptionTabProps> = ({ nodeData, enrichedBrokers }) => {
     const functionData = getRegisteredFunctions().find(f => f.id === nodeData.function_id);
 
     return (

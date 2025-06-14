@@ -14,14 +14,16 @@ import {
     updateDependencyWithNeededBrokers,
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
 import { NeededBroker } from '@/features/workflows/service/recipe-service';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface RecipeDependenciesTabProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
     neededBrokers: NeededBroker[];
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const RecipeDependenciesTab: React.FC<RecipeDependenciesTabProps> = ({ nodeData, onNodeUpdate, neededBrokers }) => {
+const RecipeDependenciesTab: React.FC<RecipeDependenciesTabProps> = ({ nodeData, onNodeUpdate, neededBrokers, enrichedBrokers }) => {
     const [previousNeededBrokers, setPreviousNeededBrokers] = useState<NeededBroker[]>([]);
     const dependencies = nodeData.additional_dependencies || [];
 

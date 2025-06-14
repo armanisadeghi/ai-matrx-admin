@@ -26,7 +26,7 @@ interface RawJsonExplorerProps {
     withSelect?: boolean;
 }
 
-const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefix = undefined, withSelect = false }) => {
+const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefix = undefined, withSelect = true }) => {
     // Initialize with cleaned data
     const [originalData, setOriginalData] = useState(null);
     const [currentPath, setCurrentPath] = useState<PathArray>([[0, "All"]]); // [[rowIndex, selectedKey], ...]

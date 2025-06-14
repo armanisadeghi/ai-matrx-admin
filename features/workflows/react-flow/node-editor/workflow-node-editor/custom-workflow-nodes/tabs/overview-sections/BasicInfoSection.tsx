@@ -8,16 +8,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DbFunctionNode } from '@/features/workflows/types';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface BasicInfoSectionProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
 /**
  * BasicInfoSection - Handles step name, function type, execution required, and node/workflow IDs
  */
-const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ nodeData, onNodeUpdate }) => {
+const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ nodeData, onNodeUpdate, enrichedBrokers }) => {
     const updateNodeField = (field: keyof DbFunctionNode, value: any) => {
         onNodeUpdate({ ...nodeData, [field]: value });
     };

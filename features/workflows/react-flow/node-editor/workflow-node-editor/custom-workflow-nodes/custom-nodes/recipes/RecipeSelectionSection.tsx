@@ -19,12 +19,13 @@ import {
     getEffectiveArgValue,
     getAllReturnBrokers,
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 /**
  * RecipeSelectionSection - Recipe selection with version control and return brokers
  * Now uses centralized utilities directly instead of context
  */
-const RecipeSelectionSection: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
+const RecipeSelectionSection: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate, enrichedBrokers }) => {
     const { quickReferenceKeyDisplayPairs } = useFetchQuickRef("recipe");
 
     const functionData = getFunctionData(nodeData.function_id);

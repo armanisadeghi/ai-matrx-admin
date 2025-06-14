@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "lucide-react";
+import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 
 interface UserInputEditorProps {
     nodeData: DbUserInput | null;
@@ -17,9 +18,10 @@ interface UserInputEditorProps {
     onClose: () => void;
     open: boolean;
     readOnly?: boolean;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const UserInputEditor: React.FC<UserInputEditorProps> = ({ nodeData, onSave, onClose, open, readOnly = false }) => {
+const UserInputEditor: React.FC<UserInputEditorProps> = ({ nodeData, onSave, onClose, open, readOnly = false, enrichedBrokers }) => {
     const [editingNode, setEditingNode] = useState<DbUserInput | null>(nodeData);
     const [cancelClicked, setCancelClicked] = useState(false);
 

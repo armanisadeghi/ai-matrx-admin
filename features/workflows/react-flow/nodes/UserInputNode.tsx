@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { DbUserInput } from "@/features/workflows/types";
-import { NodeDropdownMenu } from "../../components/menus/NodeDropdownMenu";
+import { NodeDropdownMenu } from "@/features/workflows/components/menus/NodeDropdownMenu";
 import { BsThreeDots } from "react-icons/bs";
-import { NodeContextMenu } from "../../components/menus/NodeContextMenu";
+import { NodeContextMenu } from "@/features/workflows/components/menus/NodeContextMenu";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface UserInputNodeProps {
     data: DbUserInput;
@@ -15,9 +16,10 @@ interface UserInputNodeProps {
     onDelete?: (nodeId: string) => void;
     onEdit?: (nodeData: DbUserInput) => void;
     onDuplicate?: (nodeId: string) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate }) => {
+const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, enrichedBrokers }) => {
     const { mode } = useTheme();
     const [mounted, setMounted] = useState(false);
 

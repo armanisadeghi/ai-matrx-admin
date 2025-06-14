@@ -8,6 +8,7 @@ import {
   ArgumentsMappingsSection,
   DependenciesSection
 } from './overview-sections';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 // Define section IDs for customization
 export type OverviewSectionId = 'basic-info' | 'function-info' | 'arguments-mappings' | 'dependencies';
@@ -16,8 +17,9 @@ export interface OverviewTabProps {
   nodeData: DbFunctionNode;
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
   hiddenSections?: OverviewSectionId[];
-  customSections?: Partial<Record<OverviewSectionId, React.ComponentType<{ nodeData: DbFunctionNode; onNodeUpdate: (updatedNode: DbFunctionNode) => void }>>>;
+  customSections?: Partial<Record<OverviewSectionId, React.ComponentType<{ nodeData: DbFunctionNode; onNodeUpdate: (updatedNode: DbFunctionNode) => void; enrichedBrokers: EnrichedBroker[] }>>>;
   argsToHide?: string[]; // Optional array of argument names to hide from display
+  enrichedBrokers: EnrichedBroker[];
 }
 
 /**
@@ -33,11 +35,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   onNodeUpdate,
   hiddenSections = [],
   customSections = {},
-  argsToHide = []
+  argsToHide = [],
+  enrichedBrokers
 }) => {
   // Create a wrapper for ArgumentsMappingsSection to pass argsToHide
-  const ArgumentsMappingsSectionWithHiddenArgs = ({ nodeData, onNodeUpdate }: { nodeData: DbFunctionNode; onNodeUpdate: (updatedNode: DbFunctionNode) => void }) => (
-    <ArgumentsMappingsSection nodeData={nodeData} onNodeUpdate={onNodeUpdate} argsToHide={argsToHide} />
+  const ArgumentsMappingsSectionWithHiddenArgs = ({ nodeData, onNodeUpdate, enrichedBrokers }: { nodeData: DbFunctionNode; onNodeUpdate: (updatedNode: DbFunctionNode) => void; enrichedBrokers: EnrichedBroker[] }) => (
+    <ArgumentsMappingsSection nodeData={nodeData} onNodeUpdate={onNodeUpdate} argsToHide={argsToHide} enrichedBrokers={enrichedBrokers} />
   );
 
   // Define default sections
@@ -62,7 +65,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   return (
     <div className="space-y-4 p-4">
       {finalSections.map(({ id, Component }) => (
-        <Component key={id} nodeData={nodeData} onNodeUpdate={onNodeUpdate} />
+        <Component key={id} nodeData={nodeData} onNodeUpdate={onNodeUpdate} enrichedBrokers={enrichedBrokers} />
       ))}
     </div>
   );

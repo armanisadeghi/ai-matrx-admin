@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { addWorkflowDependency, updateWorkflowDependency, removeWorkflowDependency } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/dependency-utils";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 // New tab component to display recipe details
 const RecipeDetailsTab = ({
@@ -14,12 +15,14 @@ const RecipeDetailsTab = ({
     recipeDetails,
     loading,
     error,
+    enrichedBrokers
 }: {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
     recipeDetails: RecipeConfig | null;
     loading: boolean;
     error: string | null;
+    enrichedBrokers: EnrichedBroker[];
 }) => {
     const [copied, setCopied] = useState(false);
 

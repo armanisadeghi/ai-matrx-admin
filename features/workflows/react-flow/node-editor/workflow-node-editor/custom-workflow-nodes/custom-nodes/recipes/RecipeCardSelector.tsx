@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { DbFunctionNode } from "@/features/workflows/types";
 import { NodeDefinitionType } from "../custom-node-definitions";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface RecipeOption {
     value: string;
@@ -19,6 +20,7 @@ interface RecipeCardSelectorProps {
     open: boolean;
     quickReferenceSelectOptions: RecipeOption[];
     onRecipeSelect: (recipeId: string) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
 const RecipeCardSelector: React.FC<RecipeCardSelectorProps> = ({
@@ -29,6 +31,7 @@ const RecipeCardSelector: React.FC<RecipeCardSelectorProps> = ({
     open,
     quickReferenceSelectOptions,
     onRecipeSelect,
+    enrichedBrokers
 }) => {
     if (!open) return null;
 

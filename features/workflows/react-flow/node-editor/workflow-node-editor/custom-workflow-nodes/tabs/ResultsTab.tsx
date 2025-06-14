@@ -6,13 +6,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlayCircle, Database, Clock, AlertCircle } from "lucide-react";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface ResultsTabProps {
   nodeData: DbFunctionNode;
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
+  enrichedBrokers: EnrichedBroker[];
 }
 
-const ResultsTab: React.FC<ResultsTabProps> = ({ nodeData }) => {
+const ResultsTab: React.FC<ResultsTabProps> = ({ nodeData, enrichedBrokers }) => {
     // TODO: Connect to Redux state for execution results
     // const executionResults = useAppSelector(selectNodeExecutionResults(node.id));
     // const workflowResults = useAppSelector(selectWorkflowExecutionResults(node.workflow_id));

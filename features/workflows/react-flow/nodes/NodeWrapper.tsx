@@ -5,7 +5,7 @@ import WorkflowNode from "@/features/workflows/react-flow/nodes/WorkflowNode";
 import UserInputNode from "@/features/workflows/react-flow/nodes/UserInputNode";
 import BrokerRelayNode from "@/features/workflows/react-flow/nodes/BrokerRelayNode";
 import NodeFloatingIcon from "@/features/workflows/react-flow/nodes/NodeFloatingIcon";
-import { EnrichedBroker } from "@/features/workflows/utils/edge-generator";
+import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 import { DataBrokerData } from "@/types";
 import { DbNodeData, DbUserInput, DbBrokerRelayData, DbFunctionNode } from "@/features/workflows/types";
 import { getNodePotentialInputsAndOutputs, parseEdge } from "../../utils/node-utils";
@@ -27,9 +27,10 @@ declare global {
 
 interface NodeWrapperProps extends NodeProps {
     data: DbNodeData;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, type }) => {
+export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, type, enrichedBrokers }) => {
     const updateNodeInternals = useUpdateNodeInternals();
     const { mode } = useTheme();
     const inputsAndOutputs = getNodePotentialInputsAndOutputs(data, type);
@@ -76,6 +77,7 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                     onDelete={handleDelete}
                     onEdit={handleEdit}
                     onDuplicate={handleDuplicate}
+                    enrichedBrokers={enrichedBrokers}
                 />
                 <NodeFloatingIcon nodeData={userInputData} type={type} selected={selected} />
                 {/* Output handle for user inputs */}
@@ -114,6 +116,7 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                     onEdit={handleEdit}
                     onDuplicate={handleDuplicate}
                     onConnect={handleOnConnect}
+                    enrichedBrokers={enrichedBrokers}
                 />
                 <NodeFloatingIcon nodeData={brokerRelayData} type={type} selected={selected} />
             </div>
@@ -133,6 +136,7 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                     onDuplicate={handleDuplicate}
                     userInputs={userInputs}
                     onConnect={handleOnConnect}
+                    enrichedBrokers={enrichedBrokers}
                 />
                 <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
             </div>
@@ -151,6 +155,7 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                 onEdit={handleEdit}
                 onDuplicate={handleDuplicate}
                 userInputs={userInputs}
+                enrichedBrokers={enrichedBrokers}
             />
             <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
         </div>

@@ -11,6 +11,7 @@ import { ArrowRightLeft, Plus, Trash2, Copy } from "lucide-react";
 import { BrokerSelect } from "@/components/ui/broker-select";
 import { useBrokerData } from "@/features/workflows/hooks/useBrokerData";
 import { CustomFieldLabelAndHelpText } from '@/constants/app-builder-help-text';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface BrokerRelayEditorProps {
   nodeData: DbBrokerRelayData | null;
@@ -19,6 +20,7 @@ interface BrokerRelayEditorProps {
   open: boolean;
   readOnly?: boolean;
   completeWorkflowData?: ConvertedWorkflowData | null;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({ 
@@ -27,7 +29,8 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
   onClose,
   open,
   readOnly = false,
-  completeWorkflowData
+  completeWorkflowData,
+  enrichedBrokers
 }) => {
   const [editingNode, setEditingNode] = useState<DbBrokerRelayData | null>(nodeData);
   const [cancelClicked, setCancelClicked] = useState(false);

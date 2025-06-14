@@ -4,16 +4,18 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DbFunctionNode } from '@/features/workflows/types';
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface DependenciesSectionProps {
   nodeData: DbFunctionNode;
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
+  enrichedBrokers: EnrichedBroker[];
 }
 
 /**
  * DependenciesSection - Displays the dependencies table
  */
-const DependenciesSection: React.FC<DependenciesSectionProps> = ({ nodeData }) => {
+const DependenciesSection: React.FC<DependenciesSectionProps> = ({ nodeData, enrichedBrokers }) => {
   const dependencies = nodeData.additional_dependencies || [];
 
   // Don't render if no dependencies

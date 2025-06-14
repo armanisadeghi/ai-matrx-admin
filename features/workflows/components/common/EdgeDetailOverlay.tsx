@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { deleteWorkflowEdge, saveWorkflowEdge, convertVirtualToSaved } from "@/features/workflows/service";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface EdgeDetailOverlayProps {
     edge: Edge | null;
@@ -31,6 +32,7 @@ interface EdgeDetailOverlayProps {
     onEdgeDeleted?: () => void;
     onEdgeUpdated?: () => void;
     workflowId?: string;
+    enrichedBrokers: EnrichedBroker[];
 }
 
 /**
@@ -69,7 +71,7 @@ function getConnectionTypeInfo(connectionType: string) {
     }
 }
 
-export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdgeUpdated, workflowId }: EdgeDetailOverlayProps) {
+export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdgeUpdated, workflowId, enrichedBrokers }: EdgeDetailOverlayProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isConverting, setIsConverting] = useState(false);

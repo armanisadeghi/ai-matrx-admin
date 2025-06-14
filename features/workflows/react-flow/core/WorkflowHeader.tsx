@@ -21,6 +21,7 @@ import {
     DbFunctionNode,
 } from "@/features/workflows/types";
 import { RecipeNodeInitializer, CUSTOM_NODE_REGISTRY, NodeDefinitionType } from "@/features/workflows/react-flow/node-editor";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface WorkflowToolbarProps {
     selectedFunction: string;
@@ -45,6 +46,7 @@ interface WorkflowToolbarProps {
     functionNodes: FunctionNode[];
     editingNode: DbNodeData | null;
     workflowDataForReactFlow: ConvertedWorkflowData | null;
+    enrichedBrokers: EnrichedBroker[];
 }
 
 const RECIPE_FUNCTION_ID = "2ac5576b-d1ab-45b1-ab48-4e196629fdd8";
@@ -71,6 +73,7 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
     functionNodes,
     editingNode,
     workflowDataForReactFlow,
+    enrichedBrokers,
 }) => {
     const [isBrokerOverlayOpen, setIsBrokerOverlayOpen] = useState(false);
     const [isResultsOverlayOpen, setIsResultsOverlayOpen] = useState(false);
@@ -228,6 +231,7 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
                         functionNodes={functionNodes}
                         editingNode={editingNode}
                         workflowDataForReactFlow={workflowDataForReactFlow}
+                        workflowId={workflowId}
                     />
                 </div>
             </div>
@@ -254,6 +258,7 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
                     onConfirm={handleRecipeConfirm}
                     onCancel={handleRecipeCancel}
                     open={showRecipeInitializer}
+                    enrichedBrokers={enrichedBrokers}
                 />
             )}
         </div>

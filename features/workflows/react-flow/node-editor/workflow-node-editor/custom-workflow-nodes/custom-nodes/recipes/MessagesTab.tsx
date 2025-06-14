@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { NeededBroker, RecipeSimpleMessage } from "@/features/workflows/service/recipe-service";
 import { replaceMatrxPatternsWithBrokerNames } from "@/features/rich-text-editor/utils/patternUtils";
 import { estimateTokens, estimateTotalTokens } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/token-estimator";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface MessagesTabProps {
     messages: RecipeSimpleMessage[];
     neededBrokers?: NeededBroker[];
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const MessagesTab: React.FC<MessagesTabProps> = ({ messages, neededBrokers }) => {
+const MessagesTab: React.FC<MessagesTabProps> = ({ messages, neededBrokers, enrichedBrokers }) => {
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     if (!messages || messages.length === 0) {

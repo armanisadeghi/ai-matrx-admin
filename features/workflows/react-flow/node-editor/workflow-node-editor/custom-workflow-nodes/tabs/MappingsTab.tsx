@@ -14,13 +14,15 @@ import {
     updateArgumentMapping,
     removeArgumentMapping,
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
+import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface MappingsTabProps {
     nodeData: DbFunctionNode;
     onNodeUpdate: (nodeData: DbFunctionNode) => void;
+    enrichedBrokers: EnrichedBroker[];
 }
 
-const MappingsTab: React.FC<MappingsTabProps> = ({ nodeData, onNodeUpdate }) => {
+const MappingsTab: React.FC<MappingsTabProps> = ({ nodeData, onNodeUpdate, enrichedBrokers }) => {
     const functionData = getFunctionData(nodeData.function_id);
     const allMappings = nodeData.arg_mapping || [];
 
