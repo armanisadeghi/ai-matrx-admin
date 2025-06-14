@@ -116,17 +116,28 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         }
     }, [enrichedBrokers, allKnownBrokers]);
 
-    // Handle edge click - stable function that doesn't depend on edges array
+    // Handle edge click - stable function with no dependencies on changing data
     const handleEdgeClick = useCallback(
-        (edgeData: any) => {
-            // Find the full edge object from the edges array
-            const fullEdge = edges.find((edge) => edge.id === edgeData.id);
-            if (fullEdge) {
-                setSelectedEdge(fullEdge);
-                setIsEdgeOverlayOpen(true);
-            }
+        (edgeProps: any) => {
+            // Create a proper Edge object from the props passed by CustomEdge
+            const fullEdge: Edge = {
+                id: edgeProps.id,
+                source: edgeProps.source || '',
+                target: edgeProps.target || '',
+                sourceHandle: edgeProps.sourceHandle,
+                targetHandle: edgeProps.targetHandle,
+                type: edgeProps.type,
+                animated: edgeProps.animated,
+                style: edgeProps.style,
+                data: edgeProps.data,
+                // Add any other properties that might be needed
+                ...edgeProps
+            };
+            
+            setSelectedEdge(fullEdge);
+            setIsEdgeOverlayOpen(true);
         },
-        [edges]
+        [] // No dependencies - completely stable
     );
 
     const handleCloseEdgeOverlay = useCallback(() => {
@@ -230,14 +241,6 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
             default: NodeWrapper,
         }),
         []
-    );
-
-    // Create stable edge types to avoid React Flow warning
-    const edgeTypes: EdgeTypes = useMemo(
-        () => ({
-            virtual: (props: any) => <CustomEdge {...props} onEdgeClick={handleEdgeClick} />,
-        }),
-        [handleEdgeClick]
     );
 
     const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
@@ -345,7 +348,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
                 nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
+                handleEdgeClick={handleEdgeClick}
                 onAddNode={handleAddNode}
                 onAddCustomNode={handleAddCustomNode}
                 onFinalizeNode={handleFinalizeRecipeNode}

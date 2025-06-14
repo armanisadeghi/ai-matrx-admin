@@ -16,6 +16,7 @@ import ReactFlow, {
     XYPosition,
 } from "reactflow";
 import QuickAccessPanel from "@/features/workflows/components/access-panel/QuickAccessPanel";
+import CustomEdge from "@/features/workflows/react-flow/edges/CustomEdge";
 import { EdgeDetailOverlay } from "@/features/workflows/components/common/EdgeDetailOverlay";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { DbFunctionNode } from "@/features/workflows/types";
@@ -28,7 +29,7 @@ interface WorkflowCanvasProps {
     onConnect: (connection: Connection) => void;
     onNodeClick: (event: React.MouseEvent, node: Node) => void;
     nodeTypes: NodeTypes;
-    edgeTypes: EdgeTypes;
+    handleEdgeClick: (edgeProps: any) => void;
     onAddNode: (id: string, type?: string) => void;
     onAddCustomNode: (id: string, type?: string) => Promise<{ nodeData: Omit<DbFunctionNode, "user_id">; position: XYPosition } | null | void>;
     onFinalizeNode: (configuredNodeData: Omit<DbFunctionNode, "user_id"> | DbFunctionNode, position: XYPosition) => void;
@@ -48,7 +49,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     onConnect,
     onNodeClick,
     nodeTypes,
-    edgeTypes,
+    handleEdgeClick,
     onAddNode,
     onAddCustomNode,
     onFinalizeNode,
@@ -60,6 +61,14 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     onEdgeUpdated,
 }) => {
     const { mode: themeMode } = useTheme();
+
+    // Create stable edge types using the handleEdgeClick prop
+    const edgeTypes: EdgeTypes = useMemo(
+        () => ({
+            virtual: (props: any) => <CustomEdge {...props} onEdgeClick={handleEdgeClick} />,
+        }),
+        [handleEdgeClick]
+    );
 
     // Default edge options - memoized to avoid recreating
     const defaultEdgeOptions = useMemo(

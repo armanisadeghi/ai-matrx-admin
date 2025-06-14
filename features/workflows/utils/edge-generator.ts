@@ -282,7 +282,8 @@ export class EdgeGenerator {
                 return `input--dependency--${target.brokerId}`;
             }
         } else if (fnData.arg_mapping?.some((m) => m.source_broker_id === target.brokerId && m.target_arg_name === target.label)) {
-            return `input--arg_mapping--${target.brokerId}`;
+            const mapping = fnData.arg_mapping.find((m) => m.source_broker_id === target.brokerId && m.target_arg_name === target.label);
+            return `input--arg_mapping--${mapping.source_broker_id}`;
         } else if (fnData.arg_overrides?.some((arg) => arg.name === target.label)) {
             return `input--argument--${target.label}`;
         }
