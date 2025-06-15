@@ -75,7 +75,7 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
                                     )}
                                     <FieldsWithLabels
                                         fields={container.fields}
-                                        appletId={appletId}
+                                        sourceId={appletId}
                                         isMobile={isMobile}
                                         source={source}
                                         wrapperClassName="mb-5 last:mb-0"

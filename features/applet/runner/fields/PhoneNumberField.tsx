@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 // Import the shadcn/ui components
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FieldDefinition } from "@/types/customAppTypes";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
 // Interface for phone number data
 interface PhoneData {
@@ -72,14 +72,7 @@ const COMMON_COUNTRY_CODES = [
   // Add more as needed
 ];
 
-const PhoneNumberField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const PhoneNumberField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, placeholder = "Phone number", componentProps, required } = field;
 
     const { width, customContent } = componentProps;

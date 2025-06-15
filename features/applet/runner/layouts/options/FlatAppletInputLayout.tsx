@@ -32,7 +32,7 @@ const FlatAppletInputLayout: React.FC<AppletInputProps> = ({
                         <div className="grid grid-cols-1 gap-y-6">
                             <FieldsWithLabels
                                 fields={container.fields}
-                                appletId={appletId}
+                                sourceId={appletId}
                                 isMobile={isMobile}
                                 source={source}
                                 wrapperClassName="mb-0" // Override the default margin

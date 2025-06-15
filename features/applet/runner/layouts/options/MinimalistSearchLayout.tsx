@@ -84,7 +84,7 @@ const MinimalistSearchLayout: React.FC<MinimalistSearchLayoutProps> = ({
                                 <div className={`grid md:${gridClass} gap-6`}>
                                     <FieldsWithLabels
                                         fields={container.fields}
-                                        appletId={appletId}
+                                        sourceId={appletId}
                                         isMobile={false}
                                         source={source}
                                         className="contents" // Use contents to preserve the grid layout

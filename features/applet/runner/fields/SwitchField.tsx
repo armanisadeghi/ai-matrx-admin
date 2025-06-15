@@ -7,7 +7,7 @@ import { ensureValidWidthClass } from "@/features/applet/constants/field-constan
 import { cn } from "@/lib/utils";
 // Import the shadcn/ui components
 import * as SwitchPrimitives from "@radix-ui/react-switch";
-import { FieldDefinition } from "@/types/customAppTypes";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
 // Custom styled Switch component
 const Switch = React.forwardRef<
@@ -31,14 +31,7 @@ const Switch = React.forwardRef<
 ));
 Switch.displayName = SwitchPrimitives.Root.displayName;
 
-const SwitchField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const SwitchField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, componentProps, defaultValue } = field;
 
     const { width, customContent, onLabel = "On", offLabel = "Off", direction = "horizontal" } = componentProps;

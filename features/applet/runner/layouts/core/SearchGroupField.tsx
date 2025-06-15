@@ -43,7 +43,7 @@ const SearchGroupField: React.FC<ContainerRenderProps> = ({
                 
                 <FieldsWithLabels
                     fields={fields}
-                    appletId={appletId}
+                    sourceId={appletId}
                     isMobile={isMobile}
                     source={source}
                     wrapperClassName="mb-5 last:mb-0"

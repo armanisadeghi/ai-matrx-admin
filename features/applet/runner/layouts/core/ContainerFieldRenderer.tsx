@@ -29,7 +29,7 @@ const ContainerFieldRenderer: React.FC<ContainerFieldRendererProps> = ({
             )}
             <FieldsWithLabels
                 fields={fields}
-                appletId={appletId}
+                sourceId={appletId}
                 isMobile={isMobile}
                 source={source}
                 wrapperClassName="mb-5 last:mb-0"

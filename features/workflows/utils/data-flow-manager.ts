@@ -18,6 +18,7 @@ export interface EnrichedBroker {
     name?: string;
     isKnown: boolean;
     knownBrokerData?: DataBrokerData;
+    fieldComponentId?: string;
     usageType: "source" | "target" | "both";
     sourceNodes: string[];
     targetNodes: string[];
@@ -492,6 +493,7 @@ export class DataFlowManager {
                 name: knownBrokerData?.name || brokerId,
                 isKnown: !!knownBrokerData,
                 knownBrokerData,
+                fieldComponentId: knownBrokerData?.fieldComponentId,
                 usageType: brokerSources.length > 0 && brokerTargets.length > 0 ? "both" : brokerSources.length > 0 ? "source" : "target",
                 sourceNodes: brokerSources.map((s) => s.nodeId),
                 targetNodes: brokerTargets.map((t) => t.nodeId),

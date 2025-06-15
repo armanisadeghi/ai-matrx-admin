@@ -9,20 +9,14 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
 export interface SelectedOptionValue extends FieldOption {
     selected: boolean;
     otherText?: string;
 }
 
-const DependentDropdownField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const DependentDropdownField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, placeholder = "Select an option", options, componentProps, required, includeOther = false } = field;
 
     const { width, customContent } = componentProps;
@@ -484,7 +478,7 @@ const DependentDropdownField: React.FC<{
             {/* Other text input */}
             {isOtherSelected && (
                 <Input
-                    id={`${appletId}-${id}-other-input`}
+                    id={`${sourceId}-${id}-other-input`}
                     className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                     value={otherText}
                     onChange={handleOtherTextChange}

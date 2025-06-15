@@ -59,7 +59,7 @@ const ContextualSearchLayout: React.FC<AppletInputProps> = ({
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{container.label}</h3>
                                 <FieldsWithLabels
                                     fields={container.fields}
-                                    appletId={appletId}
+                                    sourceId={appletId}
                                     isMobile={isMobile}
                                     source={source}
                                     className="space-y-6"

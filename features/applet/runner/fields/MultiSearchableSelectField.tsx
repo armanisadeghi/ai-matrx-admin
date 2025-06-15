@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
@@ -19,14 +20,7 @@ export interface SelectedOptionValue extends FieldOption {
     otherText?: string;
 }
 
-const MultiSearchableSelectField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const MultiSearchableSelectField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, placeholder, options, componentProps, includeOther } = field;
 
     const { width, customContent, maxItems, minItems, showSelectAll } = componentProps;
@@ -308,7 +302,7 @@ const MultiSearchableSelectField: React.FC<{
 
             {isOtherSelected && (
                 <Input
-                    id={`${appletId}-${id}-other-input`}
+                    id={`${sourceId}-${id}-other-input`}
                     className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                     value={otherText}
                     onChange={handleOtherTextChange}

@@ -4,13 +4,12 @@ import React, { useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
-import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { FieldDefinition } from "@/types/customAppTypes";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
 // Import the shadcn/ui Select components
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { FieldOption } from "@/types/customAppTypes";
 
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
@@ -18,22 +17,8 @@ export interface SelectedOptionValue extends FieldOption {
     otherText?: string;
 }
 
-interface FieldOption {
-    id: string;
-    label: string;
-    description?: string;
-    helpText?: string;
-    iconName?: string;
-}
 
-const SelectField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const SelectField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, placeholder, options, componentProps, includeOther } = field;
 
     const { width, customContent } = componentProps;
@@ -143,7 +128,7 @@ const SelectField: React.FC<{
 
             {isOtherSelected && (
                 <Input
-                    id={`${appletId}-${id}-other-input`}
+                    id={`${sourceId}-${id}-other-input`}
                     className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                     value={selectedOption?.description || ""}
                     onChange={handleOtherTextChange}

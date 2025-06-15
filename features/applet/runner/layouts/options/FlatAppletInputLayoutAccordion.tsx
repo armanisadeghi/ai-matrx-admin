@@ -67,7 +67,7 @@ const FlatAppletInputLayoutAccordion: React.FC<AppletInputProps> = ({
                                 <div className="grid grid-cols-1 gap-y-6">
                                     <FieldsWithLabels
                                         fields={container.fields}
-                                        appletId={appletId}
+                                        sourceId={appletId}
                                         isMobile={isMobile}
                                         source={source}
                                         className="contents"

@@ -75,7 +75,7 @@ const FieldContainerPreview: React.FC<any> = ({ fields, appletId, source, classN
 
             fields.forEach((field) => {
                 if (!newFieldComponents.has(field.id)) {
-                    newFieldComponents.set(field.id, AppletFieldController({ field, appletId, source, isMobile }));
+                    newFieldComponents.set(field.id, AppletFieldController({ field, sourceId: appletId, source, isMobile }));
                     hasNewComponents = true;
                 }
             });

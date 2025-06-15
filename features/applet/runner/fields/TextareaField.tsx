@@ -4,15 +4,9 @@ import React, { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
-import { FieldDefinition } from "@/types/customAppTypes";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
-const TextareaField: React.FC<{
-    field: FieldDefinition;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, isMobile, source = "applet", disabled = false, className = "" }) => {
+const TextareaField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, placeholder, componentProps } = field;
     const { rows, maxLength, width, spellCheck, customContent } = componentProps;
 

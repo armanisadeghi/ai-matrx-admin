@@ -32,7 +32,7 @@ const FieldTester: React.FC = () => {
   const [selectedContainer, setSelectedContainer] = useState<string | null>(null);
   
 
-  const appletId = "THIS-WILL-NOT-WORK-WE-MUST-FETCH-A-TEST-APPLET-FROM-THE-SERVER-AND-LOAD-REDUX-FIRST";
+  const sourceId = "THIS-WILL-NOT-WORK-WE-MUST-FETCH-A-TEST-APPLET-FROM-THE-SERVER-AND-LOAD-REDUX-FIRST";
   
   // Get all fields from containers
   const allFields = getFields();
@@ -151,7 +151,7 @@ const FieldTester: React.FC = () => {
                   {def.field.label}
                 </label>
                 <div className="mt-1">
-                {AppletFieldController({ field: def.field, appletId, isMobile: false })}
+                {AppletFieldController({ field: def.field, sourceId, isMobile: false })}
                 </div>
                 {def.field.helpText && (
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

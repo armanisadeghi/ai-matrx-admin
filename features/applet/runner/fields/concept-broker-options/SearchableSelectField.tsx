@@ -4,24 +4,15 @@ import { brokerSelectors, brokerActions, BrokerIdentifier } from "@/lib/redux/br
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FieldDefinition } from "@/types/customAppTypes";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CommonFieldProps } from "../core/AppletFieldController";
 
-interface SearchableSelectFieldProps {
-    field: FieldDefinition;
-    appletId: string;
-    source?: string;
-    isMobile?: boolean;
-    disabled?: boolean;
-    className?: string;
-}
-
-const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
+const SearchableSelectFieldConcept: React.FC<CommonFieldProps> = ({
     field,
-    appletId,
+    sourceId,
     source = "applet",
     isMobile,
     disabled = false,
@@ -185,7 +176,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
             </Popover>
             {isOtherSelected && (
                 <Input
-                    id={`${appletId}-${id}-other-input`}
+                    id={`${sourceId}-${id}-other-input`}
                     className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                     value={otherOption?.otherText || ""}
                     onChange={handleOtherTextChange}

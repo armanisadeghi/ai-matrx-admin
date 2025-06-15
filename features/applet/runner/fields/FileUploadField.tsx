@@ -7,17 +7,10 @@ import { ensureValidWidthClass } from "@/features/applet/constants/field-constan
 import { cn } from "@/lib/utils";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
-import { FieldDefinition } from "@/types/customAppTypes";
 import { FieldValidation, useFieldValidation } from "./common/FieldValidation";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
-const FileUploadField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    source?: string;
-    isMobile?: boolean;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const FileUploadField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, componentProps, required } = field;
 
     const {

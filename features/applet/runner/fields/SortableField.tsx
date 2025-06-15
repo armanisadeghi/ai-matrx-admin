@@ -7,20 +7,14 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
+import { CommonFieldProps } from "./core/AppletFieldController";
+import { FieldOption } from "@/types/customAppTypes";
 
 interface SortableItem extends FieldOption {
     order: number;
 }
 
-const SortableField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const SortableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, options, componentProps } = field;
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);

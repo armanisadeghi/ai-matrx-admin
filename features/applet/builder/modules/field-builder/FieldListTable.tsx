@@ -107,7 +107,7 @@ export default function FieldListTable({
         // Apply search filter
         if (searchTerm.trim()) {
             filtered = filtered.filter(
-                (field) =>
+                (field: FieldBuilder) =>
                     field.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     field.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     field.component?.toLowerCase().includes(searchTerm.toLowerCase())

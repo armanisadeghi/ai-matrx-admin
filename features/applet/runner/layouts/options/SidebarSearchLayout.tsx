@@ -118,7 +118,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                         <FieldsWithLabels
                                             fields={container.fields}
-                                            appletId={appletId}
+                                            sourceId={appletId}
                                             isMobile={isMobile}
                                             source={source}
                                             className="contents"

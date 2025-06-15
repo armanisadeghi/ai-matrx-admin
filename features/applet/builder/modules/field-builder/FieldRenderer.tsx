@@ -6,14 +6,19 @@ import HelpIcon from "@/components/official/HelpIcon";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import { normalizeFieldDefinition } from '@/features/applet/utils/field-normalization';
 
+interface FieldDefWithDisabled extends FieldDefinition {
+  disabled?: boolean;
+}
+
+
 interface FieldRendererProps {
-  field: FieldDefinition;
+  field: FieldDefWithDisabled;
 }
 
 
 export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField }) => {
   // Normalize the field to ensure all properties exist
-  const field = normalizeFieldDefinition(rawField);
+  const field = normalizeFieldDefinition(rawField) as FieldDefWithDisabled;
   
   const [value, setValue] = useState(field.defaultValue);
   const [otherValue, setOtherValue] = useState("");

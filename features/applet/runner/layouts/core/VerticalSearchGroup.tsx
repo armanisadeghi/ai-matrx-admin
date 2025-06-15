@@ -67,7 +67,7 @@ const VerticalSearchGroup: React.FC<ContainerRenderProps> = ({
                 <div ref={contentRef} className="p-4 pb-6 dark:border-gray-700">
                     <FieldsWithLabels
                         fields={fields}
-                        appletId={appletId}
+                        sourceId={appletId}
                         isMobile={isMobile}
                         source={source}
                         wrapperClassName=""

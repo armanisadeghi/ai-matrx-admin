@@ -11,6 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "lucide-react";
 import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
+import { BrokerMapEntry } from "@/lib/redux/brokerSlice/types";
+import { v4 as uuidv4 } from "uuid";
+import { brokerActions } from "@/lib/redux/brokerSlice";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { ComponentProps, ComponentType, FieldDefinition } from "@/types/customAppTypes";
+import { normalizeFieldDefinition } from "@/features/applet/utils/field-normalization";
 
 interface UserInputEditorProps {
     nodeData: DbUserInput | null;
@@ -24,13 +30,56 @@ interface UserInputEditorProps {
 const UserInputEditor: React.FC<UserInputEditorProps> = ({ nodeData, onSave, onClose, open, readOnly = false, enrichedBrokers }) => {
     const [editingNode, setEditingNode] = useState<DbUserInput | null>(nodeData);
     const [cancelClicked, setCancelClicked] = useState(false);
+    const [componentId, setComponentId] = useState<string | null>(nodeData?.field_component_id || null);
+    const dispatch = useAppDispatch();
+    const [fieldComponent, setFieldComponent] = useState<FieldDefinition | null>(null);
 
     useEffect(() => {
         setEditingNode(nodeData);
-        setCancelClicked(false); // Reset cancel flag when dialog opens
+        setCancelClicked(false);
     }, [nodeData]);
 
     if (!editingNode) return null;
+
+    useEffect(() => {
+        if (!editingNode) return;
+        if (!editingNode.field_component_id) {
+            setComponentId(`TEMP-FIELD-${uuidv4()}`);
+        }
+        setEditingNode({
+            ...editingNode,
+            field_component_id: componentId,
+        });
+    }, []);
+
+    const handleCreateBrokerMapping = () => {
+        const brokerMapping: BrokerMapEntry = {
+            brokerId: editingNode.broker_id,
+            mappedItemId: editingNode.field_component_id,
+            source: "workflows",
+            sourceId: editingNode.workflow_id,
+        };
+        dispatch(brokerActions.addOrUpdateRegisterEntry(brokerMapping));
+        return brokerMapping;
+    };
+
+    const handleCreateFieldComponent = (componentType: ComponentType, componentProps?: ComponentProps) => {
+        const brokerMapping: BrokerMapEntry = {
+            brokerId: editingNode.broker_id,
+            mappedItemId: editingNode.field_component_id,
+            source: "workflows",
+            sourceId: editingNode.workflow_id,
+        };
+        dispatch(brokerActions.addOrUpdateRegisterEntry(brokerMapping));
+
+        const fieldComponent: Partial<FieldDefinition> = {
+            id: editingNode.field_component_id,
+            label: editingNode.label,
+            component: componentType,
+            componentProps: componentProps,
+        };
+        setFieldComponent(normalizeFieldDefinition(fieldComponent));
+    };
 
     const handleSave = () => {
         if (editingNode) {
@@ -205,7 +254,7 @@ const UserInputEditor: React.FC<UserInputEditorProps> = ({ nodeData, onSave, onC
                                     <strong>Type:</strong> {editingNode.data_type}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                    <strong>Value:</strong>{" "}
+                                    <strong>Value:</strong>
                                     <code className="bg-background px-1 py-0.5 rounded text-xs">{getValueAsString() || "null"}</code>
                                 </p>
                             </div>

@@ -23,6 +23,7 @@ import {
 } from "@/features/workflows/types";
 import { CUSTOM_NODE_REGISTRY } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
 import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
+import ConnectedUserInput from "../node-editor/user-input-node-editor/ConnectedUserInput";
 
 interface NodeEditorManagerProps {
     editingNode: DbNodeData | null;
@@ -53,7 +54,8 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
 
     if ("type" in editingNode && editingNode.type === "userInput") {
         return (
-            <UserInputEditor
+
+            <ConnectedUserInput
                 nodeData={editingNode as DbUserInput}
                 onSave={onSave}
                 onClose={onClose}
@@ -61,6 +63,17 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
                 readOnly={isReadOnly}
                 enrichedBrokers={enrichedBrokers}
             />
+
+
+
+            // <UserInputEditor
+            //     nodeData={editingNode as DbUserInput}
+            //     onSave={onSave}
+            //     onClose={onClose}
+            //     open={!!editingNode}
+            //     readOnly={isReadOnly}
+            //     enrichedBrokers={enrichedBrokers}
+            // />
         );
     }
 

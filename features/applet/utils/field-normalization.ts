@@ -4,6 +4,7 @@ import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import { FieldDefinition, ComponentProps, ComponentType, FieldOption } from "@/types/customAppTypes";
 import { getComponentTypeDefaults, ensureValidWidthClass, ensureValidDirectionValue, ensureValidGridColsValue } from "@/features/applet/constants/field-constants";
 import { FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
+import { v4 as uuidv4 } from "uuid";
 
 export function processFieldOptions(options?: FieldOption[]): FieldOption[] {
     if (!options || options.length === 0) {
@@ -44,4 +45,14 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
         componentProps: mergedComponentProps,
         includeOther: field.includeOther !== undefined ? field.includeOther : false,
     };
+}
+
+
+export function normalizeFieldDefinitionWithUuid(field: Partial<FieldDefinition> | Partial<FieldBuilder>): FieldDefinition {
+    const fieldWithId = {
+        ...field,
+        id: field.id || uuidv4()
+    };
+    
+    return normalizeFieldDefinition(fieldWithId);
 }

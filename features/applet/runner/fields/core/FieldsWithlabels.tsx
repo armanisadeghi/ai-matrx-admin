@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface FieldsListProps {
     fields: FieldDefinition[];
-    appletId: string;
+    sourceId: string;
     isMobile?: boolean;
     source?: string;
     className?: string;
@@ -23,7 +23,7 @@ interface FieldsListProps {
 
 const FieldsWithLabels: React.FC<FieldsListProps> = ({
     fields,
-    appletId,
+    sourceId,
     isMobile = false,
     source = "applet",
     className = "",
@@ -35,6 +35,20 @@ const FieldsWithLabels: React.FC<FieldsListProps> = ({
     labelClassName = "",
     emptyLabelSpacing = "mb-3", // Default spacing matching original component
   }) => {
+    // Safety checks to prevent runtime errors
+    if (!fields) {
+      return <div className={className}></div>;
+    }
+    
+    if (!Array.isArray(fields)) {
+      console.warn('FieldsWithLabels: fields prop must be an array');
+      return <div className={className}></div>;
+    }
+    
+    if (fields.length === 0) {
+      return <div className={className}></div>;
+    }
+
     return (
       <div className={className}>
         {fields.map((field) => {
@@ -68,7 +82,7 @@ const FieldsWithLabels: React.FC<FieldsListProps> = ({
               )}
               <AppletFieldController
                 field={field}
-                appletId={appletId}
+                sourceId={sourceId}
                 isMobile={isMobile}
                 source={source}
                 className={isHorizontalLayout ? "flex-1" : ""}

@@ -27,13 +27,14 @@ declare global {
 
 interface NodeWrapperProps extends NodeProps {
     data: DbNodeData;
-    enrichedBrokers: EnrichedBroker[];
 }
 
-export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, type, enrichedBrokers }) => {
+export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, type }) => {
     const updateNodeInternals = useUpdateNodeInternals();
     const { mode } = useTheme();
     const inputsAndOutputs = getNodePotentialInputsAndOutputs(data, type);
+    
+    const enrichedBrokers = window.workflowEnrichedBrokers || [];
 
     const handleDelete = (nodeId: string) => {
         window.workflowSystemRef?.deleteNode?.(nodeId);
@@ -77,7 +78,6 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                     onDelete={handleDelete}
                     onEdit={handleEdit}
                     onDuplicate={handleDuplicate}
-                    enrichedBrokers={enrichedBrokers}
                 />
                 <NodeFloatingIcon nodeData={userInputData} type={type} selected={selected} />
                 {/* Output handle for user inputs */}
@@ -116,7 +116,6 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                     onEdit={handleEdit}
                     onDuplicate={handleDuplicate}
                     onConnect={handleOnConnect}
-                    enrichedBrokers={enrichedBrokers}
                 />
                 <NodeFloatingIcon nodeData={brokerRelayData} type={type} selected={selected} />
             </div>
@@ -136,7 +135,6 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                     onDuplicate={handleDuplicate}
                     userInputs={userInputs}
                     onConnect={handleOnConnect}
-                    enrichedBrokers={enrichedBrokers}
                 />
                 <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
             </div>
@@ -155,7 +153,6 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                 onEdit={handleEdit}
                 onDuplicate={handleDuplicate}
                 userInputs={userInputs}
-                enrichedBrokers={enrichedBrokers}
             />
             <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
         </div>

@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import SelectionPills from "./common/SelectionPills";
 import ValidationMessage from "./common/ValidationMessage";
-import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
+import { FieldOption } from "@/types/customAppTypes";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
@@ -14,14 +15,7 @@ export interface SelectedOptionValue extends FieldOption {
     otherText?: string;
 }
 
-const ButtonColumnField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string;
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const ButtonColumnField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, options, componentProps, includeOther, required } = field;
 
     const { width, customContent, multiSelect = false, minItems = 0, maxItems = 0, direction = "horizontal" } = componentProps;
@@ -228,7 +222,7 @@ const ButtonColumnField: React.FC<{
             {/* Other text input */}
             {isOtherSelected && (
                 <Input
-                    id={`${appletId}-${id}-other-input`}
+                    id={`${sourceId}-${id}-other-input`}
                     className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                     value={otherText}
                     onChange={handleOtherTextChange}

@@ -83,7 +83,6 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 allKnownBrokers,
                 edges
             );
-
             // Update both edges and enriched brokers
             if (JSON.stringify(result.edges) !== JSON.stringify(edges)) {
                 setEdges(result.edges);

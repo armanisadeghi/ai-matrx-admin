@@ -5,7 +5,8 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripHorizontal, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
+import { FieldOption } from "@/types/customAppTypes";
+import { CommonFieldProps } from "../core/AppletFieldController";
 
 // Extended interface for table data with order
 interface TableOption extends FieldOption {
@@ -21,14 +22,7 @@ interface ColumnConfig {
     width?: string;
 }
 
-const DragTableRowAndColumnField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const DragTableRowAndColumnField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, options, componentProps } = field;
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);

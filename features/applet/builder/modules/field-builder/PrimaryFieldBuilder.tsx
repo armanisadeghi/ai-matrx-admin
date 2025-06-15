@@ -28,7 +28,15 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { duplicateFieldComponent } from "@/lib/redux/app-builder/service/fieldComponentService";
 
-const PrimaryFieldBuilder = () => {
+interface PrimaryFieldBuilderProps {
+    onFieldSelected?: (fieldId: string) => void;
+    noFetch?: boolean;
+    initialMode?: "list" | "editor";
+    initialFieldId?: string;
+}
+
+
+const PrimaryFieldBuilder: React.FC<PrimaryFieldBuilderProps> = ({ onFieldSelected, noFetch = false, initialMode = "list", initialFieldId = null }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
@@ -40,11 +48,16 @@ const PrimaryFieldBuilder = () => {
 
     // Local state for UI
     const [isCreatingNew, setIsCreatingNew] = useState(false);
-    const [activeTab, setActiveTab] = useState<string>("list");
+    const [activeTab, setActiveTab] = useState<string>(initialMode);
 
     // Load all components on initial render
     useEffect(() => {
-        loadComponents();
+        if (!noFetch) {
+            loadComponents();
+        }
+        if (initialFieldId) {
+            handleFieldSelected(initialFieldId);
+        }
     }, []);
 
     // Load components from Redux
@@ -154,6 +167,7 @@ const PrimaryFieldBuilder = () => {
         dispatch(setActiveField(id));
         setIsCreatingNew(false);
         setActiveTab("editor");
+        onFieldSelected?.(id);
     };
 
     return (

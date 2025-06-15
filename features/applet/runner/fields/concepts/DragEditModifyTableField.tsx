@@ -15,7 +15,7 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripHorizontal, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FieldDefinition } from "@/types/customAppTypes";
+import { CommonFieldProps } from "../core/AppletFieldController";
 
 // --- Types (assuming these are correct from previous versions) ---
 type CellValue = string | number | boolean | null;
@@ -45,14 +45,7 @@ const defaultColumns: ColumnDefinition[] = [
 const THROTTLE_INTERVAL_MS = 300; // Throttle delay for Redux updates
 
 // --- Component Implementation ---
-const DragEditModifyTableField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id: fieldId, label: fieldLabel, options, componentProps } = field;
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);

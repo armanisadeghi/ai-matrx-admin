@@ -50,7 +50,7 @@ const SimpleFields: React.FC<SimpleFieldsProps> = ({
   return (
     <FieldsWithLabels
       fields={normalizedFields}
-      appletId={sourceId}
+      sourceId={sourceId}
       isMobile={isMobile}
       source={source}
       className={className}

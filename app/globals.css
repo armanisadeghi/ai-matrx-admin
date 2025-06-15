@@ -493,7 +493,65 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     --primary-rgb: 14, 165, 233; /* Example RGB values for a blue color */
 }
 
+/* Field isolation wrapper for React Flow nodes */
+.field-isolation-wrapper {
+    /* Create a new stacking context and contain styles */
+    position: relative;
+    isolation: isolate;
+    contain: style layout;
+    /* Reset any inherited constraints */
+    max-width: none;
+    max-height: none;
+    width: 100%;
+}
 
+.field-isolation-wrapper .all-revert {
+    /* Reset most inherited styles while preserving layout */
+    all: revert-layer;
+    /* But maintain essential layout properties */
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    color: inherit;
+    line-height: normal;
+}
+
+/* Ensure form elements inside React Flow nodes render properly */
+.field-isolation-wrapper input,
+.field-isolation-wrapper select,
+.field-isolation-wrapper textarea,
+.field-isolation-wrapper button {
+    /* Reset to default form styling */
+    all: revert;
+    /* Then apply our consistent styling */
+    font-family: inherit;
+    font-size: 0.75rem; /* text-xs equivalent */
+    line-height: 1.25;
+    color: inherit;
+    background-color: transparent;
+    border: 1px solid hsl(var(--border));
+    border-radius: calc(var(--radius) - 2px);
+    padding: 0.25rem 0.5rem;
+    transition: border-color 0.2s ease;
+}
+
+.field-isolation-wrapper input:focus,
+.field-isolation-wrapper select:focus,
+.field-isolation-wrapper textarea:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+
+/* Dark mode support for isolated fields */
+.react-flow-dark-mode .field-isolation-wrapper input,
+.react-flow-dark-mode .field-isolation-wrapper select,
+.react-flow-dark-mode .field-isolation-wrapper textarea {
+    background-color: hsl(var(--background));
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
+}
 
 .mask-bottom {
     mask-image: linear-gradient(to bottom, black calc(100% - 3rem), transparent 100%);

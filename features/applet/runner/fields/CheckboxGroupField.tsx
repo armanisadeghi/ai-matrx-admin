@@ -8,6 +8,7 @@ import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 import { Input } from "@/components/ui/input";
 import SelectionPills from "./common/SelectionPills";
 import ValidationMessage from "./common/ValidationMessage";
+import { CommonFieldProps } from "./core/AppletFieldController";
 
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
@@ -15,14 +16,8 @@ export interface SelectedOptionValue extends FieldOption {
     otherText?: string;
 }
 
-const CheckboxGroupField: React.FC<{
-    field: FieldDefinition;
-    appletId: string;
-    isMobile?: boolean;
-    source?: string;
-    disabled?: boolean;
-    className?: string; // Add this new prop
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
+
+const CheckboxGroupField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, options, componentProps, includeOther, required } = field;
 
     const {
@@ -263,7 +258,7 @@ const CheckboxGroupField: React.FC<{
                     className={cn("text-gray-700 dark:text-gray-300 cursor-pointer", disabled && "opacity-50 cursor-not-allowed")}
                     onClick={() => !disabled && toggleOption(option.id)}
                 >
-                    <label className="cursor-pointer select-none" htmlFor={`${appletId}-${id}-${option.id}`}>
+                    <label className="cursor-pointer select-none" htmlFor={`${sourceId}-${id}-${option.id}`}>
                         {option.label}
                     </label>
                     {option.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{option.description}</p>}
@@ -334,7 +329,7 @@ const CheckboxGroupField: React.FC<{
             {/* Other text input */}
             {isOtherSelected && (
                 <Input
-                    id={`${appletId}-${id}-other-input`}
+                    id={`${sourceId}-${id}-other-input`}
                     className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                     value={otherText}
                     onChange={handleOtherTextChange}

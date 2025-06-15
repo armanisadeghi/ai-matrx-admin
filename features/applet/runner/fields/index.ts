@@ -32,3 +32,4 @@ export { default as ValidationMessage } from './common/ValidationMessage';
 export { default as AppletFieldController } from './core/AppletFieldController';
 // Export types
 export type { SelectedOptionValue } from './SelectField';
+export type { CommonFieldProps } from './core/AppletFieldController';

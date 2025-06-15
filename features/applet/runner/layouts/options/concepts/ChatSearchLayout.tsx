@@ -134,7 +134,7 @@ const ChatSearchLayout: React.FC<AppletInputProps> = ({
                         {field.label}
                       </label>
                       <div className="field-control" onChange={() => handleFieldComplete(field.id)}>
-                        {AppletFieldController({ field, appletId, isMobile, source })}
+                        {AppletFieldController({ field, sourceId: appletId, isMobile, source })}
                       </div>
                       {field.helpText && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>

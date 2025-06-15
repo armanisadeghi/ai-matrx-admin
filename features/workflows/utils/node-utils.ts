@@ -230,6 +230,7 @@ export interface MatrxEdge {
 
 /**
  * Formats an input identifier into a human-readable label.
+ * First checks for known broker data, then falls back to parsing logic.
  * For argument names, converts from snake_case/SNAKE_CASE/kabob-case to Title Case.
  * For broker IDs with UUID_text pattern, extracts and formats the text part.
  * Shows UUID directly if it's a plain UUID with no additional text.
@@ -238,6 +239,14 @@ function formatInputLabel(inputId: string, fallbackLabel?: string): string {
     // If we have a fallback label, use it
     if (fallbackLabel && fallbackLabel !== inputId) {
         return fallbackLabel;
+    }
+
+    // Check for known broker data first
+    const enrichedBrokers = (window as any).workflowEnrichedBrokers || [];
+    const broker = enrichedBrokers?.find((b: any) => b.id === inputId);
+    const knownBrokerName = broker?.knownBrokerData?.name;
+    if (knownBrokerName) {
+        return knownBrokerName;
     }
 
     // Check if it's a plain UUID (pattern: 8-4-4-4-12 hexadecimal digits)
@@ -314,11 +323,20 @@ export function getNodePotentialInputs(node: DbFunctionNode): Input[] {
 
 /**
  * Formats a broker ID into a human-readable label.
+ * First checks for known broker data, then falls back to parsing logic.
  * Extracts text after the first underscore and converts from snake_case/SNAKE_CASE/kabob-case to Title Case.
  * Shows UUID directly if it's a valid UUID with no additional text.
  * Falls back to "Result {index + 1}" if no underscore or invalid pattern.
  */
 function formatBrokerLabel(brokerId: string, index: number): string {
+    // Check for known broker data first
+    const enrichedBrokers = (window as any).workflowEnrichedBrokers || [];
+    const broker = enrichedBrokers?.find((b: any) => b.id === brokerId);
+    const knownBrokerName = broker?.knownBrokerData?.name;
+    if (knownBrokerName) {
+        return knownBrokerName;
+    }
+
     // Check if the broker ID contains an underscore
     const underscoreIndex = brokerId.indexOf("_");
     if (underscoreIndex === -1) {
