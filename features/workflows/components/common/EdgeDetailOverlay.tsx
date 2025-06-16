@@ -32,7 +32,6 @@ interface EdgeDetailOverlayProps {
     onEdgeDeleted?: () => void;
     onEdgeUpdated?: () => void;
     workflowId?: string;
-    enrichedBrokers: EnrichedBroker[];
 }
 
 /**
@@ -71,7 +70,7 @@ function getConnectionTypeInfo(connectionType: string) {
     }
 }
 
-export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdgeUpdated, workflowId, enrichedBrokers }: EdgeDetailOverlayProps) {
+export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdgeUpdated, workflowId }: EdgeDetailOverlayProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isConverting, setIsConverting] = useState(false);

@@ -32,11 +32,12 @@ interface WorkflowNodeProps {
     selected: boolean;
     onDelete: (nodeId: string) => void;
     onEdit: (nodeData: DbFunctionNode) => void;
+    onShowResults: (nodeData: DbFunctionNode) => void;
     onDuplicate: (nodeId: string) => void;
     userInputs?: Array<{ broker_id: string; default_value: any }>; // Optional user inputs from the workflow
 }
 
-const RecipeNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, userInputs }) => {
+const RecipeNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, userInputs, onShowResults }) => {
     const { mode } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [showResults, setShowResults] = useState(false);
@@ -164,7 +165,8 @@ const RecipeNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onE
         <NodeContextMenu
             data={data}
             userInputs={userInputs}
-            onEdit={onEdit}
+            onEditFunctionNode={onEdit}
+            onShowResults={onShowResults}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
             onExecuteComplete={(taskId) => {

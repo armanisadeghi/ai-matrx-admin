@@ -35,6 +35,7 @@ interface DefaultNodeEditorProps {
   customTabs?: CustomTabConfig[]; // Custom tabs to add or replace defaults
   additionalTabs?: TabConfig[]; // Additional tabs to append
   hiddenTabs?: string[]; // Tab IDs to hide
+  defaultTabId?: string; // ID of the tab to open by default
   validationErrors?: string[];
   enrichedBrokers: EnrichedBroker[];
 }
@@ -62,6 +63,7 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
   customTabs = [],
   additionalTabs = [],
   hiddenTabs = [],
+  defaultTabId,
   validationErrors = [],
   enrichedBrokers
 }) => {
@@ -145,7 +147,7 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
       )}
       
       <div className="flex-1 min-h-0 overflow-hidden">
-        <Tabs defaultValue={finalTabs[0]?.id} className="w-full h-full flex flex-col">
+        <Tabs defaultValue={defaultTabId || finalTabs[0]?.id} className="w-full h-full flex flex-col">
           <TabsList>
             {finalTabs.map(tab => (
               <TabsTrigger key={tab.id} value={tab.id}>

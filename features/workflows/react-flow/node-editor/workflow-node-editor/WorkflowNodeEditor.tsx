@@ -40,6 +40,7 @@ interface NodeEditorProps {
   additionalTabs?: TabConfig[]; // Additional tabs to append
   readOnly?: boolean;
   enrichedBrokers: EnrichedBroker[];
+  defaultTabId?: string;
 }
 
 // Default tab configurations
@@ -62,7 +63,8 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
   customTabs = [],
   additionalTabs = [],
   readOnly = false,
-  enrichedBrokers
+  enrichedBrokers,
+  defaultTabId
 }) => {
   const [editingNode, setEditingNode] = useState<DbFunctionNode | null>(nodeData);
   const [cancelClicked, setCancelClicked] = useState(false);
@@ -147,7 +149,7 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <Tabs defaultValue={finalTabs[0]?.id} className="w-full h-full flex flex-col">
+          <Tabs defaultValue={defaultTabId || finalTabs[0]?.id} className="w-full h-full flex flex-col">
             <TabsList className="grid w-full flex-shrink-0" style={{ gridTemplateColumns: `repeat(${finalTabs.length}, minmax(0, 1fr))` }}>
               {finalTabs.map(tab => (
                 <TabsTrigger key={tab.id} value={tab.id}>

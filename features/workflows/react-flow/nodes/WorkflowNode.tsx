@@ -23,9 +23,10 @@ interface WorkflowNodeProps {
     onDuplicate: (nodeId: string) => void;
     userInputs?: Array<{ broker_id: string; default_value: any; value?: any }>;
     onConnect?: (connection: Connection) => void;
+    onShowResults?: (nodeData: DbFunctionNode) => void;
 }
 
-const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, userInputs, onConnect }) => {
+const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, userInputs, onConnect, onShowResults }) => {
     // Access enrichedBrokers from window object (set by WorkflowSystem)
     const enrichedBrokers = window.workflowEnrichedBrokers || [];
     const functionData = getRegisteredFunctions().find((f) => f.id === data.function_id);
@@ -221,6 +222,7 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, sel
             data={data}
             userInputs={userInputs}
             onEditFunctionNode={onEdit}
+            onShowResults={onShowResults}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
             onExecuteComplete={(taskId) => {

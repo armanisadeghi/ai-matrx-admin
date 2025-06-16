@@ -70,6 +70,7 @@ export interface NodeDataContextValue {
   validationErrors: string[];
   hasChanges: boolean;
   enrichedBrokers: EnrichedBroker[];
+  defaultTabId?: string;
 }
 
 /**
@@ -80,6 +81,7 @@ export interface CustomNodeEditorComponentProps {
   onNodeUpdate: (nodeData: DbFunctionNode) => void;
   nodeDefinition: NodeDefinitionType;
   enrichedBrokers: EnrichedBroker[];
+  defaultTabId?: string;
 }
 
 /**
@@ -103,6 +105,7 @@ export interface CustomNodeEditorProps {
   width?: string;
   height?: string;
   enrichedBrokers: EnrichedBroker[];
+  defaultTabId?: string;
 }
 
 /**
@@ -117,4 +120,5 @@ export interface CustomNodeEditorManagerProps {
   autoSave?: boolean;
   validation?: ValidationMode;
   enrichedBrokers: EnrichedBroker[];
+  defaultTabId?: string;
 } 

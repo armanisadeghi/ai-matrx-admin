@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Edit, Copy, Trash2, Play } from "lucide-react";
+import { Edit, Copy, Trash2, Play, Eye } from "lucide-react";
 import { MenuDefinition, MenuItemDefinition } from "@/components/ui/menu-system/types";
 import { MenuRegistry } from "@/components/ui/menu-system/MenuRegistry";
 import { DbFunctionNode, DbUserInput, DbNodeData, DbBrokerRelayData } from "@/features/workflows/types";
@@ -13,7 +13,7 @@ interface WorkflowNodeMenuProps {
     onDelete?: (nodeId: string) => void;
     onExecuteComplete?: (taskId: string) => void;
     onExecuteError?: (error: string) => void;
-
+    onShowResults?: (nodeData: DbFunctionNode) => void;
     onEditFunctionNode?: (nodeData: DbFunctionNode) => void;
     onEditUserInput?: (nodeData: DbUserInput) => void;
     onEditRelay?: (nodeData: DbBrokerRelayData) => void;
@@ -41,6 +41,13 @@ const menuItemDefinitions = [
         label: "Edit",
         handlerKey: "onEditRelay" as keyof WorkflowNodeMenuProps,
         onClick: (props: WorkflowNodeMenuProps) => props.onEditRelay!(props.data as DbBrokerRelayData),
+    },
+    {
+        id: "show-results",
+        icon: React.createElement(Eye, { className: "h-4 w-4 mr-2" }),
+        label: "Show Results",
+        handlerKey: "onShowResults" as keyof WorkflowNodeMenuProps,
+        onClick: (props: WorkflowNodeMenuProps) => props.onShowResults!(props.data as DbFunctionNode),
     },
     {
         id: "execute",

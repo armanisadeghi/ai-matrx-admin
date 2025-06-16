@@ -34,12 +34,11 @@ interface RecipeNodeInitializerProps {
     onConfirm: (updatedNodeData: DbFunctionNode) => void;
     onCancel: () => void;
     open: boolean;
-    enrichedBrokers: EnrichedBroker[];
 }
 
 const DEBUG = false;
 
-const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData, nodeDefinition, onConfirm, onCancel, open, enrichedBrokers }) => {
+const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData, nodeDefinition, onConfirm, onCancel, open }) => {
     const [currentNodeData, setCurrentNodeData] = useState<DbFunctionNode>(nodeData);
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -56,6 +55,8 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData,
         setUseLatestVersion,
         setVersion,
     } = useRecipeFetch();
+    
+    const enrichedBrokers = window.workflowEnrichedBrokers || [];
 
     const copyToClipboard = async (text: string, id: string) => {
         try {

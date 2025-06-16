@@ -38,7 +38,7 @@ const ConnectedUserInput: React.FC<UserInputEditorProps> = ({ nodeData, onSave, 
     const [mappingError, setMappingError] = useState<string | null>(null);
 
     // Get broker registry from Redux - single source of truth
-    const brokerMap = useAppSelector((state) => state.broker?.brokerMap || {});
+    const brokerMap = useAppSelector((state) => state.broker?.brokerMap);
 
     // Derive broker mapping from Redux instead of local state
     const brokerMapping = editingNode && editingNode.broker_id && editingNode.field_component_id

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Edit, Copy, Trash2, Play, Zap, User, LogOut, Sun, Moon } from "lucide-react";
+import { Edit, Copy, Trash2, Play, Zap, User, LogOut, Sun, Moon, Eye } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { DbFunctionNode } from "@/features/workflows/types";
@@ -17,6 +17,7 @@ export interface NodeMenuCoreProps {
     onDelete: (nodeId: string) => void;
     onExecuteComplete?: (taskId: string) => void;
     onExecuteError?: (error: string) => void;
+    onShowResults?: (nodeData: DbFunctionNode) => void;
     // General menu options (shown by default)
     hideProfile?: boolean;
     hideLogout?: boolean;
@@ -36,6 +37,7 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
     data,
     userInputs,
     onEdit,
+    onShowResults,
     onDuplicate,
     onDelete,
     onExecuteComplete,
@@ -95,6 +97,11 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
                 icon: <Edit className="h-4 w-4 mr-2" />,
                 label: "Edit",
                 onClick: () => onEdit(data),
+            })}
+            {renderMenuItem({
+                icon: <Eye className="h-4 w-4 mr-2" />,
+                label: "Show Results",
+                onClick: () => onShowResults(data),
             })}
             {renderMenuItem({
                 icon: <Copy className="h-4 w-4 mr-2" />,

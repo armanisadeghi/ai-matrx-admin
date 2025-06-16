@@ -17,8 +17,11 @@ declare global {
         workflowSystemRef?: {
             deleteNode: (nodeId: string) => void;
             editNode: (nodeData: any) => void;
+            editNodeWithTab?: (nodeData: any, tabId: string) => void;
             getUserInputs: () => { broker_id: string; default_value: string }[];
             duplicateNode: (nodeId: string) => void;
+            handleConnection: (matrxEdge: any) => void;
+            onConnectionMade?: (sourceNode: any, targetNode: any, matrxEdge: any) => void;
         };
         workflowEnrichedBrokers?: EnrichedBroker[];
         workflowAllKnownBrokers?: DataBrokerData[];
@@ -44,6 +47,11 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
         window.workflowSystemRef?.editNode?.(nodeData);
     };
 
+    const handleShowResults = (nodeData: any) => {
+        window.workflowSystemRef?.editNodeWithTab?.(nodeData, 'results');
+        window.workflowSystemRef?.editNode?.(nodeData);
+    };
+
     const handleDuplicate = (nodeId: string) => {
         window.workflowSystemRef?.duplicateNode?.(nodeId);
     };
@@ -63,9 +71,11 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
     };
 
     const handleOnConnect = (connection: Connection) => {
-        console.log("connection", JSON.stringify(connection, null, 2));
         const matrxEdge = parseEdge(connection);
         console.log("matrxEdge", JSON.stringify(matrxEdge, null, 2));
+        
+        // Call the connection handler from the workflow system
+        window.workflowSystemRef?.handleConnection?.(matrxEdge);
     };
 
     if (type === "userInput") {
@@ -135,6 +145,7 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                     onDuplicate={handleDuplicate}
                     userInputs={userInputs}
                     onConnect={handleOnConnect}
+                    onShowResults={handleShowResults}
                 />
                 <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
             </div>
@@ -153,6 +164,8 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, ty
                 onEdit={handleEdit}
                 onDuplicate={handleDuplicate}
                 userInputs={userInputs}
+                onConnect={handleOnConnect}
+                onShowResults={handleShowResults}
             />
             <NodeFloatingIcon nodeData={functionNodeData} type={type} selected={selected} />
         </div>

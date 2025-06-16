@@ -35,6 +35,8 @@ interface NodeEditorManagerProps {
     coreWorkflowData: DbWorkflow;
     completeWorkflowData?: ConvertedWorkflowData | null;
     enrichedBrokers: EnrichedBroker[];
+    defaultTabId?: string; // ID of the tab to open by default
+
 }
 
 export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
@@ -47,6 +49,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
     coreWorkflowData,
     completeWorkflowData,
     enrichedBrokers,
+    defaultTabId,
 }) => {
     if (!editingNode) return null;
 
@@ -104,6 +107,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
                 open={!!editingNode}
                 nodeDefinition={nodeDefinition}
                 enrichedBrokers={enrichedBrokers}
+                defaultTabId={defaultTabId}
             />
         );
     }
@@ -121,6 +125,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
                 title="Custom Node Editor (Testing)"
                 nodeDefinition={nodeDefinition}
                 enrichedBrokers={enrichedBrokers}
+                defaultTabId={defaultTabId}
             />
         );
     }
@@ -133,6 +138,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
             open={!!editingNode}
             readOnly={isReadOnly}
             enrichedBrokers={enrichedBrokers}
+            defaultTabId={defaultTabId}
         />
     );
 };

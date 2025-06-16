@@ -29,6 +29,7 @@ import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { DataBrokerRecords, DataFlowManager, EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 import { useEntityRecords } from "@/lib/redux/entity/hooks/useAllData";
 import { EdgeDetailOverlay } from "@/features/workflows/components/common/EdgeDetailOverlay";
+import { ConnectionDetailOverlay } from "@/features/workflows/components/common/ConnectionDetailOverlay";
 import {
     ConvertedWorkflowData,
     DbWorkflow,
@@ -55,6 +56,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
     const [relays, setRelays] = useState<BrokerRelayNode[]>([]);
     const [functionNodes, setFunctionNodes] = useState<FunctionNode[]>([]);
     const [editingNode, setEditingNode] = useState<DbNodeData | null>(null);
+    const [defaultTabId, setDefaultTabId] = useState<string>("");
     const [coreWorkflowData, setCoreWorkflowData] = useState<DbWorkflow | null>(null);
     const [workflowDataForReactFlow, setWorkflowDataForReactFlow] = useState<ConvertedWorkflowData | null>(null);
     const [enrichedBrokers, setEnrichedBrokers] = useState<EnrichedBroker[]>([]);
@@ -66,6 +68,12 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
     // Edge overlay state
     const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
     const [isEdgeOverlayOpen, setIsEdgeOverlayOpen] = useState(false);
+
+    // Connection overlay state
+    const [connectionOverlayOpen, setConnectionOverlayOpen] = useState(false);
+    const [connectionSourceNode, setConnectionSourceNode] = useState<DbNodeData | null>(null);
+    const [connectionTargetNode, setConnectionTargetNode] = useState<DbNodeData | null>(null);
+    const [connectionMatrxEdge, setConnectionMatrxEdge] = useState<any>(null);
 
     const [refresh, setRefresh] = useState(false);
 
@@ -193,12 +201,14 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         exposeWorkflowMethods,
         handleAddCustomNode,
         handleFinalizeRecipeNode,
+        handleAddDirectRelayNode,
     } = useWorkflowActions({
         nodes,
         edges,
         setNodes,
         setEdges,
         setEditingNode,
+        setDefaultTabId,
         workflowId,
         userId: user.id,
         setDeleteDialogNode,
@@ -207,13 +217,25 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         handleRefresh,
     });
 
+    // Connection handler callback
+    const handleConnectionMade = useCallback((sourceNode: DbNodeData, targetNode: DbNodeData, matrxEdge: any) => {
+        setConnectionSourceNode(sourceNode);
+        setConnectionTargetNode(targetNode);
+        setConnectionMatrxEdge(matrxEdge);
+        setConnectionOverlayOpen(true);
+    }, []);
+
     // Expose methods for node components
     useEffect(() => {
         exposeWorkflowMethods();
+        // Add the connection callback to the global reference
+        if (window.workflowSystemRef) {
+            window.workflowSystemRef.onConnectionMade = handleConnectionMade;
+        }
         return () => {
             delete window.workflowSystemRef;
         };
-    }, [exposeWorkflowMethods]);
+    }, [exposeWorkflowMethods, handleConnectionMade]);
 
     const nodeTypes: NodeTypes = useMemo(
         () => ({
@@ -297,6 +319,15 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         [handlePermanentDelete]
     );
 
+    const handleSaveConnection = useCallback((sourceNode: DbNodeData, targetNode: DbNodeData, matrxEdge: any) => {
+        setConnectionOverlayOpen(false);
+        handleNodeSave(sourceNode);
+        handleNodeSave(targetNode);
+    }, [handleNodeSave]);
+
+
+
+
     return (
         <div className="h-screen w-full flex flex-col bg-background">
             <WorkflowHeader
@@ -346,6 +377,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
 
             <NodeEditorManager
                 editingNode={editingNode}
+                defaultTabId={defaultTabId}
                 onSave={handleNodeSave}
                 onClose={() => setEditingNode(null)}
                 mode={mode}
@@ -372,7 +404,17 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onClose={handleCloseEdgeOverlay}
                 onEdgeUpdated={handleEdgeUpdated}
                 workflowId={workflowId}
-                enrichedBrokers={enrichedBrokers}
+            />
+
+            {/* Connection Detail Overlay */}
+            <ConnectionDetailOverlay
+                isOpen={connectionOverlayOpen}
+                onClose={() => setConnectionOverlayOpen(false)}
+                initialSourceNode={connectionSourceNode}
+                initialTargetNode={connectionTargetNode}
+                matrxEdge={connectionMatrxEdge}
+                onSaveConnection={handleSaveConnection}
+                onDirectAddRelay={handleAddDirectRelayNode}
             />
         </div>
     );

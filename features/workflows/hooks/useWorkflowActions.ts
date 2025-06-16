@@ -1,6 +1,13 @@
 import { useCallback } from "react";
 import { Node, Edge, XYPosition } from "reactflow";
-import { BrokerRelayNodeData, DbFunctionNode, DbNodeData, PythonDataType, UserInputNodeData, WorkflowNode } from "@/features/workflows/types";
+import {
+    BrokerRelayNodeData,
+    DbFunctionNode,
+    DbNodeData,
+    PythonDataType,
+    UserInputNodeData,
+    WorkflowNode,
+} from "@/features/workflows/types";
 import { getNormalizedRegisteredFunctionNode } from "@/features/workflows/utils/node-utils";
 import { extractExecutionNodes, extractUserInputs, extractRelays } from "@/features/workflows/service/workflowTransformers";
 import {
@@ -28,6 +35,7 @@ interface UseWorkflowActionsProps {
     setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
     setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
     setEditingNode: React.Dispatch<React.SetStateAction<DbNodeData | null>>;
+    setDefaultTabId: React.Dispatch<React.SetStateAction<string>>;
     workflowId?: string;
     userId: string;
     setDeleteDialogNode?: React.Dispatch<React.SetStateAction<Node | null>>;
@@ -44,6 +52,7 @@ export const useWorkflowActions = ({
     setNodes,
     setEdges,
     setEditingNode,
+    setDefaultTabId,
     workflowId,
     userId,
     setDeleteDialogNode,
@@ -190,6 +199,60 @@ export const useWorkflowActions = ({
                 }
             } catch (error) {
                 // Error adding node to database
+            }
+        },
+        [setNodes, workflowId, userId]
+    );
+
+    const handleAddDirectRelayNode = useCallback(
+        async (source_broker_id: string, target_broker_ids?: string) => {
+            if (!workflowId) {
+                return;
+            }
+
+            try {
+                const position = getCenterPosition();
+                const newId = uuidv4();
+
+                const relayNodeStructure: Node = {
+                    id: newId,
+                    type: "brokerRelay",
+                    position,
+                    data: {},
+                };
+
+                const newNodeData = {
+                    id: newId,
+                    label: "Broker Relay",
+                    source_broker_id: source_broker_id,
+                    target_broker_ids: target_broker_ids ? [target_broker_ids] : [],
+                    workflow_id: workflowId,
+                    user_id: userId,
+                    metadata: {},
+                    ui_node_data: relayNodeStructure,
+                };
+
+                const savedRelay = await saveWorkflowRelay(workflowId, userId, newNodeData, false);
+
+                const newBrokerRelayData: BrokerRelayNodeData = {
+                    id: savedRelay.id,
+                    type: "brokerRelay",
+                    source_broker_id: savedRelay.source_broker_id,
+                    target_broker_ids: savedRelay.target_broker_ids,
+                    label: savedRelay.label || "Broker Relay",
+                    metadata: savedRelay.metadata || {},
+                    workflow_id: workflowId,
+                };
+
+                const newNode: Node = {
+                    id: savedRelay.id,
+                    type: "brokerRelay",
+                    position,
+                    data: newBrokerRelayData,
+                };
+                setNodes((nds) => nds.concat(newNode));
+            } catch (error) {
+                console.error("Error adding direct relay node:", error, "inputs:", source_broker_id, target_broker_ids);
             }
         },
         [setNodes, workflowId, userId]
@@ -459,11 +522,31 @@ export const useWorkflowActions = ({
         [nodes, workflowId, setNodes, getCenterPosition]
     );
 
+    const handleConnection = useCallback(
+        (matrxEdge: any) => {
+            // This method will be called when a connection is made
+            // For now, we'll just expose the data - later we'll implement the actual connection logic
+            if (typeof window !== "undefined" && window.workflowSystemRef) {
+                const sourceNode = nodes.find((n) => n.id === matrxEdge.source.node_id);
+                const targetNode = nodes.find((n) => n.id === matrxEdge.target.node_id);
+
+                // Trigger the connection overlay
+                window.workflowSystemRef.onConnectionMade?.(sourceNode?.data, targetNode?.data, matrxEdge);
+            }
+        },
+        [nodes]
+    );
+
     const exposeWorkflowMethods = useCallback(() => {
         window.workflowSystemRef = {
             deleteNode: handleDeleteNode,
             editNode: (nodeData: any) => setEditingNode(nodeData),
+            editNodeWithTab: (nodeData: any, tabId: string) => {
+                setEditingNode(nodeData);
+                setDefaultTabId(tabId);
+            },
             duplicateNode: handleDuplicateNode,
+            handleConnection: handleConnection,
             getUserInputs: () => {
                 return nodes
                     .map((node) => node.data as UserInputNodeData)
@@ -474,7 +557,7 @@ export const useWorkflowActions = ({
                     }));
             },
         };
-    }, [nodes, handleDeleteNode, setEditingNode, handleDuplicateNode]);
+    }, [nodes, handleDeleteNode, setEditingNode, handleDuplicateNode, handleConnection]);
 
     return {
         handleAddNode,
@@ -487,5 +570,6 @@ export const useWorkflowActions = ({
         exposeWorkflowMethods,
         handleAddCustomNode,
         handleFinalizeRecipeNode,
+        handleAddDirectRelayNode,
     };
 };

@@ -35,29 +35,31 @@ const BrokerSelector: React.FC<BrokerSelectorProps> = ({
     const [customBrokerId, setCustomBrokerId] = useState("");
     const [customBrokerName, setCustomBrokerName] = useState("");
 
-    // Sort brokers: those with names first, then by usage frequency, then alphabetically
-    const sortedBrokers = [...enrichedBrokers].sort((a, b) => {
-        // Prioritize brokers with names
-        const aHasName = !!(a.name || a.knownBrokerData?.name);
-        const bHasName = !!(b.name || b.knownBrokerData?.name);
-        
-        if (aHasName !== bHasName) {
-            return bHasName ? 1 : -1;
-        }
+    // Filter out brokers with invalid IDs and sort: those with names first, then by usage frequency, then alphabetically
+    const sortedBrokers = [...enrichedBrokers]
+        .filter(broker => broker.id && broker.id.trim() !== "") // Filter out empty or whitespace-only IDs
+        .sort((a, b) => {
+            // Prioritize brokers with names
+            const aHasName = !!(a.name || a.knownBrokerData?.name);
+            const bHasName = !!(b.name || b.knownBrokerData?.name);
+            
+            if (aHasName !== bHasName) {
+                return bHasName ? 1 : -1;
+            }
 
-        // Then by usage (more connections = higher priority)
-        const aUsage = a.sourceNodes.length + a.targetNodes.length;
-        const bUsage = b.sourceNodes.length + b.targetNodes.length;
-        
-        if (aUsage !== bUsage) {
-            return bUsage - aUsage;
-        }
+            // Then by usage (more connections = higher priority)
+            const aUsage = a.sourceNodes.length + a.targetNodes.length;
+            const bUsage = b.sourceNodes.length + b.targetNodes.length;
+            
+            if (aUsage !== bUsage) {
+                return bUsage - aUsage;
+            }
 
-        // Finally alphabetically by name or ID
-        const aLabel = a.name || a.knownBrokerData?.name || a.id;
-        const bLabel = b.name || b.knownBrokerData?.name || b.id;
-        return aLabel.localeCompare(bLabel);
-    });
+            // Finally alphabetically by name or ID
+            const aLabel = a.name || a.knownBrokerData?.name || a.id;
+            const bLabel = b.name || b.knownBrokerData?.name || b.id;
+            return aLabel.localeCompare(bLabel);
+        });
 
     const selectedBroker = enrichedBrokers.find(broker => broker.id === selectedBrokerId);
 

@@ -28,9 +28,10 @@ interface RecipeNodeEditorProps {
     open: boolean;
     nodeDefinition: NodeDefinitionType;
     enrichedBrokers: EnrichedBroker[];
+    defaultTabId?: string; // ID of the tab to open by default
 }
 
-const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, onClose, open, nodeDefinition, enrichedBrokers }) => {
+const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, onClose, open, nodeDefinition, enrichedBrokers, defaultTabId }) => {
     const [recipeDetails, setRecipeDetails] = useState<RecipeConfig | null>(null);
     const [neededBrokers, setNeededBrokers] = useState<NeededBroker[]>([]);
     const [loading, setLoading] = useState(false);
@@ -336,7 +337,13 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
             .filter(Boolean); // Remove any null entries
 
         return (
-            <DefaultNodeEditor nodeData={nodeData} onNodeUpdate={onNodeUpdate} customTabs={customTabs} enrichedBrokers={enrichedBrokers} />
+            <DefaultNodeEditor
+                nodeData={nodeData}
+                onNodeUpdate={onNodeUpdate}
+                customTabs={customTabs}
+                enrichedBrokers={enrichedBrokers}
+                defaultTabId={defaultTabId}
+            />
         );
     };
 

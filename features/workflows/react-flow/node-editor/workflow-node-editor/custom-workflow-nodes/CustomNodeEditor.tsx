@@ -51,7 +51,8 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
   width = 'max-w-6xl',
   height = 'h-[85vh]',
   nodeDefinition,
-  enrichedBrokers
+  enrichedBrokers,
+  defaultTabId
 }) => {
   const [cancelClicked, setCancelClicked] = useState(false);
   const [editingNode, setEditingNode] = useState<DbFunctionNode>(nodeData);
@@ -82,7 +83,13 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <Component nodeData={editingNode} onNodeUpdate={setEditingNode} nodeDefinition={nodeDefinition} enrichedBrokers={enrichedBrokers} />
+          <Component
+            nodeData={editingNode}
+            onNodeUpdate={setEditingNode}
+            nodeDefinition={nodeDefinition}
+            enrichedBrokers={enrichedBrokers}
+            defaultTabId={defaultTabId}
+          />
         </div>
         
         {!autoSave && (

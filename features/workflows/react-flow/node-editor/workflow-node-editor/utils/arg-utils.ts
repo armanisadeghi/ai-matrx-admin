@@ -252,6 +252,25 @@ export const addBrokerMapping = (
     return updated;
 };
 
+// Function to add arg mapping with broker id
+export const addArgMappingWithBrokerId = (
+    node: any,
+    onNodeUpdate: ((updatedNode: any) => void) | null,
+    argName: string,
+    brokerId: string
+) => {
+    const updated = cloneDeep(node);
+    if (!updated.arg_mapping) updated.arg_mapping = [];
+    updated.arg_mapping.push({
+        source_broker_id: brokerId,
+        target_arg_name: argName,
+    });
+    if (onNodeUpdate) {
+        onNodeUpdate(updated);
+    }
+    return updated;
+};
+
 // Function to update broker mapping
 export const updateBrokerMapping = (
     node: any,
