@@ -73,12 +73,16 @@ const getConnectionFieldMapping = (nodeType: string, connectionType: string, isS
 const handleAddArgMapping = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
     const brokerId = matrxEdge.source.id;
     const argName = matrxEdge.target.id;
+    console.log("handleAddArgMapping brokerId", brokerId);
+    console.log("handleAddArgMapping argName", argName);
 
     const existingMapping = node.arg_mapping?.find(
         (mapping: any) => mapping.source_broker_id === brokerId && mapping.target_arg_name === argName
     );
+    console.log("handleAddArgMapping existingMapping", existingMapping);
 
     if (existingMapping) {
+        console.log("handleAddArgMapping existingMapping found, skipping");
         return;
     }
 
@@ -225,7 +229,6 @@ const handleBrokerRelayTargetBrokerIdsToBrokerRelaySourceBrokerId = ({
 
 const handleUpdateWorkflowNodeSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
     console.log("📝 UPDATE: Workflow Node source needs update");
-    // TODO: Implement logic to update workflow node source (return_broker_overrides)
 };
 
 const handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeArgMapping = ({
@@ -240,7 +243,7 @@ const handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeArgMapping = ({
         return;
     }
 
-    handleUpdateWorkflowNodeSource({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
+    console.log("The source doesn't need any updates")
 
     handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
 };
@@ -337,13 +340,8 @@ const handleConnection = ({
             handleUpdateTargetNode,
         });
     } else if (connectionType === "workflowNode_return_broker_overrides → workflowNode_additional_dependencies") {
-        // For workflow node to workflow node connections, we need to create a relay
-        // since brokers cannot connect directly to each other
-        if (onDirectAddRelay && matrxEdge.source.id) {
-            onDirectAddRelay(matrxEdge.source.id, matrxEdge.target.id);
-        } else {
-            console.warn("Cannot create direct broker connection - onDirectAddRelay not available or missing source ID");
-        }
+        // This case is handled separately in handleSaveConnectionWithLogic
+        console.log("Relay creation case - handled separately");
     } else if (connectionType === "workflowNode_return_broker_overrides → workflowNode_arg_mapping") {
         handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeArgMapping({
             sourceNode,
@@ -385,12 +383,17 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
     if (!isOpen) return null;
     const [sourceNode, setSourceNode] = useState(initialSourceNode);
     const [targetNode, setTargetNode] = useState(initialTargetNode);
+    const sourceNodeRef = React.useRef(sourceNode);
+    const targetNodeRef = React.useRef(targetNode);
 
     const handleUpdateSourceNode = (node: DbNodeData) => {
         setSourceNode(node);
+        sourceNodeRef.current = node;
     };
     const handleUpdateTargetNode = (node: DbNodeData) => {
+        console.log("handleUpdateTargetNode", node);
         setTargetNode(node);
+        targetNodeRef.current = node;
     };
 
     const sourceNodeType = getNodeType(sourceNode);
@@ -399,6 +402,18 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
 
     const handleSaveConnectionWithLogic = () => {
         if (sourceNode && targetNode && matrxEdge) {
+            const connectionType = getConnectionType(sourceNode, targetNode, matrxEdge);
+            
+            // Handle relay creation separately - don't update state, just create relay and close
+            if (connectionType === "workflowNode_return_broker_overrides → workflowNode_additional_dependencies") {
+                if (onDirectAddRelay && matrxEdge.source.id) {
+                    onDirectAddRelay(matrxEdge.source.id, matrxEdge.target.id);
+                }
+                onClose();
+                return;
+            }
+            
+            // For all other connections, update state first, then save after state updates
             handleConnection({
                 sourceNode,
                 targetNode,
@@ -408,10 +423,13 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
                 onDirectAddRelay,
             });
             
-            // Call the original save callback if provided
-            if (onSaveConnection) {
-                onSaveConnection(sourceNode, targetNode, matrxEdge);
-            }
+            // Use setTimeout to wait for React state updates to complete
+            setTimeout(() => {
+                if (onSaveConnection) {
+                    // Get the current state values after updates from refs
+                    onSaveConnection(sourceNodeRef.current, targetNodeRef.current, matrxEdge);
+                }
+            }, 0);
         }
     };
 
