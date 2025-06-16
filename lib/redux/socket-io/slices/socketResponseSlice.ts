@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSelector } from '@reduxjs/toolkit';
 import { ResponsesState, SocketErrorObject } from '../socket.types';
+import { RootState } from '@/lib/redux/store';
 
 
 const initialState: ResponsesState = {};
@@ -15,6 +17,7 @@ export const socketResponseSlice = createSlice({
       const { listenerId, taskId } = action.payload;
       state[listenerId] = {
         text: '',
+        textChunks: [], // Initialize empty chunks array
         data: [],
         info: [],
         errors: [],
@@ -29,6 +32,16 @@ export const socketResponseSlice = createSlice({
       const { listenerId, text } = action.payload;
       if (state[listenerId]) {
         state[listenerId].text += text;
+      }
+    },
+    // NEW: Performance-optimized text chunk appending (O(1) operation)
+    appendTextChunk: (
+      state,
+      action: PayloadAction<{ listenerId: string; text: string }>
+    ) => {
+      const { listenerId, text } = action.payload;
+      if (state[listenerId]) {
+        state[listenerId].textChunks.push(text);
       }
     },
     updateDataResponse: (
@@ -70,6 +83,7 @@ export const socketResponseSlice = createSlice({
 export const {
   addResponse,
   updateTextResponse,
+  appendTextChunk, // Export new action
   updateDataResponse,
   updateInfoResponse,
   updateErrorResponse,
@@ -77,3 +91,4 @@ export const {
 } = socketResponseSlice.actions;
 
 export default socketResponseSlice.reducer;
+

@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle, XCircle, Clock, Play } from "lucide-react";
+import { useRenderCount } from "@uidotdev/usehooks";
 
 type TaskStatus = "building" | "ready" | "submitted" | "completed" | "error";
 
@@ -33,6 +34,9 @@ interface TaskSidebarProps {
 }
 
 export const TaskSidebar: React.FC<TaskSidebarProps> = ({ selectedTaskId, onTaskSelect }) => {
+    const renderCount = useRenderCount();
+    console.log("[TASK SIDEBAR] renderCount", renderCount);
+
     const taskEntries = useAppSelector(selectAllTasksArray);
     const runningCount = useAppSelector(selectRunningTasksCount);
     const completedCount = useAppSelector(selectCompletedTasksCount);

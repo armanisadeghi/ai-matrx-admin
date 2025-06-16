@@ -3,7 +3,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux";
 import { selectTaskById, selectTaskListenerIds } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectPrimaryResponseForTask } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectPrimaryResponseDataByTaskId, selectPrimaryResponseErrorsByTaskId, selectPrimaryResponseInfoByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskSidebar } from "./components/TaskSidebar";
@@ -11,6 +11,7 @@ import { WorkflowSummaryDisplay } from "./components/WorkflowSummaryDisplay";
 import { StepCompletionDisplay } from "./components/StepCompletionDisplay";
 import { TextResponseDisplay } from "./components/TextResponseDisplay";
 import { InfoMessageDisplay } from "./components/InfoMessageDisplay";
+import { useRenderCount } from "@uidotdev/usehooks";
 
 interface SocketTasksTabProps {
     currentTaskId: string | null;
@@ -19,6 +20,7 @@ interface SocketTasksTabProps {
     error?: string | null;
     selectedDataType?: "text" | "data" | "info" | "error";
     selectedIndex?: number;
+    hasValidText?: boolean;
 }
 
 export const SocketTasksTab: React.FC<SocketTasksTabProps> = ({
@@ -28,30 +30,36 @@ export const SocketTasksTab: React.FC<SocketTasksTabProps> = ({
     error,
     selectedDataType = "text",
     selectedIndex = 0,
+    hasValidText = false,
 }) => {
     const selectedTask = useAppSelector((state) => (currentTaskId ? selectTaskById(state, currentTaskId) : null));
-    const socketResponse = useAppSelector((state) => (currentTaskId ? selectPrimaryResponseForTask(currentTaskId)(state) : null));
+    const dataResponse = useAppSelector((state) => selectPrimaryResponseDataByTaskId(currentTaskId)(state));
+    const infoResponse = useAppSelector((state) => selectPrimaryResponseInfoByTaskId(currentTaskId)(state));
+    const errorsResponse = useAppSelector((state) => selectPrimaryResponseErrorsByTaskId(currentTaskId)(state));
+
+    const renderCount = useRenderCount();
+    console.log("[SOCKET TASKS TAB] renderCount", renderCount);
 
     // Extract the specific response data based on type and index
     const getFilteredResponseData = () => {
-        if (!socketResponse) return null;
+        if (!hasValidText && !dataResponse.length && !infoResponse.length && !errorsResponse.length) return null;
 
         switch (selectedDataType) {
             case "text":
-                return socketResponse.text || null;
+                // Use performance-optimized text from chunks
+                return hasValidText ? "✓" : null;
             case "data":
-                return socketResponse.data?.[selectedIndex] || null;
+                return dataResponse?.[selectedIndex] || null;
             case "info":
-                return socketResponse.info?.[selectedIndex] || null;
+                return infoResponse?.[selectedIndex] || null;
             case "error":
-                return socketResponse.errors?.[selectedIndex] || null;
+                return errorsResponse?.[selectedIndex] || null;
             default:
                 return null;
         }
     };
 
     const filteredResponseData = getFilteredResponseData();
-    const hasResponseData = filteredResponseData !== null && filteredResponseData !== undefined;
 
     // Check if we're showing special data displays
     const isWorkflowSummary =
@@ -102,7 +110,7 @@ export const SocketTasksTab: React.FC<SocketTasksTabProps> = ({
                             </div>
                         ) : isTextResponse ? (
                             <div className="h-full overflow-auto">
-                                <TextResponseDisplay textResponse={filteredResponseData} isExecuting={isExecuting} />
+                                <TextResponseDisplay taskId={currentTaskId} isExecuting={isExecuting} />
                             </div>
                         ) : isInfoMessage ? (
                             <div className="h-full overflow-auto">

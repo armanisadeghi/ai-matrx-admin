@@ -4,6 +4,7 @@ import React from "react";
 import { useAppSelector } from "@/lib/redux";
 import { selectTaskById, selectTaskListenerIds } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectPrimaryResponseForTask } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectCombinedText } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskSidebar } from "./components/TaskSidebar";
@@ -31,6 +32,12 @@ export const DynamicTab: React.FC<SocketTasksTabProps> = ({
 }) => {
     const selectedTask = useAppSelector((state) => (currentTaskId ? selectTaskById(state, currentTaskId) : null));
     const socketResponse = useAppSelector((state) => (currentTaskId ? selectPrimaryResponseForTask(currentTaskId)(state) : null));
+    
+    // Get primary listener ID for performance text selector
+    const primaryListenerId = selectedTask?.listenerIds?.[0] || null;
+    const performanceText = useAppSelector((state) => 
+        primaryListenerId ? selectCombinedText(primaryListenerId)(state) : ''
+    );
 
     // Extract the specific response data based on type and index
     const getFilteredResponseData = () => {
@@ -38,7 +45,8 @@ export const DynamicTab: React.FC<SocketTasksTabProps> = ({
 
         switch (selectedDataType) {
             case "text":
-                return socketResponse.text || null;
+                // Use performance-optimized text from chunks
+                return performanceText || null;
             case "data":
                 return socketResponse.data?.[selectedIndex] || null;
             case "info":

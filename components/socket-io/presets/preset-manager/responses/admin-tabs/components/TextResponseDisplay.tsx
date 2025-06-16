@@ -2,18 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText } from "lucide-react";
 import BasicMarkdownContent from "@/components/mardown-display/chat-markdown/BasicMarkdownContent";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectPrimaryCombinedTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+
 
 interface TextResponseDisplayProps {
-    textResponse: string;
+    taskId: string;
     isExecuting?: boolean;
 }
 
 export const TextResponseDisplay: React.FC<TextResponseDisplayProps> = ({ 
-    textResponse, 
+    taskId, 
     isExecuting = false 
 }) => {
+    const textResponse = useAppSelector((state) => selectPrimaryCombinedTextByTaskId(taskId)(state));
     return (
         <div className="space-y-4">
             <Card>

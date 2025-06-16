@@ -19,6 +19,7 @@ import {
   selectTaskError
 } from '@/lib/redux/socket-io';
 
+import { selectCombinedText } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { RootState } from '@/lib/redux';
 import { useAppDispatch } from '@/lib/redux/hooks';
 
@@ -150,7 +151,8 @@ export const useSocketTask = (taskId?: string, connectionId?: string) => {
 // Hook for accessing task results when you only have a listener ID
 export const useSocketResponse = (listenerId: string) => {
   const stream = useSelector((state: RootState) => state.socketResponse[listenerId] || null);
-  const text = useSelector((state: RootState) => state.socketResponse[listenerId]?.text || '');
+  // Use performance-optimized text selector for text chunks
+  const text = useSelector((state: RootState) => selectCombinedText(listenerId)(state));
   const data = useSelector((state: RootState) => state.socketResponse[listenerId]?.data || []);
   const info = useSelector((state: RootState) => state.socketResponse[listenerId]?.info || []);
   const errors = useSelector((state: RootState) => state.socketResponse[listenerId]?.errors || []);

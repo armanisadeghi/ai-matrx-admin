@@ -70,8 +70,16 @@ export type SocketInfoObject = {
     metadata?: Record<string, unknown> | null;
 };
 
+export interface SocketBrokerObject {
+    broker_id: string;
+    value: any; // Preserve original data type
+    source?: string; // Defaults to "socket-response" if not provided
+    source_id?: string; // Defaults to listenerId if not provided
+}
+
 export interface ResponseState {
     text: string;
+    textChunks: string[]; // New: for performance optimization
     data: any[];
     info: SocketInfoObject[];
     errors: SocketErrorObject[];

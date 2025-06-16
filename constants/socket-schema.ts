@@ -20,6 +20,88 @@ export interface Schema {
 }
 
 
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
+    },
+};
+
+export const USER_INPUT_DEFINITION: Schema = {
+    broker_id: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker ID for this user input.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "8fa5f0ba-5145-48a9-ace5-f5115b6b4b5c",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value for this user input.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I own an Electronics Recycling Company",
+    },
+};
+
 export const NODE_DEFINITION: Schema = {
     function_id: {
         REQUIRED: true,
@@ -137,88 +219,6 @@ export const NODE_DEFINITION: Schema = {
         DESCRIPTION: "Override the initial values for the arguments of this function. If all values for the function are defined in overrides, and all 'required' arguments are set to 'ready', then this function will instantly execute when the workflow starts.",
         ICON_NAME: "Edit",
         TEST_VALUE: [{"name": "recipe_id", "default_value": "f652c807-c4c2-4f64-86f6-d7233e057bb8", "ready": true}, {"name": "latest_version", "default_value": true, "ready": true}],
-    },
-};
-
-export const USER_INPUT_DEFINITION: Schema = {
-    broker_id: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the broker ID for this user input.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "8fa5f0ba-5145-48a9-ace5-f5115b6b4b5c",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value for this user input.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I own an Electronics Recycling Company",
-    },
-};
-
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
     },
 };
 
@@ -641,6 +641,18 @@ export const EXECUTE_SINGLE_STEP: Schema = {
         DESCRIPTION: "The step definition to execute as a single step.",
         ICON_NAME: "Play",
     },
+    broker_values: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: "convert_broker_data",
+        REFERENCE: BROKER_DEFINITION,
+        COMPONENT: "relatedArrayObject",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
+        ICON_NAME: "Parentheses",
+    },
     user_inputs: {
         REQUIRED: false,
         DEFAULT: [],
@@ -669,6 +681,18 @@ export const START_WORKFLOW_BY_ID: Schema = {
         ICON_NAME: "Key",
         TEST_VALUE: "unknown-workflow-uuid",
     },
+    broker_values: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: "convert_broker_data",
+        REFERENCE: BROKER_DEFINITION,
+        COMPONENT: "relatedArrayObject",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
+        ICON_NAME: "Parentheses",
+    },
     user_inputs: {
         REQUIRED: false,
         DEFAULT: [],
@@ -695,6 +719,18 @@ export const START_WORKFLOW_WITH_STRUCTURE: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "The steps to execute in the workflow.",
         ICON_NAME: "Play",
+    },
+    broker_values: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: "convert_broker_data",
+        REFERENCE: BROKER_DEFINITION,
+        COMPONENT: "relatedArrayObject",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
+        ICON_NAME: "Parentheses",
     },
     user_inputs: {
         REQUIRED: false,
@@ -1329,6 +1365,229 @@ export const CREATE_WC_CLAIM: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Full name of the applicant",
         ICON_NAME: "User",
+    },
+};
+
+export const SEARCH_AND_SCRAPE_LIMITED: Schema = {
+    keyword: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter query to search and get results for.",
+        ICON_NAME: "WholeWord",
+        TEST_VALUE: "apple stock price",
+    },
+    country_code: {
+        REQUIRED: false,
+        DEFAULT: "all",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"label": "Argentina", "value": "AR"}, {"label": "Australia", "value": "AU"}, {"label": "Austria", "value": "AT"}, {"label": "Belgium", "value": "BE"}, {"label": "Brazil", "value": "BR"}, {"label": "Canada", "value": "CA"}, {"label": "Chile", "value": "CL"}, {"label": "Denmark", "value": "DK"}, {"label": "Finland", "value": "FI"}, {"label": "France", "value": "FR"}, {"label": "Germany", "value": "DE"}, {"label": "Hong Kong", "value": "HK"}, {"label": "India", "value": "IN"}, {"label": "Indonesia", "value": "ID"}, {"label": "Italy", "value": "IT"}, {"label": "Japan", "value": "JP"}, {"label": "Korea", "value": "KR"}, {"label": "Malaysia", "value": "MY"}, {"label": "Mexico", "value": "MX"}, {"label": "Netherlands", "value": "NL"}, {"label": "New Zealand", "value": "NZ"}, {"label": "Norway", "value": "NO"}, {"label": "Peoples Republic of China", "value": "CN"}, {"label": "Poland", "value": "PL"}, {"label": "Portugal", "value": "PT"}, {"label": "Republic of the Philippines", "value": "PH"}, {"label": "Russia", "value": "RU"}, {"label": "Saudi Arabia", "value": "SA"}, {"label": "South Africa", "value": "ZA"}, {"label": "Spain", "value": "ES"}, {"label": "Sweden", "value": "SE"}, {"label": "Switzerland", "value": "CH"}, {"label": "Taiwan", "value": "TW"}, {"label": "Turkey", "value": "TR"}, {"label": "United Kingdom", "value": "GB"}, {"label": "United States", "value": "US"}, {"label": "All Regions", "value": "ALL"}]},
+        DESCRIPTION: "Enter the country code to get search results for.",
+        ICON_NAME: "Flag",
+        TEST_VALUE: "US",
+    },
+    max_page_read: {
+        REQUIRED: false,
+        DEFAULT: 10,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "slider",
+        COMPONENT_PROPS: {"min": 1, "max": 20, "step": 1, "range": "False"},
+        DESCRIPTION: "Enter the number of results per keyword to get.",
+        ICON_NAME: "SlidersHorizontal",
+        TEST_VALUE: 5,
+    },
+    search_type: {
+        REQUIRED: false,
+        DEFAULT: "all",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "RadioGroup",
+        COMPONENT_PROPS: {"options": [{"label": "All", "value": "all"}, {"label": "Web", "value": "web"}, {"label": "News", "value": "news"}], "orientation": "vertical"},
+        DESCRIPTION: "Kind of search type to scrape, 'web', 'news', or 'all'.",
+        ICON_NAME: "Rss",
+    },
+    get_organized_data: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get organized json content for the scrape page.",
+        ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_structured_data: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get structured data json content for the scrape page.",
+        ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_overview: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get overview content for the scraped page. Overview contains basic information for the page like title, other metadata etc.",
+        ICON_NAME: "Target",
+        TEST_VALUE: false,
+    },
+    get_text_data: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get parsed text data for the scraped page. Generated from 'organized data'.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: true,
+    },
+    get_main_image: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get main image for the scraped page. Main image is usually the biggest or most relevant image on the page. Extracted from OG metadata or other meta tags.",
+        ICON_NAME: "Image",
+        TEST_VALUE: true,
+    },
+    get_links: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get all the links from the scraped page. Links are categorized as internal, external, document, archive etc.",
+        ICON_NAME: "Link",
+        TEST_VALUE: false,
+    },
+    get_content_filter_removal_details: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get list of objects that were ignored during parsing page based on settings.",
+        ICON_NAME: "RemoveFormatting",
+        TEST_VALUE: false,
+    },
+    include_highlighting_markers: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include /exclude highlighting markers like 'underline', 'list markers' etc... from text.",
+        ICON_NAME: "Underline",
+        TEST_VALUE: false,
+    },
+    include_media: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media content in text output.",
+        ICON_NAME: "TvMinimalPlay",
+        TEST_VALUE: true,
+    },
+    include_media_links: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media links (image , video, audio) in text. Triggered when include_media is turned on.",
+        ICON_NAME: "Link",
+        TEST_VALUE: true,
+    },
+    include_media_description: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media description (media caption etc.) in text. Triggers when include_media is turned on.",
+        ICON_NAME: "WholeWord",
+        TEST_VALUE: true,
+    },
+    include_anchors: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include hyperlinks in scraped text",
+        ICON_NAME: "ExternalLink",
+        TEST_VALUE: true,
+    },
+    anchor_size: {
+        REQUIRED: false,
+        DEFAULT: 100,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 10, "max": 500},
+        DESCRIPTION: "Size of hyperlinks in scraped text",
+        ICON_NAME: "Ruler",
+        TEST_VALUE: 100,
     },
 };
 
@@ -3683,6 +3942,7 @@ export const SERVICE_TASKS = {
         quick_scrape_stream: QUICK_SCRAPE_STREAM,
         search_and_scrape: SEARCH_AND_SCRAPE,
         search_keywords: SEARCH_KEYWORDS,
+        search_and_scrape_limited: SEARCH_AND_SCRAPE_LIMITED,
         mic_check: MIC_CHECK,
     },
     california_worker_compensation_service: {
@@ -3979,6 +4239,35 @@ export const validateMarkdown = (value: any): boolean => {
     // Check for common markdown patterns: headers, bold, italic, lists, links, or code
     const markdownRegex = /(#+\s|[-*+]\s|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_|`.*?`|\[.*?\]\(.*?\))/;
     return markdownRegex.test(value);
+};
+
+
+export const validateWCSide = (value: any): boolean => {
+    const validSides = ["left", "right", "default"];
+    return typeof value === "string" && validSides.includes(value);
+};
+
+export const validateDate = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!datePattern.test(value)) {
+        return false;
+    }
+
+    try {
+        const [year, month, day] = value.split("-").map(Number);
+        const date = new Date(year, month - 1, day);
+        return (
+            date.getFullYear() === year &&
+            date.getMonth() === month - 1 &&
+            date.getDate() === day
+        );
+    } catch {
+        return false;
+    }
 };
 
 export const validToolNames = [

@@ -13,6 +13,7 @@ import {
     StepCompletionItemComponent,
     LoadingWorkItemComponent
 } from "./ResultsSidebar";
+import { useRenderCount } from "@uidotdev/usehooks";
 
 // Interface for TaskSidebar props (for custom override)
 export interface TaskSidebarProps {
@@ -29,7 +30,7 @@ interface DualSidebarProps {
     selectedDataType?: "text" | "data" | "info" | "error";
     selectedIndex?: number;
     onDataTypeChange?: (dataType: "text" | "data" | "info" | "error", index?: number) => void;
-    
+    hasValidText: boolean;
     // Layout customization
     className?: string;
     splitRatio?: [number, number]; // [leftSidebarRatio, rightSidebarRatio] - defaults to [2, 3] (40%, 60%)
@@ -51,6 +52,7 @@ export const DualSidebar: React.FC<DualSidebarProps> = ({
     selectedDataType, 
     selectedIndex, 
     onDataTypeChange,
+    hasValidText,
     className,
     splitRatio = [2, 3],
     TaskSidebarComponent = TaskSidebar,
@@ -63,6 +65,8 @@ export const DualSidebar: React.FC<DualSidebarProps> = ({
     LoadingWorkItemComponent,
 }) => {
     const [leftRatio, rightRatio] = splitRatio;
+    const renderCount = useRenderCount();
+    console.log("[DUAL SIDEBAR] renderCount", renderCount);
     
     return (
         <div className={cn("flex h-full w-full", className)}>
@@ -78,6 +82,7 @@ export const DualSidebar: React.FC<DualSidebarProps> = ({
                     selectedDataType={selectedDataType}
                     selectedIndex={selectedIndex}
                     onDataTypeChange={onDataTypeChange}
+                    hasValidText={hasValidText}
                     InfoResponseItemComponent={InfoResponseItemComponent}
                     ErrorResponseItemComponent={ErrorResponseItemComponent}
                     TextResponseItemComponent={TextResponseItemComponent}

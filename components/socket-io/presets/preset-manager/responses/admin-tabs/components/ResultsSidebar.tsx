@@ -8,11 +8,13 @@ import {
     selectPrimaryResponseInfoByTaskId,
     selectPrimaryResponseTextByTaskId,
     selectPrimaryResponseEndedByTaskId,
+    selectPrimaryCombinedTextByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle, Clock, MessageSquare, Database, AlertCircle, Info, Copy, Loader2, Cog, Zap } from "lucide-react";
+import { useRenderCount } from "@uidotdev/usehooks";
 
 // Interfaces for response component types
 export interface InfoResponseItemProps {
@@ -30,7 +32,7 @@ export interface ErrorResponseItemProps {
 }
 
 export interface TextResponseItemProps {
-    text: string;
+    hasValidText: boolean;
     isSelected: boolean;
     onClick: () => void;
 }
@@ -74,7 +76,7 @@ interface ResultsSidebarProps {
     selectedDataType?: "text" | "data" | "info" | "error";
     selectedIndex?: number;
     onDataTypeChange?: (dataType: "text" | "data" | "info" | "error", index?: number) => void;
-
+    hasValidText: boolean;
     // Override component props
     InfoResponseItemComponent?: InfoResponseItemComponent;
     ErrorResponseItemComponent?: ErrorResponseItemComponent;
@@ -155,10 +157,10 @@ const ErrorResponseItem: React.FC<{
 
 // Component for Text response (throttled character count)
 const TextResponseItem: React.FC<{
-    text: string;
+    hasValidText: boolean;
     isSelected: boolean;
     onClick: () => void;
-}> = ({ text, isSelected, onClick }) => {
+}> = ({ hasValidText, isSelected, onClick }) => {
 
     return (
         <div
@@ -176,7 +178,7 @@ const TextResponseItem: React.FC<{
                 <div className="flex items-center gap-1">
                     <MessageSquare className={`w-3 h-3 ${isSelected ? "text-primary-foreground" : "text-green-500"}`} />
                     <span className={`text-[10px] ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                        {text ? text.length : 0} chars
+                        {hasValidText ? "Streaming Text Started" : "—"}
                     </span>
                 </div>
             </div>
@@ -425,6 +427,7 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
     selectedDataType = "text",
     selectedIndex = 0,
     onDataTypeChange,
+    hasValidText,
     InfoResponseItemComponent = InfoResponseItem,
     ErrorResponseItemComponent = ErrorResponseItem,
     TextResponseItemComponent = TextResponseItem,
@@ -433,16 +436,19 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
     StepCompletionItemComponent = StepCompletionItem,
     LoadingWorkItemComponent = LoadingWorkItem,
 }) => {
+    const renderCount = useRenderCount();
+    console.log("[RESULTS SIDEBAR] renderCount", renderCount);
+
     const [errorTimeout, setErrorTimeout] = useState<NodeJS.Timeout | null>(null);
     const [showLoadingOverride, setShowLoadingOverride] = useState(false);
+    
 
-    const textResponse = useAppSelector((state) => (selectPrimaryResponseTextByTaskId(selectedTaskId)(state)));
+
     const dataResponse = useAppSelector((state) => (selectPrimaryResponseDataByTaskId(selectedTaskId)(state)));
     const infoResponse = useAppSelector((state) => (selectPrimaryResponseInfoByTaskId(selectedTaskId)(state)));
     const errorsResponse = useAppSelector((state) => (selectPrimaryResponseErrorsByTaskId(selectedTaskId)(state)));
     const taskEnded = useAppSelector((state) => (selectPrimaryResponseEndedByTaskId(selectedTaskId)(state)));
-
-    const hasAnyData = textResponse.length > 0 || dataResponse.length > 0 || infoResponse.length > 0 || errorsResponse.length > 0;
+    const hasAnyData = hasValidText || dataResponse.length > 0 || infoResponse.length > 0 || errorsResponse.length > 0;
     const hasErrors = errorsResponse.length > 0;
 
     // Determine if task is actively running
@@ -507,8 +513,8 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                 <div className="space-y-1 text-xs">
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Text</span>
-                        <Badge variant={textResponse.length > 0 ? "default" : "secondary"} className="text-[10px] px-1 py-0">
-                            {textResponse.length > 0 ? "✓" : "—"}
+                        <Badge variant={hasValidText ? "default" : "secondary"} className="text-[10px] px-1 py-0">
+                            {hasValidText ? "✓" : "—"}
                         </Badge>
                     </div>
                     <div className="flex items-center justify-between">
@@ -544,9 +550,9 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                     ) : (
                         <div className="space-y-1">
                             {/* Text Response */}
-                            {textResponse.length > 0 && (
+                            {hasValidText && (
                                 <TextResponseItemComponent
-                                    text={textResponse}
+                                    hasValidText={hasValidText}
                                     isSelected={selectedDataType === "text"}
                                     onClick={() => onDataTypeChange?.("text")}
                                 />

@@ -41,8 +41,8 @@ const brokerSlice = createSlice({
         // Adds or updates a single broker register entry
         addOrUpdateRegisterEntry(state: BrokerState, action: PayloadAction<BrokerMapEntry>) {
             const entry = action.payload;
-            if (!entry.sourceId) {
-                console.warn(`Missing sourceId for BrokerMapEntry: ${JSON.stringify(entry)}`);
+            if (!entry.sourceId || !entry.brokerId || !entry.mappedItemId || !entry.source) {
+                console.warn(`Missing required fields for BrokerMapEntry: ${JSON.stringify(entry)}`);
                 return;
             }
             const mapKey = `${entry.source}:${entry.mappedItemId}`;
@@ -58,8 +58,8 @@ const brokerSlice = createSlice({
         addOrUpdateRegisterEntries(state: BrokerState, action: PayloadAction<BrokerMapEntry[]>) {
             const entries = action.payload;
             entries.forEach((entry) => {
-                if (!entry.sourceId) {
-                    console.warn(`Missing sourceId for BrokerMapEntry: ${JSON.stringify(entry)}`);
+                if (!entry.sourceId || !entry.brokerId || !entry.mappedItemId || !entry.source) {
+                    console.warn(`Missing required fields for BrokerMapEntry: ${JSON.stringify(entry)}`);
                     return;
                 }
                 const key = `${entry.source}:${entry.mappedItemId}`;

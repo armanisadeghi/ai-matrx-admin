@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux";
-import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectPrimaryCombinedTextByTaskId, selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { selectTaskById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BasicMarkdownContent from "@/components/mardown-display/chat-markdown/BasicMarkdownContent";
@@ -32,9 +32,7 @@ export const SocketTextResponseTab: React.FC<SocketTextResponseTabProps> = ({
   const task = useAppSelector((state) => 
     taskId ? selectTaskById(state, taskId) : null
   );
-  const textResponse = useAppSelector((state) => 
-    taskId ? selectPrimaryResponseTextByTaskId(taskId)(state) : ""
-  );
+  const textResponse = useAppSelector((state) => selectPrimaryCombinedTextByTaskId(taskId)(state));
 
   if (!taskId) {
     return (

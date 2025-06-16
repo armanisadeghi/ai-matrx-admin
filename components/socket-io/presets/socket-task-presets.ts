@@ -1,5 +1,7 @@
 import { SchemaField, SOCKET_TASKS } from "../../../constants/socket-schema";
 import { flexibleJsonParse } from "@/utils/json-utils";
+import { RootState } from "@/lib/redux/store";
+import { BrokerValues } from "@/types/socket-schema-types";
 
 /* Socket Task Preset Creation Guide
 
@@ -270,6 +272,70 @@ export interface TaskPreset {
     preprocessor?: (data: any) => any;          // Transform source data before mapping
     postprocessor?: (taskData: any) => any;    // Transform task data after mapping
     validation?: (sourceData: any) => { isValid: boolean; errors: string[] }; // Custom validation
+    brokerSources?: string[];                   // Optional: limit auto-included brokers to specific sources
+}
+
+// ===== BROKER AUTO-INCLUSION UTILITIES =====
+
+/**
+ * Checks if a task schema has broker_values field
+ */
+function taskSupportsBrokers(taskName: SocketTaskName): boolean {
+    const schema = SOCKET_TASKS[taskName];
+    return schema && 'broker_values' in schema;
+}
+
+/**
+ * Gets all current broker values, optionally filtered by source
+ */
+function getAllBrokerValues(state?: RootState, brokerSources?: string[]): BrokerValues[] {
+    if (!state) return [];
+    
+    const { brokers, brokerMap } = state.broker;
+    const brokerValues: BrokerValues[] = [];
+    
+    // If no source filtering, include all brokers
+    if (!brokerSources || brokerSources.length === 0) {
+        Object.entries(brokers).forEach(([brokerId, value]) => {
+            if (value !== undefined && value !== null) {
+                brokerValues.push({
+                    id: brokerId,
+                    value: value, // Preserve original data type
+                    ready: true
+                });
+            }
+        });
+    } else {
+        // Filter by broker sources using mapping
+        Object.values(brokerMap).forEach(entry => {
+            if (brokerSources.includes(entry.source)) {
+                const value = brokers[entry.brokerId];
+                if (value !== undefined && value !== null) {
+                    brokerValues.push({
+                        id: entry.brokerId,
+                        value: value, // Preserve original data type
+                        ready: true
+                    });
+                }
+            }
+        });
+    }
+    
+    return brokerValues;
+}
+
+/**
+ * Merges auto-included brokers with existing broker_values, ensuring no overwrites
+ */
+function mergeBrokerValues(existingBrokers: BrokerValues[], autoBrokers: BrokerValues[]): BrokerValues[] {
+    // Create a map of existing broker IDs for quick lookup
+    const existingIds = new Set(existingBrokers.map(broker => broker.id));
+    
+    // Only include auto-brokers that aren't already provided
+    const filteredAutoBrokers = autoBrokers.filter(broker => !existingIds.has(broker.id));
+    
+    // Combine existing (first priority) with filtered auto-brokers
+    return [...existingBrokers, ...filteredAutoBrokers];
 }
 
 // ===== TRANSFORMATION UTILITIES =====
@@ -344,8 +410,11 @@ function convertBySchemaType(value: any, targetField: string, taskName: SocketTa
 
 /**
  * Transforms source data into task data using a preset
+ * @param sourceData - The source data to transform
+ * @param preset - The preset configuration to use
+ * @param state - Optional Redux state for broker auto-inclusion
  */
-export function transformDataWithPreset(sourceData: any, preset: TaskPreset): any {
+export function transformDataWithPreset(sourceData: any, preset: TaskPreset, state?: RootState): any {
     try {
         // Step 1: Run preprocessor if available
         const processedSource = preset.preprocessor ? preset.preprocessor(sourceData) : sourceData;
@@ -388,7 +457,17 @@ export function transformDataWithPreset(sourceData: any, preset: TaskPreset): an
             }
         }
         
-        // Step 4: Run postprocessor if available
+        // Step 4: Auto-include brokers if task supports them and state is available
+        if (state && taskSupportsBrokers(preset.targetTask)) {
+            const autoBrokers = getAllBrokerValues(state, preset.brokerSources);
+            if (autoBrokers.length > 0) {
+                const existingBrokers = taskData.broker_values || [];
+                taskData.broker_values = mergeBrokerValues(existingBrokers, autoBrokers);
+                console.log(`🔗 Auto-included ${autoBrokers.length} brokers for task ${preset.targetTask}${preset.brokerSources ? ` (sources: ${preset.brokerSources.join(', ')})` : ''}`);
+            }
+        }
+        
+        // Step 5: Run postprocessor if available
         const finalTaskData = preset.postprocessor ? preset.postprocessor(taskData) : taskData;
         
         return finalTaskData;
@@ -408,6 +487,7 @@ export const WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP: TaskPreset = {
     description: "Convert a workflow step object to an EXECUTE_SINGLE_STEP socket task",
     targetTask: "execute_single_step",
     service: "workflow_service",
+    brokerSources: ["workflow", "applet", "system"],
     fieldMappings: {
         single_node: {
             sourceField: (data: any) => data,  // Pass the entire node data directly
@@ -454,6 +534,7 @@ export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
     description: "Convert workflow flow nodes to a START_WORKFLOW_WITH_STRUCTURE socket task for executing entire workflows",
     targetTask: "start_workflow_with_structure",
     service: "workflow_service",
+    brokerSources: ["workflow", "applet", "system"],
     fieldMappings: {
         nodes: {
             sourceField: "nodes",

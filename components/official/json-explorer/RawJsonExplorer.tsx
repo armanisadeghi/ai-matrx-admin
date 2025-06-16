@@ -21,7 +21,7 @@ import ActionButtons from "./ActionButtons";
 import CopyPathObjectDialog from "./CopyPathObjectDialog";
 
 interface RawJsonExplorerProps {
-    pageData: string;
+    pageData: any;
     ignorePrefix?: string;
     withSelect?: boolean;
 }

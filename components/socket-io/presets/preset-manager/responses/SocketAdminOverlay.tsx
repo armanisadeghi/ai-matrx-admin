@@ -20,7 +20,6 @@ import {
     LoadingWorkItemComponent,
 } from "./admin-tabs/components/ResultsSidebar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
     selectPrimaryResponseDataByTaskId,
@@ -28,8 +27,10 @@ import {
     selectPrimaryResponseInfoByTaskId,
     selectPrimaryResponseTextByTaskId,
     selectPrimaryResponseEndedByTaskId,
+    selectPrimaryCombinedTextByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { DynamicTab } from "./admin-tabs/DynamicTab";
+import { useRenderCount } from "@uidotdev/usehooks";
 
 // Define available base tab names
 export type BaseTabName = "tasks" | "text" | "data" | "data-processor" | "info" | "errors" | "dynamic";
@@ -123,12 +124,20 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
     const [selectedDataType, setSelectedDataType] = useState<"data" | "text" | "info" | "error">("text");
     const [responseIndex, setResponseIndex] = useState<number>(0);
 
+    // Cache for hasValidText per task ID to prevent re-renders on text content changes
+    const hasValidTextCacheRef = React.useRef<Map<string, boolean>>(new Map());
+
     // Get response data based on selected task (not just the initial taskId)
-    const textResponse = useAppSelector((state) => (selectPrimaryResponseTextByTaskId(selectedTaskId)(state)));
-    const dataResponse = useAppSelector((state) => (selectPrimaryResponseDataByTaskId(selectedTaskId)(state)));
-    const infoResponse = useAppSelector((state) => (selectPrimaryResponseInfoByTaskId(selectedTaskId)(state)));
-    const errorsResponse = useAppSelector((state) => (selectPrimaryResponseErrorsByTaskId(selectedTaskId)(state)));
-    const taskEnded = useAppSelector((state) => (selectPrimaryResponseEndedByTaskId(selectedTaskId)(state)));
+    const dataResponse = useAppSelector((state) => selectPrimaryResponseDataByTaskId(selectedTaskId)(state));
+    const infoResponse = useAppSelector((state) => selectPrimaryResponseInfoByTaskId(selectedTaskId)(state));
+    const errorsResponse = useAppSelector((state) => selectPrimaryResponseErrorsByTaskId(selectedTaskId)(state));
+    const taskEnded = useAppSelector((state) => selectPrimaryResponseEndedByTaskId(selectedTaskId)(state));
+
+    // Only check text response if we haven't already confirmed it has valid text for this task
+    const shouldCheckTextResponse = selectedTaskId && !hasValidTextCacheRef.current.get(selectedTaskId);
+    const textResponseForValidation = useAppSelector((state) =>
+        shouldCheckTextResponse ? selectPrimaryCombinedTextByTaskId(selectedTaskId)(state) : null
+    );
 
     // Use showOverlay prop to control visibility
     const isOverlayOpen = showOverlay;
@@ -140,10 +149,49 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
         }
     }, [taskId]);
 
+    // Clear cache for old task IDs to prevent memory leaks
+    React.useEffect(() => {
+        const cache = hasValidTextCacheRef.current;
+        const maxCacheSize = 50; // Keep cache size reasonable
+
+        if (cache.size > maxCacheSize) {
+            // Keep only the most recent entries (simple cleanup)
+            const entries = Array.from(cache.entries());
+            cache.clear();
+            // Keep the last 25 entries
+            entries.slice(-25).forEach(([key, value]) => {
+                cache.set(key, value);
+            });
+        }
+    }, [selectedTaskId]);
+
     const handleClose = (e?: React.MouseEvent) => {
         e?.stopPropagation(); // Prevent event bubbling
         onClose?.();
     };
+
+    // Calculate hasValidText using cached approach to prevent re-renders
+    const hasValidText = React.useMemo(() => {
+        if (!selectedTaskId) return false;
+
+        // Check if we already have a cached result for this task
+        if (hasValidTextCacheRef.current.has(selectedTaskId)) {
+            return hasValidTextCacheRef.current.get(selectedTaskId)!;
+        }
+
+        // If we have text response data to validate, check it
+        if (textResponseForValidation && textResponseForValidation.length >= 2) {
+            hasValidTextCacheRef.current.set(selectedTaskId, true);
+            return true;
+        }
+
+        return false;
+    }, [selectedTaskId, textResponseForValidation]);
+
+
+    const renderCount = useRenderCount();
+
+    console.log("[SOCKET ADMIN OVERLAY] renderCount", renderCount);
 
     // Define all possible base tabs
     const allBaseTabs: Record<BaseTabName, TabDefinition> = {
@@ -158,6 +206,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                     error={error}
                     selectedDataType={selectedDataType}
                     selectedIndex={responseIndex}
+                    hasValidText={hasValidText}
                 />
             ),
         },
@@ -268,7 +317,6 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
 
     const tabs: TabDefinition[] = [...baseTabs, ...customTabDefinitions];
 
-    const hasValidText = textResponse && textResponse.length >= 2;
     const hasValidData = dataResponse && dataResponse.length > 0;
     const hasValidInfo = infoResponse && infoResponse.length > 0;
     const hasValidError = errorsResponse && errorsResponse.length > 0;
@@ -425,6 +473,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                         }}
                         className={dualSidebarClassName}
                         splitRatio={dualSidebarSplitRatio}
+                        hasValidText={hasValidText}
                         TaskSidebarComponent={TaskSidebarComponent}
                         InfoResponseItemComponent={InfoResponseItemComponent}
                         ErrorResponseItemComponent={ErrorResponseItemComponent}

@@ -6,8 +6,9 @@ import {
     SocketTaskName 
 } from "@/components/socket-io/presets/socket-task-presets";
 import { createTask } from "./createTaskThunk";
-import { submitTask } from "./submitTaskThunk";
+import { submitTask, submitTaskNew } from "./submitTaskThunk";
 import { nanoid } from "nanoid";
+import { RootState } from "@/lib/redux/store";
 
 // ===== INTERFACES =====
 
@@ -62,10 +63,11 @@ export const createTaskFromPreset = createAsyncThunk<
     CreateTaskFromPresetParams,
     {
         rejectValue: CreateTaskFromPresetError;
+        state: RootState;
     }
 >(
     "socketio/createTaskFromPreset",
-    async (params, { dispatch, rejectWithValue }) => {
+    async (params, { dispatch, getState, rejectWithValue }) => {
         const { presetName, sourceData, options = {} } = params;
         const {
             taskId = nanoid(),
@@ -100,7 +102,8 @@ export const createTaskFromPreset = createAsyncThunk<
             // Step 3: Transform the data using the preset
             let transformedData: any;
             try {
-                transformedData = transformDataWithPreset(sourceData, preset);
+                const state = getState();
+                transformedData = transformDataWithPreset(sourceData, preset, state);
             } catch (transformError) {
                 return rejectWithValue({
                     message: `Data transformation failed: ${transformError.message}`,
@@ -126,10 +129,10 @@ export const createTaskFromPreset = createAsyncThunk<
                 });
             }
 
-            // Step 5: Submit the task for execution
+            // Step 5: Submit the task for execution (using new performance-optimized version)
             try {
-                await dispatch(submitTask({ taskId })).unwrap();
-                console.log(`✅ Task ${taskId} created and submitted successfully`);
+                await dispatch(submitTaskNew({ taskId })).unwrap();
+                console.log(`✅ Task ${taskId} created and submitted successfully (performance mode)`);
             } catch (submitError) {
                 return rejectWithValue({
                     message: `Task submission failed: ${submitError.message || 'Unknown error'}`,
