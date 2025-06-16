@@ -1,6 +1,13 @@
 "use client";
-import React, { useState } from "react";
-import { X } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui";
 import { DbFunctionNode, DbNodeData, WorkflowDependency } from "@/features/workflows/types";
 import { addArgMappingWithBrokerId } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { upsertWorkflowDependency } from "../../react-flow/node-editor/workflow-node-editor/utils/dependency-utils";
@@ -28,8 +35,14 @@ interface ConnectionDetailOverlayProps {
     initialSourceNode: DbNodeData | null;
     initialTargetNode: DbNodeData | null;
     matrxEdge: MatrxEdge | null;
-    onSaveConnection?: (sourceNode: DbNodeData, targetNode: DbNodeData, matrxEdge: any) => void;
-    onDirectAddRelay?: (source_broker_id: string, target_broker_ids?: string) => void;
+    onSaveConnection: (sourceNode: DbNodeData, targetNode: DbNodeData, matrxEdge: any) => void;
+    onDirectAddRelay: (source_broker_id: string, target_broker_ids?: string) => void;
+}
+
+interface PendingOperation {
+    type: "relay_creation";
+    source_broker_id: string;
+    target_broker_ids?: string;
 }
 
 interface CommonUpdateProps {
@@ -38,6 +51,9 @@ interface CommonUpdateProps {
     matrxEdge: MatrxEdge;
     handleUpdateSourceNode: (node: DbNodeData) => void;
     handleUpdateTargetNode: (node: DbNodeData) => void;
+    setConnectionMessage: (message: string) => void;
+    setIsDirty: (dirty: boolean) => void;
+    setPendingOperation: (operation: PendingOperation | null) => void;
 }
 
 interface CommonSingleNodeUpdateProps {
@@ -89,7 +105,7 @@ const handleAddArgMapping = ({ node, matrxEdge, handleUpdateNode }: CommonSingle
     addArgMappingWithBrokerId(node, handleUpdateNode, argName, brokerId);
 };
 
-const handleUpdateUserInputSource = ({node, matrxEdge, handleUpdateNode}: CommonSingleNodeUpdateProps) => {
+const handleUpdateUserInputSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
     console.log("📝 UPDATE: User Input source needs update");
     // TODO: Implement logic to update user input source (broker_id)
 };
@@ -120,7 +136,7 @@ const handleUserInputToBrokerIdToWorkflowNodeArgMapping = ({
 };
 
 // Target update placeholders
-const handleAddAdditionalDependency = ({node, matrxEdge, handleUpdateNode}: CommonSingleNodeUpdateProps) => {
+const handleAddAdditionalDependency = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
     const partialDependency: WorkflowDependency = {
         source_broker_id: matrxEdge.source.id,
         source_broker_name: "",
@@ -145,7 +161,7 @@ const handleUserInputToBrokerIdToWorkflowNodeAdditionalDependencies = ({
     handleUpdateTargetNode,
 }: CommonUpdateProps) => {
     console.log("🔗 METHOD: handleUserInputToBrokerIdToWorkflowNodeAdditionalDependencies");
-    
+
     if (!matrxEdge.source.id || matrxEdge.source.id === "") {
         console.warn("UNKNOWN SOURCE: Source ID is empty, cannot create dependency", matrxEdge);
         return;
@@ -172,22 +188,16 @@ const handleBrokerRelayTargetBrokerIdsToWorkflowNodeAdditionalDependencies = ({
     handleUpdateTargetNode,
 }: CommonUpdateProps) => {
     console.log("🔗 METHOD: handleBrokerRelayTargetBrokerIdsToWorkflowNodeAdditionalDependencies");
-    
+
     if (!matrxEdge.source.id || matrxEdge.source.id === "") {
-        return handleBrokerRelayWithoutBrokerId({ sourceNode, targetNode, matrxEdge, handleUpdateSourceNode, handleUpdateTargetNode });
+        return handleBrokerRelayWithoutBrokerId({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
     }
     handleUpdateBrokerRelaySource({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
-    
+
     handleAddAdditionalDependency({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
 };
 
-const handleBrokerRelayWithoutBrokerId = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
+const handleBrokerRelayWithoutBrokerId = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
     console.warn("UNKNOWN SOURCE: Broker Relay source ID is empty, cannot create connection", matrxEdge);
     // For now, we cannot create a dependency without a source broker ID
     // TODO: Implement logic for broker relay without source broker ID (possibly add to additional_dependencies)
@@ -206,7 +216,7 @@ const handleBrokerRelayTargetBrokerIdsToWorkflowNodeArgMapping = ({
     handleUpdateTargetNode,
 }: CommonUpdateProps) => {
     if (!matrxEdge.source.id || matrxEdge.source.id === "") {
-        return handleBrokerRelayWithoutBrokerId({ sourceNode, targetNode, matrxEdge, handleUpdateSourceNode, handleUpdateTargetNode });
+        return handleBrokerRelayWithoutBrokerId({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
     }
 
     handleUpdateBrokerRelaySource({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
@@ -225,8 +235,6 @@ const handleBrokerRelayTargetBrokerIdsToBrokerRelaySourceBrokerId = ({
     // TODO: Implement logic for relay to relay connection
 };
 
-
-
 const handleUpdateWorkflowNodeSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
     console.log("📝 UPDATE: Workflow Node source needs update");
 };
@@ -243,9 +251,30 @@ const handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeArgMapping = ({
         return;
     }
 
-    console.log("The source doesn't need any updates")
+    console.log("The source doesn't need any updates");
 
     handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
+};
+
+const handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeAdditionalDependencies = ({
+    sourceNode,
+    targetNode,
+    matrxEdge,
+    handleUpdateSourceNode,
+    handleUpdateTargetNode,
+    setConnectionMessage,
+    setIsDirty,
+    setPendingOperation,
+}: CommonUpdateProps) => {
+    console.log("🔗 METHOD: handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeAdditionalDependencies");
+
+    setConnectionMessage("This will create a new relay to connect these brokers.");
+    setIsDirty(true);
+    setPendingOperation({
+        type: "relay_creation",
+        source_broker_id: matrxEdge.source.id,
+        target_broker_ids: matrxEdge.target.id,
+    });
 };
 
 const handleWorkflowNodeReturnBrokerOverridesToBrokerRelaySourceBrokerId = ({
@@ -254,23 +283,37 @@ const handleWorkflowNodeReturnBrokerOverridesToBrokerRelaySourceBrokerId = ({
     matrxEdge,
     handleUpdateSourceNode,
     handleUpdateTargetNode,
-}: CommonUpdateProps) => {
+    setConnectionMessage,
+}: CommonUpdateProps & { setConnectionMessage?: (message: string) => void }) => {
     console.log("🔗 METHOD: handleWorkflowNodeReturnBrokerOverridesToBrokerRelaySourceBrokerId");
-    // TODO: Implement logic for workflow node to relay connection
+
+    // Check if the relay already has a source_broker_id
+    if (matrxEdge.target.id && matrxEdge.target.id !== "") {
+        // Relay already has a source broker - show message instead of updating
+        if (setConnectionMessage) {
+            setConnectionMessage(
+                "To map this broker to another node, simply drag and connect it to the destination and a new relay will be automatically created or a new map entry will be made."
+            );
+        }
+        return;
+    }
+
+    // Relay doesn't have a source broker - we can update it directly
+    const updatedTargetNode = {
+        ...targetNode,
+        source_broker_id: matrxEdge.source.id,
+    };
+
+    handleUpdateTargetNode(updatedTargetNode);
 };
-
-
-
-
-
 
 const getConnectionType = (sourceNode: any, targetNode: any, matrxEdge: MatrxEdge): string => {
     if (!sourceNode || !targetNode || !matrxEdge) return "unknown";
 
     const sourceNodeType = getNodeType(sourceNode);
     const targetNodeType = getNodeType(targetNode);
-    const sourceConnectionType = matrxEdge.source.type;
-    const targetConnectionType = matrxEdge.target.type;
+    const sourceConnectionType = matrxEdge?.source.type;
+    const targetConnectionType = matrxEdge?.target.type;
 
     const sourceField = getConnectionFieldMapping(sourceNodeType, sourceConnectionType, true);
     const targetField = getConnectionFieldMapping(targetNodeType, targetConnectionType, false);
@@ -286,8 +329,10 @@ const handleConnection = ({
     matrxEdge,
     handleUpdateSourceNode,
     handleUpdateTargetNode,
-    onDirectAddRelay,
-}: CommonUpdateProps & { onDirectAddRelay?: (source_broker_id: string, target_broker_ids?: string) => void }) => {
+    setConnectionMessage,
+    setIsDirty,
+    setPendingOperation,
+}: CommonUpdateProps) => {
     const connectionType = getConnectionType(sourceNode, targetNode, matrxEdge);
 
     // Trigger the appropriate handler method based on connection type
@@ -298,6 +343,9 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else if (connectionType === "userInput_broker_id → workflowNode_arg_mapping") {
         handleUserInputToBrokerIdToWorkflowNodeArgMapping({
@@ -306,6 +354,9 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else if (connectionType === "userInput_broker_id → brokerRelay_source_broker_id") {
         handleUserInputToBrokerIdToBrokerRelaySourceBrokerId({
@@ -314,6 +365,9 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else if (connectionType === "brokerRelay_target_broker_ids → workflowNode_additional_dependencies") {
         handleBrokerRelayTargetBrokerIdsToWorkflowNodeAdditionalDependencies({
@@ -322,6 +376,9 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else if (connectionType === "brokerRelay_target_broker_ids → workflowNode_arg_mapping") {
         handleBrokerRelayTargetBrokerIdsToWorkflowNodeArgMapping({
@@ -330,6 +387,9 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else if (connectionType === "brokerRelay_target_broker_ids → brokerRelay_source_broker_id") {
         handleBrokerRelayTargetBrokerIdsToBrokerRelaySourceBrokerId({
@@ -338,10 +398,21 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else if (connectionType === "workflowNode_return_broker_overrides → workflowNode_additional_dependencies") {
-        // This case is handled separately in handleSaveConnectionWithLogic
-        console.log("Relay creation case - handled separately");
+        handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeAdditionalDependencies({
+            sourceNode,
+            targetNode,
+            matrxEdge,
+            handleUpdateSourceNode,
+            handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
+        });
     } else if (connectionType === "workflowNode_return_broker_overrides → workflowNode_arg_mapping") {
         handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeArgMapping({
             sourceNode,
@@ -349,6 +420,9 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else if (connectionType === "workflowNode_return_broker_overrides → brokerRelay_source_broker_id") {
         handleWorkflowNodeReturnBrokerOverridesToBrokerRelaySourceBrokerId({
@@ -357,18 +431,23 @@ const handleConnection = ({
             matrxEdge,
             handleUpdateSourceNode,
             handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
         });
     } else {
         console.log("⚠️  UNKNOWN CONNECTION TYPE:", connectionType);
         const sourceNodeType = getNodeType(sourceNode);
         const targetNodeType = getNodeType(targetNode);
-        const sourceConnectionType = matrxEdge.source.type;
-        const targetConnectionType = matrxEdge.target.type;
+        const sourceConnectionType = matrxEdge?.source.type;
+        const targetConnectionType = matrxEdge?.target.type;
         const sourceField = getConnectionFieldMapping(sourceNodeType, sourceConnectionType, true);
         const targetField = getConnectionFieldMapping(targetNodeType, targetConnectionType, false);
         console.log("   → Source:", { nodeType: sourceNodeType, connectionType: sourceConnectionType, field: sourceField });
         console.log("   → Target:", { nodeType: targetNodeType, connectionType: targetConnectionType, field: targetField });
     }
+
+    return connectionType;
 };
 
 export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = ({
@@ -380,69 +459,82 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
     onSaveConnection,
     onDirectAddRelay,
 }) => {
-    if (!isOpen) return null;
-    const [sourceNode, setSourceNode] = useState(initialSourceNode);
-    const [targetNode, setTargetNode] = useState(initialTargetNode);
-    const sourceNodeRef = React.useRef(sourceNode);
-    const targetNodeRef = React.useRef(targetNode);
+    const [sourceNode, setSourceNode] = useState<DbNodeData | null>(null);
+    const [targetNode, setTargetNode] = useState<DbNodeData | null>(null);
+    const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
+    const [isDirty, setIsDirty] = useState(false);
+    const [pendingOperation, setPendingOperation] = useState<PendingOperation | null>(null);
+
+    // Reset state when dialog opens with new data
+    useEffect(() => {
+        if (isOpen && initialSourceNode && initialTargetNode && matrxEdge) {
+            setSourceNode(initialSourceNode);
+            setTargetNode(initialTargetNode);
+            setConnectionMessage(null);
+            setIsDirty(false);
+            setPendingOperation(null);
+        }
+    }, [isOpen, initialSourceNode, initialTargetNode, matrxEdge]);
 
     const handleUpdateSourceNode = (node: DbNodeData) => {
         setSourceNode(node);
-        sourceNodeRef.current = node;
-    };
-    const handleUpdateTargetNode = (node: DbNodeData) => {
-        console.log("handleUpdateTargetNode", node);
-        setTargetNode(node);
-        targetNodeRef.current = node;
+        setIsDirty(true);
     };
 
-    const sourceNodeType = getNodeType(sourceNode);
-    const targetNodeType = getNodeType(targetNode);
-    const connectionType = getConnectionType(sourceNode, targetNode, matrxEdge);
+    const handleUpdateTargetNode = (node: DbNodeData) => {
+        setTargetNode(node);
+        setIsDirty(true);
+    };
+
+    // Calculate connection type and handle connection only when we have valid data
+    const connectionType = useMemo(() => {
+        if (!sourceNode || !targetNode || !matrxEdge) return null;
+        
+        return handleConnection({
+            sourceNode,
+            targetNode,
+            matrxEdge,
+            handleUpdateSourceNode,
+            handleUpdateTargetNode,
+            setConnectionMessage,
+            setIsDirty,
+            setPendingOperation,
+        });
+    }, [sourceNode, targetNode, matrxEdge]);
+
+    const sourceNodeType = useMemo(() => getNodeType(sourceNode), [sourceNode]);
+    const targetNodeType = useMemo(() => getNodeType(targetNode), [targetNode]);
 
     const handleSaveConnectionWithLogic = () => {
-        if (sourceNode && targetNode && matrxEdge) {
-            const connectionType = getConnectionType(sourceNode, targetNode, matrxEdge);
-            
-            // Handle relay creation separately - don't update state, just create relay and close
-            if (connectionType === "workflowNode_return_broker_overrides → workflowNode_additional_dependencies") {
-                if (onDirectAddRelay && matrxEdge.source.id) {
-                    onDirectAddRelay(matrxEdge.source.id, matrxEdge.target.id);
-                }
-                onClose();
-                return;
+        if (isDirty && sourceNode && targetNode && matrxEdge) {
+            // Handle pending operations
+            if (pendingOperation && pendingOperation.type === "relay_creation") {
+                onDirectAddRelay(pendingOperation.source_broker_id, pendingOperation.target_broker_ids);
             }
+
+            // Save node updates
+            onSaveConnection(sourceNode, targetNode, matrxEdge);
             
-            // For all other connections, update state first, then save after state updates
-            handleConnection({
-                sourceNode,
-                targetNode,
-                matrxEdge,
-                handleUpdateSourceNode,
-                handleUpdateTargetNode,
-                onDirectAddRelay,
-            });
-            
-            // Use setTimeout to wait for React state updates to complete
-            setTimeout(() => {
-                if (onSaveConnection) {
-                    // Get the current state values after updates from refs
-                    onSaveConnection(sourceNodeRef.current, targetNodeRef.current, matrxEdge);
-                }
-            }, 0);
+            setIsDirty(false);
+            setPendingOperation(null);
+            setConnectionMessage(null);
         }
+        onClose();
     };
 
+    if (!isOpen) return null;
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[95vw] h-[95vh] max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Connection Details</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    </button>
-                </div>
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-7xl w-[95vw] h-[95vh] max-h-[95vh] overflow-hidden flex flex-col p-0">
+                <DialogHeader className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        Connection Details
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
+                        Review and configure the connection between workflow nodes
+                    </DialogDescription>
+                </DialogHeader>
 
                 {/* Connection Summary */}
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -451,7 +543,7 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
                     {/* Connection Type */}
                     <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                         <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">Connection Type</h4>
-                        <p className="text-sm font-mono text-blue-800 dark:text-blue-200">{connectionType}</p>
+                        <p className="text-sm font-mono text-blue-800 dark:text-blue-200">{connectionType || "Loading..."}</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
@@ -515,6 +607,31 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
                     </div>
                 </div>
 
+                {/* Connection Message */}
+                {connectionMessage && (
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Connection Information</h3>
+                                    <div className="mt-2 text-sm text-blue-700 dark:text-blue-200">
+                                        <p>{connectionMessage}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Content Grid */}
                 <div className="p-4 flex-1 overflow-auto">
                     <div className="grid grid-cols-2 gap-4 h-full">
@@ -548,20 +665,18 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
 
                 {/* Footer with Action Buttons */}
                 <div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
-                    >
+                    <Button variant="outline" onClick={onClose}>
                         Close
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={handleSaveConnectionWithLogic}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                        disabled={!isDirty}
+                        className={isDirty ? "" : "opacity-50 cursor-not-allowed"}
                     >
                         Save Connection
-                    </button>
+                    </Button>
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
