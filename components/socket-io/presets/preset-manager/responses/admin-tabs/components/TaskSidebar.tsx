@@ -35,7 +35,10 @@ interface TaskSidebarProps {
 
 export const TaskSidebar: React.FC<TaskSidebarProps> = ({ selectedTaskId, onTaskSelect }) => {
     const renderCount = useRenderCount();
-    console.log("[TASK SIDEBAR] renderCount", renderCount);
+    const LOCAL_DEBUG = false;
+    if (LOCAL_DEBUG) {
+        console.log("[TASK SIDEBAR] renderCount", renderCount);
+    }
 
     const taskEntries = useAppSelector(selectAllTasksArray);
     const runningCount = useAppSelector(selectRunningTasksCount);

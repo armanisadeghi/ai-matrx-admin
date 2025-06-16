@@ -187,6 +187,13 @@ export const RECIPE_NODE_DEFINITION: NodeDefinitionType = {
             replaces: "brokers",
             order: 6,
         },
+        {
+            id: "recipe-results",
+            label: "Results",
+            component: "RecipeResultsTab",
+            replaces: "results",
+            order: 7,
+        },
     ],
 };
 

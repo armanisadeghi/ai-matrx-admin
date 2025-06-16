@@ -80,7 +80,7 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ nodeData, enrichedBrokers }) =>
                                     
                                     <div className="space-y-2">
                                         <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                                            Results Dashboard
+                                            Results Dashboard (Custom)
                                         </h4>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                             This tab will display execution results for this node and the entire workflow.

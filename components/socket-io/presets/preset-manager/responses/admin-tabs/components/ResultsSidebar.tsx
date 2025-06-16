@@ -437,7 +437,10 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
     LoadingWorkItemComponent = LoadingWorkItem,
 }) => {
     const renderCount = useRenderCount();
-    console.log("[RESULTS SIDEBAR] renderCount", renderCount);
+    const LOCAL_DEBUG = false;
+    if (LOCAL_DEBUG) {
+        console.log("[RESULTS SIDEBAR] renderCount", renderCount);
+    }
 
     const [errorTimeout, setErrorTimeout] = useState<NodeJS.Timeout | null>(null);
     const [showLoadingOverride, setShowLoadingOverride] = useState(false);

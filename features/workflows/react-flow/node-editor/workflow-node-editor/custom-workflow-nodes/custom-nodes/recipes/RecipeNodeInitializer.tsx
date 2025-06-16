@@ -22,7 +22,7 @@ import {
     overwriteReturnBrokerOverridesFromDefinitionWithCallback,
     clearReturnBrokerOverrides,
 } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/broker-utils";
-import { useRecipeFetch } from "./useRecipeFetch";
+import { useRecipeFetch } from "./hooks/useRecipeFetch";
 import { cloneDeep } from "lodash";
 import RecipeCardSelector from "./RecipeCardSelector";
 import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';

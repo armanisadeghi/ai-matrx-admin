@@ -66,8 +66,11 @@ export const DualSidebar: React.FC<DualSidebarProps> = ({
 }) => {
     const [leftRatio, rightRatio] = splitRatio;
     const renderCount = useRenderCount();
-    console.log("[DUAL SIDEBAR] renderCount", renderCount);
-    
+    const LOCAL_DEBUG = false;
+    if (LOCAL_DEBUG) {
+        console.log("[DUAL SIDEBAR] renderCount", renderCount);
+    }
+
     return (
         <div className={cn("flex h-full w-full", className)}>
             {/* Left Sidebar - Tasks */}

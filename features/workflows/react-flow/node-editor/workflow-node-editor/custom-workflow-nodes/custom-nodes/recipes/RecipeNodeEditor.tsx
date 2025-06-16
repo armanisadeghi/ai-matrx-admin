@@ -1,19 +1,24 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import OverviewTab from "../../tabs/OverviewTab";
-import ArgumentsTab from "../../tabs/ArgumentsTab";
-import RecipeBasicInfoSection from "./RecipeBasicInfoSection";
-import RecipeSelectionSection from "./RecipeSelectionSection";
+import {
+    OverviewTab,
+    ArgumentsTab,
+    BrokersTab,
+} from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/tabs";
+import {
+    RecipeDetailsTab,
+    RecipeMessagesTab,
+    RecipeDependenciesTab,
+    RecipeResultsTab,
+    RecipeBasicInfoSection,
+    RecipeSelectionSection,
+} from "./tabs";
 import DefaultNodeEditor from "../../DefaultNodeEditor";
 import CustomNodeEditor from "../../CustomNodeEditor";
 import { DbFunctionNode } from "@/features/workflows/types";
 import { getCompiledRecipeByVersionWithNeededBrokers, NeededBroker, RecipeConfig } from "@/features/workflows/service/recipe-service";
-import RecipeDetailsTab from "./RecipeDetailsTab";
-import RecipeMessagesTab from "./RecipeMessagesTab";
-import BrokersTab from "../../tabs/BrokersTab";
 import { NodeDefinitionType, CustomTab } from "../custom-node-definitions";
-import RecipeDependenciesTab from "./RecipeDependenciesTab";
 import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 
 interface RecipeNodeEditorProps {
@@ -26,7 +31,6 @@ interface RecipeNodeEditorProps {
 }
 
 const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, onClose, open, nodeDefinition, enrichedBrokers }) => {
-
     const [recipeDetails, setRecipeDetails] = useState<RecipeConfig | null>(null);
     const [neededBrokers, setNeededBrokers] = useState<NeededBroker[]>([]);
     const [loading, setLoading] = useState(false);
@@ -87,7 +91,6 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
             setLoading(false);
         }
     }, []);
-
 
     // Enhanced node update handler that analyzes changes and triggers fetches
     const handleNodeUpdate = useCallback(
@@ -174,7 +177,6 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
         );
     };
 
-
     const RecipeDependenciesWrapper = ({
         nodeData,
         onNodeUpdate,
@@ -182,7 +184,14 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
         nodeData: DbFunctionNode;
         onNodeUpdate: (nodeData: DbFunctionNode) => void;
     }) => {
-        return <RecipeDependenciesTab nodeData={nodeData} onNodeUpdate={onNodeUpdate} neededBrokers={neededBrokers} enrichedBrokers={enrichedBrokers} />;
+        return (
+            <RecipeDependenciesTab
+                nodeData={nodeData}
+                onNodeUpdate={onNodeUpdate}
+                neededBrokers={neededBrokers}
+                enrichedBrokers={enrichedBrokers}
+            />
+        );
     };
 
     // Create a custom ArgumentsTab component that hides recipe-specific arguments
@@ -203,7 +212,14 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
             [onNodeUpdate]
         );
 
-        return <ArgumentsTab nodeData={nodeData} onNodeUpdate={wrappedUpdate} argsToHide={nodeDefinition.managed_arguments} enrichedBrokers={enrichedBrokers} />;
+        return (
+            <ArgumentsTab
+                nodeData={nodeData}
+                onNodeUpdate={wrappedUpdate}
+                argsToHide={nodeDefinition.managed_arguments}
+                enrichedBrokers={enrichedBrokers}
+            />
+        );
     };
 
     // Create a custom RecipeDetailsTab wrapper
@@ -214,7 +230,14 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
         nodeData: DbFunctionNode;
         onNodeUpdate: (nodeData: DbFunctionNode) => void;
     }) => (
-        <RecipeDetailsTab nodeData={nodeData} onNodeUpdate={onNodeUpdate} recipeDetails={recipeDetails} loading={loading} error={error} enrichedBrokers={enrichedBrokers} />
+        <RecipeDetailsTab
+            nodeData={nodeData}
+            onNodeUpdate={onNodeUpdate}
+            recipeDetails={recipeDetails}
+            loading={loading}
+            error={error}
+            enrichedBrokers={enrichedBrokers}
+        />
     );
 
     // Create a custom RecipeMessagesTab wrapper
@@ -226,6 +249,24 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
         onNodeUpdate: (nodeData: DbFunctionNode) => void;
     }) => (
         <RecipeMessagesTab
+            nodeData={nodeData}
+            onNodeUpdate={onNodeUpdate}
+            recipeDetails={recipeDetails}
+            loading={loading}
+            error={error}
+            neededBrokers={neededBrokers}
+            enrichedBrokers={enrichedBrokers}
+        />
+    );
+
+    const RecipeResultsTabWrapper = ({
+        nodeData,
+        onNodeUpdate,
+    }: {
+        nodeData: DbFunctionNode;
+        onNodeUpdate: (nodeData: DbFunctionNode) => void;
+    }) => (
+        <RecipeResultsTab
             nodeData={nodeData}
             onNodeUpdate={onNodeUpdate}
             recipeDetails={recipeDetails}
@@ -276,6 +317,9 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
                     case "RecipeDependenciesTab":
                         component = RecipeDependenciesWrapper;
                         break;
+                    case "RecipeResultsTab":
+                        component = RecipeResultsTabWrapper;
+                        break;
                     default:
                         console.warn(`Unknown component: ${tabConfig.component}`);
                         return null;
@@ -291,7 +335,9 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ nodeData, onSave, o
             })
             .filter(Boolean); // Remove any null entries
 
-        return <DefaultNodeEditor nodeData={nodeData} onNodeUpdate={onNodeUpdate} customTabs={customTabs} enrichedBrokers={enrichedBrokers} />;
+        return (
+            <DefaultNodeEditor nodeData={nodeData} onNodeUpdate={onNodeUpdate} customTabs={customTabs} enrichedBrokers={enrichedBrokers} />
+        );
     };
 
     return (

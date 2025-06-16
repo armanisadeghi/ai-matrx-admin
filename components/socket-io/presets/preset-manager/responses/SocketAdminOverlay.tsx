@@ -52,6 +52,10 @@ export interface HeaderComponentProps {
 
 export type HeaderComponent = React.FC<HeaderComponentProps>;
 
+
+const LOCAL_DEBUG = false;
+
+
 export interface SocketAdminOverlayProps extends SocketPresetResponseProps {
     // Override props for admin overlay
     overlayTitle?: string;
@@ -191,7 +195,9 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
 
     const renderCount = useRenderCount();
 
-    console.log("[SOCKET ADMIN OVERLAY] renderCount", renderCount);
+    if (LOCAL_DEBUG) {
+        console.log("[SOCKET ADMIN OVERLAY] renderCount", renderCount);
+    }
 
     // Define all possible base tabs
     const allBaseTabs: Record<BaseTabName, TabDefinition> = {
