@@ -487,7 +487,7 @@ export const WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP: TaskPreset = {
     description: "Convert a workflow step object to an EXECUTE_SINGLE_STEP socket task",
     targetTask: "execute_single_step",
     service: "workflow_service",
-    brokerSources: ["workflow", "applet", "system"],
+    brokerSources: ["workflows", "applet", "system"],
     fieldMappings: {
         single_node: {
             sourceField: (data: any) => data,  // Pass the entire node data directly
@@ -534,7 +534,7 @@ export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
     description: "Convert workflow flow nodes to a START_WORKFLOW_WITH_STRUCTURE socket task for executing entire workflows",
     targetTask: "start_workflow_with_structure",
     service: "workflow_service",
-    brokerSources: ["workflow", "applet", "system"],
+    brokerSources: ["workflows", "applet", "system"],
     fieldMappings: {
         nodes: {
             sourceField: "nodes",
