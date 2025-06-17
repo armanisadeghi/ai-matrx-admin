@@ -17,7 +17,7 @@ const RemovalDetails = ({ allRemovals }) => {
   });
 
 
-  if (!allRemovals.length) {
+  if (!allRemovals?.length) {
     return <div className="p-4 text-gray-500 dark:text-gray-400">No removal details available</div>;
   }
 

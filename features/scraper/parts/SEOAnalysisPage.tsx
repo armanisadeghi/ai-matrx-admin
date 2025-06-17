@@ -1,77 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import ScraperDataUtils from '../utils/data-utils';
 
-const SEOAnalysisPage = ({ overview, structuredData={} }) => {
+const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
   const [activeSection, setActiveSection] = useState('overview');
   
-  // Extract data from overview
+  // Use ScraperDataUtils for all SEO analysis
+  const seoAnalysis = useMemo(() => {
+    console.log("[SEO ANALYSIS] Raw overview data:", overview);
+    console.log("[SEO ANALYSIS] Raw structured data:", structuredData);
+    
+    try {
+      const analysis = ScraperDataUtils.performSEOAnalysis(overview, structuredData);
+      console.log("[SEO ANALYSIS] Complete analysis result:", analysis);
+      return analysis;
+    } catch (error) {
+      console.error("[SEO ANALYSIS] Error performing analysis:", error);
+      // Return safe defaults
+      return {
+        titleAnalysis: {
+          length: 0,
+          status: 'Too short' as const,
+          statusClass: 'text-yellow-500 dark:text-yellow-400',
+          title: ''
+        },
+        contentMetrics: {
+          charCount: 0,
+          estimatedWordCount: 0,
+          hasStructuredContent: false,
+          tableCount: 0,
+          codeBlockCount: 0,
+          listCount: 0,
+          contentLengthStatus: 'short' as const,
+          contentLengthClass: 'bg-red-500',
+          contentLengthMessage: 'No content available'
+        },
+        headerAnalysis: {
+          headers: [],
+          groupedHeaders: {},
+          totalHeaders: 0,
+          hasProperH1: false,
+          hasProperHierarchy: false,
+          h1Count: 0,
+          hierarchyIssues: []
+        },
+        suggestions: [],
+        seoScore: 0
+      };
+    }
+  }, [overview, structuredData]);
+
+  // Safe data extraction using ScraperDataUtils
+  const safeOverviewData = useMemo(() => {
+    return ScraperDataUtils.getOverview(overview);
+  }, [overview]);
+
   const {
-    url,
-    website,
-    page_title,
-    outline,
-    has_structured_content,
-    table_count,
-    code_block_count,
-    list_count,
-    char_count
-  } = overview;
+    titleAnalysis,
+    contentMetrics,
+    headerAnalysis,
+    suggestions,
+    seoScore
+  } = seoAnalysis;
 
-  // Calculate heading structure metrics
-  const headings = Object.keys(outline || {});
-  const h1Count = headings.filter(h => h.startsWith('H1:')).length;
-  const h2Count = headings.filter(h => h.startsWith('H2:')).length;
-  const h3Count = headings.filter(h => h.startsWith('H3:')).length;
-  const h4Count = headings.filter(h => h.startsWith('H4:')).length;
-  
-  // Calculate title length
-  const titleLength = page_title ? page_title.length : 0;
-  const titleStatus = 
-    titleLength < 30 ? 'Too short' :
-    titleLength > 60 ? 'Too long' : 'Good length';
-  const titleClass = 
-    titleLength < 30 ? 'text-yellow-500 dark:text-yellow-400' :
-    titleLength > 60 ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400';
+  // Safe access to overview data with fallbacks
+  const url = safeOverviewData.url || '';
+  const website = safeOverviewData.website || '';
+  const pageTitle = titleAnalysis.title || 'No title';
 
-  // Get suggestions based on SEO analysis
-  const getSuggestions = () => {
-    const suggestions = [];
-    
-    // Title suggestions
-    if (titleLength < 30) {
-      suggestions.push("Page title is too short. Consider expanding it to 50-60 characters for better SEO.");
-    } else if (titleLength > 60) {
-      suggestions.push("Page title exceeds recommended length. Consider shortening to 50-60 characters to prevent truncation in search results.");
-    }
-    
-    // H1 suggestions
-    if (h1Count === 0) {
-      suggestions.push("Missing H1 heading. Add a primary H1 heading that includes target keywords.");
-    } else if (h1Count > 1) {
-      suggestions.push("Multiple H1 headings detected. Consider using only one H1 for optimal SEO structure.");
-    }
-    
-    // Heading structure suggestions
-    if (h2Count === 0) {
-      suggestions.push("No H2 headings found. Consider adding H2 subheadings to improve content structure.");
-    }
-    
-    if (headings.some(h => h.startsWith('H4:')) && !headings.some(h => h.startsWith('H3:'))) {
-      suggestions.push("H4 headings are used without H3 headings. Consider proper heading hierarchy (H1 → H2 → H3 → H4).");
-    }
-    
-    // Content suggestions
-    if (char_count < 1000) {
-      suggestions.push("Content length is short. Consider expanding to at least 1,000-1,500 characters for better search ranking potential.");
-    }
-    
-    if (list_count === 0) {
-      suggestions.push("No lists detected. Consider adding bulleted or numbered lists to improve readability and SEO.");
-    }
-    
-    return suggestions;
-  };
-  
-  const suggestions = getSuggestions();
+  // TODO: Create component for FAQ schema opportunities detection
+  const faqOpportunities = useMemo(() => {
+    const h4Headers = headerAnalysis.groupedHeaders.H4 || [];
+    console.log("[SEO ANALYSIS] FAQ opportunities from H4 headers:", h4Headers);
+    // TODO: Create FAQSchemaAnalyzer component
+    return h4Headers;
+  }, [headerAnalysis.groupedHeaders]);
 
   return (
     <div className="w-full h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 overflow-y-auto">
@@ -81,8 +83,12 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">SEO Analysis</h1>
           <div className="flex items-center">
             <span className="text-gray-500 dark:text-gray-400 text-sm">{website}</span>
-            <span className="mx-2 text-gray-400">•</span>
-            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-sm truncate">{url}</a>
+            {website && url && <span className="mx-2 text-gray-400">•</span>}
+            {url && (
+              <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-sm truncate">
+                {url}
+              </a>
+            )}
           </div>
         </div>
         
@@ -147,24 +153,33 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
                         fill="none"
                         stroke="#4F46E5"
                         strokeWidth="3"
-                        strokeDasharray={`${75}, 100`}
+                        strokeDasharray={`${seoScore}, 100`}
                       />
-                      <text x="18" y="20.5" textAnchor="middle" fontSize="10" fill="currentColor" className="font-bold">75/100</text>
+                      <text x="18" y="20.5" textAnchor="middle" fontSize="10" fill="currentColor" className="font-bold">{seoScore}/100</text>
                     </svg>
                   </div>
                 </div>
                 <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Good SEO metrics, with some improvements needed</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {seoScore >= 80 ? 'Excellent SEO metrics' : 
+                     seoScore >= 60 ? 'Good SEO metrics, with some improvements needed' :
+                     seoScore >= 40 ? 'Moderate SEO metrics, improvements recommended' :
+                     'SEO metrics need significant improvement'}
+                  </p>
                 </div>
               </div>
               
               {/* Page Title Card */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Page Title</h3>
-                <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">Length: <span className={titleClass}>{titleLength} characters</span></p>
-                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">Status: <span className={titleClass}>{titleStatus}</span></p>
+                <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                  Length: <span className={titleAnalysis.statusClass}>{titleAnalysis.length} characters</span>
+                </p>
+                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                  Status: <span className={titleAnalysis.statusClass}>{titleAnalysis.status}</span>
+                </p>
                 <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
-                  <p className="text-sm font-medium">{page_title}</p>
+                  <p className="text-sm font-medium">{pageTitle || 'No title available'}</p>
                 </div>
               </div>
               
@@ -174,23 +189,23 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Character Count</span>
-                    <span className="text-sm font-medium">{char_count.toLocaleString()}</span>
+                    <span className="text-sm font-medium">{contentMetrics.charCount?.toLocaleString() || '0'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Lists</span>
-                    <span className="text-sm font-medium">{list_count}</span>
+                    <span className="text-sm font-medium">{contentMetrics.listCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Tables</span>
-                    <span className="text-sm font-medium">{table_count}</span>
+                    <span className="text-sm font-medium">{contentMetrics.tableCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Code Blocks</span>
-                    <span className="text-sm font-medium">{code_block_count}</span>
+                    <span className="text-sm font-medium">{contentMetrics.codeBlockCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Structured Content</span>
-                    <span className="text-sm font-medium">{has_structured_content ? 'Yes' : 'No'}</span>
+                    <span className="text-sm font-medium">{contentMetrics.hasStructuredContent ? 'Yes' : 'No'}</span>
                   </div>
                 </div>
               </div>
@@ -235,28 +250,28 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">H1</span>
                     <div className="flex items-center">
-                      <span className="text-sm mr-3">{h1Count}</span>
-                      <div className={`w-16 h-2 rounded-full ${h1Count === 1 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <span className="text-sm mr-3">{headerAnalysis.groupedHeaders.H1?.length || 0}</span>
+                      <div className={`w-16 h-2 rounded-full ${headerAnalysis.hasProperH1 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">H2</span>
                     <div className="flex items-center">
-                      <span className="text-sm mr-3">{h2Count}</span>
-                      <div className={`w-16 h-2 rounded-full ${h2Count > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <span className="text-sm mr-3">{headerAnalysis.groupedHeaders.H2?.length || 0}</span>
+                      <div className={`w-16 h-2 rounded-full ${(headerAnalysis.groupedHeaders.H2?.length || 0) > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">H3</span>
                     <div className="flex items-center">
-                      <span className="text-sm mr-3">{h3Count}</span>
+                      <span className="text-sm mr-3">{headerAnalysis.groupedHeaders.H3?.length || 0}</span>
                       <div className="w-16 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">H4</span>
                     <div className="flex items-center">
-                      <span className="text-sm mr-3">{h4Count}</span>
+                      <span className="text-sm mr-3">{headerAnalysis.groupedHeaders.H4?.length || 0}</span>
                       <div className="w-16 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
                     </div>
                   </div>
@@ -269,37 +284,25 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
                 <div className="mb-4">
                   <div className="flex justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Character Count</span>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{char_count.toLocaleString()}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{contentMetrics.charCount.toLocaleString()}</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                     <div 
-                      className={`h-2.5 rounded-full ${
-                        char_count < 1000 ? 'bg-red-500' : 
-                        char_count < 2500 ? 'bg-yellow-500' : 'bg-green-500'
-                      }`} 
-                      style={{ width: `${Math.min((char_count / 5000) * 100, 100)}%` }}
+                      className={`h-2.5 rounded-full ${contentMetrics.contentLengthClass}`} 
+                      style={{ width: `${Math.min((contentMetrics.charCount / 5000) * 100, 100)}%` }}
                     ></div>
                   </div>
                 </div>
                 <div className="mb-4">
                   <div className="flex justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Estimated Word Count</span>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{Math.round(char_count / 5.5).toLocaleString()}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{contentMetrics.estimatedWordCount.toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center">
-                    <div className={`w-3 h-3 rounded-full mr-2 ${
-                      char_count < 1000 ? 'bg-red-500' : 
-                      char_count < 2500 ? 'bg-yellow-500' : 'bg-green-500'
-                    }`}></div>
-                    <p className="text-sm">
-                      {char_count < 1000 
-                        ? 'Content is likely too short for competitive SEO rankings' 
-                        : char_count < 2500 
-                        ? 'Content length is acceptable but could be improved'
-                        : 'Content length is good for SEO purposes'}
-                    </p>
+                    <div className={`w-3 h-3 rounded-full mr-2 ${contentMetrics.contentLengthClass.replace('bg-', 'bg-')}`}></div>
+                    <p className="text-sm">{contentMetrics.contentLengthMessage}</p>
                   </div>
                 </div>
               </div>
@@ -314,31 +317,35 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
                 </button>
               </div>
               <div className="space-y-3">
-                {headings.map((heading, index) => {
-                  const level = heading.substring(0, 2);
-                  const text = heading.substring(heading.indexOf(':') + 2);
-                  
-                  let paddingClass = 'pl-0';
-                  let colorClass = 'text-gray-900 dark:text-white';
-                  
-                  if (level === 'H2') {
-                    paddingClass = 'pl-4';
-                    colorClass = 'text-gray-800 dark:text-gray-200';
-                  } else if (level === 'H3') {
-                    paddingClass = 'pl-8';
-                    colorClass = 'text-gray-700 dark:text-gray-300';
-                  } else if (level === 'H4') {
-                    paddingClass = 'pl-12';
-                    colorClass = 'text-gray-600 dark:text-gray-400';
-                  }
-                  
-                  return (
-                    <div key={index} className={`flex items-start ${paddingClass}`}>
-                      <span className="inline-block w-8 text-xs font-semibold text-gray-500 dark:text-gray-400">{level}:</span>
-                      <span className={`text-sm ${colorClass}`}>{text}</span>
-                    </div>
-                  );
-                })}
+                {headerAnalysis.headers.length > 0 ? (
+                  headerAnalysis.headers.map((header, index) => {
+                    const level = header.tag;
+                    const text = header.text;
+                    
+                    let paddingClass = 'pl-0';
+                    let colorClass = 'text-gray-900 dark:text-white';
+                    
+                    if (level === 'H2') {
+                      paddingClass = 'pl-4';
+                      colorClass = 'text-gray-800 dark:text-gray-200';
+                    } else if (level === 'H3') {
+                      paddingClass = 'pl-8';
+                      colorClass = 'text-gray-700 dark:text-gray-300';
+                    } else if (level === 'H4') {
+                      paddingClass = 'pl-12';
+                      colorClass = 'text-gray-600 dark:text-gray-400';
+                    }
+                    
+                    return (
+                      <div key={index} className={`flex items-start ${paddingClass}`}>
+                        <span className="inline-block w-8 text-xs font-semibold text-gray-500 dark:text-gray-400">{level}:</span>
+                        <span className={`text-sm ${colorClass}`}>{text}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">No headers found in content.</p>
+                )}
               </div>
             </div>
           </div>
@@ -362,13 +369,31 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
                 <div className="space-y-4">
                   {suggestions.map((suggestion, index) => (
                     <div key={index} className="flex items-start p-3 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
-                      <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-yellow-100 dark:bg-yellow-900 rounded-full mr-3">
-                        <svg className="w-4 h-4 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full mr-3 ${
+                        suggestion.priority === 'high' ? 'bg-red-100 dark:bg-red-900' :
+                        suggestion.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900' :
+                        'bg-blue-100 dark:bg-blue-900'
+                      }`}>
+                        <svg className={`w-4 h-4 ${
+                          suggestion.priority === 'high' ? 'text-red-600 dark:text-red-400' :
+                          suggestion.priority === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
+                          'text-blue-600 dark:text-blue-400'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{suggestion}</p>
+                        <div className="flex items-center mb-1">
+                          <span className={`text-xs font-medium px-2 py-1 rounded ${
+                            suggestion.priority === 'high' ? 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200' :
+                            suggestion.priority === 'medium' ? 'bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200' :
+                            'bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200'
+                          }`}>
+                            {suggestion.priority.toUpperCase()}
+                          </span>
+                          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{suggestion.type}</span>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">{suggestion.message}</p>
                         <button className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                           Fix automatically
                         </button>
@@ -432,38 +457,39 @@ const SEOAnalysisPage = ({ overview, structuredData={} }) => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">FAQ Schema Opportunity</h3>
-                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                  {Object.keys(overview.outline).filter(h => h.startsWith('H4:')).length > 0 ? 'High Impact' : 'Low Impact'}
+                <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+                  faqOpportunities.length > 0 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+                }`}>
+                  {faqOpportunities.length > 0 ? 'High Impact' : 'Low Impact'}
                 </span>
               </div>
               
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {Object.keys(overview.outline).filter(h => h.startsWith('H4:')).length > 0 
-                  ? `We've detected ${Object.keys(overview.outline).filter(h => h.startsWith('H4:')).length} potential FAQ items on this page. Adding FAQ schema can improve your visibility in Google's search results.`
+                {faqOpportunities.length > 0 
+                  ? `We've detected ${faqOpportunities.length} potential FAQ items on this page. Adding FAQ schema can improve your visibility in Google's search results.`
                   : 'No FAQ items detected. Consider adding FAQ content to improve search visibility.'}
               </p>
               
-              {Object.keys(overview.outline).filter(h => h.startsWith('H4:')).length > 0 && (
+              {faqOpportunities.length > 0 && (
                 <div className="bg-gray-50 dark:bg-gray-700 rounded p-4 mb-4 border border-gray-200 dark:border-gray-600">
                   <h4 className="font-medium text-sm mb-2">Detected FAQs:</h4>
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    {Object.keys(overview.outline)
-                      .filter(h => h.startsWith('H4:'))
-                      .slice(0, 4)
-                      .map((heading, index) => (
-                        <li key={index} className="flex items-center">
-                          <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                          </svg>
-                          {heading.substring(heading.indexOf(':') + 2)}
-                        </li>
-                      ))}
-                    {Object.keys(overview.outline).filter(h => h.startsWith('H4:')).length > 4 && (
+                    {faqOpportunities.slice(0, 4).map((faq, index) => (
+                      <li key={index} className="flex items-center">
+                        <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        {faq}
+                      </li>
+                    ))}
+                    {faqOpportunities.length > 4 && (
                       <li className="flex items-center">
                         <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span className="text-gray-400">+{Object.keys(overview.outline).filter(h => h.startsWith('H4:')).length - 4} more questions</span>
+                        <span className="text-gray-400">+{faqOpportunities.length - 4} more questions</span>
                       </li>
                     )}
                   </ul>

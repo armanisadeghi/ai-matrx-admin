@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import DynamicForm from "@/components/socket/form-builder/DynamicForm";
-import ScraperResults from "../scraper-two/ScraperResults";
 import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskStatus } from "@/lib/redux/socket-io";
+import ScraperResultsComponent from "@/features/scraper/ScraperResultsComponent";
 
 const DEBUG_MODE = true;
 
@@ -91,7 +91,7 @@ export default function Page() {
             {/* Results Section */}
             <div className="flex-1">
                 <div className={`p-4 ${!controlsExpanded ? "pt-2" : ""}`}>
-                    {taskId && <ScraperResults taskId={taskId} />}
+                    {taskId && <ScraperResultsComponent taskId={taskId} />}
                 </div>
             </div>
         </div>

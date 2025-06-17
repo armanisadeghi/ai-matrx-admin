@@ -338,4 +338,4 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
   );
 };
 
-export default DebugOverlay; 
+export default DebugOverlay;

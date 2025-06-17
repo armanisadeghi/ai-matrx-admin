@@ -4,9 +4,11 @@ import Link from "next/link";
 import { Edge, Node, XYPosition } from "reactflow";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Database, History } from "lucide-react";
+import { ArrowLeft, Database, History, RotateCcw, Focus } from "lucide-react";
+import { useReactFlow } from "reactflow";
 import { SocketExecuteButton } from "@/components/socket-io/presets/preset-manager/triggers/SocketExecuteButton";
 import DebugOverlay from "@/features/workflows/components/admin/DebugOverlay";
+import ReactFlowDebugOverlay from "@/features/workflows/components/admin/ReactFlowDebugOverlay";
 import EdgeManagementOverlay from "@/features/workflows/react-flow/core/EdgeManagementOverlay";
 import { BrokerOverlay } from "@/features/workflows/components/common/BrokerOverlay";
 import { getRegisteredFunctionSelectOptions } from "@/features/workflows/utils/node-utils";
@@ -75,6 +77,7 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
     workflowDataForReactFlow,
     enrichedBrokers,
 }) => {
+    const { fitView } = useReactFlow();
     const [isBrokerOverlayOpen, setIsBrokerOverlayOpen] = useState(false);
     const [isResultsOverlayOpen, setIsResultsOverlayOpen] = useState(false);
     const functionOptions = getRegisteredFunctionSelectOptions();
@@ -92,7 +95,6 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
             node.data && (!node.data.type || (node.data.type !== "userInput" && node.data.type !== "brokerRelay")) && node.data.function_id
     );
 
-    // Get workflow data for broker overlay
     const workflowData = prepareWorkflowData();
 
     const handleFunctionSelect = async (functionId: string) => {
@@ -182,6 +184,24 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
                     )}
 
                     <Button
+                        onClick={() => fitView()}
+                        variant="outline"
+                        size="sm"
+                        title="Fit workflow to view"
+                    >
+                        <Focus className="w-4 h-4" />
+                    </Button>
+
+                    <Button
+                        onClick={() => window.location.reload()}
+                        variant="outline"
+                        size="sm"
+                        title="Refresh workflow data"
+                    >
+                        <RotateCcw className="w-4 h-4" />
+                    </Button>
+
+                    <Button
                         onClick={() => setIsResultsOverlayOpen(true)}
                         variant="outline"
                         size="sm"
@@ -233,6 +253,8 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
                         workflowDataForReactFlow={workflowDataForReactFlow}
                         workflowId={workflowId}
                     />
+
+                    <ReactFlowDebugOverlay />
                 </div>
             </div>
 

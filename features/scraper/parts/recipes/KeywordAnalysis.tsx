@@ -12,7 +12,8 @@ import {
     selectTaskFirstListenerId,
     selectResponseDataByListenerId,
     selectPrimaryResponseEndedByTaskId,
-    selectTaskStatus
+    selectTaskStatus,
+    selectResponseTextByListenerId
 } from "@/lib/redux/socket-io";
 
 interface KeywordAnalysisPageProps {
@@ -29,27 +30,33 @@ const KeywordAnalysisPage: React.FC<KeywordAnalysisPageProps> = ({ value, overvi
     const dispatch = useAppDispatch();
     const [taskId, setTaskId] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
+    const [pageText, setPageText] = useState<string>(value);
 
     const recipeId = "0288e091-6252-4cca-b140-7ba94b4eb206";
     const brokerId = "86c303c3-e10f-4426-b739-f20172a4d754";
+
+    const broker_values = [
+        {
+            id: brokerId,
+            name: brokerId,
+            value: pageText,
+        },
+    ];
 
     // Redux selectors
     const taskStatus = useAppSelector(state => taskId ? selectTaskStatus(state, taskId) : null);
     const isTaskCompleted = useAppSelector(state => taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : false);
     const firstListenerId = useAppSelector(state => taskId ? selectTaskFirstListenerId(state, taskId) : "");
     const responseData = useAppSelector(selectResponseDataByListenerId(firstListenerId || ""));
+    const streamingResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId || ""));
 
     const isLoading = taskStatus === "submitted" && !isTaskCompleted;
 
-    // Extract streaming response from response data
-    const streamingResponse = useMemo(() => {
-        if (!responseData || !Array.isArray(responseData)) return "";
-        
-        // Combine all text responses
-        return responseData
-            .filter(item => typeof item === 'string')
-            .join('');
-    }, [responseData]);
+    useEffect(() => {
+        if (value && value.trim().length > 0) {
+            setPageText(value);
+        }
+    }, [value]);
 
     const pageTitle = overview?.page_title;
     const characterCount = overview?.char_count?.toLocaleString();
@@ -77,22 +84,11 @@ const KeywordAnalysisPage: React.FC<KeywordAnalysisPageProps> = ({ value, overvi
                 const taskData = {
                     chat_config: {
                         recipe_id: recipeId,
-                        version: "0",
                         prepare_for_next_call: false,
                         save_new_conversation: false,
                         include_classified_output: false,
-                        tools_override: [],
-                        allow_default_values: true,
-                        allow_removal_of_unmatched: true,
-                        model_override: "gpt-4o-mini"
                     },
-                    broker_values: [
-                        {
-                            id: brokerId,
-                            name: brokerId,
-                            value: value
-                        }
-                    ]
+                    broker_values: broker_values
                 };
 
                 // Set the task data

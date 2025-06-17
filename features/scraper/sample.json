@@ -1,0 +1,884 @@
+{
+    "response_type": "fetch_results",
+    "metadata": {
+        "execution_time_ms": 6.916522979736328
+    },
+    "results": [
+        {
+            "status": "success",
+            "url": "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/lip-filler/",
+            "error": null,
+            "overview": {
+                "uuid": "d40694a2-5176-42a3-b1a7-b0492ff8f77f",
+                "website": "cosmeticinjectables.com",
+                "url": "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/lip-filler/",
+                "unique_page_name": "cosmeticinjectables_com_procedures_cosmetic_procedures_for_men_lip_filler",
+                "page_title": "Lip Filler Men: Cost, Info, Results | Medspa Sharman Oaks",
+                "has_structured_content": true,
+                "table_count": 0,
+                "code_block_count": 0,
+                "list_count": 10,
+                "outline": {
+                    "H1: Lip Filler for Men": [],
+                    "H2: What is Lip Filler for Men?": [],
+                    "H2: Lip Filler for Men Benefits": [],
+                    "H2: Lip Filler for Men Cost & Pricing Structure": [],
+                    "H2: Before and After Gallery": [],
+                    "H2: How the Procedure Works": [],
+                    "H3: Before & Preparation": [],
+                    "H3: During the Procedure": [],
+                    "H3: Aftercare & Recovery": [],
+                    "H2: Am I a Good Candidate?": [],
+                    "H2: Similar & Related Procedures": [],
+                    "H3: Lip Filler VS. Lip Implants": [],
+                    "H6: Lip Filler": [],
+                    "H6: Non-Surgical Procedure:": [],
+                    "H6: Recovery Time:": [],
+                    "H6: Duration of Results:": [],
+                    "H6: Procedure Time:": [],
+                    "H6: Cost:": [],
+                    "H6: Permanent:": [],
+                    "H6: Customizable:": [],
+                    "H6: Lip Implants": [],
+                    "H6: Non-Surgical Procedure:  (2)": [],
+                    "H6: Recovery Time:  (2)": [],
+                    "H6: Duration of Results:  (2)": [],
+                    "H6: Procedure Time:  (2)": [],
+                    "H6: Cost:  (2)": [],
+                    "H6: Permanent:  (2)": [],
+                    "H6: Customizable:  (2)": [],
+                    "H2: Lip Filler for Men Side Effects & Risks": [],
+                    "H2: Lip Filler for Men FAQs": [],
+                    "H4: How long will the filler last men?": [],
+                    "H4: Is it common for males to get lip fillers?": [],
+                    "H4: How much does lip filler for men cost?": [],
+                    "H4: Does lip filler hurt?": [],
+                    "H4: What is the Russian lip filler technique?": [],
+                    "H4: How often can I get lip filler?": [],
+                    "H4: What is a macho mouth?": [],
+                    "H4: Do straight guys get lip injections?": [],
+                    "H4: Can you get lip fillers in one lip?": [],
+                    "H3: Related Content": []
+                },
+                "char_count": 9589,
+                "char_count_formatted": 10018,
+                "metadata": {
+                    "json-ld": [],
+                    "opengraph": {},
+                    "meta_tags": {
+                        "unknown": ["", "IE=edge"],
+                        "google-site-verification": "Xr_e5Ry5WyIBIFeHaDvPEfXcwMkE4k8XSG117idQiBM",
+                        "description": "Lip Fillers for Men: Achieve Precision & Natural Look. Expert treatments for masculine aesthetics & subtle enhancement. Book Now for Visible Results!",
+                        "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+                        "og:locale": "en_US",
+                        "og:type": "article",
+                        "og:title": "Lip Filler Men: Cost, Info, Results | Medspa Sharman Oaks",
+                        "og:description": "Lip Fillers for Men: Achieve Precision & Natural Look. Expert treatments for masculine aesthetics & subtle enhancement. Book Now for Visible Results!",
+                        "og:url": "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/lip-filler/",
+                        "og:site_name": "Cosmetic Injectables Center Medspa | Sherman Oaks & Los Angeles, CA",
+                        "article:publisher": "https://www.facebook.com/cosmeticinjectablescenter/",
+                        "article:section": "Our Procedures",
+                        "og:updated_time": "2025-04-15T19:57:12+00:00",
+                        "og:image": "https://cosmeticinjectables.com/wp-content/uploads/2020/07/rezeddd-01-1024x683.jpg",
+                        "og:image:secure_url": "https://cosmeticinjectables.com/wp-content/uploads/2020/07/rezeddd-01-1024x683.jpg",
+                        "og:image:width": "1024",
+                        "og:image:height": "683",
+                        "og:image:alt": "lip filler men",
+                        "og:image:type": "image/jpeg",
+                        "article:published_time": "2020-07-21T23:18:34+00:00",
+                        "article:modified_time": "2025-04-15T19:57:12+00:00",
+                        "og:video": "https://www.youtube.com/embed/iOF1dPs0z_k",
+                        "video:duration": "51",
+                        "ya:ovs:allow_embed": "true",
+                        "twitter:card": "summary_large_image",
+                        "twitter:title": "Lip Filler Men: Cost, Info, Results | Medspa Sharman Oaks",
+                        "twitter:description": "Lip Fillers for Men: Achieve Precision & Natural Look. Expert treatments for masculine aesthetics & subtle enhancement. Book Now for Visible Results!",
+                        "twitter:site": "@CosmInjectables",
+                        "twitter:creator": "@CosmInjectables",
+                        "twitter:image": "https://cosmeticinjectables.com/wp-content/uploads/2020/07/rezeddd-01-1024x683.jpg",
+                        "generator": ["Divi Child v.", "Site Kit by Google 1.154.0", "speculation-rules 1.5.0", "NitroPack"],
+                        "viewport": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0",
+                        "msapplication-TileImage": "https://cosmeticinjectables.com/wp-content/uploads/2021/05/cropped-Screen-Shot-2021-05-05-at-11.13.42-AM-270x270.png"
+                    },
+                    "canonical_url": "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/lip-filler/",
+                    "structured_data": [
+                        "{\"@context\":\"https:\\/\\/schema.org\",\"@graph\":[{\"@type\":\"Place\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#place\",\"geo\":{\"@type\":\"GeoCoordinates\",\"latitude\":\"34.15084376405069\",\"longitude\":\" -118.4480398459098\"},\"hasMap\":\"https:\\/\\/www.google.com\\/maps\\/search\\/?api=1&amp;query=34.15084376405069, -118.4480398459098\",\"address\":{\"@type\":\"PostalAddress\",\"streetAddress\":\"14460 Ventura Blvd\",\"addressLocality\":\"Sherman Oaks\",\"addressRegion\":\"California\",\"postalCode\":\"91423\",\"addressCountry\":\"US\"}},{\"@type\":[\"HealthAndBeautyBusiness\",\"Organization\"],\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#organization\",\"name\":\"Cosmetic Injectables Center Medspa | Sherman Oaks &amp; Los Angeles, CA\",\"url\":\"https:\\/\\/cosmeticinjectables.com\\/\",\"sameAs\":[\"https:\\/\\/www.facebook.com\\/cosmeticinjectablescenter\\/\",\"https:\\/\\/twitter.com\\/CosmInjectables\",\"https:\\/\\/www.instagram.com\\/cosmeticinjectablescenter\\/\",\"https:\\/\\/www.tiktok.com\\/@injectablesbycic\",\"https:\\/\\/www.linkedin.com\\/company\\/cosmetic-injectables-center\",\"https:\\/\\/www.yelp.com\\/biz\\/cosmetic-injectables-center-sherman-oaks\",\"https:\\/\\/www.youtube.com\\/channel\\/UCbPG5mFhwBu3rIbN3cbAzHg\",\"https:\\/\\/www.instagram.com\\/sherlysoleimanmd\\/\"],\"email\":\"info@cicproviders.com\",\"address\":{\"@type\":\"PostalAddress\",\"streetAddress\":\"14460 Ventura Blvd\",\"addressLocality\":\"Sherman Oaks\",\"addressRegion\":\"California\",\"postalCode\":\"91423\",\"addressCountry\":\"US\"},\"logo\":{\"@type\":\"ImageObject\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#logo\",\"url\":\"https:\\/\\/cosmeticinjectables.com\\/wp-content\\/uploads\\/2024\\/03\\/cosmetic-injectables-center-logo.webp\",\"contentUrl\":\"https:\\/\\/cosmeticinjectables.com\\/wp-content\\/uploads\\/2024\\/03\\/cosmetic-injectables-center-logo.webp\",\"caption\":\"Cosmetic Injectables Center Medspa | Sherman Oaks &amp; Los Angeles, CA\",\"inLanguage\":\"en\",\"width\":\"100\",\"height\":\"52\"},\"priceRange\":\"$$$\",\"openingHours\":[\"Monday,Tuesday,Wednesday,Thursday,Friday,Saturday 09:00-17:00\"],\"description\":\"Cosmetic Injectables Center Medspa offers advanced aesthetic treatments in Sherman Oaks, CA. Our expert team specializes in Fillers, Botox, Lasers, Threads, Kybella, Microneedling, Collagen Treatments, Radiofrequency, EMSCULPT NEO, Morpheus8, and Emsella. We proudly serve Los Angeles, the San Fernando Valley, and nearby communities, including Encino, Van Nuys, Studio City, North Hollywood, Woodland Hills, Canoga Park, West Hollywood, and Century City. Experience personalized care with natural-looking enhancements in a professional setting. Visit our website or contact us to schedule a consultation.\",\"legalName\":\"Cosmetic Injectables Center Medspa\",\"foundingDate\":\"2009\",\"location\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#place\"},\"image\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#logo\"},\"telephone\":\"+1 (818) 322-0122\"},{\"@type\":\"WebSite\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#website\",\"url\":\"https:\\/\\/cosmeticinjectables.com\",\"name\":\"Cosmetic Injectables Center Medspa | Sherman Oaks &amp; Los Angeles, CA\",\"alternateName\":\"Cosmetic Injectables Center Medspa | Sherman Oaks &amp; Los Angeles, CA\",\"publisher\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#organization\"},\"inLanguage\":\"en\"},{\"@type\":\"ImageObject\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/wp-content\\/uploads\\/2020\\/07\\/rezeddd-01-scaled.jpg\",\"url\":\"https:\\/\\/cosmeticinjectables.com\\/wp-content\\/uploads\\/2020\\/07\\/rezeddd-01-scaled.jpg\",\"width\":\"2560\",\"height\":\"1708\",\"inLanguage\":\"en\"},{\"@type\":\"BreadcrumbList\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#breadcrumb\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":\"1\",\"item\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\",\"name\":\"Home\"}},{\"@type\":\"ListItem\",\"position\":\"2\",\"item\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/\",\"name\":\"Cosmetic Procedures for Men Sherman Oaks\"}},{\"@type\":\"ListItem\",\"position\":\"3\",\"item\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/\",\"name\":\"Lip Filler for Men\"}}]},{\"@type\":\"WebPage\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#webpage\",\"url\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/\",\"name\":\"Lip Filler Men: Cost, Info, Results | Medspa Sharman Oaks\",\"datePublished\":\"2020-07-21T23:18:34+00:00\",\"dateModified\":\"2025-04-15T19:57:12+00:00\",\"isPartOf\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#website\"},\"primaryImageOfPage\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/wp-content\\/uploads\\/2020\\/07\\/rezeddd-01-scaled.jpg\"},\"inLanguage\":\"en\",\"breadcrumb\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#breadcrumb\"}},{\"@type\":\"Person\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/author\\/dr-sherly-soleiman\\/\",\"name\":\"Dr. Soleiman\",\"description\":\"Our Author Dr. Sherly Soleiman is the Founder, and medical director at our office. She is dedicated to the art and safety of minimally invasive procedures.\",\"url\":\"https:\\/\\/cosmeticinjectables.com\\/author\\/dr-sherly-soleiman\\/\",\"image\":{\"@type\":\"ImageObject\",\"@id\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/7c63d0eccc436fa0ebea887a295f50e3299112880f727a72726b44378dbf7841?s=96&amp;d=mm&amp;r=g\",\"url\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/7c63d0eccc436fa0ebea887a295f50e3299112880f727a72726b44378dbf7841?s=96&amp;d=mm&amp;r=g\",\"caption\":\"Dr. Soleiman\",\"inLanguage\":\"en\"},\"worksFor\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#organization\"}},{\"headline\":\"Lip Filler Men: Cost, Info, Results | Medspa Sharman Oaks\",\"description\":\"Lip Fillers for Men: Achieve Precision &amp; Natural Look. Expert treatments for masculine aesthetics &amp; subtle enhancement. Book Now for Visible Results!\",\"datePublished\":\"2020-07-21T23:18:34+00:00\",\"dateModified\":\"2025-04-15T19:57:12+00:00\",\"image\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/wp-content\\/uploads\\/2020\\/07\\/rezeddd-01-scaled.jpg\"},\"author\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/author\\/dr-sherly-soleiman\\/\",\"name\":\"Dr. Soleiman\"},\"@type\":\"BlogPosting\",\"name\":\"Lip Filler Men: Cost, Info, Results | Medspa Sharman Oaks\",\"subjectOf\":[{\"@type\":\"FAQPage\",\"mainEntity\":[{\"@type\":\"Question\",\"name\":\"How long will the filler last for men?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"Lip filler for men will usually last from three months to twelve months. The filler will gradually break down, and the body will absorb it. The duration of results depends on the individual's metabolism, the type of filler used, and the amount of filler injected.\"}},{\"@type\":\"Question\",\"name\":\"Is it common for males to get lip fillers?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"Yes, lip fillers are as beneficial for men as they are for women. It is becoming increasingly common for men to get lip filler for a fresh, more youthful appearance. As ladies look for a fuller and more voluminous lip look, men tend to desire a more natural look.\"}},{\"@type\":\"Question\",\"name\":\"How much does lip filler for men cost?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"The average cost in the United States varies from $500-$2,000. There are plenty of cosmetic options available for any budget. The price will vary based on the desired goal, the type of filler used, and how much filler is required. Our pricing is highly competitive when compared to the national average.\"}},{\"@type\":\"Question\",\"name\":\"Does lip filler hurt?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"The procedure should cause minimal pain or discomfort. Your provider may apply the topical anesthetic or full dental block to help ease any pain. However, because the lips are the most sensitive area of the face, some level of pain is to be expected.\"}},{\"@type\":\"Question\",\"name\":\"What is the Russian lip filler technique?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"The Russian technique involves accentuating the Cupid's bow to resemble a heart shape by injecting more filler in the center of the lip. This technique gives a fuller and plumper lip look.\"}},{\"@type\":\"Question\",\"name\":\"How often can I get lip filler?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"You can repeat the lip filler treatment every six months, but it differs from person to person. Hyaluronic acid injected into your lip helps produce collagen, which helps to create more plumped and defined lips. However, it is up to you and your desired outcome.\"}},{\"@type\":\"Question\",\"name\":\"What is a macho mouth?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"The ratio of the lips is different in men than in women. Women have a one-third to two-thirds ratio, upper lip to lower lip; in men, the ratio is closer to one-fourth to three-fourths. Men's lip shape also differs; the upper lip is generally flatter and has less of a cupid's bow. These slight differences make a lip more masculine or feminine.\"}},{\"@type\":\"Question\",\"name\":\"Do straight guys get lip injections?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"Yes! Kissable lips never go out of style and are in no way dependent upon sexual orientation or gender. All genders can both enjoy kissable and fuller lips.\"}},{\"@type\":\"Question\",\"name\":\"Can you get lip fillers in one lip?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"Yes. If you want a more modest lip enhancement, fillers in one lip may be the perfect solution. Filler treatments provide natural-looking results and are highly customizable to cater to your specific needs and goals.\"}}]}],\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#schema-60660\",\"isPartOf\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#webpage\"},\"publisher\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#organization\"},\"inLanguage\":\"en\",\"mainEntityOfPage\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#webpage\"}},{\"@type\":\"VideoObject\",\"name\":\"Sebastian Bails Experience At Cosmetic Injectables Center\",\"description\":\"Sebastian Bails tells us about his experience getting lip fillers for the  first at Cosmetic Injectables Center by Dr SoleimanTo learn more about Lip Filler ...\",\"uploadDate\":\"2025-04-15T19:57:12+00:00\",\"thumbnailUrl\":\"https:\\/\\/cosmeticinjectables.com\\/wp-content\\/uploads\\/2024\\/11\\/sebastian-bails-experience-at-co-1.jpg\",\"embedUrl\":\"https:\\/\\/www.youtube.com\\/embed\\/iOF1dPs0z_k\",\"duration\":\"PT0M51S\",\"width\":\"1280\",\"height\":\"720\",\"isFamilyFriendly\":\"True\",\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#schema-121113\",\"isPartOf\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/procedures\\/cosmetic-procedures-for-men\\/lip-filler\\/#webpage\"},\"publisher\":{\"@id\":\"https:\\/\\/cosmeticinjectables.com\\/#organization\"},\"inLanguage\":\"en\"}]}"
+                    ],
+                    "robots_directives": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large"
+                }
+            },
+            "structured_data": {
+                "Ordered Lists": {
+                    "H2: Lip Filler for Men Benefits": [
+                        {
+                            "Before": "",
+                            "List": [
+                                "Defining your lips: H yaluronic acid helps enhance and add natural volume and definition to your lips."
+                            ],
+                            "After": ""
+                        },
+                        {
+                            "Before": "",
+                            "List": [
+                                "Improve the symmetry of your lips: The procedure is entirely customizable, resulting in increased lip volume, a natural-looking lift, definition of your lip borders, lip symmetry, and hydrated and moisturized lips."
+                            ],
+                            "After": ""
+                        },
+                        {
+                            "Before": "",
+                            "List": ["No downtime: Other than possible swelling and bruising or up to 2 weeks"],
+                            "After": ""
+                        },
+                        {
+                            "Before": "",
+                            "List": ["Safe procedure with minimal risks"],
+                            "After": ""
+                        }
+                    ],
+                    "H2: Lip Filler for Men Cost & Pricing Structure": [
+                        {
+                            "Before": "",
+                            "List": [
+                                "US National Average: $600 – $2,000",
+                                "Our Price: The total cost of lip filler depends on the type of filler used and the individual’s desired results. [Contact us](https://cosmeticinjectables.com/contact-us/) for pricing.",
+                                "Additional Costs: There aren’t any additional costs associated with lip fillers.",
+                                "Insurance: Most insurance companies do not cover cosmetic procedures. We offer a variety of payment options for your convenience."
+                            ],
+                            "After": ""
+                        }
+                    ],
+                    "H3: Before & Preparation": [
+                        {
+                            "Before": "",
+                            "List": [
+                                "You will meet with one of our providers to discuss essential factors such as your physical health, desired expectations, concerns, and questions.",
+                                "Our highly skilled practitioners will analyze your facial structure and determine how to deliver a flawless, natural-looking result."
+                            ],
+                            "After": ""
+                        }
+                    ],
+                    "H3: During the Procedure": [
+                        {
+                            "Before": "",
+                            "List": [
+                                "Before injecting any substance into your lips, your provider may administer a topical anesthetic or dental block to increase comfort during the procedure.",
+                                "Your experienced practitioner will use a thin needle to inject the lip filler into any part of your lips that needs volume, definition, or shape.",
+                                "The procedure duration may take around thirty minutes."
+                            ],
+                            "After": ""
+                        }
+                    ],
+                    "H3: Aftercare & Recovery": [
+                        {
+                            "Before": "",
+                            "List": [
+                                "After the procedure, you may experience slight swelling, sensitivity, or bruising on the treated area.",
+                                "You can use an ice pack on your lips for 10 minutes fto reduce inflammation.",
+                                "Avoid wearing make-up products or lip balms for at least 24 hours after the procedure.",
+                                "Patients will require maintenance treatments every three to six months to maintain optimal results."
+                            ],
+                            "After": ""
+                        }
+                    ],
+                    "H2: Similar & Related Procedures": [
+                        {
+                            "Before": "",
+                            "List": [
+                                "Lip Implants for Men: Lip implants are the insertion of silicone into your lip to improve its size and shape by making small incisions in the corners of your mouth.",
+                                "Fat Grafting: Fat Grafting is a long-lasting surgical procedure for your lips. A small amount of fat is taken from a donor site on the body, then injected into your lips."
+                            ],
+                            "After": ""
+                        }
+                    ],
+                    "H2: Lip Filler for Men Side Effects & Risks": [
+                        {
+                            "Before": "As with any procedure requiring injection, bruising and swelling are common side effects but will subside in the following days; some side effects also depend on the individual’s response to the treatment. Risks and side effects may include",
+                            "List": [
+                                "Bleeding",
+                                "Redness",
+                                "reactivation of cold sores or fever blisters",
+                                "lip asymmetry",
+                                "lumps/bumps",
+                                "Infection"
+                            ],
+                            "After": ""
+                        }
+                    ]
+                }
+            },
+            "organized_data": {
+                "H1: Lip Filler for Men": [
+                    "Lip filler for Men is a non-surgical procedure consisting of multiple dermal filler injections to shape and plump the lips for a natural-looking, rejuvenated result. Cosmetic procedures to enhance your natural features are not gender-biased. Men, like women, lose shape and volume in their lips as they age. Lip fillers can improve the lips’ size, shape, and proportions while avoiding the risks and downtime associated with plastic surgery.",
+                    "The procedure requires no downtime, and the entire process takes approximately thirty minutes to complete. The treatment induces a change in shape, a boost in volume, and more defined lips that look more balanced and symmetrical. At the Cosmetic Injectables Center, we create a customized experience to deliver favorable and natural-looking results.",
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men.jpg",
+                            "alt": "Lip Filler For Men",
+                            "width": "920",
+                            "height": "580",
+                            "title": "Lip filler for men",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    }
+                ],
+                "H2: What is Lip Filler for Men?": [
+                    "Lip Filler for Men is a non-invasive cosmetic procedure that focuses on reshaping or enlarging the visible portion of the lip. The process utilizes hyaluronic acid (HA) filler injections into one or both of your lips with a small needle. The HA filler smooths out wrinkles, provides definition and adds hydration to the lips.",
+                    "This in-office procedure takes approximately thirty minutes. Schedule a consultation with one of the Cosmetic Injectables Center’s master injectors for a complete evaluation and discussion of your treatment goals. Lip Filler for Men is an entirely customizable procedure focused on the patient’s goals and needs."
+                ],
+                "H2: Lip Filler for Men Benefits": [
+                    "Lip Filler for Men is a delicate art form used by cosmetic professionals to shape and sculpt the lips to obtain a more youthful and fresh facial impression. The treatment provides balance and comprehensive anti-aging improvements. Our experienced practitioners customize the perfect lip filler procedure based on your unique facial anatomy to obtain your desired results. Other benefits include:",
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Male-Lip-Filler-Injections-for-Volume.webp",
+                            "alt": "Male Lips With Volume And Subtle Facial Hair",
+                            "width": "1000",
+                            "height": "562",
+                            "title": "Male lip filler injections for volume",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    },
+                    {
+                        "Lists": ["Defining your lips: H yaluronic acid helps enhance and add natural volume and definition to your lips."]
+                    },
+                    {
+                        "Lists": [
+                            "Improve the symmetry of your lips: The procedure is entirely customizable, resulting in increased lip volume, a natural-looking lift, definition of your lip borders, lip symmetry, and hydrated and moisturized lips."
+                        ]
+                    },
+                    {
+                        "Lists": ["No downtime: Other than possible swelling and bruising or up to 2 weeks"]
+                    },
+                    {
+                        "Lists": ["Safe procedure with minimal risks"]
+                    }
+                ],
+                "H2: Lip Filler for Men Cost & Pricing Structure": [
+                    "Hyaluronic acid lip fillers cost approximately $650 to $700 per syringe. The number of syringes required is the factor that will determine the exact cost of your treatment. There are several different brand names of lip fillers, including [Juvederm Ultra](https://cosmeticinjectables.com/procedures/filler-by-type/juvederm-ultra-xc/) , [Juvederm Volbella](https://cosmeticinjectables.com/procedures/filler-by-type/volbella/) , [Restylane Kysse](https://cosmeticinjectables.com/procedures/filler-by-type/restylane-kysse/) , [Restylane L](https://cosmeticinjectables.com/procedures/filler-by-type/restylane-l/) , RHA 2, and [Versa Lips](https://cosmeticinjectables.com/procedures/filler-by-type/versa-versa-lips/) , amongst others, which all have different price ranges . Moreover, the desired result plays a vital role in cost and pricing.",
+                    {
+                        "Lists": [
+                            "US National Average: $600 – $2,000",
+                            "Our Price: The total cost of lip filler depends on the type of filler used and the individual’s desired results. [Contact us](https://cosmeticinjectables.com/contact-us/) for pricing.",
+                            "Additional Costs: There aren’t any additional costs associated with lip fillers.",
+                            "Insurance: Most insurance companies do not cover cosmetic procedures. We offer a variety of payment options for your convenience."
+                        ]
+                    }
+                ],
+                "H2: Before and After Gallery": [
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-Before-and-After.png",
+                            "alt": "Lip Filler For Men Before And After | Cosmetic Injectables Center Medspa | Sherman Oaks, Los Angeles, Ca",
+                            "width": "",
+                            "height": "",
+                            "title": "Lip filler for men before and after",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    },
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-to-shape-and-sculpt-the-lips-to-obtain.png",
+                            "alt": "Lip Filler For Men To Shape And Sculpt The Lips To Obtain | Cosmetic Injectables Center Medspa | Sherman Oaks, Los Angeles, Ca",
+                            "width": "",
+                            "height": "",
+                            "title": "Lip filler for men to shape and sculpt the lips to obtain",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    },
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2025/04/male-lip-enhancement-before-after-stages.webp",
+                            "alt": "Progressive Before And After Male Lip Filler Results Showing Improved Shape And Fullness.",
+                            "width": "400",
+                            "height": "516",
+                            "title": "Male-lip-enhancement-before-after-stages",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    }
+                ],
+                "H2: How the Procedure Works": [
+                    "Lip Filler for Men is a quick, in-office, non-invasive treatment with little to no downtime."
+                ],
+                "H3: Before & Preparation": [
+                    {
+                        "Lists": [
+                            "You will meet with one of our providers to discuss essential factors such as your physical health, desired expectations, concerns, and questions.",
+                            "Our highly skilled practitioners will analyze your facial structure and determine how to deliver a flawless, natural-looking result."
+                        ]
+                    },
+                    {
+                        "video": {
+                            "src": "https://www.youtube.com/embed/iOF1dPs0z_k?feature=oembed&autoplay=1",
+                            "poster": "",
+                            "width": "1080",
+                            "height": "608",
+                            "controls": false,
+                            "autoplay": false,
+                            "loop": false,
+                            "muted": false,
+                            "preload": "",
+                            "playsinline": false,
+                            "sources": [
+                                {
+                                    "url": "https://www.youtube.com/embed/iOF1dPs0z_k?feature=oembed&autoplay=1",
+                                    "type": "unknown"
+                                }
+                            ],
+                            "tracks": [],
+                            "provider": "youtube"
+                        }
+                    },
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/Practitioner-injecting-the-lip-filler-to-the-man.jpg",
+                            "alt": "Practitioner Injecting The Lip Filler To The Man",
+                            "width": "509",
+                            "height": "339",
+                            "title": "Practitioner injecting the lip filler to the man",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    }
+                ],
+                "H3: During the Procedure": [
+                    {
+                        "Lists": [
+                            "Before injecting any substance into your lips, your provider may administer a topical anesthetic or dental block to increase comfort during the procedure.",
+                            "Your experienced practitioner will use a thin needle to inject the lip filler into any part of your lips that needs volume, definition, or shape.",
+                            "The procedure duration may take around thirty minutes."
+                        ]
+                    }
+                ],
+                "H3: Aftercare & Recovery": [
+                    {
+                        "Lists": [
+                            "After the procedure, you may experience slight swelling, sensitivity, or bruising on the treated area.",
+                            "You can use an ice pack on your lips for 10 minutes fto reduce inflammation.",
+                            "Avoid wearing make-up products or lip balms for at least 24 hours after the procedure.",
+                            "Patients will require maintenance treatments every three to six months to maintain optimal results."
+                        ]
+                    },
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/Mens-Lip-Fillers-Cosmetic-Injectables.jpg",
+                            "alt": "Mens Lip Fillers Cosmetic Injectables | Cosmetic Injectables Center Medspa | Sherman Oaks, Los Angeles, Ca",
+                            "width": "892",
+                            "height": "595",
+                            "title": "Mens lip fillers cosmetic injectables",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    },
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/man-who-is-commited-to-good-skin-is-a-perfect-candidate-for-lip-filler.jpg",
+                            "alt": "Man Who Is Commited To Good Skin Is A Perfect Candidate For Lip Filler",
+                            "width": "570",
+                            "height": "380",
+                            "title": "Man who is commited to good skin is a perfect candidate for lip filler",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    }
+                ],
+                "H2: Am I a Good Candidate?": [
+                    "Anyone interested in enhancing their lips’ appearance and not allergic to the ingredients is a good candidate for lip filler. However, the ideal candidate for this procedure is overall in good health, doesn’t smoke, and is committed to maintaining good skin health."
+                ],
+                "H2: Similar & Related Procedures": [
+                    {
+                        "Lists": [
+                            "Lip Implants for Men: Lip implants are the insertion of silicone into your lip to improve its size and shape by making small incisions in the corners of your mouth.",
+                            "Fat Grafting: Fat Grafting is a long-lasting surgical procedure for your lips. A small amount of fat is taken from a donor site on the body, then injected into your lips."
+                        ]
+                    }
+                ],
+                "H3: Lip Filler VS. Lip Implants": [],
+                "H6: Lip Filler": [],
+                "H6: Non-Surgical Procedure:": ["Yes"],
+                "H6: Recovery Time:": ["Little to none"],
+                "H6: Duration of Results:": ["6-12 months"],
+                "H6: Procedure Time:": ["30 minutes"],
+                "H6: Cost:": ["$600-$2,000"],
+                "H6: Permanent:": ["No"],
+                "H6: Customizable:": ["Yes"],
+                "H6: Lip Implants": [],
+                "H6: Non-Surgical Procedure:  (2)": ["No"],
+                "H6: Recovery Time:  (2)": ["7-14 days"],
+                "H6: Duration of Results:  (2)": ["Permanent"],
+                "H6: Procedure Time:  (2)": ["30-60 minutes"],
+                "H6: Cost:  (2)": ["$2,000-$4,000"],
+                "H6: Permanent:  (2)": ["Yes"],
+                "H6: Customizable:  (2)": ["Yes"],
+                "H2: Lip Filler for Men Side Effects & Risks": [
+                    "As with any procedure requiring injection, bruising and swelling are common side effects but will subside in the following days; some side effects also depend on the individual’s response to the treatment. Risks and side effects may include",
+                    {
+                        "Lists": [
+                            "Bleeding",
+                            "Redness",
+                            "reactivation of cold sores or fever blisters",
+                            "lip asymmetry",
+                            "lumps/bumps",
+                            "Infection"
+                        ]
+                    },
+                    {
+                        "image": {
+                            "src": "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/man-felt-uncomfortable-due-to-lumps-after-lip-filler-procedure.jpg",
+                            "alt": "Man Felt Uncomfortable Due To Lumps After Lip Filler Procedure",
+                            "width": "612",
+                            "height": "408",
+                            "title": "Man felt uncomfortable due to lumps after lip filler procedure",
+                            "loading": "",
+                            "is_data_url": false
+                        }
+                    }
+                ],
+                "H2: Lip Filler for Men FAQs": [],
+                "H4: How long will the filler last men?": [
+                    "Lip filler for men will usually last from three months to twelve months. The filter will gradually break down, and the body will absorb it. The duration of results depends on the individual’s metabolism, the type of filler used, and the amount of filler injected."
+                ],
+                "H4: Is it common for males to get lip fillers?": [
+                    "Yes, lip fillers are as beneficial for men as they are for women. It is becoming increasingly common for men to get lip filler for a fresh, more youthful appearance. As ladies look for a fuller and more voluminous lip look, men tend to desire a more natural look."
+                ],
+                "H4: How much does lip filler for men cost?": [
+                    "The average cost in the United States varies from $500-$2,000. There are plenty of cosmetic options available for any budget. The price will vary based on the desired goal, the type of filler used, and how much filler is required. Our pricing is highly competitive when compared to the national average."
+                ],
+                "H4: Does lip filler hurt?": [
+                    "The procedure should cause minimal pain or discomfort. Your provider may apply the topical anesthetic or full dental block to help to ease any pain. However, because the lips are the most sensitive area of the face, some level of pain is to be expected."
+                ],
+                "H4: What is the Russian lip filler technique?": [
+                    "The Russian technique involves accentuating the Cupid’s bow to resemble a heart shape by injecting more filler in the center of the lip. This technique gives a fuller and plumper lip look."
+                ],
+                "H4: How often can I get lip filler?": [
+                    "You can repeat the lip filler treatment every six months, but it differs from person to person. Hyaluronic acid injected into your lip helps produce collagen, which helps to create more plumped and defined lips. However, it is up to you and your desired outcome."
+                ],
+                "H4: What is a macho mouth?": [
+                    "The ratio of the lips is different in men than in women. Women have a one-third to two-thirds ratio, upper lip to lower lip; in men, the ratio is closer to one-fourth to three-fourths. Men’s lip shape also differs; the upper lip is generally flatter and has less of a cupid’s bow. These slight differences make a lip more masculine or feminine."
+                ],
+                "H4: Do straight guys get lip injections?": [
+                    "Yes! Kissable lips never go out of style and are in no way dependent upon sexual orientation or gender. All genders can both enjoy kissable and fuller lips."
+                ],
+                "H4: Can you get lip fillers in one lip?": [
+                    "Yes. If you want a more modest lip enhancement, fillers in one lip may be the perfect solution. Filler treatments provide natural-looking results and are highly customizable to cater to your specific needs and goals."
+                ],
+                "H3: Related Content": []
+            },
+            "text_data": "\nLip Filler for Men\n==================\nLip filler for Men is a non-surgical procedure consisting of multiple dermal filler injections to shape and plump the lips for a natural-looking, rejuvenated result. Cosmetic procedures to enhance your natural features are not gender-biased. Men, like women, lose shape and volume in their lips as they age. Lip fillers can improve the lips’ size, shape, and proportions while avoiding the risks and downtime associated with plastic surgery.\nThe procedure requires no downtime, and the entire process takes approximately thirty minutes to complete. The treatment induces a change in shape, a boost in volume, and more defined lips that look more balanced and symmetrical. At the Cosmetic Injectables Center, we create a customized experience to deliver favorable and natural-looking results.\n[Image]: Lip Filler For Men\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men.jpg\n\n\nWhat is Lip Filler for Men?\n---------------------------\nLip Filler for Men is a non-invasive cosmetic procedure that focuses on reshaping or enlarging the visible portion of the lip. The process utilizes hyaluronic acid (HA) filler injections into one or both of your lips with a small needle. The HA filler smooths out wrinkles, provides definition and adds hydration to the lips.\nThis in-office procedure takes approximately thirty minutes. Schedule a consultation with one of the Cosmetic Injectables Center’s master injectors for a complete evaluation and discussion of your treatment goals. Lip Filler for Men is an entirely customizable procedure focused on the patient’s goals and needs.\n\nLip Filler for Men Benefits\n---------------------------\nLip Filler for Men is a delicate art form used by cosmetic professionals to shape and sculpt the lips to obtain a more youthful and fresh facial impression. The treatment provides balance and comprehensive anti-aging improvements. Our experienced practitioners customize the perfect lip filler procedure based on your unique facial anatomy to obtain your desired results. Other benefits include:\n[Image]: Male Lips With Volume And Subtle Facial Hair\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Male-Lip-Filler-Injections-for-Volume.webp\n\n--> Defining your lips: H yaluronic acid helps enhance and add natural volume and definition to your lips.\n--> Improve the symmetry of your lips: The procedure is entirely customizable, resulting in increased lip volume, a natural-looking lift, definition of your lip borders, lip symmetry, and hydrated and moisturized lips.\n--> No downtime: Other than possible swelling and bruising or up to 2 weeks\n--> Safe procedure with minimal risks\n\nLip Filler for Men Cost & Pricing Structure\n-------------------------------------------\nHyaluronic acid lip fillers cost approximately $650 to $700 per syringe. The number of syringes required is the factor that will determine the exact cost of your treatment. There are several different brand names of lip fillers, including [Juvederm Ultra](https://cosmeticinjectables.com/procedures/filler-by-type/juvederm-ultra-xc/) , [Juvederm Volbella](https://cosmeticinjectables.com/procedures/filler-by-type/volbella/) , [Restylane Kysse](https://cosmeticinjectables.com/procedures/filler-by-type/restylane-kysse/) , [Restylane L](https://cosmeticinjectables.com/procedures/filler-by-type/restylane-l/) , RHA 2, and [Versa Lips](https://cosmeticinjectables.com/procedures/filler-by-type/versa-versa-lips/) , amongst others, which all have different price ranges . Moreover, the desired result plays a vital role in cost and pricing.\n--> US National Average: $600 – $2,000\n--> Our Price: The total cost of lip filler depends on the type of filler used and the individual’s desired results. [Contact us](https://cosmeticinjectables.com/contact-us/) for pricing.\n--> Additional Costs: There aren’t any additional costs associated with lip fillers.\n--> Insurance: Most insurance companies do not cover cosmetic procedures. We offer a variety of payment options for your convenience.\n\nBefore and After Gallery\n------------------------\n[Image]: Lip Filler For Men Before And After | Cosmetic Injectables Center Medspa | Sherman Oaks, Los Angeles, Ca\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-Before-and-After.png\n\n[Image]: Lip Filler For Men To Shape And Sculpt The Lips To Obtain | Cosmetic Injectables Center Medspa | Sherman Oaks, Los Angeles, Ca\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-to-shape-and-sculpt-the-lips-to-obtain.png\n\n[Image]: Progressive Before And After Male Lip Filler Results Showing Improved Shape And Fullness.\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2025/04/male-lip-enhancement-before-after-stages.webp\n\n\nHow the Procedure Works\n-----------------------\nLip Filler for Men is a quick, in-office, non-invasive treatment with little to no downtime.\n\nBefore & Preparation\n^^^^^^^^^^^^^^^^^^^^\n--> You will meet with one of our providers to discuss essential factors such as your physical health, desired expectations, concerns, and questions.\n--> Our highly skilled practitioners will analyze your facial structure and determine how to deliver a flawless, natural-looking result.\n [Youtube Video]\n [Video Link] : https://www.youtube.com/embed/iOF1dPs0z_k?feature=oembed&autoplay=1\n\n[Image]: Practitioner Injecting The Lip Filler To The Man\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/Practitioner-injecting-the-lip-filler-to-the-man.jpg\n\n\nDuring the Procedure\n^^^^^^^^^^^^^^^^^^^^\n--> Before injecting any substance into your lips, your provider may administer a topical anesthetic or dental block to increase comfort during the procedure.\n--> Your experienced practitioner will use a thin needle to inject the lip filler into any part of your lips that needs volume, definition, or shape.\n--> The procedure duration may take around thirty minutes.\n\nAftercare & Recovery\n^^^^^^^^^^^^^^^^^^^^\n--> After the procedure, you may experience slight swelling, sensitivity, or bruising on the treated area.\n--> You can use an ice pack on your lips for 10 minutes fto reduce inflammation.\n--> Avoid wearing make-up products or lip balms for at least 24 hours after the procedure.\n--> Patients will require maintenance treatments every three to six months to maintain optimal results.\n[Image]: Mens Lip Fillers Cosmetic Injectables | Cosmetic Injectables Center Medspa | Sherman Oaks, Los Angeles, Ca\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/Mens-Lip-Fillers-Cosmetic-Injectables.jpg\n\n[Image]: Man Who Is Commited To Good Skin Is A Perfect Candidate For Lip Filler\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/man-who-is-commited-to-good-skin-is-a-perfect-candidate-for-lip-filler.jpg\n\n\nAm I a Good Candidate?\n----------------------\nAnyone interested in enhancing their lips’ appearance and not allergic to the ingredients is a good candidate for lip filler. However, the ideal candidate for this procedure is overall in good health, doesn’t smoke, and is committed to maintaining good skin health.\n\nSimilar & Related Procedures\n----------------------------\n--> Lip Implants for Men: Lip implants are the insertion of silicone into your lip to improve its size and shape by making small incisions in the corners of your mouth.\n--> Fat Grafting: Fat Grafting is a long-lasting surgical procedure for your lips. A small amount of fat is taken from a donor site on the body, then injected into your lips.\n\nLip Filler VS. Lip Implants\n^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nLip Filler\n..........\n\nNon-Surgical Procedure:\n.......................\nYes\n\nRecovery Time:\n..............\nLittle to none\n\nDuration of Results:\n....................\n6-12 months\n\nProcedure Time:\n...............\n30 minutes\n\nCost:\n.....\n$600-$2,000\n\nPermanent:\n..........\nNo\n\nCustomizable:\n.............\nYes\n\nLip Implants\n............\n\nNon-Surgical Procedure:  (2)\n............................\nNo\n\nRecovery Time:  (2)\n...................\n7-14 days\n\nDuration of Results:  (2)\n.........................\nPermanent\n\nProcedure Time:  (2)\n....................\n30-60 minutes\n\nCost:  (2)\n..........\n$2,000-$4,000\n\nPermanent:  (2)\n...............\nYes\n\nCustomizable:  (2)\n..................\nYes\n\nLip Filler for Men Side Effects & Risks\n---------------------------------------\nAs with any procedure requiring injection, bruising and swelling are common side effects but will subside in the following days; some side effects also depend on the individual’s response to the treatment. Risks and side effects may include\n--> Bleeding\n--> Redness\n--> reactivation of cold sores or fever blisters\n--> lip asymmetry\n--> lumps/bumps\n--> Infection\n[Image]: Man Felt Uncomfortable Due To Lumps After Lip Filler Procedure\n[Image Link]: https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/man-felt-uncomfortable-due-to-lumps-after-lip-filler-procedure.jpg\n\n\nLip Filler for Men FAQs\n-----------------------\n\nHow long will the filler last men?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nLip filler for men will usually last from three months to twelve months. The filter will gradually break down, and the body will absorb it. The duration of results depends on the individual’s metabolism, the type of filler used, and the amount of filler injected.\n\nIs it common for males to get lip fillers?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nYes, lip fillers are as beneficial for men as they are for women. It is becoming increasingly common for men to get lip filler for a fresh, more youthful appearance. As ladies look for a fuller and more voluminous lip look, men tend to desire a more natural look.\n\nHow much does lip filler for men cost?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nThe average cost in the United States varies from $500-$2,000. There are plenty of cosmetic options available for any budget. The price will vary based on the desired goal, the type of filler used, and how much filler is required. Our pricing is highly competitive when compared to the national average.\n\nDoes lip filler hurt?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nThe procedure should cause minimal pain or discomfort. Your provider may apply the topical anesthetic or full dental block to help to ease any pain. However, because the lips are the most sensitive area of the face, some level of pain is to be expected.\n\nWhat is the Russian lip filler technique?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nThe Russian technique involves accentuating the Cupid’s bow to resemble a heart shape by injecting more filler in the center of the lip. This technique gives a fuller and plumper lip look.\n\nHow often can I get lip filler?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nYou can repeat the lip filler treatment every six months, but it differs from person to person. Hyaluronic acid injected into your lip helps produce collagen, which helps to create more plumped and defined lips. However, it is up to you and your desired outcome.\n\nWhat is a macho mouth?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nThe ratio of the lips is different in men than in women. Women have a one-third to two-thirds ratio, upper lip to lower lip; in men, the ratio is closer to one-fourth to three-fourths. Men’s lip shape also differs; the upper lip is generally flatter and has less of a cupid’s bow. These slight differences make a lip more masculine or feminine.\n\nDo straight guys get lip injections?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nYes! Kissable lips never go out of style and are in no way dependent upon sexual orientation or gender. All genders can both enjoy kissable and fuller lips.\n\nCan you get lip fillers in one lip?\n\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\nYes. If you want a more modest lip enhancement, fillers in one lip may be the perfect solution. Filler treatments provide natural-looking results and are highly customizable to cater to your specific needs and goals.\n\nRelated Content\n^^^^^^^^^^^^^^^",
+            "main_image": "https://cosmeticinjectables.com/wp-content/uploads/2020/07/rezeddd-01-1024x683.jpg",
+            "hashes": [],
+            "content_filter_removal_details": [
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "head",
+                    "text": "Lip Filler Men: Cost, Info, Results | Medspa Sharman Oaks",
+                    "html_length": 663886
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "script",
+                    "text": "",
+                    "html_length": 367
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "header",
+                    "text": "FollowFollowFollowFollowFollowProceduresFiller By TypeBelotero BalanceHylenex and VitraseRHATeoxane RedensityTeoxane RHA 2Teoxane RHA 3Teoxane RHA 4Juvederm Fillers FamilyJuvederm Ultra XCJuvederm Ultra Plus XCJuvederm VolbellaJuvederm VollureJuvederm VolumaJuvederm VoluxRadiesseRestylane Fillers FamilyRestylane ContourRestylane DefyneRestylane RefyneRestylane EyelightRestylane KysseRestylane-LRestylane LyftRestylane SilkSculptraVersa & Versa LipsHealth & WellnessBotox for MigrainesBotox for Plantar FasciitisBotox for Underarm SweatingBotox for TMJBotox for Tennis ElbowEMSCULPT NEOEmsellaIV Therapy & Vitamin InjectionsWrinkle RelaxersBotoxDysportJeuveauXeominDaxxifyCosmetic Procedures for MenBotox for MenLip Filler for MenJawline Injections For MenLaserCutera Excel V LaserIPL PhotorejuvenationLumenis Stellar M22Laser GenesisLaser for PigmentationLaser for VeinsTattoo RemovalOther ProceduresAquagoldAsclera Vein InjectionsBuilding CollagenNovathreadsThread Lifting (PDO Barbed Threads)Collagen Building (PDO Smooth Threads)Chemical Peels & ResurfacingKybellaLatisseLiquid FaceliftMicroneedlingMorpheus8PRP, PRF & PRFMSKINVIVETM by JUVÉDERM®Skin Tightening RadiofrequencyUPNEEQ Eye DropsZimmer Cryo Cool AirPopular TreatmentsLip FlipLip FillersSculptra Butt LiftUndereye FillersNon-surgical Liquid FaceliftBio RegenerativeExosomesExoNextEZGelMicroneedlingPRP, PRF & PRFMRadiesseSculptraSmooth ThreadsTreatment AreasFaceBrowsCheeksChinEyes and Under EyesForehead & TemplesJawlineLipsBodyButtocksDécolleté and Upper ChestHandsNeckSkinBefore and AfterShopAlastinSkin MedicaSoleiman MDSpecialsAboutOur StaffFAQFinancingCare CreditPatient ResourcesCOVID19Charitable WorkPress ReleasesBlogContact(818) 322-0122Book NowWhy Choose Us(818) 322-0122BOOK NOW",
+                    "html_length": 34258
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "nav",
+                    "text": "Home/Cosmetic Procedures for Men Sherman Oaks",
+                    "html_length": 362
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "button",
+                    "text": "Book Now",
+                    "html_length": 495
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "button",
+                    "text": "What is it?|Benefits|Cost|Before and After|How It Works|Am I a Good Candidate?|Similar Procedures|Risks|FAQs",
+                    "html_length": 669
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "promo",
+                    "text": "Our team has years of experience in providing Lip Filler for Men. Get in touch today!",
+                    "html_length": 424
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "button",
+                    "text": "Book Now",
+                    "html_length": 533
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "button",
+                    "text": "Lip Filler for Men Before and After",
+                    "html_length": 470
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "promo",
+                    "text": "Get the results you’ve always wanted from the nation’s leading physician for Cosmetic Injectables!",
+                    "html_length": 437
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "button",
+                    "text": "Book Now",
+                    "html_length": 533
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "promo",
+                    "text": "Our team has years of experience in providing Lip Filler for Men. Get in touch today!",
+                    "html_length": 424
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "button",
+                    "text": "Book Now",
+                    "html_length": 533
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "overlay",
+                    "text": "Acne Myths That Are Ruining Your Skin (And What Actually Works)Acne is one of the most common health conditions globally. It plagues over 80% of people between 11 and 30 years old. It isn't strange that with such widespread affectation, it will have many myths...",
+                    "html_length": 1586
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "overlay",
+                    "text": "The Most Effective Acne Scar Treatments: What Really Works?Acne and acne scars are common problems worldwide. While 80% of people between the ages of 11 and 30 will have acne, about 20% will develop scars. Acne occurs when pores in the skin are clogged with...",
+                    "html_length": 1537
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "overlay",
+                    "text": "Acne & Its Hidden Meaning: What Your Breakouts Reveal About Your Skin?A fresh breakout of acne on the skin is never a pleasant site. It messes with the tone and texture of your skin. There is also a risk of developing acne scars which are even more annoying. However,...",
+                    "html_length": 1594
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "overlay",
+                    "text": "Best Dermal Fillers for Acne Scars: Which One is Right for You?Acne can be a very frustrating inflammatory disease of the body. More annoying are the scars that can follow this disease.  Acne plagues the skin of a major part of the world's population. About 1...",
+                    "html_length": 1580
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "promo",
+                    "text": "Get the results you’ve always wanted from the nation’s leading physician for Cosmetic Injectables!",
+                    "html_length": 437
+                },
+                {
+                    "attribute": "class",
+                    "match_type": "partial",
+                    "trigger_value": "button",
+                    "text": "Book Now",
+                    "html_length": 533
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "script",
+                    "text": "",
+                    "html_length": 227
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "script",
+                    "text": "",
+                    "html_length": 1359
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "footer",
+                    "text": "(818) 322-0122[email protected]14460 Ventura Blvd.Sherman Oaks, CA 91423View Near By LocationsImportant LinksHomeProceduresTreatment AreasBefore and AfterCareersSitemapShopSpecialsAboutContactGet Discounts & Invites For Special EventsFollowFollowFollowFollowFollowBook A Consultation© Cosmetic Injectables Center Medspa. All Rights Reserved. Designed by:Titanium Marketing.Privacy Policy.",
+                    "html_length": 12233
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "script",
+                    "text": "",
+                    "html_length": 612
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "style",
+                    "text": "",
+                    "html_length": 49801
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "script",
+                    "text": "",
+                    "html_length": 23357
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "noscript",
+                    "text": "",
+                    "html_length": 26088
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "script",
+                    "text": "",
+                    "html_length": 144
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "script",
+                    "text": "",
+                    "html_length": 1115
+                },
+                {
+                    "attribute": "tag",
+                    "match_type": "exact",
+                    "trigger_value": "style",
+                    "text": "",
+                    "html_length": 164
+                }
+            ],
+            "links": {
+                "internal": [
+                    "https://cosmeticinjectables.com/treatment-areas/body/buttocks/",
+                    "https://cosmeticinjectables.com/about/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/zimmer-cryo-cool-air-sherman-oaks-ca/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/radiesse/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/sculptra/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-lyft/",
+                    "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/barbed-pdo-threads/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/latisse/",
+                    "https://cosmeticinjectables.com/careers/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/rha-4/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-fillers/",
+                    "https://cosmeticinjectables.com/procedures/laser/tattoo-removal-sherman-oaks-ca/",
+                    "https://cosmeticinjectables.com/privacy-policy/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-silk/",
+                    "https://cosmeticinjectables.com/about/charitable-work/",
+                    "https://cosmeticinjectables.com/procedures/laser/laser-for-veins/",
+                    "https://cosmeticinjectables.com/",
+                    "https://cosmeticinjectables.com/about/patient-forms-and-resources/",
+                    "https://cosmeticinjectables.com/procedures/botox/botox-lip-flip/",
+                    "https://cosmeticinjectables.com/procedures/lip-filler/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/asclera-vein-injections/",
+                    "https://cosmeticinjectables.com/about/why_choose_us",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/versa-versa-lips/",
+                    "https://cosmeticinjectables.com/treatment-areas/body/decollete-and-upper-chest/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/microneedling/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/radio-frequency-skin-tightening/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/rha-redensity/",
+                    "https://cosmeticinjectables.com/sherman-oaks-med-spa-specials/",
+                    "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/lip-filler/",
+                    "https://cosmeticinjectables.com/procedures/wrinkle-relaxers/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-contour/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-l/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-defyne/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/prp-prf/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/chemical-peels/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/aquagold/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/building-collagen/",
+                    "https://cosmeticinjectables.com/comments/feed/",
+                    "https://cosmeticinjectables.com/wp-json/wp/v2/procedures/377947",
+                    "https://cosmeticinjectables.com/treatment-areas/face/eyes-and-under-eyes/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/novathreads/",
+                    "https://cosmeticinjectables.com/about/faq/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/hylenex-vitrase/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/vollure/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/rha-3/",
+                    "https://cosmeticinjectables.com/wp-json/",
+                    "https://cosmeticinjectables.com/treatment-areas/face/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/juvederm-volbella/",
+                    "https://cosmeticinjectables.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fcosmeticinjectables.com%2Fprocedures%2Fcosmetic-procedures-for-men%2Flip-filler%2F",
+                    "https://cosmeticinjectables.com/procedures/wrinkle-relaxers/dysport/",
+                    "https://cosmeticinjectables.com/before-and-after/lips/",
+                    "https://cosmeticinjectables.com/blog/best-acne-scar-treatments/",
+                    "https://cosmeticinjectables.com/procedures/laser/",
+                    "https://cosmeticinjectables.com/treatment-areas/face/lips/",
+                    "https://cosmeticinjectables.com/procedures/wrinkle-relaxers/xeomin/",
+                    "https://cosmeticinjectables.com/blog/best-dermal-fillers-for-acne-scars/",
+                    "https://cosmeticinjectables.com/treatment-areas/face/brows/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-refyne/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/rha2/",
+                    "https://cosmeticinjectables.com/treatment-areas/body/",
+                    "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/jawline-injections/",
+                    "https://cosmeticinjectables.com/procedures/laser/cutera/",
+                    "https://cosmeticinjectables.com/treatment-areas/body/hands/",
+                    "https://cosmeticinjectables.com/feed/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/botox-for-migraines/",
+                    "https://cosmeticinjectables.com/before-and-after/",
+                    "https://cosmeticinjectables.com/specials/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/juvederm-fillers/",
+                    "https://cosmeticinjectables.com/xmlrpc.php",
+                    "https://cosmeticinjectables.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fcosmeticinjectables.com%2Fprocedures%2Fcosmetic-procedures-for-men%2Flip-filler%2F&format=xml",
+                    "https://cosmeticinjectables.com/contact-us/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/juvederm-ultra-xc/",
+                    "https://cosmeticinjectables.com/procedures/botox/botox-for-underarm-sweating/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-kysse/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/novathreads/smooth-threads/",
+                    "https://cosmeticinjectables.com/procedures/laser/lumenis-stellar-m22-laser-los-angeles-ca/",
+                    "https://cosmeticinjectables.com/treatment-areas/skin/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/volux/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/botox-for-plantar-fasciitis/",
+                    "https://cosmeticinjectables.com/blog/acne-breakouts-hidden-meaning/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/upneeq-eye-drops/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/juvederm-voluma/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/restylane-eyelight/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/emsella/",
+                    "https://cosmeticinjectables.com/procedures/wrinkle-relaxers/botox/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/ez-gel-filler/",
+                    "https://cosmeticinjectables.com/procedures/cosmetic-procedures-for-men/botox-for-men/",
+                    "https://cosmeticinjectables.com/treatment-areas/body/neck/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/morpheus8/",
+                    "https://cosmeticinjectables.com/press/",
+                    "https://cosmeticinjectables.com/procedures/laser/laser-genesis/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/iv-therapy-vitamin-injections/",
+                    "https://cosmeticinjectables.com/about/covid19/",
+                    "https://cosmeticinjectables.com/cdn-cgi/l/email-protection",
+                    "https://cosmeticinjectables.com/treatment-areas/face/jawline/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/emsculpt-neo/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/exosomes-treatment-sherman-oaks-ca/",
+                    "https://cosmeticinjectables.com/near-by-locations/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/juvederm-ultra-plus-xc/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/belotero-balance/",
+                    "https://cosmeticinjectables.com/procedures/laser/laser-for-pigmentation/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/botox-for-tennis-elbow/",
+                    "https://cosmeticinjectables.com",
+                    "https://cosmeticinjectables.com/procedures/wrinkle-relaxers/jeuveau/",
+                    "https://cosmeticinjectables.com/blog/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/exonext-los-angeles-ca/",
+                    "https://cosmeticinjectables.com/blog/acne-myths-vs-effective-treatments/",
+                    "https://cosmeticinjectables.com/treatment-areas/face/cheeks/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/volbella/",
+                    "https://cosmeticinjectables.com/treatment-areas/face/chin/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/",
+                    "https://cosmeticinjectables.com/procedures/health-and-wellness/botox-for-tmj/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/sculptra-butt-lift/",
+                    "https://cosmeticinjectables.com/treatment-areas/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/kybella/",
+                    "https://cosmeticinjectables.com/procedures/wrinkle-relaxers/daxxify/",
+                    "https://cosmeticinjectables.com/about/our-staff/",
+                    "https://cosmeticinjectables.com/procedures/",
+                    "https://cosmeticinjectables.com/procedures/other-procedures/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/liquid-facelift/",
+                    "https://cosmeticinjectables.com/procedures/laser/ipl-photorejuvenation-sherman-oaks-ca/",
+                    "https://cosmeticinjectables.com/treatment-areas/face/forehead-temples/",
+                    "https://cosmeticinjectables.com/procedures/filler-by-type/skinvive-by-juvederm/"
+                ],
+                "external": [
+                    "https://alastin.com/collections/welcome?designate-location=3471",
+                    "https://www.instagram.com/cosmeticinjectablescenter/",
+                    "https://cdn-didic.nitrocdn.com",
+                    "https://www.facebook.com/cosmeticinjectablescenter/",
+                    "https://twitter.com/cosminjectables",
+                    "https://cosmeticinjectables.brilliantconnections.com",
+                    "https://www.googletagmanager.com/ns.html?id=GTM-MJ3N96C",
+                    "https://quanthic.cloud",
+                    "https://www.yelp.com/biz/cosmetic-injectables-center-sherman-oaks",
+                    "https://www.youtube.com/channel/UCbPG5mFhwBu3rIbN3cbAzHg",
+                    "https://cosmetic-injectables-center.myshopify.com/",
+                    "https://www.googletagmanager.com",
+                    "https://cosmeticinj.zenoti.com/webstoreNew",
+                    "https://www.facebook.com/tr?id=735045333751939&ev=PageView&noscript=1",
+                    "https://titaniumsuccess.com/web-design-services/",
+                    "https://cdn.jsdelivr.net",
+                    "https://www.carecredit.com/go/JFF498/",
+                    "https://www.youtube.com/embed/iOF1dPs0z_k?feature=oembed&autoplay=1",
+                    "https://cosmeticinj.zenoti.com/webstoreNew/services",
+                    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3301.8323631062353!2d-118.44806129999999!3d34.1506307!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c29789ec6522cb%3A0x9191b910678228c3!2sCosmetic%20Injectables%20Center!5e0!3m2!1sen!2s!4v1749071109640!5m2!1sen!2s"
+                ],
+                "images": [
+                    "https://cosmeticinjectables.com/wp-content/uploads/2025/04/male-lip-enhancement-before-after-stages.webp",
+                    "https://cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-to-shape-and-sculpt-the-lips-to-obtain.png",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-to-shape-and-sculpt-the-lips-to-obtain.png",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/man-who-is-commited-to-good-skin-is-a-perfect-candidate-for-lip-filler.jpg",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2025/04/male-lip-enhancement-before-after-stages.webp",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2025/03/dermal-filler-for-acne-scars.webp",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2025/03/acne-scars-treatment-before-after.webp",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/Practitioner-injecting-the-lip-filler-to-the-man.jpg",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/Mens-Lip-Fillers-Cosmetic-Injectables.jpg",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-Before-and-After.png",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men.jpg",
+                    "https://cosmeticinjectables.com/wp-content/uploads/2022/07/Lip-Filler-for-Men-Before-and-After.png",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2025/03/acne-breakouts-hidden-meaning.webp",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/08/man-felt-uncomfortable-due-to-lumps-after-lip-filler-procedure.jpg",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2022/07/Male-Lip-Filler-Injections-for-Volume.webp",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2025/03/c37d9f5acc.jpg"
+                ],
+                "documents": [],
+                "others": [
+                    "https://cosmeticinjectables.com/sitemap_index.xml",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDUyIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjUyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwMCA2MzMiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjYzMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48L3N2Zz4=",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMzgwIDIyNCIgd2lkdGg9IjM4MCIgaGVpZ2h0PSIyMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2021/04/location-icon.png",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTA5IDMzOSIgd2lkdGg9IjUwOSIgaGVpZ2h0PSIzMzkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwMCA2NjciIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjY2NyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48L3N2Zz4=",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTA4MCAxMDgwIiB3aWR0aD0iMTA4MCIgaGVpZ2h0PSIxMDgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2021/05/cropped-Screen-Shot-2021-05-05-at-11.13.42-AM-192x192.png",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwMCA1NjIiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjU2MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48L3N2Zz4=",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2021/04/phone-icon.png",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgOTIwIDU4MCIgd2lkdGg9IjkyMCIgaGVpZ2h0PSI1ODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2024/03/cosmetic-injectables-center-logo.webp",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTcwIDM4MCIgd2lkdGg9IjU3MCIgaGVpZ2h0PSIzODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/static/source/rev-a4c48b8/cosmeticinjectables.com/wp-content/themes/divi-child/fonts/open-sans-v26-latin-600.woff2",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2024/03/cosmetic-injectables-center-footer-logo.webp",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2021/05/cropped-Screen-Shot-2021-05-05-at-11.13.42-AM-180x180.png",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDAwIDUxNiIgd2lkdGg9IjQwMCIgaGVpZ2h0PSI1MTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTM0IDE1MiIgd2lkdGg9IjEzNCIgaGVpZ2h0PSIxNTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjEyIDQwOCIgd2lkdGg9IjYxMiIgaGVpZ2h0PSI0MDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTM0IDkyIiB3aWR0aD0iMTM0IiBoZWlnaHQ9IjkyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2021/05/cropped-Screen-Shot-2021-05-05-at-11.13.42-AM-32x32.png",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/images/optimized/rev-7ec8652/cosmeticinjectables.com/wp-content/uploads/2021/04/email-icon.png",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgODkyIDU5NSIgd2lkdGg9Ijg5MiIgaGVpZ2h0PSI1OTUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/static/source/rev-a4c48b8/cosmeticinjectables.com/wp-content/themes/divi-child/fonts/open-sans-v26-latin-regular.woff2",
+                    "https://cdn-didic.nitrocdn.com/YXgRMWYhCWYpxFmCazItCKcdetpZrrev/assets/static/optimized/rev-a4c48b8/cosmeticinjectables.com/externalFontFace/nitro-min-noimport-92a0728fbe46760b91a70f86d0ab5fce-stylesheet.css",
+                    "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTM0IDEzNCIgd2lkdGg9IjEzNCIgaGVpZ2h0PSIxMzQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PC9zdmc+",
+                    "tel:8183220122"
+                ],
+                "audio": [],
+                "videos": [],
+                "archives": []
+            },
+            "scraped_at": "2025-06-17T14:45:06.518175+00:00"
+        }
+    ]
+}

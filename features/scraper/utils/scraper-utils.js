@@ -72,7 +72,14 @@ export const extractScraperData = (pageData) => {
   console.log("[SCRAPER UTILS: extractScraperData] pageData", pageData);
 
   try {
-    // Handle string response
+    // Handle new response structure (both scraped_pages and fetch_results)
+    if (pageData && typeof pageData === 'object' && 
+        (pageData.response_type === 'scraped_pages' || pageData.response_type === 'fetch_results')) {
+      // This is already in the new response format - return it as is
+      return pageData;
+    }
+
+    // Handle string response (legacy)
     if (typeof pageData === 'string') {
       try {
         const parsed = JSON.parse(pageData);
@@ -91,7 +98,7 @@ export const extractScraperData = (pageData) => {
         };
       }
     } 
-    // Handle object response
+    // Handle object response (legacy)
     else if (typeof pageData === 'object' && pageData !== null) {
       statusValue = pageData.status || "unknown";
       
@@ -117,7 +124,7 @@ export const extractScraperData = (pageData) => {
     contentFilterDetails = parsedContent.content_filter_removal_details || [];
     noiseRemoverDetails = parsedContent.noise_remover_removal_details || [];
     hashes = parsedContent.hashes || [];
-    contentOutline = parsedContent.overview.outline || [];
+    contentOutline = parsedContent.overview?.outline || [];
     allRemovals = [
       ...(contentFilterDetails || []).map(item => ({ ...item, remover: "Content Filter" })),
       ...(noiseRemoverDetails || []).map(item => ({ ...item, remover: "Noise Remover" })),
@@ -132,12 +139,12 @@ export const extractScraperData = (pageData) => {
     audio = links.audio || [];
     other = links.other || [];
     archives = links.archives || [];
-    metadata = parsedContent.overview.metadata || {};
-    jsonId = parsedContent.overview.metadata.json_id || [];
-    opengraph = parsedContent.overview.metadata.opengraph || {};
-    metatags = parsedContent.overview.metadata.metatags || [];
-    structuredMetadata = parsedContent.overview.metadata.structured_metadata || [];
-    organizedContentNew = parsedContent.organized_data_new.content || [];
+    metadata = parsedContent.overview?.metadata || {};
+    jsonId = parsedContent.overview?.metadata?.json_id || [];
+    opengraph = parsedContent.overview?.metadata?.opengraph || {};
+    metatags = parsedContent.overview?.metadata?.metatags || [];
+    structuredMetadata = parsedContent.overview?.metadata?.structured_metadata || [];
+    organizedContentNew = parsedContent.organized_data_new?.content || [];
     
     return {
       isError: false,
@@ -201,7 +208,7 @@ export const filterContentResponses = (responses) => {
 
 /**
  * Extracts the title from a page response
- * @param {object|string} response - Page response
+ * @param {object|string} response - Page response (could be ScrapedPagesResponse or legacy format)
  * @param {number} index - Index for fallback title
  * @returns {string} Page title
  */
@@ -209,15 +216,30 @@ export const extractPageTitle = (response, index) => {
   let defaultTitle = `Page ${index + 1}`;
   
   try {
+    // Handle new response structure (both scraped_pages and fetch_results)
+    if (response && typeof response === 'object' && 
+        (response.response_type === 'scraped_pages' || response.response_type === 'fetch_results')) {
+      // For new response format, we need to look at the first result
+      const firstResult = response.results?.[0];
+      return firstResult?.overview?.page_title || firstResult?.url || defaultTitle;
+    }
+
+    // Handle legacy string response
     if (typeof response === 'string') {
       const parsed = JSON.parse(response);
       if (parsed.parsed_content) {
         const content = safeParseJSON(parsed.parsed_content);
         return content?.overview?.page_title || defaultTitle;
       }
-    } else if (response?.parsed_content) {
+    } 
+    // Handle legacy object response
+    else if (response?.parsed_content) {
       const content = safeParseJSON(response.parsed_content);
       return content?.overview?.page_title || defaultTitle;
+    }
+    // Handle direct object with overview
+    else if (response?.overview?.page_title) {
+      return response.overview.page_title;
     }
   } catch (e) {
     console.log("Error getting page title:", e);

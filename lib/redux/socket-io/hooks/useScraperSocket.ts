@@ -13,7 +13,7 @@ export type TaskData = Record<string, any>;
 export const useScraperSocket = () => {
     const dispatch = useAppDispatch();
     const [taskId, setTaskId] = useState<string>("");
-    const [service, setService] = useState<string>("scrape_service");
+    const [service, setService] = useState<string>("scraper_service_v2");
     const [taskType, setTaskType] = useState<string>("quick_scrape");
     const [taskData, setTaskDataState] = useState<TaskData>({});
     

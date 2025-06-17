@@ -9,11 +9,12 @@ import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
 import { setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
-import { 
+import {
     selectTaskFirstListenerId,
     selectResponseDataByListenerId,
+    selectResponseTextByListenerId,
     selectPrimaryResponseEndedByTaskId,
-    selectTaskStatus
+    selectTaskStatus,
 } from "@/lib/redux/socket-io";
 import { v4 as uuidv4 } from "uuid";
 
@@ -27,32 +28,31 @@ interface FactCheckerPageProps {
     };
 }
 
-
 const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} }) => {
     const dispatch = useAppDispatch();
     const [taskId, setTaskId] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
+    const [pageText, setPageText] = useState<string>(value);
 
     const recipeIdFactChecker = "07e85962-71c8-4a2d-acb0-80d1771a4594";
     const brokerId = "59dd12d8-8bec-40ae-af24-09d2cf28a806";
 
+    const broker_values = [
+        {
+            id: brokerId,
+            name: brokerId,
+            value: pageText,
+        },
+    ];
+
     // Redux selectors
-    const taskStatus = useAppSelector(state => taskId ? selectTaskStatus(state, taskId) : null);
-    const isTaskCompleted = useAppSelector(state => taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : false);
-    const firstListenerId = useAppSelector(state => taskId ? selectTaskFirstListenerId(state, taskId) : "");
+    const taskStatus = useAppSelector((state) => (taskId ? selectTaskStatus(state, taskId) : null));
+    const isTaskCompleted = useAppSelector((state) => (taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : false));
+    const firstListenerId = useAppSelector((state) => (taskId ? selectTaskFirstListenerId(state, taskId) : ""));
     const responseData = useAppSelector(selectResponseDataByListenerId(firstListenerId || ""));
+    const streamingResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId || ""));
 
     const isLoading = taskStatus === "submitted" && !isTaskCompleted;
-
-    // Extract streaming response from response data
-    const streamingResponse = useMemo(() => {
-        if (!responseData || !Array.isArray(responseData)) return "";
-        
-        // Combine all text responses
-        return responseData
-            .filter(item => typeof item === 'string')
-            .join('');
-    }, [responseData]);
 
     // Get page details from overview if available
     const pageTitle = overview?.page_title || "Content";
@@ -60,20 +60,27 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
     const pageUrl = overview?.url;
 
     useEffect(() => {
+        if (value && value.trim().length > 0) {
+            setPageText(value);
+        }
+    }, [value]);
+
+    useEffect(() => {
         const runTask = async () => {
-            if (!value || value.trim().length === 0) {
+            if (!pageText || pageText.trim().length === 0) {
                 return;
             }
 
             setError(null);
-            console.log("[FactChecker] value:", value);
 
             try {
                 // Create the task
-                const newTaskId = await dispatch(createTask({
-                    service: "ai_chat_service",
-                    taskName: "run_recipe_to_chat"
-                })).unwrap();
+                const newTaskId = await dispatch(
+                    createTask({
+                        service: "ai_chat_service",
+                        taskName: "run_recipe_to_chat",
+                    })
+                ).unwrap();
 
                 setTaskId(newTaskId);
 
@@ -81,33 +88,23 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
                 const taskData = {
                     chat_config: {
                         recipe_id: recipeIdFactChecker,
-                        version: "1",
                         prepare_for_next_call: false,
                         save_new_conversation: false,
                         include_classified_output: false,
-                        tools_override: [],
-                        allow_default_values: true,
-                        allow_removal_of_unmatched: true,
-                        model_override: "gpt-4o-mini"
                     },
-                    broker_values: [
-                        {
-                            id: brokerId,
-                            name: brokerId,
-                            value: value
-                        }
-                    ]
+                    broker_values: broker_values,
                 };
 
                 // Set the task data
-                dispatch(setTaskFields({
-                    taskId: newTaskId,
-                    fields: taskData
-                }));
+                dispatch(
+                    setTaskFields({
+                        taskId: newTaskId,
+                        fields: taskData,
+                    })
+                );
 
                 // Submit the task
                 dispatch(submitTask({ taskId: newTaskId }));
-
             } catch (err) {
                 setError(err instanceof Error ? err.message : "An error occurred");
                 console.error("[FactChecker] Task failed:", err);
@@ -115,7 +112,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
         };
 
         runTask();
-    }, [value, dispatch]);
+    }, [pageText, dispatch]);
 
     // Parse the full response once and use the parsed content
     const parsedContent = useMemo(() => {
@@ -380,4 +377,4 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
     );
 };
 
-export default FactCheckerPage;
+export default React.memo(FactCheckerPage);

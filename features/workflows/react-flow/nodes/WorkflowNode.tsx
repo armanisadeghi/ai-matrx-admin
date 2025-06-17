@@ -6,13 +6,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { NodeContextMenu } from "@/features/workflows/components/menus/NodeContextMenu";
 import { NodeDropdownMenu } from "@/features/workflows/components/menus/NodeDropdownMenu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
-import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { SocketResultsOverlay } from "@/components/socket-io/presets/preset-manager/responses/SocketResultsOverlay";
-import { DbFunctionNode, ArgumentOverride } from "@/features/workflows/types";
-import { isNodeConnected, Input, Output, parseEdge } from "@/features/workflows/utils/node-utils";
+import { DbFunctionNode } from "@/features/workflows/types";
+import { isNodeConnected, Input, Output } from "@/features/workflows/utils/node-utils";
 import { workflowNodeCustomTabs } from "@/features/workflows/components/common/workflow-results-tab-config";
 import { BsThreeDots } from "react-icons/bs";
-import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface WorkflowNodeProps {
     data: DbFunctionNode;
@@ -26,23 +24,24 @@ interface WorkflowNodeProps {
     onShowResults?: (nodeData: DbFunctionNode) => void;
 }
 
-const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, userInputs, onConnect, onShowResults }) => {
-    // Access enrichedBrokers from window object (set by WorkflowSystem)
-    const enrichedBrokers = window.workflowEnrichedBrokers || [];
-    const functionData = getRegisteredFunctions().find((f) => f.id === data.function_id);
-    const hasRequiredInputs = functionData?.args.some((arg) => {
-        const override = data.arg_overrides?.find((o: ArgumentOverride) => o.name === arg.name);
-        return arg.required && !(override?.ready ?? arg.ready);
-    });
+const WorkflowNode: React.FC<WorkflowNodeProps> = ({
+    data,
+    inputsAndOutputs,
+    selected,
+    onDelete,
+    onEdit,
+    onDuplicate,
+    userInputs,
+    onConnect,
+    onShowResults,
+}) => {
     const { mode } = useTheme();
-    const [mounted, setMounted] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
 
     const { inputs, outputs } = inputsAndOutputs;
 
     const calculateHandlePosition = (index: number, total: number, isOutput: boolean = false) => {
-        // Account for header height, padding, and spacing
         const headerHeight = 40;
         const contentPadding = 0;
         const itemHeight = 16;
@@ -63,9 +62,6 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, inputsAndOutputs, sel
     };
 
     useEffect(() => {
-        setMounted(true);
-
-        // Add dark mode class to container if in dark mode
         const container = document.body;
         if (mode === "dark") {
             container.classList.add("react-flow-dark-mode");

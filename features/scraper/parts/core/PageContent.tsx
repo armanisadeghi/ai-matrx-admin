@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { extractScraperData } from "../../utils/scraper-utils";
+import { convertOrganizedDataToString } from "../../utils/scraper-utils";
 import PageHeader from "./PageHeader";
 import ContentTabs from "./ContentTabs";
 import OrganizedContent from "../OrganizedContent";
@@ -19,7 +19,6 @@ import FancyJsonExplorer from "../FancyJsonExplorer";
 import BookmarkViewer from "../BookmarkViewer";
 import { formatJson } from "@/utils/json-cleaner-utility";
 import SEOAnalysisPage from "@/features/scraper/parts/SEOAnalysisPage";
-import { convertOrganizedDataToString } from "../../utils/scraper-utils";
 import HeaderAnalysis from "../HeaderAnalysis";
 import FactChecker from "../recipes/FactChecker";
 import KeywordAnalysis from "../recipes/KeywordAnalysis";
@@ -31,9 +30,10 @@ interface PageContentProps {
     pageData: any;
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    dataUtils: typeof import("../../utils/data-utils").default;
 }
 
-const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiveTab }) => {
+const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiveTab, dataUtils }) => {
     // State for feature toggles
     const [featureToggles, setFeatureToggles] = useState({
         keywordAnalysis: false,
@@ -44,18 +44,93 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
         return <div className="p-4 text-gray-500 dark:text-gray-400">No data available for this page</div>;
     }
 
-    const data = useMemo(() => extractScraperData(pageData), [pageData]);
 
-    if (data.isError) {
+    // Extract data using the new ScraperDataUtils system
+    const extractedData = useMemo(() => {
+        try {
+            // The pageData should already be processed from ScraperResultsComponent
+            // Extract the first result for display
+            const firstResult = pageData?.results?.[0];
+            
+            if (!firstResult) {
+                console.error("[PAGE CONTENT] No results found in pageData:", pageData);
+                return { isError: true, error: "No results found in processed data" };
+            }
+
+
+            // Extract all the data we need for display
+            const overview = firstResult.overview || {};
+            const textData = firstResult.text_data || "";
+            const organizedData = firstResult.organized_data || {};
+            const structuredData = firstResult.structured_data || {};
+            const contentFilterDetails = firstResult.content_filter_removal_details || [];
+            const hashes = firstResult.hashes || [];
+            const links = firstResult.links || {};
+            const mainImage = firstResult.main_image;
+            const scrapedAt = firstResult.scraped_at;
+            const status = firstResult.status;
+            const error = firstResult.error;
+
+            // Process organized data for removal details display
+            const allRemovals = contentFilterDetails.map(item => ({ ...item, remover: "Content Filter" }));
+
+            const images = links.images || [];
+
+            if (scrapedAt) {
+                console.log("[PAGE CONTENT] Scraped at timestamp TODO: Create ScrapedAtInfo component:");
+                // TODO: Create ScrapedAtInfo component
+            }
+
+            // TODO: Create component for main_image display if not in images
+            if (mainImage && !images.includes(mainImage)) {
+                console.log("[PAGE CONTENT] Main image not in images list TODO: Create MainImageDisplay component:");
+                // TODO: Create MainImageDisplay component
+            }
+
+            // TODO: Create components for different link types
+            Object.keys(links).forEach(linkType => {
+                if (linkType !== 'images' && links[linkType] && links[linkType].length > 0) {
+                    console.log(`[PAGE CONTENT] ${linkType} links TODO: Create LinkDisplay component for each type:`);
+                    // TODO: Create LinkDisplay component for each type
+                }
+            });
+
+            return {
+                isError: false,
+                statusValue: status,
+                overview,
+                textData,
+                organizedData,
+                structuredData,
+                contentFilterDetails,
+                hashes,
+                allRemovals,
+                contentOutline: overview?.outline || {},
+                links,
+                images,
+                mainImage,
+                scrapedAt,
+                error
+            };
+        } catch (error) {
+            console.error("[PAGE CONTENT] Error extracting data:", error);
+            return {
+                isError: true,
+                error: `Error extracting data: ${error.message}`
+            };
+        }
+    }, [pageData, dataUtils]);
+
+
+    if (extractedData.isError) {
         return (
             <Alert className="m-4">
-                <AlertDescription>{data.error}</AlertDescription>
+                <AlertDescription>{extractedData.error}</AlertDescription>
             </Alert>
         );
     }
 
-    const jsonStr = useMemo(() => formatJson(pageData), [pageData]);
-    const { statusValue, overview, textData, organizedData, structuredData, allRemovals, hashes, contentOutline } = useMemo(() => data, [data]);
+    const { statusValue, overview, textData, organizedData, structuredData, allRemovals, hashes, contentOutline, images } = extractedData;
 
     const value = useMemo(() => convertOrganizedDataToString(organizedData), [organizedData]);
 
@@ -84,13 +159,13 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                         <OrganizedContent organizedData={organizedData} />
                     </TabsContent>
                     <TabsContent value="reader" className="m-0 h-full overflow-auto">
-                        <SimplifiedView pageData={data} />
+                        <SimplifiedView pageData={extractedData} />
                     </TabsContent>
                     <TabsContent value="structured" className="m-0 h-full overflow-auto">
                         <StructuredData structuredData={structuredData} />
                     </TabsContent>
                     <TabsContent value="images" className="m-0 h-full overflow-auto">
-                        <ImageGallery imageUrls={data?.images} />
+                        <ImageGallery imageUrls={images} />
                     </TabsContent>
                     <TabsContent value="text" className="m-0 h-full overflow-auto">
                         <TextContent textData={textData} />
@@ -120,7 +195,7 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                     </TabsContent>
                     <TabsContent value="fact-checker" className="m-0 h-full overflow-auto">
                         {featureToggles.factChecker ? (
-                            <FactChecker value={value} />
+                            <FactChecker value={value} overview={overview}/>
                         ) : (
                             <FeatureDisabledPlaceholder 
                                 featureName="Fact Checker"

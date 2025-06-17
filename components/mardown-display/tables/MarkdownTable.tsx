@@ -46,12 +46,98 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+interface ExportDropdownMenuProps {
+  debouncedTableData: {
+    headers: string[];
+    rows: string[][];
+    normalizedData?: Array<{ [key: string]: string }>;
+  };
+  content?: string;
+  copyTableToClipboard: () => void;
+  copyMarkdownToClipboard: () => void;
+  copyJsonToClipboard: () => void;
+  downloadCSV: () => void;
+  downloadMarkdown: () => void;
+}
+
+const ExportDropdownMenu: React.FC<ExportDropdownMenuProps> = ({
+  debouncedTableData,
+  content,
+  copyTableToClipboard,
+  copyMarkdownToClipboard,
+  copyJsonToClipboard,
+  downloadCSV,
+  downloadMarkdown,
+}) => {
+  const [isDataStable, setIsDataStable] = useState(false);
+
+  useEffect(() => {
+    // Hide menu immediately when data changes
+    setIsDataStable(false);
+
+    // Set a timeout to show menu after 1 second of stability
+    const stabilityTimer = setTimeout(() => {
+      setIsDataStable(true);
+    }, 1000);
+
+    return () => {
+      clearTimeout(stabilityTimer);
+    };
+  }, [debouncedTableData.headers, debouncedTableData.rows, debouncedTableData.normalizedData, content]);
+
+  if (!isDataStable) {
+    return null;
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
+          <Download className="h-4 w-4" />
+          Export
+          <ChevronDown className="h-4 w-4 ml-1" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuItem onClick={copyTableToClipboard} className="flex items-center gap-2 cursor-pointer">
+          <FileText className="h-4 w-4 text-green-500" />
+          <span>Copy as Text</span>
+        </DropdownMenuItem>
+        {content && (
+          <DropdownMenuItem onClick={copyMarkdownToClipboard} className="flex items-center gap-2 cursor-pointer">
+            <FileDown className="h-4 w-4 text-purple-500" />
+            <span>Copy as Markdown</span>
+          </DropdownMenuItem>
+        )}
+        {debouncedTableData.normalizedData && (
+          <DropdownMenuItem onClick={copyJsonToClipboard} className="flex items-center gap-2 cursor-pointer">
+            <FileJson className="h-4 w-4 text-blue-500" />
+            <span>Copy as JSON</span>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={downloadCSV} className="flex items-center gap-2 cursor-pointer">
+          <FileSpreadsheet className="h-4 w-4 text-orange-500" />
+          <span>Download as CSV</span>
+        </DropdownMenuItem>
+        {content && (
+          <DropdownMenuItem onClick={downloadMarkdown} className="flex items-center gap-2 cursor-pointer">
+            <FileDown className="h-4 w-4 text-indigo-500" />
+            <span>Download as Markdown</span>
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 interface SavedTableInfo {
   table_id: string;
   table_name: string;
   row_count: string;
   field_count: string;
 }
+
 interface MarkdownTableProps {
     data: {
         headers: string[];
@@ -93,7 +179,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
 
     // Debounce the tableData to delay control rendering
-    const debouncedTableData = useDebounce(tableData, 500);
+    // const debouncedTableData = useDebounce(tableData, 500);
+    const debouncedTableData = tableData; // testing no debounce
 
     useEffect(() => {
         if (data) {
@@ -116,15 +203,16 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const generateMarkdownTable = () => {
-        const maxLengths = Array(tableData.headers.length).fill(0);
-        [tableData.headers, ...tableData.rows].forEach((row) => {
+        const dataToUse = editMode !== "none" ? tableData : debouncedTableData;
+        const maxLengths = Array(dataToUse.headers.length).fill(0);
+        [dataToUse.headers, ...dataToUse.rows].forEach((row) => {
             row.forEach((cell, i) => {
                 maxLengths[i] = Math.max(maxLengths[i], cell.length);
             });
         });
         const formatRow = (row: string[]) => "| " + row.map((cell, i) => cell.padEnd(maxLengths[i])).join(" | ") + " |";
         const separator = "|-" + maxLengths.map((len) => "-".repeat(len)).join("-|-") + "-|";
-        return [formatRow(tableData.headers), separator, ...tableData.rows.map((row) => formatRow(row))].join("\n");
+        return [formatRow(dataToUse.headers), separator, ...dataToUse.rows.map((row) => formatRow(row))].join("\n");
     };
 
     const notifyContentChange = () => {
@@ -169,8 +257,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const downloadCSV = () => {
         try {
             const csvContent = [
-                tableData.headers.map((h) => h.replace(/"/g, '""')).join(","),
-                ...tableData.rows.map((row) =>
+                debouncedTableData.headers.map((h) => h.replace(/"/g, '""')).join(","),
+                ...debouncedTableData.rows.map((row) =>
                     row
                         .map((cell) => {
                             const escaped = cell.replace(/"/g, '""');
@@ -201,8 +289,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const downloadMarkdown = () => {
         try {
             const markdownContent = content || '';
-            const fileName = tableData.headers && tableData.headers[0] 
-                ? `${tableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
+            const fileName = debouncedTableData.headers && debouncedTableData.headers[0] 
+                ? `${debouncedTableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
                 : 'table_data.md';
             const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -347,12 +435,12 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     <table className="w-full border-collapse" style={{ fontSize: `${tableFontsize}px` }}>
                         <thead className={tableTheme.header}>
                             <tr onClick={handleHeaderClick}>
-                                {tableData.headers.map((header, i) => (
+                                {debouncedTableData.headers.map((header, i) => (
                                     <th key={i} className={cn("p-2 text-left", tableTheme.headerText)}>
                                         {isEditingHeader ? (
                                             <input
                                                 type="text"
-                                                value={header}
+                                                value={tableData.headers[i] || header}
                                                 onChange={(e) => handleHeaderChange(i, e.target.value)}
                                                 className={cn(
                                                     "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
@@ -368,7 +456,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                             </tr>
                         </thead>
                         <tbody>
-                            {tableData.rows.map((row, rowIndex) => (
+                            {debouncedTableData.rows.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
                                     className={cn("border-t", tableTheme.row, editMode === rowIndex && "bg-blue-50 dark:bg-blue-900/20")}
@@ -378,7 +466,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                         <td key={colIndex} className={cn("p-2", colIndex === 0 && "font-semibold")}>
                                             {editMode === rowIndex ? (
                                                 <textarea
-                                                    value={cell}
+                                                    value={tableData.rows[rowIndex]?.[colIndex] || cell}
                                                     onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
                                                     className={cn(
                                                         "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
@@ -412,44 +500,15 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     </Button>
                 )}
                 {renderTableActionButton()}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
-                            <Download className="h-4 w-4" />
-                            Export
-                            <ChevronDown className="h-4 w-4 ml-1" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64">
-                        <DropdownMenuItem onClick={copyTableToClipboard} className="flex items-center gap-2 cursor-pointer">
-                            <FileText className="h-4 w-4 text-green-500" />
-                            <span>Copy as Text</span>
-                        </DropdownMenuItem>
-                        {content && (
-                            <DropdownMenuItem onClick={copyMarkdownToClipboard} className="flex items-center gap-2 cursor-pointer">
-                                <FileDown className="h-4 w-4 text-purple-500" />
-                                <span>Copy as Markdown</span>
-                            </DropdownMenuItem>
-                        )}
-                        {debouncedTableData.normalizedData && (
-                            <DropdownMenuItem onClick={copyJsonToClipboard} className="flex items-center gap-2 cursor-pointer">
-                                <FileJson className="h-4 w-4 text-blue-500" />
-                                <span>Copy as JSON</span>
-                            </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={downloadCSV} className="flex items-center gap-2 cursor-pointer">
-                            <FileSpreadsheet className="h-4 w-4 text-orange-500" />
-                            <span>Download as CSV</span>
-                        </DropdownMenuItem>
-                        {content && (
-                            <DropdownMenuItem onClick={downloadMarkdown} className="flex items-center gap-2 cursor-pointer">
-                                <FileDown className="h-4 w-4 text-indigo-500" />
-                                <span>Download as Markdown</span>
-                            </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <ExportDropdownMenu
+                    debouncedTableData={debouncedTableData}
+                    content={content}
+                    copyTableToClipboard={copyTableToClipboard}
+                    copyMarkdownToClipboard={copyMarkdownToClipboard}
+                    copyJsonToClipboard={copyJsonToClipboard}
+                    downloadCSV={downloadCSV}
+                    downloadMarkdown={downloadMarkdown}
+                />
                 {isEditingEnabled ? (
                     <>
                         <Button

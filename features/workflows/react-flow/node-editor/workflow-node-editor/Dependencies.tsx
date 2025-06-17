@@ -20,7 +20,7 @@ const Dependencies: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) =
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">Workflow Dependencies</CardTitle>
+                        <CardTitle className="text-lg">Manage Workflow Dependencies</CardTitle>
                         <Button onClick={() => addWorkflowDependency(nodeData, onNodeUpdate)} size="sm">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Dependency

@@ -1,15 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BarChart, ExternalLink, FileText, Search } from "lucide-react";
-
-interface Header {
-  tag: string;
-  text: string;
-}
-
-interface Outline {
-  [key: string]: any[];
-}
+import ScraperDataUtils from "../utils/data-utils";
 
 interface Overview {
   uuid: string;
@@ -21,26 +13,21 @@ interface Overview {
   table_count: number;
   code_block_count: number;
   list_count: number;
-  outline: Outline;
+  outline: { [key: string]: string[] };
   char_count: number;
 }
 
 const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
-  const { outline } = overview;
   const [activeTab, setActiveTab] = useState("headers");
 
-  const headers: Header[] = Object.entries(outline)
-    .filter(([key]) => key !== "unassociated")
-    .map(([key]) => {
-      const [tag, text] = key.split(": ");
-      return { tag: tag.toUpperCase(), text };
-    });
+  // Use ScraperDataUtils for all data processing
+  const headerAnalysis = useMemo(() => {
+    return ScraperDataUtils.analyzeHeaders(overview.outline);
+  }, [overview.outline]);
 
-  const groupedHeaders: { [key: string]: string[] } = headers.reduce((acc, header) => {
-    acc[header.tag] = acc[header.tag] || [];
-    acc[header.tag].push(header.text);
-    return acc;
-  }, {});
+  const headerDistribution = useMemo(() => {
+    return ScraperDataUtils.getHeaderDistribution(headerAnalysis.groupedHeaders);
+  }, [headerAnalysis.groupedHeaders]);
 
   const headerColors = {
     H1: { bg: "bg-gradient-to-r from-purple-600 to-indigo-600", text: "text-white", hover: "hover:from-purple-700 hover:to-indigo-700" },
@@ -88,7 +75,7 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
               <div className="flex space-x-3">
                 <div className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-3 text-center">
                   <div className="text-white/80 text-sm font-medium mb-1">Headers</div>
-                  <div className="text-white text-2xl font-bold">{headers.length}</div>
+                  <div className="text-white text-2xl font-bold">{headerAnalysis.totalHeaders}</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-3 text-center">
                   <div className="text-white/80 text-sm font-medium mb-1">Tables</div>
@@ -152,18 +139,16 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Header Distribution</h2>
               
               <div className="space-y-4">
-                {Object.entries(groupedHeaders).map(([tag, texts]) => (
+                {Object.entries(headerDistribution).map(([tag, stats]) => (
                   <div key={tag} className="relative">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{tag}</span>
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{texts.length}</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{stats.count}</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                       <div 
                         className={`${headerColors[tag].bg} rounded-full h-3`} 
-                        style={{ 
-                          width: `${Math.min(100, (texts.length / Math.max(...Object.values(groupedHeaders).map(t => t.length))) * 100)}%` 
-                        }}
+                        style={{ width: `${stats.percentage}%` }}
                       ></div>
                     </div>
                   </div>
@@ -178,13 +163,13 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
               <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4">
                 <div className="flex items-center">
                   <div className={`w-3 h-3 rounded-full ${
-                    groupedHeaders.H1 && groupedHeaders.H1.length === 1 ? 'bg-green-500' : 'bg-amber-500'
+                    headerAnalysis.hasProperH1 ? 'bg-green-500' : 'bg-amber-500'
                   } mr-2`}></div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {groupedHeaders.H1 && groupedHeaders.H1.length === 1 
+                    {headerAnalysis.hasProperH1 
                       ? 'One H1 tag (recommended)' 
-                      : groupedHeaders.H1 && groupedHeaders.H1.length > 1 
-                        ? `Multiple H1 tags (${groupedHeaders.H1.length})`
+                      : headerAnalysis.h1Count > 1 
+                        ? `Multiple H1 tags (${headerAnalysis.h1Count})`
                         : 'No H1 tag found'}
                   </p>
                 </div>
@@ -193,20 +178,26 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
               <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4">
                 <div className="flex items-center">
                   <div className={`w-3 h-3 rounded-full ${
-                    !groupedHeaders.H1 || !groupedHeaders.H2 || 
-                    (groupedHeaders.H3 && !groupedHeaders.H2) ||
-                    (groupedHeaders.H4 && !groupedHeaders.H3)
-                      ? 'bg-red-500' : 'bg-green-500'
+                    headerAnalysis.hasProperHierarchy ? 'bg-green-500' : 'bg-red-500'
                   } mr-2`}></div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {!groupedHeaders.H1 || !groupedHeaders.H2 || 
-                    (groupedHeaders.H3 && !groupedHeaders.H2) ||
-                    (groupedHeaders.H4 && !groupedHeaders.H3)
-                      ? 'Improper header hierarchy' 
-                      : 'Proper header hierarchy'}
+                    {headerAnalysis.hasProperHierarchy 
+                      ? 'Proper header hierarchy' 
+                      : 'Improper header hierarchy'}
                   </p>
                 </div>
               </div>
+              
+              {headerAnalysis.hierarchyIssues.length > 0 && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg mb-4">
+                  <h4 className="text-sm font-medium text-red-800 dark:text-red-300 mb-2">Issues Found:</h4>
+                  <ul className="text-sm text-red-700 dark:text-red-400 space-y-1">
+                    {headerAnalysis.hierarchyIssues.map((issue, index) => (
+                      <li key={index}>• {issue}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 <p>Proper hierarchy follows H1 → H2 → H3 → H4 → H5 → H6 without skipping levels.</p>
@@ -219,14 +210,14 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
                 <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Header Details</h2>
               </div>
 
-              {Object.keys(groupedHeaders).length === 0 ? (
+              {Object.keys(headerAnalysis.groupedHeaders).length === 0 ? (
                 <div className="px-6 pb-6">
                   <p className="text-gray-500 dark:text-gray-400 text-center py-8">No headers found in the outline.</p>
                 </div>
               ) : (
                 <div className="px-2 pb-6">
                   <Accordion type="multiple" className="w-full space-y-3">
-                    {Object.entries(groupedHeaders).map(([tag, texts], index) => (
+                    {Object.entries(headerAnalysis.groupedHeaders).map(([tag, texts], index) => (
                       <AccordionItem key={tag} value={`item-${index}`} className="border-none px-4">
                         <AccordionTrigger
                           className={`${headerColors[tag].bg} ${headerColors[tag].hover} rounded-lg px-4 py-3 transition-all duration-200 shadow-sm`}
