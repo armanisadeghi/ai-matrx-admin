@@ -1,12 +1,6 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui";
 import { DbFunctionNode, DbNodeData, WorkflowDependency } from "@/features/workflows/types";
 import { addArgMappingWithBrokerId } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
@@ -86,227 +80,6 @@ const getConnectionFieldMapping = (nodeType: string, connectionType: string, isS
     return "unknown";
 };
 
-const handleAddArgMapping = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
-    const brokerId = matrxEdge.source.id;
-    const argName = matrxEdge.target.id;
-    console.log("handleAddArgMapping brokerId", brokerId);
-    console.log("handleAddArgMapping argName", argName);
-
-    const existingMapping = node.arg_mapping?.find(
-        (mapping: any) => mapping.source_broker_id === brokerId && mapping.target_arg_name === argName
-    );
-    console.log("handleAddArgMapping existingMapping", existingMapping);
-
-    if (existingMapping) {
-        console.log("handleAddArgMapping existingMapping found, skipping");
-        return;
-    }
-
-    addArgMappingWithBrokerId(node, handleUpdateNode, argName, brokerId);
-};
-
-const handleUpdateUserInputSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
-    console.log("📝 UPDATE: User Input source needs update");
-    // TODO: Implement logic to update user input source (broker_id)
-};
-
-const handleUserInputWithoutBrokerId = (
-    sourceNode: any,
-    targetNode: any,
-    matrxEdge: MatrxEdge,
-    handleUpdateTargetNode: (node: DbNodeData) => void
-) => {
-    console.warn("UNKNOWN SOURCE: Source ID is empty, cannot create connection", matrxEdge);
-    // For now, we cannot create a dependency without a source broker ID
-    // TODO: Implement logic to handle unknown source (possibly update user input to add broker_id first)
-};
-
-const handleUserInputToBrokerIdToWorkflowNodeArgMapping = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
-    if (!matrxEdge.source.id || matrxEdge.source.id === "") {
-        return handleUserInputWithoutBrokerId(sourceNode, targetNode, matrxEdge, handleUpdateTargetNode);
-    }
-
-    handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
-};
-
-// Target update placeholders
-const handleAddAdditionalDependency = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
-    const partialDependency: WorkflowDependency = {
-        source_broker_id: matrxEdge.source.id,
-        source_broker_name: "",
-        target_broker_id: "",
-        target_broker_name: "",
-    };
-
-    upsertWorkflowDependency(node, partialDependency, handleUpdateNode);
-};
-
-const handleUpdateBrokerRelayTarget = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
-    console.log("📝 UPDATE: Updating broker relay target");
-    // TODO: Implement logic to update broker relay target (source_broker_id)
-};
-
-// Connection handler methods (placeholders for now)
-const handleUserInputToBrokerIdToWorkflowNodeAdditionalDependencies = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
-    console.log("🔗 METHOD: handleUserInputToBrokerIdToWorkflowNodeAdditionalDependencies");
-
-    if (!matrxEdge.source.id || matrxEdge.source.id === "") {
-        console.warn("UNKNOWN SOURCE: Source ID is empty, cannot create dependency", matrxEdge);
-        return;
-    }
-    handleAddAdditionalDependency({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
-};
-
-const handleUserInputToBrokerIdToBrokerRelaySourceBrokerId = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
-    console.log("🔗 METHOD: handleUserInputToBrokerIdToBrokerRelaySourceBrokerId");
-    // TODO: Implement logic to set relay source_broker_id
-};
-
-const handleBrokerRelayTargetBrokerIdsToWorkflowNodeAdditionalDependencies = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
-    console.log("🔗 METHOD: handleBrokerRelayTargetBrokerIdsToWorkflowNodeAdditionalDependencies");
-
-    if (!matrxEdge.source.id || matrxEdge.source.id === "") {
-        return handleBrokerRelayWithoutBrokerId({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
-    }
-    handleUpdateBrokerRelaySource({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
-
-    handleAddAdditionalDependency({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
-};
-
-const handleBrokerRelayWithoutBrokerId = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
-    console.warn("UNKNOWN SOURCE: Broker Relay source ID is empty, cannot create connection", matrxEdge);
-    // For now, we cannot create a dependency without a source broker ID
-    // TODO: Implement logic for broker relay without source broker ID (possibly add to additional_dependencies)
-};
-
-const handleUpdateBrokerRelaySource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
-    console.log("📝 UPDATE: Broker Relay source needs update");
-    // TODO: Implement logic to update broker relay source node
-};
-
-const handleBrokerRelayTargetBrokerIdsToWorkflowNodeArgMapping = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
-    if (!matrxEdge.source.id || matrxEdge.source.id === "") {
-        return handleBrokerRelayWithoutBrokerId({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
-    }
-
-    handleUpdateBrokerRelaySource({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
-
-    handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
-};
-
-const handleBrokerRelayTargetBrokerIdsToBrokerRelaySourceBrokerId = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
-    console.log("🔗 METHOD: handleBrokerRelayTargetBrokerIdsToBrokerRelaySourceBrokerId");
-    // TODO: Implement logic for relay to relay connection
-};
-
-const handleUpdateWorkflowNodeSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
-    console.log("📝 UPDATE: Workflow Node source needs update");
-};
-
-const handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeArgMapping = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-}: CommonUpdateProps) => {
-    if (!matrxEdge.source.id || matrxEdge.source.id === "") {
-        console.warn("UNKNOWN SOURCE: Workflow Node source ID is empty, cannot create connection", matrxEdge);
-        return;
-    }
-
-    console.log("The source doesn't need any updates");
-
-    handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
-};
-
-const handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeAdditionalDependencies = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-    setConnectionMessage,
-    setIsDirty,
-    setPendingOperation,
-}: CommonUpdateProps) => {
-    console.log("🔗 METHOD: handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeAdditionalDependencies");
-
-    setConnectionMessage("This will create a new relay to connect these brokers.");
-    setIsDirty(true);
-    setPendingOperation({
-        type: "relay_creation",
-        source_broker_id: matrxEdge.source.id,
-        target_broker_ids: matrxEdge.target.id,
-    });
-};
-
-const handleWorkflowNodeReturnBrokerOverridesToBrokerRelaySourceBrokerId = ({
-    sourceNode,
-    targetNode,
-    matrxEdge,
-    handleUpdateSourceNode,
-    handleUpdateTargetNode,
-    setConnectionMessage,
-}: CommonUpdateProps & { setConnectionMessage?: (message: string) => void }) => {
-    console.log("🔗 METHOD: handleWorkflowNodeReturnBrokerOverridesToBrokerRelaySourceBrokerId");
-
-    // Check if the relay already has a source_broker_id
-    if (matrxEdge.target.id && matrxEdge.target.id !== "") {
-        // Relay already has a source broker - show message instead of updating
-        if (setConnectionMessage) {
-            setConnectionMessage(
-                "To map this broker to another node, simply drag and connect it to the destination and a new relay will be automatically created or a new map entry will be made."
-            );
-        }
-        return;
-    }
-
-    // Relay doesn't have a source broker - we can update it directly
-    const updatedTargetNode = {
-        ...targetNode,
-        source_broker_id: matrxEdge.source.id,
-    };
-
-    handleUpdateTargetNode(updatedTargetNode);
-};
-
 const getConnectionType = (sourceNode: any, targetNode: any, matrxEdge: MatrxEdge): string => {
     if (!sourceNode || !targetNode || !matrxEdge) return "unknown";
 
@@ -323,6 +96,64 @@ const getConnectionType = (sourceNode: any, targetNode: any, matrxEdge: MatrxEdg
     return connectionType;
 };
 
+const handleAddArgMapping = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
+    const brokerId = matrxEdge.source.id;
+    const argName = matrxEdge.target.id;
+
+    const existingMapping = node.arg_mapping?.find(
+        (mapping: any) => mapping.source_broker_id === brokerId && mapping.target_arg_name === argName
+    );
+    console.log("handleAddArgMapping existingMapping", existingMapping);
+
+    if (existingMapping) {
+        console.log("handleAddArgMapping existingMapping found, skipping");
+        return;
+    }
+
+    addArgMappingWithBrokerId(node, handleUpdateNode, argName, brokerId);
+};
+
+// =============== USER INPUT ===============
+const handleUserInputWithoutBrokerId = (
+    sourceNode: any,
+    targetNode: any,
+    matrxEdge: MatrxEdge,
+    handleUpdateTargetNode: (node: DbNodeData) => void
+) => {
+    console.warn("UNKNOWN SOURCE: Source ID is empty, cannot create connection", matrxEdge);
+    // For now, we cannot create a dependency without a source broker ID
+    // TODO: Implement logic to handle unknown source (possibly update user input to add broker_id first)
+};
+
+// =============== WFN Handlers ===============
+
+// Target update placeholders
+const handleAddAdditionalDependency = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
+    const partialDependency: WorkflowDependency = {
+        source_broker_id: matrxEdge.source.id,
+        source_broker_name: "",
+        target_broker_id: "",
+        target_broker_name: "",
+    };
+
+    upsertWorkflowDependency(node, partialDependency, handleUpdateNode);
+};
+
+const handleUpdateWorkflowNodeSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
+    console.log("📝 UPDATE: Workflow Node source needs update");
+};
+
+// =============== Relay ===============
+
+const handleBrokerRelayWithoutBrokerId = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
+    console.warn("UNKNOWN SOURCE: Broker Relay source ID is empty, cannot create connection", matrxEdge);
+};
+
+const handleUpdateBrokerRelayTargetAsSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {
+    console.log("📝 UPDATE: Broker Relay target as source needs update");
+    // TODO: Implement logic to update broker relay source node
+};
+
 const handleConnection = ({
     sourceNode,
     targetNode,
@@ -334,107 +165,74 @@ const handleConnection = ({
     setPendingOperation,
 }: CommonUpdateProps) => {
     const connectionType = getConnectionType(sourceNode, targetNode, matrxEdge);
+    console.log("[HANDLE CONNECTION] connectionType", connectionType);
 
-    // Trigger the appropriate handler method based on connection type
     if (connectionType === "userInput_broker_id → workflowNode_additional_dependencies") {
-        handleUserInputToBrokerIdToWorkflowNodeAdditionalDependencies({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        if (!matrxEdge.source.id || matrxEdge.source.id === "") {
+            console.warn("UNKNOWN SOURCE: Source ID is empty, cannot create dependency", matrxEdge);
+            return;
+        }
+        handleAddAdditionalDependency({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
     } else if (connectionType === "userInput_broker_id → workflowNode_arg_mapping") {
-        handleUserInputToBrokerIdToWorkflowNodeArgMapping({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        if (!matrxEdge.source.id || matrxEdge.source.id === "") {
+            return handleUserInputWithoutBrokerId(sourceNode, targetNode, matrxEdge, handleUpdateTargetNode);
+        }
+
+        handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
     } else if (connectionType === "userInput_broker_id → brokerRelay_source_broker_id") {
-        handleUserInputToBrokerIdToBrokerRelaySourceBrokerId({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        console.log("🔗 METHOD: handleUserInputToBrokerIdToBrokerRelaySourceBrokerId");
+        // TODO: Implement logic to set relay source_broker_id
     } else if (connectionType === "brokerRelay_target_broker_ids → workflowNode_additional_dependencies") {
-        handleBrokerRelayTargetBrokerIdsToWorkflowNodeAdditionalDependencies({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        if (!matrxEdge.source.id || matrxEdge.source.id === "") {
+            return handleBrokerRelayWithoutBrokerId({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
+        }
+        handleUpdateBrokerRelayTargetAsSource({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
+
+        handleAddAdditionalDependency({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
     } else if (connectionType === "brokerRelay_target_broker_ids → workflowNode_arg_mapping") {
-        handleBrokerRelayTargetBrokerIdsToWorkflowNodeArgMapping({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        if (!matrxEdge.source.id || matrxEdge.source.id === "") {
+            return handleBrokerRelayWithoutBrokerId({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
+        }
+
+        handleUpdateBrokerRelayTargetAsSource({ node: sourceNode, matrxEdge, handleUpdateNode: handleUpdateSourceNode });
+
+        handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
     } else if (connectionType === "brokerRelay_target_broker_ids → brokerRelay_source_broker_id") {
-        handleBrokerRelayTargetBrokerIdsToBrokerRelaySourceBrokerId({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        console.log("🔗 METHOD: handleBrokerRelayTargetBrokerIdsToBrokerRelaySourceBrokerId");
+        // TODO: Implement logic for relay to relay connection
     } else if (connectionType === "workflowNode_return_broker_overrides → workflowNode_additional_dependencies") {
-        handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeAdditionalDependencies({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
+        console.log("🔗 METHOD: handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeAdditionalDependencies");
+
+        setConnectionMessage("This will create a new relay to connect these brokers.");
+        setIsDirty(true);
+        setPendingOperation({
+            type: "relay_creation",
+            source_broker_id: matrxEdge.source.id,
+            target_broker_ids: matrxEdge.target.id,
         });
     } else if (connectionType === "workflowNode_return_broker_overrides → workflowNode_arg_mapping") {
-        handleWorkflowNodeReturnBrokerOverridesToWorkflowNodeArgMapping({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        if (!matrxEdge.source.id || matrxEdge.source.id === "") {
+            console.warn("UNKNOWN SOURCE: Workflow Node source ID is empty, cannot create connection", matrxEdge);
+            return;
+        }
+
+        console.log("The source doesn't need any updates");
+
+        handleAddArgMapping({ node: targetNode, matrxEdge, handleUpdateNode: handleUpdateTargetNode });
     } else if (connectionType === "workflowNode_return_broker_overrides → brokerRelay_source_broker_id") {
-        handleWorkflowNodeReturnBrokerOverridesToBrokerRelaySourceBrokerId({
-            sourceNode,
-            targetNode,
-            matrxEdge,
-            handleUpdateSourceNode,
-            handleUpdateTargetNode,
-            setConnectionMessage,
-            setIsDirty,
-            setPendingOperation,
-        });
+        if (matrxEdge.target.id && matrxEdge.target.id !== "") {
+            setConnectionMessage(
+                "This connection wouldn't make sense. To map this broker to another node, simply drag and connect it to the destination and a new relay will be automatically created or a new map entry will be made. If you want to use this relay, you would need to delete the current source first."
+            );
+            return connectionType;
+        }
+
+        const updatedTargetNode = {
+            ...targetNode,
+            source_broker_id: matrxEdge.source.id,
+        };
+
+        handleUpdateTargetNode(updatedTargetNode);
     } else {
         console.log("⚠️  UNKNOWN CONNECTION TYPE:", connectionType);
         const sourceNodeType = getNodeType(sourceNode);
@@ -486,11 +284,17 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
         setIsDirty(true);
     };
 
-    // Calculate connection type and handle connection only when we have valid data
+    // Calculate connection type - this should be stable and not affected by isDirty
     const connectionType = useMemo(() => {
         if (!sourceNode || !targetNode || !matrxEdge) return null;
-        
-        return handleConnection({
+        return getConnectionType(sourceNode, targetNode, matrxEdge);
+    }, [sourceNode, targetNode, matrxEdge]);
+
+    // Handle connection logic only when we have valid data and component is not dirty
+    useEffect(() => {
+        if (!sourceNode || !targetNode || !matrxEdge || isDirty) return;
+
+        handleConnection({
             sourceNode,
             targetNode,
             matrxEdge,
@@ -514,7 +318,7 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
 
             // Save node updates
             onSaveConnection(sourceNode, targetNode, matrxEdge);
-            
+
             setIsDirty(false);
             setPendingOperation(null);
             setConnectionMessage(null);
@@ -528,9 +332,7 @@ export const ConnectionDetailOverlay: React.FC<ConnectionDetailOverlayProps> = (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-7xl w-[95vw] h-[95vh] max-h-[95vh] overflow-hidden flex flex-col p-0">
                 <DialogHeader className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        Connection Details
-                    </DialogTitle>
+                    <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">Connection Details</DialogTitle>
                     <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
                         Review and configure the connection between workflow nodes
                     </DialogDescription>

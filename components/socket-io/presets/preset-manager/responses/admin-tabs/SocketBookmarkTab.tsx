@@ -67,8 +67,17 @@ export const SocketBookmarkTab: React.FC<SocketBookmarkTabProps> = ({
     const responseData = useAppSelector((state) => (taskId ? selectPrimaryResponseDataByTaskId(taskId)(state) : []));
 
     // Extract data using the bookmark path
-    const traversalResult = traverseBookmarkPath(responseData, config.bookmark);
+    const constructBookmarkPath = (bookmark: string, index: number | undefined) => {
+        // Replace the array index in the bookmark path (e.g., data[0] -> data[index])
+        const dynamicIndex = index ?? 0;
+        return bookmark.replace(/data\[\d+\]/, `data[${dynamicIndex}]`);
+    };
 
+    // Use the dynamic bookmark path
+    const bookmarkPath = constructBookmarkPath(config.bookmark, selectedIndex);
+
+    // Extract data using the dynamic bookmark path
+    const traversalResult = traverseBookmarkPath(responseData, bookmarkPath);
     const renderComponent = () => {
         if (!traversalResult.success) {
             return (

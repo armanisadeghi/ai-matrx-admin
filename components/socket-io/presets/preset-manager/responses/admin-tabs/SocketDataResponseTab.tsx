@@ -61,7 +61,21 @@ export const SocketDataResponseTab: React.FC<SocketDataResponseTabProps> = ({
     );
   }
 
-  const hasDataResponse = dataResponse && dataResponse.length > 0;
+      const getFilteredResponseData = () => {
+      if (!dataResponse || !Array.isArray(dataResponse) || dataResponse.length === 0) {
+        return null;
+      }
+  
+      // Only filter by selectedIndex if selectedDataType is "data"
+      if (selectedDataType === "data" && typeof selectedIndex === 'number' && selectedIndex >= 0 && selectedIndex < dataResponse.length) {
+        return dataResponse[selectedIndex];
+      }
+  
+      return dataResponse;
+    };
+
+  const filteredData = getFilteredResponseData();
+  const hasDataResponse = filteredData !== null;
 
   return (
     <div className="h-full flex flex-col p-6">
@@ -83,7 +97,7 @@ export const SocketDataResponseTab: React.FC<SocketDataResponseTabProps> = ({
         <CardContent className="h-full p-0 overflow-hidden">
           {hasDataResponse ? (
             <div className="h-full">
-              <RawJsonExplorer pageData={dataResponse} ignorePrefix="data[*]" />
+              <RawJsonExplorer pageData={filteredData} ignorePrefix="data[*]" />
             </div>
           ) : (
             <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">

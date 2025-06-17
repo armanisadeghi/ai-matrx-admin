@@ -258,7 +258,6 @@ export const WorkflowHeader: React.FC<WorkflowToolbarProps> = ({
                     onConfirm={handleRecipeConfirm}
                     onCancel={handleRecipeCancel}
                     open={showRecipeInitializer}
-                    enrichedBrokers={enrichedBrokers}
                 />
             )}
         </div>
