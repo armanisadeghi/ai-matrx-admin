@@ -30,28 +30,26 @@ const DynamicResultsRenderer: React.FC<DynamicResultsRendererProps> = ({
         setError(null);
         setComponentInfo('');
         
-        // Only attempt to load if we have a componentName
-        if (!componentName) {
-            return;
-        }
+        // Use SmartDisplay as default if no componentName is provided
+        const effectiveComponentName = componentName || 'SmartDisplay';
 
         const loadComponent = () => {
             setLoading(true);
             setError(null);
 
             try {
-                console.log('Looking up component in registry:', componentName);
+                console.log('Looking up component in registry:', effectiveComponentName);
                 
                 // Check if component exists in registry
-                if (!isValidComponentName(componentName)) {
-                    throw new Error(`Component "${componentName}" not found in registry. Available components: ${getAvailableComponentNames().join(', ')}`);
+                if (!isValidComponentName(effectiveComponentName)) {
+                    throw new Error(`Component "${effectiveComponentName}" not found in registry. Available components: ${getAvailableComponentNames().join(', ')}`);
                 }
 
                 // Get component from registry
-                const registryEntry = getComponentByName(componentName);
+                const registryEntry = getComponentByName(effectiveComponentName);
                 
                 if (!registryEntry) {
-                    throw new Error(`Failed to get component "${componentName}" from registry`);
+                    throw new Error(`Failed to get component "${effectiveComponentName}" from registry`);
                 }
 
                 console.log('Component found in registry:', registryEntry.displayName);
@@ -80,7 +78,7 @@ const DynamicResultsRenderer: React.FC<DynamicResultsRendererProps> = ({
                             Loading Results Component
                         </h4>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Importing: {componentName}
+                            Importing: {componentName || 'SmartDisplay (default)'}
                         </p>
                     </div>
                 </div>
@@ -137,31 +135,26 @@ const DynamicResultsRenderer: React.FC<DynamicResultsRendererProps> = ({
         );
     }
 
-    // No component specified - show fallback or default content
+    // Show fallback content if provided (this should rarely happen now since we default to SmartDisplay)
     if (fallbackContent) {
         return <>{fallbackContent}</>;
     }
 
-    // Default placeholder when no component is configured
+    // This should not normally be reached since we now default to SmartDisplay
     return (
         <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-4 max-w-md">
-                <div className="flex justify-center space-x-2">
-                    <Database className="h-12 w-12 text-gray-400 dark:text-gray-600" />
-                    <Clock className="h-12 w-12 text-gray-400 dark:text-gray-600" />
-                </div>
-                
+                <AlertCircle className="h-12 w-12 text-amber-500 dark:text-amber-400 mx-auto" />
                 <div className="space-y-2">
                     <h4 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                        Results Dashboard (Standard)
+                        Unexpected State
                     </h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                        No custom results component configured for this return broker.
+                        Component should have loaded by now. This may indicate an issue.
                     </p>
                 </div>
-
                 <Badge variant="secondary" className="text-xs">
-                    Default Display
+                    Fallback Display
                 </Badge>
             </div>
         </div>

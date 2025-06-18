@@ -1,6 +1,9 @@
 import React from 'react';
-import SerpResultsPage from '@/features/scraper/parts/recipes/SerpResultsPage';
-import EventDataDisplay from './EventDataDisplay';
+import SerpResultsPage from '@/features/workflows/results/registered-components/SerpResultsPage';
+import EventDataDisplay from './registered-components/EventDataDisplay';
+import SimpleTextDisplay from './registered-components/SimpleTextDisplay';
+import SimpleObjectDisplay from './registered-components/SimpleObjectDisplay';
+import SmartDisplay from './registered-components/SmartDisplay';
 
 // Registry interface
 export interface ComponentRegistryEntry {
@@ -25,7 +28,29 @@ export const DYNAMIC_COMPONENT_REGISTRY: Record<string, ComponentRegistryEntry> 
         description: 'Displays event data',
         expectedProps: ['data']
     },
+
+    'SimpleTextDisplay': {
+        component: SimpleTextDisplay,
+        displayName: 'Simple Text Display',
+        description: 'Displays a simple text',
+        expectedProps: ['brokerId', 'keyToDisplay']
+    },
+
+    'SimpleObjectDisplay': {
+        component: SimpleObjectDisplay,
+        displayName: 'Simple Object Display',
+        description: 'Displays a simple object',
+        expectedProps: ['brokerId', 'keyToDisplay']
+    },
+
+    'SmartDisplay': {
+        component: SmartDisplay,
+        displayName: 'Smart Display',
+        description: 'Displays a smart display',
+        expectedProps: ['brokerId', 'keyToDisplay']
+    },
     
+   
     // Add more components here as needed
     // 'AnotherComponent': {
     //     component: AnotherComponent,

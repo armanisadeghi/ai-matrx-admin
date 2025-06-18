@@ -4,21 +4,53 @@ import { Calendar } from "lucide-react";
 import { PageTemplate, Card } from "@/features/scraper/parts/reusable/PageTemplate";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
+import { DbFunctionNode } from "@/features/workflows/types";
+import SmartDisplay from "./SmartDisplay";
 
 interface EventDataDisplayProps {
-    data: {
-        success: boolean;
-        data: string;
-        errors: any;
-        execution_time_ms: number;
-    };
+    nodeData: DbFunctionNode;
+    brokerId?: string;
+    keyToDisplay?: string;
 }
 
-const EventDataDisplay: React.FC<EventDataDisplayProps> = ({ data }) => {
-    const dataToUse = useAppSelector((state) => brokerSelectors.selectValue(state, "e3312084-c6c2-41f8-85b1-f4ef198854ac"));
+const testBrokerId = "e3312084-c6c2-41f8-85b1-f4ef198854ac";
 
-    if (!dataToUse) {
-        return <div>No data</div>;
+const EventDataDisplay: React.FC<EventDataDisplayProps> = ({ nodeData, brokerId, keyToDisplay }) => {
+    if (!brokerId) {
+        brokerId = nodeData.return_broker_overrides[0];
+    }
+
+    const data = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
+    
+    const dataToUse = useMemo(() => {
+        if (!keyToDisplay) {
+            return data;
+        }
+        return data?.[keyToDisplay];
+    }, [data, keyToDisplay]);
+
+    // Validation: Check if data structure is what we expect for EventDataDisplay
+    const isValidEventData = useMemo(() => {
+        if (!dataToUse) return false;
+        
+        // Check if it has the expected structure with string data
+        if (typeof dataToUse.data !== 'string') return false;
+        if (typeof dataToUse.success !== 'boolean') return false;
+        if (typeof dataToUse.execution_time_ms !== 'number') return false;
+        
+        return true;
+    }, [dataToUse]);
+
+    // If data structure is not what we expect, fall back to SmartDisplay
+    if (!dataToUse || !isValidEventData) {
+        return (
+            <div className="space-y-3">
+                <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                    EventDataDisplay could not display the content. Using Smart Display
+                </div>
+                <SmartDisplay nodeData={nodeData} brokerId={brokerId} keyToDisplay={keyToDisplay} />
+            </div>
+        );
     }
 
     const statsItems = [
