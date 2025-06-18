@@ -53,6 +53,7 @@ import {
     ProcessorData,
     ProjectMembersData,
     ProjectsData,
+    PromptsData,
     RecipeBrokerData,
     RecipeData,
     RecipeDisplayData,
@@ -113,7 +114,7 @@ import { MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
 import { EntitySelectors } from "../selectors";
 import { EntityActions } from "../slice";
 import { FetchMode } from "../actions";
-import { useEntityWithFetch } from "./useAllData";
+import { useEntityWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 
 type UseActionWithFetchReturn = {
     actionSelectors: EntitySelectors<"action">;
@@ -4668,6 +4669,92 @@ export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
         fetchProjectsOneWithFkIfk,
         fetchProjectsAll,
         fetchProjectsPaginated,
+    };
+};
+
+
+
+type UsePromptsWithFetchReturn = {
+    promptsSelectors: EntitySelectors<"prompts">;
+    promptsActions: EntityActions<"prompts">;
+    promptsRecords: Record<MatrxRecordId, PromptsData>;
+    promptsUnsavedRecords: Record<MatrxRecordId, Partial<PromptsData>>;
+    promptsSelectedRecordIds: MatrxRecordId[];
+    promptsIsLoading: boolean;
+    promptsIsError: boolean;
+    promptsQuickRefRecords: QuickReferenceRecord[];
+    addPromptsMatrxId: (recordId: MatrxRecordId) => void;
+    addPromptsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removePromptsMatrxId: (recordId: MatrxRecordId) => void;
+    removePromptsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addPromptsPkValue: (pkValue: string) => void;
+    addPromptsPkValues: (pkValues: Record<string, unknown>) => void;
+    removePromptsPkValue: (pkValue: string) => void;
+    removePromptsPkValues: (pkValues: Record<string, unknown>) => void;
+    isPromptsMissingRecords: boolean;
+    setPromptsShouldFetch: (shouldFetch: boolean) => void;
+    setPromptsFetchMode: (fetchMode: FetchMode) => void;
+    fetchPromptsQuickRefs: () => void;
+    fetchPromptsOne: (recordId: MatrxRecordId) => void;
+    fetchPromptsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchPromptsAll: () => void;
+    fetchPromptsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
+    const {
+        selectors: promptsSelectors,
+        actions: promptsActions,
+        allRecords: promptsRecords,
+        unsavedRecords: promptsUnsavedRecords,
+        selectedRecordIds: promptsSelectedRecordIds,
+        isLoading: promptsIsLoading,
+        isError: promptsIsError,
+        quickRefRecords: promptsQuickRefRecords,
+        addMatrxId: addPromptsMatrxId,
+        addMatrxIds: addPromptsMatrxIds,
+        removeMatrxId: removePromptsMatrxId,
+        removeMatrxIds: removePromptsMatrxIds,
+        addPkValue: addPromptsPkValue,
+        addPkValues: addPromptsPkValues,
+        removePkValue: removePromptsPkValue,
+        removePkValues: removePromptsPkValues,
+        isMissingRecords: isPromptsMissingRecords,
+        setShouldFetch: setPromptsShouldFetch,
+        setFetchMode: setPromptsFetchMode,
+        fetchQuickRefs: fetchPromptsQuickRefs,
+        fetchOne: fetchPromptsOne,
+        fetchOneWithFkIfk: fetchPromptsOneWithFkIfk,
+        fetchAll: fetchPromptsAll,
+        fetchPaginated: fetchPromptsPaginated,
+
+    } = useEntityWithFetch("prompts");
+
+    return {
+        promptsSelectors,
+        promptsActions,
+        promptsRecords,
+        promptsUnsavedRecords,
+        promptsSelectedRecordIds,
+        promptsIsLoading,
+        promptsIsError,
+        promptsQuickRefRecords,
+        addPromptsMatrxId,
+        addPromptsMatrxIds,
+        removePromptsMatrxId,
+        removePromptsMatrxIds,
+        addPromptsPkValue,
+        addPromptsPkValues,
+        removePromptsPkValue,
+        removePromptsPkValues,
+        isPromptsMissingRecords,
+        setPromptsShouldFetch,
+        setPromptsFetchMode,
+        fetchPromptsQuickRefs,
+        fetchPromptsOne,
+        fetchPromptsOneWithFkIfk,
+        fetchPromptsAll,
+        fetchPromptsPaginated,
     };
 };
 

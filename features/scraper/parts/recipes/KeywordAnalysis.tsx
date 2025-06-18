@@ -1,20 +1,11 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { Columns2 } from "lucide-react";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import { PageTemplate, Card, FileTextIcon } from "../reusable/PageTemplate";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
-import { setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
-import { 
-    selectTaskFirstListenerId,
-    selectResponseDataByListenerId,
-    selectPrimaryResponseEndedByTaskId,
-    selectTaskStatus,
-    selectResponseTextByListenerId
-} from "@/lib/redux/socket-io";
+import { useRunQuickRecipe } from "./useRenQuickRecipe";
 
 interface KeywordAnalysisPageProps {
     value: string;
@@ -27,87 +18,33 @@ interface KeywordAnalysisPageProps {
 }
 
 const KeywordAnalysisPage: React.FC<KeywordAnalysisPageProps> = ({ value, overview }) => {
-    const dispatch = useAppDispatch();
-    const [taskId, setTaskId] = useState<string>("");
-    const [error, setError] = useState<string | null>(null);
-    const [pageText, setPageText] = useState<string>(value);
+    const { runRecipe, isLoading, error, streamingResponse } = useRunQuickRecipe();
 
     const recipeId = "0288e091-6252-4cca-b140-7ba94b4eb206";
     const brokerId = "86c303c3-e10f-4426-b739-f20172a4d754";
-
-    const broker_values = [
-        {
-            id: brokerId,
-            name: brokerId,
-            value: pageText,
-        },
-    ];
-
-    // Redux selectors
-    const taskStatus = useAppSelector(state => taskId ? selectTaskStatus(state, taskId) : null);
-    const isTaskCompleted = useAppSelector(state => taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : false);
-    const firstListenerId = useAppSelector(state => taskId ? selectTaskFirstListenerId(state, taskId) : "");
-    const responseData = useAppSelector(selectResponseDataByListenerId(firstListenerId || ""));
-    const streamingResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId || ""));
-
-    const isLoading = taskStatus === "submitted" && !isTaskCompleted;
-
-    useEffect(() => {
-        if (value && value.trim().length > 0) {
-            setPageText(value);
-        }
-    }, [value]);
 
     const pageTitle = overview?.page_title;
     const characterCount = overview?.char_count?.toLocaleString();
     const pageUrl = overview?.url;
 
     useEffect(() => {
-        const runTask = async () => {
-            if (!value || value.trim().length === 0) {
-                return;
-            }
+        if (!value || value.trim().length === 0) {
+            return;
+        }
 
-            setError(null);
-            console.log("[KeywordAnalysis] value:", value);
+        const brokerValues = [
+            {
+                id: brokerId,
+                name: brokerId,
+                value: value,
+            },
+        ];
 
-            try {
-                // Create the task
-                const newTaskId = await dispatch(createTask({
-                    service: "ai_chat_service",
-                    taskName: "run_recipe_to_chat"
-                })).unwrap();
-
-                setTaskId(newTaskId);
-
-                // Prepare task data in the new format
-                const taskData = {
-                    chat_config: {
-                        recipe_id: recipeId,
-                        prepare_for_next_call: false,
-                        save_new_conversation: false,
-                        include_classified_output: false,
-                    },
-                    broker_values: broker_values
-                };
-
-                // Set the task data
-                dispatch(setTaskFields({
-                    taskId: newTaskId,
-                    fields: taskData
-                }));
-
-                // Submit the task
-                dispatch(submitTask({ taskId: newTaskId }));
-
-            } catch (err) {
-                setError(err instanceof Error ? err.message : "An error occurred");
-                console.error("[KeywordAnalysis] Task failed:", err);
-            }
-        };
-
-        runTask();
-    }, [value, dispatch]);
+        runRecipe({
+            recipeId,
+            brokerValues,
+        });
+    }, [value, runRecipe, recipeId, brokerId]);
 
     // Create keyword analysis content component
     const KeywordAnalysisContent = () => {

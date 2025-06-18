@@ -16,7 +16,6 @@ import {
     selectPrimaryResponseEndedByTaskId,
     selectTaskStatus,
 } from "@/lib/redux/socket-io";
-import { v4 as uuidv4 } from "uuid";
 
 interface FactCheckerPageProps {
     value: string;

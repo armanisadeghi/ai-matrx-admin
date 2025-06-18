@@ -18,6 +18,7 @@ export interface EnrichedBroker {
     name?: string;
     isKnown: boolean;
     knownBrokerData?: DataBrokerData;
+    outputComponent?: string;
     fieldComponentId?: string;
     usageType: "source" | "target" | "both";
     sourceNodes: string[];

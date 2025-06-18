@@ -655,6 +655,20 @@ export type Projects = {
     createdBy?: string;
 }
 
+export type Prompts = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    name?: string;
+    messages?: Record<string, unknown>;
+    variableDefaults?: Record<string, unknown>;
+    tools?: Record<string, unknown>;
+    authenticatedRead?: boolean;
+    isPublic?: boolean;
+    userId?: string;
+    publicRead?: boolean;
+}
+
 export type Recipe = {
     id: string;
     name: string;

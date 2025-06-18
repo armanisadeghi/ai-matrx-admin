@@ -148,8 +148,6 @@ export const useDirectCreateRecord = <T extends Record<string, any>>({ entityKey
             try {
                 tempId = 'new-record-' + uuidv4();
 
-                console.log(data);
-
                 dispatch(
                     actions.startRecordCreationWithData({
                         tempId,

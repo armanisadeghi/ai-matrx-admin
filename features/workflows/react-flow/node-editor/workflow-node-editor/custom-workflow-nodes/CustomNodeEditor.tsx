@@ -48,7 +48,7 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
   autoSave = false,
   validation = 'permissive',
   title,
-  width = 'max-w-6xl',
+  width = 'max-w-7xl',
   height = 'h-[85vh]',
   nodeDefinition,
   enrichedBrokers,
@@ -93,7 +93,7 @@ const CustomNodeEditor: React.FC<CustomNodeEditorProps> = ({
         </div>
         
         {!autoSave && (
-          <DialogFooter className="flex-shrink-0">
+          <DialogFooter className="flex-shrink-0 ">
             <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>

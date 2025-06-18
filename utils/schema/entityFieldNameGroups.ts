@@ -278,6 +278,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "description", "createdAt", "updatedAt", "createdBy"]
 },
+  prompts: {
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead"]
+},
   recipe: {
   nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId"],
   primaryKeyFields: ["id"],

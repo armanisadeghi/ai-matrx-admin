@@ -212,6 +212,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  prompts: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   recipe: {
     frontendFields: ['id'],
     databaseColumns: ['id'],

@@ -905,6 +905,23 @@ const projectsEntityOverrides: EntityOverrides<'projects'> = {
 
 
 
+const promptsEntityOverrides: EntityOverrides<'prompts'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const recipeEntityOverrides: EntityOverrides<'recipe'> = {
     schemaType: null,
     entityName: null,
@@ -1893,6 +1910,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     processor: processorEntityOverrides,
     projectMembers: projectMembersEntityOverrides,
     projects: projectsEntityOverrides,
+    prompts: promptsEntityOverrides,
     recipe: recipeEntityOverrides,
     recipeBroker: recipeBrokerEntityOverrides,
     recipeDisplay: recipeDisplayEntityOverrides,

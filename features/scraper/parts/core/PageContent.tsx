@@ -24,7 +24,7 @@ import FactChecker from "../recipes/FactChecker";
 import KeywordAnalysis from "../recipes/KeywordAnalysis";
 import FeatureDisabledPlaceholder from "../reusable/FeatureDisabledPlaceholder";
 import ImageGallery from "../tabs/images/ImageGallery";
-
+import SerpResultsPage from "../recipes/SerpResultsPage";
 
 interface PageContentProps {
     pageData: any;
@@ -44,19 +44,17 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
         return <div className="p-4 text-gray-500 dark:text-gray-400">No data available for this page</div>;
     }
 
-
     // Extract data using the new ScraperDataUtils system
     const extractedData = useMemo(() => {
         try {
             // The pageData should already be processed from ScraperResultsComponent
             // Extract the first result for display
             const firstResult = pageData?.results?.[0];
-            
+
             if (!firstResult) {
                 console.error("[PAGE CONTENT] No results found in pageData:", pageData);
                 return { isError: true, error: "No results found in processed data" };
             }
-
 
             // Extract all the data we need for display
             const overview = firstResult.overview || {};
@@ -72,7 +70,7 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
             const error = firstResult.error;
 
             // Process organized data for removal details display
-            const allRemovals = contentFilterDetails.map(item => ({ ...item, remover: "Content Filter" }));
+            const allRemovals = contentFilterDetails.map((item) => ({ ...item, remover: "Content Filter" }));
 
             const images = links.images || [];
 
@@ -88,8 +86,8 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
             }
 
             // TODO: Create components for different link types
-            Object.keys(links).forEach(linkType => {
-                if (linkType !== 'images' && links[linkType] && links[linkType].length > 0) {
+            Object.keys(links).forEach((linkType) => {
+                if (linkType !== "images" && links[linkType] && links[linkType].length > 0) {
                     console.log(`[PAGE CONTENT] ${linkType} links TODO: Create LinkDisplay component for each type:`);
                     // TODO: Create LinkDisplay component for each type
                 }
@@ -110,17 +108,16 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                 images,
                 mainImage,
                 scrapedAt,
-                error
+                error,
             };
         } catch (error) {
             console.error("[PAGE CONTENT] Error extracting data:", error);
             return {
                 isError: true,
-                error: `Error extracting data: ${error.message}`
+                error: `Error extracting data: ${error.message}`,
             };
         }
     }, [pageData, dataUtils]);
-
 
     if (extractedData.isError) {
         return (
@@ -145,87 +142,92 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
     return (
         <div className="h-full flex flex-col w-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
             <div className="max-w-full px-2 sm:px-4 lg:px-6 py-4">
-                <PageHeader 
-                    title={overview?.page_title} 
-                    url={overview?.url} 
-                    status={statusValue} 
+                <PageHeader
+                    title={overview?.page_title}
+                    url={overview?.url}
+                    status={statusValue}
                     featureToggles={featureToggles}
                     setFeatureToggles={setFeatureToggles}
                 />
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
                     <ContentTabs activeTab={activeTab} setActiveTab={setActiveTab} />
                     <div className="flex-1 overflow-auto bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
-                    <TabsContent value="organized" className="m-0 h-full overflow-auto">
-                        <OrganizedContent organizedData={organizedData} />
-                    </TabsContent>
-                    <TabsContent value="reader" className="m-0 h-full overflow-auto">
-                        <SimplifiedView pageData={extractedData} />
-                    </TabsContent>
-                    <TabsContent value="structured" className="m-0 h-full overflow-auto">
-                        <StructuredData structuredData={structuredData} />
-                    </TabsContent>
-                    <TabsContent value="images" className="m-0 h-full overflow-auto">
-                        <ImageGallery imageUrls={images} />
-                    </TabsContent>
-                    <TabsContent value="text" className="m-0 h-full overflow-auto">
-                        <TextContent textData={textData} />
-                    </TabsContent>
-                    <TabsContent value="metadata" className="m-0 h-full overflow-auto">
-                        <MetadataContent overview={overview} />
-                    </TabsContent>
-                    <TabsContent value="removals" className="m-0 h-full overflow-auto">
-                        <RemovalDetails allRemovals={allRemovals} />
-                    </TabsContent>
-                    <TabsContent value="header-analysis" className="m-0 h-full overflow-auto">
-                        <HeaderAnalysis overview={overview} />
-                    </TabsContent>
-                    <TabsContent value="seo-analysis" className="m-0 h-full overflow-auto">
-                        <SEOAnalysisPage overview={overview} structuredData={structuredData} />
-                    </TabsContent>
-                    <TabsContent value="keyword-analysis" className="m-0 h-full overflow-auto">
-                        {featureToggles.keywordAnalysis ? (
-                            <KeywordAnalysis value={value} overview={overview} />
-                        ) : (
-                            <FeatureDisabledPlaceholder 
-                                featureName="Keyword Analysis"
-                                description="This feature makes API calls that may incur costs. Enable it to analyze keywords in your content."
-                                onEnable={() => enableFeature('keywordAnalysis')}
-                            />
-                        )}
-                    </TabsContent>
-                    <TabsContent value="fact-checker" className="m-0 h-full overflow-auto">
-                        {featureToggles.factChecker ? (
-                            <FactChecker value={value} overview={overview}/>
-                        ) : (
-                            <FeatureDisabledPlaceholder 
-                                featureName="Fact Checker"
-                                description="This feature makes API calls that may incur costs. Enable it to check facts in your content."
-                                onEnable={() => enableFeature('factChecker')}
-                            />
-                        )}
-                    </TabsContent>
-                    <TabsContent value="hashes" className="m-0 h-full overflow-auto">
-                        <HashesContent hashes={hashes} />
-                    </TabsContent>
-                    <TabsContent value="raw" className="m-0 h-full overflow-auto">
-                        <RawJSON pageData={pageData} />
-                    </TabsContent>
-                    <TabsContent value="raw-explorer" className="m-0 h-full overflow-auto">
-                        <RawJsonExplorer pageData={pageData} />
-                    </TabsContent>
-                    <TabsContent value="fancy-json-explorer" className="m-0 h-full overflow-auto">
-                        <FancyJsonExplorer pageData={pageData} />
-                    </TabsContent>
-                    <TabsContent value="bookmark-viewer" className="m-0 h-full overflow-auto">
-                        <BookmarkViewer pageData={pageData} />
-                    </TabsContent>
+                        <TabsContent value="organized" className="m-0 h-full overflow-auto">
+                            <OrganizedContent organizedData={organizedData} />
+                        </TabsContent>
+                        <TabsContent value="reader" className="m-0 h-full overflow-auto">
+                            <SimplifiedView pageData={extractedData} />
+                        </TabsContent>
+                        <TabsContent value="structured" className="m-0 h-full overflow-auto">
+                            <StructuredData structuredData={structuredData} />
+                        </TabsContent>
+                        <TabsContent value="images" className="m-0 h-full overflow-auto">
+                            <ImageGallery imageUrls={images} />
+                        </TabsContent>
+                        <TabsContent value="text" className="m-0 h-full overflow-auto">
+                            <TextContent textData={textData} />
+                        </TabsContent>
+                        <TabsContent value="metadata" className="m-0 h-full overflow-auto">
+                            <MetadataContent overview={overview} />
+                        </TabsContent>
+                        <TabsContent value="removals" className="m-0 h-full overflow-auto">
+                            <RemovalDetails allRemovals={allRemovals} />
+                        </TabsContent>
+                        <TabsContent value="header-analysis" className="m-0 h-full overflow-auto">
+                            <HeaderAnalysis overview={overview} />
+                        </TabsContent>
+                        <TabsContent value="seo-analysis" className="m-0 h-full overflow-auto">
+                            <SEOAnalysisPage overview={overview} structuredData={structuredData} />
+                        </TabsContent>
+                        <TabsContent value="keyword-analysis" className="m-0 h-full overflow-auto">
+                            {featureToggles.keywordAnalysis ? (
+                                <KeywordAnalysis value={value} overview={overview} />
+                            ) : (
+                                <FeatureDisabledPlaceholder
+                                    featureName="Keyword Analysis"
+                                    description="This feature makes API calls that may incur costs. Enable it to analyze keywords in your content."
+                                    onEnable={() => enableFeature("keywordAnalysis")}
+                                />
+                            )}
+                        </TabsContent>
+                        <TabsContent value="fact-checker" className="m-0 h-full overflow-auto">
+                            {featureToggles.factChecker ? (
+                                <FactChecker value={value} overview={overview} />
+                            ) : (
+                                <FeatureDisabledPlaceholder
+                                    featureName="Fact Checker"
+                                    description="This feature makes API calls that may incur costs. Enable it to check facts in your content."
+                                    onEnable={() => enableFeature("factChecker")}
+                                />
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="serp-results" className="m-0 h-full overflow-auto">
+                            {/* <SerpResultsPage data={serpData} /> */}
+                        </TabsContent>
+
+                        <TabsContent value="hashes" className="m-0 h-full overflow-auto">
+                            <HashesContent hashes={hashes} />
+                        </TabsContent>
+                        <TabsContent value="raw" className="m-0 h-full overflow-auto">
+                            <RawJSON pageData={pageData} />
+                        </TabsContent>
+                        <TabsContent value="raw-explorer" className="m-0 h-full overflow-auto">
+                            <RawJsonExplorer pageData={pageData} />
+                        </TabsContent>
+                        <TabsContent value="fancy-json-explorer" className="m-0 h-full overflow-auto">
+                            <FancyJsonExplorer pageData={pageData} />
+                        </TabsContent>
+                        <TabsContent value="bookmark-viewer" className="m-0 h-full overflow-auto">
+                            <BookmarkViewer pageData={pageData} />
+                        </TabsContent>
+                    </div>
+                </Tabs>
+                <div className="mt-4">
+                    <ActionButtons url={overview?.url} />
                 </div>
-            </Tabs>
-            <div className="mt-4">
-                <ActionButtons url={overview?.url} />
             </div>
         </div>
-    </div>
     );
 };
 

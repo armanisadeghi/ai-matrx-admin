@@ -146,7 +146,7 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
         <ErrorDisplay errors={validationErrors} className="mx-4 mt-4" />
       )}
       
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden ">
         <Tabs defaultValue={defaultTabId || finalTabs[0]?.id} className="w-full h-full flex flex-col">
           <TabsList>
             {finalTabs.map(tab => (

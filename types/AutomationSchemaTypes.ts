@@ -138,6 +138,7 @@ export type AutomationTableName =
     | 'processor'
     | 'projectMembers'
     | 'projects'
+    | 'prompts'
     | 'recipe'
     | 'recipeBroker'
     | 'recipeDisplay'
@@ -691,6 +692,15 @@ export type ProjectsProcessed = Expand<ProcessedEntityData<"projects">>;
 export type ProjectsData = Expand<EntityDataMixed<"projects">>;
 export type ProjectsState = EntityStateType<"projects">;
 export type ProjectsRecordMap = Record<"projectsRecordId", ProjectsData>;
+
+export type PromptsType = AutomationEntity<"prompts">;
+export type PromptsDataRequired = Expand<EntityData<"prompts">>;
+export type PromptsDataOptional = Expand<EntityDataOptional<"prompts">>;
+export type PromptsRecordWithKey = Expand<EntityDataWithKey<"prompts">>;
+export type PromptsProcessed = Expand<ProcessedEntityData<"prompts">>;
+export type PromptsData = Expand<EntityDataMixed<"prompts">>;
+export type PromptsState = EntityStateType<"prompts">;
+export type PromptsRecordMap = Record<"promptsRecordId", PromptsData>;
 
 export type RecipeType = AutomationEntity<"recipe">;
 export type RecipeDataRequired = Expand<EntityData<"recipe">>;
