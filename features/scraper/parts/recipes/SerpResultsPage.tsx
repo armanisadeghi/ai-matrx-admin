@@ -1,6 +1,6 @@
 "use client";
 import React, { useMemo, useEffect, useState } from "react";
-import { Search, Globe, Image, MessageCircleQuestion, Brain, ExternalLink, Clock, Users, BarChart3, FileText, Eye } from "lucide-react";
+import { Search, Globe, Image, MessageCircleQuestion, Brain, ExternalLink, Clock, Users, BarChart3, FileText, Eye, ChevronRight } from "lucide-react";
 import { PageTemplate, Card, Grid, StatusIndicator } from "../reusable/PageTemplate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -788,6 +788,162 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
         );
     };
 
+    // Pagination Content
+    const PaginationContent = () => {
+        const pagination = processor.getPagination();
+        const serpApiPagination = processor.getSerpApiPagination();
+
+        if (!pagination && !serpApiPagination) {
+            return (
+                <Card title="Pagination">
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-8">No pagination data available</p>
+                </Card>
+            );
+        }
+
+        return (
+            <Card title="Search Result Pages">
+                <div className="space-y-6">
+                    {/* Current Page Info */}
+                    <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Current Page</span>
+                            <Badge variant="default" className="bg-blue-600">
+                                Page {serpApiPagination?.current || pagination?.current || 1}
+                            </Badge>
+                        </div>
+                    </div>
+
+                    {/* Google Pagination (if available) */}
+                    {pagination && (
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                Google Search Pages
+                            </h4>
+                            <div className="space-y-2">
+                                {pagination.next && (
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 min-w-0 flex-shrink-0">Next Page:</span>
+                                        <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                                            <a href={pagination.next} target="_blank" rel="noopener noreferrer">
+                                                🔍 View Page {(pagination.current || 1) + 1}
+                                            </a>
+                                        </Button>
+                                    </div>
+                                )}
+                                
+                                {pagination.other_pages && Object.keys(pagination.other_pages).length > 0 && (
+                                    <div>
+                                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 block">All Pages:</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {Object.entries(pagination.other_pages).map(([pageNum, url]) => (
+                                                <Button
+                                                    key={pageNum}
+                                                    variant={parseInt(pageNum) === pagination.current ? "default" : "outline"}
+                                                    size="sm"
+                                                    className="h-7 text-xs"
+                                                    asChild
+                                                >
+                                                    <a href={url} target="_blank" rel="noopener noreferrer">
+                                                        {pageNum}
+                                                    </a>
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SerpAPI Pagination (JSON endpoints) */}
+                    {serpApiPagination && (
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                SerpAPI Data Pages (JSON)
+                            </h4>
+                            <div className="space-y-3">
+                                {serpApiPagination.next_link && (
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 min-w-0 flex-shrink-0">Next Page Data:</span>
+                                        <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded truncate flex-1">
+                                            {serpApiPagination.next_link}
+                                        </code>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-5 w-5 p-0"
+                                            onClick={() => navigator.clipboard.writeText(serpApiPagination.next_link || "")}
+                                            title="Copy API URL"
+                                        >
+                                            📋
+                                        </Button>
+                                        <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                                            <a href={serpApiPagination.next_link} target="_blank" rel="noopener noreferrer">
+                                                📊 Fetch JSON
+                                            </a>
+                                        </Button>
+                                    </div>
+                                )}
+                                
+                                {serpApiPagination.other_pages && Object.keys(serpApiPagination.other_pages).length > 0 && (
+                                    <div>
+                                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 block">All Page APIs:</span>
+                                        <div className="space-y-2">
+                                            {Object.entries(serpApiPagination.other_pages).map(([pageNum, url]) => (
+                                                <div key={pageNum} className="flex items-center space-x-2">
+                                                    <Badge 
+                                                        variant={parseInt(pageNum) === serpApiPagination.current ? "default" : "outline"}
+                                                        className="text-xs min-w-[2rem] justify-center"
+                                                    >
+                                                        {pageNum}
+                                                    </Badge>
+                                                    <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded truncate flex-1">
+                                                        {url}
+                                                    </code>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-5 w-5 p-0"
+                                                        onClick={() => navigator.clipboard.writeText(url)}
+                                                        title="Copy API URL"
+                                                    >
+                                                        📋
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                                                        <a href={url} target="_blank" rel="noopener noreferrer">
+                                                            📊 JSON
+                                                        </a>
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Usage Note */}
+                    <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+                        <div className="flex items-start space-x-2">
+                            <span className="text-amber-600 dark:text-amber-400 text-lg">💡</span>
+                            <div>
+                                <h5 className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                                    SEO Research Tip
+                                </h5>
+                                <p className="text-xs text-amber-700 dark:text-amber-300">
+                                    Use the JSON endpoints to fetch additional pages of results for comprehensive competitor analysis. 
+                                    Each page shows different organic results that can reveal more competitor insights.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Card>
+        );
+    };
+
     // Stats for hero section
     const statsItems = [
         { label: "Total Results", value: summary.totalResults.toLocaleString() },
@@ -821,6 +977,12 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
             label: "Related Searches",
             icon: Search,
             content: <RelatedSearchesContent />,
+        },
+        {
+            id: "pagination",
+            label: "Pagination",
+            icon: ChevronRight,
+            content: <PaginationContent />,
         },
         // Only show these tabs if data is available
         ...(summary.hasAIOverview

@@ -255,6 +255,11 @@ export class SerpProcessor {
         return this.data.pagination || null;
     }
 
+    // Get SerpAPI pagination (with direct API links)
+    getSerpApiPagination(): SerpApiPagination | null {
+        return this.data.serpapi_pagination || null;
+    }
+
     // Get local results (local businesses)
     getLocalResults(): LocalResult[] {
         return this.data.local_results?.places || [];

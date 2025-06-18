@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PlayCircle, Database, Clock, AlertCircle } from "lucide-react";
 import { DbFunctionNode, TabComponentProps } from "@/features/workflows/types";
 import { useDataOutputComponentWithFetch } from "@/features/workflows/hooks/useDataOutputComponent";
-import DynamicResultsRenderer from "@/features/workflows/components/DynamicResultsRenderer";
+import DynamicResultsRenderer from "@/features/workflows/results/DynamicResultsRenderer";
 
 const ResultsTab: React.FC<TabComponentProps> = ({ nodeData, enrichedBrokers }) => {
     // TODO: Connect to Redux state for execution results

@@ -1,5 +1,6 @@
 import React from 'react';
 import SerpResultsPage from '@/features/scraper/parts/recipes/SerpResultsPage';
+import EventDataDisplay from './EventDataDisplay';
 
 // Registry interface
 export interface ComponentRegistryEntry {
@@ -15,6 +16,13 @@ export const DYNAMIC_COMPONENT_REGISTRY: Record<string, ComponentRegistryEntry> 
         component: SerpResultsPage,
         displayName: 'SERP Results Page',
         description: 'Displays search engine results page analysis',
+        expectedProps: ['data']
+    },
+
+    'EventDataDisplay': {
+        component: EventDataDisplay,
+        displayName: 'Event Data Display',
+        description: 'Displays event data',
         expectedProps: ['data']
     },
     
