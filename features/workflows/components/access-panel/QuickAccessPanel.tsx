@@ -79,7 +79,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode, onAddCus
     const handleRecipeConfirm = async (configuredNodeData: Omit<DbFunctionNode, "user_id">) => {
         if (pendingRecipeNode) {
             try {
-                await onFinalizeNode(configuredNodeData, pendingRecipeNode.position);
+                onFinalizeNode(configuredNodeData, pendingRecipeNode.position);
                 setShowRecipeInitializer(false);
                 setPendingRecipeNode(null);
             } catch (error) {

@@ -4,6 +4,7 @@ import EventDataDisplay from './registered-components/EventDataDisplay';
 import SimpleTextDisplay from './registered-components/SimpleTextDisplay';
 import SimpleObjectDisplay from './registered-components/SimpleObjectDisplay';
 import SmartDisplay from './registered-components/SmartDisplay';
+import ViewTablePage from '@/features/workflows/results/registered-components/ViewTablePage';
 
 // Registry interface
 export interface ComponentRegistryEntry {
@@ -48,6 +49,13 @@ export const DYNAMIC_COMPONENT_REGISTRY: Record<string, ComponentRegistryEntry> 
         displayName: 'Smart Display',
         description: 'Displays a smart display',
         expectedProps: ['brokerId', 'keyToDisplay']
+    },
+
+    'ViewTablePage': {
+        component: ViewTablePage,
+        displayName: 'View Table Page',
+        description: 'Displays a table',
+        expectedProps: ['tableId']
     },
     
    
