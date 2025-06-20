@@ -19,8 +19,8 @@ const CategoryNodeSection: React.FC<CategoryNodeSectionProps> = ({
     onCategoryClick,
 }) => {
     return (
-        <div className="px-2 pb-4">
-            <div className={`grid grid-cols-4 gap-2`} >
+        <div className="px-0 pb-4">
+            <div className={`grid grid-cols-2 gap-2`} >
                 {categories.map((category) => {
                     const IconComponent = category.icon;
                     return (

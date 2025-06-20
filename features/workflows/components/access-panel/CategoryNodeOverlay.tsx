@@ -22,8 +22,6 @@ interface CategoryNodeOverlayProps {
 const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({ title, categoryId, nodes, onAddNode, onClose, isOpen }) => {
     const handleNodeClick = (node: CategoryNodeDefinition) => {
         onAddNode(node.id, "registeredFunction");
-        // Note: onAddNode now handles closing the overlay internally for recipe nodes
-        // For regular nodes, it will close immediately
     };
 
     const handleBackdropClick = (e: React.MouseEvent) => {
@@ -36,7 +34,7 @@ const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({ title, catego
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={handleBackdropClick}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-7xl w-full max-h-[80vh] overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
@@ -55,18 +53,18 @@ const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({ title, catego
                                     <button
                                         key={node.id}
                                         onClick={() => handleNodeClick(node)}
-                                        className="group p-4 bg-white dark:bg-gray-700/50 border border-blue-200 dark:border-blue-800/50 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 text-left"
+                                        className="group p-4 bg-white dark:bg-gray-700/50 border border-blue-200 dark:border-blue-800/50 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 text-left h-full flex flex-col"
                                     >
-                                        <div className="flex items-start gap-3">
-                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800/40 transition-all duration-200">
+                                        <div className="flex items-start gap-3 flex-1">
+                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800/40 transition-all duration-200 flex-shrink-0">
                                                 <IconComponent className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-1 group-hover:text-blue-700 dark:group-hover:text-blue-200 transition-colors">
+                                            <div className="flex-1 min-w-0 flex flex-col">
+                                                <h3 className="font-medium text-sm text-blue-900 dark:text-blue-100 mb-1 group-hover:text-blue-700 dark:group-hover:text-blue-200 transition-colors">
                                                     {node.name}
                                                 </h3>
                                                 {node.description && (
-                                                    <p className="text-sm text-blue-600 dark:text-blue-300 leading-relaxed">
+                                                    <p className="text-xs text-blue-600 dark:text-blue-300 leading-relaxed line-clamp-4">
                                                         {node.description}
                                                     </p>
                                                 )}
@@ -92,7 +90,7 @@ const CategoryNodeOverlay: React.FC<CategoryNodeOverlayProps> = ({ title, catego
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {nodes.length > 0
-                                ? `Choose a ${title.toLowerCase()} to add to your workflow`
+                                ? `Choose a Node from '${title}' to add to your workflow`
                                 : `${title} will be available here soon`}
                         </p>
                         <button

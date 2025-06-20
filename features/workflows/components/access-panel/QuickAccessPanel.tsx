@@ -108,7 +108,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode, onAddCus
             .map((func) => ({
                 id: func.id,
                 name: func.name,
-                description: func.nodeDescription || func.description?.slice(0, 100) + "..." || "No description available",
+                description: func.nodeDescription || func.description?.slice(0, 200) + "..." || "No description available",
                 icon: getIconComponent(func.icon),
             }));
     };
@@ -119,11 +119,11 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode, onAddCus
     };
 
     return (
-        <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+        <div className="w-40 bg-white dark:bg-gray-800 flex flex-col">
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
                 {/* Core System Nodes - Direct access at the top */}
-                <div className="px-2 pb-2">
+                <div className="px-0 pb-2">
                     <div className="grid grid-cols-2 gap-2">
                         <button
                             onClick={() => onAddNode("userInput", "userInput")}
@@ -147,11 +147,11 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode, onAddCus
                 <CategoryNodeSection categories={CATEGORY_DEFINITIONS} onCategoryClick={handleCategoryClick} />
 
                 {/* Integration Nodes */}
-                <CollapsibleNodeSection title="Integrations" nodes={INTEGRATION_NODES} onAddNode={onAddNode} defaultExpanded={false} />
+                {/* <CollapsibleNodeSection title="Integrations" nodes={INTEGRATION_NODES} onAddNode={onAddNode} defaultExpanded={false} /> */}
             </div>
 
             {/* Floating Action Button */}
-            <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+            {/* <div className="p-2 border-t border-gray-200 dark:border-gray-700">
                 <button
                     onClick={() => setIsOverlayOpen(true)}
                     className="w-full flex items-center justify-center gap-2 p-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transform hover:scale-[1.02]"
@@ -159,7 +159,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode, onAddCus
                     <Plus className="h-4 w-4" />
                     <span className="font-medium">Browse Nodes</span>
                 </button>
-            </div>
+            </div> */}
 
             {/* Node Selection Overlay */}
             <NodeSelectionOverlay

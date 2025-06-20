@@ -949,7 +949,6 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
         { label: "Total Results", value: summary.totalResults.toLocaleString() },
         { label: "Organic Results", value: summary.organicResultsCount },
         { label: "Local Results", value: summary.localResultsCount },
-        { label: "Available Sections", value: summary.availableSections.length },
     ];
 
     // Define tabs
@@ -1036,7 +1035,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
             statsItems={statsItems}
             tabs={tabs}
             defaultActiveTab="overview"
-            heroSize="s"
+            heroSize="xs"
         />
     );
 };

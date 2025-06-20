@@ -41,11 +41,29 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
   
   // Hero size classes
   const heroSizeClasses = {
-    xs: 'px-4 py-4 sm:px-6 sm:py-8',
-    s: 'px-5 py-6 sm:px-8 sm:py-10',
+    xs: 'px-2 py-3 sm:px-4 sm:py-5',
+    s: 'px-3 py-4 sm:px-6 sm:py-8',
     m: 'px-6 py-8 sm:px-10 sm:py-12',
     lg: 'px-6 py-10 sm:px-12 sm:py-16 md:py-20 lg:py-24',
     xl: 'px-8 py-14 sm:px-16 sm:py-20 md:py-24 lg:py-32'
+  };
+
+  // Hero text size classes for titles
+  const heroTitleSizeClasses = {
+    xs: 'text-xl md:text-2xl lg:text-3xl',
+    s: 'text-2xl md:text-3xl lg:text-4xl',
+    m: 'text-3xl md:text-4xl lg:text-5xl',
+    lg: 'text-3xl md:text-4xl lg:text-5xl',
+    xl: 'text-4xl md:text-5xl lg:text-6xl'
+  };
+
+  // Hero text size classes for subtitles
+  const heroSubtitleSizeClasses = {
+    xs: 'text-sm',
+    s: 'text-base',
+    m: 'text-lg',
+    lg: 'text-lg',
+    xl: 'text-xl'
   };
 
   return (
@@ -57,20 +75,20 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 to-indigo-700/30 backdrop-blur-sm rounded-2xl"></div>
             <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between">
               <div className="mb-6 md:mb-0">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4 leading-tight">
+                <h1 className={`${heroTitleSizeClasses[heroSize]} font-extrabold text-white mb-4 leading-tight`}>
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="text-white/90 text-lg font-medium mb-2">{subtitle}</p>
+                  <p className={`text-white/90 ${heroSubtitleSizeClasses[heroSize]} font-medium mb-2`}>{subtitle}</p>
                 )}
                 {url && (
                   <div className="flex items-center">
-                    <ExternalLinkIcon className="text-white/80 mr-2 h-5 w-5" />
+                    <ExternalLinkIcon className="text-white/80 mr-2 h-4 w-4" />
                     <a 
                       href={url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-white/90 hover:text-white hover:dark:text-gray-300 underline decoration-1 underline-offset-4 text-sm font-small"
+                      className="text-white/90 hover:text-white hover:dark:text-gray-300 underline decoration-1 underline-offset-4 text-xs font-small"
                     >
                       {urlText || url}
                     </a>
