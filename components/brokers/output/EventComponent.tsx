@@ -32,9 +32,9 @@ const EventComponent: React.FC<Props> = ({ sections, tables }) => {
         <div className="w-full p-6">
             {/* Responsive Grid System */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                {sections.map((section) => (
+                {sections?.map((section, index) => (
                     <div
-                        key={section.title}
+                        key={`${section.title}-${index}`}
                         className="bg-gradient-to-br from-pink-50 to-cyan-50 dark:from-pink-950 dark:to-cyan-950 border-2 border-pink-200 dark:border-pink-800 shadow-lg rounded-xl p-5"
                     >
                         <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-cyan-400 dark:from-pink-400 dark:to-cyan-300 bg-clip-text text-transparent">
@@ -53,7 +53,7 @@ const EventComponent: React.FC<Props> = ({ sections, tables }) => {
                         </ul>
                     </div>
                 ))}
-                {tables.map((table) => (
+                {tables?.map((table) => (
                     <TableRenderer key={table.title} table={table} />
                 ))}
             </div>

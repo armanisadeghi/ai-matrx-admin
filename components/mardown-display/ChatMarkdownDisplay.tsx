@@ -75,14 +75,12 @@ const ChatMarkdownDisplay: React.FC<ChatMarkdownDisplayProps> = ({ content, type
                         fontSize={16}
                         className="my-3"
                         onCodeChange={(newCode) => {
-                            // Handle code changes if needed
                             console.log("Code updated:", newCode);
                         }}
                     />
                 );
             }
 
-            // Inline code styling with amber color and semi-bold effect
             return (
                 <code
                     className={cn(

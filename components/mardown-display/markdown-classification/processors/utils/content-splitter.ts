@@ -9,7 +9,6 @@ export interface ContentBlock {
     metadata?: any;
 }
 
-
 export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     const blocks: ContentBlock[] = [];
     let currentText = "";
@@ -178,10 +177,10 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             continue;
         }
 
-        // Detect image markdown syntax (e.g., ![alt](url))
+        // Detect image markdown syntax (e.g., <image-card alt="alt" src="url" ></image-card> or [Image URL: url])
         const imageMatch =
-            processedTrimmedLine.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)/) ||
-            processedTrimmedLine.match(/\[Image URL: (https?:\/\/[^\s\]]+)\]/);
+            trimmedLine.match(/^!$$ (.*?) $$$$ (https?:\/\/[^\s)]+) $$/) || // Standard Markdown
+            trimmedLine.match(/$$ Image URL: (https?:\/\/[^\s $$]+)\]/); // Custom format
 
         if (imageMatch) {
             if (currentText.trim()) {
@@ -199,7 +198,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
 
             blocks.push({
                 type: "image",
-                content: processedTrimmedLine,
+                content: trimmedLine,
                 src,
                 alt: alt || "Image",
             });

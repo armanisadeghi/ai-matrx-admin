@@ -8,10 +8,11 @@ import DraggableToolbar, { ToolbarAction } from "../components/DraggableToolbar"
 import { Eye, Code, FileText, Copy, Braces, Plus } from "lucide-react";
 import { FcDownLeft } from "react-icons/fc";
 import { AiOutlineDoubleLeft } from "react-icons/ai";
-import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors";
+import { selectFirstPrimaryResponseDataByTaskId, selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors";
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors";
 import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
+import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 
 interface ResultPanelProps {
     id: string;
@@ -51,10 +52,14 @@ export function ResultPanel({
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const streamingText = useAppSelector(selectResponseTextByListenerId(firstListenerId));
     const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
+    const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
 
-    
-    
-    
+
+    const isStreaming = !isTaskComplete;
+
+
+    const analysisData = responseData?.response?.metadata || null;
+
     const toggleCollapse = () => {
         if (isCollapsed) {
             setIsCollapsed(false);
@@ -104,11 +109,11 @@ export function ResultPanel({
 
     const FloatingAddButton = () => {
         if (!addAssistantResponse) return null;
-        
+
         return (
             <div className="absolute bottom-4 left-4 z-10">
-                <Button 
-                    size="sm" 
+                <Button
+                    size="sm"
                     className="flex items-center gap-1.5 bg-zinc-200/80 dark:bg-zinc-800/80 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 shadow-md transition-all duration-200 ease-in-out hover:scale-105"
                     onClick={() => addAssistantResponse(streamingText)}
                 >
@@ -141,9 +146,7 @@ export function ResultPanel({
                 } catch (error) {
                     return (
                         <div className="relative h-full">
-                            <div className="p-4 text-red-500 dark:text-red-400">
-                                Invalid JSON: {String(error)}
-                            </div>
+                            <div className="p-4 text-red-500 dark:text-red-400">Invalid JSON: {String(error)}</div>
                             <pre className="p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm h-full">{streamingText}</pre>
                             <FloatingAddButton />
                         </div>
@@ -153,7 +156,18 @@ export function ResultPanel({
             default:
                 return (
                     <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin relative">
-                        <MarkdownRenderer content={streamingText} type="message" role="assistant" fontSize={16} />
+                        <div className="max-w-[750px] w-full min-h-full">
+                            <EnhancedChatMarkdown
+                                content={streamingText}
+                                type="message"
+                                role="assistant"
+                                className="bg-transparent dark:bg-transparent p-4"
+                                isStreamActive={isStreaming}
+                                analysisData={analysisData}
+                                messageId={null}
+                                allowFullScreenEditor={false}
+                            />
+                        </div>
                         <FloatingAddButton />
                     </div>
                 );

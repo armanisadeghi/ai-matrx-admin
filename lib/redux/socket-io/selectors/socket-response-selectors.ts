@@ -40,7 +40,14 @@ export const selectResponsesByTaskId = createSelector(
 // ==================== Individual Response Property Selectors ====================
 // Fixed: Use createSelector consistently for all response property selectors
 export const selectResponseTextByListenerId = (listenerId: string) =>
-    createSelector([selectResponseByListenerId(listenerId)], (response) => response?.text || "");
+    createSelector([selectResponseByListenerId(listenerId)], (response) => {
+        if (!response) return "";
+        // Use textChunks if available (new performance approach), fallback to text
+        if (response.textChunks && response.textChunks.length > 0) {
+            return response.textChunks.join("");
+        }
+        return response.text || "";
+    });
 
 export const selectResponseDataByListenerId = (listenerId: string) =>
     createSelector([selectResponseByListenerId(listenerId)], (response) => response?.data || EMPTY_ARRAY);
@@ -84,9 +91,28 @@ export const selectTaskResults = (taskId: string) =>
                 return EMPTY_RESPONSE_STATE;
             }
 
+            // Helper function to get text from either textChunks or text
+            const getResponseText = (response: ResponseState) => {
+                if (!response) return "";
+                if (response.textChunks && response.textChunks.length > 0) {
+                    return response.textChunks.join("");
+                }
+                return response.text || "";
+            };
+
             if (listenerIds.length === 1) {
                 const response = responses[listenerIds[0]];
-                return response || { text: "", data: [], info: [], errors: [], ended: false };
+                if (!response) {
+                    return { text: "", data: [], info: [], errors: [], ended: false };
+                }
+                return {
+                    ...response,
+                    text: getResponseText(response), // Always use the helper for consistent text extraction
+                    data: response.data || [],
+                    info: response.info || [],
+                    errors: response.errors || [],
+                    ended: response.ended || false,
+                };
             }
 
             return listenerIds.reduce(
@@ -94,7 +120,7 @@ export const selectTaskResults = (taskId: string) =>
                     const response = responses[listenerId] as ResponseState;
                     if (!response) return combined;
                     return {
-                        text: combined.text + response.text,
+                        text: combined.text + getResponseText(response), // Use helper here too
                         data: [...combined.data, ...response.data],
                         info: [...combined.info, ...response.info],
                         errors: [...combined.errors, ...response.errors],
@@ -141,7 +167,14 @@ export const selectPrimaryResponseForTask = (taskId: string) =>
 
 // Fixed: Build all primary response selectors on top of the base selector
 export const selectPrimaryResponseTextByTaskId = (taskId: string) =>
-    createSelector([selectPrimaryResponseForTask(taskId)], (response) => response?.text || "");
+    createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
+        if (!response) return "";
+        // Use textChunks if available (new performance approach), fallback to text
+        if (response.textChunks && response.textChunks.length > 0) {
+            return response.textChunks.join("");
+        }
+        return response.text || "";
+    });
 
 export const selectPrimaryResponseDataByTaskId = (taskId: string) =>
     createSelector([selectPrimaryResponseForTask(taskId)], (response) => response?.data || EMPTY_ARRAY);
@@ -184,11 +217,17 @@ export const selectFirstPrimaryResponseErrorByTaskId = (taskId: string) =>
 export const createTaskResponseSelectors = (taskId: string) => {
     // Create the base selector once
     const baseSelector = selectPrimaryResponseForTask(taskId);
-
     // Return all the derived selectors built on the base
     return {
         selectResponse: baseSelector,
-        selectText: createSelector([baseSelector], (response) => response?.text || ""),
+        selectText: createSelector([baseSelector], (response) => {
+            if (!response) return "";
+            // Use textChunks if available (new performance approach), fallback to text
+            if (response.textChunks && response.textChunks.length > 0) {
+                return response.textChunks.join("");
+            }
+            return response.text || "";
+        }),
         selectTextChunks: createSelector([baseSelector], (response) => response?.textChunks || []),
         selectData: createSelector([baseSelector], (response) => response?.data || []),
         selectInfo: createSelector([baseSelector], (response) => response?.info || []),

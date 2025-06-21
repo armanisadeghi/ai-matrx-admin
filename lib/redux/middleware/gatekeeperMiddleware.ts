@@ -27,6 +27,11 @@ export const gatekeeperMiddleware: Middleware = (store) => (next) => (action: Un
     return next(action);
   }
 
+  // PERFORMANCE: Early exit for socketResponse actions to avoid middleware overhead
+  if (action.type.startsWith('socketResponse/')) {
+    return next(action);
+  }
+
   let result = action;
   const nonBlockingTriggers: ActionHandler[] = [];
 

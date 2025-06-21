@@ -15,6 +15,8 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
     const state = getState();
     const task = state.socketTasks.tasks[taskId];
 
+    console.log("=================== submitTask ===================")
+
     if (!task) {
       dispatch(setTaskError({ taskId, error: `Task with ID ${taskId} not found` }));
       return [];
@@ -32,17 +34,14 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
 
     let connection = state.socketConnections.connections[task.connectionId];
 
-    // Check if we need to reconnect
+    // Check if we need to reconnect (same logic as original)
     if (!connection || !connection.socket || connection.connectionStatus !== "connected") {
-      // Attempt to reconnect using the SocketConnectionManager
       const socketManager = SocketConnectionManager.getInstance();
       
       try {
-        // First try to reconnect with existing connection ID
         const socket = await socketManager.reconnect(task.connectionId);
         
         if (socket) {
-          // Update Redux state with the new connection
           dispatch(
             setConnection({
               connectionId: task.connectionId,
@@ -54,11 +53,9 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
             })
           );
           
-          // Re-fetch the connection from state
           const newState = getState();
           connection = newState.socketConnections.connections[task.connectionId];
         } else {
-          // If reconnect failed, create a brand new connection
           const newConnectionId = await socketManager.initializePrimaryConnection();
           const newSocket = await socketManager.getSocket(
             newConnectionId,
@@ -78,10 +75,8 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
               })
             );
             
-            // Update the task to use the new connection ID
             dispatch(setTaskFields({ taskId, fields: { connectionId: newConnectionId } }));
             
-            // Re-fetch the connection from state
             const newState = getState();
             connection = newState.socketConnections.connections[newConnectionId];
           }
@@ -91,7 +86,6 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
         return [];
       }
       
-      // Final check after reconnection attempt
       if (!connection || !connection.socket || connection.connectionStatus !== "connected") {
         dispatch(setTaskError({ taskId, error: "Unable to establish socket connection" }));
         return [];
@@ -103,7 +97,6 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
         task.service,
         { taskName: task.taskName, taskData: task.taskData },
         (response: { response_listener_events?: string[] }) => {
-          // ... rest of the implementation remains the same
           const eventNames = response?.response_listener_events || [];
 
           if (!eventNames.length) {
@@ -140,8 +133,9 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
                 isFirstResponse = false;
               }
 
+              // ===== PERFORMANCE IMPROVEMENT: Use appendTextChunk instead of updateTextResponse =====
               if (typeof response === "string") {
-                dispatch(updateTextResponse({ listenerId: eventName, text: response }));
+                dispatch(appendTextChunk({ listenerId: eventName, text: response }));
               } else {
                 if (response?.data !== undefined) {
                   dispatch(updateDataResponse({ listenerId: eventName, data: response.data }));
@@ -160,13 +154,13 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
                   brokers.forEach((broker: SocketBrokerObject) => {
                     if (broker?.broker_id && broker?.value !== undefined) {
                       const brokerId = broker.broker_id;
-                      const value = broker.value; // Preserve original data type
+                      const value = broker.value;
                       const source = broker.source || "socket-response";
                       const sourceId = broker.source_id || eventName;
                       
                       const mapEntry = {
                         brokerId,
-                        mappedItemId: brokerId, // Use brokerId as mappedItemId for socket responses  ======= TEMP SOLUTION =======
+                        mappedItemId: brokerId,
                         source,
                         sourceId,
                       };
@@ -180,7 +174,7 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
                       
                       dispatch(brokerActions.setValue(valuePayload));
                     } else {
-                      console.warn("[SUBMIT TASK THUNK] Invalid broker response - missing broker_id or value:", broker);
+                      console.warn("[SUBMIT TASK] Invalid broker response - missing broker_id or value:", broker);
                     }
                   });
                 }
@@ -213,6 +207,8 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
   }
 );
 
+
+
 export const createAndSubmitTask = createAsyncThunk<
   { taskId: string; submitResult: string[] }, // Return taskId and submitTask result
   { service: string; taskName: string; taskData: Record<string, any>; connectionId?: string },
@@ -223,6 +219,8 @@ export const createAndSubmitTask = createAsyncThunk<
     const state = getState();
     const resolvedConnectionId =
       connectionId || selectPrimaryConnection(state)?.connectionId;
+
+    console.log("=================== createAndSubmitTask ===================")
 
     if (!resolvedConnectionId) {
       throw new Error("No primary connection available and no connectionId provided");
@@ -257,6 +255,8 @@ export const submitTaskNew = createAsyncThunk<string[], { taskId: string }, { st
   async ({ taskId }, { dispatch, getState }) => {
     const state = getState();
     const task = state.socketTasks.tasks[taskId];
+
+    console.log("=================== submitTaskNew ===================")
 
     if (!task) {
       dispatch(setTaskError({ taskId, error: `Task with ID ${taskId} not found` }));

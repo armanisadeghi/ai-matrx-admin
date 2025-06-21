@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import MultiSwitchToggle from '@/components/matrx/MultiSwitchToggle';
 import SelectWithIconDisplay from '@/components/matrx/SelectWithIconDisplay';
-import { allTools } from '@/features/chat/components/input/constants';
+import { allTools } from '@/constants/mcp-tools';
 
 interface Tool {
     id: string;

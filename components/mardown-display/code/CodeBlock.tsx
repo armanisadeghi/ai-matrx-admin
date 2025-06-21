@@ -18,6 +18,7 @@ interface CodeBlockProps {
     className?: string;
     onCodeChange?: (newCode: string) => void;
     inline?: boolean;
+    isStreamActive?: boolean;
 }
 
 const CodeBlock: React.FC<CodeBlockProps> = ({
@@ -29,8 +30,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     className,
     onCodeChange,
     inline = false,
+    isStreamActive = false,
 }) => {
-    const [code, setCode] = useState(initialCode);
+    const [code, setCode] = useState("");
     const [isCopied, setIsCopied] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -46,6 +48,13 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const { mode } = useTheme();
     const isMobile = useIsMobile();
 
+    useEffect(() => {
+        if (code !== initialCode) {
+            setCode(initialCode);
+        }
+    }, [initialCode, code]);
+
+    
     useEffect(() => {
         const observerOptions = {
             root: null,

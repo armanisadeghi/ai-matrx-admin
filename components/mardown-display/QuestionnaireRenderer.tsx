@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Bug } from "lucide-react";
 import { THEMES } from "./themes";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+
 
 // Helper function to check if an option is an "Other" option
 const isOtherOption = (option) => {
@@ -400,7 +403,9 @@ const extractSliderRange = (intro) => {
     return { min: 0, max: 100 };
 };
 
-const QuestionnaireRenderer = ({ data, theme }) => {
+const QuestionnaireRenderer = ({ data, theme, taskId=null }) => {
+    const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
     const [formState, setFormState] = useState({});
     const [questionData, setQuestionData] = useState({});
     const [debugMode, setDebugMode] = useState(false);

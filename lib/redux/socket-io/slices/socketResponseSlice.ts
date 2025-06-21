@@ -1,7 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createSelector } from '@reduxjs/toolkit';
 import { ResponsesState, SocketErrorObject } from '../socket.types';
-import { RootState } from '@/lib/redux/store';
 
 
 const initialState: ResponsesState = {};

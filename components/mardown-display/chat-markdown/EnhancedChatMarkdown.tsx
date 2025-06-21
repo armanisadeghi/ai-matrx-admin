@@ -10,7 +10,6 @@ import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import ImageBlock from "./ImageBlock";
 import TranscriptBlock from "@/components/mardown-display/blocks/transcripts/TranscriptBlock";
 import TasksBlock from "@/components/mardown-display/blocks/tasks/TasksBlock";
-import { MarkdownAnalysisData } from "./analyzer/types";
 import { ContentBlock, splitContentIntoBlocks } from "../markdown-classification/processors/utils/content-splitter";
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
@@ -41,7 +40,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     allowFullScreenEditor = true,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [currentContent, setCurrentContent] = useState(content);
+    const [currentContent, setCurrentContent] = useState("");
     
     // Update internal content when prop changes
     useEffect(() => {
@@ -94,15 +93,16 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         onContentChange?.(updatedContent);
     };
 
-    const preprocessContent = (mdContent: string): string => {
-        // Match the format [Image URL: https://example.com/image.png]
-        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
-        return mdContent.replace(imageUrlRegex, "![Image]($1)");
-    };
+    // const preprocessContent = (mdContent: string): string => {
+    //     // Match the format [Image URL: https://example.com/image.png]
+    //     const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
+    //     return mdContent.replace(imageUrlRegex, "![Image]($1)");
+    // };
 
-    const processedContent = preprocessContent(currentContent);
-    const blocks = splitContentIntoBlocks(processedContent);
+    // const processedContent = preprocessContent(currentContent);
 
+
+    const blocks = splitContentIntoBlocks(currentContent);
 
     const renderBlock = (block: ContentBlock, index: number) => {
         switch (block.type) {
@@ -118,7 +118,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         language={block.language}
                         fontSize={16}
                         className="my-3"
-                        onCodeChange={(newCode) => handleCodeChange(newCode, block.content)}
+                        onCodeChange={isStreamActive ? undefined : (newCode) => handleCodeChange(newCode, block.content)}
+                        isStreamActive={isStreamActive}
                     />
                 );
             case "table":

@@ -17,6 +17,7 @@ const generateUniqueKey = (base: string, index: number, parentIndex?: number) =>
 };
 
 const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: EnhancedMarkdownCardProps) => {
+
   const { intro, sections, outro } = parsed;
   const themeColors = THEMES[theme];
 
@@ -125,13 +126,13 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
       }
     };
 
-    sections.forEach((section, index) => {
-      if (section.tables.length > 0) {
+    sections?.forEach((section, index) => {
+      if (section?.tables?.length > 0) {
         // Flush any pending grid sections
         flushGridSections();
         
         // Add the section content (if it has any items)
-        if (section.items.length > 0) {
+        if (section?.items?.length > 0) {
           result.push({
             type: 'fullWidth',
             section
@@ -139,7 +140,7 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
         }
         
         // Add each table
-        section.tables.forEach((table, tableIndex) => {
+        section?.tables?.forEach((table, tableIndex) => {
           result.push({
             type: 'table',
             table,
@@ -175,7 +176,7 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
         if (item.type === 'grid') {
           return (
             <div key={`grid-${index}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {item.sections.map((section, sectionIndex) => 
+              {item?.sections?.map((section, sectionIndex) => 
                 renderSectionContent(section, sectionIndex)
               )}
             </div>

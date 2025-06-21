@@ -63,7 +63,10 @@ export const DynamicPanelRender: React.FC<DynamicPanelRenderProps> = ({
     const streamingText = useAppSelector(selectResponseTextByListenerId(firstListenerId));
     const responseData = useAppSelector((state) => selectResponseDataByListenerId(firstListenerId)(state));
 
-    console.log("DynamicPanelRender responseData", responseData);
+    // Early return if no data is available yet - prevents rendering components with empty/undefined content
+    if (!streamingText && !responseData) {
+        return <div className="h-full w-full" />;
+    }
 
     // Process content based on parser selection
     const processedContent = React.useMemo(() => {
@@ -108,12 +111,16 @@ export const DynamicPanelRender: React.FC<DynamicPanelRenderProps> = ({
 
     // If there's a parsing error, show error fallback
     if (parsingError) {
-        return <ErrorFallback error={parsingError} content={streamingText} />;
+        return (
+            <div className="h-full w-full overflow-auto">
+                <ErrorFallback error={parsingError} content={streamingText || ''} />
+            </div>
+        );
     }
 
-    // Render the component with processed content
+    // Render the component with processed content in a scrollable container
     return (
-        <div className="h-full w-full">
+        <div className="h-full w-full overflow-auto">
             <Component
                 content={processedContent}
                 taskId={taskId}

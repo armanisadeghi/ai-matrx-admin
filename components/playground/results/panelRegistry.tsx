@@ -32,6 +32,7 @@ import { createDynamicPanelWrapper } from "./DynamicPanelRender";
 // Import Redux hooks and selectors
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 
 // Import the actual rendering components
 import EnhancedMarkdownCard from "@/components/mardown-display/EnhancedMarkdownCard";
@@ -47,6 +48,7 @@ import SectionViewerWithSidebar from "@/components/mardown-display/chat-markdown
 import SectionsViewer from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/sections-viewer";
 import LinesViewer from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/lines-viewer";
 import SectionViewerV2 from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/section-viewer-V2";
+import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 
 // Dynamically import EventComponent
 const EventComponent = lazy(() => import("@/components/brokers/output/EventComponent"));
@@ -68,13 +70,25 @@ const MultiSectionMarkdownCardPanel = createDynamicPanelWrapper(
     { theme: "professional", fontSize: 16, className: "" }
 );
 
+const jsonDataResponsePanel = createDynamicPanelWrapper(
+    ({ taskId }: { taskId?: string }) => {
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
+        const data = responseData?.response?.metadata;
+
+        return <RawJsonExplorer pageData={data} ignorePrefix="data" withSelect={true} />;
+    },
+    "jsonDataResponse"
+);
+
+
 const EventComponentPanel = createDynamicPanelWrapper(
     ({ content }: { content: any }) => <EventComponent sections={content.sections} tables={[]} />,
     "markdownContent"
 );
 
 const QuestionnaireRendererPanel = createDynamicPanelWrapper(
-    ({ content: data }: { content: any }) => <QuestionnaireRenderer data={data} theme="professional" />,
+    ({ content: data, taskId }: { content: any; taskId?: string }) => <QuestionnaireRenderer data={data} theme="professional" taskId={taskId} />,
     "separated"
 );
 
@@ -151,17 +165,17 @@ const MarkdownRendererPanel = createDynamicPanelWrapper(
     // No parser = raw content
 );
 
+
+
+
+
 const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
     ({ content, taskId }: { content: string; taskId?: string }) => {
         const [isOpen, setIsOpen] = React.useState(true);
 
-        console.log("taskId", taskId);
-        // Get response data using the selector
         const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
 
-        console.log("responseData", responseData);
 
-        // Extract metadata from response data
         const analysisData = responseData?.response?.metadata || null;
 
         if (!isOpen) {
@@ -420,7 +434,7 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
         id: "markdown",
         component: ResultPanel,
         icon: FileText,
-        label: "Formatted Markdown (Custom-Formatted using one of the many formats offered by Matrx)",
+        label: "Formatted Markdown",
         value: "markdown",
         defaultProps: {},
     },
@@ -428,7 +442,7 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
         id: "raw",
         component: RawTextPanel,
         icon: Baseline,
-        label: "Raw Text (The exact output from the Model)",
+        label: "Raw Text",
         value: "raw",
         defaultProps: {},
     },
@@ -436,7 +450,7 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
         id: "parseExtractorOptions",
         component: ParseExtractorOptionsPanel,
         icon: Settings,
-        label: "A glimpse into the Power of AI Matrx. This component is converting your text content into structured data, which can be traversed with clicks.",
+        label: "Review the structured data to find the exact data you need",
         value: "parseExtractorOptions",
         defaultProps: {},
     },
@@ -464,7 +478,14 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
         value: "compiled",
         defaultProps: {},
     },
-
+    jsonDataResponse: {
+        id: "jsonDataResponse",
+        component: jsonDataResponsePanel,
+        icon: Braces,
+        label: "JSON Data Response",
+        value: "jsonDataResponse",
+        defaultProps: {},
+    },
     eventComponent: {
         id: "eventComponent",
         component: EventComponentPanel,

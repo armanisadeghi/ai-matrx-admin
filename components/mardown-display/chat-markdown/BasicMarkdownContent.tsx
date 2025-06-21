@@ -31,11 +31,11 @@ const detectTextDirection = (text: string): 'rtl' | 'ltr' => {
         /[\u200F]/,         // Right-to-Left Mark
         /[\u202E]/,         // Right-to-Left Override
     ];
-
+    
     // Count RTL and LTR characters
     let rtlCount = 0;
     let ltrCount = 0;
-
+    
     for (const char of text) {
         if (rtlRanges.some(range => range.test(char))) {
             rtlCount++;
@@ -43,7 +43,7 @@ const detectTextDirection = (text: string): 'rtl' | 'ltr' => {
             ltrCount++;
         }
     }
-
+    
     // If RTL characters are more than 30% of alphabetic characters, consider it RTL
     const totalAlphabetic = rtlCount + ltrCount;
     if (totalAlphabetic === 0) return 'ltr';
@@ -70,20 +70,24 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     // Detect text direction
     const textDirection = useMemo(() => detectTextDirection(content), [content]);
     const directionClasses = getDirectionClasses(textDirection);
-
+    
     const preprocessContent = (rawContent: string): string => {
         // Fix setext-style heading patterns by ensuring there's a blank line before ---
         // This prevents paragraph text from being interpreted as h2 headings
         return rawContent.replace(/([^\n])\n---/g, '$1\n\n---');
     };
-
+    
     const processedContent = preprocessContent(content);
-
+    
     const handleEdit = () => {
         console.log("Edit clicked with content:", content);
         onEditRequest?.();
     };
 
+    // Conditional mouse event handlers - only active when stream is not active
+    const handleMouseEnter = !isStreamActive ? () => setIsHovering(true) : undefined;
+    const handleMouseLeave = !isStreamActive ? () => setIsHovering(false) : undefined;
+    
     const components = {
         p: ({ node, children, ...props }: any) => {
             // Detect direction for this specific paragraph
@@ -302,15 +306,15 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         <div 
             className={`relative my-2 group ${directionClasses}`}
             dir={textDirection}
-            onMouseEnter={() => setIsHovering(true)} 
-            onMouseLeave={() => setIsHovering(false)}
+            onMouseEnter={handleMouseEnter} 
+            onMouseLeave={handleMouseLeave}
         >
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                 {processedContent}
             </ReactMarkdown>
             
-            {/* Edit button now triggers onEditRequest */}
-            {isHovering && !isStreamActive && (
+            {/* Only render interactive elements when stream is not active */}
+            {!isStreamActive && isHovering && (
                 <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">  
                     {showCopyButton && (
                         <InlineCopyButton 
@@ -320,7 +324,6 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                             isMarkdown={true}
                         />
                     )}
-                    {/* Only show Edit button if onEditRequest is provided */}
                     {onEditRequest && (
                         <button 
                             onClick={handleEdit} 

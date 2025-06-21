@@ -64,6 +64,7 @@ export function createRecipeOverrides(settingsList: Record<string, any>[]): Reci
                 audio_format: settings.audioFormat,
                 modalities: settings.modalities,
                 tools: settings.tools,
+                tools_override: settings.tools?.selectedToolIds || [],
                 system_message_override: settings.systemMessageOverride,
             }).filter(([_, value]) => value !== "default")
         ),

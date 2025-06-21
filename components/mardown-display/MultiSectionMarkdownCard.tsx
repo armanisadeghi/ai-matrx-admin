@@ -280,13 +280,13 @@ const MultiSectionMarkdownCard = ({
       }
     };
 
-    sections.forEach((section, index) => {
-      if (section.tables.length > 0) {
+    sections?.forEach((section, index) => {
+      if (section?.tables?.length > 0) {
         // Flush any pending grid sections
         flushGridSections();
 
         // If section has items, render it full-width
-        if (section.items.length > 0) {
+        if (section?.items?.length > 0) {
           result.push({
             type: "fullWidth",
             section,
@@ -294,7 +294,7 @@ const MultiSectionMarkdownCard = ({
         }
 
         // Then add each table as a separate block
-        section.tables.forEach((table, tableIndex) => {
+        section?.tables?.forEach((table, tableIndex) => {
           result.push({
             type: "table",
             table,
@@ -339,7 +339,7 @@ const MultiSectionMarkdownCard = ({
               key={`grid-${index}`}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
             >
-              {item.sections?.map((section, sectionIndex) =>
+              {item?.sections?.map((section, sectionIndex) =>
                 renderSectionContent(section, sectionIndex)
               )}
             </div>

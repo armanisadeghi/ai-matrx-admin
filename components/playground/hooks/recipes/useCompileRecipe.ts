@@ -22,7 +22,6 @@ const extractNestedValues = (settings: any) => {
         endpoint: settings?.ai_endpoint_reference?.name,
         agentId: settings?.ai_agent_inverse?.id,
         systemMessageOverride: settings?.ai_agent_inverse?.system_message_override,
-
         // Remove the original nested objects since we've extracted what we need
         ai_model_reference: undefined,
         ai_provider_reference: undefined,

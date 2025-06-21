@@ -418,7 +418,7 @@ const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefi
                 />
             )}
 
-            <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 p-4 rounded-md text-sm text-gray-800 dark:text-gray-200 overflow-auto max-h-[60vh]">
+            <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 p-4 rounded-md text-sm text-gray-800 dark:text-gray-200 overflow-auto h-full">
                 {displayJsonStr}
             </pre>
 
