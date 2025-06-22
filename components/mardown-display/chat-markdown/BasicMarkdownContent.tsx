@@ -72,9 +72,32 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const directionClasses = getDirectionClasses(textDirection);
     
     const preprocessContent = (rawContent: string): string => {
+        let processed = rawContent;
+        
         // Fix setext-style heading patterns by ensuring there's a blank line before ---
         // This prevents paragraph text from being interpreted as h2 headings
-        return rawContent.replace(/([^\n])\n---/g, '$1\n\n---');
+        processed = processed.replace(/([^\n])\n---/g, '$1\n\n---');
+        
+        // Ensure proper line breaks after bold text that should start a new line
+        // This handles cases like "**Meta Title:**\n[content]" to ensure proper paragraph separation
+        processed = processed.replace(/(\*\*[^*]+\*\*)\n([^\n*])/g, '$1\n\n$2');
+        
+        // Ensure proper line breaks before and after italic text that spans multiple lines
+        // This handles cases where italic text should be on its own line
+        processed = processed.replace(/([^\n])\n(\*[^*]+\*)\n([^\n])/g, '$1\n\n$2\n\n$3');
+        
+        // Handle cases where there are single line breaks between different formatting elements
+        // that should be treated as separate paragraphs
+        processed = processed.replace(/(\*\*[^*]+\*\*|\*[^*]+\*)\n([^\n*\s])/g, '$1\n\n$2');
+        
+        // Ensure proper separation between list items and following paragraph content
+        // This handles cases where content follows a list without proper spacing
+        processed = processed.replace(/(^|\n)(- .+)\n([^\n\-#*\s])/gm, '$1$2\n\n$3');
+        
+        // Clean up any excessive line breaks (more than 2 consecutive newlines)
+        processed = processed.replace(/\n{3,}/g, '\n\n');
+        
+        return processed;
     };
     
     const processedContent = preprocessContent(content);
@@ -121,7 +144,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(parentTagName);
             
             return (
-                <em className={isInHeading ? "italic" : "italic text-purple-600"} {...props}>
+                <em className={isInHeading ? "italic" : "italic text-blue-600 dark:text-blue-400"} {...props}>
                     {children}
                 </em>
             );

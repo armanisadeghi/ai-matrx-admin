@@ -144,6 +144,27 @@ export const allTools: Tool[] = [
         icon: <LucideIcons.EditIcon size={20} />,
     },
     {
+        id: "seo_check_meta_titles",
+        name: "Check Meta Titles",
+        description: "Analyze meta titles for pixel width, character count, and SEO compliance. Checks against Google's display limits for desktop (580px), mobile (920px), and SEO character limit (60 chars).",
+        category: "Seo",
+        icon: <LucideIcons.Braces size={20} />,
+    },
+    {
+        id: "seo_check_meta_descriptions",
+        name: "Check Meta Descriptions",
+        description: "Analyze meta descriptions for pixel width, character count, and SEO compliance. Checks against Google's display limits for desktop (920px) and SEO character limit (160 chars).",
+        category: "Seo",
+        icon: <LucideIcons.Braces size={20} />,
+    },
+    {
+        id: "seo_check_meta_tags_batch",
+        name: "Check Meta Tags Batch",
+        description: "Analyze arrays of meta title and description pairs for comprehensive SEO compliance. Returns simplified analysis with boolean flags for easy validation.",
+        category: "Seo",
+        icon: <LucideIcons.Braces size={20} />,
+    },
+    {
         id: "text_analyze",
         name: "Analyze",
         description: "Analyzes text and returns word count, sentence count, and character count.",
