@@ -5,6 +5,7 @@ import SimpleTextDisplay from './registered-components/SimpleTextDisplay';
 import SimpleObjectDisplay from './registered-components/SimpleObjectDisplay';
 import SmartDisplay from './registered-components/SmartDisplay';
 import ViewTablePage from '@/features/workflows/results/registered-components/ViewTablePage';
+import SitemapViewer from './registered-components/SitemapViewer';
 
 // Registry interface
 export interface ComponentRegistryEntry {
@@ -56,6 +57,12 @@ export const DYNAMIC_COMPONENT_REGISTRY: Record<string, ComponentRegistryEntry> 
         displayName: 'View Table Page',
         description: 'Displays a table',
         expectedProps: ['tableId']
+    },
+    'SitemapViewer': {
+        component: SitemapViewer,
+        displayName: 'Sitemap Viewer',
+        description: 'Displays a sitemap viewer',
+        expectedProps: ['data']
     },
     
    
