@@ -44,7 +44,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ Icon, title, description, fea
 const Footer: React.FC = () => (
     <footer className="py-6 border-t border-border mt-12">
         <div className="container mx-auto px-4 flex justify-center">
-            <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/privacy-policy" className="text-lg text-muted-foreground hover:text-foreground transition-colors">
                 Privacy Policy
             </Link>
         </div>

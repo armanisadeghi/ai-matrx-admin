@@ -64,7 +64,7 @@ export default function GoogleAccessPage() {
                         <div>
                             {!isInitializing && (
                                 <button
-                                    onClick={isAuthenticated ? signOut : signIn}
+                                    onClick={() => (isAuthenticated ? signOut() : signIn([]))}
                                     disabled={!isGoogleLoaded}
                                     className={`px-4 py-2 rounded-lg text-white font-medium ${
                                         !isGoogleLoaded

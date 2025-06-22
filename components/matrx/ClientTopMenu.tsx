@@ -9,7 +9,7 @@ interface ClientTopMenuProps {
   initialTheme: 'light' | 'dark';
 }
 
-const ClientTopMenu: React.FC<ClientTopMenuProps> = ({ initialTheme }) => {
+const ClientTopMenu: React.FC<ClientTopMenuProps> = ({ initialTheme='light' }) => {
   const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
 
   // Optionally, sync theme changes if needed

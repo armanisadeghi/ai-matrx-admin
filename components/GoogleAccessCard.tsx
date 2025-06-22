@@ -95,7 +95,7 @@ export default function GoogleAccessCard({ service }: GoogleAccessCardProps) {
     try {
       if (!isAuthenticated) {
         // First sign in the user if not already signed in
-        await signIn();
+        await signIn([scope]);
         
         // Wait briefly for auth state to update
         setTimeout(async () => {
