@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,21 +8,40 @@ import { PlayCircle, Database, Clock, AlertCircle } from "lucide-react";
 import { DbFunctionNode, TabComponentProps } from "@/features/workflows/types";
 import { useDataOutputComponentWithFetch } from "@/features/workflows/hooks/useDataOutputComponent";
 import DynamicResultsRenderer from "@/features/workflows/results/DynamicResultsRenderer";
+import { detectResponseType } from "./utils/data-structure-detection";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { brokerSelectors } from "@/lib/redux/brokerSlice";
 
 const ResultsTab: React.FC<TabComponentProps> = ({ nodeData, enrichedBrokers }) => {
     // TODO: Connect to Redux state for execution results
     // const executionResults = useAppSelector(selectNodeExecutionResults(node.id));
     // const workflowResults = useAppSelector(selectWorkflowExecutionResults(node.workflow_id));
-
     const { dataOutputComponentRecords } = useDataOutputComponentWithFetch();
 
     const firstReturnBroker = nodeData.return_broker_overrides[0];
+
+    const lastReturnBroker = nodeData.return_broker_overrides[nodeData.return_broker_overrides.length - 1];
+
     const returnBrokerData = enrichedBrokers?.find((broker) => broker.id === firstReturnBroker)?.knownBrokerData;
+
+    
     const dataOutputComponentId = returnBrokerData?.outputComponent;
     const dataOutputComponentData = dataOutputComponentRecords[`id:${dataOutputComponentId}`];
-    const componentName = dataOutputComponentData?.uiComponent;
     const importPath = dataOutputComponentData?.additionalParams?.importPath as string;
+    const rawData = useAppSelector((state) => brokerSelectors.selectValue(state, firstReturnBroker));
+
+    let componentName = dataOutputComponentData?.uiComponent;
     console.log("[ResultsTab] componentName", componentName);
+
+    const lastReturnBrokerData = useAppSelector((state) => brokerSelectors.selectValue(state, lastReturnBroker));
+
+    const autoType = useMemo(() => detectResponseType(lastReturnBrokerData), [lastReturnBrokerData]); 
+    console.log("[ResultsTab] lastReturnBrokerData", lastReturnBrokerData);
+    console.log("[ResultsTab] autoType", autoType);
+
+    if (autoType !== "Unknown") {
+        componentName = autoType;
+    }
 
     const handleRunNode = () => {
         // TODO: Dispatch action to run individual node

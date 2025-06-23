@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo } from "react";
 import { Calendar } from "lucide-react";
-import { PageTemplate, Card } from "@/features/scraper/parts/reusable/PageTemplate";
+import { PageTemplate, Card } from "@/components/official/PageTemplate";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { DbFunctionNode } from "@/features/workflows/types";

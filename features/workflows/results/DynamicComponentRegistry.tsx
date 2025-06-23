@@ -6,6 +6,7 @@ import SimpleObjectDisplay from './registered-components/SimpleObjectDisplay';
 import SmartDisplay from './registered-components/SmartDisplay';
 import ViewTablePage from '@/features/workflows/results/registered-components/ViewTablePage';
 import SitemapViewer from './registered-components/SitemapViewer';
+import EventsViewer from './registered-components/EventsViewer';
 
 // Registry interface
 export interface ComponentRegistryEntry {
@@ -62,6 +63,12 @@ export const DYNAMIC_COMPONENT_REGISTRY: Record<string, ComponentRegistryEntry> 
         component: SitemapViewer,
         displayName: 'Sitemap Viewer',
         description: 'Displays a sitemap viewer',
+        expectedProps: ['data']
+    },
+    'EventsViewer': {
+        component: EventsViewer,
+        displayName: 'Events Viewer',
+        description: 'Displays a events viewer',
         expectedProps: ['data']
     },
     

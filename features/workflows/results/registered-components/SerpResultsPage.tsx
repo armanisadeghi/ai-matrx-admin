@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo, useEffect, useState } from "react";
 import { Search, Globe, Image, MessageCircleQuestion, Brain, ExternalLink, Clock, Users, BarChart3, FileText, Eye, ChevronRight } from "lucide-react";
-import { PageTemplate, Card, Grid, StatusIndicator } from "@/features/scraper/parts/reusable/PageTemplate";
+import { PageTemplate, Card, Grid, StatusIndicator } from "@/components/official/PageTemplate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

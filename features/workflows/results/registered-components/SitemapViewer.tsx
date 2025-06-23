@@ -1,11 +1,12 @@
+// File: features/workflows/results/registered-components/SitemapViewer.tsx
 "use client";
+
 import React, { useMemo } from "react";
-import { Globe, Link, FileText, FolderTree, TestTube, ExternalLink } from "lucide-react";
-import { PageTemplate, Card, Grid } from "@/features/scraper/parts/reusable/PageTemplate";
+import { Link, FileText, FolderTree, TestTube, ExternalLink } from "lucide-react";
+import { Card, Grid } from "@/components/official/PageTemplate";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { DbFunctionNode } from "../../types";
+import { DbFunctionNode } from "@/features/workflows/types";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useRouter } from "next/navigation";
@@ -20,16 +21,16 @@ interface SitemapData {
     execution_time_ms: number;
 }
 
-interface SitemapViewerProps {
+interface ViewerProps {
     nodeData: DbFunctionNode;
     brokerId?: string;
     keyToDisplay?: string;
 }
 
-const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyToDisplay }) => {
+const SitemapViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay }) => {
     const router = useRouter();
     const [activeTab, setActiveTab] = React.useState("sitemaps");
-    
+
     if (!brokerId) {
         brokerId = nodeData?.return_broker_overrides[0];
     }
@@ -37,11 +38,11 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
     const rawData = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
 
     const handleTestPageNavigation = () => {
-        router.push('/tests/registered-results/sitemap-viewer');
+        router.push("/registered-results/sitemap-viewer");
     };
 
     const handleTestPageNewTab = () => {
-        window.open('/tests/registered-results/sitemap-viewer', '_blank');
+        window.open("/registered-results/sitemap-viewer", "_blank");
     };
 
     const data: SitemapData = useMemo(() => {
@@ -113,7 +114,7 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
     // Sitemaps overview tab
     const SitemapsContent = () => (
         <Grid cols={1} gap="medium">
-            <Card title="Sitemap Files">
+            <div>
                 <div className="space-y-3">
                     {data?.sitemap_links?.map((sitemapUrl, index) => {
                         const filename = sitemapUrl.split("/").pop() || sitemapUrl;
@@ -138,10 +139,10 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                         );
                     })}
                 </div>
-            </Card>
+            </div>
 
             {subdomainCount > 1 && (
-                <Card title="Subdomains">
+                <div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {Object.entries(data?.links || {}).map(([subdomain, urls]) => (
                             <div
@@ -155,7 +156,7 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
             )}
         </Grid>
     );
@@ -164,8 +165,8 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
     const PagesContent = () => (
         <Grid cols={1} gap="medium">
             {Object.entries(data?.links || {}).map(([subdomain, urls]) => (
-                <Card key={subdomain} title={`${subdomain === "@" ? "Main Domain" : subdomain} (${urls.length.toLocaleString()} pages)`}>
-                    <div className="max-h-96 overflow-y-auto space-y-2">
+                <div key={subdomain} className="h-full">
+                    <div className="h-full">
                         {urls.map((url, index) => {
                             const displayUrl = url.replace(/^https?:\/\//, "");
                             return (
@@ -189,14 +190,14 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                             );
                         })}
                     </div>
-                </Card>
+                </div>
             ))}
         </Grid>
     );
 
     // Routes structure tab
     const RoutesContent = () => (
-        <Card title="Site Structure">
+        <div>
             <Accordion type="multiple" className="w-full">
                 {Object.entries(routeStructure)
                     .sort(([a], [b]) => {
@@ -247,7 +248,7 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                         </AccordionItem>
                     ))}
             </Accordion>
-        </Card>
+        </div>
     );
 
     // Define tabs
@@ -299,7 +300,7 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                                 </h1>
                                 <p className="text-white/90 text-base font-medium mb-2">{domain}</p>
                             </div>
-                            
+
                             <div className="flex items-center space-x-3 flex-wrap gap-y-3">
                                 {/* Stats */}
                                 {statsItems.map((stat, index) => (
@@ -308,27 +309,27 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                                         <div className="text-white text-2xl font-bold">{stat.value}</div>
                                     </div>
                                 ))}
-                                
-                                {/* Test Page Button with Dropdown */}
+
+                                {/* Full Screen Button with Dropdown */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button 
-                                            className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white shadow-lg ml-3"
-                                            size="default"
-                                        >
-                                            <TestTube className="h-4 w-4 mr-2" />
-                                            Test Page
-                                        </Button>
+                                        <div className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-3 text-center cursor-pointer hover:bg-white/20 transition-all duration-200 shadow-lg">
+                                            <div className="text-white/80 text-sm font-medium mb-1">Actions</div>
+                                            <div className="text-white text-lg font-bold flex items-center justify-center">
+                                                <ExternalLink className="h-4 w-4 mr-2" />
+                                                Full Screen
+                                            </div>
+                                        </div>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                             onClick={handleTestPageNavigation}
                                             className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                             <TestTube className="h-4 w-4 mr-2" />
-                                            Open Test Page
+                                            Open Full Screen
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                             onClick={handleTestPageNewTab}
                                             className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
@@ -341,7 +342,7 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Tabs */}
                 <div className="mb-3 flex space-x-1 overflow-x-auto pb-2">
                     {tabs.map((tab) => (
@@ -359,7 +360,7 @@ const SitemapViewer: React.FC<SitemapViewerProps> = ({ nodeData, brokerId, keyTo
                         </button>
                     ))}
                 </div>
-                
+
                 {/* Main content */}
                 {tabs.map((tab) => (
                     <div key={tab.id} className={activeTab === tab.id ? "block" : "hidden"}>

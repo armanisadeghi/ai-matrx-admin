@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { AlertTriangle, Search, ClipboardList, AlertCircle, ListChecks, Table, FileText } from "lucide-react";
 import { parseFactCheck } from "./fact-check-parsing-util";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
-import { PageTemplate, Card } from "../reusable/PageTemplate";
+import { PageTemplate, Card } from "../../../../components/official/PageTemplate";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

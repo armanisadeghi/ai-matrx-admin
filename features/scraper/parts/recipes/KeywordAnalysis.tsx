@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { Columns2 } from "lucide-react";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
-import { PageTemplate, Card, FileTextIcon } from "../reusable/PageTemplate";
+import { PageTemplate, Card, FileTextIcon } from "../../../../components/official/PageTemplate";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import { useRunQuickRecipe } from "./useRenQuickRecipe";

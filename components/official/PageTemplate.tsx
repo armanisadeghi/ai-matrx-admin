@@ -1,3 +1,7 @@
+// File: components/official/PageTemplate.tsx
+
+"use client";
+
 import React, { ReactNode, useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ExternalLinkIcon, LucideIcon } from "lucide-react";
