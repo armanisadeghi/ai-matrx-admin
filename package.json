@@ -101,6 +101,7 @@
         "@types/uuid": "latest",
         "@types/vscode-webview": "^1.57.5",
         "@uidotdev/usehooks": "github:uidotdev/usehooks",
+        "@xyflow/react": "^12.7.1",
         "ag-grid-community": "^33.3.0",
         "ag-grid-react": "^33.3.0",
         "ai": "latest",

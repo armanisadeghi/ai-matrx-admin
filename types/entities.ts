@@ -1273,6 +1273,33 @@ export type Workflow = {
     viewport?: Record<string, unknown>;
 }
 
+export type WorkflowData = {
+    id: string;
+    name: string;
+    description?: string;
+    workflowType?: string;
+    inputs?: Record<string, unknown>;
+    outputs?: Record<string, unknown>;
+    dependencies?: Record<string, unknown>;
+    sources?: Record<string, unknown>;
+    destinations?: Record<string, unknown>;
+    actions?: Record<string, unknown>;
+    category?: string;
+    tags?: Record<string, unknown>;
+    isActive?: boolean;
+    isDeleted?: boolean;
+    autoExecute?: boolean;
+    metadata?: Record<string, unknown>;
+    viewport?: Record<string, unknown>;
+    userId?: string;
+    version?: number;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export type WorkflowEdge = {
     id: string;
     createdAt: Date;
@@ -1308,6 +1335,28 @@ export type WorkflowNode = {
     publicRead?: boolean;
     metadata?: Record<string, unknown>;
     uiNodeData?: Record<string, unknown>;
+}
+
+export type WorkflowNodeData = {
+    id: string;
+    workflowId?: string;
+    functionId?: string;
+    type?: string;
+    stepName?: string;
+    nodeType?: string;
+    executionRequired?: boolean;
+    additionalDependencies?: Record<string, unknown>;
+    inputs?: Record<string, unknown>;
+    outputs?: Record<string, unknown>;
+    dependencies?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+    uiData?: Record<string, unknown>;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    createdAt: Date;
+    updatedAt?: Date;
+    userId?: string;
 }
 
 export type WorkflowRelay = {

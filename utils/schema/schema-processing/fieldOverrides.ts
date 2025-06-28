@@ -65,7 +65,7 @@ const aiSettingsFieldOverrides: AllFieldOverrides = {
             onBlur: "default",
             formatString: "default",
             min: 0,
-            max: 8000,
+            max: 16000,
             step: 1,
             numberType: "smallint",
             options: "default",
@@ -457,9 +457,13 @@ const wcReportFieldOverrides: AllFieldOverrides = {};
 
 const workflowFieldOverrides: AllFieldOverrides = {};
 
+const workflowDataFieldOverrides: AllFieldOverrides = {};
+
 const workflowEdgeFieldOverrides: AllFieldOverrides = {};
 
 const workflowNodeFieldOverrides: AllFieldOverrides = {};
+
+const workflowNodeDataFieldOverrides: AllFieldOverrides = {};
 
 const workflowRelayFieldOverrides: AllFieldOverrides = {};
 
@@ -571,8 +575,10 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     wcInjury: wcInjuryFieldOverrides,
     wcReport: wcReportFieldOverrides,
     workflow: workflowFieldOverrides,
+    workflowData: workflowDataFieldOverrides,
     workflowEdge: workflowEdgeFieldOverrides,
     workflowNode: workflowNodeFieldOverrides,
+    workflowNodeData: workflowNodeDataFieldOverrides,
     workflowRelay: workflowRelayFieldOverrides,
     workflowUserInput: workflowUserInputFieldOverrides,
 };

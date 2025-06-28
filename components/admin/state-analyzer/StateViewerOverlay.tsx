@@ -31,6 +31,15 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({ isOpen, onClose
     // Create tabs based on the exact slices from your root reducer
     const tabs: TabDefinition[] = [
         {
+            id: "workflow",
+            label: "Workflow",
+            content: <GenericSliceViewer sliceKey="workflow" state={completeState.workflow} />,
+        },
+        {
+            id: "workflowNodes",
+            label: "Workflow Nodes",
+            content: <GenericSliceViewer sliceKey="workflowNodes" state={completeState.workflowNodes} />,
+        },        {
             id: "customAppletRuntime",
             label: "Custom Applet Runtime",
             content: <AppletRuntimeViewer sliceKey="customAppletRuntime" state={completeState.customAppletRuntime} />,

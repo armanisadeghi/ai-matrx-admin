@@ -33,9 +33,10 @@ const EntityTagsManager = forwardRef<HTMLInputElement, TagsManagerProps>(
             setIsEditMode(!disabled);
         }, [disabled]);
 
+        // Only call onChange when tags actually change, not when onChange reference changes
         useEffect(() => {
             onChange({ tags });
-        }, [tags, onChange]);
+        }, [tags]); // Removed onChange from dependencies to prevent infinite loops
 
         const handleAddTag = () => {
             if (inputValue.trim() && !disabled) {

@@ -1,21 +1,3 @@
-import { WorkflowNode } from "./workflowNodeTypes";
-
-export interface WorkflowRelay {
-    source: string;
-    targets: string[];
-}
-export interface UserInput {
-    broker_id: string;
-    value: any;
-}
-
-export interface WorkflowDefinition {
-    nodes: WorkflowNode[];
-    relays?: WorkflowRelay[];
-    user_inputs?: UserInput[];
-}
-
-
 export const WorkflowStatus = {
     PENDING: "pending",
     INITIALIZED: "initialized",
@@ -25,4 +7,36 @@ export const WorkflowStatus = {
     EXECUTION_FAILED: "execution_failed",
 } as const;
 
-export type WorkflowStatusType = (typeof WorkflowStatus)[keyof typeof WorkflowStatus];
+export interface WorkflowData {
+    id: string;
+    name: string;
+    description: string | null;
+    workflow_type: string | null;
+    inputs: Record<string, any> | null;
+    outputs: Record<string, any> | null;
+    dependencies: Record<string, any> | null;
+    sources: Record<string, any> | null;
+    destinations: Record<string, any> | null;
+    actions: Record<string, any> | null;
+    category: string | null;
+    tags: Record<string, any> | null;
+    is_active: boolean | null;
+    is_deleted: boolean | null;
+    auto_execute: boolean | null;
+    metadata: Record<string, any> | null;
+    viewport: Record<string, any> | null;
+    user_id: string | null;
+    version: number | null;
+    is_public: boolean | null;
+    authenticated_read: boolean | null;
+    public_read: boolean | null;
+    created_at: string | null;
+    updated_at: string | null;
+  }
+  
+  export interface WorkflowState {
+    workflows: WorkflowData[];
+    currentWorkflow: WorkflowData | null;
+    loading: boolean;
+    error: string | null;
+  }

@@ -105,8 +105,10 @@ import {
     WcInjuryData,
     WcReportData,
     WorkflowData,
+    WorkflowDataData,
     WorkflowEdgeData,
     WorkflowNodeData,
+    WorkflowNodeDataData,
     WorkflowRelayData,
     WorkflowUserInputData,
 } from "@/types";
@@ -114,7 +116,7 @@ import { MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
 import { EntitySelectors } from "../selectors";
 import { EntityActions } from "../slice";
 import { FetchMode } from "../actions";
-import { useEntityWithFetch } from "@/lib/redux/entity/hooks/useAllData";
+import { useEntityWithFetch } from "./useAllData";
 
 type UseActionWithFetchReturn = {
     actionSelectors: EntitySelectors<"action">;
@@ -2529,6 +2531,7 @@ type UseDataBrokerWithFetchReturn = {
     dataBrokerActions: EntityActions<"dataBroker">;
     dataBrokerRecords: Record<MatrxRecordId, DataBrokerData>;
     dataBrokerUnsavedRecords: Record<MatrxRecordId, Partial<DataBrokerData>>;
+    dataBrokerRecordsById: Record<string, DataBrokerData>;
     dataBrokerSelectedRecordIds: MatrxRecordId[];
     dataBrokerIsLoading: boolean;
     dataBrokerIsError: boolean;
@@ -2550,6 +2553,8 @@ type UseDataBrokerWithFetchReturn = {
     fetchDataBrokerAll: () => void;
     fetchDataBrokerPaginated: (page: number, pageSize: number) => void;
 };
+
+import { useMemo } from 'react';
 
 export const useDataBrokerWithFetch = (): UseDataBrokerWithFetchReturn => {
     const {
@@ -2580,10 +2585,21 @@ export const useDataBrokerWithFetch = (): UseDataBrokerWithFetchReturn => {
 
     } = useEntityWithFetch("dataBroker");
 
+    const dataBrokerRecordsById = useMemo(() => {
+        const recordsById: Record<string, any> = {};
+        Object.entries(dataBrokerRecords).forEach(([key, value]) => {
+            const cleanKey = key.startsWith('id:') ? key.slice(3) : key;
+            recordsById[cleanKey] = value;
+        });
+        
+        return recordsById;
+    }, [dataBrokerRecords]);
+
     return {
         dataBrokerSelectors,
         dataBrokerActions,
         dataBrokerRecords,
+        dataBrokerRecordsById,
         dataBrokerUnsavedRecords,
         dataBrokerSelectedRecordIds,
         dataBrokerIsLoading,
@@ -9146,6 +9162,92 @@ export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
 
 
 
+type UseWorkflowDataWithFetchReturn = {
+    workflowDataSelectors: EntitySelectors<"workflowData">;
+    workflowDataActions: EntityActions<"workflowData">;
+    workflowDataRecords: Record<MatrxRecordId, WorkflowDataData>;
+    workflowDataUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowDataData>>;
+    workflowDataSelectedRecordIds: MatrxRecordId[];
+    workflowDataIsLoading: boolean;
+    workflowDataIsError: boolean;
+    workflowDataQuickRefRecords: QuickReferenceRecord[];
+    addWorkflowDataMatrxId: (recordId: MatrxRecordId) => void;
+    addWorkflowDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeWorkflowDataMatrxId: (recordId: MatrxRecordId) => void;
+    removeWorkflowDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addWorkflowDataPkValue: (pkValue: string) => void;
+    addWorkflowDataPkValues: (pkValues: Record<string, unknown>) => void;
+    removeWorkflowDataPkValue: (pkValue: string) => void;
+    removeWorkflowDataPkValues: (pkValues: Record<string, unknown>) => void;
+    isWorkflowDataMissingRecords: boolean;
+    setWorkflowDataShouldFetch: (shouldFetch: boolean) => void;
+    setWorkflowDataFetchMode: (fetchMode: FetchMode) => void;
+    fetchWorkflowDataQuickRefs: () => void;
+    fetchWorkflowDataOne: (recordId: MatrxRecordId) => void;
+    fetchWorkflowDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchWorkflowDataAll: () => void;
+    fetchWorkflowDataPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useWorkflowDataWithFetch = (): UseWorkflowDataWithFetchReturn => {
+    const {
+        selectors: workflowDataSelectors,
+        actions: workflowDataActions,
+        allRecords: workflowDataRecords,
+        unsavedRecords: workflowDataUnsavedRecords,
+        selectedRecordIds: workflowDataSelectedRecordIds,
+        isLoading: workflowDataIsLoading,
+        isError: workflowDataIsError,
+        quickRefRecords: workflowDataQuickRefRecords,
+        addMatrxId: addWorkflowDataMatrxId,
+        addMatrxIds: addWorkflowDataMatrxIds,
+        removeMatrxId: removeWorkflowDataMatrxId,
+        removeMatrxIds: removeWorkflowDataMatrxIds,
+        addPkValue: addWorkflowDataPkValue,
+        addPkValues: addWorkflowDataPkValues,
+        removePkValue: removeWorkflowDataPkValue,
+        removePkValues: removeWorkflowDataPkValues,
+        isMissingRecords: isWorkflowDataMissingRecords,
+        setShouldFetch: setWorkflowDataShouldFetch,
+        setFetchMode: setWorkflowDataFetchMode,
+        fetchQuickRefs: fetchWorkflowDataQuickRefs,
+        fetchOne: fetchWorkflowDataOne,
+        fetchOneWithFkIfk: fetchWorkflowDataOneWithFkIfk,
+        fetchAll: fetchWorkflowDataAll,
+        fetchPaginated: fetchWorkflowDataPaginated,
+
+    } = useEntityWithFetch("workflowData");
+
+    return {
+        workflowDataSelectors,
+        workflowDataActions,
+        workflowDataRecords,
+        workflowDataUnsavedRecords,
+        workflowDataSelectedRecordIds,
+        workflowDataIsLoading,
+        workflowDataIsError,
+        workflowDataQuickRefRecords,
+        addWorkflowDataMatrxId,
+        addWorkflowDataMatrxIds,
+        removeWorkflowDataMatrxId,
+        removeWorkflowDataMatrxIds,
+        addWorkflowDataPkValue,
+        addWorkflowDataPkValues,
+        removeWorkflowDataPkValue,
+        removeWorkflowDataPkValues,
+        isWorkflowDataMissingRecords,
+        setWorkflowDataShouldFetch,
+        setWorkflowDataFetchMode,
+        fetchWorkflowDataQuickRefs,
+        fetchWorkflowDataOne,
+        fetchWorkflowDataOneWithFkIfk,
+        fetchWorkflowDataAll,
+        fetchWorkflowDataPaginated,
+    };
+};
+
+
+
 type UseWorkflowEdgeWithFetchReturn = {
     workflowEdgeSelectors: EntitySelectors<"workflowEdge">;
     workflowEdgeActions: EntityActions<"workflowEdge">;
@@ -9313,6 +9415,92 @@ export const useWorkflowNodeWithFetch = (): UseWorkflowNodeWithFetchReturn => {
         fetchWorkflowNodeOneWithFkIfk,
         fetchWorkflowNodeAll,
         fetchWorkflowNodePaginated,
+    };
+};
+
+
+
+type UseWorkflowNodeDataWithFetchReturn = {
+    workflowNodeDataSelectors: EntitySelectors<"workflowNodeData">;
+    workflowNodeDataActions: EntityActions<"workflowNodeData">;
+    workflowNodeDataRecords: Record<MatrxRecordId, WorkflowNodeDataData>;
+    workflowNodeDataUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowNodeDataData>>;
+    workflowNodeDataSelectedRecordIds: MatrxRecordId[];
+    workflowNodeDataIsLoading: boolean;
+    workflowNodeDataIsError: boolean;
+    workflowNodeDataQuickRefRecords: QuickReferenceRecord[];
+    addWorkflowNodeDataMatrxId: (recordId: MatrxRecordId) => void;
+    addWorkflowNodeDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeWorkflowNodeDataMatrxId: (recordId: MatrxRecordId) => void;
+    removeWorkflowNodeDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addWorkflowNodeDataPkValue: (pkValue: string) => void;
+    addWorkflowNodeDataPkValues: (pkValues: Record<string, unknown>) => void;
+    removeWorkflowNodeDataPkValue: (pkValue: string) => void;
+    removeWorkflowNodeDataPkValues: (pkValues: Record<string, unknown>) => void;
+    isWorkflowNodeDataMissingRecords: boolean;
+    setWorkflowNodeDataShouldFetch: (shouldFetch: boolean) => void;
+    setWorkflowNodeDataFetchMode: (fetchMode: FetchMode) => void;
+    fetchWorkflowNodeDataQuickRefs: () => void;
+    fetchWorkflowNodeDataOne: (recordId: MatrxRecordId) => void;
+    fetchWorkflowNodeDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchWorkflowNodeDataAll: () => void;
+    fetchWorkflowNodeDataPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useWorkflowNodeDataWithFetch = (): UseWorkflowNodeDataWithFetchReturn => {
+    const {
+        selectors: workflowNodeDataSelectors,
+        actions: workflowNodeDataActions,
+        allRecords: workflowNodeDataRecords,
+        unsavedRecords: workflowNodeDataUnsavedRecords,
+        selectedRecordIds: workflowNodeDataSelectedRecordIds,
+        isLoading: workflowNodeDataIsLoading,
+        isError: workflowNodeDataIsError,
+        quickRefRecords: workflowNodeDataQuickRefRecords,
+        addMatrxId: addWorkflowNodeDataMatrxId,
+        addMatrxIds: addWorkflowNodeDataMatrxIds,
+        removeMatrxId: removeWorkflowNodeDataMatrxId,
+        removeMatrxIds: removeWorkflowNodeDataMatrxIds,
+        addPkValue: addWorkflowNodeDataPkValue,
+        addPkValues: addWorkflowNodeDataPkValues,
+        removePkValue: removeWorkflowNodeDataPkValue,
+        removePkValues: removeWorkflowNodeDataPkValues,
+        isMissingRecords: isWorkflowNodeDataMissingRecords,
+        setShouldFetch: setWorkflowNodeDataShouldFetch,
+        setFetchMode: setWorkflowNodeDataFetchMode,
+        fetchQuickRefs: fetchWorkflowNodeDataQuickRefs,
+        fetchOne: fetchWorkflowNodeDataOne,
+        fetchOneWithFkIfk: fetchWorkflowNodeDataOneWithFkIfk,
+        fetchAll: fetchWorkflowNodeDataAll,
+        fetchPaginated: fetchWorkflowNodeDataPaginated,
+
+    } = useEntityWithFetch("workflowNodeData");
+
+    return {
+        workflowNodeDataSelectors,
+        workflowNodeDataActions,
+        workflowNodeDataRecords,
+        workflowNodeDataUnsavedRecords,
+        workflowNodeDataSelectedRecordIds,
+        workflowNodeDataIsLoading,
+        workflowNodeDataIsError,
+        workflowNodeDataQuickRefRecords,
+        addWorkflowNodeDataMatrxId,
+        addWorkflowNodeDataMatrxIds,
+        removeWorkflowNodeDataMatrxId,
+        removeWorkflowNodeDataMatrxIds,
+        addWorkflowNodeDataPkValue,
+        addWorkflowNodeDataPkValues,
+        removeWorkflowNodeDataPkValue,
+        removeWorkflowNodeDataPkValues,
+        isWorkflowNodeDataMissingRecords,
+        setWorkflowNodeDataShouldFetch,
+        setWorkflowNodeDataFetchMode,
+        fetchWorkflowNodeDataQuickRefs,
+        fetchWorkflowNodeDataOne,
+        fetchWorkflowNodeDataOneWithFkIfk,
+        fetchWorkflowNodeDataAll,
+        fetchWorkflowNodeDataPaginated,
     };
 };
 

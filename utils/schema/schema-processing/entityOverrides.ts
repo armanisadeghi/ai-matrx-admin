@@ -1789,6 +1789,23 @@ const workflowEntityOverrides: EntityOverrides<'workflow'> = {
 
 
 
+const workflowDataEntityOverrides: EntityOverrides<'workflowData'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const workflowEdgeEntityOverrides: EntityOverrides<'workflowEdge'> = {
     schemaType: null,
     entityName: null,
@@ -1807,6 +1824,23 @@ const workflowEdgeEntityOverrides: EntityOverrides<'workflowEdge'> = {
 
 
 const workflowNodeEntityOverrides: EntityOverrides<'workflowNode'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const workflowNodeDataEntityOverrides: EntityOverrides<'workflowNodeData'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1962,8 +1996,10 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     wcInjury: wcInjuryEntityOverrides,
     wcReport: wcReportEntityOverrides,
     workflow: workflowEntityOverrides,
+    workflowData: workflowDataEntityOverrides,
     workflowEdge: workflowEdgeEntityOverrides,
     workflowNode: workflowNodeEntityOverrides,
+    workflowNodeData: workflowNodeDataEntityOverrides,
     workflowRelay: workflowRelayEntityOverrides,
     workflowUserInput: workflowUserInputEntityOverrides,
 };

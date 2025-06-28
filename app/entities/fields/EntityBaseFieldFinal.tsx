@@ -47,6 +47,11 @@ const EntityBaseFieldFinal = ({
 
                 const onChange = useCallback(
                     (newValue: unknown) => {
+                        // Prevent infinite loops by checking if the value actually changed
+                        if (JSON.stringify(newValue) === JSON.stringify(currentValue)) {
+                            return;
+                        }
+                        
                         setCurrentValue(newValue);
                         if (recordId && (operationMode === 'create' || operationMode === 'update')) {
                             dispatch(
@@ -59,7 +64,7 @@ const EntityBaseFieldFinal = ({
                         }
                         onFieldChange?.(fieldName, newValue);
                     },
-                    [dispatch, actions, recordId, fieldName, operationMode, onFieldChange]
+                    [dispatch, actions, recordId, fieldName, operationMode, onFieldChange, currentValue]
                 );
 
                 return (

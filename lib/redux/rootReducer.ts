@@ -44,7 +44,8 @@ import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSli
 import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
-
+import workflowSlice from "./workflow/slice";
+import workflowNodeSlice from "./workflow-node/slice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -131,6 +132,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         overlays: overlaySlice,
 
         dbFunctionNode: dbFunctionNodeSlice,
+
+        workflow: workflowSlice,
+        workflowNodes: workflowNodeSlice,
 
     });
 };

@@ -420,11 +420,19 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  workflowData: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   workflowEdge: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
   workflowNode: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  workflowNodeData: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
