@@ -554,9 +554,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "workflowId", "functionId", "functionType", "stepName", "nodeType", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "status", "isPublic", "authenticatedRead", "publicRead", "metadata", "uiNodeData"]
 },
   workflowNodeData: {
-  nativeFields: ["id", "workflowId", "functionId", "type", "stepName", "nodeType", "executionRequired", "additionalDependencies", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId"],
+  nativeFields: ["id", "workflowId", "functionId", "type", "stepName", "nodeType", "executionRequired", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["workflowId", "functionId", "type", "stepName", "nodeType", "executionRequired", "additionalDependencies", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId"]
+  nativeFieldsNoPk: ["workflowId", "functionId", "type", "stepName", "nodeType", "executionRequired", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId"]
 },
   workflowRelay: {
   nativeFields: ["id", "createdAt", "updatedAt", "workflowId", "userId", "sourceBrokerId", "label", "targetBrokerIds", "metadata", "uiNodeData"],

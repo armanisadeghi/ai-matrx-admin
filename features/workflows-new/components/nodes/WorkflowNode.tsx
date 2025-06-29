@@ -18,7 +18,9 @@ import { NodeHandles } from "./NodeHandles";
 import { CompactNodeHandles } from "./CompactNodeHandles";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
+import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
 import { NodeEditorOne } from "./dynamic-node-editor/FlexibleNodeEditor";
+import { Switch } from "@/components/ui/switch";
 
 interface WorkflowNodeComponentProps extends Omit<NodeProps, "data"> {
     data: WorkflowNodeData & {
@@ -43,8 +45,10 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
     const updateNodeInternals = useUpdateNodeInternals();
     const nodeId = useNodeId();
     const { setNodes } = useReactFlow();
+    const dispatch = useAppDispatch();
 
     const nodeData = useAppSelector((state) => workflowNodeSelectors.nodeById(state, nodeId || ""));
+    const isNodeActive = useAppSelector((state) => workflowNodeSelectors.nodeActive(state, nodeId || ""));
     const [internalDisplayMode, setInternalDisplayMode] = useState<"detailed" | "compact">("detailed");
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
@@ -59,8 +63,26 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
         }
     }, [nodeData?.inputs?.length, nodeData?.outputs?.length, nodeId, updateNodeInternals]);
 
+    // Set default active state if not already set
+    useEffect(() => {
+        if (nodeId && nodeData && nodeData.metadata?.active === undefined) {
+            dispatch(workflowNodeActions.setNodeActive({ nodeId, active: true }));
+        }
+    }, [nodeId, nodeData, dispatch]);
+
     // Get node styles from utility
-    const nodeStyles = getNodeStyles(nodeData?.node_type);
+    const baseNodeStyles = getNodeStyles(nodeData?.node_type);
+    
+    // Override styles for inactive nodes
+    const nodeStyles = {
+        ...baseNodeStyles,
+        borderColor: isNodeActive 
+            ? baseNodeStyles.borderColor 
+            : "border-gray-500 dark:border-gray-400",
+        backgroundColor: isNodeActive 
+            ? baseNodeStyles.backgroundColor 
+            : "bg-gray-50 dark:bg-gray-950/20"
+    };
 
     // Enhanced handle connection validation
     const isValidConnection = useCallback((connection: any) => {
@@ -117,6 +139,13 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
         setIsEditorOpen(open);
     }, []);
 
+    // Handle active state toggle
+    const handleActiveToggle = useCallback((checked: boolean) => {
+        if (nodeId) {
+            dispatch(workflowNodeActions.setNodeActive({ nodeId, active: checked }));
+        }
+    }, [nodeId, dispatch]);
+
     // Handle double-click to open editor
     const handleDoubleClick = useCallback((event: React.MouseEvent) => {
         event.preventDefault();
@@ -151,6 +180,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
             ${nodeStyles.backgroundColor}
             ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
             ${dragging ? "shadow-2xl scale-110" : "shadow-lg hover:shadow-xl"}
+            ${!isNodeActive ? "opacity-60" : ""}
             transition-all duration-200
             bg-background dark:bg-background
             border-2
@@ -219,6 +249,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                   ${nodeStyles.backgroundColor}
                   ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
                   ${dragging ? "shadow-2xl scale-105" : "shadow-lg hover:shadow-xl"}
+                  ${!isNodeActive ? "opacity-70" : ""}
                   transition-all duration-200
                   bg-background dark:bg-background
                   border-2
@@ -242,7 +273,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                     <NodeHandles inputs={nodeData?.inputs} outputs={nodeData?.outputs} isValidConnection={isValidConnection} />
 
                     {/* Status indicators */}
-                    <div className="flex items-center justify-center mt-2 pt-1 border-t border-border">
+                    <div className="flex items-center justify-between mt-2 pt-1 border-t border-border">
                         <div className="flex items-center gap-2">
                             {/* Execution Required Icon - Always visible */}
                             {React.createElement(getExecutionRequiredIcon(), {
@@ -255,6 +286,16 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                                     nodeData?.status === "processing" || nodeData?.status === "executing" ? "animate-spin" : ""
                                 }`,
                             })}
+                        </div>
+
+                        {/* Active Toggle Switch */}
+                        <div className="flex items-center gap-0.5">
+                            <span className="text-[8px] text-muted-foreground leading-none">Active</span>
+                            <Switch
+                                checked={isNodeActive}
+                                onCheckedChange={handleActiveToggle}
+                                className="h-2.5 w-5 border data-[state=checked]:bg-green-500 dark:data-[state=checked]:bg-green-600 [&>*]:h-2 [&>*]:w-2 [&>*]:data-[state=checked]:translate-x-2.5"
+                            />
                         </div>
                     </div>
                 </CardContent>

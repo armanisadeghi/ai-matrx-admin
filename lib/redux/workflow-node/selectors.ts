@@ -170,7 +170,10 @@ const selectNodeRegisteredFunction = createSelector(
   (metadata) => metadata?.registered_function || null
 );
 
-
+const selectNodeActive = createSelector(
+  [selectNodeMetadata],
+  (metadata) => metadata?.active === true
+);
 
 const selectNodeUiData = createSelector(
   [selectNodeById],
@@ -221,6 +224,7 @@ export const workflowNodeSelectors = {
   nodeDependencies: selectNodeDependencies,
   nodeMetadata: selectNodeMetadata,
   nodeRegisteredFunction: selectNodeRegisteredFunction,
+  nodeActive: selectNodeActive,
   nodeUiData: selectNodeUiData,
   nodeInputByArgName: selectNodeInputByArgName,
 

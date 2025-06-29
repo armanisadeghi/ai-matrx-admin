@@ -1,9 +1,77 @@
+const WORD_REPLACE_MAP = {
+    api: "API",
+    ui: "UI",
+    url: "URL",
+    qr: "QR",
+    http: "HTTP",
+    https: "HTTPS",
+    id: "ID",
+    json: "JSON",
+    xml: "XML",
+    sql: "SQL",
+    css: "CSS",
+    html: "HTML",
+    sdk: "SDK",
+    oauth: "OAuth",
+    uuid: "UUID",
+    db: "DB",
+    aws: "AWS",
+    gcp: "GCP",
+    ip: "IP",
+    aimatrix: "AIMatrix",
+    openai: "OpenAI",
+    deepseek: "DeepSeek",
+};
+
+
+const KEEP_LOWER_CASE = [
+    "or",
+    "and",
+    "not",
+    "if",
+    "else",
+    "in",
+    "on",
+    "to",
+    "for",
+    "is",
+    "as",
+    "try",
+    "from",
+    "with",
+    "by",
+    "at",
+    "from",
+    "as",
+];
 
 const toTitleCase = (str: string) => {
     return str
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, char => char.toUpperCase());
+        // Split camelCase and snake_case
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/_/g, " ")
+        // Split into words
+        .split(/\s+/)
+        // Process each word
+        .map(word => {
+            // Convert to lowercase for comparison
+            const lowerWord = word.toLowerCase();
+            
+            // Check if word should be replaced
+            if (WORD_REPLACE_MAP[lowerWord]) {
+                return WORD_REPLACE_MAP[lowerWord];
+            }
+            
+            // Check if word should stay lowercase
+            if (KEEP_LOWER_CASE.includes(lowerWord)) {
+                return lowerWord;
+            }
+            
+            // Capitalize first letter
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        })
+        // Join words back together
+        .join(" ");
 };
 
 export { toTitleCase };

@@ -1345,7 +1345,6 @@ export type WorkflowNodeData = {
     stepName?: string;
     nodeType?: string;
     executionRequired?: boolean;
-    additionalDependencies?: Record<string, unknown>;
     inputs?: Record<string, unknown>;
     outputs?: Record<string, unknown>;
     dependencies?: Record<string, unknown>;

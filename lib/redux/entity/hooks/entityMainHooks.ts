@@ -2530,8 +2530,8 @@ type UseDataBrokerWithFetchReturn = {
     dataBrokerSelectors: EntitySelectors<"dataBroker">;
     dataBrokerActions: EntityActions<"dataBroker">;
     dataBrokerRecords: Record<MatrxRecordId, DataBrokerData>;
-    dataBrokerUnsavedRecords: Record<MatrxRecordId, Partial<DataBrokerData>>;
     dataBrokerRecordsById: Record<string, DataBrokerData>;
+    dataBrokerUnsavedRecords: Record<MatrxRecordId, Partial<DataBrokerData>>;
     dataBrokerSelectedRecordIds: MatrxRecordId[];
     dataBrokerIsLoading: boolean;
     dataBrokerIsError: boolean;

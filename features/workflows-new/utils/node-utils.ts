@@ -6,14 +6,11 @@ import { InputMapping, Output } from "@/lib/redux/workflow/types";
 
 export const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers", "session_manager", "user_id", "stream_handler", "internal_config_object"];
 export const DEFAULT_HIDE_CONNECTIONS = ["recipe_id", "latest_version"];
-
 export const ALL_HIDDEN_CONNECTIONS = [...DEFAULT_HIDE_CONNECTIONS, ...DEFAULT_EXCLUDE_ARG_NAMES];
 
-
-// Helper function to filter broker data to only include essential fields
-const filterBrokerData = (broker: any) => {
+// Helper function to filter broker data
+const filterBrokerData = (broker: any): DataBrokerData | null => {
     if (!broker) return null;
-
     return {
         id: broker.id,
         name: broker.name,
@@ -27,12 +24,10 @@ const filterBrokerData = (broker: any) => {
     };
 };
 
-// Get registered functions from Redux store (primary source)
-export function getRegisteredFunctions() {
+// Get registered functions from Redux store
+export function getRegisteredFunctions(): any[] {
     const store = getStore();
-    if (!store) {
-        return [];
-    }
+    if (!store) return [];
 
     const state = store.getState();
     const functions = Object.values(state.entities?.registeredFunction?.records || {});
@@ -66,31 +61,9 @@ export function getRegisteredFunctions() {
     });
 }
 
-// Helper function to get the effective value for an argument
-export const getEffectiveArgValue = (arg: any, inputMapping?: InputMapping[]): { value: any; ready: boolean } => {
-    const override = inputMapping?.find((o) => o.arg_name === arg.name);
-    return {
-        value: override?.default_value ?? arg.default_value ?? "",
-        ready: override?.ready ?? arg.ready ?? false,
-    };
-};
-
-export function getNormalizedRegisteredFunctionNode(
-    function_id: string,
-    workflowId?: string,
-    userId?: string,
-    uiData?: any
-): Omit<WorkflowNodeData, "id" | "created_at" | "updated_at"> {
-    const function_data = getRegisteredFunctions().find((f) => f.id === function_id);
-    if (!function_data) {
-        throw new Error(`Function with id ${function_id} not found`);
-    }
-
-    const type = function_data.category.toLowerCase();
-
-    
-
-    const inputs: InputMapping[] = function_data.args
+// Generate inputs from registered function
+export function generateNodeInputs(functionData: any): InputMapping[] {
+    return functionData.args
         .filter((arg) => !DEFAULT_EXCLUDE_ARG_NAMES.includes(arg.name))
         .map((arg) => ({
             type: (arg.ready === false && arg.required === true) ? "arg_mapping" : "arg_override",
@@ -103,46 +76,83 @@ export function getNormalizedRegisteredFunctionNode(
                 use_system_default: !arg.required || arg.ready,
             },
         }));
+}
 
-    const outputs: Output[] = function_data.return_broker
+// Generate outputs from registered function
+export function generateNodeOutputs(functionData: any): Output[] {
+    return functionData.return_broker
         ? [
               {
-                  broker_id: function_data.return_broker?.id,
-                  name: function_data.return_broker?.name,
+                  broker_id: functionData.return_broker.id,
+                  name: functionData.return_broker.name,
                   bookmark: null,
                   conversion: null,
-                  data_type: function_data.return_broker?.dataType,
+                  data_type: functionData.return_broker.dataType,
                   is_default_output: true,
                   result: {
-                    component: function_data.return_broker?.outputComponent,
-                    bookmark: null,
-                    metadata: {},
+                      component: functionData.return_broker.outputComponent,
+                      bookmark: null,
+                      metadata: {},
                   },
                   metadata: {},
               },
           ]
         : [];
+}
 
-    const node: Omit<WorkflowNodeData, "id" | "created_at" | "updated_at"> = {
-        function_id: function_data.id,
+// Get effective argument value
+export const getEffectiveArgValue = (arg: any, inputMapping?: InputMapping[]): { value: any; ready: boolean } => {
+    const override = inputMapping?.find((o) => o.arg_name === arg.name);
+    return {
+        value: override?.default_value ?? arg.default_value ?? "",
+        ready: override?.ready ?? arg.ready ?? false,
+    };
+};
+
+// Main function to create normalized node
+export function getNormalizedRegisteredFunctionNode(
+    functionId: string,
+    workflowId?: string,
+    userId?: string,
+    uiData?: any
+): Omit<WorkflowNodeData, "id" | "created_at" | "updated_at"> {
+    const functionData = getRegisteredFunctions().find((f) => f.id === functionId);
+    if (!functionData) {
+        throw new Error(`Function with id ${functionId} not found`);
+    }
+
+    const type = functionData.category.toLowerCase();
+
+    return {
+        function_id: functionData.id,
         workflow_id: workflowId || null,
-        type: type,
+        type,
         node_type: type,
-        step_name: `New ${function_data.name}`,
+        step_name: `New ${functionData.name}`,
         execution_required: true,
-        inputs: inputs,
-        outputs: outputs,
+        inputs: generateNodeInputs(functionData),
+        outputs: generateNodeOutputs(functionData),
         user_id: userId || null,
         ui_data: uiData || {},
         dependencies: [],
         metadata: {
-            registered_function: function_data,
+            registered_function: functionData,
         },
         is_public: false,
         authenticated_read: true,
         public_read: false,
         status: "pending",
     };
+}
 
-    return node;
+// Utility to reset specific node parts
+export function resetNodePart(
+    node: WorkflowNodeData,
+    functionData: any,
+    part: 'inputs' | 'outputs'
+): WorkflowNodeData {
+    return {
+        ...node,
+        [part]: part === 'inputs' ? generateNodeInputs(functionData) : generateNodeOutputs(functionData),
+    };
 }

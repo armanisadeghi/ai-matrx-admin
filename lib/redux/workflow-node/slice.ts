@@ -317,6 +317,22 @@ const workflowNodeSlice = createSlice({
             }
         },
 
+        // Set node active status
+        setNodeActive: (state, action: PayloadAction<{ nodeId: string; active: boolean }>) => {
+            const { nodeId, active } = action.payload;
+            if (state.nodes[nodeId]) {
+                // Initialize metadata if it doesn't exist
+                if (!state.nodes[nodeId].metadata) {
+                    state.nodes[nodeId].metadata = {};
+                }
+                // Set or update the active status
+                state.nodes[nodeId].metadata!.active = active;
+                if (!state.dirtyNodes.includes(nodeId)) {
+                    state.dirtyNodes.push(nodeId);
+                }
+            }
+        },
+
         // Cache management
         markNodeStale: (state, action: PayloadAction<string>) => {
             delete state.lastFetched[action.payload];

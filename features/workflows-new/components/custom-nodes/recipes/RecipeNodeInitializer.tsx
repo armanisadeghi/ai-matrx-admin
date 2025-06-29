@@ -74,6 +74,7 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                     required: true,
                     data_type: broker.dataType,
                     use_system_default: false,
+                    allow_reset: false,
                     broker: dataBrokerRecordsById[broker.id],
                 },
             }));
@@ -96,7 +97,6 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
 
     const handleRecipeChange = (recipeId: string, useLatestVersion: boolean, version: number | null) => {
         if (recipeId) {
-            console.log("---- Setting recipe id", recipeId);
             dispatch(
                 workflowNodeActions.updateNodeInputByArgName({
                     nodeId,
@@ -154,8 +154,6 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                 });
             } else {
                 console.log("cleared node dependencies");
-                console.log("needed brokers", neededBrokers);
-                console.log("recipe id", recipeId);
             }
         } else {
             dispatch(

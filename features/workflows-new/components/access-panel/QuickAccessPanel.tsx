@@ -8,9 +8,6 @@ import { getIconComponent } from "@/components/common/IconResolver";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
 import { useNodes, XYPosition } from "@xyflow/react";
 import { CATEGORY_DEFINITIONS } from "@/features/workflows-new/utils/nodeStyles";
-
-import { findGoodNodePosition } from "@/features/workflows-new/utils/nodeTransforms";
-import { createNewNode } from "@/features/workflows-new/utils/nodeTransforms";
 import { create, saveStateToDb } from "@/lib/redux/workflow-node/thunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -32,7 +29,6 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onFinal
 
     const dispatch = useAppDispatch();
     const userId = useAppSelector(selectUserId);
-    const allNodes = useAppSelector(workflowNodeSelectors.allNodesArray);
 
     const [activeCategoryOverlay, setActiveCategoryOverlay] = useState<string | null>(null);
     const [showRecipeInitializer, setShowRecipeInitializer] = useState(false);
@@ -45,7 +41,6 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onFinal
 
     const handleAddNode = async (nodeType: string, functionId?: string) => {
         setIsAddingNode(true);
-
         try {
             const newNodeData = getNormalizedRegisteredFunctionNode(functionId, workflowId, userId, { x: 0, y: 0 });
 

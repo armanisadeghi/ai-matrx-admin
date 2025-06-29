@@ -13,6 +13,7 @@ import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
 
 export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const nodeData = useAppSelector((state) => workflowNodeSelectors.nodeById(state, nodeId));
+    const isNodeActive = useAppSelector((state) => workflowNodeSelectors.nodeActive(state, nodeId));
     const dispatch = useAppDispatch();
 
     if (!nodeData) {
@@ -64,6 +65,28 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                     />
                                     <span className="text-xs text-muted-foreground">
                                         {nodeData.execution_required ? "Current Setting: Required" : "Current Setting: Optional"}
+                                    </span>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                        <TableRow className="bg-background dark:bg-background">
+                            <TableCell className="font-medium text-xs w-48 border-r border-border dark:border-border">Active</TableCell>
+                            <TableCell>
+                                <div className="flex items-center space-x-2">
+                                    <Switch
+                                        checked={isNodeActive}
+                                        onCheckedChange={(checked) => {
+                                            dispatch(
+                                                workflowNodeActions.setNodeActive({
+                                                    nodeId,
+                                                    active: checked,
+                                                })
+                                            );
+                                        }}
+                                        className="data-[state=checked]:bg-green-500 dark:data-[state=checked]:bg-green-600"
+                                    />
+                                    <span className="text-xs text-muted-foreground">
+                                        {isNodeActive ? "Current Setting: Active" : "Current Setting: Inactive"}
                                     </span>
                                 </div>
                             </TableCell>
