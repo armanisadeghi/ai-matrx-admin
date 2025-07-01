@@ -1,11 +1,14 @@
 "use client";
 
-import { ReactFlowProvider } from '@xyflow/react';
+import { ReactFlowProvider } from "@xyflow/react";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
 import { useEffect } from "react";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
+import { useAppDispatch } from "@/lib/redux";
 
 export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
+    const dispatch = useAppDispatch();
     const { combinedFunctions, isLoading, isError, fetchAll } = useCombinedFunctionsWithArgs();
 
     const { fetchDataBrokerAll } = useDataBrokerWithFetch();
@@ -13,6 +16,7 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
     useEffect(() => {
         fetchAll();
         fetchDataBrokerAll();
+        dispatch(fetchFieldsThunk());
     }, []);
 
     // Show loading while data is being fetched

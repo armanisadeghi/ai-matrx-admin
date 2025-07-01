@@ -4,18 +4,8 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { InputMapping, Output } from '@/lib/redux/workflow/types';
 import { getHandleColor } from '../../utils/nodeStyles';
+import { toTitleCase } from '@/utils/dataUtils';
 
-// Utility function to convert snake_case or camelCase to Title Case
-const toTitleCase = (str: string): string => {
-  return str
-    // Handle snake_case: replace underscores with spaces
-    .replace(/_/g, ' ')
-    // Handle camelCase: insert space before uppercase letters
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    // Capitalize first letter of each word
-    .replace(/\b\w/g, letter => letter.toUpperCase())
-    .trim();
-};
 
 interface NodeHandlesProps {
   inputs?: InputMapping[];
@@ -28,8 +18,18 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({
   outputs = [],
   isValidConnection,
 }) => {
-  // Filter out inputs with type "arg_override"
-  const filteredInputs = inputs.filter(input => input.type !== "arg_override");
+  // Filter out inputs with type "arg_override" and null/undefined arg_name
+  const filteredInputs = inputs.filter(input => 
+    input.type !== "arg_override" && 
+    input.arg_name != null && 
+    input.arg_name !== ''
+  );
+
+  // Filter out outputs with null/undefined names
+  const filteredOutputs = outputs.filter(output => 
+    output.name != null && 
+    output.name !== ''
+  );
 
   return (
     <>
@@ -39,7 +39,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({
           <Handle
             type="target"
             position={Position.Left}
-            id={input.arg_name}
+            id={input.arg_name!} // Safe to use ! here since we filtered out null values
             className={`${getHandleColor('input')}`}
             style={{ 
               left: -10
@@ -55,7 +55,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({
       ))}
       
       {/* Output handles */}
-      {outputs.map((output, index) => (
+      {filteredOutputs.map((output, index) => (
         <div key={`output-${index}`} className="relative flex items-center justify-end mb-1">
           <div className="text-[8px] text-muted-foreground pl-2 text-right">
             <div className="font-small leading-tight">
@@ -65,7 +65,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({
           <Handle
             type="source"
             position={Position.Right}
-            id={output.name}
+            id={output.name!} // Safe to use ! here since we filtered out null values
             className={`${getHandleColor('output')}`}
             style={{ 
               right: -10

@@ -45,7 +45,12 @@ const KEEP_LOWER_CASE = [
     "as",
 ];
 
-const toTitleCase = (str: string) => {
+const toTitleCase = (str: string | null | undefined) => {
+    // Handle null, undefined, or empty string cases
+    if (!str || typeof str !== 'string') {
+        return '';
+    }
+
     return str
         // Split camelCase and snake_case
         .replace(/([a-z])([A-Z])/g, "$1 $2")

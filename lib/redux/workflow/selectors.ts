@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import { RootState } from '../store';
-import { WorkflowData } from './types';
+import { BrokerSourceConfig, WorkflowData } from './types';
 
 const selectWorkflowSlice = (state: RootState) => state.workflow;
 
@@ -242,6 +242,86 @@ const selectWorkflowDependencies = createSelector(
 const selectWorkflowSources = createSelector(
   [selectSelectedWorkflow],
   (workflow) => workflow?.sources || null
+) as (state: RootState) => BrokerSourceConfig[] | null;
+
+const selectWorkflowUserInputSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => {
+    if (!sources || !Array.isArray(sources)) return [];
+    return sources.filter(source => source.sourceType === "user_input") as BrokerSourceConfig<"user_input">[];
+  }
+);
+
+const selectWorkflowUserInputSourceByBrokerId = createSelector(
+  [selectWorkflowUserInputSources, (state: RootState, brokerId: string) => brokerId],
+  (userInputSources, brokerId) => {
+    if (!userInputSources || !Array.isArray(userInputSources)) return null;
+    return userInputSources.find(source => source.brokerId === brokerId) || null;
+  }
+);
+
+const selectWorkflowUserDataSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => {
+    if (!sources || !Array.isArray(sources)) return [];
+    return sources.filter(source => source.sourceType === "user_data") as BrokerSourceConfig<"user_data">[];
+  }
+);
+
+const selectWorkflowUserDataSourceByBrokerId = createSelector(
+  [selectWorkflowUserDataSources, (state: RootState, brokerId: string) => brokerId],
+  (userDataSources, brokerId) => {
+    if (!userDataSources || !Array.isArray(userDataSources)) return null;
+    return userDataSources.find(source => source.brokerId === brokerId) || null;
+  }
+);
+
+const selectWorkflowUserListSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => {
+    if (!sources || !Array.isArray(sources)) return [];
+    return sources.filter(source => source.sourceType === "user_list") as BrokerSourceConfig<"user_list">[];
+  }
+);
+
+const selectWorkflowSystemTableSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => {
+    if (!sources || !Array.isArray(sources)) return [];
+    return sources.filter(source => source.sourceType === "system_table") as BrokerSourceConfig<"system_table">[];
+  }
+);
+
+const selectWorkflowApiSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => {
+    if (!sources || !Array.isArray(sources)) return [];
+    return sources.filter(source => source.sourceType === "api") as BrokerSourceConfig<"api">[];
+  }
+);
+
+const selectWorkflowOtherSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => {
+    if (!sources || !Array.isArray(sources)) return [];
+    return sources.filter(source => source.sourceType === "other") as BrokerSourceConfig<"other">[];
+  }
+);
+
+const selectWorkflowSourceFieldIds = createSelector(
+  [selectWorkflowUserInputSources],
+  (userInputSources) => {
+    if (!userInputSources || !Array.isArray(userInputSources)) return [];
+    
+    return userInputSources
+      .map(source => source.sourceDetails?.mappedItemId)
+      .filter(id => id !== null && id !== undefined && id !== "");
+  }
+);
+// Sources by workflow ID selector
+const selectWorkflowSourcesById = createSelector(
+  [selectWorkflowById],
+  (workflow) => workflow?.sources || null
 );
 
 const selectWorkflowDestinations = createSelector(
@@ -375,6 +455,19 @@ export const workflowSelectors = {
   outputs: selectWorkflowOutputs,
   dependencies: selectWorkflowDependencies,
   sources: selectWorkflowSources,
+  sourcesById: selectWorkflowSourcesById,
+
+  userInputSources: selectWorkflowUserInputSources,
+  userInputSourceByBrokerId: selectWorkflowUserInputSourceByBrokerId,
+
+  userDataSources: selectWorkflowUserDataSources,
+  userDataSourceByBrokerId: selectWorkflowUserDataSourceByBrokerId,
+  userListSources: selectWorkflowUserListSources,
+  systemTableSources: selectWorkflowSystemTableSources,
+  apiSources: selectWorkflowApiSources,
+  otherSources: selectWorkflowOtherSources,
+  sourceFieldIds: selectWorkflowSourceFieldIds,
+
   destinations: selectWorkflowDestinations,
   actions: selectWorkflowActions,
   tags: selectWorkflowTags,

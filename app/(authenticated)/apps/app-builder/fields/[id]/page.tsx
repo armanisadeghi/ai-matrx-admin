@@ -207,11 +207,6 @@ export default function FieldDetailPage({ params }: { params: Promise<{ id: stri
                   Required
                 </Badge>
               )}
-              {field.disabled && (
-                <Badge variant="outline" className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
-                  Disabled
-                </Badge>
-              )}
               {field.isPublic ? (
                 <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">
                   Public
@@ -306,9 +301,6 @@ export default function FieldDetailPage({ params }: { params: Promise<{ id: stri
                     <dl className="grid grid-cols-[120px_1fr] gap-y-3">
                       <dt className="text-gray-500 dark:text-gray-400">Required:</dt>
                       <dd>{field.required ? 'Yes' : 'No'}</dd>
-                      
-                      <dt className="text-gray-500 dark:text-gray-400">Disabled:</dt>
-                      <dd>{field.disabled ? 'Yes' : 'No'}</dd>
                       
                       <dt className="text-gray-500 dark:text-gray-400">Placeholder:</dt>
                       <dd>{field.placeholder || 'None'}</dd>

@@ -4,7 +4,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, RefreshCcw } from "lucide-react";
 
 interface GenericTableHeaderProps {
     searchTerm: string;
@@ -23,6 +23,7 @@ interface GenericTableHeaderProps {
     additionalContent?: React.ReactNode;
     rightAlignedContent?: React.ReactNode;
     containerClassName?: string;
+    onRefresh?: () => void;
 }
 
 export default function GenericTableHeader({ 
@@ -41,7 +42,8 @@ export default function GenericTableHeader({
     buttonSize = "sm",
     additionalContent,
     rightAlignedContent,
-    containerClassName = ""
+    containerClassName = "",
+    onRefresh
 }: GenericTableHeaderProps) {
     const getInputSizeClass = () => {
         switch (inputSize) {
@@ -63,7 +65,16 @@ export default function GenericTableHeader({
                         onChange={onSearchChange} 
                     />
                 </div>
-                
+                {onRefresh && (
+                    <Button 
+                        onClick={onRefresh} 
+                        className={`bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800 h-8 text-xs py-0 ${buttonClassName}`}
+                        size={buttonSize}
+                    >
+                        <RefreshCcw className="h-3.5 w-3.5 mr-1.5" />
+                        Refresh
+                    </Button>
+                )}
                 {showCreateButton && onCreateItem && (
                     <Button 
                         onClick={onCreateItem} 

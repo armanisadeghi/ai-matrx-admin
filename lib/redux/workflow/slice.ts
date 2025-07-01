@@ -42,7 +42,7 @@ const workflowSlice = createSlice({
             }
         },
         markWorkflowClean: (state, action: PayloadAction<string>) => {
-            state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== action.payload);
+            state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== action.payload);
         },
         markAllWorkflowsClean: (state) => {
             state.dirtyWorkflows = [];
@@ -127,6 +127,43 @@ const workflowSlice = createSlice({
                 }
             }
         },
+        addSource: (state, action: PayloadAction<BrokerSourceConfig>) => {
+            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
+                state.workflows[state.selectedWorkflowId].sources = [
+                    ...(state.workflows[state.selectedWorkflowId].sources || []),
+                    action.payload,
+                ];
+                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
+                    state.dirtyWorkflows.push(state.selectedWorkflowId);
+                }
+            }
+        },
+        removeSource: (state, action: PayloadAction<{ sourceType: string; brokerId: string }>) => {
+            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
+                state.workflows[state.selectedWorkflowId].sources = state.workflows[state.selectedWorkflowId].sources?.filter(
+                    (source) => `${source.sourceType}:${source.brokerId}` !== `${action.payload.sourceType}:${action.payload.brokerId}`
+                );
+                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
+                    state.dirtyWorkflows.push(state.selectedWorkflowId);
+                }
+            }
+        },
+        updateSource: (state, action: PayloadAction<{ sourceType: string; brokerId: string; source: BrokerSourceConfig }>) => {
+            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
+                const workflow = state.workflows[state.selectedWorkflowId];
+                if (workflow.sources) {
+                    const index = workflow.sources.findIndex(
+                        (source) => `${source.sourceType}:${source.brokerId}` === `${action.payload.sourceType}:${action.payload.brokerId}`
+                    );
+                    if (index !== -1) {
+                        workflow.sources[index] = action.payload.source;
+                    }
+                }
+                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
+                    state.dirtyWorkflows.push(state.selectedWorkflowId);
+                }
+            }
+        },
         updateDestinations: (state, action: PayloadAction<BrokerDestination[] | null>) => {
             if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
                 state.workflows[state.selectedWorkflowId].destinations = action.payload;
@@ -135,6 +172,29 @@ const workflowSlice = createSlice({
                 }
             }
         },
+        addDestination: (state, action: PayloadAction<BrokerDestination>) => {
+            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
+                state.workflows[state.selectedWorkflowId].destinations = [
+                    ...(state.workflows[state.selectedWorkflowId].destinations || []),
+                    action.payload,
+                ];
+                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
+                    state.dirtyWorkflows.push(state.selectedWorkflowId);
+                }
+            }
+        },
+
+        removeDestination: (state, action: PayloadAction<string>) => {
+            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
+                state.workflows[state.selectedWorkflowId].destinations = state.workflows[state.selectedWorkflowId].destinations?.filter(
+                    (destination) => destination.broker_id !== action.payload
+                );
+                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
+                    state.dirtyWorkflows.push(state.selectedWorkflowId);
+                }
+            }
+        },
+
         updateActions: (state, action: PayloadAction<any>) => {
             if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
                 state.workflows[state.selectedWorkflowId].actions = action.payload;
@@ -331,7 +391,7 @@ const workflowSlice = createSlice({
         removeWorkflowFromState: (state, action: PayloadAction<string>) => {
             delete state.workflows[action.payload];
             delete state.lastFetched[action.payload];
-            state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== action.payload);
+            state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== action.payload);
             if (state.selectedWorkflowId === action.payload) {
                 state.selectedWorkflowId = null;
             }
@@ -339,7 +399,7 @@ const workflowSlice = createSlice({
 
         // Set multiple workflows (from fetch operations)
         setWorkflows: (state, action: PayloadAction<WorkflowData[]>) => {
-            action.payload.forEach(workflow => {
+            action.payload.forEach((workflow) => {
                 state.workflows[workflow.id] = workflow;
                 state.lastFetched[workflow.id] = Date.now();
             });
@@ -350,7 +410,7 @@ const workflowSlice = createSlice({
             const workflow = action.payload;
             state.workflows[workflow.id] = workflow;
             state.lastFetched[workflow.id] = Date.now();
-            state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflow.id); // Clean after successful fetch/save
+            state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id); // Clean after successful fetch/save
         },
 
         // Backward compatibility - set all workflow data (used by thunks)
@@ -358,7 +418,7 @@ const workflowSlice = createSlice({
             if (action.payload.id) {
                 state.workflows[action.payload.id] = { ...state.workflows[action.payload.id], ...action.payload } as WorkflowData;
                 state.lastFetched[action.payload.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== action.payload.id);
+                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== action.payload.id);
             }
         },
 
@@ -377,7 +437,7 @@ const workflowSlice = createSlice({
                 const workflow = action.payload;
                 state.workflows[workflow.id] = workflow;
                 state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflow.id);
+                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
             })
             .addCase(fetchOne.rejected, (state, action) => {
                 state.loading = false;
@@ -390,7 +450,7 @@ const workflowSlice = createSlice({
             })
             .addCase(fetchAll.fulfilled, (state, action) => {
                 state.loading = false;
-                action.payload.forEach(workflow => {
+                action.payload.forEach((workflow) => {
                     state.workflows[workflow.id] = workflow;
                     state.lastFetched[workflow.id] = Date.now();
                 });
@@ -409,7 +469,7 @@ const workflowSlice = createSlice({
                 const workflow = action.payload;
                 state.workflows[workflow.id] = workflow;
                 state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflow.id);
+                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
             })
             .addCase(create.rejected, (state, action) => {
                 state.loading = false;
@@ -425,7 +485,7 @@ const workflowSlice = createSlice({
                 const workflow = action.payload;
                 state.workflows[workflow.id] = workflow;
                 state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflow.id);
+                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
             })
             .addCase(update.rejected, (state, action) => {
                 state.loading = false;
@@ -441,7 +501,7 @@ const workflowSlice = createSlice({
                 const workflowId = action.payload;
                 delete state.workflows[workflowId];
                 delete state.lastFetched[workflowId];
-                state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflowId);
+                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflowId);
                 if (state.selectedWorkflowId === workflowId) {
                     state.selectedWorkflowId = null;
                 }
@@ -460,7 +520,7 @@ const workflowSlice = createSlice({
                 const workflow = action.payload;
                 state.workflows[workflow.id] = workflow;
                 state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflow.id);
+                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
             })
             .addCase(fetchOneWithNodes.rejected, (state, action) => {
                 state.loading = false;
@@ -476,7 +536,7 @@ const workflowSlice = createSlice({
                 const workflow = action.payload;
                 state.workflows[workflow.id] = workflow;
                 state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflow.id);
+                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
             })
             .addCase(saveWithNodes.rejected, (state, action) => {
                 state.loading = false;
@@ -493,7 +553,7 @@ const workflowSlice = createSlice({
                     const workflow = action.payload;
                     state.workflows[workflow.id] = workflow;
                     state.lastFetched[workflow.id] = Date.now();
-                    state.dirtyWorkflows = state.dirtyWorkflows.filter(id => id !== workflow.id);
+                    state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
                 }
             })
             .addCase(fetchOrGetFromState.rejected, (state, action) => {

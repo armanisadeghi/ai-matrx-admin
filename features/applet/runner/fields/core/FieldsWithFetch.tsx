@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import FieldsWithLabels from "./FieldsWithlabels";
@@ -20,6 +19,7 @@ interface FieldsWithFetchProps {
     labelPosition?: "top" | "left" | "right";
     labelClassName?: string;
     emptyLabelSpacing?: string;
+    separatorStyle?: "border" | "spacing" | "background" | "none";
 }
 
 const FieldsWithFetch: React.FC<FieldsWithFetchProps> = ({
@@ -28,16 +28,17 @@ const FieldsWithFetch: React.FC<FieldsWithFetchProps> = ({
     isMobile = false,
     source = "applet",
     className = "",
-    wrapperClassName = "mb-5 last:mb-0",
+    wrapperClassName = "mb-6 last:mb-0", // Updated to match new default
     showLabels = true,
     showHelpText = true,
     showRequired = true,
     labelPosition = "top",
     labelClassName = "",
     emptyLabelSpacing = "mb-3",
+    separatorStyle = "spacing", // New prop with default value
 }) => {
     const dispatch = useAppDispatch();
-
+    
     // Normalize fieldIds to always be an array
     const fieldIdsArray = useMemo(() => {
         if (typeof fieldIds === 'string') {
@@ -45,7 +46,7 @@ const FieldsWithFetch: React.FC<FieldsWithFetchProps> = ({
         }
         return fieldIds || [];
     }, [fieldIds]);
-
+    
     // Get fields from Redux state
     const fieldsFromState = useAppSelector((state) => {
         if (fieldIdsArray.length === 1) {
@@ -54,13 +55,17 @@ const FieldsWithFetch: React.FC<FieldsWithFetchProps> = ({
         }
         return selectFieldsByIds(state, fieldIdsArray);
     });
-
+    
     // Check which fields are missing from state
     const missingFieldIds = useMemo(() => {
-        const existingIds = new Set(fieldsFromState.map(field => field.id));
+        const existingIds = new Set(
+            fieldsFromState
+                .filter(field => field && field.id) // Filter out null/undefined fields or fields without id
+                .map(field => field.id)
+        );
         return fieldIdsArray.filter(id => !existingIds.has(id));
     }, [fieldIdsArray, fieldsFromState]);
-
+    
     // Fetch missing fields
     useEffect(() => {
         const fetchMissingFields = async () => {
@@ -72,22 +77,24 @@ const FieldsWithFetch: React.FC<FieldsWithFetchProps> = ({
                 }
             }
         };
-
+        
         if (missingFieldIds.length > 0) {
             fetchMissingFields();
         }
     }, [dispatch, missingFieldIds]);
-
+    
     // Convert FieldBuilder objects to FieldDefinition objects
     const normalizedFields: FieldDefinition[] = useMemo(() => {
-        return fieldsFromState.map(field => normalizeFieldDefinition(field));
+        return fieldsFromState
+            .filter(field => field !== null && field !== undefined)
+            .map(field => normalizeFieldDefinition(field));
     }, [fieldsFromState]);
-
+    
     // If we don't have all the fields yet, show a loading state or empty div
     if (normalizedFields.length < fieldIdsArray.length) {
         return <div className={className}></div>;
     }
-
+    
     // Render the FieldsWithLabels component with all props passed through
     return (
         <FieldsWithLabels
@@ -103,6 +110,7 @@ const FieldsWithFetch: React.FC<FieldsWithFetchProps> = ({
             labelPosition={labelPosition}
             labelClassName={labelClassName}
             emptyLabelSpacing={emptyLabelSpacing}
+            separatorStyle={separatorStyle}
         />
     );
 };

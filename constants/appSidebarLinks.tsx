@@ -249,6 +249,11 @@ export const secondaryLinks = [
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "App Builder Parts",
+        href: "/apps/app-builder", // https://lucide.dev/icons/
+        icon: <SiMagic className="text-amber-500 dark:text-amber-600 hover:text-amber-600 dark:hover:text-amber-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
         label: "Applet demo",
         href: "/apps/demo", // https://lucide.dev/icons/
         icon: <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />,

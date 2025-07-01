@@ -1,9 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import dynamic from "next/dynamic";
-import type { Editor as TuiEditorReactComp } from "@toast-ui/react-editor";
 import { useTheme } from "@/styles/themes/ThemeProvider";
-import EditorLoading from "../text-block/editorLoading";
 import MarkdownAnalyzer from "./analyzer/MarkdownAnalyzer";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
@@ -13,18 +10,8 @@ import SectionViewerWithSidebar from "./analyzer/analyzer-options/SectionViewerW
 import SectionsViewer from "./analyzer/analyzer-options/sections-viewer";
 import LinesViewer from "./analyzer/analyzer-options/lines-viewer";
 import SectionViewerV2 from "./analyzer/analyzer-options/section-viewer-V2";
-
-// Import the Toast UI Editor dark theme CSS
-import "@toast-ui/editor/dist/toastui-editor.css";
-import "@toast-ui/editor/dist/theme/toastui-editor-dark.css";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
-
-const TuiEditor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), {
-    ssr: false,
-    loading: () => <EditorLoading />,
-});
-
-const loadColorSyntaxPlugin = () => import("@toast-ui/editor-plugin-color-syntax").then((mod) => mod.default);
+import TuiEditorContent, { type TuiEditorContentRef } from "./tui/TuiEditorContent";
 
 interface FullScreenMarkdownEditorProps {
     isOpen: boolean;
@@ -59,111 +46,25 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
 }) => {
     const [editedContent, setEditedContent] = useState(initialContent);
     const [activeTab, setActiveTab] = useState<string>(initialTab);
-    const editorRef = useRef<TuiEditorReactComp>(null);
+    const tuiEditorRef = useRef<TuiEditorContentRef>(null);
     const { mode } = useTheme();
-    const [colorSyntaxPlugin, setColorSyntaxPlugin] = useState<any>(null);
-    const [isClient, setIsClient] = useState(false);
-
-    // Apply dark mode class to editor when mode changes
-    useEffect(() => {
-        if (editorRef.current && isClient) {
-            try {
-                // Get the editor root element directly
-                const editorEl = editorRef.current.getRootElement();
-                // Find the actual editor container element
-                const editorContainer = editorEl?.querySelector(".toastui-editor-defaultUI");
-                if (editorContainer) {
-                    if (mode === "dark") {
-                        editorContainer.classList.add("toastui-editor-dark");
-                    } else {
-                        editorContainer.classList.remove("toastui-editor-dark");
-                    }
-                }
-            } catch (e) {
-                console.error("Error applying dark mode to editor:", e);
-            }
-        }
-    }, [mode, isClient]);
-
-    useEffect(() => {
-        setIsClient(true);
-        loadColorSyntaxPlugin().then((plugin) => {
-            setColorSyntaxPlugin(() => plugin);
-        });
-    }, []);
 
     // Update the edited content whenever initialContent changes or editor is opened
     useEffect(() => {
         if (isOpen) {
             setEditedContent(initialContent);
-            // If the editor is already open and initialContent changes, update the TUI editor
-            if (activeTab === "rich" && editorRef.current) {
-                try {
-                    const instance = editorRef.current.getInstance();
-                    const currentMarkdownInTui = instance.getMarkdown();
-                    if (currentMarkdownInTui !== initialContent) {
-                        instance.setMarkdown(initialContent, false);
-                    }
-                } catch (e) {
-                    console.error("Error updating TUI editor with new initialContent:", e);
-                }
-            }
         }
-    }, [isOpen, initialContent, activeTab]);
-
-    const handleTuiChange = useCallback(() => {
-        if (editorRef.current && activeTab === "rich") {
-            try {
-                const instance = editorRef.current.getInstance();
-                const currentMarkdown = instance.getMarkdown();
-                if (currentMarkdown !== editedContent) {
-                    setEditedContent(currentMarkdown);
-                }
-            } catch (e) {
-                console.error("Error getting markdown from TUI change:", e);
-            }
-        }
-    }, [activeTab, editedContent]);
+    }, [isOpen, initialContent]);
 
     const handleTabChange = (newTab: string) => {
-        const currentTab = activeTab;
-        if (currentTab === "rich" && editorRef.current) {
-            try {
-                const instance = editorRef.current.getInstance();
-                const markdown = instance.getMarkdown();
-                if (markdown !== editedContent) {
-                    setEditedContent(markdown);
-                }
-            } catch (e) {
-                console.error("Error getting markdown on tab change:", e);
+        // Get current content from TuiEditor if leaving rich tab
+        if (activeTab === "rich" && tuiEditorRef.current?.getCurrentMarkdown) {
+            const markdown = tuiEditorRef.current.getCurrentMarkdown();
+            if (markdown !== editedContent) {
+                setEditedContent(markdown);
             }
         }
         setActiveTab(newTab);
-        if (newTab === "rich") {
-            queueMicrotask(() => {
-                if (editorRef.current) {
-                    try {
-                        const instance = editorRef.current.getInstance();
-                        const currentMarkdownInTui = instance.getMarkdown();
-                        if (currentMarkdownInTui !== editedContent) {
-                            instance.setMarkdown(editedContent, false);
-                        }
-                        // Ensure dark mode is applied when switching tabs
-                        const editorEl = editorRef.current.getRootElement();
-                        const editorContainer = editorEl?.querySelector(".toastui-editor-defaultUI");
-                        if (editorContainer) {
-                            if (mode === "dark") {
-                                editorContainer.classList.add("toastui-editor-dark");
-                            } else {
-                                editorContainer.classList.remove("toastui-editor-dark");
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Error setting markdown on tab change:", e);
-                    }
-                }
-            });
-        }
     };
 
     const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -174,29 +75,13 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
 
     const handleSave = () => {
         let finalMarkdown = editedContent;
-        if (activeTab === "rich" && editorRef.current) {
-            try {
-                const instance = editorRef.current.getInstance();
-                finalMarkdown = instance.getMarkdown();
-            } catch (e) {
-                console.error("Error getting final markdown from TUI editor on save:", e);
-            }
-        } else {
-            finalMarkdown = editedContent;
+        if (activeTab === "rich" && tuiEditorRef.current?.getCurrentMarkdown) {
+            finalMarkdown = tuiEditorRef.current.getCurrentMarkdown();
         }
         if (onSave) {
-            console.log("--> FullScreenMarkdownEditor: handleSave: onSave: finalMarkdown: ", finalMarkdown);
             onSave(finalMarkdown);
         }
     };
-
-    const handleImageUpload = async (blob: File | Blob, callback: (url: string, altText?: string) => void) => {
-        console.warn("Image upload not implemented.");
-        alert("Image upload not configured. See console for details.");
-        // callback('error.jpg', 'upload error');
-    };
-
-    const editorPlugins = isClient && colorSyntaxPlugin ? [colorSyntaxPlugin] : [];
 
     // Define tabs content
     const tabDefinitions: TabDefinition[] = [];
@@ -223,25 +108,12 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             id: "rich",
             label: "Rich Text",
             content: (
-                <div className="w-full h-full tui-editor-wrapper">
-                    {isOpen && isClient && (
-                        <TuiEditor
-                            ref={editorRef}
-                            key={`${activeTab}-${mode}-${isOpen}`}
-                            initialValue={editedContent}
-                            initialEditType="wysiwyg"
-                            previewStyle="tab"
-                            height="100%"
-                            usageStatistics={false}
-                            plugins={editorPlugins}
-                            hooks={{
-                                addImageBlobHook: handleImageUpload,
-                            }}
-                            onChange={handleTuiChange}
-                        />
-                    )}
-                    {!isClient && <EditorLoading />}
-                </div>
+                <TuiEditorContent
+                    ref={tuiEditorRef}
+                    content={editedContent}
+                    onChange={setEditedContent}
+                    isActive={activeTab === "rich"}
+                />
             ),
             className: "overflow-hidden p-0 bg-background"
         });

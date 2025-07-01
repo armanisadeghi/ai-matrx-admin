@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
@@ -172,10 +173,12 @@ export default function EditRowModal({
         
       default: // string and other types
         return (
-          <Input
+          <Textarea
             id={field.field_name}
             value={value === null || value === undefined ? '' : value}
             onChange={(e) => handleValueChange(field.field_name, e.target.value)}
+            rows={3}
+            className="resize-y"
           />
         );
     }

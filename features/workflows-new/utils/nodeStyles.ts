@@ -34,6 +34,7 @@ import {
     XCircle,
     Clock,
     Loader2,
+    Download,
 } from "lucide-react";
 
 // Single source of truth for node type configurations
@@ -280,6 +281,16 @@ export const NODE_TYPE_CONFIGS: Record<string, NodeTypeConfig> = {
         minimapColorLight: "#f59e0b",
         minimapColorDark: "#fbbf24",
     },
+    sourceInput: {
+        id: "sourceInput",
+        icon: Download,
+        label: "Source Input",
+        borderColor: "border-blue-300 dark:border-blue-600",
+        backgroundColor: "bg-blue-50 dark:bg-blue-950/20",
+        minimapColorLight: "#3b82f6",
+        minimapColorDark: "#60a5fa",
+    },
+
 };
 
 // Handle styles configuration

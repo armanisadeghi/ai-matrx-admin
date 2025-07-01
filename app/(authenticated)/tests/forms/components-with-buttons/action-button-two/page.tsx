@@ -3,10 +3,10 @@
 import React from 'react';
 import { useAppDispatch, useAppSelector } from 'lib/redux/hooks';
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Link, Pencil, Upload, Calendar, Clock, Globe, Code, File, Plus, RefreshCw, Search } from 'lucide-react';
+import { Button } from '@/components/ui/ButtonMine';
 
 // Action types
 const FIELD_ACTIONS = {
@@ -134,7 +134,7 @@ const createDefaultActions = (dispatch) => ({
         },
         getModalContent: (field, value, onChange, state) => {
             const [searchTerm, setSearchTerm] = React.useState('');
-            const searchResults = useAppSelector(state => state.entities['registeredFunction'].entityMetadata.fields || []);
+            const searchResults = useAppSelector(state => state.entities['registeredFunction'].entityMetadata.entityFields || []);
 
             return (
                 <div className="space-y-4">

@@ -1,30 +1,29 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { User, ArrowRightLeft, Plus } from "lucide-react";
+import { User, ArrowRightLeft } from "lucide-react";
 import CategoryNodeSection from "./CategoryNodeSection";
 import CategoryNodeOverlay from "./CategoryNodeOverlay";
 import { getIconComponent } from "@/components/common/IconResolver";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
-import { useNodes, XYPosition } from "@xyflow/react";
 import { CATEGORY_DEFINITIONS } from "@/features/workflows-new/utils/nodeStyles";
 import { create, saveStateToDb } from "@/lib/redux/workflow-node/thunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
 import RecipeNodeInitializer from "../custom-nodes/recipes/RecipeNodeInitializer";
-import { CUSTOM_NODE_REGISTRY, NodeDefinitionType } from "../custom-nodes/custom-node-definitions";
+import { CUSTOM_NODE_REGISTRY } from "../custom-nodes/custom-node-definitions";
 import { getNormalizedRegisteredFunctionNode } from "@/features/workflows-new/utils/node-utils";
+import SourceInputNodeSettings from "../nodes/source-node/SourceInputNodeSettings";
 
 interface QuickAccessPanelProps {
     workflowId: string;
-    onFinalizeNode: (configuredNodeData: Omit<WorkflowNodeData, "user_id"> | WorkflowNodeData, position: XYPosition) => void;
+    onOpenFieldDisplay: () => void;
 }
 
 const RECIPE_FUNCTION_ID = "2ac5576b-d1ab-45b1-ab48-4e196629fdd8";
 
-const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onFinalizeNode }) => {
+const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onOpenFieldDisplay }) => {
     const [isAddingNode, setIsAddingNode] = useState(false);
 
     const dispatch = useAppDispatch();
@@ -32,6 +31,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onFinal
 
     const [activeCategoryOverlay, setActiveCategoryOverlay] = useState<string | null>(null);
     const [showRecipeInitializer, setShowRecipeInitializer] = useState(false);
+    const [showSourceInputCreator, setShowSourceInputCreator] = useState(false);
     const [pendingRecipeNode, setPendingRecipeNode] = useState<{
         nodeData: WorkflowNodeData;
     } | null>(null);
@@ -120,9 +120,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onFinal
     };
 
     const handleRecipeConfirm = async () => {
-        dispatch(
-            saveStateToDb(pendingRecipeNode?.nodeData.id!)
-        );
+        dispatch(saveStateToDb(pendingRecipeNode?.nodeData.id!));
         if (pendingRecipeNode) {
             try {
                 setShowRecipeInitializer(false);
@@ -144,9 +142,9 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onFinal
             <div className="flex-1 overflow-y-auto">
                 {/* Core System Nodes - Direct access at the top */}
                 <div className="px-0 pb-2">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 mb-2">
                         <button
-                            onClick={() => handleNodeAdd("userInput")}
+                            onClick={() => setShowSourceInputCreator(true)}
                             className="flex flex-col items-center gap-1 p-1 pt-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                         >
                             <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -189,6 +187,14 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onFinal
                     open={showRecipeInitializer}
                 />
             )}
+
+            {/* Source Input Creator */}
+            <SourceInputNodeSettings
+                isOpen={showSourceInputCreator}
+                onOpenChange={setShowSourceInputCreator}
+                workflowId={workflowId}
+                mode="create"
+            />
         </div>
     );
 };

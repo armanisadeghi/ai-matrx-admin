@@ -210,7 +210,7 @@ const EntityTester: React.FC = () => {
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead className="w-[50px]">Select</TableHead>
-                                                {entity.entityMetadata.fields.map(field => (
+                                                {Object.values(entity.entityMetadata.entityFields).map(field => (
                                                     <TableHead key={field.name}>
                                                         {field.displayName}
                                                     </TableHead>

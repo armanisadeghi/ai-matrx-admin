@@ -20,7 +20,7 @@ export type RuntimeSort = {
 
 // // --- Main Slice State ---
 // export interface EntityState<TEntity extends EntityKeys> {
-//     entityMetadata: EntityMetadata; // Field info is here: entityMetadata.fields has this: EntityStateField[]
+//     entityMetadata: EntityMetadata; 
 //     records: Record<MatrxRecordId, EntityData<TEntity>>
 //     unsavedRecords: Record<MatrxRecordId, Partial<EntityData<TEntity>>>;
 //     pendingOperations: MatrxRecordId[]; // Array instead of Set

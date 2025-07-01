@@ -1,9 +1,11 @@
 // Pattern definitions
 export const MATRX_PATTERN = /<<<MATRX_START>>>(.*?)<<<MATRX_END>>>/gs;
+export const MATRX_ID_PATTERN = /<ID>(.*?)<ID_END>/gs;
+export const MATRX_NAME_PATTERN = /<NAME>(.*?)<NAME_END>/gs;
+
+
 export const MATRX_RECORD_ID_PATTERN = /<MATRX_KEY>(.*?)<MATRX_KEY_END>/gs;
 export const DEFAULT_VALUE_PATTERN = /<DEFAULT_VALUE>(.*?)<DEFAULT_VALUE_END>/gs;
-export const MATRX_NAME_PATTERN = /<NAME>(.*?)<NAME_END>/gs;
-export const MATRX_ID_PATTERN = /<ID>(.*?)<ID_END>/gs;
 export const MATRX_STATUS_PATTERN = /<STATUS>(.*?)<STATUS_END>/gs;
 export const MATRX_COLOR_PATTERN = /<COLOR>(.*?)<COLOR_END>/gs;
 export const MATRX_DEFAULT_COMPONENT_PATTERN = /<COMPONENT>(.*?)<COMPONENT_END>/gs;

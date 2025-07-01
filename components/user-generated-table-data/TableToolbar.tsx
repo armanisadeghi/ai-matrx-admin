@@ -6,9 +6,10 @@ import EditRowModal from './EditRowModal';
 import DeleteRowModal from './DeleteRowModal';
 import TableSettingsModal from './TableSettingsModal';
 import ExportTableModal from './ExportTableModal';
+import TableReferenceOverlay from './TableReferenceOverlay';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, Download, Pencil, Trash, Settings, Plus } from 'lucide-react';
+import { Search, X, Download, Pencil, Trash, Settings, Plus, Link } from 'lucide-react';
 
 interface TableToolbarProps {
   tableId: string;
@@ -31,6 +32,7 @@ interface TableToolbarProps {
   showAddRowModal: boolean;
   showExportModal: boolean;
   showTableSettingsModal: boolean;
+  showReferenceOverlay: boolean;
   
   // Modal visibility state setters
   setShowEditModal: (show: boolean) => void;
@@ -39,6 +41,7 @@ interface TableToolbarProps {
   setShowAddRowModal: (show: boolean) => void;
   setShowExportModal: (show: boolean) => void;
   setShowTableSettingsModal: (show: boolean) => void;
+  setShowReferenceOverlay: (show: boolean) => void;
   
   // Success callbacks
   onEditSuccess?: () => void;
@@ -66,6 +69,7 @@ export default function TableToolbar({
   showAddRowModal,
   showExportModal,
   showTableSettingsModal,
+  showReferenceOverlay,
   
   // Modal visibility state setters
   setShowEditModal,
@@ -74,6 +78,7 @@ export default function TableToolbar({
   setShowAddRowModal,
   setShowExportModal,
   setShowTableSettingsModal,
+  setShowReferenceOverlay,
   
   // Success callbacks
   onEditSuccess = () => loadTableData(),
@@ -133,6 +138,15 @@ export default function TableToolbar({
           <Button 
             variant="outline"
             size="sm"
+            onClick={() => setShowReferenceOverlay(true)}
+            className="whitespace-nowrap"
+            title="Create Table Reference"
+          >
+            <Link className="h-4 w-4 md:mr-2" />
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
             onClick={() => setShowExportModal(true)}
             className="whitespace-nowrap"
           >
@@ -188,6 +202,13 @@ export default function TableToolbar({
         tableName={tableInfo?.table_name || 'table'}
         isOpen={showExportModal}
         onClose={() => setShowExportModal(false)}
+      />
+      <TableReferenceOverlay
+        isOpen={showReferenceOverlay}
+        onClose={() => setShowReferenceOverlay(false)}
+        tableId={tableId}
+        tableInfo={tableInfo}
+        fields={fields}
       />
     </>
   );

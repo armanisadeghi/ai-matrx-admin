@@ -31,6 +31,7 @@ import {
     Redo,
     Minimize2,
     Maximize2,
+    Database,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createNewNode, findGoodNodePosition } from "../utils/nodeTransforms";
@@ -41,6 +42,7 @@ import { FiEdit } from "react-icons/fi";
 import { WorkflowEditOverlay } from "@/features/workflows-new/components/WorkflowEditOverlay";
 import { workflowSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
+import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
 
 interface WorkflowHeaderProps {
     mode: "edit" | "view" | "execute";
@@ -55,6 +57,8 @@ interface WorkflowHeaderProps {
     canUndo?: boolean;
     canRedo?: boolean;
     workflowId: string;
+    onOpenFieldDisplay?: () => void;
+    onOpenAdminOverlay?: () => void;
 }
 
 export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({ 
@@ -69,7 +73,9 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     onExpandAll,
     canUndo = false,
     canRedo = false,
-    workflowId 
+    workflowId,
+    onOpenFieldDisplay,
+    onOpenAdminOverlay 
 }) => {
     const dispatch = useAppDispatch();
 
@@ -110,14 +116,14 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
 
         try {
             // Convert Redux nodes to React Flow format for position calculation
-            const reactFlowNodes: Node[] = allNodesArray.map((node) => ({
-                id: node.id,
-                position: node.ui_data?.position || { x: 0, y: 0 },
+            const reactFlowNodes: Node[] = allNodesArray.map((workflowNode: WorkflowNodeData) => ({
+                id: workflowNode.id,
+                position: workflowNode.ui_data?.position || { x: 0, y: 0 },
                 data: {},
                 type: "default",
                 measured: {
-                    width: node.ui_data?.width || 200,
-                    height: node.ui_data?.height || 150,
+                    width: workflowNode.ui_data?.width || 200,
+                    height: workflowNode.ui_data?.height || 150,
                 },
             }));
 
@@ -263,6 +269,24 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                             feedbackDuration={500}
                             successIcon={<Grid3X3 className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
                         />
+                        {onOpenFieldDisplay && (
+                            <IconButton
+                                icon={<Database className="h-4 w-4" />}
+                                tooltip="Field Display"
+                                variant="ghost"
+                                size="sm"
+                                onClick={onOpenFieldDisplay}
+                            />
+                        )}
+                        {onOpenAdminOverlay && (
+                            <IconButton
+                                icon={<Settings className="h-4 w-4" />}
+                                tooltip="Admin Panel"
+                                variant="ghost"
+                                size="sm"
+                                onClick={onOpenAdminOverlay}
+                            />
+                        )}
                     </div>
 
                     {mode === "edit" && (
@@ -318,7 +342,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                                 Auto Arrange
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="sm:hidden" />
-                            <DropdownMenuItem className="cursor-pointer hover:bg-accent">
+                            <DropdownMenuItem onClick={onOpenAdminOverlay} className="cursor-pointer hover:bg-accent">
                                 <Settings className="h-4 w-4 mr-2" />
                                 Settings
                             </DropdownMenuItem>

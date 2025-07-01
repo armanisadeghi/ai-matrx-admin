@@ -67,7 +67,6 @@ export function GlobalBrokersInitializer({ user }: GlobalBrokersInitializerProps
             })
         );
         
-        console.log("User broker values initialized");
     }, [dispatch, user]);
 
     return null;

@@ -48,6 +48,24 @@ export const selectFieldsByIds = createSelector(
   }
 );
 
+// Memoized selector for field labels by a list of IDs
+export const selectFieldLabelsByIds = createSelector(
+  [
+    getFieldBuilderState,
+    (_state: RootState, fieldIds: string[]) => fieldIds
+  ],
+  (fieldBuilderState, fieldIds) => {
+    const labels: Record<string, string> = {};
+    fieldIds.forEach(fieldId => {
+      const field = fieldBuilderState.fields[fieldId];
+      if (field && field.label) {
+        labels[fieldId] = field.label;
+      }
+    });
+    return labels;
+  }
+);
+
 // Memoized selector for fields of a specific component type
 export const selectFieldsByComponentType = createSelector(
   [

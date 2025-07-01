@@ -29,7 +29,7 @@ const EntityTableContainer = ({entityKey}: { entityKey: EntityKeys }) => {
         id: record[entity.primaryKeyMetadata.fields[0]]
     }));
 
-    const visibleColumns = entity.entityMetadata.fields.map(field => field.name);
+    const visibleColumns = Object.values(entity.entityMetadata.entityFields).map(field => field.name);
 
     return (
         <MatrxTable

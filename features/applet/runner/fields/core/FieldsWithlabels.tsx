@@ -19,6 +19,7 @@ interface FieldsListProps {
     labelPosition?: "top" | "left" | "right";
     labelClassName?: string;
     emptyLabelSpacing?: string;
+    separatorStyle?: "border" | "spacing" | "background" | "none";
 }
 
 const FieldsWithLabels: React.FC<FieldsListProps> = ({
@@ -27,13 +28,14 @@ const FieldsWithLabels: React.FC<FieldsListProps> = ({
     isMobile = false,
     source = "applet",
     className = "",
-    wrapperClassName = "mb-5 last:mb-0",
+    wrapperClassName = "mb-6 last:mb-0", // Increased default spacing
     showLabels = true,
     showHelpText = true,
     showRequired = true,
     labelPosition = "top",
     labelClassName = "",
-    emptyLabelSpacing = "mb-3", // Default spacing matching original component
+    emptyLabelSpacing = "mb-3",
+    separatorStyle = "spacing", // Default to spacing separation
   }) => {
     // Safety checks to prevent runtime errors
     if (!fields) {
@@ -49,17 +51,40 @@ const FieldsWithLabels: React.FC<FieldsListProps> = ({
       return <div className={className}></div>;
     }
 
+    const getSeparatorClasses = (isLast: boolean, index: number) => {
+      if (isLast) return "";
+      
+      switch (separatorStyle) {
+        case "border":
+          return "border-b border-gray-300 dark:border-gray-700 pb-6 mb-6";
+        case "background":
+          // Alternate every other field with a subtle background overlay
+          return index % 2 === 0 ? "bg-black/[0.02] dark:bg-white/[0.02] p-4 rounded-lg mb-4" : "mb-4";
+        case "spacing":
+          return "mb-8";
+        case "none":
+        default:
+          return "";
+      }
+    };
+
     return (
       <div className={className}>
-        {fields.map((field) => {
+        {fields.map((field, index) => {
           const isHorizontalLayout = labelPosition === "left" || labelPosition === "right";
+          const isLast = index === fields.length - 1;
           
           return (
             <div 
               key={field.id} 
               className={cn(
+                // Base wrapper classes
                 wrapperClassName,
-                isHorizontalLayout ? "flex items-start" : ""
+                isHorizontalLayout ? "flex items-start" : "",
+                // Separator classes
+                getSeparatorClasses(isLast, index),
+                // Add subtle transition for better UX
+                "transition-all duration-200"
               )}
             >
               {showLabels ? (

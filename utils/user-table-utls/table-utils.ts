@@ -21,6 +21,10 @@ const DATA_TYPE_MAPPING: Record<string, ValidDataType> = {
   'varchar': 'string',
   'char': 'string',
   'str': 'string',
+  'textarea': 'string',
+  'longtext': 'string',
+  'mediumtext': 'string',
+  'clob': 'string',
   
   // Common variations for number
   'float': 'number',

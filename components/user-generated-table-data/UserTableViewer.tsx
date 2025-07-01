@@ -27,9 +27,16 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/utils/supabase/client';
 import TableToolbar from './TableToolbar';
-import { Search, X, Plus, Download, Settings, Pencil, Trash, Loader } from 'lucide-react';
+import { Search, X, Plus, Download, Settings, Pencil, Trash, Loader, Expand, Link } from 'lucide-react';
 import { TableLoadingComponent } from '@/components/matrx/LoadingComponents';
 import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import TableReferenceModal from './TableReferenceModal';
 
 interface UserTable {
   id: string;
@@ -76,10 +83,21 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   const [showAddRowModal, setShowAddRowModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showTableSettingsModal, setShowTableSettingsModal] = useState(false);
+  const [showReferenceOverlay, setShowReferenceOverlay] = useState(false);
   
   // Table selector state
   const [tables, setTables] = useState<UserTable[]>([]);
   const [tablesLoading, setTablesLoading] = useState(false);
+  
+  // Text expansion modal state
+  const [expandedText, setExpandedText] = useState<string | null>(null);
+  const [expandedFieldName, setExpandedFieldName] = useState<string | null>(null);
+  const [showTextModal, setShowTextModal] = useState(false);
+  
+  // Reference modal state
+  const [showReferenceModal, setShowReferenceModal] = useState(false);
+  const [referenceRowId, setReferenceRowId] = useState<string | null>(null);
+  const [referenceRowData, setReferenceRowData] = useState<any>(null);
   
   // Load tables for selector
   const loadTables = async () => {
@@ -210,27 +228,69 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
     setShowDeleteModal(true);
   };
   
+  // Handle text expansion
+  const handleExpandText = (text: string, fieldName: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent row edit modal from opening
+    setExpandedText(text);
+    setExpandedFieldName(fieldName);
+    setShowTextModal(true);
+  };
+  
+  // Handle reference modal
+  const handleShowReference = (rowId: string, rowData: any, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent row edit modal from opening
+    setReferenceRowId(rowId);
+    setReferenceRowData(rowData);
+    setShowReferenceModal(true);
+  };
+  
   // Add this helper function somewhere in the component, before the return statement
   const formatCellValue = (value: any, dataType: string) => {
-    if (value === null || value === undefined) return '—';
+    if (value === null || value === undefined) return { display: '—', isTruncated: false, fullText: '' };
     
     // Format based on data type
     switch (dataType) {
       case 'json':
-        return typeof value === 'object' ? JSON.stringify(value) : value;
+        const jsonDisplay = typeof value === 'object' ? JSON.stringify(value) : value;
+        return { display: jsonDisplay, isTruncated: false, fullText: jsonDisplay };
       case 'array':
-        return Array.isArray(value) ? JSON.stringify(value) : value;
+        const arrayDisplay = Array.isArray(value) ? JSON.stringify(value) : value;
+        return { display: arrayDisplay, isTruncated: false, fullText: arrayDisplay };
       case 'boolean':
-        return value ? 'True' : 'False';
+        const boolDisplay = value ? 'True' : 'False';
+        return { display: boolDisplay, isTruncated: false, fullText: boolDisplay };
       case 'date':
       case 'datetime':
         try {
-          return new Date(value).toLocaleString();
+          const dateDisplay = new Date(value).toLocaleString();
+          return { display: dateDisplay, isTruncated: false, fullText: dateDisplay };
         } catch (e) {
-          return value;
+          return { display: value, isTruncated: false, fullText: value };
         }
+      case 'string':
+        // For string fields, show truncated content if too long or multiline
+        const stringValue = String(value);
+        const lines = stringValue.split('\n');
+        if (lines.length > 1) {
+          const firstLine = lines[0];
+          const truncatedFirstLine = firstLine.length > 50 ? `${firstLine.substring(0, 50)}...` : firstLine;
+          return { 
+            display: `${truncatedFirstLine} (+${lines.length - 1} more)`, 
+            isTruncated: true, 
+            fullText: stringValue 
+          };
+        }
+        if (stringValue.length > 50) {
+          return { 
+            display: `${stringValue.substring(0, 50)}...`, 
+            isTruncated: true, 
+            fullText: stringValue 
+          };
+        }
+        return { display: stringValue, isTruncated: false, fullText: stringValue };
       default:
-        return value;
+        const defaultDisplay = String(value);
+        return { display: defaultDisplay, isTruncated: false, fullText: defaultDisplay };
     }
   };
   
@@ -306,6 +366,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         showAddRowModal={showAddRowModal}
         showExportModal={showExportModal}
         showTableSettingsModal={showTableSettingsModal}
+        showReferenceOverlay={showReferenceOverlay}
         
         // Modal visibility state setters
         setShowEditModal={setShowEditModal}
@@ -314,6 +375,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         setShowAddRowModal={setShowAddRowModal}
         setShowExportModal={setShowExportModal}
         setShowTableSettingsModal={setShowTableSettingsModal}
+        setShowReferenceOverlay={setShowReferenceOverlay}
         
         // Success callbacks
         onEditSuccess={() => {
@@ -346,7 +408,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                   )}
                 </TableHead>
               ))}
-              <TableHead className="w-[100px] text-gray-700 dark:text-gray-300 text-center py-3">Actions</TableHead>
+              <TableHead className="w-[140px] text-gray-700 dark:text-gray-300 text-center py-3">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -377,13 +439,40 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                 >
                   {fields.map((field) => (
                     <TableCell key={`${row.id}-${field.id}`} className="py-3">
-                      {row.data[field.field_name] !== null 
-                        ? formatCellValue(row.data[field.field_name], field.data_type)
-                        : '—'}
+                      {row.data[field.field_name] !== null ? (() => {
+                        const cellData = formatCellValue(row.data[field.field_name], field.data_type);
+                        return (
+                          <div className="flex items-center justify-between group">
+                            <span className="flex-1">{String(cellData.display)}</span>
+                            {cellData.isTruncated && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 h-6 w-6 p-0"
+                                onClick={(e) => handleExpandText(cellData.fullText, field.display_name, e)}
+                                title={`Expand ${field.display_name}`}
+                              >
+                                <Expand className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })() : '—'}
                     </TableCell>
                   ))}
                   <TableCell className="text-center">
-                    <div className="flex justify-center space-x-2">
+                    <div className="flex justify-center space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShowReference(row.id, row.data, e);
+                        }}
+                        title="Get Reference"
+                      >
+                        <Link className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -391,6 +480,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                           e.stopPropagation();
                           handleEditRow(row.id, row.data);
                         }}
+                        title="Edit Row"
                       >
                         <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                       </Button>
@@ -401,6 +491,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                           e.stopPropagation();
                           handleDeleteRow(row.id);
                         }}
+                        title="Delete Row"
                       >
                         <Trash className="h-4 w-4 text-red-500 dark:text-red-400" />
                       </Button>
@@ -472,6 +563,35 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           </Pagination>
         </div>
       )}
+      
+      {/* Text Expansion Modal */}
+      <Dialog open={showTextModal} onOpenChange={setShowTextModal}>
+        <DialogContent className="sm:max-w-[60vw] max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>
+              {expandedFieldName ? `${expandedFieldName} - Full Content` : 'Full Content'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border">
+              <pre className="whitespace-pre-wrap text-sm font-mono break-words">
+                {expandedText}
+              </pre>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Reference Modal */}
+      <TableReferenceModal
+        isOpen={showReferenceModal}
+        onClose={() => setShowReferenceModal(false)}
+        tableId={tableId}
+        tableInfo={tableInfo}
+        rowId={referenceRowId}
+        rowData={referenceRowData}
+        fields={fields}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import { cn } from "@/styles/themes/utils";
 import { PencilIcon } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -332,7 +333,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             onMouseEnter={handleMouseEnter} 
             onMouseLeave={handleMouseLeave}
         >
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
                 {processedContent}
             </ReactMarkdown>
             

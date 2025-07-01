@@ -42,8 +42,6 @@ const MessageItem = React.memo(
         }, [message.content]);
 
         const handleContentEdit = (newContent: string) => {
-            console.log("newContent", newContent);
-            // Update the local content state
             setLocalContent(newContent);
         };
 

@@ -30,6 +30,8 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         canRedo: () => boolean;
         collapseAll: () => void;
         expandAll: () => void;
+        openFieldDisplay: () => void;
+        openAdminOverlay: () => void;
     }>(null);
 
     // Get initial data and save function
@@ -84,6 +86,20 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         }
     }, []);
 
+    // Field display handler
+    const handleOpenFieldDisplay = useCallback(() => {
+        if (canvasRef.current) {
+            canvasRef.current.openFieldDisplay();
+        }
+    }, []);
+
+    // Admin overlay handler
+    const handleOpenAdminOverlay = useCallback(() => {
+        if (canvasRef.current) {
+            canvasRef.current.openAdminOverlay();
+        }
+    }, []);
+
     // History state getters
     const canUndo = canvasRef.current?.canUndo() || false;
     const canRedo = canvasRef.current?.canRedo() || false;
@@ -110,6 +126,8 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onExpandAll={handleExpandAll}
                 canUndo={canUndo}
                 canRedo={canRedo}
+                onOpenFieldDisplay={handleOpenFieldDisplay}
+                onOpenAdminOverlay={handleOpenAdminOverlay}
             />
 
             <WorkflowCanvas

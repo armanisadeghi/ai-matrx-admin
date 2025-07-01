@@ -98,7 +98,8 @@ export const ConversationsPanel: React.FC = () => {
             <div>
               {conversations.map((convo) => {
                 const isCurrent = selectedConversation === convo.id;
-                const date = new Date(convo.updatedAt || convo.createdAt);
+                // Only use updatedAt for consistency with grouping logic
+                const date = convo.updatedAt ? new Date(convo.updatedAt) : null;
 
                 return (
                   <div
@@ -130,7 +131,7 @@ export const ConversationsPanel: React.FC = () => {
                         )}
                       </div>
                       <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
-                        {formatRelativeTime(date)}
+                        {date ? formatRelativeTime(date) : "No date"}
                       </span>
                     </div>
                   </div>

@@ -34,9 +34,13 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { WorkflowNode } from "./nodes/WorkflowNode";
+import { SourceInputNode } from "./nodes/source-node/SourceInputNode";
 import { WorkflowEdge } from "./edges/WorkflowEdge";
+
 import { getNodeMinimapColor } from "../utils/nodeStyles";
 import QuickAccessPanel from "./access-panel/QuickAccessPanel";
+import FieldDisplaySheet from "./nodes/source-node/sheets/FieldDisplaySheet";
+import { WorkflowAdminOverlay } from "./WorkflowAdminOverlay";
 
 interface WorkflowCanvasProps {
     workflowId: string;
@@ -73,6 +77,8 @@ interface WorkflowCanvasRef {
     canRedo: () => boolean;
     collapseAll: () => void;
     expandAll: () => void;
+    openFieldDisplay: () => void;
+    openAdminOverlay: () => void;
 }
 
 export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>(
@@ -108,6 +114,12 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
 
         // Viewport state
         const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
+
+        // Field display sheet state
+        const [isFieldDisplaySheetOpen, setIsFieldDisplaySheetOpen] = useState(false);
+
+        // Admin overlay state
+        const [isAdminOverlayOpen, setIsAdminOverlayOpen] = useState(false);
 
         // History state for undo/redo
         const [history, setHistory] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
@@ -153,7 +165,9 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 const newNodes = initialNodes.filter((n) => !currentNodeIds.has(n.id));
 
                 // Check for removed nodes
-                const removedNodeIds = nodes.filter((n) => !reduxNodeIds.has(n.id)).map((n) => n.id);
+                const removedNodeIds = nodes
+                    .filter((n) => !reduxNodeIds.has(n.id))
+                    .map((n) => n.id);
 
                 if (newNodes.length > 0 || removedNodeIds.length > 0) {
                     // Update nodes: remove deleted ones and add new ones
@@ -248,6 +262,9 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 condition: WorkflowNode,
                 loop: WorkflowNode,
                 webhook: WorkflowNode,
+
+                // Source input nodes
+                sourceInput: SourceInputNode,
             }),
             []
         );
@@ -438,9 +455,11 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
             }
         }, [onSave, reactFlowInstance]);
 
+
+
         // Enhanced viewport controls
         const handleFitView = useCallback(() => {
-            reactFlowInstance.fitView({ duration: 800, padding: 0.2 });
+            reactFlowInstance.fitView({ duration: 800, padding: 0.2, maxZoom: 1.5 });
         }, [reactFlowInstance]);
 
         const handleZoomIn = useCallback(() => {
@@ -489,29 +508,48 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
         const handleAutoArrange = useCallback(() => {
             const currentNodes = reactFlowInstance.getNodes();
 
-            const arrangedNodes = currentNodes.map((node, index) => {
-                const cols = Math.ceil(Math.sqrt(currentNodes.length));
-                const row = Math.floor(index / cols);
-                const col = index % cols;
+            // Separate source input nodes from regular workflow nodes
+            const sourceNodes = currentNodes.filter(node => node.type === 'sourceInput');
+            const regularNodes = currentNodes.filter(node => node.type !== 'sourceInput');
 
-                return {
+            const arrangedNodes = [
+                // Position source nodes on the left in compact mode (like initial render)
+                ...sourceNodes.map((node, index) => ({
                     ...node,
                     position: {
-                        x: col * 350 + 100,
-                        y: row * 350 + 100,
+                        x: -300, // Same as initial positioning
+                        y: index * 120, // Same spacing as initial positioning
                     },
-                };
-            });
+                    data: {
+                        ...node.data,
+                        displayMode: "compact", // Ensure they're compact
+                    },
+                })),
+                // Arrange regular nodes in a grid to the right
+                ...regularNodes.map((node, index) => {
+                    const cols = Math.ceil(Math.sqrt(regularNodes.length));
+                    const row = Math.floor(index / cols);
+                    const col = index % cols;
+
+                    return {
+                        ...node,
+                        position: {
+                            x: col * 350 + 100, // Start at x: 100 to leave space for source nodes
+                            y: row * 350 + 100,
+                        },
+                    };
+                }),
+            ];
 
             setNodes(arrangedNodes);
 
             // Fit view after arranging
             setTimeout(() => {
-                reactFlowInstance.fitView({ duration: 800, padding: 0.2 });
+                reactFlowInstance.fitView({ duration: 800, padding: 0.2, maxZoom: 1.5 });
             }, 100);
         }, [reactFlowInstance, setNodes]);
 
-        // Collapse/Expand all nodes
+        // Collapse/Expand all nodes (including source input nodes)
         const handleCollapseAll = useCallback(() => {
             setNodes((nds) =>
                 nds.map((node) => ({
@@ -535,6 +573,16 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 }))
             );
         }, [setNodes]);
+
+        // Field display handler
+        const handleOpenFieldDisplay = useCallback(() => {
+            setIsFieldDisplaySheetOpen(true);
+        }, []);
+
+        // Admin overlay handler
+        const handleOpenAdminOverlay = useCallback(() => {
+            setIsAdminOverlayOpen(true);
+        }, []);
 
         // History utility functions
         const canUndoHistory = useCallback(() => {
@@ -565,6 +613,8 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 canRedo: canRedoHistory,
                 collapseAll: handleCollapseAll,
                 expandAll: handleExpandAll,
+                openFieldDisplay: handleOpenFieldDisplay,
+                openAdminOverlay: handleOpenAdminOverlay,
             }),
             [
                 handleSave,
@@ -583,6 +633,8 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 canRedoHistory,
                 handleCollapseAll,
                 handleExpandAll,
+                handleOpenFieldDisplay,
+                handleOpenAdminOverlay,
             ]
         );
 
@@ -625,6 +677,7 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                     fitViewOptions={{
                         padding: 0.2,
                         includeHiddenNodes: false,
+                        maxZoom: 1.5, // Limit auto-fit zoom to 150%
                     }}
                     attributionPosition="bottom-left"
                     nodesDraggable={isInteractive}
@@ -676,7 +729,7 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                             showInteractive={false}
                             showZoom={true}
                             showFitView={true}
-                            fitViewOptions={{ duration: 800, padding: 0.2 }}
+                            fitViewOptions={{ duration: 800, padding: 0.2, maxZoom: 1.5 }}
                         />
                     )}
 
@@ -695,11 +748,31 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
 
                     {mode === "edit" && (
                         <Panel position="top-left" className="p-0">
-                            <QuickAccessPanel workflowId={workflowId} onFinalizeNode={() => {}} />
+                            <QuickAccessPanel 
+                                workflowId={workflowId} 
+                                onOpenFieldDisplay={() => setIsFieldDisplaySheetOpen(true)}
+                            />
                         </Panel>
                     )}
                 </ReactFlow>
+
+                {/* Field Display Sheet */}
+                <FieldDisplaySheet
+                    isOpen={isFieldDisplaySheetOpen}
+                    onOpenChange={setIsFieldDisplaySheetOpen}
+                    workflowId={workflowId}
+                    onSave={handleSave}
+                />
+
+                {/* Admin Overlay */}
+                <WorkflowAdminOverlay
+                    isOpen={isAdminOverlayOpen}
+                    onClose={() => setIsAdminOverlayOpen(false)}
+                    workflowId={workflowId}
+                />
             </div>
         );
     }
 );
+
+WorkflowCanvas.displayName = "WorkflowCanvas";
