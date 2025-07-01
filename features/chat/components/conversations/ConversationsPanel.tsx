@@ -31,7 +31,10 @@ export const ConversationsPanel: React.FC = () => {
     handleEdit,
     handleDelete,
     handleCreateNewChat,
-    formatRelativeTime
+    formatRelativeTime,
+    handleLoadMore,
+    isLoadingMore,
+    hasMoreConversations
   } = useConversationPanel();
 
   return (
@@ -140,6 +143,19 @@ export const ConversationsPanel: React.FC = () => {
             </div>
           </div>
         ))}
+        
+        {/* Load More Button */}
+        {hasMoreConversations && (
+          <div className="p-4">
+            <button
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="w-full py-2 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-md transition-colors duration-200 text-sm font-medium"
+            >
+              {isLoadingMore ? "Loading..." : "Load More Conversations"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Context Menu */}

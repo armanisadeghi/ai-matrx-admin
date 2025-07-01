@@ -42,7 +42,17 @@ export const getChatActionsWithThunks = () => {
     return {
         // Initial setup (run once, could be moved elsewhere if not needed per call)
         initialize: () => (dispatch: AppDispatch) => {
-            dispatch(conversationActions.fetchAll({})); // Change to make this paginated and fetch only the last 10 added by date and figure out how to include the one from the route.
+            // Fetch conversations with proper sorting (most recent first) and pagination
+            dispatch(conversationActions.fetchRecords({
+                page: 1,
+                pageSize: 1000, // Fetch up to 1000 conversations initially
+                options: {
+                    sort: {
+                        field: 'updated_at',
+                        direction: 'desc' // Most recent first
+                    }
+                }
+            }));
             dispatch(aiModelActions.fetchAll({}));
             dispatch(messageActions.setParentEntityField(parentEntityField));
             dispatch(messageActions.setRuntimeFilters(DEFAULT_MESSAGE_RUNTIME_FILTERS));
@@ -96,7 +106,31 @@ export const getChatActionsWithThunks = () => {
             },
 
         fetchAllConversations: () => (dispatch: AppDispatch) => {
-            dispatch(conversationActions.fetchAll({}));
+            // Fetch conversations with proper sorting (most recent first)
+            dispatch(conversationActions.fetchRecords({
+                page: 1,
+                pageSize: 1000, // Fetch up to 1000 conversations
+                options: {
+                    sort: {
+                        field: 'updated_at',
+                        direction: 'desc' // Most recent first
+                    }
+                }
+            }));
+        },
+
+        fetchAdditionalConversations: (page: number, pageSize: number) => (dispatch: AppDispatch) => {
+            // Fetch additional conversations for pagination
+            dispatch(conversationActions.fetchRecords({
+                page,
+                pageSize,
+                options: {
+                    sort: {
+                        field: 'updated_at',
+                        direction: 'desc' // Most recent first
+                    }
+                }
+            }));
         },
 
         fetchRelatedMessageForConversation: (params: { conversationId: string }) => (dispatch: AppDispatch) => {
@@ -759,7 +793,16 @@ export const getChatActions = (dispatch: AppDispatch) => {
     dispatch(messageActions.setRuntimeSort(DEFAULT_MESSAGE_RUNTIME_SORT));
 
     return {
-        fetchAllConversations: () => dispatch(conversationActions.fetchAll({})),
+        fetchAllConversations: () => dispatch(conversationActions.fetchRecords({
+            page: 1,
+            pageSize: 1000,
+            options: {
+                sort: {
+                    field: 'updated_at',
+                    direction: 'desc'
+                }
+            }
+        })),
 
         setActiveConversation: (conversationId: string) => {
             dispatch(conversationActions.fetchOneWithFkIfk({ matrxRecordId: `id:${conversationId}` }));

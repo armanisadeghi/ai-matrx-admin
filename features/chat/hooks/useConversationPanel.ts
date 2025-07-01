@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import formatRelativeTime from "@/features/chat/components/utils/formatRelativeTime";
+import { useConversationRouting } from "@/hooks/ai/chat/useConversationRouting";
 
 export type ConversationModified = {
     id?: string;
@@ -24,12 +25,18 @@ export function useConversationPanel() {
     const selectors = createChatSelectors();
     const dispatch = useAppDispatch();
     const chatActions = getChatActionsWithThunks();
+    const { navigateToConversation } = useConversationRouting({});
 
     // UI State
     const [expanded, setExpanded] = useState(true);
     const [contentSearch, setContentSearch] = useState("");
     const [labelSearch, setLabelSearch] = useState("");
     const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize] = useState(1000);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     // Context Menu State
     const [showContextMenu, setShowContextMenu] = useState(false);
@@ -37,8 +44,16 @@ export function useConversationPanel() {
     const [contextMenuConversationId, setContextMenuConversationId] = useState<string | null>(null);
     const contextMenuRef = useRef<HTMLDivElement>(null);
 
-    // Get conversations from Redux
+        // Get conversations from Redux
     const conversationsArray = useAppSelector(selectors.conversationsArray);
+    
+    // Get current date for calculations
+    const now = new Date();
+
+    // Debug: Log a sample of conversation IDs to verify they're valid
+    if (conversationsArray.length > 0) {
+        console.log('Sample conversation IDs:', conversationsArray.slice(0, 3).map(c => ({ id: c.id, label: c.label })));
+    }
 
     // Filter conversations based on search terms
     const filteredConversations = conversationsArray.filter((convo) => {
@@ -57,7 +72,22 @@ export function useConversationPanel() {
 
         return matchesLabel && matchesContent;
     });
-    
+
+    // Debug logging removed
+     
+    // Debug boundaries once
+    const todayStart = startOfDay(now);
+    const yesterdayStart = startOfDay(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+    const yesterdayEnd = endOfDay(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+    const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+    const lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+    const thisMonthStart = startOfMonth(now);
+    const lastMonthStart = startOfMonth(subMonths(now, 1));
+    const lastMonthEnd = endOfMonth(subMonths(now, 1));
+
+    // Debug boundaries removed - issue is pagination/fetch ordering, not date grouping
+
     // Group conversations by date section with expanded categories
     const groupedConversations = filteredConversations.reduce((acc, convo) => {
         // Ensure we're only using updatedAt for date calculations
@@ -66,31 +96,7 @@ export function useConversationPanel() {
         // Parse the timestamp and handle timezone consistently
         const date = new Date(convo.updatedAt);
 
-        // Get current date
-        const now = new Date();
-        
-        // Calculate date boundaries using proper date-fns functions
-        // All boundaries are calculated in local time for consistency
-        const todayStart = startOfDay(now);
-        const yesterdayStart = startOfDay(new Date(now.getTime() - 24 * 60 * 60 * 1000));
-        const yesterdayEnd = endOfDay(new Date(now.getTime() - 24 * 60 * 60 * 1000));
-        
-        // Week boundaries (Monday as start of week)
-        const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
-        const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
-        const lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
-        
-        // Month boundaries
-        const thisMonthStart = startOfMonth(now);
-        const lastMonthStart = startOfMonth(subMonths(now, 1));
-        const lastMonthEnd = endOfMonth(subMonths(now, 1));
-
-        // Debug logging (enabled for troubleshooting)
-        console.log('Date being evaluated:', date.toISOString());
-        console.log('Today start:', todayStart.toISOString());
-        console.log('Yesterday start:', yesterdayStart.toISOString(), 'Yesterday end:', yesterdayEnd.toISOString());
-        console.log('This week start:', thisWeekStart.toISOString());
-        console.log('Last week start:', lastWeekStart.toISOString(), 'Last week end:', lastWeekEnd.toISOString());
+        // Debug logging removed
 
         let section = "Earlier";
 
@@ -109,6 +115,8 @@ export function useConversationPanel() {
             section = "Last Month";
         }
         // Anything older falls into "Earlier"
+
+        // Debug logging removed
 
         // Ensure the conversation object conforms to ConversationModified, especially the keywords
         const modifiedConvo: ConversationModified = {
@@ -139,11 +147,7 @@ export function useConversationPanel() {
         });
     });
 
-    // Debug logging enabled for troubleshooting
-    Object.entries(groupedConversations).forEach(([section, convos]) => {
-        console.log(`Section: ${section}, Count: ${convos.length}`);
-        convos.forEach(c => console.log(`  - ${c.label || 'Untitled'}: ${new Date(c.updatedAt || '').toISOString()}`));
-    });
+    // Debug logging removed
 
     // Define the display order for the sections
     const sectionDisplayOrder = ["Today", "Yesterday", "This Week", "Last Week", "This Month", "Last Month", "Earlier"];
@@ -169,10 +173,25 @@ export function useConversationPanel() {
     // Handle conversation selection with routing
     const handleSelectConversation = useCallback(
         (convoId: string) => {
+            console.log('Navigating to conversation:', convoId);
+            console.log('Route will be:', `/chat/${convoId}`);
+            console.log('Current pathname:', pathname);
             setSelectedConversation(convoId);
-            router.push(`/chat/${convoId}`);
+            
+            // Try using window.location as a fallback to test if router.push is the issue
+            const targetRoute = `/chat/${convoId}`;
+            console.log('Attempting router.push to:', targetRoute);
+            
+            try {
+                router.push(targetRoute);
+                console.log('router.push completed');
+            } catch (error) {
+                console.error('router.push failed:', error);
+                // Fallback to window.location
+                window.location.href = targetRoute;
+            }
         },
-        [router]
+        [router, pathname]
     );
 
     // Handle conversation preview without routing
@@ -221,6 +240,26 @@ export function useConversationPanel() {
         router.push("/chat/new");
     }, [router]);
 
+    // Load more conversations (pagination)
+    const handleLoadMore = useCallback(async () => {
+        if (isLoadingMore) return;
+        
+        setIsLoadingMore(true);
+        try {
+            const nextPage = currentPage + 1;
+            // Use fetchRecords to load additional conversations
+            await dispatch(chatActions.fetchAdditionalConversations(nextPage, pageSize));
+            setCurrentPage(nextPage);
+        } catch (error) {
+            console.error("Failed to load more conversations:", error);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [dispatch, chatActions, currentPage, pageSize, isLoadingMore]);
+
+    // Check if there are potentially more conversations to load
+    const hasMoreConversations = conversationsArray.length >= currentPage * pageSize;
+
     return {
         // State
         expanded,
@@ -246,6 +285,11 @@ export function useConversationPanel() {
         handleDelete,
         handleCreateNewChat,
         formatRelativeTime,
+        // Pagination
+        handleLoadMore,
+        isLoadingMore,
+        hasMoreConversations,
+        currentPage,
     };
 }
 

@@ -182,6 +182,11 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
             return;
         }
 
+        if (!tableDescription.trim()) {
+            toast.error("Table description is required");
+            return;
+        }
+
         // Don't allow submission if already in progress
         if (taskStatus === "submitted" || taskStatus === "completed") {
             return;
@@ -221,7 +226,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && tableName.trim() && stage === "form") {
+        if (e.key === "Enter" && tableName.trim() && tableDescription.trim() && stage === "form") {
             e.preventDefault();
             handleSave();
         }
@@ -248,7 +253,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
 
             <div className="grid gap-2">
                 <Label htmlFor="table-description" className="text-gray-700 dark:text-gray-300">
-                    Description (optional)
+                    Description*
                 </Label>
                 <Textarea
                     id="table-description"
@@ -336,8 +341,8 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                         <Button
                             variant="default"
                             onClick={handleSave}
-                            disabled={isLoading}
-                            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
+                            disabled={isLoading || !tableName.trim() || !tableDescription.trim()}
+                            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             {isLoading ? "Saving..." : "Save Table"}
                         </Button>

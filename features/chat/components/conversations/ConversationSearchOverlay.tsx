@@ -23,6 +23,9 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
         handlePreviewConversation,
         handleCoordinatedFetch,
         handleContextMenu,
+        handleLoadMore,
+        isLoadingMore,
+        hasMoreConversations,
     } = useConversationPanel();
     // Local state for the overlay
     const [selectedForPreview, setSelectedForPreview] = useState<string | null>(null);
@@ -333,6 +336,19 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                                     <p className="text-lg font-medium text-zinc-700 dark:text-zinc-300">No results found</p>
                                     <p className="mt-1 text-zinc-500 dark:text-zinc-400">Try adjusting your search terms</p>
                                 </div>
+                            </div>
+                        )}
+                        
+                        {/* Load More Button */}
+                        {hasResults && hasMoreConversations && (
+                            <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
+                                <button
+                                    onClick={handleLoadMore}
+                                    disabled={isLoadingMore}
+                                    className="w-full py-2 px-4 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-700 dark:text-zinc-300 rounded-lg transition-colors duration-200 text-sm font-medium"
+                                >
+                                    {isLoadingMore ? "Loading..." : "Load More Conversations"}
+                                </button>
                             </div>
                         )}
                     </div>
