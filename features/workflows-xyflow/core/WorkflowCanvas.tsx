@@ -33,14 +33,14 @@ import {
 } from "@xyflow/react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { WorkflowNode } from "./nodes/WorkflowNode";
-import { SourceInputNode } from "./nodes/source-node/SourceInputNode";
-import { WorkflowEdge } from "./edges/WorkflowEdge";
+import { WorkflowNode } from "../nodes/wf-nodes/WorkflowNode";
+import { SourceInputNode } from "../nodes/source-node/SourceInputNode";
+import { WorkflowEdge } from "../edges/WorkflowEdge";
 
 import { getNodeMinimapColor } from "../utils/nodeStyles";
-import QuickAccessPanel from "./access-panel/QuickAccessPanel";
-import FieldDisplaySheet from "./nodes/source-node/sheets/FieldDisplaySheet";
-import { WorkflowAdminOverlay } from "./WorkflowAdminOverlay";
+import QuickAccessPanel from "../access-panel/QuickAccessPanel";
+import FieldDisplaySheet from "../nodes/source-node/sheets/FieldDisplaySheet";
+import { WorkflowAdminOverlay } from "../admin/WorkflowAdminOverlay";
 
 interface WorkflowCanvasProps {
     workflowId: string;
@@ -528,16 +528,16 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 // Arrange regular nodes in a grid to the right
                 ...regularNodes.map((node, index) => {
                     const cols = Math.ceil(Math.sqrt(regularNodes.length));
-                    const row = Math.floor(index / cols);
-                    const col = index % cols;
+                const row = Math.floor(index / cols);
+                const col = index % cols;
 
-                    return {
-                        ...node,
-                        position: {
+                return {
+                    ...node,
+                    position: {
                             x: col * 350 + 100, // Start at x: 100 to leave space for source nodes
-                            y: row * 350 + 100,
-                        },
-                    };
+                        y: row * 350 + 100,
+                    },
+                };
                 }),
             ];
 

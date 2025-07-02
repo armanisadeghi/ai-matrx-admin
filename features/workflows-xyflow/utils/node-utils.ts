@@ -3,10 +3,7 @@ import { getStore } from "@/lib/redux/store";
 import { DataBrokerData } from "@/types";
 import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
 import { InputMapping, Output } from "@/lib/redux/workflow/types";
-
-export const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers", "session_manager", "user_id", "stream_handler", "internal_config_object"];
-export const DEFAULT_HIDE_CONNECTIONS = ["recipe_id", "latest_version"];
-export const ALL_HIDDEN_CONNECTIONS = [...DEFAULT_HIDE_CONNECTIONS, ...DEFAULT_EXCLUDE_ARG_NAMES];
+import { DEFAULT_EXCLUDE_ARG_NAMES } from "./arg-utils";
 
 // Helper function to filter broker data
 const filterBrokerData = (broker: any): DataBrokerData | null => {
@@ -25,7 +22,7 @@ const filterBrokerData = (broker: any): DataBrokerData | null => {
 };
 
 // Get registered functions from Redux store
-export function getRegisteredFunctions(): any[] {
+function getRegisteredFunctions(): any[] {
     const store = getStore();
     if (!store) return [];
 
@@ -100,14 +97,6 @@ export function generateNodeOutputs(functionData: any): Output[] {
         : [];
 }
 
-// Get effective argument value
-export const getEffectiveArgValue = (arg: any, inputMapping?: InputMapping[]): { value: any; ready: boolean } => {
-    const override = inputMapping?.find((o) => o.arg_name === arg.name);
-    return {
-        value: override?.default_value ?? arg.default_value ?? "",
-        ready: override?.ready ?? arg.ready ?? false,
-    };
-};
 
 // Main function to create normalized node
 export function getNormalizedRegisteredFunctionNode(

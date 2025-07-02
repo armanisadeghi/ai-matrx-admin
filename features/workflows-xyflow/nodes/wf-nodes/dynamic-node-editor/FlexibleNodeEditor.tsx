@@ -1,7 +1,7 @@
 import React from "react";
 import { DynamicNodeEditor, TabConfig } from "./DynamicNodeEditor";
-import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RegisteredFunctionTab } from "../editor-tabs";
-import InputEditor from "../editor-tabs/InputEditor";
+import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RegisteredFunctionTab } from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
+import InputEditor from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs/InputEditor";
 
 // Helper component to make tab creation easier
 interface TabProps {

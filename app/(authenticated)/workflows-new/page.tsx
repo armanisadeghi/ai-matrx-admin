@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { WorkflowsList } from '@/features/workflows-new/components/WorkflowsList';
+import { WorkflowsList } from '@/features/workflows-xyflow/common/WorkflowsList';
 import { selectUserId } from '@/lib/redux/selectors/userSelectors';
 import { fetchAll } from '@/lib/redux/workflow/thunks';
 import { workflowSelectors } from '@/lib/redux/workflow/selectors';

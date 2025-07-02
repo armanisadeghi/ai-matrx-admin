@@ -1,8 +1,8 @@
 // Main Components
 export { WorkflowSystem } from './WorkflowSystem';
-export { WorkflowCanvas } from './components/WorkflowCanvas';
-export { WorkflowHeader } from './components/WorkflowHeader';
-export { WorkflowNode } from './components/nodes/WorkflowNode';
+export { WorkflowCanvas } from './core/WorkflowCanvas';
+export { WorkflowHeader } from './core/WorkflowHeader';
+export { WorkflowNode } from './nodes/wf-nodes/WorkflowNode';
 
 // Hooks
 export { useWorkflowSync } from './hooks/useWorkflowSync';

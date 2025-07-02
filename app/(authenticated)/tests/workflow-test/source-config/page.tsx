@@ -1,6 +1,6 @@
 "use client";
 
-import SourceConfigBuilder from "@/features/workflows-new/components/source-config/SourceConfigBuilder";
+import SourceConfigBuilder from "@/features/workflows-xyflow/concepts/source-config/SourceConfigBuilder";
 
 
 export default function SourceConfigPage() {

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import { WorkflowSystem } from "@/features/workflows-new/WorkflowSystem";
+import { WorkflowSystem } from "@/features/workflows-xyflow/WorkflowSystem";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowActions } from "@/lib/redux/workflow/slice";

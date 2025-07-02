@@ -6,15 +6,15 @@ import CategoryNodeSection from "./CategoryNodeSection";
 import CategoryNodeOverlay from "./CategoryNodeOverlay";
 import { getIconComponent } from "@/components/common/IconResolver";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
-import { CATEGORY_DEFINITIONS } from "@/features/workflows-new/utils/nodeStyles";
+import { CATEGORY_DEFINITIONS } from "@/features/workflows-xyflow/utils/nodeStyles";
 import { create, saveStateToDb } from "@/lib/redux/workflow-node/thunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
 import RecipeNodeInitializer from "../custom-nodes/recipes/RecipeNodeInitializer";
 import { CUSTOM_NODE_REGISTRY } from "../custom-nodes/custom-node-definitions";
-import { getNormalizedRegisteredFunctionNode } from "@/features/workflows-new/utils/node-utils";
-import SourceInputNodeSettings from "../nodes/source-node/SourceInputNodeSettings";
+import { getNormalizedRegisteredFunctionNode } from "@/features/workflows-xyflow/utils/node-utils";
+import SourceTypeSelector from "../nodes/source-node/SourceTypeSelector";
 
 interface QuickAccessPanelProps {
     workflowId: string;
@@ -148,7 +148,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onOpenF
                             className="flex flex-col items-center gap-1 p-1 pt-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                         >
                             <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            <span className="text-[10px] leading-tight text-blue-700 dark:text-blue-300">User Input</span>
+                            <span className="text-[10px] leading-tight text-blue-700 dark:text-blue-300">Input Source</span>
                         </button>
 
                         <button
@@ -189,7 +189,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onOpenF
             )}
 
             {/* Source Input Creator */}
-            <SourceInputNodeSettings
+            <SourceTypeSelector
                 isOpen={showSourceInputCreator}
                 onOpenChange={setShowSourceInputCreator}
                 workflowId={workflowId}

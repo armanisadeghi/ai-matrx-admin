@@ -8,8 +8,8 @@ import { Download } from "lucide-react";
 import { SourceInputNodeToolbar } from "./SourceInputNodeToolbar";
 import SourceInputNodeSettings from "./SourceInputNodeSettings";
 
-import { getNodeStyles, getStatusIcon, getExecutionRequiredIcon, getStatusIconStyle, getExecutionRequiredIconStyle, NODE_ICON_SIZES } from "../../../utils/nodeStyles";
-import { getHandleColor } from "../../../utils/nodeStyles";
+import { getNodeStyles, getStatusIcon, getExecutionRequiredIcon, getStatusIconStyle, getExecutionRequiredIconStyle, NODE_ICON_SIZES } from "../../utils/nodeStyles";
+import { getHandleColor } from "../../utils/nodeStyles";
 import { useAppSelector } from "@/lib/redux";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
@@ -114,10 +114,10 @@ const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({
     const handleSettings = useCallback(() => {
         setIsSettingsOpen(true);
     }, []);
-
+    
     // Get broker display name (use name if available, otherwise ID)
     const brokerDisplayName = dataBrokerRecordsById[brokerId]?.name || brokerId;
-    
+
     // Generate display text using broker name
     const sourceDisplayText = `${brokerDisplayName} Input`;
 
@@ -319,17 +319,17 @@ const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({
             </Card>
 
             {/* Settings Modal */}
-            <SourceInputNodeSettings
-                isOpen={isSettingsOpen}
-                onOpenChange={setIsSettingsOpen}
-                workflowId={workflowId}
-                currentMapping={{
-                    brokerId,
-                    mappedItemId,
-                    source,
-                    sourceId,
-                }}
-            />
+                            <SourceInputNodeSettings
+                    isOpen={isSettingsOpen}
+                    onOpenChange={setIsSettingsOpen}
+                    workflowId={workflowId}
+                    currentMapping={{
+                        brokerId,
+                        mappedItemId,
+                        source,
+                        sourceId,
+                    }}
+                />
         </>
     );
 };

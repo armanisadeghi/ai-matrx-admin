@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import "@xyflow/react/dist/style.css";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { WorkflowCanvas } from "./components/WorkflowCanvas";
-import { WorkflowHeader } from "./components/WorkflowHeader";
+import { WorkflowCanvas } from "./core/WorkflowCanvas";
+import { WorkflowHeader } from "./core/WorkflowHeader";
 import { useWorkflowSync } from "./hooks/useWorkflowSync";
 
 interface WorkflowSystemProps {

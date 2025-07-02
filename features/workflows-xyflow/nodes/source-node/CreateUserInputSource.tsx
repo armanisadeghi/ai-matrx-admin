@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
@@ -26,6 +26,7 @@ interface CreateUserInputSourceProps {
     onOpenChange: (open: boolean) => void;
     workflowId: string;
     onSuccess?: () => void;
+    onBack?: () => void;
 }
 
 const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
@@ -33,6 +34,7 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
     onOpenChange,
     workflowId,
     onSuccess,
+    onBack,
 }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
@@ -183,7 +185,20 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
             <Dialog open={isOpen} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
-                        <DialogTitle>Create User Input Source</DialogTitle>
+                        <div className="flex items-center gap-2">
+                            {onBack && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onBack}
+                                    className="p-1 h-auto"
+                                    disabled={isCreating}
+                                >
+                                    <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                            )}
+                            <DialogTitle>Create User Input Source</DialogTitle>
+                        </div>
                         <DialogDescription>
                             Create a new user input source for this workflow.
                         </DialogDescription>

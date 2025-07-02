@@ -15,7 +15,7 @@ import {
 } from "../../utils/nodeStyles";
 import { NodeToolbar } from "./NodeToolbar";
 import { NodeHandles } from "./NodeHandles";
-import { CompactNodeHandles } from "./CompactNodeHandles";
+import { CompactNodeHandles } from "../CompactNodeHandles";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
 import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";

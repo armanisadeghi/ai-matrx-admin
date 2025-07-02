@@ -39,7 +39,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { create } from "@/lib/redux/workflow-node/thunks";
 import { Node } from "@xyflow/react";
 import { FiEdit } from "react-icons/fi";
-import { WorkflowEditOverlay } from "@/features/workflows-new/components/WorkflowEditOverlay";
+import { WorkflowEditOverlay } from "@/features/workflows-xyflow/common/WorkflowEditOverlay";
 import { workflowSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
 import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";

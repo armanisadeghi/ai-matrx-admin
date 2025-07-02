@@ -16,6 +16,7 @@ interface SourceInputNodeSettingsProps {
     };
     mode?: "create" | "edit";
     onSuccess?: () => void;
+    onBack?: () => void;
 }
 
 const SourceInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
@@ -25,6 +26,7 @@ const SourceInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
     currentMapping,
     mode = "edit",
     onSuccess,
+    onBack,
 }) => {
     if (mode === "create") {
         return (
@@ -33,6 +35,7 @@ const SourceInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
                 onOpenChange={onOpenChange}
                 workflowId={workflowId}
                 onSuccess={onSuccess}
+                onBack={onBack}
             />
         );
     }

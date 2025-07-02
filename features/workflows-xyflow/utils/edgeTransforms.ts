@@ -1,4 +1,4 @@
-import { Edge, MarkerType } from 'reactflow';
+import { Edge, MarkerType } from '@xyflow/react';
 import { InputMapping, Output } from '@/lib/redux/workflow/types';
 
 // For now, edges are derived from node connections
@@ -9,6 +9,7 @@ export interface EdgeData {
   targetInput?: InputMapping;
   label?: string;
   metadata?: Record<string, any>;
+  [key: string]: unknown;
 }
 
 // Convert edge data to React Flow Edge format

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { InputMapping, Output } from '@/lib/redux/workflow/types';
-import { getHandleColor } from '../../utils/nodeStyles';
+import { getHandleColor } from '../utils/nodeStyles';
 
 interface CompactNodeHandlesProps {
   inputs?: InputMapping[];

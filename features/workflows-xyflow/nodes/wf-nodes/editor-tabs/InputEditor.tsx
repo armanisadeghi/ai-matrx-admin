@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
-import { ALL_HIDDEN_CONNECTIONS, generateNodeInputs } from "@/features/workflows-new/utils/node-utils";
+import { ALL_HIDDEN_CONNECTIONS, generateNodeInputs } from "@/features/workflows-xyflow/utils";
 import DataTypeInput from "./common/DataTypeInput";
 import { DefaultTabProps } from "./types";
 import { toTitleCase } from "@/utils/dataUtils";

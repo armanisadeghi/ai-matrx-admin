@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, memo } from "react";
-import { NodeProps, Handle, Position } from "reactflow";
+import { NodeProps, Handle, Position } from "@xyflow/react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { LucideIcon } from "lucide-react";
@@ -13,7 +13,7 @@ import {
     getStatusIcon,
     getStatusIconStyle,
     NODE_ICON_SIZES,
-} from "@/features/workflows-new/utils/nodeStyles";
+} from "@/features/workflows-xyflow/utils/nodeStyles";
 
 export interface BaseSourceNodeData extends Record<string, unknown> {
     brokerId: string;
@@ -35,8 +35,6 @@ interface BaseSourceNodeComponentProps extends BaseSourceNodeProps {
     brokerDisplayName: string;
     leftHandleLabel?: string;
     rightHandleLabel?: string;
-    positionAbsoluteX?: number;
-    positionAbsoluteY?: number;
 
     // Custom content components
     CompactContent?: React.ComponentType;
@@ -323,3 +321,4 @@ const BaseSourceNodeComponent: React.FC<BaseSourceNodeComponentProps> = ({
 };
 
 export const BaseSourceNode = memo(BaseSourceNodeComponent);
+ 
