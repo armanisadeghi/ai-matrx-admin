@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Wand2 } from "lucide-react";
 
 
 interface TableField {
@@ -36,6 +36,8 @@ interface EditRowModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  cleanupHtmlText?: (text: string) => string;
+  containsCleanableHtml?: (text: string) => boolean;
 }
 
 export default function EditRowModal({ 
@@ -45,7 +47,9 @@ export default function EditRowModal({
   fields, 
   isOpen, 
   onClose, 
-  onSuccess 
+  onSuccess,
+  cleanupHtmlText,
+  containsCleanableHtml
 }: EditRowModalProps) {
   const [rowData, setRowData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
@@ -64,6 +68,17 @@ export default function EditRowModal({
       ...prev,
       [fieldName]: value
     }));
+  };
+  
+  // Handle HTML cleanup for a specific field
+  const handleFieldCleanup = (fieldName: string) => {
+    if (!cleanupHtmlText) return;
+    
+    const currentValue = rowData[fieldName];
+    if (currentValue && typeof currentValue === 'string') {
+      const cleanedValue = cleanupHtmlText(currentValue);
+      handleValueChange(fieldName, cleanedValue);
+    }
   };
   
   // Handle form submission
@@ -172,14 +187,31 @@ export default function EditRowModal({
         );
         
       default: // string and other types
+        const stringValue = value === null || value === undefined ? '' : String(value);
+        const hasCleanableHtml = containsCleanableHtml && containsCleanableHtml(stringValue);
+        
         return (
-          <Textarea
-            id={field.field_name}
-            value={value === null || value === undefined ? '' : value}
-            onChange={(e) => handleValueChange(field.field_name, e.target.value)}
-            rows={3}
-            className="resize-y"
-          />
+          <div className="relative">
+            <Textarea
+              id={field.field_name}
+              value={stringValue}
+              onChange={(e) => handleValueChange(field.field_name, e.target.value)}
+              rows={6}
+              className="resize-y pr-10"
+            />
+            {hasCleanableHtml && cleanupHtmlText && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                onClick={() => handleFieldCleanup(field.field_name)}
+                title={`Clean up HTML formatting in ${field.display_name}`}
+              >
+                <Wand2 className="h-3 w-3 text-purple-500 dark:text-purple-400" />
+              </Button>
+            )}
+          </div>
         );
     }
   };

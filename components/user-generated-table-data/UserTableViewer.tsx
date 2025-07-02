@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/utils/supabase/client';
 import TableToolbar from './TableToolbar';
-import { Search, X, Plus, Download, Settings, Pencil, Trash, Loader, Expand, Link } from 'lucide-react';
+import { Search, X, Plus, Download, Settings, Pencil, Trash, Loader, Expand, Link, Wand2 } from 'lucide-react';
 import { TableLoadingComponent } from '@/components/matrx/LoadingComponents';
 import { useRouter } from 'next/navigation';
 import {
@@ -35,7 +35,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import TableReferenceModal from './TableReferenceModal';
 
 interface UserTable {
@@ -92,12 +94,82 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   // Text expansion modal state
   const [expandedText, setExpandedText] = useState<string | null>(null);
   const [expandedFieldName, setExpandedFieldName] = useState<string | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [expandedFieldKey, setExpandedFieldKey] = useState<string | null>(null);
   const [showTextModal, setShowTextModal] = useState(false);
+  const [expandedTextModified, setExpandedTextModified] = useState(false);
+  const [savingExpandedText, setSavingExpandedText] = useState(false);
   
   // Reference modal state
   const [showReferenceModal, setShowReferenceModal] = useState(false);
   const [referenceRowId, setReferenceRowId] = useState<string | null>(null);
   const [referenceRowData, setReferenceRowData] = useState<any>(null);
+  
+  // Add this helper function after the other state declarations and before formatCellValue
+  const cleanupHtmlText = (text: string): string => {
+    if (!text || typeof text !== 'string') return text;
+    
+    // Replace <br> and <br/> tags with newlines
+    let cleaned = text.replace(/<br\s*\/?>/gi, '\n');
+    
+    // Replace HTML entities
+    cleaned = cleaned.replace(/&lt;/g, '<');
+    cleaned = cleaned.replace(/&gt;/g, '>');
+    cleaned = cleaned.replace(/&amp;/g, '&');
+    cleaned = cleaned.replace(/&quot;/g, '"');
+    cleaned = cleaned.replace(/&#39;/g, "'");
+    cleaned = cleaned.replace(/&nbsp;/g, ' ');
+    
+    // Remove any remaining HTML tags
+    cleaned = cleaned.replace(/<[^>]*>/g, '');
+    
+    // Clean up extra whitespace but preserve intentional line breaks
+    cleaned = cleaned.replace(/\n\s*\n/g, '\n\n'); // Multiple newlines become double newlines
+    cleaned = cleaned.replace(/^\s+|\s+$/g, ''); // Trim start and end
+    
+    return cleaned;
+  };
+  
+  // Add this helper function to detect if text contains HTML that can be cleaned
+  const containsCleanableHtml = (text: string): boolean => {
+    if (!text || typeof text !== 'string') return false;
+    
+    // Check for <br> tags or other common HTML patterns
+    return /<br\s*\/?>/gi.test(text) || 
+           /&lt;|&gt;|&amp;|&quot;|&#39;|&nbsp;/g.test(text) ||
+           /<[^>]*>/g.test(text);
+  };
+  
+  // Add this function to handle the cleanup and update
+  const handleCleanupText = async (fieldName: string, originalText: string, rowId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent row edit modal from opening
+    
+    try {
+      const cleanedText = cleanupHtmlText(originalText);
+      
+      if (cleanedText === originalText) {
+        // No changes needed
+        return;
+      }
+      
+      // Update the row data
+      const updatedData = { [fieldName]: cleanedText };
+      
+      const { data, error } = await supabase.rpc('update_data_row_in_user_table', {
+        p_row_id: rowId,
+        p_data: updatedData
+      });
+      
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to update row');
+      
+      // Reload the table data to reflect changes
+      loadTableData(currentPage, limit, sortField, sortDirection, searchTerm);
+    } catch (err) {
+      console.error('Error cleaning up text:', err);
+      setError(err instanceof Error ? err.message : 'Failed to cleanup text');
+    }
+  };
   
   // Load tables for selector
   const loadTables = async () => {
@@ -229,11 +301,158 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   };
   
   // Handle text expansion
-  const handleExpandText = (text: string, fieldName: string, e: React.MouseEvent) => {
+  const handleExpandText = (text: string, fieldName: string, rowId: string, fieldKey: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent row edit modal from opening
     setExpandedText(text);
     setExpandedFieldName(fieldName);
+    setExpandedRowId(rowId);
+    setExpandedFieldKey(fieldKey);
+    setExpandedTextModified(false);
     setShowTextModal(true);
+  };
+  
+  // Handle HTML cleanup in the text expansion modal
+  const handleCleanupExpandedText = () => {
+    if (!expandedText) return;
+    
+    const cleanedText = cleanupHtmlText(expandedText);
+    setExpandedText(cleanedText);
+    setExpandedTextModified(true);
+  };
+  
+  // Handle saving expanded text changes to the database
+  const handleSaveExpandedText = async () => {
+    if (!expandedRowId || !expandedFieldKey || !expandedText) return;
+    
+    try {
+      setSavingExpandedText(true);
+      
+      const updatedData = { [expandedFieldKey]: expandedText };
+      
+      const { data, error } = await supabase.rpc('update_data_row_in_user_table', {
+        p_row_id: expandedRowId,
+        p_data: updatedData
+      });
+      
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to update row');
+      
+      // Reload the table data to reflect changes
+      await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm);
+      
+      setExpandedTextModified(false);
+      setShowTextModal(false);
+      
+      // Reset expanded text state
+      setExpandedText(null);
+      setExpandedFieldName(null);
+      setExpandedRowId(null);
+      setExpandedFieldKey(null);
+      
+    } catch (err) {
+      console.error('Error saving expanded text:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save text changes');
+    } finally {
+      setSavingExpandedText(false);
+    }
+  };
+  
+  // Handle manual text changes in the expanded modal
+  const handleExpandedTextChange = (newText: string) => {
+    setExpandedText(newText);
+    setExpandedTextModified(true);
+  };
+  
+  // Check if any data in the current table contains cleanable HTML
+  const hasCleanableHtmlInTable = () => {
+    if (!data || !fields) return false;
+    
+    const stringFields = fields.filter(field => field.data_type === 'string');
+    if (stringFields.length === 0) return false;
+    
+    return data.some(row => 
+      stringFields.some(field => {
+        const value = row.data[field.field_name];
+        return value && typeof value === 'string' && containsCleanableHtml(value);
+      })
+    );
+  };
+  
+  // Handle bulk HTML cleanup for all rows in the table
+  const handleBulkHtmlCleanup = async () => {
+    if (!data || !fields) return;
+    
+    try {
+      setLoading(true);
+      
+      const stringFields = fields.filter(field => field.data_type === 'string');
+      const updates = [];
+      
+      // Collect all rows that need cleaning
+      for (const row of data) {
+        const cleanedData = {};
+        let hasChanges = false;
+        
+        for (const field of stringFields) {
+          const value = row.data[field.field_name];
+          if (value && typeof value === 'string' && containsCleanableHtml(value)) {
+            const cleanedValue = cleanupHtmlText(value);
+            if (cleanedValue !== value) {
+              cleanedData[field.field_name] = cleanedValue;
+              hasChanges = true;
+            }
+          }
+        }
+        
+        if (hasChanges) {
+          updates.push({
+            rowId: row.id,
+            data: cleanedData
+          });
+        }
+      }
+      
+      if (updates.length === 0) {
+        setError('No HTML content found to clean up');
+        return;
+      }
+      
+      // Process updates in batches to avoid overwhelming the database
+      const batchSize = 10;
+      let processedCount = 0;
+      
+      for (let i = 0; i < updates.length; i += batchSize) {
+        const batch = updates.slice(i, i + batchSize);
+        
+        await Promise.all(
+          batch.map(async (update) => {
+            const { data: result, error } = await supabase.rpc('update_data_row_in_user_table', {
+              p_row_id: update.rowId,
+              p_data: update.data
+            });
+            
+            if (error) throw error;
+            if (!result.success) throw new Error(result.error || 'Failed to update row');
+            
+            processedCount++;
+          })
+        );
+      }
+      
+      // Reload the table data to reflect changes
+      await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm);
+      
+      // Show success message
+      setError(null);
+      // You could add a success toast here if you have a toast system
+      console.log(`Successfully cleaned HTML in ${processedCount} rows`);
+      
+    } catch (err) {
+      console.error('Error during bulk HTML cleanup:', err);
+      setError(err instanceof Error ? err.message : 'Failed to cleanup HTML content');
+    } finally {
+      setLoading(false);
+    }
   };
   
   // Handle reference modal
@@ -246,51 +465,61 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   
   // Add this helper function somewhere in the component, before the return statement
   const formatCellValue = (value: any, dataType: string) => {
-    if (value === null || value === undefined) return { display: '—', isTruncated: false, fullText: '' };
+    if (value === null || value === undefined) return { display: '—', isTruncated: false, fullText: '', hasCleanableHtml: false };
     
     // Format based on data type
     switch (dataType) {
       case 'json':
         const jsonDisplay = typeof value === 'object' ? JSON.stringify(value) : value;
-        return { display: jsonDisplay, isTruncated: false, fullText: jsonDisplay };
+        return { display: jsonDisplay, isTruncated: false, fullText: jsonDisplay, hasCleanableHtml: false };
       case 'array':
         const arrayDisplay = Array.isArray(value) ? JSON.stringify(value) : value;
-        return { display: arrayDisplay, isTruncated: false, fullText: arrayDisplay };
+        return { display: arrayDisplay, isTruncated: false, fullText: arrayDisplay, hasCleanableHtml: false };
       case 'boolean':
         const boolDisplay = value ? 'True' : 'False';
-        return { display: boolDisplay, isTruncated: false, fullText: boolDisplay };
+        return { display: boolDisplay, isTruncated: false, fullText: boolDisplay, hasCleanableHtml: false };
       case 'date':
       case 'datetime':
         try {
           const dateDisplay = new Date(value).toLocaleString();
-          return { display: dateDisplay, isTruncated: false, fullText: dateDisplay };
+          return { display: dateDisplay, isTruncated: false, fullText: dateDisplay, hasCleanableHtml: false };
         } catch (e) {
-          return { display: value, isTruncated: false, fullText: value };
+          return { display: value, isTruncated: false, fullText: value, hasCleanableHtml: false };
         }
       case 'string':
-        // For string fields, show truncated content if too long or multiline
+        // For string fields, handle multiline content intelligently
         const stringValue = String(value);
+        const hasCleanableHtml = containsCleanableHtml(stringValue);
         const lines = stringValue.split('\n');
+        
+        // If multiline, show first line with indicator
         if (lines.length > 1) {
           const firstLine = lines[0];
-          const truncatedFirstLine = firstLine.length > 50 ? `${firstLine.substring(0, 50)}...` : firstLine;
           return { 
-            display: `${truncatedFirstLine} (+${lines.length - 1} more)`, 
+            display: firstLine, 
             isTruncated: true, 
-            fullText: stringValue 
+            fullText: stringValue,
+            hasCleanableHtml,
+            multilineIndicator: `+${lines.length - 1} more lines`
           };
         }
-        if (stringValue.length > 50) {
-          return { 
-            display: `${stringValue.substring(0, 50)}...`, 
-            isTruncated: true, 
-            fullText: stringValue 
-          };
-        }
-        return { display: stringValue, isTruncated: false, fullText: stringValue };
+        
+        // For single line, let CSS handle truncation based on available space
+        return { 
+          display: stringValue, 
+          isTruncated: stringValue.length > 100, // Only consider "truncated" if reasonably long
+          fullText: stringValue, 
+          hasCleanableHtml 
+        };
       default:
         const defaultDisplay = String(value);
-        return { display: defaultDisplay, isTruncated: false, fullText: defaultDisplay };
+        const defaultHasCleanableHtml = containsCleanableHtml(defaultDisplay);
+        return { 
+          display: defaultDisplay, 
+          isTruncated: defaultDisplay.length > 100, 
+          fullText: defaultDisplay, 
+          hasCleanableHtml: defaultHasCleanableHtml 
+        };
     }
   };
   
@@ -389,28 +618,37 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
           setSelectedRowId(null);
           loadTableData(currentPage, limit);
         }}
+        
+        // HTML cleanup functions
+        cleanupHtmlText={cleanupHtmlText}
+        containsCleanableHtml={containsCleanableHtml}
+        hasCleanableHtmlInTable={hasCleanableHtmlInTable()}
+        handleBulkHtmlCleanup={handleBulkHtmlCleanup}
       />
       
       {/* Table */}
-      <div className="border rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm scrollbar-none">
-        <Table>
-          <TableHeader className="bg-gray-100 dark:bg-gray-800">
-            <TableRow>
-              {fields.map((field) => (
-                <TableHead 
-                  key={field.id}
-                  className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-center py-3"
-                  onClick={() => handleSort(field.field_name)}
-                >
-                  {field.display_name}
-                  {sortField === field.field_name && (
-                    <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                  )}
-                </TableHead>
-              ))}
-              <TableHead className="w-[140px] text-gray-700 dark:text-gray-300 text-center py-3">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+      <div className="border rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+        <div className="overflow-x-auto scrollbar-none">
+          <Table className="table-fixed w-full">
+            <TableHeader className="bg-gray-100 dark:bg-gray-800">
+              <TableRow>
+                {fields.map((field) => (
+                  <TableHead 
+                    key={field.id}
+                    className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-center py-3 min-w-[150px]"
+                    onClick={() => handleSort(field.field_name)}
+                  >
+                    <div className="truncate">
+                      {field.display_name}
+                      {sortField === field.field_name && (
+                        <span className="ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                ))}
+                <TableHead className="w-[140px] text-gray-700 dark:text-gray-300 text-center py-3 flex-shrink-0">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
@@ -438,23 +676,48 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                   onClick={() => handleEditRow(row.id, row.data)}
                 >
                   {fields.map((field) => (
-                    <TableCell key={`${row.id}-${field.id}`} className="py-3">
+                    <TableCell key={`${row.id}-${field.id}`} className="py-3 max-w-0">
                       {row.data[field.field_name] !== null ? (() => {
                         const cellData = formatCellValue(row.data[field.field_name], field.data_type);
                         return (
-                          <div className="flex items-center justify-between group">
-                            <span className="flex-1">{String(cellData.display)}</span>
-                            {cellData.isTruncated && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 h-6 w-6 p-0"
-                                onClick={(e) => handleExpandText(cellData.fullText, field.display_name, e)}
-                                title={`Expand ${field.display_name}`}
+                          <div className="flex items-center justify-between group min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <div 
+                                className="truncate text-left"
+                                title={cellData.isTruncated ? cellData.fullText : undefined}
                               >
-                                <Expand className="h-3 w-3" />
-                              </Button>
-                            )}
+                                {String(cellData.display)}
+                              </div>
+                              {cellData.multilineIndicator && (
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  {cellData.multilineIndicator}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-1 ml-2 flex-shrink-0">
+                              {cellData.hasCleanableHtml && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                  onClick={(e) => handleCleanupText(field.field_name, cellData.fullText, row.id, e)}
+                                  title={`Clean up HTML formatting in ${field.display_name}`}
+                                >
+                                  <Wand2 className="h-3 w-3 text-purple-500 dark:text-purple-400" />
+                                </Button>
+                              )}
+                              {cellData.isTruncated && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                  onClick={(e) => handleExpandText(cellData.fullText, field.display_name, row.id, field.field_name, e)}
+                                  title={`Expand ${field.display_name}`}
+                                >
+                                  <Expand className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         );
                       })() : '—'}
@@ -501,7 +764,8 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
               ))
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
       
       {/* Pagination */}
@@ -565,20 +829,65 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       )}
       
       {/* Text Expansion Modal */}
-      <Dialog open={showTextModal} onOpenChange={setShowTextModal}>
+      <Dialog open={showTextModal} onOpenChange={(open) => {
+        if (!open && expandedTextModified) {
+          // Could add a confirmation dialog here if needed
+        }
+        setShowTextModal(open);
+      }}>
         <DialogContent className="sm:max-w-[60vw] max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle>
-              {expandedFieldName ? `${expandedFieldName} - Full Content` : 'Full Content'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border">
-              <pre className="whitespace-pre-wrap text-sm font-mono break-words">
-                {expandedText}
-              </pre>
+            <div className="flex items-center justify-between">
+              <DialogTitle>
+                {expandedFieldName ? `${expandedFieldName} - Full Content` : 'Full Content'}
+                {expandedTextModified && <span className="text-orange-500 ml-2">*</span>}
+              </DialogTitle>
+              {expandedText && containsCleanableHtml(expandedText) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCleanupExpandedText}
+                  className="flex items-center gap-2"
+                  title="Clean up HTML formatting"
+                  disabled={savingExpandedText}
+                >
+                  <Wand2 className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                  <span className="text-sm">Clean HTML</span>
+                </Button>
+              )}
             </div>
+          </DialogHeader>
+          <div className="max-h-[50vh] overflow-y-auto">
+            <Textarea
+              value={expandedText || ''}
+              onChange={(e) => handleExpandedTextChange(e.target.value)}
+              className="min-h-[300px] resize-none font-mono text-sm"
+              placeholder="No content"
+              disabled={savingExpandedText}
+            />
           </div>
+          <DialogFooter className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              {expandedTextModified ? 'You have unsaved changes' : 'Click to edit the content above'}
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowTextModal(false)}
+                disabled={savingExpandedText}
+              >
+                Cancel
+              </Button>
+              {expandedTextModified && (
+                <Button 
+                  onClick={handleSaveExpandedText}
+                  disabled={savingExpandedText}
+                >
+                  {savingExpandedText ? 'Saving...' : 'Save Changes'}
+                </Button>
+              )}
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       

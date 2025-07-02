@@ -9,7 +9,7 @@ import ExportTableModal from './ExportTableModal';
 import TableReferenceOverlay from './TableReferenceOverlay';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, Download, Pencil, Trash, Settings, Plus, Link } from 'lucide-react';
+import { Search, X, Download, Pencil, Trash, Settings, Plus, Link, Wand2 } from 'lucide-react';
 
 interface TableToolbarProps {
   tableId: string;
@@ -46,6 +46,12 @@ interface TableToolbarProps {
   // Success callbacks
   onEditSuccess?: () => void;
   onDeleteSuccess?: () => void;
+  
+  // HTML cleanup functions
+  cleanupHtmlText?: (text: string) => string;
+  containsCleanableHtml?: (text: string) => boolean;
+  hasCleanableHtmlInTable?: boolean;
+  handleBulkHtmlCleanup?: () => Promise<void>;
 }
 
 export default function TableToolbar({ 
@@ -82,7 +88,13 @@ export default function TableToolbar({
   
   // Success callbacks
   onEditSuccess = () => loadTableData(),
-  onDeleteSuccess = () => loadTableData()
+  onDeleteSuccess = () => loadTableData(),
+  
+  // HTML cleanup functions
+  cleanupHtmlText,
+  containsCleanableHtml,
+  hasCleanableHtmlInTable,
+  handleBulkHtmlCleanup
 }: TableToolbarProps) {
   return (
     <>
@@ -135,6 +147,18 @@ export default function TableToolbar({
         </div>
         
         <div className="flex items-center w-full md:w-auto justify-end space-x-2">
+          {hasCleanableHtmlInTable && handleBulkHtmlCleanup && (
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleBulkHtmlCleanup}
+              className="whitespace-nowrap text-purple-600 dark:text-purple-400 border-purple-300 dark:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+              title="Clean HTML formatting in all string fields"
+            >
+              <Wand2 className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Clean All HTML</span>
+            </Button>
+          )}
           <Button 
             variant="outline"
             size="sm"
@@ -184,6 +208,8 @@ export default function TableToolbar({
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         onSuccess={onEditSuccess}
+        cleanupHtmlText={cleanupHtmlText}
+        containsCleanableHtml={containsCleanableHtml}
       />
       <DeleteRowModal
         rowId={selectedRowId}
