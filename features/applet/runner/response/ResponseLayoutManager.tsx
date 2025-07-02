@@ -4,7 +4,7 @@ import React, { useMemo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseTextByListenerId, selectResponseEndedByListenerId, selectResponseDataByListenerId } from "@/lib/redux/socket-io";
-import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
+import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import AppletPostActionButtons from "./AppletPostActionButtons";
@@ -91,7 +91,7 @@ export default function ResponseLayoutManager({
                     <div className="w-full max-w-4xl mx-auto p-4">
                         {/* For regular markdown or non-custom views */}
                         {!hasCustomView && (
-                            <MarkdownRenderer content={textResponse} type="message" className="bg-slate-50 dark:bg-slate-900" />
+                            <EnhancedChatMarkdown content={textResponse} type="message" role="assistant" className="bg-slate-50 dark:bg-slate-900" isStreamActive={!isTaskComplete} />
                         )}
 
                         {/* For custom views - always show the DirectMarkdownRenderer but pass isLoading */}
