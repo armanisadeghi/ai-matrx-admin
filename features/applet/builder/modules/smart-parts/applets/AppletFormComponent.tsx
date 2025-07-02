@@ -41,9 +41,12 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const applet = useAppSelector((state: RootState) => selectAppletById(state, appletId || ""));
 
     const handleSaveApplet = () => {
-        if (appletId) {
+        if (onSaveApplet) {
+            // If parent provides save handler, use that instead of local Redux dispatch
+            onSaveApplet();
+        } else if (appletId) {
+            // Otherwise, use local Redux dispatch
             dispatch(saveAppletThunk(appletId));
-            onSaveApplet?.();
         }
     };
 

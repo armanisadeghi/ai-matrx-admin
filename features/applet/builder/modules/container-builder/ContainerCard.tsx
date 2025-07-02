@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Trash2, X, RefreshCw, Save, Unlink, AlertTriangle } from "lucide-react";
+import { Trash2, X, RefreshCw, Save, Unlink, AlertTriangle, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { addField, removeField } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
@@ -266,7 +266,7 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                         {container.fields?.length !== 1 ? "s" : ""}
                     </span>
                     {isCompiled && (
-                        <span className="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 py-0.5 px-1.5 rounded-full">
+                        <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 py-0.5 px-1.5 rounded-full">
                             Compiled Version
                         </span>
                     )}
@@ -330,6 +330,9 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                             const isDatabaseFieldDirty = fieldAnalysis.dirtyCoreFieldsForOurFields.some(f => f.id === field.id);
                             const isFieldMissing = fieldAnalysis.fieldsNotInCoreFields.some(f => f.id === field.id);
                             
+                            // Check if field matches database (positive feedback)
+                            const hasMatchingDatabaseField = fieldFromState && !hasDatabaseDifferences && !isDatabaseFieldDirty && !isFieldMissing;
+                            
                             // Find the broker for this field
                             const brokerMapping = brokerMappings?.find(mapping => mapping.fieldId === field.id);
                             const broker = brokerMapping ? allBrokers?.find(b => b.id === brokerMapping.brokerId) : null;
@@ -367,6 +370,12 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                                                     {isFieldMissing && (
                                                         <span className="ml-2 text-[10px] bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 py-0.5 px-1.5 rounded-full flex-shrink-0">
                                                             Missing in DB
+                                                        </span>
+                                                    )}
+                                                    {hasMatchingDatabaseField && (
+                                                        <span className="ml-2 text-[10px] bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 py-0.5 px-1.5 rounded-full flex-shrink-0 flex items-center gap-1">
+                                                            <CircleCheck className="h-2.5 w-2.5" />
+                                                            Synced
                                                         </span>
                                                     )}
                                                 </div>

@@ -249,7 +249,7 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                             disabled={allDisabled || isDirty}
                             initialSelectedRecordKey={appletRecordKey}
                         />
-                        <DebugLog 
+                        {/* <DebugLog 
                             title="Button disable conditions"
                             values={{
                                 isLoading,
@@ -262,7 +262,7 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                                 isDirty,
                                 appletRecordKey,
                             }}
-                        />
+                        /> */}
                         <Button
                             onClick={handleCompileContainer}
                             disabled={isLoading || isSaving || isCompiling || !containerId || !selectedApplet || isDirty}

@@ -2,6 +2,44 @@ import { FieldDefinition } from "@/types/customAppTypes";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
 
 /**
+ * Deep comparison function that ignores property order
+ * @param obj1 First object to compare
+ * @param obj2 Second object to compare
+ * @returns true if objects are deeply equal, false otherwise
+ */
+const deepEqual = (obj1: any, obj2: any): boolean => {
+  if (obj1 === obj2) return true;
+  
+  if (obj1 == null || obj2 == null) return obj1 === obj2;
+  
+  if (typeof obj1 !== typeof obj2) return false;
+  
+  if (typeof obj1 !== 'object') return obj1 === obj2;
+  
+  if (Array.isArray(obj1) !== Array.isArray(obj2)) return false;
+  
+  if (Array.isArray(obj1)) {
+    if (obj1.length !== obj2.length) return false;
+    for (let i = 0; i < obj1.length; i++) {
+      if (!deepEqual(obj1[i], obj2[i])) return false;
+    }
+    return true;
+  }
+  
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+  
+  if (keys1.length !== keys2.length) return false;
+  
+  for (const key of keys1) {
+    if (!keys2.includes(key)) return false;
+    if (!deepEqual(obj1[key], obj2[key])) return false;
+  }
+  
+  return true;
+};
+
+/**
  * Compares a container field with its corresponding core field to detect differences
  * @param containerField The field from the container
  * @param coreField The field from the core database
@@ -21,10 +59,10 @@ export const hasFieldDifferences = (
     containerField.description !== coreField.description ||
     containerField.helpText !== coreField.helpText ||
     containerField.placeholder !== coreField.placeholder ||
-    // Compare options array
-    JSON.stringify(containerField.options || []) !== JSON.stringify(coreField.options || []) ||
-    // Compare component properties
-    JSON.stringify(containerField.componentProps || {}) !== JSON.stringify(coreField.componentProps || {})
+    // Compare options array using deep comparison
+    !deepEqual(containerField.options || [], coreField.options || []) ||
+    // Compare component properties using deep comparison
+    !deepEqual(containerField.componentProps || {}, coreField.componentProps || {})
   );
 };
 
@@ -68,7 +106,7 @@ export const getFieldDifferences = (
   }
   
   // Compare options if they exist
-  if (JSON.stringify(containerField.options || []) !== JSON.stringify(coreField.options || [])) {
+  if (!deepEqual(containerField.options || [], coreField.options || [])) {
     differences.options = { 
       container: containerField.options || [], 
       core: coreField.options || [] 
@@ -76,7 +114,7 @@ export const getFieldDifferences = (
   }
   
   // Compare component properties
-  if (JSON.stringify(containerField.componentProps || {}) !== JSON.stringify(coreField.componentProps || {})) {
+  if (!deepEqual(containerField.componentProps || {}, coreField.componentProps || {})) {
     differences.componentProps = { 
       container: containerField.componentProps || {}, 
       core: coreField.componentProps || {} 
