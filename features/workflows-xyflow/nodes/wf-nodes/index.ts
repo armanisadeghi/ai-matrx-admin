@@ -1,7 +1,8 @@
 // Main workflow node components
 export { WorkflowNode } from './WorkflowNode';
 export { NodeToolbar } from './NodeToolbar';
-export { NodeHandles } from './NodeHandles';
+export { WorkflowNodeHandles } from './WorkflowNodeHandles';
+export { WorkflowCompactNodeHandles } from './WorkflowCompactNodeHandles';
 export { NodeEditor } from './NodeEditor';
 
 // Dynamic node editor components

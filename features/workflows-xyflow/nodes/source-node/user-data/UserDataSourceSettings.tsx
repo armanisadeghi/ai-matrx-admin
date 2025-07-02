@@ -45,6 +45,7 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
     onSuccess,
     onBack,
 }) => {
+
     const dispatch = useAppDispatch();
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
 
@@ -226,7 +227,7 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-5xl">
                 <DialogHeader>
                     <div className="flex items-center gap-2">
                         {onBack && (

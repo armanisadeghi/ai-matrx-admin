@@ -14,8 +14,8 @@ import {
     NODE_ICON_SIZES,
 } from "../../utils/nodeStyles";
 import { NodeToolbar } from "./NodeToolbar";
-import { NodeHandles } from "./NodeHandles";
-import { CompactNodeHandles } from "../CompactNodeHandles";
+import { WorkflowNodeHandles } from "./WorkflowNodeHandles";
+import { WorkflowCompactNodeHandles } from "./WorkflowCompactNodeHandles";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
 import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
@@ -202,7 +202,12 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                     </div>
 
                     {/* Compact handles positioned around the circle */}
-                    <CompactNodeHandles inputs={nodeData?.inputs} outputs={nodeData?.outputs} isValidConnection={isValidConnection} />
+                    <WorkflowCompactNodeHandles 
+                        nodeId={nodeId || ''} 
+                        inputs={nodeData?.inputs} 
+                        outputs={nodeData?.outputs} 
+                        isValidConnection={isValidConnection} 
+                    />
                 </div>
             </>
         );
@@ -270,7 +275,12 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
 
                 <CardContent className="pt-0 relative">
                     {/* Handles Component */}
-                    <NodeHandles inputs={nodeData?.inputs} outputs={nodeData?.outputs} isValidConnection={isValidConnection} />
+                    <WorkflowNodeHandles 
+                        nodeId={nodeId || ''} 
+                        inputs={nodeData?.inputs} 
+                        outputs={nodeData?.outputs} 
+                        isValidConnection={isValidConnection} 
+                    />
 
                     {/* Status indicators */}
                     <div className="flex items-center justify-between mt-2 pt-1 border-t border-border">

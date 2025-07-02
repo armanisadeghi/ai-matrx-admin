@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Database, ArrowLeft } from "lucide-react";
-import SourceInputNodeSettings from "./SourceInputNodeSettings";
-import UserDataSourceSettings from "./UserDataSourceSettings";
+import UserInputNodeSettings from "./user-input/UserInputNodeSettings";
+import UserDataSourceSettings from "./user-data/UserDataSourceSettings";
 
 type SourceType = "user_input" | "user_data";
 
@@ -61,7 +61,7 @@ const SourceTypeSelector: React.FC<SourceTypeSelectorProps> = ({
     // Render the selected source component
     if (selectedSourceType === "user_input") {
         return (
-            <SourceInputNodeSettings
+            <UserInputNodeSettings
                 isOpen={isOpen}
                 onOpenChange={handleClose}
                 workflowId={workflowId}

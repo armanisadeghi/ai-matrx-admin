@@ -2,44 +2,42 @@
 
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { InputMapping, Output } from '@/lib/redux/workflow/types';
 import { getHandleColor } from '../../utils/nodeStyles';
 import { toTitleCase } from '@/utils/dataUtils';
 
+// Generic handle interface for reusable component
+export interface NodeHandle {
+  /** Unique identifier for this handle - must be unique across the node */
+  id: string;
+  /** Display label for the handle */
+  label: string;
+  /** Optional metadata for the handle */
+  metadata?: Record<string, any>;
+}
 
 interface NodeHandlesProps {
-  inputs?: InputMapping[];
-  outputs?: Output[];
+  /** Array of input handles to render */
+  inputHandles?: NodeHandle[];
+  /** Array of output handles to render */
+  outputHandles?: NodeHandle[];
+  /** Optional validation function for connections */
   isValidConnection?: (connection: any) => boolean;
 }
 
 export const NodeHandles: React.FC<NodeHandlesProps> = ({
-  inputs = [],
-  outputs = [],
+  inputHandles = [],
+  outputHandles = [],
   isValidConnection,
 }) => {
-  // Filter out inputs with type "arg_override" and null/undefined arg_name
-  const filteredInputs = inputs.filter(input => 
-    input.type !== "arg_override" && 
-    input.arg_name != null && 
-    input.arg_name !== ''
-  );
-
-  // Filter out outputs with null/undefined names
-  const filteredOutputs = outputs.filter(output => 
-    output.name != null && 
-    output.name !== ''
-  );
-
   return (
     <>
       {/* Input handles */}
-      {filteredInputs.map((input, index) => (
-        <div key={`input-${index}`} className="relative flex items-center mb-1">
+      {inputHandles.map((handle) => (
+        <div key={`input-${handle.id}`} className="relative flex items-center mb-1">
           <Handle
             type="target"
             position={Position.Left}
-            id={input.arg_name!} // Safe to use ! here since we filtered out null values
+            id={handle.id}
             className={`${getHandleColor('input')}`}
             style={{ 
               left: -10
@@ -48,24 +46,24 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({
           />
           <div className="text-[8px] text-muted-foreground pr-2">
             <div className="font-small leading-tight">
-              {toTitleCase(input.arg_name)}
+              {handle.label}
             </div>
           </div>
         </div>
       ))}
       
       {/* Output handles */}
-      {filteredOutputs.map((output, index) => (
-        <div key={`output-${index}`} className="relative flex items-center justify-end mb-1">
+      {outputHandles.map((handle) => (
+        <div key={`output-${handle.id}`} className="relative flex items-center justify-end mb-1">
           <div className="text-[8px] text-muted-foreground pl-2 text-right">
             <div className="font-small leading-tight">
-              {toTitleCase(output.name)}
+              {handle.label}
             </div>
           </div>
           <Handle
             type="source"
             position={Position.Right}
-            id={output.name!} // Safe to use ! here since we filtered out null values
+            id={handle.id}
             className={`${getHandleColor('output')}`}
             style={{ 
               right: -10

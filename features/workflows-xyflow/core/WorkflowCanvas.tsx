@@ -34,7 +34,8 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { WorkflowNode } from "../nodes/wf-nodes/WorkflowNode";
-import { SourceInputNode } from "../nodes/source-node/SourceInputNode";
+import { SourceInputNode } from "../nodes/source-node/user-input/SourceInputNode";
+import { UserDataSourceNode } from "../nodes/source-node/user-data/UserDataSourceNode";
 import { WorkflowEdge } from "../edges/WorkflowEdge";
 
 import { getNodeMinimapColor } from "../utils/nodeStyles";
@@ -254,7 +255,6 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 api: WorkflowNode,
                 other: WorkflowNode,
 
-                userInput: WorkflowNode,
                 brokerRelay: WorkflowNode,
                 workflowNode: WorkflowNode,
                 trigger: WorkflowNode,
@@ -264,7 +264,8 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 webhook: WorkflowNode,
 
                 // Source input nodes
-                sourceInput: SourceInputNode,
+                userInput: SourceInputNode,
+                userDataSource: UserDataSourceNode,
             }),
             []
         );
@@ -509,8 +510,8 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
             const currentNodes = reactFlowInstance.getNodes();
 
             // Separate source input nodes from regular workflow nodes
-            const sourceNodes = currentNodes.filter(node => node.type === 'sourceInput');
-            const regularNodes = currentNodes.filter(node => node.type !== 'sourceInput');
+                    const sourceNodes = currentNodes.filter(node => node.type === 'userInput' || node.type === 'userDataSource');
+        const regularNodes = currentNodes.filter(node => node.type !== 'userInput' && node.type !== 'userDataSource');
 
             const arrangedNodes = [
                 // Position source nodes on the left in compact mode (like initial render)

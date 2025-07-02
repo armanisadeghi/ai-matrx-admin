@@ -19,7 +19,7 @@ interface SourceInputNodeSettingsProps {
     onBack?: () => void;
 }
 
-const SourceInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
+const UserInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
     isOpen,
     onOpenChange,
     workflowId,
@@ -28,6 +28,8 @@ const SourceInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
     onSuccess,
     onBack,
 }) => {
+
+    
     if (mode === "create") {
         return (
             <CreateUserInputSource
@@ -57,4 +59,4 @@ const SourceInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
     return null;
 };
 
-export default SourceInputNodeSettings;
+export default UserInputNodeSettings;

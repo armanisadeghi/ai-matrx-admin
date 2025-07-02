@@ -209,15 +209,7 @@ export const NODE_TYPE_CONFIGS: Record<string, NodeTypeConfig> = {
         minimapColorLight: "#737373",
         minimapColorDark: "#a3a3a3",
     },
-    userInput: {
-        id: "userInput",
-        icon: User,
-        label: "User Input",
-        borderColor: "border-green-500 dark:border-green-400",
-        backgroundColor: "bg-green-50 dark:bg-green-950/20",
-        minimapColorLight: "#10b981",
-        minimapColorDark: "#34d399",
-    },
+
     brokerRelay: {
         id: "brokerRelay",
         icon: ArrowRight,
@@ -281,14 +273,24 @@ export const NODE_TYPE_CONFIGS: Record<string, NodeTypeConfig> = {
         minimapColorLight: "#f59e0b",
         minimapColorDark: "#fbbf24",
     },
-    sourceInput: {
-        id: "sourceInput",
-        icon: Download,
-        label: "Source Input",
-        borderColor: "border-blue-300 dark:border-blue-600",
+
+    userInput: {
+        id: "userInput",
+        icon: User,
+        label: "User Input",
+        borderColor: "border-blue-400 dark:border-blue-500",
         backgroundColor: "bg-blue-50 dark:bg-blue-950/20",
         minimapColorLight: "#3b82f6",
         minimapColorDark: "#60a5fa",
+    },
+    userDataSource: {
+        id: "userDataSource",
+        icon: Database,
+        label: "User Data Source",
+        borderColor: "border-emerald-400 dark:border-emerald-500",
+        backgroundColor: "bg-emerald-50 dark:bg-emerald-950/20",
+        minimapColorLight: "#10b981",
+        minimapColorDark: "#34d399",
     },
 
 };

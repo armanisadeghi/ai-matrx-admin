@@ -2,21 +2,24 @@
 
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { InputMapping, Output } from '@/lib/redux/workflow/types';
-import { getHandleColor } from '../utils/nodeStyles';
+import { getHandleColor } from '../../utils/nodeStyles';
+import { NodeHandle } from './NodeHandles';
 
 interface CompactNodeHandlesProps {
-  inputs?: InputMapping[];
-  outputs?: Output[];
+  /** Array of input handles to render */
+  inputHandles?: NodeHandle[];
+  /** Array of output handles to render */
+  outputHandles?: NodeHandle[];
+  /** Optional validation function for connections */
   isValidConnection?: (connection: any) => boolean;
 }
 
 export const CompactNodeHandles: React.FC<CompactNodeHandlesProps> = ({
-  inputs = [],
-  outputs = [],
+  inputHandles = [],
+  outputHandles = [],
   isValidConnection,
 }) => {
-  const totalHandles = inputs.length + outputs.length;
+  const totalHandles = inputHandles.length + outputHandles.length;
   const radius = 32; // Half of the 64px (w-16 h-16) node size
   
   // Calculate positions for handles around the circle
@@ -34,8 +37,8 @@ export const CompactNodeHandles: React.FC<CompactNodeHandlesProps> = ({
     } else {
       // Multiple handles: distribute around the circle
       // Inputs take left half (-π/2 to π/2), outputs take right half
-      const inputCount = inputs.length;
-      const outputCount = outputs.length;
+      const inputCount = inputHandles.length;
+      const outputCount = outputHandles.length;
       
       if (isInput) {
         if (inputCount === 1) {
@@ -83,16 +86,16 @@ export const CompactNodeHandles: React.FC<CompactNodeHandlesProps> = ({
   return (
     <>
       {/* Input handles */}
-      {inputs.map((input, index) => {
+      {inputHandles.map((handle, index) => {
         const { x, y, angle } = getHandlePosition(index, totalHandles, true);
         const position = getHandlePositionType(angle);
         
         return (
           <Handle
-            key={`compact-input-${index}`}
+            key={`compact-input-${handle.id}`}
             type="target"
             position={position}
-            id={`input-${index}`}
+            id={handle.id}
             className={`!w-3 !h-3 !border-2 !border-white dark:!border-background ${getHandleColor('input')}`}
             style={{ 
               left: `calc(50% + ${x}px - 6px)`,
@@ -104,17 +107,17 @@ export const CompactNodeHandles: React.FC<CompactNodeHandlesProps> = ({
       })}
       
       {/* Output handles */}
-      {outputs.map((output, index) => {
-        const globalIndex = inputs.length + index;
+      {outputHandles.map((handle, index) => {
+        const globalIndex = inputHandles.length + index;
         const { x, y, angle } = getHandlePosition(globalIndex, totalHandles, false);
         const position = getHandlePositionType(angle);
         
         return (
           <Handle
-            key={`compact-output-${index}`}
+            key={`compact-output-${handle.id}`}
             type="source"
             position={position}
-            id={`output-${index}`}
+            id={handle.id}
             className={`!w-3 !h-3 !border-2 !border-white dark:!border-background ${getHandleColor('output')}`}
             style={{ 
               left: `calc(50% + ${x}px - 6px)`,
