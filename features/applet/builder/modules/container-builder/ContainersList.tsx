@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectContainersForApplet, selectIsAppletDirtyById } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { selectAllFields } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import {
     selectActiveContainerId,
     selectAllContainerIds,
@@ -27,7 +26,6 @@ import { ConfirmationDialog } from "@/features/applet/builder/parts/Confirmation
 import { ContainerBuilder } from "@/lib/redux/app-builder/types";
 import ContainerCard from "./ContainerCard";
 import { DebugLog } from "@/components/admin/debug-log-component";
-import { useAppletFieldAnalysis } from "@/features/applet/hooks/useFieldAnalysis";
 
 interface ContainersListProps {
     appletId: string;
@@ -58,13 +56,9 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
     const activeContainerId = useAppSelector(selectActiveContainerId);
     const allContainerIds = useAppSelector(selectAllContainerIds);
     const appletContainers = useAppSelector((state) => (appletId ? selectContainersForApplet(state, appletId) : []));
-    const allFields = useAppSelector(selectAllFields);
 
     const isAppletDirty = useAppSelector((state) => selectIsAppletDirtyById(state, appletId));
     const isContainerDirty = useAppSelector((state) => selectIsContainerDirtyById(state, activeContainerId));
-
-    // Analyze field issues across all containers to determine if recompile button should be shown
-    const fieldAnalysis = useAppletFieldAnalysis(appletContainers, allFields);
 
     useEffect(() => {
         dispatch(fetchContainersThunk());
@@ -314,13 +308,6 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
                             values={{
                                 isAppletDirty,
                                 isContainerDirty,
-                                hasFieldIssues: fieldAnalysis.hasAnyIssues,
-                                totalFieldsWithIssues: fieldAnalysis.totalFieldsWithIssues,
-                                fieldAnalysis: {
-                                    differences: fieldAnalysis.totalFieldsWithDifferences,
-                                    dirty: fieldAnalysis.totalDirtyFields,
-                                    missing: fieldAnalysis.totalMissingFields,
-                                }
                             }}
                         />
                         {isAppletDirty && !isContainerDirty && (
@@ -334,22 +321,20 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
                                 Applet Recompile Needed
                             </Button>
                         )}
-                        {fieldAnalysis.hasAnyIssues && (
-                            <Button
-                                onClick={handleSaveContainerAndRecompileFieldsAndApplet}
-                                disabled={savingContainer}
-                                size="sm"
-                                className="bg-amber-500 hover:bg-amber-600 text-white w-full"
-                            >
-                                {savingContainer ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <RefreshCw className="mr-2 h-4 w-4 text-red-500" />
-                                )}
-                                FULLY RECOMPILE FIELDS & APPLET ({fieldAnalysis.totalFieldsWithIssues} issue{fieldAnalysis.totalFieldsWithIssues !== 1 ? 's' : ''})
-                                <TriangleAlert className="ml-2 h-4 w-4 text-red-500" />
-                            </Button>
-                        )}
+                        <Button
+                            onClick={handleSaveContainerAndRecompileFieldsAndApplet}
+                            disabled={savingContainer}
+                            size="sm"
+                            className="bg-amber-500 hover:bg-amber-600 text-white w-full"
+                        >
+                            {savingContainer ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <RefreshCw className="mr-2 h-4 w-4 text-red-500" />
+                            )}
+                            FULLY RECOMPILE FIELDS & APPLET
+                            <TriangleAlert className="ml-2 h-4 w-4 text-red-500" />
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-4">
