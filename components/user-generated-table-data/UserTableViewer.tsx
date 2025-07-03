@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/utils/supabase/client';
 import TableToolbar from './TableToolbar';
-import { Search, X, Plus, Download, Settings, Pencil, Trash, Loader, Expand, Link, Wand2 } from 'lucide-react';
+import { Search, X, Plus, Download, Settings, Pencil, Trash, Loader, Expand, Link, Wand2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { TableLoadingComponent } from '@/components/matrx/LoadingComponents';
 import { useRouter } from 'next/navigation';
 import {
@@ -63,7 +63,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   
@@ -104,6 +104,10 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   const [showReferenceModal, setShowReferenceModal] = useState(false);
   const [referenceRowId, setReferenceRowId] = useState<string | null>(null);
   const [referenceRowData, setReferenceRowData] = useState<any>(null);
+  
+  // Row ordering state
+  const [rowOrderingEnabled, setRowOrderingEnabled] = useState(false);
+  const [showRowOrderingModal, setShowRowOrderingModal] = useState(false);
   
   // Add this helper function after the other state declarations and before formatCellValue
   const cleanupHtmlText = (text: string): string => {
@@ -201,13 +205,19 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   const loadTableData = async (page = 1, pageLimit = limit, sort = sortField, direction = sortDirection, search = searchTerm, forceReload = false) => {
     setLoading(true);
     try {
-      // First load table metadata and fields
+      // Load table metadata and fields (always reload if forceReload is true)
+      let currentTableInfo = tableInfo;
+      let currentFields = fields;
+      
       if (!tableInfo || !fields.length || forceReload) {
         const { data: tableData, error: tableError } = await supabase
           .rpc('get_user_table_complete', { p_table_id: tableId });
           
         if (tableError) throw tableError;
         if (!tableData.success) throw new Error(tableData.error || 'Failed to load table');
+        
+        currentTableInfo = tableData.table;
+        currentFields = tableData.fields;
         
         setTableInfo(tableData.table);
         setFields(tableData.fields);
@@ -230,7 +240,35 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
       if (paginatedError) throw paginatedError;
       if (!paginatedData.success) throw new Error(paginatedData.error || 'Failed to load data');
       
-      setData(paginatedData.data);
+      let processedData = paginatedData.data;
+      
+      // Apply row ordering if enabled and no other sorting is active
+      if (currentTableInfo?.row_ordering_config?.enabled && currentTableInfo.row_ordering_config.order && !sort) {
+        const orderConfig = currentTableInfo.row_ordering_config.order;
+        processedData = [...paginatedData.data].sort((a, b) => {
+          const aIndex = orderConfig.indexOf(a.id);
+          const bIndex = orderConfig.indexOf(b.id);
+          
+          // If both items are in the order config, sort by their position
+          if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex;
+          }
+          
+          // If only one item is in the order config, prioritize it
+          if (aIndex !== -1) return -1;
+          if (bIndex !== -1) return 1;
+          
+          // If neither item is in the order config, maintain original order
+          return 0;
+        });
+      }
+      
+      // Apply client-side sorting if we have a sort field and conditions are right for client-side sorting
+      if (sort && !search && page === 1 && pageLimit >= paginatedData.pagination.total_count) {
+        processedData = smartSort(processedData, sort, direction as 'asc' | 'desc');
+      }
+
+      setData(processedData);
       setTotalCount(paginatedData.pagination.total_count);
       setTotalPages(paginatedData.pagination.page_count);
       setCurrentPage(paginatedData.pagination.current_page);
@@ -252,6 +290,13 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
     }
   }, [tableId, showTableSelector]);
   
+  // Check row ordering status when table info changes
+  useEffect(() => {
+    if (tableInfo) {
+      setRowOrderingEnabled(checkRowOrderingEnabled());
+    }
+  }, [tableInfo]);
+  
   // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -267,12 +312,73 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
     loadTableData(1, numLimit);
   };
   
+  // Smart numeric sorting helper
+  const isNumericValue = (value: any): boolean => {
+    if (value === null || value === undefined || value === '') return false;
+    const stringValue = String(value).trim();
+    return !isNaN(Number(stringValue)) && isFinite(Number(stringValue));
+  };
+
+  const parseNumericValue = (value: any): number => {
+    if (value === null || value === undefined || value === '') return -Infinity;
+    return Number(String(value).trim());
+  };
+
+  const smartSort = (data: any[], fieldName: string, direction: 'asc' | 'desc') => {
+    return [...data].sort((a, b) => {
+      const aValue = a.data[fieldName];
+      const bValue = b.data[fieldName];
+      
+      // Handle null/undefined values
+      if (aValue === null || aValue === undefined) {
+        if (bValue === null || bValue === undefined) return 0;
+        return direction === 'asc' ? -1 : 1;
+      }
+      if (bValue === null || bValue === undefined) {
+        return direction === 'asc' ? 1 : -1;
+      }
+
+      // Check if both values are numeric
+      const aIsNumeric = isNumericValue(aValue);
+      const bIsNumeric = isNumericValue(bValue);
+
+      if (aIsNumeric && bIsNumeric) {
+        // Both are numeric - do numeric comparison
+        const aNum = parseNumericValue(aValue);
+        const bNum = parseNumericValue(bValue);
+        const result = aNum - bNum;
+        return direction === 'asc' ? result : -result;
+      } else if (aIsNumeric && !bIsNumeric) {
+        // Mixed types - numeric values come first in ascending order
+        return direction === 'asc' ? -1 : 1;
+      } else if (!aIsNumeric && bIsNumeric) {
+        // Mixed types - numeric values come first in ascending order
+        return direction === 'asc' ? 1 : -1;
+      } else {
+        // Both are non-numeric - do string comparison
+        const aStr = String(aValue).toLowerCase();
+        const bStr = String(bValue).toLowerCase();
+        const result = aStr.localeCompare(bStr);
+        return direction === 'asc' ? result : -result;
+      }
+    });
+  };
+
   // Handle sorting
   const handleSort = (field) => {
     const newDirection = field === sortField && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
-    loadTableData(currentPage, limit, field, newDirection);
+
+    // If we have current data and no search term, do client-side smart sorting
+    if (data.length > 0 && !searchTerm && currentPage === 1 && limit >= totalCount) {
+      // We have all data loaded, can do client-side sorting
+      const sortedData = smartSort(data, field, newDirection);
+      setData(sortedData);
+    } else {
+      // Fall back to server-side sorting for complex scenarios
+      loadTableData(currentPage, limit, field, newDirection);
+    }
   };
   
   // Handle search
@@ -361,6 +467,70 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   const handleExpandedTextChange = (newText: string) => {
     setExpandedText(newText);
     setExpandedTextModified(true);
+  };
+  
+  // Check if row ordering is enabled for this table
+  const checkRowOrderingEnabled = () => {
+    if (!tableInfo?.row_ordering_config) return false;
+    return tableInfo.row_ordering_config.enabled === true;
+  };
+  
+  // Get the current row order from the table config
+  const getCurrentRowOrder = () => {
+    if (!tableInfo?.row_ordering_config?.order) return [];
+    return tableInfo.row_ordering_config.order;
+  };
+  
+  // Update row ordering configuration
+  const updateRowOrdering = async (newOrder: string[]) => {
+    try {
+      const { data, error } = await supabase.rpc('update_user_table_row_ordering', {
+        p_table_id: tableId,
+        p_enabled: true,
+        p_order: newOrder
+      });
+      
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to update row order');
+      
+      // Reload table data to reflect new order
+      await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm, true);
+      
+    } catch (err) {
+      console.error('Error updating row order:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update row order');
+    }
+  };
+  
+  // Enable row ordering for the table
+  const enableRowOrdering = async () => {
+    if (!data.length) return;
+    
+    // Create initial order based on current data
+    const initialOrder = data.map(row => row.id);
+    await updateRowOrdering(initialOrder);
+    setRowOrderingEnabled(true);
+  };
+  
+  // Disable row ordering
+  const disableRowOrdering = async () => {
+    try {
+      const { data, error } = await supabase.rpc('update_user_table_row_ordering', {
+        p_table_id: tableId,
+        p_enabled: false,
+        p_order: []
+      });
+      
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to disable row ordering');
+      
+      setRowOrderingEnabled(false);
+      await loadTableData(currentPage, limit, sortField, sortDirection, searchTerm, true);
+      
+    } catch (err) {
+      console.error('Error disabling row ordering:', err);
+      setError(err instanceof Error ? err.message : 'Failed to disable row ordering');
+    }
   };
   
   // Check if any data in the current table contains cleanable HTML
@@ -596,6 +766,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         showExportModal={showExportModal}
         showTableSettingsModal={showTableSettingsModal}
         showReferenceOverlay={showReferenceOverlay}
+        showRowOrderingModal={showRowOrderingModal}
         
         // Modal visibility state setters
         setShowEditModal={setShowEditModal}
@@ -605,6 +776,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         setShowExportModal={setShowExportModal}
         setShowTableSettingsModal={setShowTableSettingsModal}
         setShowReferenceOverlay={setShowReferenceOverlay}
+        setShowRowOrderingModal={setShowRowOrderingModal}
         
         // Success callbacks
         onEditSuccess={() => {
@@ -624,6 +796,17 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         containsCleanableHtml={containsCleanableHtml}
         hasCleanableHtmlInTable={hasCleanableHtmlInTable()}
         handleBulkHtmlCleanup={handleBulkHtmlCleanup}
+        
+        // Row ordering functions
+        rowOrderingEnabled={rowOrderingEnabled}
+        enableRowOrdering={enableRowOrdering}
+        disableRowOrdering={disableRowOrdering}
+        onRowOrderingSuccess={() => {
+          // Clear any active sorting when row ordering is updated
+          setSortField(null);
+          setSortDirection('asc');
+          loadTableData(currentPage, limit, null, 'asc', searchTerm, true);
+        }}
       />
       
       {/* Table */}

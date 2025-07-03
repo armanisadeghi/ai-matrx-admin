@@ -4,12 +4,13 @@ import AddColumnModal from './AddColumnModal';
 import AddRowModal from './AddRowModal';
 import EditRowModal from './EditRowModal';
 import DeleteRowModal from './DeleteRowModal';
-import TableSettingsModal from './TableSettingsModal';
+import TableConfigModal from './TableConfigModal';
 import ExportTableModal from './ExportTableModal';
 import TableReferenceOverlay from './TableReferenceOverlay';
+import RowOrderingModal from './RowOrderingModal';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, Download, Pencil, Trash, Settings, Plus, Link, Wand2 } from 'lucide-react';
+import { Search, X, Download, Pencil, Trash, Settings, Plus, Link, Wand2, ArrowUpDown, GripVertical } from 'lucide-react';
 
 interface TableToolbarProps {
   tableId: string;
@@ -33,6 +34,7 @@ interface TableToolbarProps {
   showExportModal: boolean;
   showTableSettingsModal: boolean;
   showReferenceOverlay: boolean;
+  showRowOrderingModal: boolean;
   
   // Modal visibility state setters
   setShowEditModal: (show: boolean) => void;
@@ -42,6 +44,7 @@ interface TableToolbarProps {
   setShowExportModal: (show: boolean) => void;
   setShowTableSettingsModal: (show: boolean) => void;
   setShowReferenceOverlay: (show: boolean) => void;
+  setShowRowOrderingModal: (show: boolean) => void;
   
   // Success callbacks
   onEditSuccess?: () => void;
@@ -52,6 +55,12 @@ interface TableToolbarProps {
   containsCleanableHtml?: (text: string) => boolean;
   hasCleanableHtmlInTable?: boolean;
   handleBulkHtmlCleanup?: () => Promise<void>;
+  
+  // Row ordering functions
+  rowOrderingEnabled?: boolean;
+  enableRowOrdering?: () => Promise<void>;
+  disableRowOrdering?: () => Promise<void>;
+  onRowOrderingSuccess?: () => void;
 }
 
 export default function TableToolbar({ 
@@ -76,6 +85,7 @@ export default function TableToolbar({
   showExportModal,
   showTableSettingsModal,
   showReferenceOverlay,
+  showRowOrderingModal,
   
   // Modal visibility state setters
   setShowEditModal,
@@ -85,6 +95,7 @@ export default function TableToolbar({
   setShowExportModal,
   setShowTableSettingsModal,
   setShowReferenceOverlay,
+  setShowRowOrderingModal,
   
   // Success callbacks
   onEditSuccess = () => loadTableData(),
@@ -94,7 +105,13 @@ export default function TableToolbar({
   cleanupHtmlText,
   containsCleanableHtml,
   hasCleanableHtmlInTable,
-  handleBulkHtmlCleanup
+  handleBulkHtmlCleanup,
+  
+  // Row ordering functions
+  rowOrderingEnabled,
+  enableRowOrdering,
+  disableRowOrdering,
+  onRowOrderingSuccess
 }: TableToolbarProps) {
   return (
     <>
@@ -147,6 +164,28 @@ export default function TableToolbar({
         </div>
         
         <div className="flex items-center w-full md:w-auto justify-end space-x-2">
+          {/* Row Ordering Controls */}
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (!rowOrderingEnabled && enableRowOrdering) {
+                // Auto-enable ordering and open modal
+                enableRowOrdering().then(() => {
+                  setShowRowOrderingModal(true);
+                });
+              } else {
+                // Just open modal if already enabled
+                setShowRowOrderingModal(true);
+              }
+            }}
+            className="whitespace-nowrap text-green-600 dark:text-green-400 border-green-300 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+            title={!rowOrderingEnabled ? "Enable row ordering and open reorder modal" : "Open row reordering modal"}
+          >
+            <GripVertical className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Reorder Rows</span>
+          </Button>
+          
           {hasCleanableHtmlInTable && handleBulkHtmlCleanup && (
             <Button 
               variant="outline"
@@ -217,11 +256,13 @@ export default function TableToolbar({
         onClose={() => setShowDeleteModal(false)}
         onSuccess={onDeleteSuccess}
       />
-      <TableSettingsModal
+      <TableConfigModal
         tableId={tableId}
+        tableInfo={tableInfo}
+        fields={fields}
         isOpen={showTableSettingsModal}
         onClose={() => setShowTableSettingsModal(false)}
-        onSuccess={() => loadTableData()}
+        onSuccess={() => loadTableData(true)}
       />
       <ExportTableModal
         tableId={tableId}
@@ -235,6 +276,13 @@ export default function TableToolbar({
         tableId={tableId}
         tableInfo={tableInfo}
         fields={fields}
+      />
+      <RowOrderingModal
+        isOpen={showRowOrderingModal}
+        onClose={() => setShowRowOrderingModal(false)}
+        tableId={tableId}
+        tableInfo={tableInfo}
+        onSuccess={onRowOrderingSuccess || (() => loadTableData(true))}
       />
     </>
   );

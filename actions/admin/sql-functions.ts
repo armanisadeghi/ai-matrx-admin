@@ -156,4 +156,4 @@ export async function deleteSqlFunction(schema: string, functionName: string, ar
         console.error('Error deleting SQL function:', error)
         throw new Error('Failed to delete SQL function')
     }
-} 
+}
