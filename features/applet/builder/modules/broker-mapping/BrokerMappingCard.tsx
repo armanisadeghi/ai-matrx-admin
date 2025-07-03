@@ -31,8 +31,6 @@ const BrokerMappingCard = ({ selectedBroker, appletId, onMappingCreated }: Broke
     const isMappingComplete = useAppSelector((state) => selectIsBrokerMapped(state, appletId, selectedBroker?.id));
     const fieldLabel = useAppSelector((state) => selectFieldLabelByBrokerId(state, appletId, selectedBroker?.id));
 
-    console.log("Broker Mapping Card Is Loading", isLoading);
-
     const activeFieldId = useAppSelector(selectActiveFieldId);
 
     useEffect(() => {

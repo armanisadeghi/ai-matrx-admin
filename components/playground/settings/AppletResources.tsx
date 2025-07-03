@@ -3,17 +3,15 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings2, Layers, Plus, RefreshCw } from "lucide-react";
+import { Settings2, Layers, Plus, RefreshCw, Settings, ExternalLink } from "lucide-react";
 import AppSelectCreateOverlay from "@/features/applet/builder/modules/smart-parts/apps/AppSelectCreateOverlay";
 import AppletSelectCreateOverlay from "@/features/applet/builder/modules/smart-parts/applets/AppletSelectCreateOverlay";
 import { CustomAppConfig, CustomAppletConfig } from "@/types/customAppTypes";
 import { CockpitPanelProps } from '../types';
 import { UseRecipeAgentSettingsHook } from '@/hooks/aiCockpit/useRecipeAgentSettings';
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { createAppletFromRecipe, createContainerFromRecipe } from "@/lib/redux/app-builder/utils/auto-applet-creator";
-import { updateAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { getCompiledRecipeByVersionWithNeededBrokers } from "@/features/workflows/service/recipe-service";
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { createAppletFromRecipe, updateAppletFromRecipe } from "@/lib/redux/app-builder/utils/auto-applet-creator";
+import { addAppletToAppThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AppletResourcesProps {
@@ -30,16 +28,25 @@ const AppletResources: React.FC<AppletResourcesProps> = ({
     const [isCreating, setIsCreating] = useState(false);
     const recipeRecord = playgroundControls.aiCockpitHook.recipeRecord;
     const dispatch = useAppDispatch();
+    const store = useAppStore();
     const { toast } = useToast();
 
     const handleAppSaved = (app: CustomAppConfig) => {
         setSelectedApp(app);
+        // Clear applet selection when app changes
+        setSelectedApplet(null);
         console.log('App selected/created:', app);
     };
 
     const handleAppletSaved = (applet: CustomAppletConfig) => {
         setSelectedApplet(applet);
         console.log('Applet selected/created:', applet);
+    };
+
+    const handleGoToApp = () => {
+        if (selectedApp?.slug) {
+            window.open(`/apps/custom/${selectedApp.slug}`, '_blank');
+        }
     };
 
     const handleCreateAppletFromRecipe = async () => {
@@ -52,53 +59,51 @@ const AppletResources: React.FC<AppletResourcesProps> = ({
             return;
         }
 
+        if (!selectedApp) {
+            toast({
+                title: "No App Selected",
+                description: "Please select an app first.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsCreating(true);
         try {
-            if (selectedApplet) {
-                // Update existing applet - inline logic
-                const recipeConfig = await getCompiledRecipeByVersionWithNeededBrokers(recipeRecord.id);
-                
-                if (!recipeConfig) {
-                    throw new Error(`Recipe with ID ${recipeRecord.id} not found`);
-                }
+            let resultApplet: CustomAppletConfig;
 
-                // Extract broker names from the recipe config
-                const brokerNames = recipeConfig.neededBrokers?.map((broker) => broker.name) || [];
-                
-                // Create ONE container with ALL brokers as fields
-                const container = await createContainerFromRecipe(selectedApplet.name, brokerNames, dispatch);
-                
-                // Update the applet with new containers and source config, preserving identity
-                const changes = {
-                    containers: [container],
-                    dataSourceConfig: {
-                        sourceType: "recipe" as const,
-                        config: {
-                            id: recipeConfig.id,
-                            compiledId: recipeConfig.compiledId,
-                            version: recipeConfig.version,
-                            neededBrokers: recipeConfig.neededBrokers || []
-                        }
-                    },
-                    compiledRecipeId: recipeConfig.compiledId,
-                };
-                
-                const updatedApplet = await dispatch(updateAppletThunk({ id: selectedApplet.id, changes })).unwrap();
-                setSelectedApplet(updatedApplet);
+            if (selectedApplet) {
+                // Update existing applet using the utility function
+                resultApplet = await updateAppletFromRecipe(
+                    selectedApplet.id, 
+                    recipeRecord.id, 
+                    dispatch, 
+                    store.getState
+                );
                 toast({
                     title: "Applet Updated",
-                    description: `${updatedApplet.name} has been updated with the current recipe.`,
+                    description: `${resultApplet.name} has been updated with the current recipe.`,
                 });
             } else {
-                // Create new applet
+                // Create new applet using the utility function
                 const recipeName = recipeRecord?.name || "Recipe";
-                const newApplet = await createAppletFromRecipe(recipeRecord.id, recipeName, dispatch);
-                setSelectedApplet(newApplet);
+                resultApplet = await createAppletFromRecipe(recipeRecord.id, recipeName, dispatch);
                 toast({
                     title: "Applet Created",
-                    description: `${newApplet.name} has been created from the recipe.`,
+                    description: `${resultApplet.name} has been created from the recipe.`,
                 });
             }
+
+            // Associate the applet with the selected app if there is one
+            if (selectedApp && resultApplet.id && (!resultApplet.appId || resultApplet.appId !== selectedApp.id)) {
+                await dispatch(addAppletToAppThunk({ appletId: resultApplet.id, appId: selectedApp.id })).unwrap();
+                toast({
+                    title: "App Association",
+                    description: `${resultApplet.name} has been associated with ${selectedApp.name}.`,
+                });
+            }
+
+            setSelectedApplet(resultApplet);
         } catch (error: any) {
             toast({
                 title: "Error",
@@ -119,85 +124,104 @@ const AppletResources: React.FC<AppletResourcesProps> = ({
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-                {/* App Management */}
-                <div className="space-y-2">
-                    {selectedApp ? (
-                        <>
-                            <div className="text-xs font-medium text-foreground truncate">
-                                App: {selectedApp.name}
+                {/* Row 1: App Selection */}
+                <div className="flex items-center justify-between gap-2 p-2 rounded-md border border-border bg-muted/50">
+                    <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-muted-foreground">App</div>
+                        {selectedApp ? (
+                            <div className="text-sm font-medium text-foreground truncate">
+                                {selectedApp.name}
                             </div>
-                            <AppSelectCreateOverlay
-                                onAppSaved={handleAppSaved}
-                                buttonLabel="Change App"
-                                dialogTitle="Select, Create, or Delete App"
-                                showCreateOption={true}
-                                showDelete={true}
-                                buttonClassName="w-full h-7 px-2 text-xs"
-                            />
-                        </>
-                    ) : (
-                        <AppSelectCreateOverlay
-                            onAppSaved={handleAppSaved}
-                            buttonLabel="Manage Apps"
-                            dialogTitle="Select, Create, or Delete App"
-                            showCreateOption={true}
-                            showDelete={true}
-                            buttonClassName="w-full h-7 px-2 text-xs"
-                        />
-                    )}
+                        ) : (
+                            <div className="text-sm text-muted-foreground italic">
+                                No app selected
+                            </div>
+                        )}
+                    </div>
+                    <AppSelectCreateOverlay
+                        onAppSaved={handleAppSaved}
+                        buttonLabel=""
+                        dialogTitle="Select, Create, or Delete App"
+                        showCreateOption={true}
+                        showDelete={true}
+                        buttonClassName="h-8 w-8 p-0"
+                        buttonVariant="ghost"
+                        triggerComponent={
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        }
+                    />
                 </div>
 
-                {/* Applet Management */}
-                <div className="space-y-2">
-                    {selectedApplet ? (
-                        <>
-                            <div className="text-xs font-medium text-foreground truncate">
-                                Applet: {selectedApplet.name}
+                {/* Row 2: Applet Selection */}
+                <div className={`flex items-center justify-between gap-2 p-2 rounded-md border border-border ${
+                    selectedApp ? 'bg-muted/50' : 'bg-muted/20 opacity-50'
+                }`}>
+                    <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-muted-foreground">Applet</div>
+                        {selectedApplet ? (
+                            <div className="text-sm font-medium text-foreground truncate">
+                                {selectedApplet.name}
                             </div>
-                            {selectedApplet.slug && (
-                                <div className="text-xs text-muted-foreground truncate">
-                                    Slug: {selectedApplet.slug}
-                                </div>
-                            )}
-                            <AppletSelectCreateOverlay
-                                onAppletSaved={handleAppletSaved}
-                                buttonLabel="Change Applet"
-                                dialogTitle="Select, Create, or Delete Applet"
-                                showCreateOption={true}
-                                showDelete={true}
-                                buttonClassName="w-full h-7 px-2 text-xs"
-                            />
-                        </>
-                    ) : (
-                        <AppletSelectCreateOverlay
-                            onAppletSaved={handleAppletSaved}
-                            buttonLabel="Manage Applets"
-                            dialogTitle="Select, Create, or Delete Applet"
-                            showCreateOption={true}
-                            showDelete={true}
-                            buttonClassName="w-full h-7 px-2 text-xs"
-                        />
-                    )}
+                        ) : (
+                            <div className="text-sm text-muted-foreground italic">
+                                {selectedApp ? "No applet selected" : "Select an app first"}
+                            </div>
+                        )}
+                    </div>
+                    <AppletSelectCreateOverlay
+                        onAppletSaved={handleAppletSaved}
+                        buttonLabel=""
+                        dialogTitle="Select, Create, or Delete Applet"
+                        showCreateOption={true}
+                        showDelete={true}
+                        buttonClassName="h-8 w-8 p-0"
+                        buttonVariant="ghost"
+                        triggerComponent={
+                            <Button variant="ghost" className="h-8 w-8 p-0" disabled={!selectedApp}>
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        }
+                    />
                 </div>
 
-                {/* Create/Update Applet from Recipe */}
+                {/* Row 3: Create/Update Applet from Recipe */}
                 {recipeRecord && (
-                    <div className="pt-2 border-t border-border">
+                    <div className="pt-2 border-t border-border space-y-2">
                         <Button
                             onClick={handleCreateAppletFromRecipe}
-                            disabled={isCreating}
-                            className="w-full h-7 px-2 text-xs"
+                            disabled={isCreating || !selectedApp}
+                            className="w-full h-8 px-3 text-xs"
                             variant="outline"
                         >
                             {isCreating ? (
-                                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                                <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
                             ) : selectedApplet ? (
-                                <RefreshCw className="h-3 w-3 mr-1" />
+                                <RefreshCw className="h-3 w-3 mr-2" />
                             ) : (
-                                <Plus className="h-3 w-3 mr-1" />
+                                <Plus className="h-3 w-3 mr-2" />
                             )}
                             {selectedApplet ? "Update from Recipe" : "Create from Recipe"}
                         </Button>
+                        
+                        {/* Go to App Button - only show when both app and applet are selected */}
+                        {selectedApp && selectedApplet && (
+                            <Button
+                                onClick={handleGoToApp}
+                                className="w-full h-8 px-3 text-xs"
+                                variant="default"
+                            >
+                                <ExternalLink className="h-3 w-3 mr-2" />
+                                Go to App
+                            </Button>
+                        )}
+                        
+                        {!selectedApp && (
+                            <div className="text-xs text-muted-foreground text-center mt-1">
+                                Select an app to enable recipe actions
+                            </div>
+                        )}
                     </div>
                 )}
             </CardContent>

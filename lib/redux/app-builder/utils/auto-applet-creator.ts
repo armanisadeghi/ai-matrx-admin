@@ -9,6 +9,7 @@ import { createAppletThunk, updateAppletThunk } from "../thunks/appletBuilderThu
 import { selectAppletById } from "../selectors/appletSelectors";
 import { RootState } from "@/lib/redux/store";
 import { isAppletSlugAvailable } from "../service/customAppletService";
+import { BrokerMapping, NeededBroker } from "@/types/customAppTypes";
 
 export const createFieldFromBroker = async (brokerName: string, dispatch: AppDispatch) => {
     const field = normalizeFieldDefinitionWithUuid({ component: "textarea", label: brokerName });
@@ -17,9 +18,9 @@ export const createFieldFromBroker = async (brokerName: string, dispatch: AppDis
     return result;
 };
 
-export const createContainerFromRecipe = async (recipeName: string, brokerNames: string[], dispatch: AppDispatch) => {
+export const createContainerFromRecipe = async (recipeName: string, neededBrokers: NeededBroker[], dispatch: AppDispatch) => {
     // First, create all the fields
-    const fields = await Promise.all(brokerNames.map((name) => createFieldFromBroker(name, dispatch)));
+    const fields = await Promise.all(neededBrokers.map((broker) => createFieldFromBroker(broker.name, dispatch)));
     console.log("Created fields:", fields);
     
     // Create the container without fields first
@@ -48,7 +49,13 @@ export const createContainerFromRecipe = async (recipeName: string, brokerNames:
     const finalContainer = await getComponentGroupById(createdContainer.id);
     console.log("Final container with fields:", finalContainer);
     
-    return finalContainer || createdContainer;
+    return {
+        container: finalContainer || createdContainer,
+        fieldToBrokerMappings: fields.map((field, index) => ({
+            fieldId: field.id!,
+            brokerId: neededBrokers[index].id
+        }))
+    };
 };
 
 export const createAppletFromRecipe = async (recipeId: string, recipeName: string, dispatch: AppDispatch) => {
@@ -58,12 +65,13 @@ export const createAppletFromRecipe = async (recipeId: string, recipeName: strin
         throw new Error(`Recipe with ID ${recipeId} not found`);
     }
     
-    // Extract broker names from the recipe config
-    const brokerNames = recipeConfig.neededBrokers?.map((broker) => broker.name) || [];
+    // Get needed brokers from the recipe config
+    const neededBrokers = recipeConfig.neededBrokers || [];
     
-    // Create ONE container with ALL brokers as fields
-    const container = await createContainerFromRecipe(recipeName, brokerNames, dispatch);
+    // Create ONE container with ALL brokers as fields and get the field-to-broker mappings
+    const { container, fieldToBrokerMappings } = await createContainerFromRecipe(recipeName, neededBrokers, dispatch);
     console.log("container", container);
+    console.log("fieldToBrokerMappings", fieldToBrokerMappings);
     
     // Generate a unique slug
     const baseSlug = convertToKebabCase(recipeName);
@@ -76,12 +84,22 @@ export const createAppletFromRecipe = async (recipeId: string, recipeName: strin
         counter++;
     }
 
+    const appletId = uuidv4();
+    
+    // Create broker mappings for the applet
+    const brokerMappings: BrokerMapping[] = fieldToBrokerMappings.map(mapping => ({
+        appletId,
+        fieldId: mapping.fieldId,
+        brokerId: mapping.brokerId
+    }));
+
     const applet = {
-        id: uuidv4(),
+        id: appletId,
         name: `${recipeName} Applet`,
         description: `Auto-generated applet for ${recipeName}`,
         slug: uniqueSlug,
         containers: [container],
+        brokerMap: brokerMappings,
         dataSourceConfig: {
             sourceType: "recipe" as const,
             config: {
@@ -109,15 +127,23 @@ export const updateAppletFromRecipe = async (appletId: string, recipeId: string,
         throw new Error(`Applet with ID ${appletId} not found`);
     }
     
-    // Extract broker names from the recipe config
-    const brokerNames = recipeConfig.neededBrokers?.map((broker) => broker.name) || [];
+    // Get needed brokers from the recipe config
+    const neededBrokers = recipeConfig.neededBrokers || [];
     
-    // Create ONE container with ALL brokers as fields
-    const container = await createContainerFromRecipe(existingApplet.name, brokerNames, dispatch);
+    // Create ONE container with ALL brokers as fields and get the field-to-broker mappings
+    const { container, fieldToBrokerMappings } = await createContainerFromRecipe(existingApplet.name, neededBrokers, dispatch);
     
-    // Update the applet with new containers and source config, preserving identity
+    // Create broker mappings for the applet
+    const brokerMappings: BrokerMapping[] = fieldToBrokerMappings.map(mapping => ({
+        appletId,
+        fieldId: mapping.fieldId,
+        brokerId: mapping.brokerId
+    }));
+    
+    // Update the applet with new containers, broker mappings, and source config, preserving identity
     const changes = {
         containers: [container],
+        brokerMap: brokerMappings,
         dataSourceConfig: {
             sourceType: "recipe" as const,
             config: {
