@@ -101,6 +101,7 @@ interface FieldsState {
     error: string | null;
     activeFieldId: string | null;
     newFieldId: string | null;
+    hasFetched: boolean;
 }
 
 const initialState: FieldsState = {
@@ -109,6 +110,7 @@ const initialState: FieldsState = {
     error: null,
     activeFieldId: null,
     newFieldId: null,
+    hasFetched: false,
 };
 
 export const fieldBuilderSlice = createSlice({
@@ -551,10 +553,12 @@ export const fieldBuilderSlice = createSlice({
             
             state.fields = newFields;
             state.isLoading = false;
+            state.hasFetched = true;
         });
         builder.addCase(fetchFieldsThunk.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message || "Failed to fetch fields";
+            state.hasFetched = true;
         });
 
         // Fetch Field By Id

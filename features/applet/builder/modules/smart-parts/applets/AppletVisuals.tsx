@@ -31,9 +31,15 @@ export interface AppletVisualsProps {
     appletId: string;
     isNew?: boolean;
     showLayoutOption?: boolean;
+    showButtonOptions?: boolean;
 }
 
-export const AppletVisuals: React.FC<AppletVisualsProps> = ({ appletId, isNew = false, showLayoutOption = true }) => {
+export const AppletVisuals: React.FC<AppletVisualsProps> = ({
+    appletId,
+    isNew = false,
+    showLayoutOption = true,
+    showButtonOptions = true,
+}) => {
     const dispatch = useAppDispatch();
 
     // Redux selectors for the current applet
@@ -71,50 +77,52 @@ export const AppletVisuals: React.FC<AppletVisualsProps> = ({ appletId, isNew = 
 
     return (
         <div className="space-y-6">
-            <div className="space-y-4">
-                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Submit Button</Label>
-
+            {showButtonOptions && (
                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 w-full">
-                        <IconPicker
-                            selectedIcon={appletIcon || DEFAULT_APPLET_CONFIG.appletIcon}
-                            onIconSelect={handleAppletIconSelect}
-                            dialogTitle="Select Submit Button"
-                            dialogDescription="Choose an icon to represent your submit button"
-                            className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg"
-                            primaryColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
-                            accentColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
-                            iconType="submitIcon"
-                        />
-                        <Input
-                            id={`${isNew ? "new" : "edit"}-submit-text`}
-                            value={appletSubmitText || DEFAULT_APPLET_CONFIG.appletSubmitText}
-                            onChange={handleAppletSubmitTextChange}
-                            className="flex-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
-                            placeholder="Optional button text"
-                        />
-                    </div>
+                    <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Submit Button</Label>
 
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <TailwindColorPicker
-                                selectedColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
-                                onColorChange={(color) => handleAppletColorChange("primary", color)}
-                                size="sm"
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 w-full">
+                            <IconPicker
+                                selectedIcon={appletIcon || DEFAULT_APPLET_CONFIG.appletIcon}
+                                onIconSelect={handleAppletIconSelect}
+                                dialogTitle="Select Submit Button"
+                                dialogDescription="Choose an icon to represent your submit button"
+                                className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg"
+                                primaryColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
+                                accentColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
+                                iconType="submitIcon"
                             />
-                            <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Primary Color</Label>
+                            <Input
+                                id={`${isNew ? "new" : "edit"}-submit-text`}
+                                value={appletSubmitText || DEFAULT_APPLET_CONFIG.appletSubmitText}
+                                onChange={handleAppletSubmitTextChange}
+                                className="flex-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                placeholder="Optional button text"
+                            />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <TailwindColorPicker
-                                selectedColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
-                                onColorChange={(color) => handleAppletColorChange("accent", color)}
-                                size="sm"
-                            />
-                            <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Accent Color</Label>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <TailwindColorPicker
+                                    selectedColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
+                                    onColorChange={(color) => handleAppletColorChange("primary", color)}
+                                    size="sm"
+                                />
+                                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Primary Color</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <TailwindColorPicker
+                                    selectedColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
+                                    onColorChange={(color) => handleAppletColorChange("accent", color)}
+                                    size="sm"
+                                />
+                                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Accent Color</Label>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             <div className="space-y-4">
                 {showLayoutOption && (

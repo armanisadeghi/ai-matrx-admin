@@ -5,6 +5,7 @@ import { RecordTabData, UseRecipeAgentSettingsHook } from '@/hooks/aiCockpit/use
 import { FieldRendererOptions } from '@/app/entities/hooks/form-related/useFieldRenderer';
 import { DEFAULT_CRUD_LAYOUT, DEFAULT_CRUD_OPTIONS, layoutProps } from './constants';
 import PlaygroundResources from './PlaygroundResources';
+import AppletResources from './AppletResources';
 import MetricsCard from './MetricsCard';
 
 interface AiSettingsRecordProps {
@@ -51,7 +52,11 @@ const AiSettingsRecord: React.FC<AiSettingsRecordProps> = ({
                 </div>
             </div>
             {/* Fixed bottom section */}
-            <div className='mt-auto border-t border-border/30'>
+            <div className='mt-auto border-t border-border/30 space-y-4'>
+                <AppletResources
+                    playgroundControls={playgroundControls}
+                    recipeAgentSettingsHook={recipeAgentSettingsHook}
+                />
                 <PlaygroundResources
                     playgroundControls={playgroundControls}
                     recipeAgentSettingsHook={recipeAgentSettingsHook}

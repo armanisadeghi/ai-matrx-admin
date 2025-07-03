@@ -23,9 +23,7 @@ export type ComponentGroupDB = {
 /**
  * Converts a ContainerBuilder to the database format
  */
-export const componentGroupToDBFormat = async (
-    group: ContainerBuilder
-): Promise<Omit<ComponentGroupDB, "created_at" | "updated_at">> => {
+export const componentGroupToDBFormat = async (group: ContainerBuilder): Promise<Omit<ComponentGroupDB, "created_at" | "updated_at">> => {
     const { data } = await supabase.auth.getUser();
     const userId = data.user?.id;
 
@@ -241,16 +239,16 @@ export const addOrRefreshFieldInGroup = async (groupId: string, fieldId: string)
             p_group_id: groupId,
             p_field_id: fieldId,
         });
-        
+
         if (error) {
             console.error("Error refreshing field in group:", error);
             throw error;
         }
-        
+
         if (!data) {
             throw new Error("No data returned from refresh_field_in_group operation");
         }
-        
+
         // Convert the returned jsonb data to our application format
         return dbToComponentGroup(data as ComponentGroupDB);
     } catch (err) {

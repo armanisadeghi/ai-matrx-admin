@@ -1,16 +1,19 @@
 "use client";
 import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle, useRef } from "react";
-import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, BoxIcon } from "lucide-react";
+import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, BoxIcon, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
-import { fetchAppletsThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import { fetchAppletsThunk, deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import { startNewApplet, setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { v4 as uuidv4 } from "uuid";
 import {
     selectAllApplets,
     selectAppletLoading,
@@ -33,6 +36,7 @@ export type SmartAppletListRefType = {
  * @param {Function} props.onEditApplet - Callback when applet is edited
  * @param {boolean} props.showCreateButton - Whether to show the create button
  * @param {Function} props.onCreateApplet - Callback when create button is clicked
+ * @param {boolean} props.showDelete - Whether to show delete buttons on applets
  * @param {string} props.className - Additional CSS classes
  * @param {string[]} props.appletIds - Optional list of applet IDs to fetch and display
  * @param {Function} props.onRefreshComplete - Optional callback when refresh completes
@@ -45,12 +49,15 @@ const SmartAppletList = forwardRef<
         onEditApplet?: (applet: CustomAppletConfig) => void;
         showCreateButton?: boolean;
         onCreateApplet?: () => void;
+        showDelete?: boolean;
         className?: string;
         appletIds?: string[];
         onRefreshComplete?: (applets: CustomAppletConfig[]) => void;
         appId?: string; // Add appId prop
         initialViewMode?: "grid" | "list";
         shouldFetch?: boolean;
+        allowCreate?: boolean;
+        allowDelete?: boolean;
     }
 >(
     (
@@ -59,12 +66,15 @@ const SmartAppletList = forwardRef<
             onEditApplet,
             showCreateButton = true,
             onCreateApplet,
+            showDelete = false,
             className = "",
             appletIds,
             onRefreshComplete,
             appId, // New prop
             initialViewMode = "grid",
             shouldFetch = true,
+            allowCreate = false,
+            allowDelete = false,
         },
         ref
     ) => {
@@ -85,6 +95,36 @@ const SmartAppletList = forwardRef<
 
         // Derived state
         const baseApplets = appletIds ? useAppSelector((state) => selectAppletsByIds(state, appletIds)) : allApplets;
+
+        const handleLocalCreateApplet = () => {
+            // Only handle creation internally if no external callback is provided
+            if (onCreateApplet) {
+                onCreateApplet();
+            } else {
+                if (!allowCreate) return;
+                const newAppletId = uuidv4();
+                dispatch(startNewApplet({ id: newAppletId }));
+                dispatch(setActiveApplet(newAppletId));
+            }
+        };
+
+        // Handle applet deletion
+        const handleDeleteApplet = async (applet: CustomAppletConfig) => {
+            try {
+                await dispatch(deleteAppletThunk(applet.id)).unwrap();
+                toast({
+                    title: "Applet Deleted",
+                    description: `"${applet.name}" has been deleted successfully.`,
+                });
+            } catch (error) {
+                console.error("Error deleting applet:", error);
+                toast({
+                    title: "Delete Failed",
+                    description: "Could not delete the applet. Please try again.",
+                    variant: "destructive",
+                });
+            }
+        };
 
         // Filter by appId if provided
         const applets = React.useMemo(() => {
@@ -314,8 +354,8 @@ const SmartAppletList = forwardRef<
                             </Button>
                         </div>
 
-                        {showCreateButton && onCreateApplet && (
-                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" size="sm" onClick={onCreateApplet}>
+                        {showCreateButton && (
+                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" size="sm" onClick={handleLocalCreateApplet}>
                                 <Plus className="h-4 w-4 mr-1" /> New
                             </Button>
                         )}
@@ -323,7 +363,7 @@ const SmartAppletList = forwardRef<
                 </div>
 
                 {/* Applet cards */}
-                <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-3"}>
+                <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-4 gap-4" : "space-y-3"}>
                     {isLoading ? (
                         renderSkeletons()
                     ) : filteredApplets.length === 0 ? (
@@ -335,8 +375,8 @@ const SmartAppletList = forwardRef<
                             <p className="text-gray-500 dark:text-gray-400 mt-1">
                                 {searchTerm ? "Try a different search term" : "Create your first applet to get started"}
                             </p>
-                            {showCreateButton && onCreateApplet && (
-                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white mt-4" onClick={onCreateApplet}>
+                            {showCreateButton && (
+                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white mt-4" onClick={handleLocalCreateApplet}>
                                     <Plus className="h-4 w-4 mr-2" /> Create New Applet
                                 </Button>
                             )}
@@ -497,6 +537,35 @@ const SmartAppletList = forwardRef<
                                                         >
                                                             Edit
                                                         </Button>
+                                                    )}
+                                                    {showDelete && (
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button
+                                                                    className="bg-red-500 hover:bg-red-600 text-white"
+                                                                    size="sm"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Delete Applet</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Are you sure you want to delete "{applet.name}"? This action cannot be undone and will permanently remove the applet and all its data.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        className="bg-red-600 hover:bg-red-700"
+                                                                        onClick={() => handleDeleteApplet(applet)}
+                                                                    >
+                                                                        Delete
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
                                                     )}
                                                 </div>
                                             </CardFooter>

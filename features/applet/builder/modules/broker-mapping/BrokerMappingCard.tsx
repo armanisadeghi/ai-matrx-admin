@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import SectionCard from "@/components/official/cards/SectionCard";
 import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
-import { selectFieldLoading, selectActiveFieldId } from "@/lib/redux/app-builder/selectors/fieldSelectors";
+import { selectFieldLoading, selectActiveFieldId, selectFieldsHasFetched } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { Broker, BrokerMapping } from "@/types/customAppTypes";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import FieldListTable from "@/features/applet/builder/modules/field-builder/FieldListTable";
@@ -25,10 +25,13 @@ interface BrokerMappingCardProps {
 const BrokerMappingCard = ({ selectedBroker, appletId, onMappingCreated }: BrokerMappingCardProps) => {
     const dispatch = useAppDispatch();
     const isLoading = useAppSelector(selectFieldLoading);
+    const hasFetched = useAppSelector(selectFieldsHasFetched);
     const [mode, setMode] = useState<"create" | "edit" | "list">("list");
     const [broker, setBroker] = useState<Broker | null>(selectedBroker);
     const isMappingComplete = useAppSelector((state) => selectIsBrokerMapped(state, appletId, selectedBroker?.id));
     const fieldLabel = useAppSelector((state) => selectFieldLabelByBrokerId(state, appletId, selectedBroker?.id));
+
+    console.log("Broker Mapping Card Is Loading", isLoading);
 
     const activeFieldId = useAppSelector(selectActiveFieldId);
 
@@ -36,11 +39,11 @@ const BrokerMappingCard = ({ selectedBroker, appletId, onMappingCreated }: Broke
         setBroker(selectedBroker);
     }, [selectedBroker]);
 
-
-
     useEffect(() => {
-        dispatch(fetchFieldsThunk());
-    }, [dispatch]);
+        if (!hasFetched && !isLoading) {
+            dispatch(fetchFieldsThunk());
+        }
+    }, [dispatch, hasFetched, isLoading]);
 
     // Create mapping between broker and field
     const handleCreateMapping = (id: string) => {

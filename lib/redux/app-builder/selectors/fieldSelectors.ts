@@ -35,6 +35,12 @@ export const selectFieldError = createSelector(
   (fieldBuilderState) => fieldBuilderState.error
 );
 
+// Memoized selector for fields fetch status
+export const selectFieldsHasFetched = createSelector(
+  [getFieldBuilderState],
+  (fieldBuilderState) => fieldBuilderState.hasFetched
+);
+
 // Memoized selector for fields by a list of IDs
 export const selectFieldsByIds = createSelector(
   [

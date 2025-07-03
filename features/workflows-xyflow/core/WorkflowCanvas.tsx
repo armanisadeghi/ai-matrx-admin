@@ -30,6 +30,9 @@ import {
     useOnSelectionChange,
     useOnViewportChange,
     useNodesInitialized,
+    OnConnectStart,
+    OnConnectEnd,
+    OnReconnect,
 } from "@xyflow/react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
@@ -329,6 +332,96 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
             [edges, nodes]
         );
 
+        // Connection Event Handlers - Added comprehensive logging
+        const handleConnectStart: OnConnectStart = useCallback((event, params) => {
+            console.log('🔄 onConnectStart called with:', {
+                event: {
+                    type: event.type,
+                    clientX: 'clientX' in event ? event.clientX : undefined,
+                    clientY: 'clientY' in event ? event.clientY : undefined,
+                    target: event.target,
+                },
+                connectionData: {
+                    nodeId: params.nodeId,
+                    handleId: params.handleId,
+                    handleType: params.handleType,
+                }
+            });
+        }, []);
+
+        const handleConnect: OnConnect = useCallback(
+            (connection) => {
+                console.log('🔗 onConnect called with connection:', {
+                    connection,
+                    isValid: isValidConnection(connection),
+                    sourceNode: nodes.find(n => n.id === connection.source),
+                    targetNode: nodes.find(n => n.id === connection.target),
+                });
+
+                if (isValidConnection(connection)) {
+                    // Create a new edge with proper styling and ID
+                    const newEdge: Edge = {
+                        id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
+                        source: connection.source!,
+                        target: connection.target!,
+                        sourceHandle: connection.sourceHandle,
+                        targetHandle: connection.targetHandle,
+                        type: "smoothstep",
+                        animated: false,
+                        style: {
+                            strokeWidth: 2,
+                            stroke: currentTheme === "dark" ? "#6b7280" : "#374151",
+                        },
+                        data: {
+                            // Store connection metadata for future use
+                            createdAt: new Date().toISOString(),
+                            isTemporary: true, // Mark as temporary until backend is implemented
+                        },
+                    };
+
+                    console.log('✅ Creating new edge:', newEdge);
+                    setEdges((eds) => [...eds, newEdge]);
+                } else {
+                    console.log('❌ Connection rejected - validation failed');
+                }
+            },
+            [setEdges, isValidConnection, currentTheme, nodes]
+        );
+
+        const handleConnectEnd: OnConnectEnd = useCallback((event) => {
+            console.log('🏁 onConnectEnd called with event:', {
+                type: event.type,
+                clientX: 'clientX' in event ? event.clientX : undefined,
+                clientY: 'clientY' in event ? event.clientY : undefined,
+                target: event.target,
+            });
+        }, []);
+
+        const handleReconnect: OnReconnect = useCallback((oldEdge, newConnection) => {
+            console.log('🔄 onReconnect called with:', {
+                oldEdge,
+                newConnection,
+                isValidNewConnection: isValidConnection(newConnection),
+            });
+
+            if (isValidConnection(newConnection)) {
+                console.log('✅ Reconnecting edge');
+                setEdges((eds) => eds.map((edge) => 
+                    edge.id === oldEdge.id 
+                        ? { 
+                            ...edge, 
+                            source: newConnection.source!,
+                            target: newConnection.target!,
+                            sourceHandle: newConnection.sourceHandle,
+                            targetHandle: newConnection.targetHandle,
+                        }
+                        : edge
+                ));
+            } else {
+                console.log('❌ Reconnection rejected - validation failed');
+            }
+        }, [isValidConnection, setEdges]);
+
         // Enhanced event handlers
         const handleNodesChange: OnNodesChange = useCallback(
             (changes) => {
@@ -365,35 +458,6 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                 }
             },
             [onEdgesChange, historyIndex, reactFlowInstance]
-        );
-
-        const handleConnect: OnConnect = useCallback(
-            (connection) => {
-                if (isValidConnection(connection)) {
-                    // Create a new edge with proper styling and ID
-                    const newEdge: Edge = {
-                        id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
-                        source: connection.source!,
-                        target: connection.target!,
-                        sourceHandle: connection.sourceHandle,
-                        targetHandle: connection.targetHandle,
-                        type: "smoothstep",
-                        animated: false,
-                        style: {
-                            strokeWidth: 2,
-                            stroke: currentTheme === "dark" ? "#6b7280" : "#374151",
-                        },
-                        data: {
-                            // Store connection metadata for future use
-                            createdAt: new Date().toISOString(),
-                            isTemporary: true, // Mark as temporary until backend is implemented
-                        },
-                    };
-
-                    setEdges((eds) => [...eds, newEdge]);
-                }
-            },
-            [setEdges, isValidConnection, currentTheme]
         );
 
         // Selection change handler
@@ -670,6 +734,9 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                     onNodesChange={handleNodesChange}
                     onEdgesChange={handleEdgesChange}
                     onConnect={handleConnect}
+                    onConnectStart={handleConnectStart}
+                    onConnectEnd={handleConnectEnd}
+                    onReconnect={handleReconnect}
                     nodeTypes={nodeTypes}
                     edgeTypes={edgeTypes}
                     defaultEdgeOptions={defaultEdgeOptions}
@@ -685,6 +752,7 @@ export const WorkflowCanvas = forwardRef<WorkflowCanvasRef, WorkflowCanvasProps>
                     nodesConnectable={isInteractive}
                     nodesFocusable={isInteractive}
                     edgesFocusable={isInteractive}
+                    edgesReconnectable={isInteractive}
                     elementsSelectable={isInteractive}
                     selectNodesOnDrag={isInteractive}
                     panOnDrag={true}

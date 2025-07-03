@@ -135,9 +135,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
     // Handlers
     const handleCreateNewApplet = () => {
         const appletId = uuidv4();
-        console.log("AppletsConfigStep created new id:", appletId);
         dispatch(startNewApplet({ id: appletId }));
-        console.log("AppletsConfigStep STARTED new applet with the generated id.");
         setCurrentMode("new");
     };
 

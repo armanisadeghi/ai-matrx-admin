@@ -1,16 +1,17 @@
 "use client";
 import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
-import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, Bug } from "lucide-react";
+import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, Bug, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
-import { fetchAppsThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
+import { fetchAppsThunk, deleteAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { selectAllApps, selectAppLoading, selectAppError, selectAppsByIds } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { IconPicker } from "@/components/ui/IconPicker";
 import { COLOR_VARIANTS } from "@/features/applet/styles/StyledComponents";
@@ -27,6 +28,7 @@ export type SmartAppListRefType = {
  * @param {Function} props.onSelectApp - Callback when app is selected
  * @param {boolean} props.showCreateButton - Whether to show the create button
  * @param {Function} props.onCreateApp - Callback when create button is clicked
+ * @param {boolean} props.showDelete - Whether to show delete buttons on apps
  * @param {string} props.className - Additional CSS classes
  * @param {string[]} props.appIds - Optional list of app IDs to fetch and display
  * @param {Function} props.onRefreshComplete - Optional callback when refresh completes
@@ -43,6 +45,7 @@ const SmartAppList = forwardRef<
         onEditApp?: (app: CustomAppConfig) => void;
         showCreateButton?: boolean;
         onCreateApp?: () => void;
+        showDelete?: boolean;
         className?: string;
         appIds?: string[];
         onRefreshComplete?: (apps: CustomAppConfig[]) => void;
@@ -60,6 +63,7 @@ const SmartAppList = forwardRef<
             onEditApp,
             showCreateButton = true,
             onCreateApp,
+            showDelete = false,
             className = "",
             appIds,
             onRefreshComplete,
@@ -201,6 +205,24 @@ const SmartAppList = forwardRef<
             });
         };
 
+        // Handle app deletion
+        const handleDeleteApp = async (app: CustomAppConfig) => {
+            try {
+                await dispatch(deleteAppThunk(app.id)).unwrap();
+                toast({
+                    title: "App Deleted",
+                    description: `"${app.name}" has been deleted successfully.`,
+                });
+            } catch (error) {
+                console.error("Error deleting app:", error);
+                toast({
+                    title: "Delete Failed",
+                    description: "Could not delete the app. Please try again.",
+                    variant: "destructive",
+                });
+            }
+        };
+
         // Handle search term changes
         const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
             setSearchTerm(e.target.value);
@@ -209,21 +231,6 @@ const SmartAppList = forwardRef<
         // Handle sort changes
         const handleSortChange = (value: string) => {
             setSortBy(value);
-        };
-
-        // Debug function to check Redux store
-        const debugReduxStore = () => {
-            try {
-                // Access the Redux store directly
-                const state = store.getState();
-
-                toast({
-                    title: "Redux Store Debugged",
-                    description: "Check the console for details",
-                });
-            } catch (err) {
-                console.error("Error debugging Redux store:", err);
-            }
         };
 
         // Renders skeleton cards during loading state
@@ -284,14 +291,6 @@ const SmartAppList = forwardRef<
 
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                         {/* Debug button - only shown in development */}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center gap-1 bg-yellow-100 text-yellow-900 dark:bg-yellow-800 dark:text-yellow-200"
-                            onClick={debugReduxStore}
-                        >
-                            <Bug className="h-4 w-4" />
-                        </Button>
 
                         <Button
                             className="bg-blue-500 hover:bg-blue-600 text-white"
@@ -523,6 +522,35 @@ const SmartAppList = forwardRef<
                                                         >
                                                             Edit
                                                         </Button>
+                                                    )}
+                                                    {showDelete && (
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button
+                                                                    className="bg-red-500 hover:bg-red-600 text-white"
+                                                                    size="sm"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Delete App</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Are you sure you want to delete "{app.name}"? This action cannot be undone and will permanently remove the app and all its data.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        className="bg-red-600 hover:bg-red-700"
+                                                                        onClick={() => handleDeleteApp(app)}
+                                                                    >
+                                                                        Delete
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
                                                     )}
                                                 </div>
                                             </CardFooter>

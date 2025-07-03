@@ -13,6 +13,9 @@ import { RootState } from "@/lib/redux";
 import { selectFieldById } from "../selectors/fieldSelectors";
 import { addOrRefreshFieldInGroup, refreshAllFieldsInGroup } from "../service/fieldContainerService";
 import { setActiveField } from "../slices/fieldBuilderSlice";
+import { getComponentTypeDefaults } from "@/features/applet/constants/field-constants";
+import { v4 as uuidv4 } from "uuid";
+import { normalizeFieldDefinitionWithUuid } from "@/features/applet/utils/field-normalization";
 
 /**
  * Unified thunk for saving a field - handles both create and update
@@ -109,6 +112,7 @@ export const createFieldThunk = createAsyncThunk<FieldBuilder, FieldBuilder>(
         }
     }
 );
+
 
 // export const updateFieldThunk = createAsyncThunk<FieldBuilder, { id: string; changes: Partial<FieldBuilder> }>(
 //     "fieldBuilder/updateField",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import {
   EdgeProps,
   getSmoothStepPath,
@@ -11,7 +11,8 @@ import {
 } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Settings, Zap } from 'lucide-react';
+import { Trash2, Settings, Zap } from 'lucide-react';
+import { EdgeSettingsOverlay } from './EdgeSettingsOverlay';
 
 interface WorkflowEdgeData extends Record<string, unknown> {
   label?: string;
@@ -26,21 +27,32 @@ interface WorkflowEdgeProps extends EdgeProps {
   data?: WorkflowEdgeData;
 }
 
-const WorkflowEdgeComponent: React.FC<WorkflowEdgeProps> = ({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  style = {},
-  data,
-  selected,
-  markerEnd,
-  markerStart,
-}) => {
+const WorkflowEdgeComponent: React.FC<WorkflowEdgeProps> = (props) => {
+  const {
+    id,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    style = {},
+    data,
+    selected,
+    markerEnd,
+    markerStart,
+    source,
+    target,
+    animated,
+    label,
+  } = props;
   const { deleteElements, updateEdge } = useReactFlow();
+  
+  // State for edge settings overlay
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Reconstruct the complete edge object for the overlay
+  const completeEdge = props;
 
   // Calculate edge path
   const [edgePath, labelX, labelY] = getSmoothStepPath({
@@ -104,10 +116,10 @@ const WorkflowEdgeComponent: React.FC<WorkflowEdgeProps> = ({
     deleteElements({ edges: [{ id }] });
   };
 
-  // Handle edge settings
+  // Handle edge settings - now opens the overlay
   const handleSettings = (event: React.MouseEvent) => {
     event.stopPropagation();
-    console.log('Open edge settings for:', id);
+    setIsSettingsOpen(true);
   };
 
   // Toggle animation
@@ -189,22 +201,13 @@ const WorkflowEdgeComponent: React.FC<WorkflowEdgeProps> = ({
               
               {/* Controls (only when selected) */}
               {selected && (
-                <div className="flex items-center gap-1 bg-background/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-lg">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleToggleAnimation}
-                    className="h-5 w-5 p-0"
-                    title={data?.animated ? "Disable Animation" : "Enable Animation"}
-                  >
-                    <Zap className={`h-3 w-3 ${data?.animated ? 'text-yellow-500' : ''}`} />
-                  </Button>
+                <div className="flex items-center gap-1 bg-background border border-border rounded-lg shadow-lg p-1">
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={handleSettings}
-                    className="h-5 w-5 p-0"
-                    title="Edge Settings"
+                    className="h-6 w-6 p-0"
+                    title="Settings"
                   >
                     <Settings className="h-3 w-3" />
                   </Button>
@@ -212,10 +215,19 @@ const WorkflowEdgeComponent: React.FC<WorkflowEdgeProps> = ({
                     size="sm"
                     variant="ghost"
                     onClick={handleDelete}
-                    className="h-5 w-5 p-0 text-destructive hover:text-destructive"
-                    title="Delete Edge"
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                    title="Delete"
                   >
-                    <X className="h-3 w-3" />
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleToggleAnimation}
+                    className="h-6 w-6 p-0"
+                    title={data?.animated ? "Disable Animation" : "Enable Animation"}
+                  >
+                    <Zap className={`h-3 w-3 ${data?.animated ? 'text-yellow-500' : ''}`} />
                   </Button>
                 </div>
               )}
@@ -223,6 +235,13 @@ const WorkflowEdgeComponent: React.FC<WorkflowEdgeProps> = ({
           )}
         </div>
       </EdgeLabelRenderer>
+
+      {/* Edge Settings Overlay */}
+      <EdgeSettingsOverlay
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        edge={completeEdge}
+      />
     </>
   );
 };

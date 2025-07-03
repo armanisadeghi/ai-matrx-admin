@@ -7,12 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { RootState } from "@/lib/redux/store";
-import {
-    setName,
-    setSlug,
-    setDescription,
-    setCreator,
-} from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { setName, setSlug, setDescription, setCreator } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import {
     selectAppletName,
     selectAppletSlug,
@@ -39,13 +34,8 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         dispatch(setName({ id: appletId, name: value }));
-    };
-
-    const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        if (isNew && !appletSlug) {
-            const slug = convertToKebabCase(e.target.value);
-            dispatch(setSlug({ id: appletId, slug }));
-        }
+        const newSlug = convertToKebabCase(value);
+        dispatch(setSlug({ id: appletId, slug: newSlug }));
     };
 
     const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,16 +69,12 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
                     name="name"
                     value={appletName || ""}
                     onChange={handleNameChange}
-                    onBlur={handleNameBlur}
                     placeholder="Enter applet name"
                     className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
                 />
             </div>
             <div className="space-y-2">
-                <Label
-                    htmlFor={`${isNew ? "new" : "edit"}-creator`}
-                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
-                >
+                <Label htmlFor={`${isNew ? "new" : "edit"}-creator`} className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     Creator Name
                 </Label>
                 <Input
@@ -124,10 +110,7 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
             </div>
 
             <div className="space-y-2">
-                <Label
-                    htmlFor={`${isNew ? "new" : "edit"}-description`}
-                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
-                >
+                <Label htmlFor={`${isNew ? "new" : "edit"}-description`} className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     Description
                 </Label>
                 <Textarea
@@ -144,4 +127,4 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
     );
 };
 
-export default AppletOverview; 
+export default AppletOverview;

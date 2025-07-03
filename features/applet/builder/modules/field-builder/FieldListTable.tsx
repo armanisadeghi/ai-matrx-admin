@@ -3,7 +3,7 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectAllFields, selectFieldLoading } from "@/lib/redux/app-builder/selectors/fieldSelectors";
+import { selectAllFields, selectFieldLoading, selectFieldsHasFetched } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { deleteFieldThunk, fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { Eye, Pencil, TextCursorInput, Trash2, Check } from "lucide-react";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
@@ -91,17 +91,18 @@ export default function FieldListTable({
     // Get fields from Redux
     const fields = useAppSelector(selectAllFields);
     const isLoading = useAppSelector(selectFieldLoading);
+    const hasFetched = useAppSelector(selectFieldsHasFetched);
 
     const fetchFields = useCallback(async () => {
         await dispatch(fetchFieldsThunk()).unwrap();
         onRefresh?.();
-    }, [dispatch]);
+    }, [dispatch, onRefresh]);
 
     useEffect(() => {
-        if (fields.length === 0) {
+        if (!hasFetched && !isLoading) {
             fetchFields();
         }
-    }, [fields, fetchFields]);
+    }, [hasFetched, isLoading, fetchFields]);
 
     // Local state for search/filter
     const [searchTerm, setSearchTerm] = useState("");
