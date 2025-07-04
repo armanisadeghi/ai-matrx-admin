@@ -29,25 +29,8 @@ import { THEMES } from "../themes";
 import SaveTableModal from "./SaveTableModal";
 import ViewTableModal from "./ViewTableModal";
 
-// Custom debounce hook
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
 interface ExportDropdownMenuProps {
-  debouncedTableData: {
+  tableData: {
     headers: string[];
     rows: string[][];
     normalizedData?: Array<{ [key: string]: string }>;
@@ -61,7 +44,7 @@ interface ExportDropdownMenuProps {
 }
 
 const ExportDropdownMenu: React.FC<ExportDropdownMenuProps> = ({
-  debouncedTableData,
+  tableData,
   content,
   copyTableToClipboard,
   copyMarkdownToClipboard,
@@ -83,7 +66,7 @@ const ExportDropdownMenu: React.FC<ExportDropdownMenuProps> = ({
     return () => {
       clearTimeout(stabilityTimer);
     };
-  }, [debouncedTableData.headers, debouncedTableData.rows, debouncedTableData.normalizedData, content]);
+  }, [tableData.headers, tableData.rows, tableData.normalizedData, content]);
 
   if (!isDataStable) {
     return null;
@@ -109,7 +92,7 @@ const ExportDropdownMenu: React.FC<ExportDropdownMenuProps> = ({
             <span>Copy as Markdown</span>
           </DropdownMenuItem>
         )}
-        {debouncedTableData.normalizedData && (
+        {tableData.normalizedData && (
           <DropdownMenuItem onClick={copyJsonToClipboard} className="flex items-center gap-2 cursor-pointer">
             <FileJson className="h-4 w-4 text-blue-500" />
             <span>Copy as JSON</span>
@@ -150,6 +133,7 @@ interface MarkdownTableProps {
     onSave?: (tableData: { headers: string[]; rows: string[][] }) => void;
     content?: string;
     onContentChange?: (updatedMarkdown: string) => void;
+    isStreamActive?: boolean;
 }
 const MarkdownTable: React.FC<MarkdownTableProps> = ({
     data,
@@ -159,6 +143,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     onSave = () => {},
     content = "",
     onContentChange,
+    isStreamActive = false,
 }) => {
     const [tableData, setTableData] = useState<{
         headers: string[];
@@ -177,10 +162,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
     const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
-
-    // Debounce the tableData to delay control rendering
-    // const debouncedTableData = useDebounce(tableData, 500);
-    const debouncedTableData = tableData; // testing no debounce
 
     useEffect(() => {
         if (data) {
@@ -203,7 +184,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const generateMarkdownTable = () => {
-        const dataToUse = editMode !== "none" ? tableData : debouncedTableData;
+        const dataToUse = editMode !== "none" ? tableData : tableData;
         const maxLengths = Array(dataToUse.headers.length).fill(0);
         [dataToUse.headers, ...dataToUse.rows].forEach((row) => {
             row.forEach((cell, i) => {
@@ -257,8 +238,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const downloadCSV = () => {
         try {
             const csvContent = [
-                debouncedTableData.headers.map((h) => h.replace(/"/g, '""')).join(","),
-                ...debouncedTableData.rows.map((row) =>
+                tableData.headers.map((h) => h.replace(/"/g, '""')).join(","),
+                ...tableData.rows.map((row) =>
                     row
                         .map((cell) => {
                             const escaped = cell.replace(/"/g, '""');
@@ -289,8 +270,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const downloadMarkdown = () => {
         try {
             const markdownContent = content || '';
-            const fileName = debouncedTableData.headers && debouncedTableData.headers[0] 
-                ? `${debouncedTableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
+            const fileName = tableData.headers && tableData.headers[0] 
+                ? `${tableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
                 : 'table_data.md';
             const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -387,7 +368,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const renderTableActionButton = () => {
-        if (!debouncedTableData.normalizedData) return null;
+        if (!tableData.normalizedData) return null;
         if (savedTableInfo) {
             return (
                 <Button
@@ -417,9 +398,9 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     return (
         <div className={cn("relative", className)}>
-            {showNormalized && debouncedTableData.normalizedData ? (
+            {showNormalized && tableData.normalizedData ? (
                 <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <pre className="text-sm overflow-auto">{JSON.stringify(debouncedTableData.normalizedData, null, 2)}</pre>
+                    <pre className="text-sm overflow-auto">{JSON.stringify(tableData.normalizedData, null, 2)}</pre>
                     <Button
                         variant="outline"
                         size="sm"
@@ -435,7 +416,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     <table className="w-full border-collapse" style={{ fontSize: `${tableFontsize}px` }}>
                         <thead className={tableTheme.header}>
                             <tr onClick={handleHeaderClick}>
-                                {debouncedTableData.headers.map((header, i) => (
+                                {tableData.headers.map((header, i) => (
                                     <th key={i} className={cn("p-2 text-left", tableTheme.headerText)}>
                                         {isEditingHeader ? (
                                             <input
@@ -456,7 +437,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                             </tr>
                         </thead>
                         <tbody>
-                            {debouncedTableData.rows.map((row, rowIndex) => (
+                            {tableData.rows.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
                                     className={cn("border-t", tableTheme.row, editMode === rowIndex && "bg-blue-50 dark:bg-blue-900/20")}
@@ -488,7 +469,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 </div>
             )}
             <div className="flex justify-end gap-2 mt-2">
-                {debouncedTableData.normalizedData && (
+                {tableData.normalizedData && (
                     <Button
                         variant="outline"
                         size="sm"
@@ -501,7 +482,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 )}
                 {renderTableActionButton()}
                 <ExportDropdownMenu
-                    debouncedTableData={debouncedTableData}
+                    tableData={tableData}
                     content={content}
                     copyTableToClipboard={copyTableToClipboard}
                     copyMarkdownToClipboard={copyMarkdownToClipboard}
@@ -547,7 +528,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     isOpen={showSaveModal}
                     onClose={() => setShowSaveModal(false)}
                     onSaveComplete={handleSaveComplete}
-                    tableData={debouncedTableData.normalizedData}
+                    tableData={tableData.normalizedData}
                 />
             )}
             {showViewModal && savedTableInfo && (

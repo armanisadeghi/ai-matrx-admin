@@ -18,7 +18,7 @@ const EntitySpecialSwitch = React.forwardRef<HTMLElement, EntitySpecialSwitchPro
         // Extract configuration with fallbacks
         const variant = componentProps?.variant || "geometric";
         const width = componentProps?.width || "w-28";
-        const height = componentProps?.height || "h-7";
+        const height = componentProps?.height || "h-8";
         
         // Handle labels with type safety and fallbacks
         const defaultLabels = { on: "True", off: "False" };

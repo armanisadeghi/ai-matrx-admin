@@ -134,6 +134,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         data={{ ...tableData.markdown, normalizedData: tableData.data }} 
                         content={block.content}
                         onContentChange={onContentChange ? (updatedTable) => handleTableChange(updatedTable, block.content) : undefined}
+                        isStreamActive={isStreamActive}
                     />
                 );
             case "transcript":

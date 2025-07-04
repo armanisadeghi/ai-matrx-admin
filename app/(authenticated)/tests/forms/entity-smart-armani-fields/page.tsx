@@ -41,7 +41,7 @@ export default async function EntityManagementPage() {
         },
         resizableLayoutOptions: DEFAULT_RESIZABLE_LAYOUT_OPTIONS,
         selectComponentOptions: DEFAULT_SELECT_COMPONENT_OPTIONS,
-        defaultFormComponent: 'ArmaniFormSmart',
+        formComponent: 'ARMANI_SMART',
     };
 
     return (

@@ -9,7 +9,7 @@ import { createAppletThunk, updateAppletThunk } from "../thunks/appletBuilderThu
 import { selectAppletById } from "../selectors/appletSelectors";
 import { RootState } from "@/lib/redux/store";
 import { isAppletSlugAvailable } from "../service/customAppletService";
-import { BrokerMapping, NeededBroker } from "@/types/customAppTypes";
+import { AppletLayoutOption, BrokerMapping, NeededBroker } from "@/types/customAppTypes";
 import { getFieldComponentById } from "../service/fieldComponentService";
 
 export const createFieldFromBroker = async (brokerName: string, brokerId: string, fieldComponentId: string | undefined, dispatch: AppDispatch) => {
@@ -41,8 +41,7 @@ export const createContainerFromRecipe = async (recipeName: string, neededBroker
         id: uuidv4(),
         label: `${recipeName} Input`,
         shortLabel: `${recipeName}`,
-        description: "Auto-generated container for " + recipeName,
-        fields: [], // Start with empty fields
+        fields: [],
     };
 
     const createdContainer = await dispatch(createContainerThunk(container)).unwrap();
@@ -106,6 +105,7 @@ export const createAppletFromRecipe = async (recipeId: string, recipeName: strin
         id: appletId,
         name: `${recipeName} Applet`,
         description: `Auto-generated applet for ${recipeName}`,
+        layoutType: "minimalist" as AppletLayoutOption,
         slug: uniqueSlug,
         containers: [container],
         brokerMap: brokerMappings,

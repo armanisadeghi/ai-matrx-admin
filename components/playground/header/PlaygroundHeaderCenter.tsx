@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/ButtonMine';
-import { Plus, History, Save } from 'lucide-react';
+import { Plus, History, Save, Settings } from 'lucide-react';
 import PlaygroundHistoryDialog from './PlaygroundHistoryDialog';
 import PlaygroundNavContainer from './PlaygroundNavContainer';
 import { UseAiCockpitHook } from '../hooks/useAiCockpit';
 import QuickRefSearchableSelect from '@/app/entities/quick-reference/QuickRefSearchableSelect';
+import { SingleEntityOverlay } from '@/app/entities/layout/SingleEntityLayout';
 
 interface PlaygroundHeaderCenterProps {
     currentMode?: string;
@@ -25,6 +26,7 @@ const PlaygroundHeaderCenter = ({
 }: PlaygroundHeaderCenterProps) => {
     const { saveCompiledRecipe, recipeVersion, activeRecipeMatrxId, recipeRecord } = aiCockpitHook;
     const [version, setVersion] = useState(recipeVersion);
+    const [isEntityOverlayOpen, setIsEntityOverlayOpen] = useState(false);
 
     useEffect(() => {
         setVersion(recipeVersion-1);
@@ -64,22 +66,22 @@ const PlaygroundHeaderCenter = ({
                             entityKey='recipe'
                         />
                     </div>
-                    <select
-                        className='w-16 bg-elevation1 rounded-md p-2 text-sm'
-                        value={version.toString()}
-                        onChange={(v) => handleVersionChange(Number(v))}
-                    >
-                        <option value=''></option>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((v) => (
-                            <option
-                                key={v}
-                                value={v.toString()}
-                                className='text-ellipsis overflow-hidden'
+
+                    <SingleEntityOverlay
+                        entityKey='recipe'
+                        isOpen={isEntityOverlayOpen}
+                        onOpenChange={setIsEntityOverlayOpen}
+                        trigger={
+                            <Button
+                                variant='ghost'
+                                size='md'
+                                className='bg-elevation2 h-8 w-8 px-2 shrink-0'
                             >
-                                {v}
-                            </option>
-                        ))}
-                    </select>
+                                <Settings size={16} />
+                            </Button>
+                        }
+                    />
+
                     <div className='flex items-center gap-2'>
                         <Button
                             variant='ghost'

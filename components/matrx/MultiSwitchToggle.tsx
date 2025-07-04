@@ -89,7 +89,7 @@ const MultiSwitchToggle = forwardRef<any, MultiSwitchToggleProps>(({
                                 className={cn(
                                     buttonBaseClasses,
                                     width || defaultSizes.width,
-                                    activeState === index ? "transform" : "transform -translate-y-1"
+                                    activeState === index ? "bg-primary transform text-sm" : "transform -translate-y-0.5 text-xs"
                                 )}
                             >
                                 <div
@@ -98,13 +98,13 @@ const MultiSwitchToggle = forwardRef<any, MultiSwitchToggleProps>(({
                                         validVariant === 'rounded' && index === 0 && "rounded-l-full",
                                         validVariant === 'rounded' && index === states.length - 1 && "rounded-r-full",
                                         activeState === index 
-                                            ? "dark:bg-gradient-to-br dark:from-primary/90 dark:via-primary dark:to-primary/90 bg-gradient-to-br from-primary/90 via-primary to-primary/90" 
+                                            ? "bg-gradient-to-br from-primary/90 via-primary to-primary/90" 
                                             : "bg-gradient-to-br from-background via-background/90 to-background/80"
                                     )}
                                 />
                                 <span
                                     className={cn(
-                                        "relative z-30 font-medium flex items-center justify-center h-full",
+                                        "relative z-30 font-medium text-xs flex items-center justify-center h-full",
                                         activeState === index 
                                             ? "text-primary-foreground" 
                                             : "text-muted-foreground"

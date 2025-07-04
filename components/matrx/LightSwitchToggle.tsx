@@ -61,7 +61,7 @@ const LightSwitchToggle = forwardRef<any, LightSwitchToggleProps>((
     );
 
     const buttonBaseClasses = "relative w-1/2 h-full transition-all duration-300";
-    const activeButtonClasses = "bg-primary transform ";
+    const activeButtonClasses = "bg-primary transform translate-y-0.5";
     const inactiveButtonClasses = "bg-background transform -translate-y-1";
 
     return (
@@ -91,7 +91,7 @@ const LightSwitchToggle = forwardRef<any, LightSwitchToggleProps>((
                     />
                     <span
                         className={cn(
-                            "relative z-20 font-medium truncate px-1",
+                            "relative z-20 font-medium text-xs truncate px-1",
                             !isOn ? "dark:text-foreground text-muted-foreground" : "text-muted-foreground"
                         )}
                     >
@@ -120,7 +120,7 @@ const LightSwitchToggle = forwardRef<any, LightSwitchToggleProps>((
                     />
                     <span
                         className={cn(
-                            "relative z-20 font-medium truncate px-2",
+                            "relative z-20 font-medium text-xs truncate px-2",
                             isOn ? "text-primary-foreground" : "text-muted-foreground"
                         )}
                     >

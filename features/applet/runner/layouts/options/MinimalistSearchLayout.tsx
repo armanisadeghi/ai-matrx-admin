@@ -55,9 +55,6 @@ const MinimalistSearchLayout: React.FC<MinimalistSearchLayoutProps> = ({
     
     return (
         <div className={`w-full max-w-5xl mx-auto p-4 ${className}`}>
-            <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-8">
-                <h2 className="text-2xl font-light text-center">What are you looking for?</h2>
-            </div>
             <div className="space-y-10">
                 {appletContainers.map((container) => {
                     const isExpanded = expandedGroup === container.id;

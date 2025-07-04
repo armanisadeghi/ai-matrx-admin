@@ -38,7 +38,7 @@ const AiSettingsRecord: React.FC<AiSettingsRecordProps> = ({
         <div className='flex flex-col h-full'>
             {/* Scrollable section for settings */}
             <div className='flex-1 overflow-auto'>
-                <div className='space-y-4 p-2'>
+                <div className='space-y-4 py-2'>
                     <EntityFormCustomMinimal
                         recordId={recordId}
                         unifiedLayoutProps={layoutProps}
@@ -52,7 +52,7 @@ const AiSettingsRecord: React.FC<AiSettingsRecordProps> = ({
                 </div>
             </div>
             {/* Fixed bottom section */}
-            <div className='mt-auto border-t border-border/30 space-y-4'>
+            <div className='mt-auto space-y-4'>
                 <AppletResources
                     playgroundControls={playgroundControls}
                     recipeAgentSettingsHook={recipeAgentSettingsHook}

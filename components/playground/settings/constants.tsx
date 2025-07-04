@@ -66,7 +66,7 @@ export const MODEL_DATA: ModelDataType = {
           formStyleOptions: {
               fieldFiltering: {
                   excludeFields: ['id'],
-                  defaultShownFields: ['presetName', 'aiEndpoint', 'aiModel', 'temperature', 'maxTokens', 'stream', 'responseFormat', 'tools'],
+                  defaultShownFields: ['aiModel', 'temperature', 'maxTokens', 'stream', 'responseFormat', 'tools'],
               },
           },
       },
