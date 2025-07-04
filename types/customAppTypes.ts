@@ -161,6 +161,7 @@ export interface NeededBroker {
   required: boolean;
   dataType: string;
   defaultValue: string;
+  fieldComponentId?: string;
 }
 
 export interface RecipeSourceConfig {

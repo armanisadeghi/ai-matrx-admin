@@ -31,7 +31,7 @@ const EntityBaseFieldFinal = ({
     forceEnable
 }: EntityBaseFieldFinalProps) => {
     const dispatch = useAppDispatch();
-    const { store, actions, selectors } = useEntityTools(entityKey);
+    const { actions, selectors } = useEntityTools(entityKey);
 
     const entityStatus = useAppSelector(selectors.selectEntityStatus);
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);

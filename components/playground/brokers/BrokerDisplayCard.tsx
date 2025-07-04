@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
@@ -36,6 +36,12 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
         if (!chips) return 'teal';
         return (chips[0]?.color as TailwindColor) || 'teal';
     });
+
+    useEffect(() => {
+        if (record?.color) {
+            setColor(record.color as TailwindColor);
+        }
+    }, [record]);
 
     const isBrokerCard = Boolean(recordId && record);
 
@@ -132,6 +138,7 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                                         unifiedLayoutProps={unifiedLayoutProps}
                                         onFieldChange={handleBrokerFieldUpdate}
                                     />
+
                                 ) : (
                                     // Orphan chip form
                                     <>

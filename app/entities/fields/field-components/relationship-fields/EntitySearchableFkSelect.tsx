@@ -6,10 +6,12 @@ import { useSelectQuickRef } from '@/app/entities/hooks/useSelectQuickRef';
 import EntitySheetForm from '@/app/entities/forms/EntitySheetForm';
 import PortalDropdownSelect from '@/components/ui/matrx/PortalDropdownSelect';
 import { PencilIcon, CheckIcon, XIcon } from 'lucide-react';
+import CustomFkHandler from './CustomFkHandler';
 
 type EntityForeignKeySelectProps = FieldComponentProps<string>;
 
-const EntitySearchableFkSelect = React.forwardRef<HTMLDivElement, EntityForeignKeySelectProps>(
+// Default implementation component (extracted from the main component)
+const DefaultEntitySearchableFkSelect = React.forwardRef<HTMLDivElement, EntityForeignKeySelectProps>(
     (
         { entityKey: parentEntity, dynamicFieldInfo, value, onChange, disabled, className, density, animationPreset, size, textSize, variant, floatingLabel = true },
         ref
@@ -196,6 +198,31 @@ const EntitySearchableFkSelect = React.forwardRef<HTMLDivElement, EntityForeignK
                     onOpenChange={setIsSheetOpen}
                 />
             </>
+        );
+    }
+);
+
+DefaultEntitySearchableFkSelect.displayName = 'DefaultEntitySearchableFkSelect';
+
+// Main component that routes to custom implementations or default
+const EntitySearchableFkSelect = React.forwardRef<HTMLDivElement, EntityForeignKeySelectProps>(
+    (props, ref) => {
+        const relatedEntity = props.dynamicFieldInfo.foreignKeyReference?.entity as EntityKeys;
+
+        useEffect(() => {
+            console.log("EntitySearchableFkSelect", relatedEntity);
+            if (relatedEntity === 'fieldComponents') {
+                console.log("EntitySearchableFkSelect has a field component", relatedEntity);
+            }
+        }, [relatedEntity]);
+
+        return (
+            <CustomFkHandler
+                {...props}
+                ref={ref}
+                relatedEntity={relatedEntity}
+                DefaultComponent={DefaultEntitySearchableFkSelect}
+            />
         );
     }
 );

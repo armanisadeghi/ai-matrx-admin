@@ -120,20 +120,19 @@ const AppletResources: React.FC<AppletResourcesProps> = ({
             <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Layers className="h-4 w-4" />
-                    App Resources
+                    Automated Applet Creation
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
                 {/* Row 1: App Selection */}
                 <div className="flex items-center justify-between gap-2 p-2 rounded-md border border-border bg-muted/50">
                     <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium text-muted-foreground">App</div>
                         {selectedApp ? (
-                            <div className="text-sm font-medium text-foreground truncate">
+                            <div className="text-xs font-medium text-foreground truncate">
                                 {selectedApp.name}
                             </div>
                         ) : (
-                            <div className="text-sm text-muted-foreground italic">
+                            <div className="text-xs text-muted-foreground italic">
                                 No app selected
                             </div>
                         )}
@@ -159,13 +158,12 @@ const AppletResources: React.FC<AppletResourcesProps> = ({
                     selectedApp ? 'bg-muted/50' : 'bg-muted/20 opacity-50'
                 }`}>
                     <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium text-muted-foreground">Applet</div>
                         {selectedApplet ? (
-                            <div className="text-sm font-medium text-foreground truncate">
+                            <div className="text-xs font-medium text-foreground truncate">
                                 {selectedApplet.name}
                             </div>
                         ) : (
-                            <div className="text-sm text-muted-foreground italic">
+                            <div className="text-xs text-muted-foreground italic">
                                 {selectedApp ? "No applet selected" : "Select an app first"}
                             </div>
                         )}

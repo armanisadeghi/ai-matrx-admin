@@ -31,8 +31,8 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
             onRightCollapsedChange,
             onLeftResize,
             onRightResize,
-            initialLeftSize = 15,
-            initialRightSize = 15,
+            initialLeftSize = 18,
+            initialRightSize = 18,
             className = '',
             cockpitControls,
         },
@@ -104,7 +104,7 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
                     {/* <Panel defaultSize={55}>{showMessages && <DynamicMessagesContainer cockpitControls={cockpitControls} />}</Panel> */}
                     <Panel ref={messagesPanelRef} defaultSize={55}>{showMessages && <MessagesContainer cockpitControls={cockpitControls} />}</Panel>
                     <PanelResizeHandle />
-                    <Panel ref={resultsPanelRef} defaultSize={15}>
+                    <Panel ref={resultsPanelRef} defaultSize={9}>
                         {showResults ? <ResultPanelManager cockpitControls={cockpitControls} /> : <CompiledRecipeDisplay cockpitControls={cockpitControls} />}
                     </Panel>{' '}
                     <CollapsibleSidebarPanel

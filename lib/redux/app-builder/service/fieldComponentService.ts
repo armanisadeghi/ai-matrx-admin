@@ -101,9 +101,6 @@ export const getAllFieldComponents = async (): Promise<FieldBuilder[]> => {
 
     const { data, error } = await supabase.from("field_components").select("*").eq("user_id", userId);
 
-    console.log("getAllFieldComponents", data);
-    console.log("getAllFieldComponents error", error);
-
     if (error) {
         console.error("Error fetching field components:", error);
         throw error;

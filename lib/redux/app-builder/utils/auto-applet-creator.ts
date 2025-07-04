@@ -10,36 +10,48 @@ import { selectAppletById } from "../selectors/appletSelectors";
 import { RootState } from "@/lib/redux/store";
 import { isAppletSlugAvailable } from "../service/customAppletService";
 import { BrokerMapping, NeededBroker } from "@/types/customAppTypes";
+import { getFieldComponentById } from "../service/fieldComponentService";
 
-export const createFieldFromBroker = async (brokerName: string, dispatch: AppDispatch) => {
-    const field = normalizeFieldDefinitionWithUuid({ component: "textarea", label: brokerName });
-    console.log("field", field);
+export const createFieldFromBroker = async (brokerName: string, brokerId: string, fieldComponentId: string | undefined, dispatch: AppDispatch) => {
+    // If the broker already has a fieldComponentId, use the existing field component
+    if (fieldComponentId) {
+        const existingField = await getFieldComponentById(fieldComponentId);
+        if (existingField) {
+            return existingField;
+        }
+        // If fieldComponentId exists but field not found, log warning and create new one
+        console.warn(`Field component with ID ${fieldComponentId} not found for broker ${brokerName}. Creating new field.`);
+    }
+    
+    // Create a new field component if no existing one found
+    const field = normalizeFieldDefinitionWithUuid({ component: "textarea", label: brokerName, description: "Auto-generated for " + brokerName });
     const result = await dispatch(createFieldThunk(field)).unwrap();
     return result;
 };
 
 export const createContainerFromRecipe = async (recipeName: string, neededBrokers: NeededBroker[], dispatch: AppDispatch) => {
-    // First, create all the fields
-    const fields = await Promise.all(neededBrokers.map((broker) => createFieldFromBroker(broker.name, dispatch)));
-    console.log("Created fields:", fields);
+
+
+    const fields = await Promise.all(neededBrokers.map((broker) => 
+        createFieldFromBroker(broker.name, broker.id, broker.fieldComponentId, dispatch)
+    ));
     
     // Create the container without fields first
     const container = {
         id: uuidv4(),
         label: `${recipeName} Input`,
         shortLabel: `${recipeName}`,
+        description: "Auto-generated container for " + recipeName,
         fields: [], // Start with empty fields
     };
 
     const createdContainer = await dispatch(createContainerThunk(container)).unwrap();
-    console.log("Created container:", createdContainer);
     
     // Now add each field to the container using the dedicated function
     const { addFieldToGroup } = await import("../service/fieldContainerService");
     
     for (const field of fields) {
         if (field.id) {
-            console.log(`Adding field ${field.id} to container ${createdContainer.id}`);
             await addFieldToGroup(createdContainer.id, field.id);
         }
     }
@@ -47,7 +59,6 @@ export const createContainerFromRecipe = async (recipeName: string, neededBroker
     // Retrieve the updated container with all fields
     const { getComponentGroupById } = await import("../service/fieldContainerService");
     const finalContainer = await getComponentGroupById(createdContainer.id);
-    console.log("Final container with fields:", finalContainer);
     
     return {
         container: finalContainer || createdContainer,
@@ -70,8 +81,6 @@ export const createAppletFromRecipe = async (recipeId: string, recipeName: strin
     
     // Create ONE container with ALL brokers as fields and get the field-to-broker mappings
     const { container, fieldToBrokerMappings } = await createContainerFromRecipe(recipeName, neededBrokers, dispatch);
-    console.log("container", container);
-    console.log("fieldToBrokerMappings", fieldToBrokerMappings);
     
     // Generate a unique slug
     const baseSlug = convertToKebabCase(recipeName);
