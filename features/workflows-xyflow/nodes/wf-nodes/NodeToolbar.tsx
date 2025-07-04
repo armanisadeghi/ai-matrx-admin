@@ -1,11 +1,10 @@
 "use client";
 import React, { useCallback } from 'react';
-import { NodeToolbar as ReactFlowNodeToolbar, Position, useReactFlow, useNodeId } from '@xyflow/react';
+import { NodeToolbar as ReactFlowNodeToolbar, Position, useReactFlow, useNodeId, Node } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { Settings, Copy, Trash2, Plus, Minus, Maximize2, Minimize2 } from 'lucide-react';
 import { useAppDispatch } from '@/lib/redux/hooks';
-import { duplicateNode, deleteNode } from '@/lib/redux/workflow-node/thunks';
-import { nodeToReactFlow } from '../../utils/nodeTransforms';
+import { duplicateWorkflowNode, deleteWorkflowNode } from '@/lib/redux/workflow-nodes/thunks';
 
 interface NodeToolbarProps {
   isVisible: boolean;
@@ -41,18 +40,13 @@ export const NodeToolbar: React.FC<NodeToolbarProps> = ({
     if (!nodeId) return;
     
     try {
-      const newPosition = {
-        x: positionAbsoluteX + 50,
-        y: positionAbsoluteY + 50,
-      };
-      
       // Get the newly created node from the thunk
-      const newNode = await dispatch(duplicateNode({ 
-        currentNodeId: nodeId, 
-        newNodePosition: newPosition 
-      })).unwrap();
+      const newNode = await dispatch(duplicateWorkflowNode(nodeId)).unwrap();
       
-      const reactFlowNode = nodeToReactFlow(newNode);
+      const reactFlowNode = {
+        ...newNode.ui_data,
+        id: newNode.id,
+      } as Node;
       addNodes([reactFlowNode]);
       
     } catch (error) {
@@ -66,7 +60,7 @@ export const NodeToolbar: React.FC<NodeToolbarProps> = ({
     
     try {
       // Delete from Redux first
-      await dispatch(deleteNode(nodeId)).unwrap();
+      await dispatch(deleteWorkflowNode(nodeId)).unwrap();
       
       // Then remove from React Flow UI
       deleteElements({ nodes: [{ id: nodeId }] });

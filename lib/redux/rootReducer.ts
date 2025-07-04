@@ -45,7 +45,7 @@ import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
-import workflowNodeSlice from "./workflow-node/slice";
+import workflowNodeSlice from "./workflow-nodes/slice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -133,7 +133,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         dbFunctionNode: dbFunctionNodeSlice,
 
-        workflow: workflowSlice,
+        workflows: workflowSlice,
         workflowNodes: workflowNodeSlice,
 
     });

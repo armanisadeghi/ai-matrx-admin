@@ -1,9 +1,10 @@
 import { Node } from "@xyflow/react";
-import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
+import { WorkflowNode, WorkflowNodeCreateInput, XyFlowNodeType } from "@/lib/redux/workflow-nodes/types";
 import { InputMapping } from "@/lib/redux/workflow/types";
+import { WorkflowNodeType } from "@/features/workflows-xyflow/utils/nodeStyles";
 
 // Helper to calculate z-index based on creation time
-const getNodeZIndex = (nodeData: WorkflowNodeData): number => {
+const getNodeZIndex = (nodeData: WorkflowNode): number => {
     // Base z-index of 1
     let zIndex = 1;
 
@@ -18,60 +19,9 @@ const getNodeZIndex = (nodeData: WorkflowNodeData): number => {
     return zIndex;
 };
 
-// Convert Redux WorkflowNodeData to React Flow Node
-export const nodeToReactFlow = (nodeData: WorkflowNodeData): Node => {
-    // Extract position from ui_data or use default
-    const uiData = nodeData.ui_data || {};
-
-    // Provide safe defaults for position
-    let position = { x: 100, y: 100 };
-    if (
-        uiData.position &&
-        typeof uiData.position.x === "number" &&
-        typeof uiData.position.y === "number" &&
-        !isNaN(uiData.position.x) &&
-        !isNaN(uiData.position.y)
-    ) {
-        position = uiData.position;
-    } else {
-        // Generate a semi-random position if no valid position exists
-        position = {
-            x: Math.random() * 400 + 50,
-            y: Math.random() * 300 + 50,
-        };
-    }
-
-    const width = typeof uiData.width === "number" && uiData.width > 0 ? uiData.width : 200;
-    const height = typeof uiData.height === "number" && uiData.height > 0 ? uiData.height : 150;
-
-    return {
-        id: nodeData.id,
-        type: nodeData.node_type || "default",
-        position,
-        data: {
-            // Include all the Redux data for the node component to use
-            ...nodeData,
-            // Add computed properties for React Flow
-            label: nodeData.step_name || `Node ${nodeData.id.slice(0, 8)}`,
-            inputs: nodeData.inputs || [],
-            outputs: nodeData.outputs || [],
-            dependencies: nodeData.dependencies || [],
-        },
-        selected: false,
-        dragging: false,
-        // Set z-index based on creation time or explicit value
-        zIndex: uiData.zIndex || getNodeZIndex(nodeData),
-        // Add measured dimensions for SSR compatibility
-        measured: {
-            width,
-            height,
-        },
-    };
-};
-
-// Convert React Flow Node back to Redux WorkflowNodeData
-export const reactFlowToNode = (node: Node): Partial<WorkflowNodeData> => {
-    const nodeData = node.data as unknown as WorkflowNodeData;
+// Convert React Flow Node back to Redux WorkflowNode
+export const reactFlowToNode = (node: Node): Partial<WorkflowNode> => {
+    const nodeData = node.data as unknown as WorkflowNode;
 
     return {
         ...nodeData,
@@ -83,39 +33,6 @@ export const reactFlowToNode = (node: Node): Partial<WorkflowNodeData> => {
             width: node.measured?.width,
             height: node.measured?.height,
         },
-    };
-};
-
-// Helper to create a new node with default values
-export const createNewNode = (
-    type: string,
-    position: { x: number; y: number },
-    workflowId: string,
-    userId: string,
-    functionId?: string
-): Omit<WorkflowNodeData, "id" | "created_at" | "updated_at"> => {
-    return {
-        workflow_id: workflowId,
-        function_id: functionId || null,
-        type,
-        step_name: `New ${type} Node`,
-        node_type: type,
-        execution_required: false,
-        inputs: createDefaultInputs(type) as InputMapping[],
-        outputs: createDefaultOutputs(type),
-        dependencies: [],
-        metadata: {},
-        ui_data: {
-            position,
-            selected: false,
-            dragging: false,
-            width: 200,
-            height: 150,
-        },
-        is_public: false,
-        authenticated_read: true,
-        public_read: false,
-        user_id: userId,
     };
 };
 
@@ -225,8 +142,45 @@ const createDefaultOutputs = (nodeType: string) => {
     }
 };
 
+
+// Helper to create a new node with default values
+export const createNewNode = (
+    type: XyFlowNodeType,
+    nodeType: WorkflowNodeType,
+    position: { x: number; y: number },
+    workflowId: string,
+    userId: string,
+    functionId?: string
+): WorkflowNodeCreateInput => {
+    return {
+        workflow_id: workflowId,
+        function_id: functionId || null,
+        type: type,
+        step_name: `${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`,
+        node_type: nodeType,
+        execution_required: true,
+        inputs: [],
+        outputs: [],
+        dependencies: [],
+        metadata: {},
+        ui_data: {
+            position,
+            selected: false,
+            dragging: false,
+            width: 200,
+            height: 150,
+        } as any, // The ui_data type is complex, cast for now
+        is_public: false,
+        authenticated_read: true,
+        public_read: false,
+    };
+};
+
+
+
+
 // Helper to validate node data
-export const validateNodeData = (nodeData: Partial<WorkflowNodeData>): boolean => {
+export const validateNodeData = (nodeData: Partial<WorkflowNode>): boolean => {
     return !!(nodeData.workflow_id && nodeData.type && nodeData.step_name && nodeData.node_type);
 };
 

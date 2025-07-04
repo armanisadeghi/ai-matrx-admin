@@ -3,7 +3,7 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { NodeProps, useUpdateNodeInternals, NodeResizer, useNodeId, useReactFlow } from "@xyflow/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
+import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import {
     getNodeStyles,
     getNodeIcon,
@@ -17,18 +17,14 @@ import { NodeToolbar } from "./NodeToolbar";
 import { WorkflowNodeHandles } from "./WorkflowNodeHandles";
 import { WorkflowCompactNodeHandles } from "./WorkflowCompactNodeHandles";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
-import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
+import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { NodeEditorOne } from "./dynamic-node-editor/FlexibleNodeEditor";
 import { Switch } from "@/components/ui/switch";
 
 interface WorkflowNodeComponentProps extends Omit<NodeProps, "data"> {
-    data: WorkflowNodeData & {
-        id: string;
-        isResizable?: boolean;
-        showToolbar?: boolean;
+    data: WorkflowNode & {
         displayMode?: "detailed" | "compact";
-        status?: string;
         onDisplayModeChange?: (mode: "detailed" | "compact") => void;
     };
 }
@@ -47,8 +43,8 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
     const { setNodes } = useReactFlow();
     const dispatch = useAppDispatch();
 
-    const nodeData = useAppSelector((state) => workflowNodeSelectors.nodeById(state, nodeId || ""));
-    const isNodeActive = useAppSelector((state) => workflowNodeSelectors.nodeActive(state, nodeId || ""));
+    const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId || ""));
+    const nodeStatus = useAppSelector((state) => workflowNodesSelectors.nodeStatus(state, nodeId || ""));
     const [internalDisplayMode, setInternalDisplayMode] = useState<"detailed" | "compact">("detailed");
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
@@ -65,23 +61,19 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
 
     // Set default active state if not already set
     useEffect(() => {
-        if (nodeId && nodeData && nodeData.metadata?.active === undefined) {
-            dispatch(workflowNodeActions.setNodeActive({ nodeId, active: true }));
+        if (nodeId && nodeData && nodeData.is_active === null) {
+            dispatch(workflowNodesActions.updateField({ id: nodeId, field: "is_active", value: true }));
         }
     }, [nodeId, nodeData, dispatch]);
 
     // Get node styles from utility
     const baseNodeStyles = getNodeStyles(nodeData?.node_type);
-    
+
     // Override styles for inactive nodes
     const nodeStyles = {
         ...baseNodeStyles,
-        borderColor: isNodeActive 
-            ? baseNodeStyles.borderColor 
-            : "border-gray-500 dark:border-gray-400",
-        backgroundColor: isNodeActive 
-            ? baseNodeStyles.backgroundColor 
-            : "bg-gray-50 dark:bg-gray-950/20"
+        borderColor: nodeData?.is_active ? baseNodeStyles.borderColor : "border-gray-500 dark:border-gray-400",
+        backgroundColor: nodeData?.is_active ? baseNodeStyles.backgroundColor : "bg-gray-50 dark:bg-gray-950/20",
     };
 
     // Enhanced handle connection validation
@@ -140,18 +132,24 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
     }, []);
 
     // Handle active state toggle
-    const handleActiveToggle = useCallback((checked: boolean) => {
-        if (nodeId) {
-            dispatch(workflowNodeActions.setNodeActive({ nodeId, active: checked }));
-        }
-    }, [nodeId, dispatch]);
+    const handleActiveToggle = useCallback(
+        (checked: boolean) => {
+            if (nodeId) {
+                dispatch(workflowNodesActions.updateField({ id: nodeId, field: "is_active", value: checked }));
+            }
+        },
+        [nodeId, dispatch]
+    );
 
     // Handle double-click to open editor
-    const handleDoubleClick = useCallback((event: React.MouseEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
-        handleOpenEditor();
-    }, [handleOpenEditor]);
+    const handleDoubleClick = useCallback(
+        (event: React.MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+            handleOpenEditor();
+        },
+        [handleOpenEditor]
+    );
 
     const canRemoveInput = (nodeData?.inputs?.length || 0) > 0;
     const NodeIcon = getNodeIcon(nodeData?.node_type);
@@ -162,7 +160,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
             <>
                 {/* Compact Node Toolbar */}
                 <NodeToolbar
-                    isVisible={selected && data.showToolbar !== false}
+                    isVisible={selected}
                     positionAbsoluteX={positionAbsoluteX}
                     positionAbsoluteY={positionAbsoluteY}
                     onSettings={handleOpenEditor}
@@ -180,7 +178,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
             ${nodeStyles.backgroundColor}
             ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
             ${dragging ? "shadow-2xl scale-110" : "shadow-lg hover:shadow-xl"}
-            ${!isNodeActive ? "opacity-60" : ""}
+            ${!nodeData?.is_active ? "opacity-60" : ""}
             transition-all duration-200
             bg-background dark:bg-background
             border-2
@@ -202,11 +200,11 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                     </div>
 
                     {/* Compact handles positioned around the circle */}
-                    <WorkflowCompactNodeHandles 
-                        nodeId={nodeId || ''} 
-                        inputs={nodeData?.inputs} 
-                        outputs={nodeData?.outputs} 
-                        isValidConnection={isValidConnection} 
+                    <WorkflowCompactNodeHandles
+                        nodeId={nodeId || ""}
+                        inputs={nodeData?.inputs}
+                        outputs={nodeData?.outputs}
+                        isValidConnection={isValidConnection}
                     />
                 </div>
             </>
@@ -218,7 +216,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
         <>
             {/* Node Toolbar */}
             <NodeToolbar
-                isVisible={selected && data.showToolbar !== false}
+                isVisible={selected}
                 positionAbsoluteX={positionAbsoluteX}
                 positionAbsoluteY={positionAbsoluteY}
                 onSettings={handleOpenEditor}
@@ -229,22 +227,20 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
             />
 
             {/* Node Resizer */}
-            {data.isResizable && (
-                <NodeResizer
-                    isVisible={selected}
-                    minWidth={200}
-                    minHeight={100}
-                    handleStyle={{
-                        width: "8px",
-                        height: "8px",
-                        backgroundColor: "var(--primary)",
-                        border: "2px solid var(--background)",
-                    }}
-                    lineStyle={{
-                        borderColor: "var(--primary)",
-                    }}
-                />
-            )}
+            <NodeResizer
+                isVisible={selected}
+                minWidth={200}
+                minHeight={100}
+                handleStyle={{
+                    width: "8px",
+                    height: "8px",
+                    backgroundColor: "var(--primary)",
+                    border: "2px solid var(--background)",
+                }}
+                lineStyle={{
+                    borderColor: "var(--primary)",
+                }}
+            />
 
             {/* Main Node Card */}
             <Card
@@ -254,7 +250,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                   ${nodeStyles.backgroundColor}
                   ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
                   ${dragging ? "shadow-2xl scale-105" : "shadow-lg hover:shadow-xl"}
-                  ${!isNodeActive ? "opacity-70" : ""}
+                  ${!nodeData?.is_active ? "opacity-70" : ""}
                   transition-all duration-200
                   bg-background dark:bg-background
                   border-2
@@ -275,11 +271,11 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
 
                 <CardContent className="pt-0 relative">
                     {/* Handles Component */}
-                    <WorkflowNodeHandles 
-                        nodeId={nodeId || ''} 
-                        inputs={nodeData?.inputs} 
-                        outputs={nodeData?.outputs} 
-                        isValidConnection={isValidConnection} 
+                    <WorkflowNodeHandles
+                        nodeId={nodeId || ""}
+                        inputs={nodeData?.inputs}
+                        outputs={nodeData?.outputs}
+                        isValidConnection={isValidConnection}
                     />
 
                     {/* Status indicators */}
@@ -291,9 +287,9 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                             })}
 
                             {/* Status Icon - Always visible */}
-                            {React.createElement(getStatusIcon(nodeData?.status), {
-                                className: `${NODE_ICON_SIZES.small} ${getStatusIconStyle(nodeData?.status)} ${
-                                    nodeData?.status === "processing" || nodeData?.status === "executing" ? "animate-spin" : ""
+                            {React.createElement(getStatusIcon(nodeStatus), {
+                                className: `${NODE_ICON_SIZES.small} ${getStatusIconStyle(nodeStatus)} ${
+                                    nodeStatus === "executing" ? "animate-spin" : ""
                                 }`,
                             })}
                         </div>
@@ -302,7 +298,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                         <div className="flex items-center gap-0.5">
                             <span className="text-[8px] text-muted-foreground leading-none">Active</span>
                             <Switch
-                                checked={isNodeActive}
+                                checked={nodeData?.is_active}
                                 onCheckedChange={handleActiveToggle}
                                 className="h-2.5 w-5 border data-[state=checked]:bg-green-500 dark:data-[state=checked]:bg-green-600 [&>*]:h-2 [&>*]:w-2 [&>*]:data-[state=checked]:translate-x-2.5"
                             />
@@ -318,4 +314,4 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
 };
 
 // Export memoized component for performance
-export const WorkflowNode = memo(WorkflowNodeComponent);
+export const WorkflowNodeItem = memo(WorkflowNodeComponent);

@@ -9,11 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { X, Check, AlertCircle, Loader2, Copy } from "lucide-react";
-import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRecipeFetch } from "./useRecipeFetch";
 import RecipeCardSelector from "./RecipeCardSelector";
-import { workflowNodeActions, workflowNodeSelectors } from "@/lib/redux/workflow-node";
+import { workflowNodesActions, workflowNodesSelectors } from "@/lib/redux/workflow-nodes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { useRegisteredFunctionWithFetch } from "@/lib/redux/entity/hooks/functions-and-args";
@@ -31,7 +30,7 @@ const DEBUG = false;
 
 const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, onCancel, open, onConfirm }) => {
     const dispatch = useAppDispatch();
-    const node = useAppSelector((state) => workflowNodeSelectors.nodeById(state, nodeId));
+    const node = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
     const { registeredFunctionSelectors } = useRegisteredFunctionWithFetch();
 
@@ -78,10 +77,10 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                     broker: dataBrokerRecordsById[broker.id],
                 },
             }));
-            dispatch(workflowNodeActions.updateNodeDependencies({ nodeId, dependencies: allDependencies }));
-            dispatch(workflowNodeActions.addNodeInputs({ nodeId, inputs: newInputs }));
+            dispatch(workflowNodesActions.updateDependencies({ id: nodeId, dependencies: allDependencies }));
+            dispatch(workflowNodesActions.updateInputs({ id: nodeId, inputs: newInputs }));
         } else {
-            dispatch(workflowNodeActions.clearNodeDependencies({ nodeId }));
+            dispatch(workflowNodesActions.clearDependencies({ id: nodeId }));
         }
     }, [neededBrokers, recipeId]);
 
@@ -98,7 +97,7 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
     const handleRecipeChange = (recipeId: string, useLatestVersion: boolean, version: number | null) => {
         if (recipeId) {
             dispatch(
-                workflowNodeActions.updateNodeInputByArgName({
+                workflowNodesActions.updateNodeInputByArgName({
                     nodeId,
                     argName: "recipe_id",
                     updates: { default_value: recipeId, ready: true },
@@ -106,21 +105,22 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
             );
             const recipeName = quickReferenceSelectOptions.find((option) => option.value === recipeId)?.label;
             dispatch(
-                workflowNodeActions.updateStepName({
-                    nodeId,
-                    stepName: recipeName || "ERROR! New Run Recipe",
+                workflowNodesActions.updateField({
+                    id: nodeId,
+                    field: "step_name",
+                    value: recipeName || "ERROR! New Run Recipe",
                 })
             );
             if (useLatestVersion) {
                 dispatch(
-                    workflowNodeActions.updateNodeInputByArgName({
+                    workflowNodesActions.updateNodeInputByArgName({
                         nodeId,
                         argName: "latest_version",
                         updates: { default_value: true, ready: true },
                     })
                 );
                 dispatch(
-                    workflowNodeActions.updateNodeInputByArgName({
+                    workflowNodesActions.updateNodeInputByArgName({
                         nodeId,
                         argName: "version",
                         updates: { default_value: null, ready: false },
@@ -128,14 +128,14 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                 );
             } else {
                 dispatch(
-                    workflowNodeActions.updateNodeInputByArgName({
+                    workflowNodesActions.updateNodeInputByArgName({
                         nodeId,
                         argName: "latest_version",
                         updates: { default_value: false, ready: true },
                     })
                 );
                 dispatch(
-                    workflowNodeActions.updateNodeInputByArgName({
+                    workflowNodesActions.updateNodeInputByArgName({
                         nodeId,
                         argName: "version",
                         updates: { default_value: version, ready: version !== null },
@@ -146,8 +146,8 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                 console.log("setting needed brokers", neededBrokers);
                 neededBrokers.forEach((broker) => {
                     dispatch(
-                        workflowNodeActions.addNodeDependency({
-                            nodeId,
+                        workflowNodesActions.addDependency({
+                            id: nodeId,
                             dependency: { type: "dataBroker", id: broker.id, metadata: dataBrokerRecordsById[broker.id] },
                         })
                     );
@@ -157,17 +157,17 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
             }
         } else {
             dispatch(
-                workflowNodeActions.updateNodeInputByArgName({ nodeId, argName: "recipe_id", updates: { default_value: "", ready: false } })
+                workflowNodesActions.updateNodeInputByArgName({ nodeId, argName: "recipe_id", updates: { default_value: "", ready: false } })
             );
             dispatch(
-                workflowNodeActions.updateNodeInputByArgName({
+                workflowNodesActions.updateNodeInputByArgName({
                     nodeId,
                     argName: "latest_version",
                     updates: { default_value: true, ready: false },
                 })
             );
             dispatch(
-                workflowNodeActions.updateNodeInputByArgName({ nodeId, argName: "version", updates: { default_value: null, ready: false } })
+                workflowNodesActions.updateNodeInputByArgName({ nodeId, argName: "version", updates: { default_value: null, ready: false } })
             );
         }
     };

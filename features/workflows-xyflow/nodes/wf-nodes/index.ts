@@ -1,5 +1,5 @@
 // Main workflow node components
-export { WorkflowNode } from './WorkflowNode';
+export { WorkflowNodeItem as WorkflowNode } from './WorkflowNode';
 export { NodeToolbar } from './NodeToolbar';
 export { WorkflowNodeHandles } from './WorkflowNodeHandles';
 export { WorkflowCompactNodeHandles } from './WorkflowCompactNodeHandles';

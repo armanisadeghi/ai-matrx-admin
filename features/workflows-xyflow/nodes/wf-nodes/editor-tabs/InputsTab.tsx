@@ -2,12 +2,12 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { DefaultTabProps } from "./types";
 
 
 export const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
-    const inputs = useAppSelector((state) => workflowNodeSelectors.nodeInputs(state, nodeId));
+    const inputs = useAppSelector((state) => workflowNodesSelectors.nodeInputs(state, nodeId));
 
     return (
         <div className="h-full">

@@ -1,213 +1,158 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { workflowService } from './service';
-import { workflowNodeService } from '../workflow-node/service';
-import { workflowNodeActions } from '../workflow-node/slice';
-import { workflowSelectors } from './selectors';
-import { workflowNodeSelectors } from '../workflow-node/selectors';
-import { WorkflowData } from './types';
-import { WorkflowNodeData } from '../workflow-node/types';
-import { RootState } from '../store';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { Node, Edge, Viewport } from "@xyflow/react";
+import { workflowService } from "./service";
+import { workflowNodeService } from "../workflow-nodes/service";
+import { setAll as setAllNodes, updateUiData } from "../workflow-nodes/slice";
+import { updateViewport } from "./slice";
+import { workflowsSelectors } from "./selectors";
+import { workflowNodesSelectors } from "../workflow-nodes/selectors";
+import { WorkflowCreateInput, WorkflowUpdateInput } from "./types";
+import { RootState } from "../store";
 
-export const fetchOne = createAsyncThunk(
-  'workflow/fetchOne',
-  async (id: string) => {
+export const fetchAllWorkflows = createAsyncThunk("workflows/fetchAll", async () => {
+    return await workflowService.fetchAll();
+});
+
+export const fetchOneWorkflow = createAsyncThunk("workflows/fetchOne", async (id: string) => {
     return await workflowService.fetchOne(id);
-  }
-);
+});
 
-export const fetchOrGetFromState = createAsyncThunk(
-  'workflow/fetchOrGetFromState',
-  async (id: string, { getState }) => {
-    const state = getState() as RootState;
-    
-    // Check if the workflow exists in state
-    const workflowExists = workflowSelectors.exists(state, id);
-    
-    if (workflowExists) {
-      // Return the existing workflow from state
-      const existingWorkflow = workflowSelectors.workflowById(state, id);
-      return existingWorkflow;
-    }
-    
-    // Workflow doesn't exist in state, fetch it from the service
-    return await workflowService.fetchOne(id);
-  }
-);
-
-export const fetchAll = createAsyncThunk(
-  'workflow/fetchAll',
-  async (userId: string) => {
-    return await workflowService.fetchAll(userId);
-  }
-);
-
-export const create = createAsyncThunk(
-  'workflow/create',
-  async (workflow: Omit<WorkflowData, 'id' | 'created_at' | 'updated_at' | 'version'>) => {
+export const createWorkflow = createAsyncThunk("workflows/create", async (workflow: WorkflowCreateInput) => {
     return await workflowService.create(workflow);
-  }
+});
+
+export const updateWorkflow = createAsyncThunk(
+    "workflows/update",
+    async ({ id, updates }: { id: string; updates: WorkflowUpdateInput }) => {
+        return await workflowService.update(id, updates);
+    }
 );
 
-export const update = createAsyncThunk(
-  'workflow/update',
-  async ({ id, updates }: { id: string; updates: Partial<WorkflowData> }) => {
-    return await workflowService.update(id, updates);
-  }
-);
+export const deleteWorkflow = createAsyncThunk("workflows/delete", async (id: string) => {
+    return await workflowService.delete(id);
+});
 
-export const deleteWorkflow = createAsyncThunk(
-  'workflow/delete',
-  async (id: string) => {
-    await workflowService.delete(id);
-    return id;
-  }
-);
-
-export const fetchOneWithNodes = createAsyncThunk(
-  'workflow/fetchOneWithNodes',
-  async (id: string, { dispatch }) => {
+export const fetchOneWorkflowWithNodes = createAsyncThunk("workflows/fetchOneWithNodes", async (id: string, { dispatch }) => {
     const workflow = await workflowService.fetchOne(id);
     const nodes = await workflowNodeService.fetchByWorkflowId(id);
 
-    // Update workflow node slice with fetched nodes
-    dispatch(workflowNodeActions.setNodes(nodes));
-
+    dispatch(setAllNodes(nodes));
     return workflow;
-  }
+});
+
+export const saveWorkflowWithNodes = createAsyncThunk(
+    "workflows/saveWithNodes",
+    async (
+        {
+            workflow,
+            nodes,
+        }: {
+            workflow: { id: string; updates: WorkflowUpdateInput };
+            nodes: { create: any[]; update: any[]; delete: string[] };
+        },
+        { dispatch }
+    ) => {
+        try {
+            // Start transaction-like operations
+            const updatedWorkflow = await workflowService.update(workflow.id, workflow.updates);
+
+            // Handle node operations
+            const promises = [];
+
+            // Create new nodes
+            if (nodes.create.length > 0) {
+                promises.push(...nodes.create.map((node) => workflowNodeService.create({ ...node, workflow_id: workflow.id })));
+            }
+
+            // Update existing nodes
+            if (nodes.update.length > 0) {
+                promises.push(...nodes.update.map((node) => workflowNodeService.update(node.id, node)));
+            }
+
+            // Delete nodes
+            if (nodes.delete.length > 0) {
+                promises.push(...nodes.delete.map((nodeId) => workflowNodeService.delete(nodeId)));
+            }
+
+            await Promise.all(promises);
+
+            // Refresh nodes data
+            const refreshedNodes = await workflowNodeService.fetchByWorkflowId(workflow.id);
+            dispatch(setAllNodes(refreshedNodes));
+
+            return updatedWorkflow;
+        } catch (error) {
+            console.error("Error saving workflow with nodes:", error);
+            throw error;
+        }
+    }
 );
 
-export const saveWithNodes = createAsyncThunk(
-  'workflow/saveWithNodes',
-  async ({ 
-    workflow, 
-    nodes 
-  }: { 
-    workflow: Partial<WorkflowData> & { id?: string }; 
-    nodes: WorkflowNodeData[] 
-  }, { dispatch }) => {
-    try {
-      // Filter out only the database fields for workflow (exclude Redux state fields)
-      const workflowDataForDB: Partial<WorkflowData> = {
-        id: workflow.id,
-        name: workflow.name,
-        description: workflow.description,
-        workflow_type: workflow.workflow_type,
-        inputs: workflow.inputs,
-        outputs: workflow.outputs,
-        dependencies: workflow.dependencies,
-        sources: workflow.sources,
-        destinations: workflow.destinations,
-        actions: workflow.actions,
-        category: workflow.category,
-        tags: workflow.tags,
-        is_active: workflow.is_active,
-        is_deleted: workflow.is_deleted,
-        auto_execute: workflow.auto_execute,
-        metadata: workflow.metadata,
-        viewport: workflow.viewport,
-        user_id: workflow.user_id,
-        version: workflow.version,
-        is_public: workflow.is_public,
-        authenticated_read: workflow.authenticated_read,
-        public_read: workflow.public_read,
-        // Explicitly exclude created_at and updated_at - database handles these
-      };
+export const saveWorkflowFromReactFlow = createAsyncThunk(
+    "workflows/saveFromReactFlow",
+    async (
+        {
+            workflowId,
+            reactFlowNodes,
+            reactFlowEdges,
+            reactFlowViewport,
+        }: {
+            workflowId: string;
+            reactFlowNodes: Node[];
+            reactFlowEdges: Edge[];
+            reactFlowViewport: Viewport;
+        },
+        { getState, dispatch }
+    ) => {
+        // 1. Update workflow viewport in state
+        dispatch(
+            updateViewport({
+                id: workflowId,
+                viewport: reactFlowViewport,
+            })
+        );
 
-      // Save or update workflow
-      let savedWorkflow: WorkflowData;
-      if (workflowDataForDB.id) {
-        // Remove id from updates object since it's used for the WHERE clause
-        const { id, ...updates } = workflowDataForDB;
-        savedWorkflow = await workflowService.update(id, updates);
-      } else {
-        savedWorkflow = await workflowService.create(workflowDataForDB as Omit<WorkflowData, 'id' | 'created_at' | 'updated_at' | 'version'>);
-      }
+        // 2. Get current workflow nodes from Redux
+        const state = getState() as RootState;
+        const workflowNodes = workflowNodesSelectors.nodesByWorkflowId(state)(workflowId);
 
-      // Update nodes with workflow ID and save them
-      const nodesToSave = nodes.map(node => ({
-        ...node,
-        workflow_id: savedWorkflow.id
-      }));
+        // 3. Update ui_data for each workflow node with matching ReactFlow node
+        workflowNodes.forEach((workflowNode) => {
+            const reactFlowNode = reactFlowNodes.find((rfNode) => rfNode.id === workflowNode.id);
 
-      // Save all nodes
-      const savedNodes = await Promise.all(
-        nodesToSave.map(node => {
-          if (node.id) {
-            // Remove id from updates object since it's used for the WHERE clause
-            const { id, ...updates } = node;
-            return workflowNodeService.update(id, updates);
-          } else {
-            // Remove id for creates
-            const { id, ...nodeData } = node;
-            return workflowNodeService.create(nodeData as Omit<WorkflowNodeData, 'id' | 'created_at' | 'updated_at'>);
-          }
-        })
-      );
+            if (!reactFlowNode) {
+                throw new Error(`ReactFlow node not found for WorkflowNode ID: ${workflowNode.id}`);
+            }
 
-      // Update workflow node slice with saved nodes
-      dispatch(workflowNodeActions.setNodes(savedNodes));
+            const { id, data, ...uiData } = reactFlowNode;
 
-      return savedWorkflow;
-    } catch (error) {
-      console.error('Error saving workflow with nodes:', error);
-      throw error;
+            dispatch(
+                updateUiData({
+                    id: workflowNode.id,
+                    ui_data: uiData,
+                })
+            );
+        });
+
+        // 4. Get updated state and save everything
+        const updatedState = getState() as RootState;
+        const updatedWorkflow = workflowsSelectors.workflowById(updatedState, workflowId);
+        const updatedWorkflowNodes = workflowNodesSelectors.nodesByWorkflowId(updatedState)(workflowId);
+
+        if (!updatedWorkflow) {
+            throw new Error(`Workflow not found: ${workflowId}`);
+        }
+
+        // 5. Save to database
+        return await dispatch(
+            saveWorkflowWithNodes({
+                workflow: { id: workflowId, updates: updatedWorkflow },
+                nodes: {
+                    create: [],
+                    update: updatedWorkflowNodes,
+                    delete: [],
+                },
+            })
+        ).unwrap();
     }
-  }
-);
-
-export const saveWorkflowFromState = createAsyncThunk(
-  'workflow/saveWorkflowFromState',
-  async (workflowId: string, { getState, dispatch }) => {
-    try {
-      const state = getState() as RootState;
-      
-      // Get workflow data from state using selector
-      const workflowData = workflowSelectors.saveDataById(state, workflowId);
-      if (!workflowData) {
-        throw new Error(`Workflow with ID ${workflowId} not found in state`);
-      }
-
-      // Get nodes data from state using selector
-      const nodesData = workflowNodeSelectors.nodesSaveDataByWorkflowId(state, workflowId);
-
-      // Save or update workflow
-      let savedWorkflow: WorkflowData;
-      if (workflowData.id) {
-        // Remove id from updates object since it's used for the WHERE clause
-        const { id, ...updates } = workflowData;
-        savedWorkflow = await workflowService.update(id, updates);
-      } else {
-        savedWorkflow = await workflowService.create(workflowData as Omit<WorkflowData, 'id' | 'created_at' | 'updated_at' | 'version'>);
-      }
-
-      // Update nodes with workflow ID and save them
-      const nodesToSave = nodesData.map(node => ({
-        ...node,
-        workflow_id: savedWorkflow.id
-      }));
-
-      // Save all nodes
-      const savedNodes = await Promise.all(
-        nodesToSave.map(node => {
-          if (node.id) {
-            // Remove id from updates object since it's used for the WHERE clause
-            const { id, ...updates } = node;
-            return workflowNodeService.update(id, updates);
-          } else {
-            // Remove id for creates
-            const { id, ...nodeData } = node;
-            return workflowNodeService.create(nodeData as Omit<WorkflowNodeData, 'id' | 'created_at' | 'updated_at'>);
-          }
-        })
-      );
-
-      // Update workflow node slice with saved nodes
-      dispatch(workflowNodeActions.setNodes(savedNodes));
-
-      return savedWorkflow;
-    } catch (error) {
-      console.error('Error saving workflow from state:', error);
-      throw error;
-    }
-  }
 );

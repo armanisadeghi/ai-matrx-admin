@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { DefaultTabProps } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/table";
 
 export const RegisteredFunctionTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
-    const registeredFunction = useAppSelector((state) => workflowNodeSelectors.nodeRegisteredFunction(state, nodeId));
+    const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId || ""));
+
+    const registeredFunction = nodeData?.metadata?.registered_function;
 
     if (!registeredFunction) {
         return (

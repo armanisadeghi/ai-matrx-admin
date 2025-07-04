@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useReactFlow } from "@xyflow/react";
 import { IconButton } from "@/components/ui/icon-button";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
 import {
@@ -34,55 +35,36 @@ import {
     Database,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { createNewNode, findGoodNodePosition } from "../utils/nodeTransforms";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { create } from "@/lib/redux/workflow-node/thunks";
-import { Node } from "@xyflow/react";
 import { FiEdit } from "react-icons/fi";
 import { WorkflowEditOverlay } from "@/features/workflows-xyflow/common/WorkflowEditOverlay";
-import { workflowSelectors } from "@/lib/redux/workflow/selectors";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
-import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
+import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 
 interface WorkflowHeaderProps {
     mode: "edit" | "view" | "execute";
     onSave?: () => Promise<void>;
     onAutoArrange?: () => void;
-    onFitView?: () => void;
-    onZoomToFit?: () => void;
-    onUndo?: () => void;
-    onRedo?: () => void;
-    onCollapseAll?: () => void;
-    onExpandAll?: () => void;
-    canUndo?: boolean;
-    canRedo?: boolean;
     workflowId: string;
     onOpenFieldDisplay?: () => void;
     onOpenAdminOverlay?: () => void;
 }
 
-export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({ 
-    mode, 
-    onSave, 
-    onAutoArrange, 
-    onFitView, 
-    onZoomToFit, 
-    onUndo,
-    onRedo,
-    onCollapseAll,
-    onExpandAll,
-    canUndo = false,
-    canRedo = false,
+export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
+    mode,
+    onSave,
+    onAutoArrange,
     workflowId,
     onOpenFieldDisplay,
-    onOpenAdminOverlay 
+    onOpenAdminOverlay,
 }) => {
     const dispatch = useAppDispatch();
+    const reactFlowInstance = useReactFlow();
 
-    // Get data from Redux using selectors
-    const workflowData = useAppSelector(workflowSelectors.selectedWorkflow);
-    const isLoading = useAppSelector(workflowSelectors.loading);
-    const allNodesArray = useAppSelector(workflowNodeSelectors.allNodesArray);
+    // Get data from Redux using correct selectors
+    const workflowData = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
+    const isLoading = useAppSelector(workflowsSelectors.isLoading);
+    const allNodesArray = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state)(workflowId));
     const nodeCount = allNodesArray.length;
     const userId = useAppSelector(selectUserId);
 
@@ -90,6 +72,67 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     const [isSaving, setIsSaving] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
     const [isWorkflowEditOpen, setIsWorkflowEditOpen] = useState(false);
+
+    // Proper undo/redo state management
+    const [history, setHistory] = useState<{ nodes: any[]; edges: any[] }[]>([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+
+    // Save current state to history
+    const saveToHistory = () => {
+        const currentNodes = reactFlowInstance.getNodes();
+        const currentEdges = reactFlowInstance.getEdges();
+        const newState = { nodes: currentNodes, edges: currentEdges };
+
+        // Remove any future history if we're not at the end
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(newState);
+
+        // Limit history size to prevent memory issues
+        const maxHistorySize = 50;
+        if (newHistory.length > maxHistorySize) {
+            newHistory.shift();
+        } else {
+            setHistoryIndex((prev) => prev + 1);
+        }
+
+        setHistory(newHistory);
+    };
+
+    // Initialize history when nodes are loaded
+    React.useEffect(() => {
+        if (allNodesArray.length > 0 && history.length === 0) {
+            const currentNodes = reactFlowInstance.getNodes();
+            const currentEdges = reactFlowInstance.getEdges();
+            if (currentNodes.length > 0) {
+                setHistory([{ nodes: currentNodes, edges: currentEdges }]);
+                setHistoryIndex(0);
+            }
+        }
+    }, [allNodesArray.length, history.length, reactFlowInstance]);
+
+    // Undo functionality
+    const handleUndo = () => {
+        if (historyIndex > 0) {
+            const prevState = history[historyIndex - 1];
+            reactFlowInstance.setNodes(prevState.nodes);
+            reactFlowInstance.setEdges(prevState.edges);
+            setHistoryIndex((prev) => prev - 1);
+        }
+    };
+
+    // Redo functionality
+    const handleRedo = () => {
+        if (historyIndex < history.length - 1) {
+            const nextState = history[historyIndex + 1];
+            reactFlowInstance.setNodes(nextState.nodes);
+            reactFlowInstance.setEdges(nextState.edges);
+            setHistoryIndex((prev) => prev + 1);
+        }
+    };
+
+    // Check if undo/redo is available
+    const canUndo = historyIndex > 0;
+    const canRedo = historyIndex < history.length - 1;
 
     // Handle save with loading state
     const handleSave = async () => {
@@ -103,42 +146,6 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
             } finally {
                 setIsSaving(false);
             }
-        }
-    };
-
-    const handleAddNode = async (nodeType: string) => {
-        if (!userId) {
-            console.error("User not authenticated");
-            return;
-        }
-
-        setIsAddingNode(true);
-
-        try {
-            // Convert Redux nodes to React Flow format for position calculation
-            const reactFlowNodes: Node[] = allNodesArray.map((workflowNode: WorkflowNodeData) => ({
-                id: workflowNode.id,
-                position: workflowNode.ui_data?.position || { x: 0, y: 0 },
-                data: {},
-                type: "default",
-                measured: {
-                    width: workflowNode.ui_data?.width || 200,
-                    height: workflowNode.ui_data?.height || 150,
-                },
-            }));
-
-            // Find a good position for the new node
-            const position = findGoodNodePosition(reactFlowNodes);
-
-            // Create the new node
-            const newNodeData = createNewNode(nodeType, position, workflowId, userId);
-
-            // Create the node via Redux thunk
-            await dispatch(create(newNodeData));
-        } catch (error) {
-            console.error("Failed to add node:", error);
-        } finally {
-            setIsAddingNode(false);
         }
     };
 
@@ -161,19 +168,48 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
         }
     };
 
+    // Use direct ReactFlow access for viewport operations
     const handleFitView = () => {
-        if (onFitView) {
-            onFitView();
-        }
+        reactFlowInstance.fitView({ duration: 800, padding: 0.2, maxZoom: 1.5 });
+    };
+
+    // Implement collapse/expand directly in header using ReactFlow
+    const handleCollapseAll = () => {
+        const currentNodes = reactFlowInstance.getNodes();
+        const updatedNodes = currentNodes.map((node) => ({
+            ...node,
+            data: {
+                ...node.data,
+                displayMode: "compact",
+            },
+        }));
+        reactFlowInstance.setNodes(updatedNodes);
+    };
+
+    const handleExpandAll = () => {
+        const currentNodes = reactFlowInstance.getNodes();
+        const updatedNodes = currentNodes.map((node) => ({
+            ...node,
+            data: {
+                ...node.data,
+                displayMode: "detailed",
+            },
+        }));
+        reactFlowInstance.setNodes(updatedNodes);
     };
 
     const nodeTypes = [
+        // COMPLETELY FAKE! These are not our real node categories!
         { type: "functionNode", label: "Function", icon: <SquareFunction className="h-4 w-4" /> },
         { type: "userInput", label: "User Input", icon: <Users className="h-4 w-4" /> },
         { type: "brokerRelay", label: "Broker Relay", icon: <Shuffle className="h-4 w-4" /> },
         { type: "trigger", label: "Trigger", icon: <Zap className="h-4 w-4" /> },
         { type: "action", label: "Action", icon: <GitBranch className="h-4 w-4" /> },
     ];
+
+    const handleAddNode = async (nodeType: string) => {
+        console.log("Adding nodes will need major modifications to ensure it uses the same logic as the QuickAccessPanel    ");
+    };
 
     return (
         <div className="border-b border-border bg-background px-3 py-2">
@@ -205,7 +241,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                                 tooltip="Undo"
                                 variant="ghost"
                                 size="sm"
-                                onClick={onUndo}
+                                onClick={handleUndo}
                                 disabled={!canUndo}
                                 disabledTooltip="Nothing to undo"
                             />
@@ -214,7 +250,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                                 tooltip="Redo"
                                 variant="ghost"
                                 size="sm"
-                                onClick={onRedo}
+                                onClick={handleRedo}
                                 disabled={!canRedo}
                                 disabledTooltip="Nothing to redo"
                             />
@@ -229,7 +265,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                             tooltip="Collapse All Nodes"
                             variant="ghost"
                             size="sm"
-                            onClick={onCollapseAll}
+                            onClick={handleCollapseAll}
                             successTooltip="All nodes collapsed!"
                             feedbackDuration={500}
                             successIcon={<Minimize2 className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
@@ -239,7 +275,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                             tooltip="Expand All Nodes"
                             variant="ghost"
                             size="sm"
-                            onClick={onExpandAll}
+                            onClick={handleExpandAll}
                             successTooltip="All nodes expanded!"
                             feedbackDuration={500}
                             successIcon={<Maximize2 className="h-4 w-4 text-blue-500 dark:text-blue-400" />}

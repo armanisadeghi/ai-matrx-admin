@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useCallback, ReactNode, ReactElement } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
-import { update as updateNode } from "@/lib/redux/workflow-node/thunks";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
+import { updateWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -32,15 +32,15 @@ export const DynamicNodeEditor: React.FC<NodeEditorProps> = ({
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id || "");
     
     // Get node data and dirty state from Redux
-    const nodeData = useAppSelector((state) => workflowNodeSelectors.nodeById(state, nodeId));
-    const isDirty = useAppSelector((state) => workflowNodeSelectors.isNodeDirty(state, nodeId));
+    const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
+    const isDirty = useAppSelector((state) => workflowNodesSelectors.isNodeDirty(state, nodeId));
 
     const handleSave = useCallback(async () => {
         if (!nodeData) return;
         try {
             // Use the node data directly for updates (exclude id)
             const { id, ...updates } = nodeData;
-            await dispatch(updateNode({ id: nodeId, updates })).unwrap();
+            await dispatch(updateWorkflowNode({ id: nodeId, updates })).unwrap();
             onOpenChange(false);
         } catch (error) {
             console.error("Failed to save node:", error);

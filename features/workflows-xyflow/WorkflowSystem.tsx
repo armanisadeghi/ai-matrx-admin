@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useState } from "react";
 import "@xyflow/react/dist/style.css";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useReactFlow, Viewport, Node, Edge } from "@xyflow/react";
 import { WorkflowCanvas } from "./core/WorkflowCanvas";
 import { WorkflowHeader } from "./core/WorkflowHeader";
 import { useWorkflowSync } from "./hooks/useWorkflowSync";
+import FieldDisplaySheet from "./nodes/source-node/sheets/FieldDisplaySheet";
+import { WorkflowAdminOverlay } from "./admin/WorkflowAdminOverlay";
 
 interface WorkflowSystemProps {
     workflowId: string;
@@ -13,96 +15,78 @@ interface WorkflowSystemProps {
 }
 
 export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode = "edit" }) => {
-    const canvasRef = useRef<{
-        triggerSave: () => Promise<void>;
-        fitView: () => void;
-        autoArrange: () => void;
-        zoomIn: () => void;
-        zoomOut: () => void;
-        resetView: () => void;
-        getSelectedNodes: () => any[];
-        getSelectedEdges: () => any[];
-        selectAll: () => void;
-        clearSelection: () => void;
-        undo: () => void;
-        redo: () => void;
-        canUndo: () => boolean;
-        canRedo: () => boolean;
-        collapseAll: () => void;
-        expandAll: () => void;
-        openFieldDisplay: () => void;
-        openAdminOverlay: () => void;
-    }>(null);
+    const reactFlowInstance = useReactFlow();
 
     // Get initial data and save function
     const { initialNodes, initialEdges, initialViewport, saveWorkflow, isLoading } = useWorkflowSync(workflowId);
 
-    // NO LOADING HERE - the page already loads the workflow with fetchOneWithNodes
+    // UI state management at top level
+    const [isFieldDisplaySheetOpen, setIsFieldDisplaySheetOpen] = useState(false);
+    const [isAdminOverlayOpen, setIsAdminOverlayOpen] = useState(false);
 
-    // Header save handler - triggers save from canvas
-    const handleHeaderSave = useCallback(async () => {
-        if (canvasRef.current) {
-            await canvasRef.current.triggerSave();
+    // Save handler - gets current state directly from ReactFlow
+    const handleSave = useCallback(async () => {
+        if (saveWorkflow) {
+            const currentNodes = reactFlowInstance.getNodes();
+            const currentEdges = reactFlowInstance.getEdges();
+            const currentViewport = reactFlowInstance.getViewport();
+            await saveWorkflow(currentNodes, currentEdges, currentViewport);
         }
-    }, []);
+    }, [saveWorkflow, reactFlowInstance]);
 
-    // Fit view handler
-    const handleFitView = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.fitView();
-        }
-    }, []);
-
-    // Auto arrange handler
+    // Auto arrange handler - implements custom layout logic at top level
     const handleAutoArrange = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.autoArrange();
-        }
-    }, []);
+        const currentNodes = reactFlowInstance.getNodes();
 
-    // History handlers
-    const handleUndo = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.undo();
-        }
-    }, []);
+        // Separate source input nodes from regular workflow nodes
+        const sourceNodes = currentNodes.filter(node => node.type === 'userInput' || node.type === 'userDataSource');
+        const regularNodes = currentNodes.filter(node => node.type !== 'userInput' && node.type !== 'userDataSource');
 
-    const handleRedo = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.redo();
-        }
-    }, []);
+        const arrangedNodes = [
+            // Position source nodes on the left in compact mode (like initial render)
+            ...sourceNodes.map((node, index) => ({
+                ...node,
+                position: {
+                    x: -300, // Same as initial positioning
+                    y: index * 120, // Same spacing as initial positioning
+                },
+                data: {
+                    ...node.data,
+                    displayMode: "compact", // Ensure they're compact
+                },
+            })),
+            // Arrange regular nodes in a grid to the right
+            ...regularNodes.map((node, index) => {
+                const cols = Math.ceil(Math.sqrt(regularNodes.length));
+                const row = Math.floor(index / cols);
+                const col = index % cols;
 
-    // Node display handlers
-    const handleCollapseAll = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.collapseAll();
-        }
-    }, []);
+                return {
+                    ...node,
+                    position: {
+                        x: col * 350 + 100, // Start at x: 100 to leave space for source nodes
+                        y: row * 350 + 100,
+                    },
+                };
+            }),
+        ];
 
-    const handleExpandAll = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.expandAll();
-        }
-    }, []);
+        reactFlowInstance.setNodes(arrangedNodes);
 
-    // Field display handler
+        // Fit view after arranging
+        setTimeout(() => {
+            reactFlowInstance.fitView({ duration: 800, padding: 0.2, maxZoom: 1.5 });
+        }, 100);
+    }, [reactFlowInstance]);
+
+    // UI overlay handlers
     const handleOpenFieldDisplay = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.openFieldDisplay();
-        }
+        setIsFieldDisplaySheetOpen(true);
     }, []);
 
-    // Admin overlay handler
     const handleOpenAdminOverlay = useCallback(() => {
-        if (canvasRef.current) {
-            canvasRef.current.openAdminOverlay();
-        }
+        setIsAdminOverlayOpen(true);
     }, []);
-
-    // History state getters
-    const canUndo = canvasRef.current?.canUndo() || false;
-    const canRedo = canvasRef.current?.canRedo() || false;
 
     if (isLoading) {
         return (
@@ -117,27 +101,37 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
             <WorkflowHeader
                 workflowId={workflowId}
                 mode={mode}
-                onSave={mode === "edit" ? handleHeaderSave : undefined}
-                onFitView={handleFitView}
+                onSave={mode === "edit" ? handleSave : undefined}
                 onAutoArrange={handleAutoArrange}
-                onUndo={handleUndo}
-                onRedo={handleRedo}
-                onCollapseAll={handleCollapseAll}
-                onExpandAll={handleExpandAll}
-                canUndo={canUndo}
-                canRedo={canRedo}
                 onOpenFieldDisplay={handleOpenFieldDisplay}
                 onOpenAdminOverlay={handleOpenAdminOverlay}
             />
 
             <WorkflowCanvas
-                ref={canvasRef}
                 workflowId={workflowId}
                 initialNodes={initialNodes}
                 initialEdges={initialEdges}
                 initialViewport={initialViewport}
                 mode={mode}
-                onSave={saveWorkflow}
+                isFieldDisplaySheetOpen={isFieldDisplaySheetOpen}
+                onOpenFieldDisplaySheet={setIsFieldDisplaySheetOpen}
+                isAdminOverlayOpen={isAdminOverlayOpen}
+                onOpenAdminOverlay={setIsAdminOverlayOpen}
+            />
+
+            {/* Field Display Sheet */}
+            <FieldDisplaySheet
+                isOpen={isFieldDisplaySheetOpen}
+                onOpenChange={setIsFieldDisplaySheetOpen}
+                workflowId={workflowId}
+                onSave={handleSave}
+            />
+
+            {/* Admin Overlay */}
+            <WorkflowAdminOverlay
+                isOpen={isAdminOverlayOpen}
+                onClose={() => setIsAdminOverlayOpen(false)}
+                workflowId={workflowId}
             />
         </div>
     );

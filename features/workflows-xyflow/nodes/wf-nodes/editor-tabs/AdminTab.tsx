@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
-import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
+import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DefaultTabProps } from "./types";
 
 export const AdminTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const dispatch = useAppDispatch();
-    const nodeData = useAppSelector((state) => workflowNodeSelectors.nodeById(state, nodeId));
+    const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
 
     const [jsonValue, setJsonValue] = useState("");
     const [isValidJson, setIsValidJson] = useState(true);
@@ -51,7 +51,7 @@ export const AdminTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
             }
 
             // Dispatch action to update the node
-            dispatch(workflowNodeActions.updateNode({ nodeId, updates: parsedData }));
+            dispatch(workflowNodesActions.updateWorkflowNode({ id: nodeId, updates: parsedData }));
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to apply changes");

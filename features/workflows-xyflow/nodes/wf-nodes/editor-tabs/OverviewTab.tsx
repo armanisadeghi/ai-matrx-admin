@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { DefaultTabProps } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -9,11 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
+import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 
 export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
-    const nodeData = useAppSelector((state) => workflowNodeSelectors.nodeById(state, nodeId));
-    const isNodeActive = useAppSelector((state) => workflowNodeSelectors.nodeActive(state, nodeId));
+    const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
     const dispatch = useAppDispatch();
 
     if (!nodeData) {
@@ -39,9 +38,10 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                     placeholder="Enter step name..."
                                     onChange={(e) => {
                                         dispatch(
-                                            workflowNodeActions.updateStepName({
-                                                nodeId,
-                                                stepName: e.target.value,
+                                            workflowNodesActions.updateField({
+                                                id: nodeId,
+                                                field: "step_name",
+                                                value: e.target.value,
                                             })
                                         );
                                     }}
@@ -56,9 +56,10 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                         checked={nodeData.execution_required}
                                         onCheckedChange={(checked) => {
                                             dispatch(
-                                                workflowNodeActions.updateExecutionRequired({
-                                                    nodeId,
-                                                    executionRequired: checked,
+                                                workflowNodesActions.updateField({
+                                                    id: nodeId,
+                                                    field: "execution_required",
+                                                    value: checked,
                                                 })
                                             );
                                         }}
@@ -74,19 +75,20 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                             <TableCell>
                                 <div className="flex items-center space-x-2">
                                     <Switch
-                                        checked={isNodeActive}
+                                        checked={nodeData.is_active}
                                         onCheckedChange={(checked) => {
                                             dispatch(
-                                                workflowNodeActions.setNodeActive({
-                                                    nodeId,
-                                                    active: checked,
+                                                workflowNodesActions.updateField({
+                                                    id: nodeId,
+                                                    field: "is_active",
+                                                    value: checked,
                                                 })
                                             );
                                         }}
                                         className="data-[state=checked]:bg-green-500 dark:data-[state=checked]:bg-green-600"
                                     />
                                     <span className="text-xs text-muted-foreground">
-                                        {isNodeActive ? "Current Setting: Active" : "Current Setting: Inactive"}
+                                        {nodeData.is_active ? "Current Setting: Active" : "Current Setting: Inactive"}
                                     </span>
                                 </div>
                             </TableCell>

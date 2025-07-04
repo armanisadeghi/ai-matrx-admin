@@ -1,578 +1,465 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Viewport } from "@xyflow/react";
+import { BrokerDestination, BrokerSourceConfig, Dependency, InputMapping, Output, Workflow, WorkflowMetadata, WorkflowState } from "./types";
 import {
-    WorkflowData,
-    WorkflowSliceState,
-    InputMapping,
-    Output,
-    Dependency,
-    BrokerSourceConfig,
-    BrokerDestination,
-    createInputMapping,
-    createOutput,
-    createDependency,
-    ensureInputMappingArray,
-    ensureOutputArray,
-    ensureDependencyArray,
-} from "./types";
-import { fetchOne, fetchAll, create, update, deleteWorkflow, fetchOneWithNodes, saveWithNodes, fetchOrGetFromState } from "./thunks";
+    fetchAllWorkflows,
+    fetchOneWorkflow,
+    createWorkflow,
+    updateWorkflow,
+    deleteWorkflow,
+    fetchOneWorkflowWithNodes,
+    saveWorkflowWithNodes,
+} from "./thunks";
 
-const initialState: WorkflowSliceState = {
-    workflows: {},
-    selectedWorkflowId: null,
-    loading: false,
+export const DEFAULT_WORKFLOW: Omit<Workflow, "id" | "created_at" | "updated_at" | "user_id" | "version"> = {
+    name: "",
+    description: null,
+    workflow_type: null,
+    inputs: null,
+    outputs: null,
+    dependencies: null,
+    sources: null,
+    destinations: null,
+    actions: null,
+    category: null,
+    tags: null,
+    is_active: true,
+    is_deleted: false,
+    auto_execute: false,
+    metadata: null,
+    viewport: null,
+    is_public: false,
+    authenticated_read: true,
+    public_read: false,
+};
+
+const initialState: WorkflowState = {
+    entities: {},
+    ids: [],
+    activeId: null,
+    selectedIds: [],
+    isDirty: {},
+    isLoading: false,
     error: null,
-    dirtyWorkflows: [],
-    lastFetched: {},
-    staleTime: 600000, // 10 minutes
+    fetchTimestamp: null,
+    dataFetched: false,
 };
 
 const workflowSlice = createSlice({
-    name: "workflow",
+    name: "workflows",
     initialState,
     reducers: {
-        // Workflow selection
-        selectWorkflow: (state, action: PayloadAction<string | null>) => {
-            state.selectedWorkflowId = action.payload;
+        setActive: (state, action: PayloadAction<string | null>) => {
+            state.activeId = action.payload;
         },
-
-        // Mark workflow as dirty/clean
-        markWorkflowDirty: (state, action: PayloadAction<string>) => {
-            if (!state.dirtyWorkflows.includes(action.payload)) {
-                state.dirtyWorkflows.push(action.payload);
+        setSelected: (state, action: PayloadAction<string[]>) => {
+            state.selectedIds = action.payload;
+        },
+        updateField: (state, action: PayloadAction<{ id: string; field: keyof Workflow; value: any }>) => {
+            const { id, field, value } = action.payload;
+            if (state.entities[id]) {
+                (state.entities[id] as any)[field] = value;
+                state.isDirty[id] = true;
             }
         },
-        markWorkflowClean: (state, action: PayloadAction<string>) => {
-            state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== action.payload);
-        },
-        markAllWorkflowsClean: (state) => {
-            state.dirtyWorkflows = [];
-        },
-
-        // Update specific workflow fields
-        updateWorkflowField: (state, action: PayloadAction<{ workflowId: string; field: keyof WorkflowData; value: any }>) => {
-            const { workflowId, field, value } = action.payload;
-            if (state.workflows[workflowId]) {
-                (state.workflows[workflowId] as any)[field] = value;
-                if (!state.dirtyWorkflows.includes(workflowId)) {
-                    state.dirtyWorkflows.push(workflowId);
-                }
+        
+        // Input Management Actions
+        updateInputs: (state, action: PayloadAction<{ id: string; inputs: InputMapping[] }>) => {
+            const { id, inputs } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].inputs = inputs;
+                state.isDirty[id] = true;
             }
         },
-
-        // Update entire workflow
-        updateWorkflow: (state, action: PayloadAction<{ workflowId: string; updates: Partial<WorkflowData> }>) => {
-            const { workflowId, updates } = action.payload;
-            if (state.workflows[workflowId]) {
-                state.workflows[workflowId] = { ...state.workflows[workflowId], ...updates };
-                if (!state.dirtyWorkflows.includes(workflowId)) {
-                    state.dirtyWorkflows.push(workflowId);
+        addInput: (state, action: PayloadAction<{ id: string; input: InputMapping }>) => {
+            const { id, input } = action.payload;
+            if (state.entities[id]) {
+                if (!state.entities[id].inputs) {
+                    state.entities[id].inputs = [];
                 }
+                state.entities[id].inputs!.push(input);
+                state.isDirty[id] = true;
             }
         },
-
-        // Individual field updates for selected workflow (backward compatibility)
-        updateName: (state, action: PayloadAction<string>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].name = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
+        removeInput: (state, action: PayloadAction<{ id: string; index: number }>) => {
+            const { id, index } = action.payload;
+            if (state.entities[id] && state.entities[id].inputs) {
+                state.entities[id].inputs!.splice(index, 1);
+                state.isDirty[id] = true;
             }
         },
-        updateDescription: (state, action: PayloadAction<string | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].description = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateWorkflowType: (state, action: PayloadAction<string | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].workflow_type = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateInputs: (state, action: PayloadAction<InputMapping[] | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].inputs = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateOutputs: (state, action: PayloadAction<Output[] | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].outputs = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateDependencies: (state, action: PayloadAction<Dependency[] | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].dependencies = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateSources: (state, action: PayloadAction<BrokerSourceConfig[] | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].sources = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        addSource: (state, action: PayloadAction<BrokerSourceConfig>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].sources = [
-                    ...(state.workflows[state.selectedWorkflowId].sources || []),
-                    action.payload,
-                ];
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        removeSource: (state, action: PayloadAction<{ sourceType: string; brokerId: string }>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].sources = state.workflows[state.selectedWorkflowId].sources?.filter(
-                    (source) => `${source.sourceType}:${source.brokerId}` !== `${action.payload.sourceType}:${action.payload.brokerId}`
-                );
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateSource: (state, action: PayloadAction<{ sourceType: string; brokerId: string; source: BrokerSourceConfig }>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (workflow.sources) {
-                    const index = workflow.sources.findIndex(
-                        (source) => `${source.sourceType}:${source.brokerId}` === `${action.payload.sourceType}:${action.payload.brokerId}`
-                    );
-                    if (index !== -1) {
-                        workflow.sources[index] = action.payload.source;
-                    }
-                }
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateDestinations: (state, action: PayloadAction<BrokerDestination[] | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].destinations = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        addDestination: (state, action: PayloadAction<BrokerDestination>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].destinations = [
-                    ...(state.workflows[state.selectedWorkflowId].destinations || []),
-                    action.payload,
-                ];
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
+        updateInputItem: (state, action: PayloadAction<{ id: string; index: number; input: InputMapping }>) => {
+            const { id, index, input } = action.payload;
+            if (state.entities[id] && state.entities[id].inputs && state.entities[id].inputs![index]) {
+                state.entities[id].inputs![index] = input;
+                state.isDirty[id] = true;
             }
         },
 
-        removeDestination: (state, action: PayloadAction<string>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].destinations = state.workflows[state.selectedWorkflowId].destinations?.filter(
-                    (destination) => destination.broker_id !== action.payload
-                );
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
+        // Output Management Actions
+        updateOutputs: (state, action: PayloadAction<{ id: string; outputs: Output[] }>) => {
+            const { id, outputs } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].outputs = outputs;
+                state.isDirty[id] = true;
+            }
+        },
+        addOutput: (state, action: PayloadAction<{ id: string; output: Output }>) => {
+            const { id, output } = action.payload;
+            if (state.entities[id]) {
+                if (!state.entities[id].outputs) {
+                    state.entities[id].outputs = [];
                 }
+                state.entities[id].outputs!.push(output);
+                state.isDirty[id] = true;
+            }
+        },
+        removeOutput: (state, action: PayloadAction<{ id: string; index: number }>) => {
+            const { id, index } = action.payload;
+            if (state.entities[id] && state.entities[id].outputs) {
+                state.entities[id].outputs!.splice(index, 1);
+                state.isDirty[id] = true;
+            }
+        },
+        updateOutputItem: (state, action: PayloadAction<{ id: string; index: number; output: Output }>) => {
+            const { id, index, output } = action.payload;
+            if (state.entities[id] && state.entities[id].outputs && state.entities[id].outputs![index]) {
+                state.entities[id].outputs![index] = output;
+                state.isDirty[id] = true;
             }
         },
 
-        updateActions: (state, action: PayloadAction<any>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].actions = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
+        // Dependency Management Actions
+        updateDependencies: (state, action: PayloadAction<{ id: string; dependencies: Dependency[] }>) => {
+            const { id, dependencies } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].dependencies = dependencies;
+                state.isDirty[id] = true;
             }
         },
-        updateCategory: (state, action: PayloadAction<string | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].category = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
+        addDependency: (state, action: PayloadAction<{ id: string; dependency: Dependency }>) => {
+            const { id, dependency } = action.payload;
+            if (state.entities[id]) {
+                if (!state.entities[id].dependencies) {
+                    state.entities[id].dependencies = [];
                 }
+                state.entities[id].dependencies!.push(dependency);
+                state.isDirty[id] = true;
             }
         },
-        updateTags: (state, action: PayloadAction<any>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].tags = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
+        removeDependency: (state, action: PayloadAction<{ id: string; index: number }>) => {
+            const { id, index } = action.payload;
+            if (state.entities[id] && state.entities[id].dependencies) {
+                state.entities[id].dependencies!.splice(index, 1);
+                state.isDirty[id] = true;
             }
         },
-        updateIsActive: (state, action: PayloadAction<boolean | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].is_active = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateIsDeleted: (state, action: PayloadAction<boolean | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].is_deleted = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateAutoExecute: (state, action: PayloadAction<boolean | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].auto_execute = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateMetadata: (state, action: PayloadAction<Record<string, any> | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].metadata = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateViewport: (state, action: PayloadAction<any>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].viewport = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateIsPublic: (state, action: PayloadAction<boolean | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].is_public = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateAuthenticatedRead: (state, action: PayloadAction<boolean | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].authenticated_read = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updatePublicRead: (state, action: PayloadAction<boolean | null>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                state.workflows[state.selectedWorkflowId].public_read = action.payload;
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
+        updateDependencyItem: (state, action: PayloadAction<{ id: string; index: number; dependency: Dependency }>) => {
+            const { id, index, dependency } = action.payload;
+            if (state.entities[id] && state.entities[id].dependencies && state.entities[id].dependencies![index]) {
+                state.entities[id].dependencies![index] = dependency;
+                state.isDirty[id] = true;
             }
         },
 
-        // Array management for selected workflow
-        addInput: (state, action: PayloadAction<InputMapping>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (!workflow.inputs) workflow.inputs = [];
-                workflow.inputs.push(action.payload);
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
+        // Source Management Actions
+        updateSources: (state, action: PayloadAction<{ id: string; sources: BrokerSourceConfig[] }>) => {
+            const { id, sources } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].sources = sources;
+                state.isDirty[id] = true;
             }
         },
-        updateInput: (state, action: PayloadAction<{ index: number; input: InputMapping }>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (workflow.inputs && workflow.inputs[action.payload.index]) {
-                    workflow.inputs[action.payload.index] = action.payload.input;
-                    if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                        state.dirtyWorkflows.push(state.selectedWorkflowId);
-                    }
+        addSource: (state, action: PayloadAction<{ id: string; source: BrokerSourceConfig }>) => {
+            const { id, source } = action.payload;
+            if (state.entities[id]) {
+                if (!state.entities[id].sources) {
+                    state.entities[id].sources = [];
                 }
+                state.entities[id].sources!.push(source);
+                state.isDirty[id] = true;
             }
         },
-        removeInput: (state, action: PayloadAction<number>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (workflow.inputs) {
-                    workflow.inputs.splice(action.payload, 1);
-                    if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                        state.dirtyWorkflows.push(state.selectedWorkflowId);
-                    }
-                }
+        removeSource: (state, action: PayloadAction<{ id: string; index: number }>) => {
+            const { id, index } = action.payload;
+            if (state.entities[id] && state.entities[id].sources) {
+                state.entities[id].sources!.splice(index, 1);
+                state.isDirty[id] = true;
             }
         },
-        addOutput: (state, action: PayloadAction<Output>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (!workflow.outputs) workflow.outputs = [];
-                workflow.outputs.push(action.payload);
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
+        removeSourceByBrokerId: (state, action: PayloadAction<{ id: string; brokerId: string }>) => {
+            const { id, brokerId } = action.payload;
+            if (state.entities[id] && state.entities[id].sources) {
+                state.entities[id].sources = state.entities[id].sources!.filter(source => source.brokerId !== brokerId);
+                state.isDirty[id] = true;
             }
         },
-        updateOutput: (state, action: PayloadAction<{ index: number; output: Output }>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (workflow.outputs && workflow.outputs[action.payload.index]) {
-                    workflow.outputs[action.payload.index] = action.payload.output;
-                    if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                        state.dirtyWorkflows.push(state.selectedWorkflowId);
-                    }
-                }
-            }
-        },
-        removeOutput: (state, action: PayloadAction<number>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (workflow.outputs) {
-                    workflow.outputs.splice(action.payload, 1);
-                    if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                        state.dirtyWorkflows.push(state.selectedWorkflowId);
-                    }
-                }
-            }
-        },
-        addDependency: (state, action: PayloadAction<Dependency>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (!workflow.dependencies) workflow.dependencies = [];
-                workflow.dependencies.push(action.payload);
-                if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                    state.dirtyWorkflows.push(state.selectedWorkflowId);
-                }
-            }
-        },
-        updateDependency: (state, action: PayloadAction<{ index: number; dependency: Dependency }>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (workflow.dependencies && workflow.dependencies[action.payload.index]) {
-                    workflow.dependencies[action.payload.index] = action.payload.dependency;
-                    if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                        state.dirtyWorkflows.push(state.selectedWorkflowId);
-                    }
-                }
-            }
-        },
-        removeDependency: (state, action: PayloadAction<number>) => {
-            if (state.selectedWorkflowId && state.workflows[state.selectedWorkflowId]) {
-                const workflow = state.workflows[state.selectedWorkflowId];
-                if (workflow.dependencies) {
-                    workflow.dependencies.splice(action.payload, 1);
-                    if (!state.dirtyWorkflows.includes(state.selectedWorkflowId)) {
-                        state.dirtyWorkflows.push(state.selectedWorkflowId);
-                    }
-                }
+        updateSourceItem: (state, action: PayloadAction<{ id: string; index: number; source: BrokerSourceConfig }>) => {
+            const { id, index, source } = action.payload;
+            if (state.entities[id] && state.entities[id].sources && state.entities[id].sources![index]) {
+                state.entities[id].sources![index] = source;
+                state.isDirty[id] = true;
             }
         },
 
-        // Cache management
-        markWorkflowStale: (state, action: PayloadAction<string>) => {
-            delete state.lastFetched[action.payload];
+        // Destination Management Actions
+        updateDestinations: (state, action: PayloadAction<{ id: string; destinations: BrokerDestination[] }>) => {
+            const { id, destinations } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].destinations = destinations;
+                state.isDirty[id] = true;
+            }
         },
-
-        // Remove workflow from state
-        removeWorkflowFromState: (state, action: PayloadAction<string>) => {
-            delete state.workflows[action.payload];
-            delete state.lastFetched[action.payload];
-            state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== action.payload);
-            if (state.selectedWorkflowId === action.payload) {
-                state.selectedWorkflowId = null;
+        addDestination: (state, action: PayloadAction<{ id: string; destination: BrokerDestination }>) => {
+            const { id, destination } = action.payload;
+            if (state.entities[id]) {
+                if (!state.entities[id].destinations) {
+                    state.entities[id].destinations = [];
+                }
+                state.entities[id].destinations!.push(destination);
+                state.isDirty[id] = true;
+            }
+        },
+        removeDestination: (state, action: PayloadAction<{ id: string; index: number }>) => {
+            const { id, index } = action.payload;
+            if (state.entities[id] && state.entities[id].destinations) {
+                state.entities[id].destinations!.splice(index, 1);
+                state.isDirty[id] = true;
+            }
+        },
+        updateDestinationItem: (state, action: PayloadAction<{ id: string; index: number; destination: BrokerDestination }>) => {
+            const { id, index, destination } = action.payload;
+            if (state.entities[id] && state.entities[id].destinations && state.entities[id].destinations![index]) {
+                state.entities[id].destinations![index] = destination;
+                state.isDirty[id] = true;
             }
         },
 
-        // Set multiple workflows (from fetch operations)
-        setWorkflows: (state, action: PayloadAction<WorkflowData[]>) => {
-            action.payload.forEach((workflow) => {
-                state.workflows[workflow.id] = workflow;
-                state.lastFetched[workflow.id] = Date.now();
+        // Metadata and Viewport Actions
+        updateMetadata: (state, action: PayloadAction<{ id: string; metadata: WorkflowMetadata }>) => {
+            const { id, metadata } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].metadata = metadata;
+                state.isDirty[id] = true;
+            }
+        },
+        updateViewport: (state, action: PayloadAction<{ id: string; viewport: Viewport }>) => {
+            const { id, viewport } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].viewport = viewport;
+                state.isDirty[id] = true;
+            }
+        },
+
+        // General State Management
+        setDirty: (state, action: PayloadAction<{ id: string; isDirty: boolean }>) => {
+            const { id, isDirty } = action.payload;
+            state.isDirty[id] = isDirty;
+        },
+        clearDirty: (state, action: PayloadAction<string>) => {
+            delete state.isDirty[action.payload];
+        },
+        setAll: (state, action: PayloadAction<Workflow[]>) => {
+            const workflows = action.payload;
+            state.entities = {};
+            state.ids = [];
+            workflows.forEach((workflow) => {
+                state.entities[workflow.id] = workflow;
+                state.ids.push(workflow.id);
             });
+            state.fetchTimestamp = Date.now();
+            state.dataFetched = true;
         },
-
-        // Set single workflow (from fetch operations)
-        setWorkflow: (state, action: PayloadAction<WorkflowData>) => {
-            const workflow = action.payload;
-            state.workflows[workflow.id] = workflow;
-            state.lastFetched[workflow.id] = Date.now();
-            state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id); // Clean after successful fetch/save
-        },
-
-        // Backward compatibility - set all workflow data (used by thunks)
-        setAll: (state, action: PayloadAction<Partial<WorkflowData>>) => {
-            if (action.payload.id) {
-                state.workflows[action.payload.id] = { ...state.workflows[action.payload.id], ...action.payload } as WorkflowData;
-                state.lastFetched[action.payload.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== action.payload.id);
-            }
-        },
-
-        // Reset entire state
         reset: () => initialState,
     },
     extraReducers: (builder) => {
         builder
-            // fetchOne
-            .addCase(fetchOne.pending, (state) => {
-                state.loading = true;
+            // Fetch All
+            .addCase(fetchAllWorkflows.pending, (state) => {
+                state.isLoading = true;
                 state.error = null;
             })
-            .addCase(fetchOne.fulfilled, (state, action) => {
-                state.loading = false;
-                const workflow = action.payload;
-                state.workflows[workflow.id] = workflow;
-                state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
-            })
-            .addCase(fetchOne.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.error.message || "Failed to fetch workflow";
-            })
-            // fetchAll
-            .addCase(fetchAll.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchAll.fulfilled, (state, action) => {
-                state.loading = false;
-                action.payload.forEach((workflow) => {
-                    state.workflows[workflow.id] = workflow;
-                    state.lastFetched[workflow.id] = Date.now();
+            .addCase(fetchAllWorkflows.fulfilled, (state, action) => {
+                state.isLoading = false;
+                const workflows = action.payload;
+                state.entities = {};
+                state.ids = [];
+                workflows.forEach((workflow) => {
+                    state.entities[workflow.id] = workflow;
+                    state.ids.push(workflow.id);
                 });
+                state.fetchTimestamp = Date.now();
+                state.dataFetched = true;
             })
-            .addCase(fetchAll.rejected, (state, action) => {
-                state.loading = false;
+            .addCase(fetchAllWorkflows.rejected, (state, action) => {
+                state.isLoading = false;
                 state.error = action.error.message || "Failed to fetch workflows";
             })
-            // create
-            .addCase(create.pending, (state) => {
-                state.loading = true;
+            // Fetch One
+            .addCase(fetchOneWorkflow.pending, (state) => {
+                state.isLoading = true;
                 state.error = null;
             })
-            .addCase(create.fulfilled, (state, action) => {
-                state.loading = false;
+            .addCase(fetchOneWorkflow.fulfilled, (state, action) => {
+                state.isLoading = false;
                 const workflow = action.payload;
-                state.workflows[workflow.id] = workflow;
-                state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
+                state.entities[workflow.id] = workflow;
+                if (!state.ids.includes(workflow.id)) {
+                    state.ids.push(workflow.id);
+                }
+                state.fetchTimestamp = Date.now();
             })
-            .addCase(create.rejected, (state, action) => {
-                state.loading = false;
+            .addCase(fetchOneWorkflow.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.error.message || "Failed to fetch workflow";
+            })
+            // Create
+            .addCase(createWorkflow.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(createWorkflow.fulfilled, (state, action) => {
+                state.isLoading = false;
+                const workflow = action.payload;
+                state.entities[workflow.id] = workflow;
+                state.ids.push(workflow.id);
+                state.activeId = workflow.id;
+                delete state.isDirty[workflow.id];
+            })
+            .addCase(createWorkflow.rejected, (state, action) => {
+                state.isLoading = false;
                 state.error = action.error.message || "Failed to create workflow";
             })
-            // update
-            .addCase(update.pending, (state) => {
-                state.loading = true;
+            // Update
+            .addCase(updateWorkflow.pending, (state) => {
+                state.isLoading = true;
                 state.error = null;
             })
-            .addCase(update.fulfilled, (state, action) => {
-                state.loading = false;
+            .addCase(updateWorkflow.fulfilled, (state, action) => {
+                state.isLoading = false;
                 const workflow = action.payload;
-                state.workflows[workflow.id] = workflow;
-                state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
+                state.entities[workflow.id] = workflow;
+                delete state.isDirty[workflow.id];
             })
-            .addCase(update.rejected, (state, action) => {
-                state.loading = false;
+            .addCase(updateWorkflow.rejected, (state, action) => {
+                state.isLoading = false;
                 state.error = action.error.message || "Failed to update workflow";
             })
-            // delete
+            // Delete
             .addCase(deleteWorkflow.pending, (state) => {
-                state.loading = true;
+                state.isLoading = true;
                 state.error = null;
             })
             .addCase(deleteWorkflow.fulfilled, (state, action) => {
-                state.loading = false;
+                state.isLoading = false;
                 const workflowId = action.payload;
-                delete state.workflows[workflowId];
-                delete state.lastFetched[workflowId];
-                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflowId);
-                if (state.selectedWorkflowId === workflowId) {
-                    state.selectedWorkflowId = null;
+                delete state.entities[workflowId];
+                state.ids = state.ids.filter((id) => id !== workflowId);
+                if (state.activeId === workflowId) {
+                    state.activeId = null;
                 }
+                state.selectedIds = state.selectedIds.filter((id) => id !== workflowId);
+                delete state.isDirty[workflowId];
             })
             .addCase(deleteWorkflow.rejected, (state, action) => {
-                state.loading = false;
+                state.isLoading = false;
                 state.error = action.error.message || "Failed to delete workflow";
             })
-            // fetchOneWithNodes
-            .addCase(fetchOneWithNodes.pending, (state) => {
-                state.loading = true;
+            // Fetch One With Nodes
+            .addCase(fetchOneWorkflowWithNodes.pending, (state) => {
+                state.isLoading = true;
                 state.error = null;
             })
-            .addCase(fetchOneWithNodes.fulfilled, (state, action) => {
-                state.loading = false;
+            .addCase(fetchOneWorkflowWithNodes.fulfilled, (state, action) => {
+                state.isLoading = false;
                 const workflow = action.payload;
-                state.workflows[workflow.id] = workflow;
-                state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
+                state.entities[workflow.id] = workflow;
+                if (!state.ids.includes(workflow.id)) {
+                    state.ids.push(workflow.id);
+                }
+                state.fetchTimestamp = Date.now();
             })
-            .addCase(fetchOneWithNodes.rejected, (state, action) => {
-                state.loading = false;
+            .addCase(fetchOneWorkflowWithNodes.rejected, (state, action) => {
+                state.isLoading = false;
                 state.error = action.error.message || "Failed to fetch workflow with nodes";
             })
-            // saveWithNodes
-            .addCase(saveWithNodes.pending, (state) => {
-                state.loading = true;
+            // Save With Nodes
+            .addCase(saveWorkflowWithNodes.pending, (state) => {
+                state.isLoading = true;
                 state.error = null;
             })
-            .addCase(saveWithNodes.fulfilled, (state, action) => {
-                state.loading = false;
+            .addCase(saveWorkflowWithNodes.fulfilled, (state, action) => {
+                state.isLoading = false;
                 const workflow = action.payload;
-                state.workflows[workflow.id] = workflow;
-                state.lastFetched[workflow.id] = Date.now();
-                state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
+                state.entities[workflow.id] = workflow;
+                delete state.isDirty[workflow.id];
             })
-            .addCase(saveWithNodes.rejected, (state, action) => {
-                state.loading = false;
+            .addCase(saveWorkflowWithNodes.rejected, (state, action) => {
+                state.isLoading = false;
                 state.error = action.error.message || "Failed to save workflow with nodes";
-            })
-            // fetchOrGetFromState
-            .addCase(fetchOrGetFromState.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchOrGetFromState.fulfilled, (state, action) => {
-                state.loading = false;
-                if (action.payload) {
-                    const workflow = action.payload;
-                    state.workflows[workflow.id] = workflow;
-                    state.lastFetched[workflow.id] = Date.now();
-                    state.dirtyWorkflows = state.dirtyWorkflows.filter((id) => id !== workflow.id);
-                }
-            })
-            .addCase(fetchOrGetFromState.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.error.message || "Failed to fetch or get workflow from state";
             });
     },
 });
 
-export const workflowActions = workflowSlice.actions;
+export const {
+    // General State Management
+    setActive,
+    setSelected,
+    updateField,
+    setDirty,
+    clearDirty,
+    setAll,
+    reset,
+    
+    // Input Management
+    updateInputs,
+    addInput,
+    removeInput,
+    updateInputItem,
+    
+    // Output Management
+    updateOutputs,
+    addOutput,
+    removeOutput,
+    updateOutputItem,
+    
+    // Dependency Management
+    updateDependencies,
+    addDependency,
+    removeDependency,
+    updateDependencyItem,
+    
+    // Source Management
+    updateSources,
+    addSource,
+    removeSource,
+    removeSourceByBrokerId,
+    updateSourceItem,
+    
+    // Destination Management
+    updateDestinations,
+    addDestination,
+    removeDestination,
+    updateDestinationItem,
+    
+    // Metadata and Viewport
+    updateMetadata,
+    updateViewport,
+} = workflowSlice.actions;
 
-// Export utility functions for easy access
-export const workflowUtils = {
-    createInputMapping,
-    createOutput,
-    createDependency,
-    ensureInputMappingArray,
-    ensureOutputArray,
-    ensureDependencyArray,
+// Combined actions object that includes both slice actions and thunks
+export const workflowActions = {
+    // Slice actions
+    ...workflowSlice.actions,
+    
+    // Thunks
+    fetchAllWorkflows,
+    fetchOneWorkflow,
+    createWorkflow,
+    updateWorkflow,
+    deleteWorkflow,
+    fetchOneWorkflowWithNodes,
+    saveWorkflowWithNodes,
 };
 
 export default workflowSlice.reducer;

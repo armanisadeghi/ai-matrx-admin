@@ -292,8 +292,11 @@ export const NODE_TYPE_CONFIGS: Record<string, NodeTypeConfig> = {
         minimapColorLight: "#10b981",
         minimapColorDark: "#34d399",
     },
-
 };
+
+
+export type WorkflowNodeType = keyof typeof NODE_TYPE_CONFIGS;
+
 
 // Handle styles configuration
 export const HANDLE_STYLES = {

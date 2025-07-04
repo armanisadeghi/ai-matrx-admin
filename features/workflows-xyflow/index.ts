@@ -2,7 +2,7 @@
 export { WorkflowSystem } from './WorkflowSystem';
 export { WorkflowCanvas } from './core/WorkflowCanvas';
 export { WorkflowHeader } from './core/WorkflowHeader';
-export { WorkflowNode } from './nodes/wf-nodes/WorkflowNode';
+export { WorkflowNodeItem as WorkflowNode } from './nodes/wf-nodes/WorkflowNode';
 
 // Hooks
 export { useWorkflowSync } from './hooks/useWorkflowSync';

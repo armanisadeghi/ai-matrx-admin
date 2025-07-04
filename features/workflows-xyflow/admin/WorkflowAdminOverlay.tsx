@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import FullScreenOverlay, { TabDefinition } from '@/components/official/FullScreenOverlay';
 import { useAppSelector } from "@/lib/redux/hooks";
-import { workflowSelectors } from "@/lib/redux/workflow/selectors";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
+import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { 
     useNodes, 
     useEdges, 
@@ -27,9 +27,9 @@ export const WorkflowAdminOverlay: React.FC<WorkflowAdminOverlayProps> = ({
     workflowId
 }) => {
     // Redux state
-    const workflow = useAppSelector((state) => workflowSelectors.workflowById(state, workflowId));
-    const workflowNodes = useAppSelector((state) => workflowNodeSelectors.nodesByWorkflowId(state, workflowId));
-    const workflowWithNodes = useAppSelector((state) => workflowSelectors.workflowWithNodesById(state, workflowId));
+    const workflow = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
+    const workflowNodes = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId));
+    const workflowWithNodes = useAppSelector((state) => workflowsSelectors.workflowWithNodesById(state, workflowId));
 
     // React Flow direct state hooks
     const reactFlowNodes = useNodes();

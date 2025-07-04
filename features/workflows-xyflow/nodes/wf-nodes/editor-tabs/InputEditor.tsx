@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { workflowNodeActions } from "@/lib/redux/workflow-node";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
+import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +15,10 @@ import { DefaultTabProps } from "./types";
 import { toTitleCase } from "@/utils/dataUtils";
 
 const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
-    const inputs = useAppSelector((state) => workflowNodeSelectors.nodeInputs(state, nodeId));
-    const registeredFunction = useAppSelector((state) => workflowNodeSelectors.nodeRegisteredFunction(state, nodeId));
+    const inputs = useAppSelector((state) => workflowNodesSelectors.nodeInputs(state, nodeId));
+    const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId || ""));
+
+    const registeredFunction = nodeData?.metadata?.registered_function;
 
     const dispatch = useAppDispatch();
     const hiddenArgNames = ALL_HIDDEN_CONNECTIONS;
@@ -85,7 +87,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const handleTypeChange = (argName, newType) => {
         dispatch(
-            workflowNodeActions.updateNodeInputByArgName({
+            workflowNodesActions.updateNodeInputByArgName({
                 nodeId,
                 argName,
                 updates: { type: newType },
@@ -95,7 +97,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const handleReadyChange = (argName, newReady) => {
         dispatch(
-            workflowNodeActions.updateNodeInputByArgName({
+            workflowNodesActions.updateNodeInputByArgName({
                 nodeId,
                 argName,
                 updates: { ready: newReady === "true" },
@@ -105,7 +107,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const handleSystemDefaultToggle = (argName, useSystemDefault) => {
         dispatch(
-            workflowNodeActions.updateNodeInputByArgName({
+            workflowNodesActions.updateNodeInputByArgName({
                 nodeId,
                 argName,
                 updates: {
@@ -120,7 +122,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const handleSourceChange = (argName, newSource) => {
         dispatch(
-            workflowNodeActions.updateNodeInputByArgName({
+            workflowNodesActions.updateNodeInputByArgName({
                 nodeId,
                 argName,
                 updates: { type: newSource },
@@ -130,7 +132,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const handleSetManuallyToggle = (argName, setManually) => {
         dispatch(
-            workflowNodeActions.updateNodeInputByArgName({
+            workflowNodesActions.updateNodeInputByArgName({
                 nodeId,
                 argName,
                 updates: {
@@ -145,7 +147,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const handleDefaultValueChange = (argName, newValue) => {
         dispatch(
-            workflowNodeActions.updateNodeInputByArgName({
+            workflowNodesActions.updateNodeInputByArgName({
                 nodeId,
                 argName,
                 updates: { default_value: newValue },
@@ -155,7 +157,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const handleMappingValueChange = (argName, newValue) => {
         dispatch(
-            workflowNodeActions.updateNodeInputByArgName({
+            workflowNodesActions.updateNodeInputByArgName({
                 nodeId,
                 argName,
                 updates: { default_value: newValue },
@@ -180,8 +182,8 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
         
         // Update all inputs at once
         dispatch(
-            workflowNodeActions.updateNodeInputs({
-                nodeId,
+            workflowNodesActions.updateInputs({
+                id: nodeId,
                 inputs: finalInputs,
             })
         );

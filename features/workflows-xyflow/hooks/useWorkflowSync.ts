@@ -3,23 +3,25 @@ import { Node, Edge } from "@xyflow/react";
 import { useSelector } from "react-redux";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
-import { workflowActions } from "@/lib/redux/workflow/slice";
-import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
-import { workflowSelectors } from "@/lib/redux/workflow/selectors";
-import { saveWorkflowFromState } from "@/lib/redux/workflow/thunks";
+import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
+import { saveWorkflowFromReactFlow } from "@/lib/redux/workflow/thunks";
 import { brokerActions, BrokerMapEntry } from "@/lib/redux/brokerSlice";
-import { nodeToReactFlow } from "../utils/nodeTransforms";
+import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
 
 export const useWorkflowSync = (workflowId: string) => {
     const dispatch = useAppDispatch();
 
-    // Get Redux state using selectors
-    const workflowData = useAppSelector((state) => workflowSelectors.workflowById(state, workflowId));
-    const workflowNodes = useAppSelector((state) => workflowNodeSelectors.nodesByWorkflowId(state, workflowId));
-    const workflowSources = useAppSelector((state) => workflowSelectors.sourcesById(state, workflowId));
-    const workflowUserInputSources = useAppSelector((state) => workflowSelectors.userInputSources(state));
-    const isLoading = useAppSelector(workflowSelectors.loading);
+    // Get Redux state using correct selectors
+    const workflowData = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
+    const workflowNodes = useAppSelector((state) => 
+        workflowNodesSelectors.xyFlowNodesByWorkflowId(state)(workflowId)
+    ); // Returns Node[] directly - no transformations needed!
+    const workflowNodesData = useAppSelector((state) => 
+        workflowNodesSelectors.nodesByWorkflowId(state)(workflowId)
+    ); // Returns WorkflowNode[] for business data (inputs/outputs)
+    const workflowSources = useAppSelector((state) => workflowsSelectors.workflowSources(state, workflowId));
+    const isLoading = useAppSelector(workflowsSelectors.isLoading);
 
     // Get current theme
     const currentTheme = useSelector((state: RootState) => state.theme.mode);
@@ -27,49 +29,47 @@ export const useWorkflowSync = (workflowId: string) => {
     // Ensure broker mappings exist for workflow sources on load
     useEffect(() => {
         if (workflowSources?.length) {
-            const brokerMappings: BrokerMapEntry[] = workflowUserInputSources.map((sourceConfig) => sourceConfig.sourceDetails);
+            // Extract user input sources from workflow sources
+            const userInputSources = workflowSources.filter(source => source.sourceType === 'user_input') as BrokerSourceConfig<'user_input'>[];
+            const brokerMappings: BrokerMapEntry[] = userInputSources.map((sourceConfig) => sourceConfig.sourceDetails);
 
             // Use the broker slice's built-in action that handles duplicates
-            dispatch(brokerActions.addOrUpdateRegisterEntries(brokerMappings));
+            if (brokerMappings.length > 0) {
+                dispatch(brokerActions.addOrUpdateRegisterEntries(brokerMappings));
+            }
         }
     }, [workflowSources, dispatch]);
 
     // Convert Redux data to React Flow format ONCE
     const initialNodes = useMemo(() => {
-        const regularNodes = workflowNodes.map(nodeToReactFlow);
+        // Regular workflow nodes - no transformation needed! 
+        // xyFlowNodesByWorkflowId returns Node[] directly from stored ui_data
+        const regularNodes = workflowNodes;
 
-        // Generate source input nodes from workflow sources
-        const sourceNodes = (workflowSources || []).map((source, index) => {
-            const mapKey = `${source.sourceType}:${source.brokerId}`;
-
-            // Determine the correct node type based on source type
-            const nodeType = source.sourceType === "user_input" ? "userInput" : "userDataSource";
-
+        // Generate source input nodes from workflow sources (these are auto-generated, not stored)
+        const sourceNodes = (workflowSources || []).map((source: BrokerSourceConfig, index) => {
             return {
-                id: mapKey,
-                type: nodeType,
+                id: `${source.sourceType}:${source.brokerId}`,
+                type: source.sourceType,
                 position: { x: -300, y: index * 120 }, // Position to the left of regular nodes with more spacing
                 data: {
                     ...source,
                     isActive: true, // Default to active
-                    showToolbar: true, // Show toolbar like regular nodes
                     displayMode: source.metadata?.displayMode || "detailed", // Use saved displayMode or default to detailed
                     workflowId, // Add workflowId to the data
                 },
-                draggable: true, // Allow dragging for positioning
-                selectable: true, // Allow selection
-                deletable: false, // Prevent deletion since they're auto-generated
             };
         });
 
         return [...regularNodes, ...sourceNodes];
-    }, [workflowNodes, workflowSources]);
+    }, [workflowNodes, workflowSources, workflowId]);
 
     // Generate edges from business data connections ONCE
     const initialEdges = useMemo(() => {
         const edges: Edge[] = [];
 
-        workflowNodes.forEach((node) => {
+        // Use workflowNodesData for business logic (inputs/outputs)
+        workflowNodesData.forEach((node) => {
             if (node.inputs) {
                 node.inputs.forEach((input, inputIndex) => {
                     if (input.source_broker_id) {
@@ -94,7 +94,7 @@ export const useWorkflowSync = (workflowId: string) => {
                             });
                         } else {
                             // Find the source node that provides this broker (within the same workflow)
-                            const sourceNode = workflowNodes.find((n) =>
+                            const sourceNode = workflowNodesData.find((n) =>
                                 n.outputs?.some((output) => output.broker_id === input.source_broker_id)
                             );
 
@@ -123,34 +123,19 @@ export const useWorkflowSync = (workflowId: string) => {
         });
 
         return edges;
-    }, [workflowNodes, workflowSources, currentTheme]);
+    }, [workflowNodesData, workflowSources, currentTheme]);
 
-    // Simple save function using Redux properly
+    // UPDATED: Save function using new saveWorkflowFromReactFlow thunk
     const saveWorkflow = useCallback(
         async (reactFlowNodes: Node[], reactFlowEdges: Edge[], reactFlowViewport: any) => {
             try {
-                // 1. Ensure the workflow is selected for viewport update
-                dispatch(workflowActions.selectWorkflow(workflowId));
-
-                // 2. Update UI data in Redux using actions (exclude selected - it's runtime only)
-                reactFlowNodes.forEach((node) => {
-                    dispatch(
-                        workflowNodeActions.updateNodeUiData({
-                            nodeId: node.id,
-                            uiData: {
-                                position: node.position,
-                                width: node.measured?.width,
-                                height: node.measured?.height,
-                            },
-                        })
-                    );
-                });
-
-                // 3. Update viewport in Redux for the selected workflow
-                dispatch(workflowActions.updateViewport(reactFlowViewport));
-
-                // 4. Use the new thunk that gets all data directly from state
-                await dispatch(saveWorkflowFromState(workflowId)).unwrap();
+                // Use the new thunk that handles all state updates and saves everything
+                await dispatch(saveWorkflowFromReactFlow({
+                    workflowId,
+                    reactFlowNodes,
+                    reactFlowEdges,
+                    reactFlowViewport
+                })).unwrap();
 
                 console.log("Workflow saved successfully!");
             } catch (error) {

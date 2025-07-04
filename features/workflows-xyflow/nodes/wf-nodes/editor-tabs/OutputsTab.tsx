@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { workflowNodeSelectors } from "@/lib/redux/workflow-node/selectors";
-import { workflowNodeActions } from "@/lib/redux/workflow-node/slice";
+import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
+import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,8 +26,7 @@ const DATA_TYPES = [
 
 export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const dispatch = useAppDispatch();
-    const outputs = useAppSelector((state) => workflowNodeSelectors.nodeOutputs(state, nodeId)) as Output[] || [];
-    const registeredFunction = useAppSelector((state) => workflowNodeSelectors.nodeRegisteredFunction(state, nodeId));
+    const outputs = useAppSelector((state) => workflowNodesSelectors.nodeOutputs(state, nodeId)) as Output[] || [];
 
     const createDefaultOutput = (): Output => ({
         name: "New Output",
@@ -47,17 +46,17 @@ export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const addOutput = () => {
         const newOutput = createDefaultOutput();
-        dispatch(workflowNodeActions.addNodeOutput({ nodeId, output: newOutput }));
+        dispatch(workflowNodesActions.addOutput({ id: nodeId, output: newOutput }));
     };
 
     const updateOutput = (index: number, field: keyof Output, value: any) => {
         const updatedOutputs = [...outputs];
         updatedOutputs[index] = { ...updatedOutputs[index], [field]: value };
-        dispatch(workflowNodeActions.updateNodeOutputs({ nodeId, outputs: updatedOutputs }));
+        dispatch(workflowNodesActions.updateOutputs({ id: nodeId, outputs: updatedOutputs }));
     };
 
     const removeOutput = (index: number) => {
-        dispatch(workflowNodeActions.removeNodeOutput({ nodeId, index }));
+        dispatch(workflowNodesActions.removeOutput({ id: nodeId, index }));
     };
 
     const updateBookmark = (index: number, bookmarkField: keyof Bookmark, value: any) => {

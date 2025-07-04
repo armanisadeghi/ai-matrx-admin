@@ -15,7 +15,7 @@ import {
 import { workflowActions } from "@/lib/redux/workflow/slice";
 
 // Workflow Node imports
-import {  workflowNodeSelectors} from "@/lib/redux/workflow-node/selectors";
+import {  workflowNodesSelectors} from "@/lib/redux/workflow-nodes/selectors";
 import {
   create as createWorkflowNode,
   update as updateWorkflowNode,
@@ -34,7 +34,7 @@ export default function WorkflowManagementTestPage() {
   const allWorkflowsLoading = useAppSelector(workflowSelectors.loading);
 
   // Workflow Node state
-  const nodeLoading = useAppSelector(workflowNodeSelectors.loading);
+  const nodeLoading = useAppSelector(workflowNodesSelectors.loading);
 
   // Local state
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>('');

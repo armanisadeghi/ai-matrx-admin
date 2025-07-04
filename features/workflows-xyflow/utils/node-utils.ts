@@ -1,9 +1,10 @@
 import { cloneDeep } from "lodash";
 import { getStore } from "@/lib/redux/store";
 import { DataBrokerData } from "@/types";
-import { WorkflowNodeData } from "@/lib/redux/workflow-node/types";
+import { WorkflowNode, WorkflowNodeUiData, XyFlowNodeType } from "@/lib/redux/workflow-nodes/types";
 import { InputMapping, Output } from "@/lib/redux/workflow/types";
 import { DEFAULT_EXCLUDE_ARG_NAMES } from "./arg-utils";
+import { WorkflowNodeType } from "./nodeStyles";
 
 // Helper function to filter broker data
 const filterBrokerData = (broker: any): DataBrokerData | null => {
@@ -100,29 +101,40 @@ export function generateNodeOutputs(functionData: any): Output[] {
 
 // Main function to create normalized node
 export function getNormalizedRegisteredFunctionNode(
+    type: XyFlowNodeType = "workflowNode",
     functionId: string,
-    workflowId?: string,
-    userId?: string,
-    uiData?: any
-): Omit<WorkflowNodeData, "id" | "created_at" | "updated_at"> {
+    workflowId: string,
+    userId: string,
+    uiData?: WorkflowNodeUiData,
+): Omit<WorkflowNode, "id" | "created_at" | "updated_at"> {
     const functionData = getRegisteredFunctions().find((f) => f.id === functionId);
     if (!functionData) {
         throw new Error(`Function with id ${functionId} not found`);
     }
-
-    const type = functionData.category.toLowerCase();
-
+    const nodeType = functionData.category.toLowerCase();
+    
+    const randomXOffset = Math.floor(Math.random() * 11) * 10;
+    const randomYOffset = Math.floor(Math.random() * 11) * 10;
+    
     return {
         function_id: functionData.id,
-        workflow_id: workflowId || null,
-        type,
-        node_type: type,
+        workflow_id: workflowId,
+        type: type,
+        node_type: nodeType,
         step_name: `New ${functionData.name}`,
         execution_required: true,
         inputs: generateNodeInputs(functionData),
         outputs: generateNodeOutputs(functionData),
-        user_id: userId || null,
-        ui_data: uiData || {},
+        user_id: userId,
+        is_active: true,
+        ui_data: uiData || { 
+            width: 250, 
+            height: 125, 
+            position: { 
+                x: 500 + randomXOffset, 
+                y: 250 + randomYOffset 
+            } 
+        },
         dependencies: [],
         metadata: {
             registered_function: functionData,
@@ -130,16 +142,15 @@ export function getNormalizedRegisteredFunctionNode(
         is_public: false,
         authenticated_read: true,
         public_read: false,
-        status: "pending",
     };
 }
 
 // Utility to reset specific node parts
 export function resetNodePart(
-    node: WorkflowNodeData,
+    node: WorkflowNode,
     functionData: any,
     part: 'inputs' | 'outputs'
-): WorkflowNodeData {
+): WorkflowNode {
     return {
         ...node,
         [part]: part === 'inputs' ? generateNodeInputs(functionData) : generateNodeOutputs(functionData),

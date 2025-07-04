@@ -1,491 +1,194 @@
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { BrokerSourceConfig, WorkflowData } from './types';
+import { selectAllWorkflowNodes, selectWorkflowNodesByWorkflowId } from '../workflow-nodes/selectors';
 
-const selectWorkflowSlice = (state: RootState) => state.workflow;
+const selectWorkflowState = (state: RootState) => state.workflows;
 
-// Basic state selectors
-const selectAllWorkflows = createSelector(
-  [selectWorkflowSlice],
-  (workflow) => workflow.workflows
+export const selectAllWorkflows = createSelector(
+  [selectWorkflowState],
+  (workflowState) => workflowState.ids.map(id => workflowState.entities[id])
 );
 
-const selectSelectedWorkflowId = createSelector(
-  [selectWorkflowSlice],
-  (workflow) => workflow.selectedWorkflowId
+export const selectWorkflowById = createSelector(
+  [selectWorkflowState, (state: RootState, id: string) => id],
+  (workflowState, id) => workflowState.entities[id] || null
 );
 
-const selectLoading = createSelector(
-  [selectWorkflowSlice],
-  (workflow) => workflow.loading
+export const selectActiveWorkflow = createSelector(
+  [selectWorkflowState],
+  (workflowState) => 
+    workflowState.activeId ? workflowState.entities[workflowState.activeId] : null
 );
 
-const selectError = createSelector(
-  [selectWorkflowSlice],
-  (workflow) => workflow.error
+export const selectSelectedWorkflows = createSelector(
+  [selectWorkflowState],
+  (workflowState) => 
+    workflowState.selectedIds.map(id => workflowState.entities[id]).filter(Boolean)
 );
 
-const selectDirtyWorkflows = createSelector(
-  [selectWorkflowSlice],
-  (workflow) => workflow.dirtyWorkflows
+export const selectWorkflowsIsLoading = createSelector(
+  [selectWorkflowState],
+  (workflowState) => workflowState.isLoading
 );
 
-const selectLastFetched = createSelector(
-  [selectWorkflowSlice],
-  (workflow) => workflow.lastFetched
+export const selectWorkflowsError = createSelector(
+  [selectWorkflowState],
+  (workflowState) => workflowState.error
 );
 
-// Workflow by ID selector
-const selectWorkflowById = createSelector(
-  [selectAllWorkflows, (state: RootState, workflowId: string) => workflowId],
-  (workflows, workflowId) => workflows[workflowId] || null
+export const selectWorkflowIsDirty = createSelector(
+  [selectWorkflowState, (state: RootState, id: string) => id],
+  (workflowState, id) => workflowState.isDirty[id] || false
 );
 
-// Selected workflow selector
-const selectSelectedWorkflow = createSelector(
-  [selectAllWorkflows, selectSelectedWorkflowId],
-  (workflows, selectedWorkflowId) => selectedWorkflowId ? workflows[selectedWorkflowId] || null : null
+export const selectWorkflowsDataFreshness = createSelector(
+  [selectWorkflowState],
+  (workflowState) => ({
+    fetchTimestamp: workflowState.fetchTimestamp,
+    dataFetched: workflowState.dataFetched,
+    isStale: workflowState.fetchTimestamp ? 
+      Date.now() - workflowState.fetchTimestamp > 5 * 60 * 1000 : true // 5 minutes
+  })
 );
 
-// Workflow existence check
-const selectWorkflowExists = createSelector(
-  [selectAllWorkflows, (state: RootState, workflowId: string) => workflowId],
-  (workflows, workflowId) => !!workflows[workflowId]
-);
-
-// Dirty state selectors
-const selectIsWorkflowDirty = createSelector(
-  [selectDirtyWorkflows, (state: RootState, workflowId: string) => workflowId],
-  (dirtyWorkflows, workflowId) => dirtyWorkflows.includes(workflowId)
-);
-
-const selectHasDirtyWorkflows = createSelector(
-  [selectDirtyWorkflows],
-  (dirtyWorkflows) => dirtyWorkflows.length > 0
-);
-
-const selectDirtyWorkflowIds = createSelector(
-  [selectDirtyWorkflows],
-  (dirtyWorkflows) => [...dirtyWorkflows] // Return a copy of the array
-);
-
-// Array of all workflows
-const selectAllWorkflowsArray = createSelector(
+export const selectActiveWorkflows = createSelector(
   [selectAllWorkflows],
-  (workflows) => Object.values(workflows)
-);
-
-// Filtered workflows
-const selectActiveWorkflows = createSelector(
-  [selectAllWorkflowsArray],
   (workflows) => workflows.filter(workflow => workflow.is_active && !workflow.is_deleted)
 );
 
-const selectWorkflowsByCategory = createSelector(
-  [selectAllWorkflowsArray, (state: RootState, category: string) => category],
+export const selectWorkflowsByCategory = createSelector(
+  [selectAllWorkflows, (state: RootState, category: string) => category],
   (workflows, category) => workflows.filter(workflow => workflow.category === category)
 );
 
-// Cache-related selectors
-const selectIsWorkflowStale = createSelector(
-  [selectLastFetched, selectWorkflowSlice, (state: RootState, workflowId: string) => workflowId],
-  (lastFetched, workflowSlice, workflowId) => {
-    const fetchTime = lastFetched[workflowId];
-    if (!fetchTime) return true;
-    return Date.now() - fetchTime > workflowSlice.staleTime;
-  }
-);
-
-// Data transformation selectors
-const selectWorkflowDuplicationData = createSelector(
-  [selectWorkflowById],
-  (workflow) => {
+export const selectWorkflowWithNodes = createSelector(
+  [selectWorkflowById, selectWorkflowNodesByWorkflowId],
+  (workflow, getNodesByWorkflowId) => {
     if (!workflow) return null;
-    
-    // Return workflow data without id, created_at, updated_at, version for duplication
-    const { id, created_at, updated_at, version, ...duplicationData } = workflow;
-    return duplicationData;
-  }
-);
-
-const selectWorkflowSaveData = createSelector(
-  [selectWorkflowById],
-  (workflow) => {
-    if (!workflow) return null;
-    
-    // Return full workflow data for saving
-    return { ...workflow };
-  }
-);
-
-const selectWorkflowSaveDataById = createSelector(
-  [selectWorkflowById],
-  (workflow) => {
-    if (!workflow) return null;
-    
-    // Return full workflow data for saving
-    return { ...workflow };
-  }
-);
-
-// Workflow with nodes selectors
-const selectWorkflowWithNodes = createSelector(
-  [selectSelectedWorkflow, (state: RootState) => state.workflowNodes.nodes],
-  (workflow, nodes) => {
-    if (!workflow) return null;
-    const nodeArray = Object.values(nodes).filter(node => node.workflow_id === workflow.id);
     return {
       ...workflow,
-      nodes: nodeArray
+      nodes: getNodesByWorkflowId(workflow.id)
     };
   }
 );
 
-const selectWorkflowWithNodesById = createSelector(
-  [selectWorkflowById, (state: RootState) => state.workflowNodes.nodes],
-  (workflow, nodes) => {
-    if (!workflow) return null;
-    const nodeArray = Object.values(nodes).filter(node => node.workflow_id === workflow.id);
+export const selectActiveWorkflowWithNodes = createSelector(
+  [selectActiveWorkflow, selectAllWorkflowNodes],
+  (activeWorkflow, allNodes) => {
+    if (!activeWorkflow) return null;
+    const workflowNodes = allNodes.filter(node => node.workflow_id === activeWorkflow.id);
     return {
-      ...workflow,
-      nodes: nodeArray
+      ...activeWorkflow,
+      nodes: workflowNodes
     };
   }
 );
 
-// Individual field selectors for a specific workflow
-const selectWorkflowField = <K extends keyof WorkflowData>(field: K) =>
-  createSelector(
-    [selectWorkflowById],
-    (workflow): WorkflowData[K] | null => workflow ? workflow[field] : null
-  );
-
-// Specific field selectors for selected workflow
-const selectSelectedWorkflowField = <K extends keyof WorkflowData>(field: K) =>
-  createSelector(
-    [selectSelectedWorkflow],
-    (workflow): WorkflowData[K] | null => workflow ? workflow[field] : null
-  );
-
-// Backward compatibility selectors for selected workflow
-const selectWorkflow = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow || {
-    id: "",
-    name: "",
-    description: null,
-    workflow_type: null,
-    inputs: null,
-    outputs: null,
-    dependencies: null,
-    sources: null,
-    destinations: null,
-    actions: null,
-    category: null,
-    tags: null,
-    is_active: true,
-    is_deleted: false,
-    auto_execute: false,
-    metadata: null,
-    viewport: null,
-    user_id: null,
-    version: null,
-    is_public: false,
-    authenticated_read: true,
-    public_read: false,
-    created_at: "",
-    updated_at: "",
-  }
-);
-
-// Individual field selectors for selected workflow (backward compatibility)
-const selectWorkflowId = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.id || ""
-);
-
-const selectWorkflowName = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.name || ""
-);
-
-const selectWorkflowDescription = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.description || null
-);
-
-const selectWorkflowType = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.workflow_type || null
-);
-
-const selectWorkflowCategory = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.category || null
-);
-
-const selectWorkflowInputs = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.inputs || null
-);
-
-const selectWorkflowOutputs = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.outputs || null
-);
-
-const selectWorkflowDependencies = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.dependencies || null
-);
-
-const selectWorkflowSources = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.sources || null
-) as (state: RootState) => BrokerSourceConfig[] | null;
-
-const selectWorkflowUserInputSources = createSelector(
-  [selectWorkflowSources],
-  (sources) => {
-    if (!sources || !Array.isArray(sources)) return [];
-    return sources.filter(source => source.sourceType === "user_input") as BrokerSourceConfig<"user_input">[];
-  }
-);
-
-const selectWorkflowUserInputSourceByBrokerId = createSelector(
-  [selectWorkflowUserInputSources, (state: RootState, brokerId: string) => brokerId],
-  (userInputSources, brokerId) => {
-    if (!userInputSources || !Array.isArray(userInputSources)) return null;
-    return userInputSources.find(source => source.brokerId === brokerId) || null;
-  }
-);
-
-const selectWorkflowUserDataSources = createSelector(
-  [selectWorkflowSources],
-  (sources) => {
-    if (!sources || !Array.isArray(sources)) return [];
-    return sources.filter(source => source.sourceType === "user_data") as BrokerSourceConfig<"user_data">[];
-  }
-);
-
-const selectWorkflowUserDataSourceByBrokerId = createSelector(
-  [selectWorkflowUserDataSources, (state: RootState, brokerId: string) => brokerId],
-  (userDataSources, brokerId) => {
-    if (!userDataSources || !Array.isArray(userDataSources)) return null;
-    return userDataSources.find(source => source.brokerId === brokerId) || null;
-  }
-);
-
-const selectWorkflowUserListSources = createSelector(
-  [selectWorkflowSources],
-  (sources) => {
-    if (!sources || !Array.isArray(sources)) return [];
-    return sources.filter(source => source.sourceType === "user_list") as BrokerSourceConfig<"user_list">[];
-  }
-);
-
-const selectWorkflowSystemTableSources = createSelector(
-  [selectWorkflowSources],
-  (sources) => {
-    if (!sources || !Array.isArray(sources)) return [];
-    return sources.filter(source => source.sourceType === "system_table") as BrokerSourceConfig<"system_table">[];
-  }
-);
-
-const selectWorkflowApiSources = createSelector(
-  [selectWorkflowSources],
-  (sources) => {
-    if (!sources || !Array.isArray(sources)) return [];
-    return sources.filter(source => source.sourceType === "api") as BrokerSourceConfig<"api">[];
-  }
-);
-
-const selectWorkflowOtherSources = createSelector(
-  [selectWorkflowSources],
-  (sources) => {
-    if (!sources || !Array.isArray(sources)) return [];
-    return sources.filter(source => source.sourceType === "other") as BrokerSourceConfig<"other">[];
-  }
-);
-
-const selectWorkflowSourceFieldIds = createSelector(
-  [selectWorkflowUserInputSources],
-  (userInputSources) => {
-    if (!userInputSources || !Array.isArray(userInputSources)) return [];
-    
-    return userInputSources
-      .map(source => source.sourceDetails?.mappedItemId)
-      .filter(id => id !== null && id !== undefined && id !== "");
-  }
-);
-// Sources by workflow ID selector
-const selectWorkflowSourcesById = createSelector(
+// Complex State Array Selectors
+export const selectWorkflowInputs = createSelector(
   [selectWorkflowById],
-  (workflow) => workflow?.sources || null
+  (workflow) => workflow?.inputs || []
 );
 
-const selectWorkflowDestinations = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.destinations || null
+export const selectWorkflowOutputs = createSelector(
+  [selectWorkflowById],
+  (workflow) => workflow?.outputs || []
 );
 
-const selectWorkflowActions = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.actions || null
+export const selectWorkflowDependencies = createSelector(
+  [selectWorkflowById],
+  (workflow) => workflow?.dependencies || []
 );
 
-const selectWorkflowTags = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.tags || null
+export const selectWorkflowSources = createSelector(
+  [selectWorkflowById],
+  (workflow) => workflow?.sources || []
 );
 
-const selectWorkflowMetadata = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.metadata || null
+export const selectWorkflowDestinations = createSelector(
+  [selectWorkflowById],
+  (workflow) => workflow?.destinations || []
 );
 
-const selectWorkflowViewport = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.viewport || null
+// Active Workflow Complex State Selectors
+export const selectActiveWorkflowInputs = createSelector(
+  [selectActiveWorkflow],
+  (workflow) => workflow?.inputs || []
 );
 
-const selectWorkflowIsActive = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.is_active ?? true
+export const selectActiveWorkflowOutputs = createSelector(
+  [selectActiveWorkflow],
+  (workflow) => workflow?.outputs || []
 );
 
-const selectWorkflowIsDeleted = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.is_deleted ?? false
+export const selectActiveWorkflowDependencies = createSelector(
+  [selectActiveWorkflow],
+  (workflow) => workflow?.dependencies || []
 );
 
-const selectWorkflowAutoExecute = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.auto_execute ?? false
+export const selectActiveWorkflowSources = createSelector(
+  [selectActiveWorkflow],
+  (workflow) => workflow?.sources || []
 );
 
-const selectWorkflowIsPublic = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.is_public ?? false
+export const selectActiveWorkflowDestinations = createSelector(
+  [selectActiveWorkflow],
+  (workflow) => workflow?.destinations || []
 );
 
-const selectWorkflowAuthenticatedRead = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.authenticated_read ?? true
+// Utility Selectors for Complex State Arrays
+export const selectWorkflowInputById = createSelector(
+  [selectWorkflowInputs, (state: RootState, workflowId: string, index: number) => index],
+  (inputs, index) => inputs[index] || null
 );
 
-const selectWorkflowPublicRead = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.public_read ?? false
+export const selectWorkflowOutputById = createSelector(
+  [selectWorkflowOutputs, (state: RootState, workflowId: string, index: number) => index],
+  (outputs, index) => outputs[index] || null
 );
 
-const selectWorkflowUserId = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.user_id || null
+export const selectWorkflowSourceByBrokerId = createSelector(
+  [selectWorkflowSources, (state: RootState, workflowId: string, brokerId: string) => brokerId],
+  (sources, brokerId) => sources.find(source => source.brokerId === brokerId) || null
 );
 
-const selectWorkflowVersion = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.version || null
-);
-
-const selectWorkflowCreatedAt = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.created_at || ""
-);
-
-const selectWorkflowUpdatedAt = createSelector(
-  [selectSelectedWorkflow],
-  (workflow) => workflow?.updated_at || ""
-);
-
-const selectWorkflowIsDirty = createSelector(
-  [selectSelectedWorkflowId, selectDirtyWorkflows],
-  (selectedWorkflowId, dirtyWorkflows) => 
-    selectedWorkflowId ? dirtyWorkflows.includes(selectedWorkflowId) : false
-);
-
-export const workflowSelectors = {
-  // Basic state
-  slice: selectWorkflowSlice,
+export const workflowsSelectors = {
+  // Basic workflow selectors
   allWorkflows: selectAllWorkflows,
-  allWorkflowsArray: selectAllWorkflowsArray,
-  selectedWorkflowId: selectSelectedWorkflowId,
-  selectedWorkflow: selectSelectedWorkflow,
-  loading: selectLoading,
-  error: selectError,
-  dirtyWorkflows: selectDirtyWorkflows,
-  lastFetched: selectLastFetched,
-
-  // Workflow by ID
   workflowById: selectWorkflowById,
-  exists: selectWorkflowExists,
-  isWorkflowStale: selectIsWorkflowStale,
-
-  // Dirty state
-  isWorkflowDirty: selectIsWorkflowDirty,
-  hasDirtyWorkflows: selectHasDirtyWorkflows,
-  dirtyWorkflowIds: selectDirtyWorkflowIds,
-
-  // Filtered workflows
+  activeWorkflow: selectActiveWorkflow,
+  selectedWorkflows: selectSelectedWorkflows,
+  
+  // State selectors
+  isLoading: selectWorkflowsIsLoading,
+  error: selectWorkflowsError,
+  isDirty: selectWorkflowIsDirty,
+  dataFreshness: selectWorkflowsDataFreshness,
+  
+  // Filter selectors
   activeWorkflows: selectActiveWorkflows,
   workflowsByCategory: selectWorkflowsByCategory,
-
-  // Data transformation
-  duplicationData: selectWorkflowDuplicationData,
-  saveData: selectWorkflowSaveData,
-  saveDataById: selectWorkflowSaveDataById,
-
-  // Workflow with nodes
+  
+  // Workflow with nodes selectors
   workflowWithNodes: selectWorkflowWithNodes,
-  workflowWithNodesById: selectWorkflowWithNodesById,
-
-  // Field selectors (factory functions)
-  workflowField: selectWorkflowField,
-  selectedWorkflowField: selectSelectedWorkflowField,
-
-  // Backward compatibility - selected workflow fields
-  workflow: selectWorkflow,
-  id: selectWorkflowId,
-  name: selectWorkflowName,
-  description: selectWorkflowDescription,
-  workflowType: selectWorkflowType,
-  category: selectWorkflowCategory,
-  inputs: selectWorkflowInputs,
-  outputs: selectWorkflowOutputs,
-  dependencies: selectWorkflowDependencies,
-  sources: selectWorkflowSources,
-  sourcesById: selectWorkflowSourcesById,
-
-  userInputSources: selectWorkflowUserInputSources,
-  userInputSourceByBrokerId: selectWorkflowUserInputSourceByBrokerId,
-
-  userDataSources: selectWorkflowUserDataSources,
-  userDataSourceByBrokerId: selectWorkflowUserDataSourceByBrokerId,
-  userListSources: selectWorkflowUserListSources,
-  systemTableSources: selectWorkflowSystemTableSources,
-  apiSources: selectWorkflowApiSources,
-  otherSources: selectWorkflowOtherSources,
-  sourceFieldIds: selectWorkflowSourceFieldIds,
-
-  destinations: selectWorkflowDestinations,
-  actions: selectWorkflowActions,
-  tags: selectWorkflowTags,
-  metadata: selectWorkflowMetadata,
-  viewport: selectWorkflowViewport,
-  isActive: selectWorkflowIsActive,
-  isDeleted: selectWorkflowIsDeleted,
-  autoExecute: selectWorkflowAutoExecute,
-  isPublic: selectWorkflowIsPublic,
-  authenticatedRead: selectWorkflowAuthenticatedRead,
-  publicRead: selectWorkflowPublicRead,
-  userId: selectWorkflowUserId,
-  version: selectWorkflowVersion,
-  createdAt: selectWorkflowCreatedAt,
-  updatedAt: selectWorkflowUpdatedAt,
-  isDirty: selectWorkflowIsDirty,
-
-  // Legacy aliases (will be deprecated)
-  allLoading: selectLoading,
-  allError: selectError,
+  activeWorkflowWithNodes: selectActiveWorkflowWithNodes,
+  
+  // Workflow array property selectors
+  workflowInputs: selectWorkflowInputs,
+  workflowOutputs: selectWorkflowOutputs,
+  workflowDependencies: selectWorkflowDependencies,
+  workflowSources: selectWorkflowSources,
+  workflowDestinations: selectWorkflowDestinations,
+  
+  // Active workflow array property selectors
+  activeWorkflowInputs: selectActiveWorkflowInputs,
+  activeWorkflowOutputs: selectActiveWorkflowOutputs,
+  activeWorkflowDependencies: selectActiveWorkflowDependencies,
+  activeWorkflowSources: selectActiveWorkflowSources,
+  activeWorkflowDestinations: selectActiveWorkflowDestinations,
+  
+  // Utility selectors
+  workflowInputById: selectWorkflowInputById,
+  workflowOutputById: selectWorkflowOutputById,
+  workflowSourceByBrokerId: selectWorkflowSourceByBrokerId,
 };
