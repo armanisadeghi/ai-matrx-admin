@@ -8,6 +8,7 @@ import { WorkflowHeader } from "./core/WorkflowHeader";
 import { useWorkflowSync } from "./hooks/useWorkflowSync";
 import FieldDisplaySheet from "./nodes/source-node/sheets/FieldDisplaySheet";
 import { WorkflowAdminOverlay } from "./admin/WorkflowAdminOverlay";
+import WorkflowLoading from "./common/workflow-loading";
 
 interface WorkflowSystemProps {
     workflowId: string;
@@ -90,9 +91,14 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
 
     if (isLoading) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-background">
-                <div className="text-lg text-foreground">(system) Loading workflow...</div>
-            </div>
+            <WorkflowLoading 
+                title="Loading Workflow System"
+                subtitle="Initializing functions, data brokers, and workflow components..."
+                step1="Functions"
+                step2="Data Brokers"
+                step3="Ready"
+                fullscreen={false}
+            />
         );
     }
 

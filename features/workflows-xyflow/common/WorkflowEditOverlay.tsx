@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { workflowActions } from '@/lib/redux/workflow/slice';
-import { update } from '@/lib/redux/workflow/thunks';
-import { workflowSelectors } from '@/lib/redux/workflow/selectors';
+import { updateWorkflow } from '@/lib/redux/workflow/thunks';
+import { workflowsSelectors } from '@/lib/redux/workflow/selectors';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Save, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 
 interface WorkflowEditOverlayProps {
   workflowId: string;
@@ -26,33 +27,36 @@ interface WorkflowEditOverlayProps {
 
 export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEditOverlayProps) {
   const dispatch = useAppDispatch();
-  const loading = useAppSelector(workflowSelectors.loading);
-  const error = useAppSelector(workflowSelectors.error);
-
-  // Individual field selectors
-  const name = useAppSelector(workflowSelectors.name);
-  const description = useAppSelector(workflowSelectors.description);
-  const workflowType = useAppSelector(workflowSelectors.workflowType);
-  const category = useAppSelector(workflowSelectors.category);
-  const inputs = useAppSelector(workflowSelectors.inputs);
-  const outputs = useAppSelector(workflowSelectors.outputs);
-  const dependencies = useAppSelector(workflowSelectors.dependencies);
-  const sources = useAppSelector(workflowSelectors.sources);
-  const destinations = useAppSelector(workflowSelectors.destinations);
-  const actions = useAppSelector(workflowSelectors.actions);
-  const tags = useAppSelector(workflowSelectors.tags);
-  const metadata = useAppSelector(workflowSelectors.metadata);
-  const viewport = useAppSelector(workflowSelectors.viewport);
-  const isActive = useAppSelector(workflowSelectors.isActive);
-  const isDeleted = useAppSelector(workflowSelectors.isDeleted);
-  const autoExecute = useAppSelector(workflowSelectors.autoExecute);
-  const isPublic = useAppSelector(workflowSelectors.isPublic);
-  const authenticatedRead = useAppSelector(workflowSelectors.authenticatedRead);
-  const publicRead = useAppSelector(workflowSelectors.publicRead);
-  const currentId = useAppSelector(workflowSelectors.id);
-  const version = useAppSelector(workflowSelectors.version);
-  const createdAt = useAppSelector(workflowSelectors.createdAt);
-  const updatedAt = useAppSelector(workflowSelectors.updatedAt);
+  const loading = useAppSelector(workflowsSelectors.isLoading);
+  const error = useAppSelector(workflowsSelectors.error);
+  
+  // Get the complete workflow object
+  const workflow = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
+  
+  // Extract individual fields from the workflow object
+  const name = workflow?.name || '';
+  const description = workflow?.description || '';
+  const workflowType = workflow?.workflow_type || '';
+  const category = workflow?.category || '';
+  const inputs = workflow?.inputs || [];
+  const outputs = workflow?.outputs || [];
+  const dependencies = workflow?.dependencies || [];
+  const sources = workflow?.sources || [];
+  const destinations = workflow?.destinations || [];
+  const actions = workflow?.actions || null;
+  const tags = workflow?.tags || null;
+  const metadata = workflow?.metadata || null;
+  const viewport = workflow?.viewport || null;
+  const isActive = workflow?.is_active || false;
+  const isDeleted = workflow?.is_deleted || false;
+  const autoExecute = workflow?.auto_execute || false;
+  const isPublic = workflow?.is_public || false;
+  const authenticatedRead = workflow?.authenticated_read || false;
+  const publicRead = workflow?.public_read || false;
+  const currentId = workflow?.id || null;
+  const version = workflow?.version || null;
+  const createdAt = workflow?.created_at || null;
+  const updatedAt = workflow?.updated_at || null;
 
   const [jsonFields, setJsonFields] = useState({
     inputs: '',
@@ -72,7 +76,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
 
   // Initialize JSON fields when workflow data changes
   useEffect(() => {
-    if (currentId === workflowId) {
+    if (workflow && currentId === workflowId) {
       setJsonFields({
         inputs: inputs ? JSON.stringify(inputs, null, 2) : '',
         outputs: outputs ? JSON.stringify(outputs, null, 2) : '',
@@ -85,7 +89,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
         viewport: viewport ? JSON.stringify(viewport, null, 2) : ''
       });
     }
-  }, [currentId, workflowId, inputs, outputs, dependencies, sources, destinations, actions, tags, metadata, viewport]);
+  }, [workflow, currentId, workflowId, inputs, outputs, dependencies, sources, destinations, actions, tags, metadata, viewport]);
 
   const handleSave = async () => {
     try {
@@ -131,7 +135,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
         ...parsedJsonFields
       };
 
-      await dispatch(update({ id: workflowId, updates: updateData })).unwrap();
+      await dispatch(updateWorkflow({ id: workflowId, updates: updateData })).unwrap();
       
       toast({
         title: "Success",
@@ -183,7 +187,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
 
   if (!isOpen) return null;
 
-  const isCurrentWorkflow = currentId === workflowId;
+  const isCurrentWorkflow = workflow && currentId === workflowId;
   const showContent = isCurrentWorkflow && !loading;
   const showLoadingState = loading || !isCurrentWorkflow;
 
@@ -192,10 +196,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
       <DialogContent className="w-[60vw] max-w-none h-[90vh] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex flex-col p-0">
         {showLoadingState && (
           <div className="flex items-center justify-center py-8 h-full">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-400 mx-auto" />
-              <span className="mt-2 block text-gray-600 dark:text-gray-300">(overlay) Loading workflow...</span>
-            </div>
+            <LoadingSpinner variant="brain" size="lg" message="Loading workflow..." />
           </div>
         )}
 
@@ -275,7 +276,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                                           <Input
                       id="name"
                       value={name}
-                      onChange={(e) => dispatch(workflowActions.updateName(e.target.value))}
+                      onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'name', value: e.target.value }))}
                       placeholder="Enter workflow name"
                       className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                     />
@@ -288,7 +289,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                                           <Textarea
                       id="description"
                       value={description || ''}
-                      onChange={(e) => dispatch(workflowActions.updateDescription(e.target.value || null))}
+                      onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'description', value: e.target.value || null }))}
                       placeholder="Enter workflow description"
                       className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                     />
@@ -302,7 +303,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                         <Input
                           id="workflow_type"
                           value={workflowType || ''}
-                          onChange={(e) => dispatch(workflowActions.updateWorkflowType(e.target.value || null))}
+                          onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'workflow_type', value: e.target.value || null }))}
                           placeholder="Enter workflow type"
                           className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                         />
@@ -315,7 +316,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                         <Input
                           id="category"
                           value={category || ''}
-                          onChange={(e) => dispatch(workflowActions.updateCategory(e.target.value || null))}
+                          onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'category', value: e.target.value || null }))}
                           placeholder="Enter category"
                           className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                         />
@@ -365,7 +366,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                       </div>
                                           <Switch
                       checked={isPublic || false}
-                      onCheckedChange={(checked) => dispatch(workflowActions.updateIsPublic(checked))}
+                      onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'is_public', value: checked }))}
                     />
                     </div>
 
@@ -378,7 +379,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                       </div>
                                           <Switch
                       checked={authenticatedRead || false}
-                      onCheckedChange={(checked) => dispatch(workflowActions.updateAuthenticatedRead(checked))}
+                      onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'authenticated_read', value: checked }))}
                     />
                     </div>
 
@@ -391,7 +392,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                       </div>
                                           <Switch
                       checked={publicRead || false}
-                      onCheckedChange={(checked) => dispatch(workflowActions.updatePublicRead(checked))}
+                      onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'public_read', value: checked }))}
                     />
                     </div>
                   </CardContent>
@@ -415,7 +416,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                         </div>
                                               <Switch
                         checked={isActive || false}
-                        onCheckedChange={(checked) => dispatch(workflowActions.updateIsActive(checked))}
+                        onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'is_active', value: checked }))}
                       />
                       </div>
 
@@ -426,7 +427,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                         </div>
                                               <Switch
                         checked={autoExecute || false}
-                        onCheckedChange={(checked) => dispatch(workflowActions.updateAutoExecute(checked))}
+                        onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'auto_execute', value: checked }))}
                       />
                       </div>
                     </div>
@@ -467,7 +468,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
                     className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
                   >
                     {loading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4 mr-2" />
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}

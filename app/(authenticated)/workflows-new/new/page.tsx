@@ -7,17 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Workflow } from "lucide-react";
+import { ArrowLeft, Workflow } from "lucide-react";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 import Link from 'next/link';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/selectors/userSelectors';
-import { create } from '@/lib/redux/workflow/thunks';
+import { createWorkflow } from '@/lib/redux/workflow/thunks';
 
 export default function NewWorkflowPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(selectUser);
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: ''
@@ -25,15 +27,24 @@ export default function NewWorkflowPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent double submissions
+    if (isSubmitting || loading) {
+      return;
+    }
+    
+    setIsSubmitting(true);
     setLoading(true);
     
     if (!currentUser?.id) {
       console.error('No user found');
+      setIsSubmitting(false);
       setLoading(false);
       return;
     }
 
     if (!formData.name.trim()) {
+      setIsSubmitting(false);
       setLoading(false);
       return;
     }
@@ -65,16 +76,20 @@ export default function NewWorkflowPage() {
         user_id: currentUser.id,
       };
 
-      const result = await dispatch(create(newWorkflowData));
+      const result = await dispatch(createWorkflow(newWorkflowData));
       
       if (result.payload && typeof result.payload === 'object' && 'id' in result.payload) {
-        // Navigate to the new workflow
+        // Navigate to the new workflow - keep loading states active during navigation
         router.push(`/workflows-new/${result.payload.id}`);
+      } else {
+        // Reset loading states if creation failed but no error was thrown
+        setIsSubmitting(false);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to create workflow:', error);
       // You might want to show a toast or error message here
-    } finally {
+      setIsSubmitting(false);
       setLoading(false);
     }
   };
@@ -121,7 +136,7 @@ export default function NewWorkflowPage() {
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 required
-                disabled={loading}
+                disabled={isSubmitting || loading}
                 className="w-full"
               />
             </div>
@@ -133,7 +148,7 @@ export default function NewWorkflowPage() {
                 placeholder="Describe what this workflow does..."
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                disabled={loading}
+                disabled={isSubmitting || loading}
                 rows={3}
                 className="w-full resize-none"
               />
@@ -142,14 +157,13 @@ export default function NewWorkflowPage() {
             <div className="flex items-center gap-3 pt-4">
               <Button
                 type="submit"
-                disabled={!formData.name.trim() || loading}
+                disabled={!formData.name.trim() || isSubmitting || loading}
                 className="flex-1 bg-primary text-primary-foreground hover:bg-primary/70 border border-primary hover:border-primary/90 transition-all duration-200"
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
+                {isSubmitting && !loading ? (
+                  <LoadingSpinner variant="minimal" size="sm" message="Creating..." showMessage={true} />
+                ) : loading ? (
+                  <LoadingSpinner variant="dots" size="sm" message="Loading workflow..." showMessage={true} />
                 ) : (
                   'Create Workflow'
                 )}
@@ -159,7 +173,7 @@ export default function NewWorkflowPage() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  disabled={loading}
+                  disabled={isSubmitting || loading}
                   className="border-blue-200 dark:border-blue-800 hover:border-primary/20 dark:hover:border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
                 >
                   Cancel

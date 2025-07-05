@@ -13,7 +13,9 @@ export type ViewId =
     | "keyPointsNestedList"
     | "travelGuide"
     | "astRenderer"
-    | "modernAstRenderer";
+    | "modernAstRenderer"
+    | "modernKeywordAnalyzer"
+    | "keywordHierarchy";
 
 export const viewComponents = {
     candidateProfileView: lazy(() => import("./view-components/CandidateProfileView")),
@@ -28,6 +30,8 @@ export const viewComponents = {
     travelGuideView: lazy(() => import("./view-components/TravelGuideView")),
     astRendererView: lazy(() => import("./view-components/AstRendererView")),
     modernAstRendererView: lazy(() => import("./view-components/ModernAstRenderer")),
+    modernKeywordAnalyzerView: lazy(() => import("./view-components/ModernKeywordAnalyzerView")),
+    keywordHierarchyView: lazy(() => import("./view-components/LsiKeywordView")),
 };
 
 export interface ViewDefinition {
@@ -146,7 +150,21 @@ const MODERN_AST_RENDERER_VIEW_DEFINITION: ViewDefinition = {
     extractors: [],
 };
 
+const MODERN_KEYWORD_ANALYZER_VIEW_DEFINITION: ViewDefinition = {
+    id: "modernKeywordAnalyzer",
+    label: "Modern Keyword Analyzer",
+    description: "Modern Keyword Analyzer",
+    component: viewComponents.modernKeywordAnalyzerView,
+    extractors: [],
+};
 
+const KEYWORD_HIERARCHY_VIEW_DEFINITION: ViewDefinition = {
+    id: "keywordHierarchy",
+    label: "Keyword Hierarchy",
+    description: "Keyword Hierarchy",
+    component: viewComponents.keywordHierarchyView,
+    extractors: [],
+};
 
 export const VIEW_DEFINITIONS = {
     CANDIDATE_PROFILE_VIEW_DEFINITION,
@@ -161,6 +179,8 @@ export const VIEW_DEFINITIONS = {
     TRAVEL_GUIDE_VIEW_DEFINITION,
     AST_RENDERER_VIEW_DEFINITION,
     MODERN_AST_RENDERER_VIEW_DEFINITION,
+    MODERN_KEYWORD_ANALYZER_VIEW_DEFINITION,
+    KEYWORD_HIERARCHY_VIEW_DEFINITION,
 };
 
 export const getViewSelectOptions = () => {

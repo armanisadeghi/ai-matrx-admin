@@ -144,11 +144,14 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
                 sourceDetails: mapEntry,
             };
 
-            // Ensure workflow is selected
-            dispatch(workflowActions.selectWorkflow(workflowId));
+            // Ensure workflow is active
+            dispatch(workflowActions.setActive(workflowId));
 
             // Add the source
-            dispatch(workflowActions.addSource(newSource));
+            dispatch(workflowActions.addSource({
+                id: workflowId,
+                source: newSource
+            }));
 
             // Update broker registry
             dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));

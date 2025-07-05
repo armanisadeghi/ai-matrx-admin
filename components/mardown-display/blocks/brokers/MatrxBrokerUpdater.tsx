@@ -13,39 +13,8 @@ import { MatrxMetadata, MatrxStatus, encodeMatrxMetadata } from "@/features/rich
 import { getAllColorOptions } from "@/features/rich-text-editor/utils/colorUitls";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { DataBrokerData } from "@/types";
-import FieldListTableOverlay from '@/features/applet/builder/modules/field-builder/FieldListTableOverlay';
-
-/* TODO:
-
-- Connect this to Entities slice to attempt to fetch the broker by id.
-- If the broker is found, then it's 'connected' and if it's not, then it's 'disconnected'
-- The user also needs the ability to connect this instance of a broker to any broker they already have.
-- We need a way to display a list of available brokers for them to connect to.
-- However, if they make a change in the connection, we have to be careful about allowing changes because they will then be changing a broker that might already be used in other workflows.
-   - They can certainly do that, but we need a way to separate what they do that impacts only this instance and what will modify the actual broker system-wide.
-   - There must be a clear separation between the aspect of a broker which are 'local' and those which are going to impact that broker anywhere.
-
-*/
-
-
-
-
-
-
-// Define component and data type options
-const COMPONENT_OPTIONS = [
-    { value: "button", label: "Button" },
-    { value: "select", label: "Select" },
-    { value: "input", label: "Input" },
-    { value: "textarea", label: "Textarea" },
-    { value: "number", label: "Number" },
-    { value: "date", label: "Date" },
-    { value: "checkbox", label: "Checkbox" },
-    { value: "radio", label: "Radio" },
-    { value: "slider", label: "Slider" },
-    { value: "multiselect", label: "Multi-select" },
-    { value: "custom", label: "Custom" },
-];
+import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
+import FieldListTable from "@/features/applet/builder/modules/field-builder/FieldListTable";
 
 const DATA_TYPE_OPTIONS = [
     { value: "str", label: "Text (String)" },
@@ -73,14 +42,14 @@ const getStatusColor = (status: MatrxStatus | undefined) => {
     }
 };
 
-interface MatrxBrokerBlockProps {
+interface MatrxBrokerUpdaterProps {
     content: string;
     metadata: MatrxMetadata;
     onUpdate?: (updatedBrokerContent: string, originalBrokerContent: string) => void;
     onDelete?: () => void;
 }
 
-const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, onUpdate, onDelete }) => {
+const MatrxBrokerUpdater: React.FC<MatrxBrokerUpdaterProps> = ({ content, metadata, onUpdate, onDelete }) => {
     const [editedMetadata, setEditedMetadata] = useState<MatrxMetadata>({ ...metadata });
     const [originalMetadata, setOriginalMetadata] = useState<MatrxMetadata>({ ...metadata });
     const { toast } = useToast();
@@ -90,16 +59,20 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
     const elevationStyles = "border border-gray-200 dark:border-gray-600 shadow-sm";
     const { fetchDataBrokerAll, dataBrokerActions, dataBrokerRecordsById } = useDataBrokerWithFetch();
 
-    const updateBroker = useCallback((brokerId: string, updatedData: Partial<DataBrokerData>) => {
-        dataBrokerActions.directUpdateRecord({matrxRecordId: `id:${brokerId}`, data: updatedData});
-    }, [dataBrokerActions]);
+    const updateBroker = useCallback(
+        (brokerId: string, updatedData: Partial<DataBrokerData>) => {
+            dataBrokerActions.directUpdateRecord({ matrxRecordId: `id:${brokerId}`, data: updatedData });
+        },
+        [dataBrokerActions]
+    );
 
-
+    const handleFieldSelect = useCallback((fieldId: string) => {
+        console.log("fieldId", fieldId);
+    }, []);
 
     useEffect(() => {
         fetchDataBrokerAll();
     }, []);
-
 
     useEffect(() => {
         setEditedMetadata({ ...metadata });
@@ -167,24 +140,19 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                 {/* Component selector - now using Select instead of DropdownMenu */}
                 <div className="flex items-center gap-4 mb-4">
                     <label className="text-sm text-muted-foreground w-24 flex-shrink-0">Component:</label>
-                    <Select
-                        value={editedMetadata.defaultComponent || "none"}
-                        onValueChange={(value) =>
-                            setEditedMetadata({ ...editedMetadata, defaultComponent: value === "none" ? undefined : value })
-                        }
-                    >
-                        <SelectTrigger className={cn("w-full", elevationStyles)}>
-                            <SelectValue placeholder="None" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {COMPONENT_OPTIONS.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex-1 overflow-auto p-0">
+                        <FieldListTable
+                            onFieldSelect={handleFieldSelect}
+                            defaultPageSize={10}
+                            allowCreate={true}
+                            allowEdit={true}
+                            allowView={true}
+                            allowDelete={true}
+                            allowSelectAction={true}
+                            showStripedRows={true}
+                            allowRefresh={true}
+                        />
+                    </div>
                 </div>
 
                 {/* Data type selector - now using Select instead of DropdownMenu */}
@@ -246,4 +214,4 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
     );
 };
 
-export default MatrxBrokerBlock;
+export default MatrxBrokerUpdater;

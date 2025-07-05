@@ -447,19 +447,7 @@ export const {
     updateViewport,
 } = workflowSlice.actions;
 
-// Combined actions object that includes both slice actions and thunks
-export const workflowActions = {
-    // Slice actions
-    ...workflowSlice.actions,
-    
-    // Thunks
-    fetchAllWorkflows,
-    fetchOneWorkflow,
-    createWorkflow,
-    updateWorkflow,
-    deleteWorkflow,
-    fetchOneWorkflowWithNodes,
-    saveWorkflowWithNodes,
-};
+// Export just the slice actions
+export const workflowActions = workflowSlice.actions;
 
 export default workflowSlice.reducer;

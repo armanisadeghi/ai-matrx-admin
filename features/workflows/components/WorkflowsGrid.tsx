@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Workflow, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, WorkflowIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { fetchUserWorkflows } from '../service/workflowService';
 import { WorkflowCard } from './WorkflowCard';
 import { selectUser, selectActiveUserName } from "@/lib/redux/selectors/userSelectors";
 import { useAppSelector } from '@/lib/redux';
-import { CoreWorkflowData } from '../types';
+import { Workflow } from '@/lib/redux/workflow/types';
 
 export function WorkflowsGrid() {
-  const [workflows, setWorkflows] = useState<CoreWorkflowData[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const user = useAppSelector(selectUser);
@@ -62,7 +62,7 @@ export function WorkflowsGrid() {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Workflow className="w-8 h-8 text-primary" />
+          <WorkflowIcon className="w-8 h-8 text-primary" />
         </div>
         <h3 className="text-lg font-medium text-foreground mb-2">No workflows yet</h3>
         <p className="text-muted-foreground mb-6">

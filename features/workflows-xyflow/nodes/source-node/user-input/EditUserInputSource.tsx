@@ -19,7 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
-import { BrokerSourceConfig, workflowSelectors } from "@/lib/redux/workflow";
+import { BrokerSourceConfig, workflowsSelectors } from "@/lib/redux/workflow";
 
 interface EditUserInputSourceProps {
     isOpen: boolean;
@@ -42,7 +42,7 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
 
     // Get current source from Redux (single source of truth)
     const currentSource = useAppSelector((state) => 
-        workflowSelectors.userInputSourceByBrokerId(state, brokerId)
+        workflowsSelectors.userInputSourceByBrokerId(state, workflowId, brokerId)
     );
 
     // Local state for UI only - initialized from Redux state
@@ -157,19 +157,22 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                 sourceDetails: mapEntry,
             };
 
-            // Ensure workflow is selected
-            dispatch(workflowActions.selectWorkflow(workflowId));
+            // Ensure workflow is active
+            dispatch(workflowActions.setActive(workflowId));
 
             // If broker ID changed, we need to remove old and add new
             if (formData.brokerId !== currentSource.brokerId) {
                 // Remove old source
-                dispatch(workflowActions.removeSource({ 
-                    sourceType: currentSource.sourceType, 
+                dispatch(workflowActions.removeSourceByBrokerId({ 
+                    id: workflowId,
                     brokerId: currentSource.brokerId 
                 }));
 
                 // Add new source
-                dispatch(workflowActions.addSource(updatedSource));
+                dispatch(workflowActions.addSource({
+                    id: workflowId,
+                    source: updatedSource
+                }));
 
                 // Remove old broker registry entry
                 if (currentSource.sourceDetails) {
@@ -179,11 +182,14 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                     }));
                 }
             } else {
-                // Update existing source
-                dispatch(workflowActions.updateSource({ 
-                    sourceType: currentSource.sourceType, 
-                    brokerId: currentSource.brokerId, 
-                    source: updatedSource 
+                // Update existing source by removing and re-adding
+                dispatch(workflowActions.removeSourceByBrokerId({ 
+                    id: workflowId,
+                    brokerId: currentSource.brokerId 
+                }));
+                dispatch(workflowActions.addSource({
+                    id: workflowId,
+                    source: updatedSource
                 }));
             }
 
@@ -216,8 +222,8 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
 
         try {
             // Remove from workflow sources
-            dispatch(workflowActions.removeSource({ 
-                sourceType: currentSource.sourceType, 
+            dispatch(workflowActions.removeSourceByBrokerId({ 
+                id: workflowId,
                 brokerId: currentSource.brokerId 
             }));
 

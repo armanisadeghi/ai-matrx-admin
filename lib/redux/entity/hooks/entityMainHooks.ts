@@ -112,10 +112,10 @@ import {
     WorkflowRelayData,
     WorkflowUserInputData,
 } from "@/types";
-import { MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
+import { FilterPayload, MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
 import { EntitySelectors } from "../selectors";
 import { EntityActions } from "../slice";
-import { FetchMode } from "../actions";
+import { FetchMode, SortPayload } from "../actions";
 import { useEntityWithFetch } from "./useAllData";
 
 type UseActionWithFetchReturn = {
@@ -2034,7 +2034,11 @@ type UseCompiledRecipeWithFetchReturn = {
     fetchCompiledRecipeOne: (recordId: MatrxRecordId) => void;
     fetchCompiledRecipeOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchCompiledRecipeAll: () => void;
-    fetchCompiledRecipePaginated: (page: number, pageSize: number) => void;
+    fetchCompiledRecipePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useCompiledRecipeWithFetch = (): UseCompiledRecipeWithFetchReturn => {

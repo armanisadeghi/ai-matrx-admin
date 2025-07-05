@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import TableReferenceIcon from "@/components/user-generated-table-data/TableReferenceIcon";
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { workflowSelectors, workflowActions } from "@/lib/redux/workflow";
+import { workflowsSelectors, workflowActions } from "@/lib/redux/workflow";
 import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
 import { toast } from "sonner";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
@@ -51,13 +51,13 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
 
     // Get current source data from Redux (for edit mode)
     const userDataSource = useAppSelector((state) =>
-        currentMapping?.brokerId ? workflowSelectors.userDataSourceByBrokerId(state, currentMapping.brokerId) : null
+        currentMapping?.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, workflowId, currentMapping.brokerId) : null
     );
 
     // Local state for the form
     const [formData, setFormData] = useState({
         brokerId: currentMapping?.brokerId || "",
-        selectedReference: userDataSource?.sourceDetails || (null as UserDataReference | null),
+        selectedReference: (userDataSource?.sourceDetails as UserDataReference) || (null as UserDataReference | null),
         source: userDataSource?.scope || ("workflow" as string),
         sourceId: workflowId,
     });
@@ -141,11 +141,12 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                     metadata: null,
                 };
 
-                // Ensure workflow is selected
-                dispatch(workflowActions.selectWorkflow(workflowId));
 
                 // Add the source
-                dispatch(workflowActions.addSource(sourceConfig));
+                dispatch(workflowActions.addSource({
+                    id: workflowId,
+                    source: sourceConfig,
+                }));
 
                 // Update broker registry
                 dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));
@@ -175,20 +176,27 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                 // If broker ID changed, remove old and add new
                 if (formData.brokerId !== currentMapping.brokerId) {
                     dispatch(
-                        workflowActions.removeSource({
-                            sourceType: "user_data",
+                        workflowActions.removeSourceByBrokerId({
+                            id: workflowId,
                             brokerId: currentMapping.brokerId,
                         })
                     );
-                    dispatch(workflowActions.addSource(sourceConfig));
+                    dispatch(workflowActions.addSource({
+                        id: workflowId,
+                        source: sourceConfig,
+                    }));
                 } else {
+                    // Update existing source by removing and re-adding
                     dispatch(
-                        workflowActions.updateSource({
-                            sourceType: "user_data",
+                        workflowActions.removeSourceByBrokerId({
+                            id: workflowId,
                             brokerId: formData.brokerId,
-                            source: sourceConfig,
                         })
                     );
+                    dispatch(workflowActions.addSource({
+                        id: workflowId,
+                        source: sourceConfig,
+                    }));
                 }
 
                 // Update broker registry

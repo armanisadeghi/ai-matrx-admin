@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Workflow, Calendar, Tag } from "lucide-react";
-import { CoreWorkflowData } from '../service/workflowService';
+import { WorkflowIcon, Calendar, Tag } from "lucide-react";
+import { Workflow } from '@/lib/redux/workflow/types';
 
 interface WorkflowCardProps {
-  workflow: CoreWorkflowData;
+  workflow: Workflow;
 }
 
 export function WorkflowCard({ workflow }: WorkflowCardProps) {
@@ -28,7 +28,7 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Workflow className="w-4 h-4 text-primary" />
+                <WorkflowIcon className="w-4 h-4 text-primary" />
               </div>
               <div>
                 <CardTitle className="text-lg group-hover:text-primary transition-colors">

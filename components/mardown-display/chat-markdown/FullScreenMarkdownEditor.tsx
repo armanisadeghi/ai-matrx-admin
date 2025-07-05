@@ -25,8 +25,8 @@ interface FullScreenMarkdownEditorProps {
     showCopyButton?: boolean;
     showSaveButton?: boolean;
     showCancelButton?: boolean;
-    tabs?: Array<"write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar" | "section_viewer_v2" | "lines_viewer" | "sections_viewer" | "headers_viewer" | "section_texts_viewer">;
-    initialTab?: "write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar" | "section_viewer_v2" | "lines_viewer" | "sections_viewer" | "headers_viewer" | "section_texts_viewer";
+    tabs?: Array<"write" | "markdown" | "wysiwyg" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar" | "section_viewer_v2" | "lines_viewer" | "sections_viewer" | "headers_viewer" | "section_texts_viewer">;
+    initialTab?: "write" | "markdown" | "wysiwyg" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar" | "section_viewer_v2" | "lines_viewer" | "sections_viewer" | "headers_viewer" | "section_texts_viewer";
 }
 
 const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
@@ -41,7 +41,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     showCopyButton = true,
     showSaveButton = true,
     showCancelButton = true,
-    tabs = ["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer", "classified_analyzer_sidebar", "section_viewer_v2", "lines_viewer", "sections_viewer", "headers_viewer", "section_texts_viewer"],
+    tabs = ["write", "markdown", "wysiwyg", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer", "classified_analyzer_sidebar", "section_viewer_v2", "lines_viewer", "sections_viewer", "headers_viewer", "section_texts_viewer"],
     initialTab = "write",
 }) => {
     const [editedContent, setEditedContent] = useState(initialContent);
@@ -57,8 +57,8 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     }, [isOpen, initialContent]);
 
     const handleTabChange = (newTab: string) => {
-        // Get current content from TuiEditor if leaving rich tab
-        if (activeTab === "rich" && tuiEditorRef.current?.getCurrentMarkdown) {
+        // Get current content from TuiEditor if leaving markdown or wysiwyg tab
+        if ((activeTab === "markdown" || activeTab === "wysiwyg") && tuiEditorRef.current?.getCurrentMarkdown) {
             const markdown = tuiEditorRef.current.getCurrentMarkdown();
             if (markdown !== editedContent) {
                 setEditedContent(markdown);
@@ -75,7 +75,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
 
     const handleSave = () => {
         let finalMarkdown = editedContent;
-        if (activeTab === "rich" && tuiEditorRef.current?.getCurrentMarkdown) {
+        if ((activeTab === "markdown" || activeTab === "wysiwyg") && tuiEditorRef.current?.getCurrentMarkdown) {
             finalMarkdown = tuiEditorRef.current.getCurrentMarkdown();
         }
         if (onSave) {
@@ -86,10 +86,44 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     // Define tabs content
     const tabDefinitions: TabDefinition[] = [];
     
+    if (tabs.includes("markdown")) {
+        tabDefinitions.push({
+            id: "markdown",
+            label: "Split View Editor",
+            content: (
+                <TuiEditorContent
+                    ref={tuiEditorRef}
+                    content={editedContent}
+                    onChange={setEditedContent}
+                    isActive={activeTab === "markdown"}
+                    editMode="markdown"
+                />
+            ),
+            className: "overflow-hidden p-0 bg-background"
+        });
+    }
+    
+    if (tabs.includes("wysiwyg")) {
+        tabDefinitions.push({
+            id: "wysiwyg",
+            label: "Rich Text Editor",
+            content: (
+                <TuiEditorContent
+                    ref={tuiEditorRef}
+                    content={editedContent}
+                    onChange={setEditedContent}
+                    isActive={activeTab === "wysiwyg"}
+                    editMode="wysiwyg"
+                />
+            ),
+            className: "overflow-hidden p-0 bg-background"
+        });
+    }
+    
     if (tabs.includes("write")) {
         tabDefinitions.push({
             id: "write",
-            label: "Write",
+            label: "Plain Text Editor",
             content: (
                 <textarea
                     className="w-full h-full p-4 outline-none resize-none border-none bg-background text-foreground text-base font-mono"
@@ -100,22 +134,6 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                 />
             ),
             className: "p-0"
-        });
-    }
-    
-    if (tabs.includes("rich")) {
-        tabDefinitions.push({
-            id: "rich",
-            label: "Rich Text",
-            content: (
-                <TuiEditorContent
-                    ref={tuiEditorRef}
-                    content={editedContent}
-                    onChange={setEditedContent}
-                    isActive={activeTab === "rich"}
-                />
-            ),
-            className: "overflow-hidden p-0 bg-background"
         });
     }
     

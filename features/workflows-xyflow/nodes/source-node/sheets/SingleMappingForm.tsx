@@ -92,11 +92,11 @@ const SingleMappingForm: React.FC<SingleMappingFormProps> = ({
                 sourceDetails: mapEntry,
             };
 
-            // Ensure workflow is selected
-            dispatch(workflowActions.selectWorkflow(workflowId));
-
             // Add to workflow sources with proper structure
-            dispatch(workflowActions.addSource(newSource));
+            dispatch(workflowActions.addSource({
+                id: workflowId,
+                source: newSource,
+            }));
 
             // Add to broker registry
             dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));

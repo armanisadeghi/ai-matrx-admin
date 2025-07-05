@@ -599,6 +599,17 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     color: #ffffff !important; /* Light blue color that stands out in dark mode */
 }
 
+/* Increase font size for TUI editor content - improved readability */
+.toastui-editor .toastui-editor-md-container .ProseMirror,
+.toastui-editor .toastui-editor-ww-container .ProseMirror,
+.toastui-editor .ProseMirror,
+.toastui-editor .toastui-editor-contents,
+.toastui-editor .toastui-editor-md-container,
+.toastui-editor .toastui-editor-ww-container {
+    font-size: 20px !important;
+    line-height: 1.6 !important;
+}
+
 @layer utilities {
     @media (max-width: 640px) {
         .container {

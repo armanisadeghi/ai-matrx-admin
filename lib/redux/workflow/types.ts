@@ -4,7 +4,7 @@ import { UserDataReference } from "@/components/user-generated-table-data/tableR
 import { BrokerMapEntry } from "../brokerSlice";
 import { Viewport } from "@xyflow/react";
 
-export type NodeInputType = "arg_override" | "arg_mapping" | "broker";
+export type NodeInputType = "arg_override" | "arg_mapping" | "user_input" | "environment" | "broker";
 
 export interface InputMapping {
     type?: NodeInputType;
@@ -13,6 +13,30 @@ export interface InputMapping {
     default_value?: any;
     ready?: boolean;
     metadata?: Record<string, any>;
+}
+
+export interface ArgMapping {
+    arg_name: string;
+    ready: boolean;
+}
+
+// Simple type mapping
+type MappingDetails = {
+    user_input: BrokerMapEntry;
+    arg_mapping: ArgMapping;
+    dependency: Record<string, any>;
+    environment: Record<string, any>;
+    other: Record<string, any>;
+};
+
+export interface InputConfig<T extends keyof MappingDetails = keyof MappingDetails> {
+    mappingType: T;
+    scope: "global" | "session" | "task" | "organization" | "user" | "workflow" | "action" | "temporary" | string;
+    scopeId: string;
+    brokerId: string;
+    mappingDetails: MappingDetails[T];
+    extraction?: "label" | "id" | "object" | "string" | null;
+    metadata?: Record<string, any> | null;
 }
 
 export interface Bookmark {
@@ -75,7 +99,6 @@ export interface WorkflowMetadata {
     [key: string]: any;
 }
 
-
 export interface Workflow {
     id: string;
     name: string;
@@ -101,9 +124,9 @@ export interface Workflow {
     public_read: boolean | null;
     created_at: string | null;
     updated_at: string | null;
-  }
-  
-  export interface WorkflowState {
+}
+
+export interface WorkflowState {
     entities: Record<string, Workflow>;
     ids: string[];
     activeId: string | null;
@@ -113,7 +136,7 @@ export interface Workflow {
     error: string | null;
     fetchTimestamp: number | null;
     dataFetched: boolean;
-  }
-  
-  export type WorkflowCreateInput = Omit<Workflow, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'version'>;
-  export type WorkflowUpdateInput = Partial<Omit<Workflow, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'version'>>;
+}
+
+export type WorkflowCreateInput = Omit<Workflow, "id" | "created_at" | "updated_at" | "user_id" | "version">;
+export type WorkflowUpdateInput = Partial<Omit<Workflow, "id" | "created_at" | "updated_at" | "user_id" | "version">>;

@@ -597,6 +597,40 @@ A wild mix of **styles** and *flavors* for testing Markdown parsing. Expect **bo
 
 **Quick Tip**: Monitor chaos with **Nebula Analytics**. Track clicks, vibes, and stardust daily.`;
 
+const lsiKeywords = `# Primary Keyword: No-Code AI Platform
+
+## Parent LSIs:
+1. Artificial Intelligence Platform
+2. Machine Learning Platform
+3. Automation Platform
+
+## Child LSIs:
+1. Visual AI Platform
+2. Low-Code AI Platform
+3. AI Development Platform
+4. Cloud AI Platform
+5. AI Model Builder
+
+## Long-Tail Variations:
+1. No-Code AI Platform for business
+2. No-Code machine learning solutions
+3. AI platform for non-technical users
+4. No-Code AI development tools
+5. Cloud-based No-Code AI Platform
+
+## Natural LSIs:
+1. Codeless AI Platform
+2. AI Builder
+3. Automated Intelligence Platform
+4. Intelligent Automation Platform
+5. Model Building Platform
+6. AI Solution Platform 
+7. Drag-and-Drop AI Platform`
+
+
+
+
+
 export const markdownSamples = {
     candidateProfileShort,
     candidateProfileFull,
@@ -610,6 +644,7 @@ export const markdownSamples = {
     grokSample,
     gptSectionedList,
     mergedContentRandom,
+    lsiKeywords,
 };
 
 /**

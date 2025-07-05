@@ -4,9 +4,9 @@ import { WorkflowSystem } from "@/features/workflows-xyflow/WorkflowSystem";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowActions } from "@/lib/redux/workflow/slice";
-import { create, fetchOneWithNodes } from "@/lib/redux/workflow/thunks";
+import { createWorkflow, fetchOneWorkflowWithNodes } from "@/lib/redux/workflow/thunks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import { workflowSelectors } from "@/lib/redux/workflow/selectors";
+import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 
 interface WorkflowPageProps {
     params: Promise<{
@@ -25,18 +25,18 @@ export default function WorkflowPage({ params, searchParams }: WorkflowPageProps
     const router = useRouter();
     const dispatch = useAppDispatch();
     const user = useAppSelector(selectUser);
-    const workflow = useAppSelector((state) => workflowSelectors.workflowById(state, workflowId));
-    const isLoading = useAppSelector(workflowSelectors.loading);
-    const selectedWorkflowId = useAppSelector(workflowSelectors.selectedWorkflowId);
+    const workflow = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
+    const isLoading = useAppSelector(workflowsSelectors.isLoading);
+    const activeWorkflowId = useAppSelector((state) => state.workflows.activeId);
 
     // Load existing workflow and select it
     useEffect(() => {
         if (workflowId !== "new") {
             // Select the workflow first
-            dispatch(workflowActions.selectWorkflow(workflowId));
+            dispatch(workflowActions.setActive(workflowId));
             
             // Then fetch it if it doesn't exist or is stale
-            dispatch(fetchOneWithNodes(workflowId));
+            dispatch(fetchOneWorkflowWithNodes(workflowId));
         }
     }, [workflowId, dispatch]);
 
@@ -60,8 +60,6 @@ export default function WorkflowPage({ params, searchParams }: WorkflowPageProps
                 is_deleted: false,
                 auto_execute: false,
                 metadata: {
-                    created_by: user.id,
-                    created_at: new Date().toISOString(),
                 },
                 viewport: { x: 0, y: 0, zoom: 1 },
                 is_public: false,
@@ -71,11 +69,11 @@ export default function WorkflowPage({ params, searchParams }: WorkflowPageProps
             };
 
             // Create workflow via Redux thunk
-            dispatch(create(newWorkflow))
+            dispatch(createWorkflow(newWorkflow))
                 .then((action: any) => {
                     if (action.payload?.id) {
                         // Select the new workflow and redirect to its edit page
-                        dispatch(workflowActions.selectWorkflow(action.payload.id));
+                        dispatch(workflowActions.setActive(action.payload.id));
                         router.replace(`/workflows-new/${action.payload.id}`);
                     }
                 })
@@ -88,17 +86,11 @@ export default function WorkflowPage({ params, searchParams }: WorkflowPageProps
         }
     }, [workflowId, dispatch, user.id, router]);
 
-    // Show loading for new workflow creation or existing workflow loading
-    if (workflowId === "new" || isLoading) {
-        return (
-            <div className="h-screen w-full flex items-center justify-center bg-background">
-                <div className="text-lg">{workflowId === "new" ? "Creating new workflow..." : "(page) Loading workflow..."}</div>
-            </div>
-        );
-    }
+    // Let Next.js loading.tsx handle the loading UI instead of blocking it
+    // Remove the custom loading spinner to allow the beautiful loading.tsx to show
 
-    // Show error if workflow not found
-    if (workflowId !== "new" && !workflow) {
+    // Show error if workflow not found (but only if not loading)
+    if (workflowId !== "new" && !workflow && !isLoading) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-background">
                 <div className="text-lg text-red-500">Workflow not found</div>

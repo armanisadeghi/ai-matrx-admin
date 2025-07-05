@@ -12,15 +12,15 @@ import {
   Trash2, 
   Calendar,
   User,
-  Loader2,
   Plus
 } from 'lucide-react';
-import { WorkflowData } from '@/lib/redux/workflow/types';
+import WorkflowLoading from '@/features/workflows-xyflow/common/workflow-loading';
+import { Workflow } from '@/lib/redux/workflow/types';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { deleteWorkflow } from '@/lib/redux/workflow/thunks';
 
 interface WorkflowsListProps {
-  workflows: WorkflowData[];
+  workflows: Workflow[];
   isLoading: boolean;
 }
 
@@ -38,10 +38,14 @@ export const WorkflowsList: React.FC<WorkflowsListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading workflows...</span>
-      </div>
+      <WorkflowLoading 
+        title="Loading Workflows"
+        subtitle="Fetching your workflows from the server..."
+        step1="Loading"
+        step2="Fetching"
+        step3="Ready"
+        fullscreen={false}
+      />
     );
   }
 

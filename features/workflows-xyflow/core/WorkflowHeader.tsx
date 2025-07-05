@@ -17,7 +17,6 @@ import {
     Play,
     Plus,
     Settings,
-    Loader2,
     SquareFunction,
     Users,
     Shuffle,
@@ -34,6 +33,7 @@ import {
     Maximize2,
     Database,
 } from "lucide-react";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { FiEdit } from "react-icons/fi";
@@ -331,7 +331,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <IconButton
-                                        icon={isAddingNode ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                                        icon={isAddingNode ? <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4" /> : <Plus className="h-4 w-4" />}
                                         tooltip={isAddingNode ? "Adding node..." : "Add Node"}
                                         variant="ghost"
                                         size="sm"
@@ -365,8 +365,10 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-background border-border">
                             <DropdownMenuItem onClick={handleExecute} className="cursor-pointer hover:bg-accent" disabled={isExecuting}>
-                                {isExecuting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
-                                Execute
+                                <div className="flex items-center">
+                                    {isExecuting ? <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                                    Execute
+                                </div>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleFitView} className="cursor-pointer hover:bg-accent sm:hidden">
@@ -388,7 +390,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                     {/* Save Button */}
                     {mode === "edit" && onSave && (
                         <ActionFeedbackButton
-                            icon={isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                            icon={isSaving ? <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4" /> : <Save className="h-4 w-4" />}
                             tooltip={isSaving ? "Saving..." : "Save Workflow"}
                             variant="default"
                             size="sm"

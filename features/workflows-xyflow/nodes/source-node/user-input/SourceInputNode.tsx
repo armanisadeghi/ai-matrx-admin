@@ -9,7 +9,7 @@ import UserInputNodeSettings from "./UserInputNodeSettings";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
-import { workflowSelectors } from "@/lib/redux/workflow/selectors";
+import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowActions } from "@/lib/redux/workflow/slice";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { useToast } from "@/components/ui/use-toast";
@@ -44,7 +44,7 @@ const SourceInputNodeToolbar: React.FC<{
 
     // Get Redux data for this source
     const currentSource = useAppSelector((state) =>
-        data.brokerId ? workflowSelectors.userInputSourceByBrokerId(state, data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, data.sourceId || "", data.brokerId) : null
     );
 
     const handleCustomDelete = useCallback(
@@ -62,10 +62,10 @@ const SourceInputNodeToolbar: React.FC<{
 
             // Remove from workflow sources
             if (currentMapping.sourceId) {
-                dispatch(workflowActions.selectWorkflow(currentMapping.sourceId));
+                dispatch(workflowActions.setActive(currentMapping.sourceId));
                 dispatch(
-                    workflowActions.removeSource({
-                        sourceType: "user_input",
+                    workflowActions.removeSourceByBrokerId({
+                        id: currentMapping.sourceId,
                         brokerId: currentMapping.brokerId,
                     })
                 );
@@ -104,7 +104,7 @@ const SourceInputSettings: React.FC<{
 
     // Get Redux data for this source
     const currentSource = useAppSelector((state) =>
-        data.brokerId ? workflowSelectors.userInputSourceByBrokerId(state, data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, data.sourceId || "", data.brokerId) : null
     );
 
     // Determine mode based on whether we have an existing source
@@ -141,23 +141,29 @@ const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nod
 
     // Get Redux data for this source
     const currentSource = useAppSelector((state) =>
-        data.brokerId ? workflowSelectors.userInputSourceByBrokerId(state, data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, (data.workflowId as string) || "", data.brokerId) : null
     );
 
     // Custom display mode toggle handler that saves to metadata
     const handleDisplayModeToggle = useCallback((nodeId: string, newDisplayMode: "detailed" | "compact") => {
         if (currentSource && data.workflowId) {
-            // Update the source metadata in Redux
-            dispatch(workflowActions.updateSource({
-                sourceType: "user_input",
-                brokerId: currentSource.brokerId,
-                source: {
-                    ...currentSource,
-                    metadata: {
-                        ...currentSource.metadata,
-                        displayMode: newDisplayMode
-                    }
+            // Update the source metadata in Redux by removing and re-adding
+            const updatedSource = {
+                ...currentSource,
+                metadata: {
+                    ...currentSource.metadata,
+                    displayMode: newDisplayMode
                 }
+            };
+            
+            dispatch(workflowActions.removeSourceByBrokerId({
+                id: data.workflowId as string,
+                brokerId: currentSource.brokerId,
+            }));
+            
+            dispatch(workflowActions.addSource({
+                id: data.workflowId as string,
+                source: updatedSource
             }));
         }
     }, [currentSource, data.workflowId, dispatch]);

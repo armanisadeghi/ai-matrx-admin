@@ -7,20 +7,20 @@ import { Plus } from "lucide-react";
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { WorkflowsList } from '@/features/workflows-xyflow/common/WorkflowsList';
 import { selectUserId } from '@/lib/redux/selectors/userSelectors';
-import { fetchAll } from '@/lib/redux/workflow/thunks';
-import { workflowSelectors } from '@/lib/redux/workflow/selectors';
+import { fetchAllWorkflows } from '@/lib/redux/workflow/thunks';
+import { workflowsSelectors } from '@/lib/redux/workflow/selectors';
 
 
 export default function WorkflowsNewPage() {
   const dispatch = useAppDispatch();
-  const workflows = useAppSelector(workflowSelectors.allWorkflowsArray);
-  const isLoading = useAppSelector(workflowSelectors.loading);
+  const workflows = useAppSelector(workflowsSelectors.allWorkflows);
+  const isLoading = useAppSelector(workflowsSelectors.isLoading);
   const userId = useAppSelector(selectUserId);
 
   // Load workflows on mount
   React.useEffect(() => {
     if (userId) {
-      dispatch(fetchAll(userId));
+      dispatch(fetchAllWorkflows());
     }
   }, [dispatch, userId]);
 

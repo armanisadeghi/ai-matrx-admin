@@ -4,7 +4,7 @@ import React, { useCallback, memo } from "react";
 import { Database } from "lucide-react";
 import { NodeProps, Position, useNodeId, useReactFlow } from "@xyflow/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { workflowSelectors, workflowActions } from "@/lib/redux/workflow";
+import { workflowsSelectors, workflowActions } from "@/lib/redux/workflow";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { BaseNode, NodeConfig, BaseNodeData } from "@/features/workflows-xyflow/nodes/BaseNode";
 import { BaseNodeToolbar } from "@/features/workflows-xyflow/nodes/BaseNodeToolbar";
@@ -39,7 +39,7 @@ const UserDataSourceNodeToolbar: React.FC<{
     
     // Get Redux data for this source
     const userDataSource = useAppSelector((state) => 
-        data.brokerId ? workflowSelectors.userDataSourceByBrokerId(state, data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
     );
     
     const handleCustomDelete = useCallback(async (nodeId: string) => {
@@ -49,10 +49,10 @@ const UserDataSourceNodeToolbar: React.FC<{
         
         // Remove from workflow sources
         if (data.workflowId) {
-            dispatch(workflowActions.selectWorkflow(data.workflowId));
+            dispatch(workflowActions.setActive(data.workflowId));
             dispatch(
-                workflowActions.removeSource({
-                    sourceType: "user_data",
+                workflowActions.removeSourceByBrokerId({
+                    id: data.workflowId,
                     brokerId: data.brokerId,
                 })
             );
@@ -81,7 +81,7 @@ const UserDataSourceSettingsWrapper: React.FC<{
     
     // Get Redux data for this source
     const userDataSource = useAppSelector((state) => 
-        data.brokerId ? workflowSelectors.userDataSourceByBrokerId(state, data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
     );
     
     const selectedTable = userDataSource?.sourceDetails;
@@ -119,7 +119,7 @@ const UserDataCompactContent: React.FC = () => {
     
     // Get Redux data for this source
     const userDataSource = useAppSelector((state) => 
-        data.brokerId ? workflowSelectors.userDataSourceByBrokerId(state, data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
     );
     
     const selectedTable = userDataSource?.sourceDetails;
@@ -143,23 +143,29 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
     
     // Get Redux data for this source
     const userDataSource = useAppSelector((state) => 
-        data.brokerId ? workflowSelectors.userDataSourceByBrokerId(state, data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
     );
 
     // Custom display mode toggle handler that saves to metadata
     const handleDisplayModeToggle = useCallback((nodeId: string, newDisplayMode: "detailed" | "compact") => {
         if (userDataSource && data.workflowId) {
-            // Update the source metadata in Redux
-            dispatch(workflowActions.updateSource({
-                sourceType: "user_data",
-                brokerId: userDataSource.brokerId,
-                source: {
-                    ...userDataSource,
-                    metadata: {
-                        ...userDataSource.metadata,
-                        displayMode: newDisplayMode
-                    }
+            // Update the source metadata in Redux by removing and re-adding
+            const updatedSource = {
+                ...userDataSource,
+                metadata: {
+                    ...userDataSource.metadata,
+                    displayMode: newDisplayMode
                 }
+            };
+            
+            dispatch(workflowActions.removeSourceByBrokerId({
+                id: data.workflowId,
+                brokerId: userDataSource.brokerId,
+            }));
+            
+            dispatch(workflowActions.addSource({
+                id: data.workflowId,
+                source: updatedSource
             }));
         }
     }, [userDataSource, data.workflowId, dispatch]);
@@ -204,7 +210,6 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
                 id: `${nodeId}-${brokerId}`,
                 label: brokerDisplayName || "Missing Broker Display Name",
             },
-,
         ],
         
         // Custom components

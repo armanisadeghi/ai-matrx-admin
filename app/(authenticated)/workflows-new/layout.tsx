@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { useAppDispatch } from "@/lib/redux";
+import WorkflowLoading from "@/features/workflows-xyflow/common/workflow-loading";
 
 export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch();
@@ -22,12 +23,13 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
     // Show loading while data is being fetched
     if (isLoading || combinedFunctions.length === 0) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600 dark:text-gray-400">Loading workflows...</p>
-                </div>
-            </div>
+            <WorkflowLoading 
+                title="Loading Workflow System"
+                subtitle="Initializing functions, data brokers, and workflow components..."
+                step1="Functions"
+                step2="Data Brokers"
+                step3="Ready"
+            />
         );
     }
 

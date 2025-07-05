@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { selectAllWorkflowNodes, selectWorkflowNodesByWorkflowId } from '../workflow-nodes/selectors';
+import { BrokerSourceConfig } from './types';
 
 const selectWorkflowState = (state: RootState) => state.workflows;
 
@@ -152,6 +153,34 @@ export const selectWorkflowSourceByBrokerId = createSelector(
   (sources, brokerId) => sources.find(source => source.brokerId === brokerId) || null
 );
 
+// User data source selectors
+export const selectWorkflowUserDataSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => sources.filter(source => source.sourceType === 'user_data')
+);
+
+export const selectWorkflowUserDataSourceByBrokerId = createSelector(
+  [selectWorkflowUserDataSources, (state: RootState, workflowId: string, brokerId: string) => brokerId],
+  (userDataSources, brokerId) => {
+    if (!userDataSources || !Array.isArray(userDataSources)) return null;
+    return userDataSources.find(source => source.brokerId === brokerId) as BrokerSourceConfig<"user_data"> | null;
+  }
+);
+
+// User input source selectors
+export const selectWorkflowUserInputSources = createSelector(
+  [selectWorkflowSources],
+  (sources) => sources.filter(source => source.sourceType === 'user_input')
+);
+
+export const selectWorkflowUserInputSourceByBrokerId = createSelector(
+  [selectWorkflowUserInputSources, (state: RootState, workflowId: string, brokerId: string) => brokerId],
+  (userInputSources, brokerId) => {
+    if (!userInputSources || !Array.isArray(userInputSources)) return null;
+    return userInputSources.find(source => source.brokerId === brokerId) as BrokerSourceConfig<"user_input"> | null;
+  }
+);
+
 export const workflowsSelectors = {
   // Basic workflow selectors
   allWorkflows: selectAllWorkflows,
@@ -191,4 +220,12 @@ export const workflowsSelectors = {
   workflowInputById: selectWorkflowInputById,
   workflowOutputById: selectWorkflowOutputById,
   workflowSourceByBrokerId: selectWorkflowSourceByBrokerId,
+  
+  // User data source selectors
+  workflowUserDataSources: selectWorkflowUserDataSources,
+  userDataSourceByBrokerId: selectWorkflowUserDataSourceByBrokerId,
+  
+  // User input source selectors  
+  workflowUserInputSources: selectWorkflowUserInputSources,
+  userInputSourceByBrokerId: selectWorkflowUserInputSourceByBrokerId,
 };

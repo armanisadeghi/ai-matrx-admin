@@ -29,6 +29,7 @@ interface TuiEditorContentProps {
     onChange?: (content: string) => void;
     isActive?: boolean;
     className?: string;
+    editMode?: "markdown" | "wysiwyg";
 }
 
 interface TuiEditorContentRef {
@@ -53,7 +54,7 @@ const createMatrxWidgetRules = () => {
                         return document.createTextNode(text);
                     }
                     
-                    const uuid = match[1].substring(1); // Remove @ prefix
+                    const uuid = match[1]?.substring(1); // Remove @ prefix
                     const displayName = match[2];
                     
                     if (!uuid || !displayName) {
@@ -66,61 +67,92 @@ const createMatrxWidgetRules = () => {
                     pill.textContent = displayName;
                     pill.title = `MATRX: ${displayName} (ID: ${uuid})`;
                     
-                    // Store data as attributes
-                    pill.setAttribute('data-matrx-id', uuid);
-                    pill.setAttribute('data-matrx-name', displayName);
-                    pill.setAttribute('data-matrx-original', text);
+                    // Store data as attributes safely
+                    try {
+                        pill.setAttribute('data-matrx-id', uuid);
+                        pill.setAttribute('data-matrx-name', displayName);
+                        pill.setAttribute('data-matrx-original', text);
+                    } catch (attrError) {
+                        console.warn('Failed to set attributes:', attrError);
+                    }
                     
                     // Professional blue pill styling - no !important overrides
-                    pill.style.cssText = `
-                        background: #3b82f6;
-                        color: white;
-                        padding: 2px 8px;
-                        border-radius: 12px;
-                        font-size: 12px;
-                        font-weight: 500;
-                        display: inline-block;
-                        margin: 0 2px;
-                        cursor: pointer;
-                        user-select: none;
-                        vertical-align: baseline;
-                        white-space: nowrap;
-                        max-width: 200px;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        border: 1px solid rgba(59, 130, 246, 0.3);
-                        transition: background-color 0.2s ease;
-                        line-height: 1.4;
-                    `;
+                    try {
+                        pill.style.cssText = `
+                            background: #3b82f6;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 16px;
+                            font-weight: 500;
+                            display: inline-block;
+                            margin: 0 2px;
+                            cursor: pointer;
+                            user-select: none;
+                            vertical-align: middle;
+                            white-space: nowrap;
+                            max-width: 200px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            border: 1px solid rgba(59, 130, 246, 0.3);
+                            transition: background-color 0.2s ease;
+                            line-height: 1.2;
+                        `;
+                    } catch (styleError) {
+                        console.warn('Failed to apply styles:', styleError);
+                    }
                     
-                    // Simple hover effect
-                    pill.addEventListener('mouseenter', function() {
-                        this.style.backgroundColor = '#2563eb';
-                    });
-                    
-                    pill.addEventListener('mouseleave', function() {
-                        this.style.backgroundColor = '#3b82f6';
-                    });
-                    
-                    // Click handler
-                    pill.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        const customEvent = new CustomEvent('matrxWidgetClick', {
-                            detail: { id: uuid, name: displayName },
-                            bubbles: true
+                    // Add event handlers with error protection
+                    try {
+                        // Simple hover effect
+                        pill.addEventListener('mouseenter', function() {
+                            try {
+                                this.style.backgroundColor = '#2563eb';
+                            } catch (e) {
+                                console.warn('Hover effect failed:', e);
+                            }
                         });
-                        this.dispatchEvent(customEvent);
-                    });
+                        
+                        pill.addEventListener('mouseleave', function() {
+                            try {
+                                this.style.backgroundColor = '#3b82f6';
+                            } catch (e) {
+                                console.warn('Hover effect failed:', e);
+                            }
+                        });
+                        
+                        // Click handler
+                        pill.addEventListener('click', function(e) {
+                            try {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                
+                                const customEvent = new CustomEvent('matrxWidgetClick', {
+                                    detail: { id: uuid, name: displayName },
+                                    bubbles: true
+                                });
+                                this.dispatchEvent(customEvent);
+                            } catch (clickError) {
+                                console.warn('Click handler failed:', clickError);
+                            }
+                        });
+                    } catch (eventError) {
+                        console.warn('Failed to add event listeners:', eventError);
+                    }
                     
                     return pill;
                     
                 } catch (error) {
                     console.error('Error in MATRX widget toDOM:', error);
-                    const fallback = document.createElement('span');
-                    fallback.textContent = text;
-                    return fallback;
+                    // Always return a safe fallback
+                    try {
+                        const fallback = document.createElement('span');
+                        fallback.textContent = text;
+                        return fallback;
+                    } catch (fallbackError) {
+                        console.error('Even fallback failed:', fallbackError);
+                        return document.createTextNode(text);
+                    }
                 }
             }
         }
@@ -165,7 +197,8 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
     content,
     onChange,
     isActive = true,
-    className = "w-full h-full tui-editor-wrapper"
+    className = "w-full h-full tui-editor-wrapper",
+    editMode = "wysiwyg"
  }, ref) => {
     const editorRef = useRef<TuiEditorReactComp>(null);
     const { mode } = useTheme();
@@ -337,10 +370,10 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
         <div className={className}>
             <TuiEditor
                 ref={editorRef}
-                key={`tui-editor-${mode}-${isActive}`}
+                key={`tui-editor-${mode}-${isActive}-${editMode}`}
                 initialValue={convertedContent}
-                initialEditType="wysiwyg"
-                previewStyle="tab"
+                initialEditType={editMode}
+                previewStyle={editMode === "markdown" ? "vertical" : "tab"}
                 height="100%"
                 usageStatistics={false}
                 plugins={editorPlugins}
@@ -349,6 +382,7 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
                     addImageBlobHook: handleImageUpload,
                 }}
                 onChange={handleTuiChange}
+                hideModeSwitch={editMode === "markdown"}
             />
         </div>
     );

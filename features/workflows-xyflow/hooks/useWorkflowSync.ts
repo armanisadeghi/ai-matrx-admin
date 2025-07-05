@@ -14,12 +14,8 @@ export const useWorkflowSync = (workflowId: string) => {
 
     // Get Redux state using correct selectors
     const workflowData = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
-    const workflowNodes = useAppSelector((state) => 
-        workflowNodesSelectors.xyFlowNodesByWorkflowId(state)(workflowId)
-    ); // Returns Node[] directly - no transformations needed!
-    const workflowNodesData = useAppSelector((state) => 
-        workflowNodesSelectors.nodesByWorkflowId(state)(workflowId)
-    ); // Returns WorkflowNode[] for business data (inputs/outputs)
+    const workflowNodes = useAppSelector((state) => workflowNodesSelectors.xyFlowNodesByWorkflowId(state)(workflowId)); // Returns Node[] directly - no transformations needed!
+    const workflowNodesData = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state)(workflowId)); // Returns WorkflowNode[] for business data (inputs/outputs)
     const workflowSources = useAppSelector((state) => workflowsSelectors.workflowSources(state, workflowId));
     const isLoading = useAppSelector(workflowsSelectors.isLoading);
 
@@ -30,7 +26,9 @@ export const useWorkflowSync = (workflowId: string) => {
     useEffect(() => {
         if (workflowSources?.length) {
             // Extract user input sources from workflow sources
-            const userInputSources = workflowSources.filter(source => source.sourceType === 'user_input') as BrokerSourceConfig<'user_input'>[];
+            const userInputSources = workflowSources.filter(
+                (source) => source.sourceType === "user_input"
+            ) as BrokerSourceConfig<"user_input">[];
             const brokerMappings: BrokerMapEntry[] = userInputSources.map((sourceConfig) => sourceConfig.sourceDetails);
 
             // Use the broker slice's built-in action that handles duplicates
@@ -42,9 +40,15 @@ export const useWorkflowSync = (workflowId: string) => {
 
     // Convert Redux data to React Flow format ONCE
     const initialNodes = useMemo(() => {
-        // Regular workflow nodes - no transformation needed! 
+        // Regular workflow nodes - ensure it's an array and add displayMode if needed
         // xyFlowNodesByWorkflowId returns Node[] directly from stored ui_data
-        const regularNodes = workflowNodes;
+        const regularNodes = (workflowNodes || []).map((node) => ({
+            ...node,
+            data: {
+                ...node.data,
+                displayMode: node.data?.displayMode || "detailed",
+            },
+        }));
 
         // Generate source input nodes from workflow sources (these are auto-generated, not stored)
         const sourceNodes = (workflowSources || []).map((source: BrokerSourceConfig, index) => {
@@ -130,12 +134,14 @@ export const useWorkflowSync = (workflowId: string) => {
         async (reactFlowNodes: Node[], reactFlowEdges: Edge[], reactFlowViewport: any) => {
             try {
                 // Use the new thunk that handles all state updates and saves everything
-                await dispatch(saveWorkflowFromReactFlow({
-                    workflowId,
-                    reactFlowNodes,
-                    reactFlowEdges,
-                    reactFlowViewport
-                })).unwrap();
+                await dispatch(
+                    saveWorkflowFromReactFlow({
+                        workflowId,
+                        reactFlowNodes,
+                        reactFlowEdges,
+                        reactFlowViewport,
+                    })
+                ).unwrap();
 
                 console.log("Workflow saved successfully!");
             } catch (error) {

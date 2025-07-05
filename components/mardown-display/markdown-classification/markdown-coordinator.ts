@@ -182,6 +182,33 @@ const DYNAMIC_DEFINITION: CoordinatorDefinition = {
     sampleData: ["appDescription"],
 };
 
+const LSI_KEYWORDS_DEFINITION: CoordinatorDefinition = {
+    id: "lsi_keywords",
+    label: "LSI Keywords",
+    description: "Configuration for parsing LSI keywords",
+    rawProcessor: "ast",
+    processor: "combined-processor",
+    config: null,
+    defaultView: "modernKeywordAnalyzer",
+    availableViews: [
+        "modernKeywordAnalyzer",
+    ],
+    sampleData: ["lsiKeywords"],
+};
+
+const KEYWORD_HIERARCHY_DEFINITION: CoordinatorDefinition = {
+    id: "keyword_hierarchy",
+    label: "Keyword Hierarchy",
+    description: "Configuration for parsing keyword hierarchy",
+    rawProcessor: "ast",
+    processor: "combined-processor",
+    config: null,
+    defaultView: "keywordHierarchy",
+    availableViews: ["keywordHierarchy"],
+    sampleData: ["lsiKeywords"],
+};
+
+
 const COORDINATOR_DEFINITIONS = [
     CANDIDATE_PROFILE_DEFINITION,
     CANDIDATE_PROFILE_STRUCTURED_DEFINITION,
@@ -194,6 +221,8 @@ const COORDINATOR_DEFINITIONS = [
     SECTIONED_LIST_DEFINITION,
     DYNAMIC_DEFINITION,
     MODERN_CANDIDATE_PROFILE_DEFINITION,
+    LSI_KEYWORDS_DEFINITION,
+    KEYWORD_HIERARCHY_DEFINITION,
 ];
 
 export const getCoordinatorSelectOptions = () => {

@@ -23,6 +23,7 @@ const SLUG_TO_COORDINATOR_MAP = {
     "applet-description-generator": "app_suggestions",
     "candidate-write-up-not-used": "candidate_profile_structured",
     "interview-transcript-analyzer": "modern_candidate_profile",
+    "lsi-variations": "keyword_hierarchy",
 };
 
 interface AppletRunComponentProps {
