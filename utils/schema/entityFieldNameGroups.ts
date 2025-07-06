@@ -243,6 +243,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["role", "type", "createdAt", "content"]
 },
+  nodeCategory: {
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "label", "icon", "color", "description"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "label", "icon", "color", "description"]
+},
   organizationInvitations: {
   nativeFields: ["id", "organizationId", "email", "token", "role", "invitedAt", "invitedBy", "expiresAt"],
   primaryKeyFields: ["id"],
@@ -284,9 +289,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead"]
 },
   recipe: {
-  nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId"],
+  nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId", "metadata"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId"]
+  nativeFieldsNoPk: ["name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId", "metadata"]
 },
   recipeBroker: {
   nativeFields: ["id", "recipe", "broker", "brokerRole", "required"],
@@ -332,6 +337,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "funcName", "modulePath", "className", "description", "returnBroker", "name", "tags", "category", "icon", "nodeDescription"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["funcName", "modulePath", "className", "description", "returnBroker", "name", "tags", "category", "icon", "nodeDescription"]
+},
+  registeredNode: {
+  nativeFields: ["id", "createdAt", "updatedAt", "registeredFunctionId", "name", "styles", "nodeType", "description", "isActive", "arguments", "inputs", "outputs", "customEditor", "metadata", "dependencies", "depedencyFunction", "dynamicBrokerArgs", "tags", "functionDescription", "icon", "category"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "registeredFunctionId", "name", "styles", "nodeType", "description", "isActive", "arguments", "inputs", "outputs", "customEditor", "metadata", "dependencies", "depedencyFunction", "dynamicBrokerArgs", "tags", "functionDescription", "icon", "category"]
 },
   schemaTemplates: {
   nativeFields: ["id", "templateName", "description", "fields", "version", "createdAt"],
@@ -509,9 +519,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["preferences", "createdAt", "updatedAt"]
 },
   userTables: {
-  nativeFields: ["id", "tableName", "description", "version", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"],
+  nativeFields: ["id", "tableName", "description", "version", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt", "rowOrderingConfig"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["tableName", "description", "version", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"]
+  nativeFieldsNoPk: ["tableName", "description", "version", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt", "rowOrderingConfig"]
 },
   wcClaim: {
   nativeFields: ["id", "createdAt", "applicantName", "personId", "dateOfBirth", "dateOfInjury", "ageAtDoi", "occupationalCode", "weeklyEarnings"],
@@ -554,9 +564,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "workflowId", "functionId", "functionType", "stepName", "nodeType", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "status", "isPublic", "authenticatedRead", "publicRead", "metadata", "uiNodeData"]
 },
   workflowNodeData: {
-  nativeFields: ["id", "workflowId", "functionId", "type", "stepName", "nodeType", "executionRequired", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId"],
+  nativeFields: ["id", "workflowId", "functionId", "type", "stepName", "executionRequired", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId", "isActive", "arguments", "nodeType"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["workflowId", "functionId", "type", "stepName", "nodeType", "executionRequired", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId"]
+  nativeFieldsNoPk: ["workflowId", "functionId", "type", "stepName", "executionRequired", "inputs", "outputs", "dependencies", "metadata", "uiData", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "userId", "isActive", "arguments", "nodeType"]
 },
   workflowRelay: {
   nativeFields: ["id", "createdAt", "updatedAt", "workflowId", "userId", "sourceBrokerId", "label", "targetBrokerIds", "metadata", "uiNodeData"],

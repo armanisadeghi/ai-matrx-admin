@@ -12,11 +12,6 @@ import { getNormalizedRegisteredFunctionNode } from "@/features/workflows-xyflow
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import { createWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
 
-interface CategoryDefinition {
-    id: string;
-    icon: LucideIcon;
-    label: string;
-}
 
 interface CategoryNodeSectionProps {
     workflowId: string;

@@ -38,7 +38,7 @@ import { getEntitySlice } from "../entitySlice";
 import { EntityActions } from "../slice";
 import { FetchMode } from "../actions";
 import { getEntityMetadata } from "../utils/direct-schema";
-import { parseRecordKey } from "../utils/stateHelpUtils";
+import { parseRecordKey, parseFirstRecordKey } from "../utils/stateHelpUtils";
 import { createRecordKey } from "../utils/stateHelpUtils";
 import { useEntityFetch } from "./useEntityFetch";
 
@@ -74,10 +74,13 @@ export const useEntitySelectedRecordIds = <TEntity extends EntityKeys>(entityKey
 export const useEntityLoadingState = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const loadingState = useAppSelector((state: RootState) => state.entities[entityKey].loading);
 
-    return useMemo(() => ({
-        isLoading: loadingState.loading,
-        isError: loadingState.error !== null,
-    }), [loadingState]);
+    return useMemo(
+        () => ({
+            isLoading: loadingState.loading,
+            isError: loadingState.error !== null,
+        }),
+        [loadingState]
+    );
 };
 
 export const useEntityQuickRefRecords = <TEntity extends EntityKeys>(entityKey: TEntity) => {
@@ -99,10 +102,12 @@ interface UseEntitySelectorsReturn<TEntity extends EntityKeys> {
     quickRefRecords: QuickReferenceRecord[];
     metadata: EntityMetadata;
     fields: EntityFieldRecord;
+    firstPkField: AllEntityFieldKeys;
     pkValueToMatrxId: (pkValue: string) => MatrxRecordId;
     pkValuesToMatrxId: (pkValues: Record<string, unknown>) => MatrxRecordId;
     matrxIdToPks: (recordId: MatrxRecordId) => Record<AllEntityFieldKeys, unknown>;
     defaultFetchStrategy: FetchStrategy;
+    recordsById: Record<string, EntityData<TEntity>>;
 }
 
 export const useEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity): UseEntitySelectorsReturn<TEntity> => {
@@ -114,7 +119,9 @@ export const useEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntit
     const { isLoading, isError } = useEntityLoadingState(entityKey);
     const quickRefRecords = useEntityQuickRefRecords(entityKey);
     const metadata = getEntityMetadata(entityKey);
-    if (!metadata) { return null; }
+    if (!metadata) {
+        return null;
+    }
     const fields = metadata.entityFields;
     const pkMeta = metadata?.primaryKeyMetadata;
     const pkType = pkMeta?.type;
@@ -124,8 +131,8 @@ export const useEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntit
 
     const pkValueToMatrxId = useCallback(
         (pkValue: string) => {
-            if (pkType === 'composite') {
-                console.error('This Entity has a composite primary key. Use pkValuesToMatrxId instead.');
+            if (pkType === "composite") {
+                console.error("This Entity has a composite primary key. Use pkValuesToMatrxId instead.");
             }
             return createRecordKey(pkMeta, { [firstPkField]: pkValue });
         },
@@ -135,6 +142,17 @@ export const useEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntit
     const pkValuesToMatrxId = useCallback((pkValues: Record<string, unknown>) => createRecordKey(pkMeta, pkValues), [pkMeta]);
 
     const matrxIdToPks = useCallback((recordId: MatrxRecordId) => parseRecordKey(recordId) as Record<AllEntityFieldKeys, unknown>, []);
+
+    const recordsById = useMemo(() => {
+        const recordsById: Record<string, any> = {};
+
+        Object.entries(allRecords).forEach(([key, value]) => {
+            const firstKeyValue = parseFirstRecordKey(key);
+            recordsById[firstKeyValue] = value;
+        });
+
+        return recordsById;
+    }, [allRecords]);
 
     return useMemo(
         () => ({
@@ -152,8 +170,25 @@ export const useEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntit
             pkValuesToMatrxId,
             matrxIdToPks,
             defaultFetchStrategy,
+            firstPkField,
+            recordsById,
         }),
-        [allRecords, unsavedRecords, selectedRecordIds, isLoading, isError, quickRefRecords, metadata, fields, pkValueToMatrxId, pkValuesToMatrxId, matrxIdToPks, defaultFetchStrategy]
+        [
+            allRecords,
+            unsavedRecords,
+            selectedRecordIds,
+            isLoading,
+            isError,
+            quickRefRecords,
+            metadata,
+            fields,
+            pkValueToMatrxId,
+            pkValuesToMatrxId,
+            matrxIdToPks,
+            defaultFetchStrategy,
+            firstPkField,
+            recordsById,
+        ]
     );
 };
 
@@ -163,6 +198,7 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
         selectors,
         actions,
         allRecords,
+        firstPkField,
         unsavedRecords,
         selectedRecordIds,
         isLoading,
@@ -174,25 +210,20 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
         pkValuesToMatrxId,
         matrxIdToPks,
         defaultFetchStrategy,
+        recordsById,
     } = useEntitySelectors(entityName);
 
     const [matrxIdSet, setMatrxIdSet] = useState<Set<MatrxRecordId>>(new Set());
-    const [fetchMode, setFetchMode] = useState<FetchMode>('fkIfk');
+    const [fetchMode, setFetchMode] = useState<FetchMode>("fkIfk");
     const [shouldFetch, setShouldFetch] = useState(false);
 
-    const {
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
-    } = useEntityFetch(entityName);
+    const { fetchQuickRefs, fetchOne, fetchOneWithFkIfk, fetchAll, fetchPaginated } = useEntityFetch(entityName);
 
     const isMissingRecords = useMemo(() => {
         const allFetchedIds = Object.keys(allRecords);
-        return Array.from(matrxIdSet).some(id => !allFetchedIds.includes(id));
+        return Array.from(matrxIdSet).some((id) => !allFetchedIds.includes(id));
     }, [allRecords, matrxIdSet]);
-    
+
     useEffect(() => {
         if (isMissingRecords && shouldFetch) {
             dispatch(
@@ -204,28 +235,31 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
         }
     }, [dispatch, actions, matrxIdSet, shouldFetch, isMissingRecords, fetchMode]);
 
-    const addMatrxId = useCallback((recordId: MatrxRecordId) => {
-        setMatrxIdSet(prevSet => {
-            const newSet = new Set(prevSet);
-            newSet.add(recordId);
-            return newSet;
-        });
-        if (!shouldFetch) {
-            setShouldFetch(true);
-        }
-    }, [shouldFetch]);
+    const addMatrxId = useCallback(
+        (recordId: MatrxRecordId) => {
+            setMatrxIdSet((prevSet) => {
+                const newSet = new Set(prevSet);
+                newSet.add(recordId);
+                return newSet;
+            });
+            if (!shouldFetch) {
+                setShouldFetch(true);
+            }
+        },
+        [shouldFetch]
+    );
 
     const addMatrxIds = useCallback((recordIds: MatrxRecordId[]) => {
-        setMatrxIdSet(prevSet => {
+        setMatrxIdSet((prevSet) => {
             const newSet = new Set(prevSet);
-            recordIds.forEach(id => newSet.add(id));
+            recordIds.forEach((id) => newSet.add(id));
             return newSet;
         });
         setShouldFetch(true);
     }, []);
 
     const removeMatrxId = useCallback((recordId: MatrxRecordId) => {
-        setMatrxIdSet(prevSet => {
+        setMatrxIdSet((prevSet) => {
             const newSet = new Set(prevSet);
             newSet.delete(recordId);
             return newSet;
@@ -233,55 +267,69 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
     }, []);
 
     const removeMatrxIds = useCallback((recordIds: MatrxRecordId[]) => {
-        setMatrxIdSet(prevSet => {
+        setMatrxIdSet((prevSet) => {
             const newSet = new Set(prevSet);
-            recordIds.forEach(id => newSet.delete(id));
+            recordIds.forEach((id) => newSet.delete(id));
             return newSet;
         });
     }, []);
 
-    const addPkValue = useCallback((pkValue: string) => {
-        const matrxId = pkValueToMatrxId(pkValue);
-        setMatrxIdSet(prevSet => {
-            const newSet = new Set(prevSet);
-            newSet.add(matrxId);
-            return newSet;
-        });
-        setShouldFetch(true);
-    }, [pkValueToMatrxId]);
+    const addPkValue = useCallback(
+        (pkValue: string) => {
+            const matrxId = pkValueToMatrxId(pkValue);
+            setMatrxIdSet((prevSet) => {
+                const newSet = new Set(prevSet);
+                newSet.add(matrxId);
+                return newSet;
+            });
+            setShouldFetch(true);
+        },
+        [pkValueToMatrxId]
+    );
 
-    const addPkValues = useCallback((pkValues: Record<string, unknown>) => {
-        const matrxId = pkValuesToMatrxId(pkValues);
-        setMatrxIdSet(prevSet => {
-            const newSet = new Set(prevSet);
-            newSet.add(matrxId);
-            return newSet;
-        });
-        setShouldFetch(true);
-    }, [pkValuesToMatrxId]);
+    const addPkValues = useCallback(
+        (pkValues: Record<string, unknown>) => {
+            const matrxId = pkValuesToMatrxId(pkValues);
+            setMatrxIdSet((prevSet) => {
+                const newSet = new Set(prevSet);
+                newSet.add(matrxId);
+                return newSet;
+            });
+            setShouldFetch(true);
+        },
+        [pkValuesToMatrxId]
+    );
 
-    const removePkValue = useCallback((pkValue: string) => {
-        const matrxId = pkValueToMatrxId(pkValue);
-        setMatrxIdSet(prevSet => {
-            const newSet = new Set(prevSet);
-            newSet.delete(matrxId);
-            return newSet;
-        });
-    }, [pkValueToMatrxId]);
+    const removePkValue = useCallback(
+        (pkValue: string) => {
+            const matrxId = pkValueToMatrxId(pkValue);
+            setMatrxIdSet((prevSet) => {
+                const newSet = new Set(prevSet);
+                newSet.delete(matrxId);
+                return newSet;
+            });
+        },
+        [pkValueToMatrxId]
+    );
 
-    const removePkValues = useCallback((pkValues: Record<string, unknown>) => {
-        const matrxId = pkValuesToMatrxId(pkValues);
-        setMatrxIdSet(prevSet => {
-            const newSet = new Set(prevSet);
-            newSet.delete(matrxId);
-            return newSet;
-        });
-    }, [pkValuesToMatrxId]);
+    const removePkValues = useCallback(
+        (pkValues: Record<string, unknown>) => {
+            const matrxId = pkValuesToMatrxId(pkValues);
+            setMatrxIdSet((prevSet) => {
+                const newSet = new Set(prevSet);
+                newSet.delete(matrxId);
+                return newSet;
+            });
+        },
+        [pkValuesToMatrxId]
+    );
 
     return {
         selectors,
         actions,
         allRecords,
+        firstPkField,
+        recordsById,
         unsavedRecords,
         selectedRecordIds,
         isLoading,
@@ -303,7 +351,6 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
         fetchOneWithFkIfk,
         fetchAll,
         fetchPaginated,
-
     };
 };
 
@@ -330,7 +377,6 @@ export type UseBrokerValuesWithFetchReturn = {
     setBrokerValueShouldFetch: (shouldFetch: boolean) => void;
     setBrokerValueFetchMode: (fetchMode: FetchMode) => void;
 };
-
 
 export const useBrokerValuesWithFetch = (): UseBrokerValuesWithFetchReturn => {
     const {
@@ -378,9 +424,6 @@ export const useBrokerValuesWithFetch = (): UseBrokerValuesWithFetchReturn => {
     };
 };
 
-
-
-
 export type UseDataBrokersWithFetchReturn = {
     dataBrokerSelectors: EntitySelectors<"dataBroker">;
     dataBrokerActions: EntityActions<"dataBroker">;
@@ -402,7 +445,6 @@ export type UseDataBrokersWithFetchReturn = {
     setDataBrokerShouldFetch: (shouldFetch: boolean) => void;
     setDataBrokerFetchMode: (fetchMode: FetchMode) => void;
 };
-
 
 export const useDataBrokersWithFetch = (): UseDataBrokersWithFetchReturn => {
     const {
@@ -450,7 +492,6 @@ export const useDataBrokersWithFetch = (): UseDataBrokersWithFetchReturn => {
     };
 };
 
-
 export type UseDataInputComponentsWithFetchReturn = {
     dataInputComponentSelectors: EntitySelectors<"dataInputComponent">;
     dataInputComponentActions: EntityActions<"dataInputComponent">;
@@ -472,7 +513,6 @@ export type UseDataInputComponentsWithFetchReturn = {
     setDataInputComponentShouldFetch: (shouldFetch: boolean) => void;
     setDataInputComponentFetchMode: (fetchMode: FetchMode) => void;
 };
-
 
 export const useDataInputComponentsWithFetch = (): UseDataInputComponentsWithFetchReturn => {
     const {
@@ -520,12 +560,6 @@ export const useDataInputComponentsWithFetch = (): UseDataInputComponentsWithFet
     };
 };
 
-
-
-
-
-
-
 type UseDataBrokersReturn = {
     brokerSelectors: EntitySelectors<"dataBroker">;
     brokerActions: EntityActions<"dataBroker">;
@@ -559,8 +593,6 @@ export const useDataBrokers = (): UseDataBrokersReturn => {
         brokerQuickRefRecords,
     };
 };
-
-
 
 type UseValueBrokersReturn = {
     valueBrokerSelectors: EntitySelectors<"brokerValue">;
@@ -732,7 +764,6 @@ export const useCompiledRecipes = (): UseCompiledRecipesReturn => {
     };
 };
 
-
 type UseAppletsWithFetchReturn = {
     appletSelectors: EntitySelectors<"applet">;
     appletActions: EntityActions<"applet">;
@@ -754,7 +785,6 @@ type UseAppletsWithFetchReturn = {
     setAppletShouldFetch: (shouldFetch: boolean) => void;
     setAppletFetchMode: (fetchMode: FetchMode) => void;
 };
-
 
 export const useAppletsWithFetch = (): UseAppletsWithFetchReturn => {
     const {
@@ -823,7 +853,6 @@ type UseCompiledRecipesWithFetchReturn = {
     setCompiledRecipeShouldFetch: (shouldFetch: boolean) => void;
     setCompiledRecipeFetchMode: (fetchMode: FetchMode) => void;
 };
-
 
 export const useCompiledRecipesWithFetch = (): UseCompiledRecipesWithFetchReturn => {
     const {
@@ -896,7 +925,6 @@ type UseAiModelWithFetchReturn = {
     fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAll: () => void;
     fetchPaginated: (page: number, pageSize: number) => void;
-
 };
 
 export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
@@ -925,7 +953,6 @@ export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
         fetchOneWithFkIfk,
         fetchAll,
         fetchPaginated,
-
     } = useEntityWithFetch("aiModel");
 
     return {
@@ -956,8 +983,6 @@ export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
     };
 };
 
-
-
 type UseAiEndpointWithFetchReturn = {
     aiEndpointSelectors: EntitySelectors<"aiEndpoint">;
     aiEndpointActions: EntityActions<"aiEndpoint">;
@@ -983,7 +1008,6 @@ type UseAiEndpointWithFetchReturn = {
     fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAll: () => void;
     fetchPaginated: (page: number, pageSize: number) => void;
-
 };
 
 export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
@@ -1012,7 +1036,6 @@ export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
         fetchOneWithFkIfk,
         fetchAll,
         fetchPaginated,
-
     } = useEntityWithFetch("aiEndpoint");
 
     return {
@@ -1043,8 +1066,6 @@ export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
     };
 };
 
-
-
 type UseAiModelEndpointWithFetchReturn = {
     aiModelEndpointSelectors: EntitySelectors<"aiModelEndpoint">;
     aiModelEndpointActions: EntityActions<"aiModelEndpoint">;
@@ -1070,7 +1091,6 @@ type UseAiModelEndpointWithFetchReturn = {
     fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAll: () => void;
     fetchPaginated: (page: number, pageSize: number) => void;
-
 };
 
 export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn => {
@@ -1099,7 +1119,6 @@ export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn
         fetchOneWithFkIfk,
         fetchAll,
         fetchPaginated,
-
     } = useEntityWithFetch("aiModelEndpoint");
 
     return {
@@ -1130,8 +1149,6 @@ export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn
     };
 };
 
-
-
 type UseAiSettingsWithFetchReturn = {
     aiSettingsSelectors: EntitySelectors<"aiSettings">;
     aiSettingsActions: EntityActions<"aiSettings">;
@@ -1157,7 +1174,6 @@ type UseAiSettingsWithFetchReturn = {
     fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAll: () => void;
     fetchPaginated: (page: number, pageSize: number) => void;
-
 };
 
 export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
@@ -1186,7 +1202,6 @@ export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
         fetchOneWithFkIfk,
         fetchAll,
         fetchPaginated,
-
     } = useEntityWithFetch("aiSettings");
 
     return {
@@ -1217,8 +1232,6 @@ export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
     };
 };
 
-
-
 type UseAiAgentWithFetchReturn = {
     aiAgentSelectors: EntitySelectors<"aiAgent">;
     aiAgentActions: EntityActions<"aiAgent">;
@@ -1244,7 +1257,6 @@ type UseAiAgentWithFetchReturn = {
     fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAll: () => void;
     fetchPaginated: (page: number, pageSize: number) => void;
-
 };
 
 export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
@@ -1273,7 +1285,6 @@ export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
         fetchOneWithFkIfk,
         fetchAll,
         fetchPaginated,
-
     } = useEntityWithFetch("aiAgent");
 
     return {
@@ -1357,7 +1368,6 @@ export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
         fetchOneWithFkIfk: fetchWorkflowOneWithFkIfk,
         fetchAll: fetchWorkflowAll,
         fetchPaginated: fetchWorkflowPaginated,
-
     } = useEntityWithFetch("workflow");
 
     return {
@@ -1388,12 +1398,10 @@ export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
     };
 };
 
-
-
 type UseRegisteredFunctionWithFetchReturn = {
     registeredFunctionSelectors: EntitySelectors<"registeredFunction">;
     registeredFunctionActions: EntityActions<"registeredFunction">;
-    registeredFunctionRecords: Record<MatrxRecordId, RegisteredFunctionData>;       
+    registeredFunctionRecords: Record<MatrxRecordId, RegisteredFunctionData>;
     registeredFunctionUnsavedRecords: Record<MatrxRecordId, Partial<RegisteredFunctionData>>;
     registeredFunctionSelectedRecordIds: MatrxRecordId[];
     registeredFunctionIsLoading: boolean;
@@ -1404,9 +1412,9 @@ type UseRegisteredFunctionWithFetchReturn = {
     removeRegisteredFunctionMatrxId: (recordId: MatrxRecordId) => void;
     removeRegisteredFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
     addRegisteredFunctionPkValue: (pkValue: string) => void;
-    addRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;     
+    addRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;
     removeRegisteredFunctionPkValue: (pkValue: string) => void;
-    removeRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;  
+    removeRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;
     isRegisteredFunctionMissingRecords: boolean;
     setRegisteredFunctionShouldFetch: (shouldFetch: boolean) => void;
     setRegisteredFunctionFetchMode: (fetchMode: FetchMode) => void;
@@ -1414,7 +1422,7 @@ type UseRegisteredFunctionWithFetchReturn = {
     fetchRegisteredFunctionOne: (recordId: MatrxRecordId) => void;
     fetchRegisteredFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRegisteredFunctionAll: () => void;
-    fetchRegisteredFunctionPaginated: (page: number, pageSize: number) => void;     
+    fetchRegisteredFunctionPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetchReturn => {
@@ -1443,7 +1451,6 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         fetchOneWithFkIfk: fetchRegisteredFunctionOneWithFkIfk,
         fetchAll: fetchRegisteredFunctionAll,
         fetchPaginated: fetchRegisteredFunctionPaginated,
-
     } = useEntityWithFetch("registeredFunction");
 
     return {
@@ -1473,8 +1480,6 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         fetchRegisteredFunctionPaginated,
     };
 };
-
-
 
 type UseArgWithFetchReturn = {
     argSelectors: EntitySelectors<"arg">;
@@ -1529,7 +1534,6 @@ export const useArgWithFetch = (): UseArgWithFetchReturn => {
         fetchOneWithFkIfk: fetchArgOneWithFkIfk,
         fetchAll: fetchArgAll,
         fetchPaginated: fetchArgPaginated,
-
     } = useEntityWithFetch("arg");
 
     return {

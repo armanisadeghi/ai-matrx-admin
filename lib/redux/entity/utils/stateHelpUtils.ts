@@ -587,6 +587,15 @@ export const parseRecordKey = (key: MatrxRecordId): Record<AllEntityFieldKeys, u
     }, {} as Record<AllEntityFieldKeys, unknown>);
 };
 
+export const parseFirstRecordKey = (key: MatrxRecordId): string => {
+    const firstPair = key.split("::")[0];
+    const [, value] = firstPair.split(":");
+    if (value !== undefined) {
+        return value;
+    }
+    throw new Error(`parseFirstRecordKey Invalid format in record key: ${key}`);
+};
+
 export const parseRecordKeys = (keys: MatrxRecordId[]): Record<AllEntityFieldKeys, unknown>[] => {
     return keys.map((key) => {
         return parseRecordKey(key);

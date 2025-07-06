@@ -194,7 +194,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({
                 <div
                     className={`
                         relative w-16 h-16 rounded-full
-                        ${nodeStyles.borderColor} 
+                        border-2 border-red-500
                         ${nodeStyles.backgroundColor}
                         ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
                         ${dragging ? "shadow-2xl scale-110" : "shadow-lg hover:shadow-xl"}

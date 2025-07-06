@@ -17,6 +17,12 @@ export const databasePages: ModulePage[] = [
     relative: false,
     description: "Manage database functions and stored procedures",
   },
+  {
+    title: "Enums",
+    path: "/administration/database/enums",
+    relative: false,
+    description: "Manage database enum types and their values",
+  },
   // Additional database administration routes can be added here
 ];
 

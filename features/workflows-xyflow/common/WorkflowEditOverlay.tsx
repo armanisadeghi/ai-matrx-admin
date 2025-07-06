@@ -76,6 +76,7 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
 
   // Initialize JSON fields when workflow data changes
   useEffect(() => {
+    if (!isOpen) return;
     if (workflow && currentId === workflowId) {
       setJsonFields({
         inputs: inputs ? JSON.stringify(inputs, null, 2) : '',

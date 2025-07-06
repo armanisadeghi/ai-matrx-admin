@@ -21265,6 +21265,10 @@ export const dataBroker = {
     "numberType": "default",
     "options": [
         {
+            "label": "Bot",
+            "value": "Bot"
+        },
+        {
             "label": "Amber",
             "value": "amber"
         },
@@ -21357,8 +21361,8 @@ export const dataBroker = {
 },
             structure: 'single' as const,
             isNative: true,
-            typeReference: {} as TypeBrand<"amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined>,
-            enumValues: ['amber', 'blue', 'cyan', 'emerald', 'fuchsia', 'gray', 'green', 'indigo', 'lime', 'neutral', 'orange', 'pink', 'purple', 'red', 'rose', 'sky', 'slate', 'stone', 'teal', 'violet', 'yellow', 'zinc'] as const,
+            typeReference: {} as TypeBrand<"Bot" | "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined>,
+            enumValues: ['Bot', 'amber', 'blue', 'cyan', 'emerald', 'fuchsia', 'gray', 'green', 'indigo', 'lime', 'neutral', 'orange', 'pink', 'purple', 'red', 'rose', 'sky', 'slate', 'stone', 'teal', 'violet', 'yellow', 'zinc'] as const,
             entityName: 'dataBroker',
             databaseTable: 'data_broker',
             foreignKeyReference: null,
@@ -35503,6 +35507,1642 @@ export const messageTemplate = {
         ],
     } as const;
 
+export const nodeCategory = {
+        schemaType: 'table' as const,
+        entityName: 'nodeCategory',
+        displayName: 'Node Category',
+        uniqueTableId: 'supabase_automation_matrix:public:node_category',
+        uniqueEntityId: 'supabase_automation_matrix:nodeCategory',
+        primaryKey: 'id',
+        primaryKeyMetadata: {
+    "type": "single",
+    "fields": [
+        "id"
+    ],
+    "database_fields": [
+        "id"
+    ],
+    "where_template": {
+        "id": null
+    }
+},
+        displayFieldMetadata: { fieldName: 'name', databaseFieldName: 'name' },
+        defaultFetchStrategy: 'm2mAndIfk',
+        componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "minDate": "default",
+    "maxDate": "default",
+    "numberType": "default"
+},
+        entityFields: {
+            id: {
+            fieldNameFormats: {
+    "frontend": "id",
+    "backend": "id",
+    "database": "id",
+    "pretty": "Id",
+    "component": "Id",
+    "kebab": "id",
+    "sqlFunctionRef": "p_id",
+    "RestAPI": "id",
+    "GraphQL": "id",
+    "custom": "id"
+} as const,
+            name: 'id',
+            displayName: 'Id',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:id',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:id',
+
+            dataType: 'uuid' as const,
+            isRequired: true,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: true,
+            isDisplayField: false,
+            defaultGeneratorFunction: "getUUID()",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'UUID_FIELD' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": true
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Id" field for nodeCategory. This is a required field. Your entry must be an uuid data type.',
+        },
+            createdAt: {
+            fieldNameFormats: {
+    "frontend": "createdAt",
+    "backend": "created_at",
+    "database": "created_at",
+    "pretty": "Created At",
+    "component": "CreatedAt",
+    "kebab": "created-at",
+    "sqlFunctionRef": "p_created_at",
+    "RestAPI": "createdAt",
+    "GraphQL": "createdAt",
+    "custom": "createdAt"
+} as const,
+            name: 'createdAt',
+            displayName: 'Created At',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:created_at',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:createdAt',
+
+            dataType: 'date' as const,
+            isRequired: true,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "getCurrentTime()",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'DATE_PICKER' as const,
+            componentProps: {
+    "subComponent": "timestamptz",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": true
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Date>,
+            enumValues: null,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Created At" field for nodeCategory. This is a required field. Your entry must be an date data type.',
+        },
+            updatedAt: {
+            fieldNameFormats: {
+    "frontend": "updatedAt",
+    "backend": "updated_at",
+    "database": "updated_at",
+    "pretty": "Updated At",
+    "component": "UpdatedAt",
+    "kebab": "updated-at",
+    "sqlFunctionRef": "p_updated_at",
+    "RestAPI": "updatedAt",
+    "GraphQL": "updatedAt",
+    "custom": "updatedAt"
+} as const,
+            name: 'updatedAt',
+            displayName: 'Updated At',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:updated_at',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:updatedAt',
+
+            dataType: 'date' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "getCurrentTime()",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'DATE_PICKER' as const,
+            componentProps: {
+    "subComponent": "timestamptz",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Date>,
+            enumValues: null,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Updated At" field for nodeCategory. This is an optional field. Your entry must be an date data type.',
+        },
+            name: {
+            fieldNameFormats: {
+    "frontend": "name",
+    "backend": "name",
+    "database": "name",
+    "pretty": "Name",
+    "component": "Name",
+    "kebab": "name",
+    "sqlFunctionRef": "p_name",
+    "RestAPI": "name",
+    "GraphQL": "name",
+    "custom": "name"
+} as const,
+            name: 'name',
+            displayName: 'Name',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:name',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:name',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: true,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'INPUT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Name" field for nodeCategory. This is an optional field. Your entry must be an string data type.',
+        },
+            label: {
+            fieldNameFormats: {
+    "frontend": "label",
+    "backend": "label",
+    "database": "label",
+    "pretty": "Label",
+    "component": "Label",
+    "kebab": "label",
+    "sqlFunctionRef": "p_label",
+    "RestAPI": "label",
+    "GraphQL": "label",
+    "custom": "label"
+} as const,
+            name: 'label',
+            displayName: 'Label',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:label',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:label',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'INPUT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Label" field for nodeCategory. This is an optional field. Your entry must be an string data type.',
+        },
+            icon: {
+            fieldNameFormats: {
+    "frontend": "icon",
+    "backend": "icon",
+    "database": "icon",
+    "pretty": "Icon",
+    "component": "Icon",
+    "kebab": "icon",
+    "sqlFunctionRef": "p_icon",
+    "RestAPI": "icon",
+    "GraphQL": "icon",
+    "custom": "icon"
+} as const,
+            name: 'icon',
+            displayName: 'Icon',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:icon',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:icon',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'SELECT' as const,
+            componentProps: {
+    "subComponent": "enumSelect",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": [
+        {
+            "label": "Activity",
+            "value": "Activity"
+        },
+        {
+            "label": "Alert Circle",
+            "value": "AlertCircle"
+        },
+        {
+            "label": "Alert Triangle",
+            "value": "AlertTriangle"
+        },
+        {
+            "label": "Align Center",
+            "value": "AlignCenter"
+        },
+        {
+            "label": "Align Left",
+            "value": "AlignLeft"
+        },
+        {
+            "label": "Align Right",
+            "value": "AlignRight"
+        },
+        {
+            "label": "Archive",
+            "value": "Archive"
+        },
+        {
+            "label": "Arrow Down",
+            "value": "ArrowDown"
+        },
+        {
+            "label": "Arrow Left",
+            "value": "ArrowLeft"
+        },
+        {
+            "label": "Arrow Left Right",
+            "value": "ArrowLeftRight"
+        },
+        {
+            "label": "Arrow Right",
+            "value": "ArrowRight"
+        },
+        {
+            "label": "Arrow Right Left",
+            "value": "ArrowRightLeft"
+        },
+        {
+            "label": "Arrow Up",
+            "value": "ArrowUp"
+        },
+        {
+            "label": "Asterisk",
+            "value": "Asterisk"
+        },
+        {
+            "label": "At Sign",
+            "value": "AtSign"
+        },
+        {
+            "label": "Award",
+            "value": "Award"
+        },
+        {
+            "label": "Banknote",
+            "value": "Banknote"
+        },
+        {
+            "label": "Bar Chart",
+            "value": "BarChart"
+        },
+        {
+            "label": "Battery",
+            "value": "Battery"
+        },
+        {
+            "label": "Battery Low",
+            "value": "BatteryLow"
+        },
+        {
+            "label": "Bell",
+            "value": "Bell"
+        },
+        {
+            "label": "Bell Off",
+            "value": "BellOff"
+        },
+        {
+            "label": "Bike",
+            "value": "Bike"
+        },
+        {
+            "label": "Bitcoin",
+            "value": "Bitcoin"
+        },
+        {
+            "label": "Bold",
+            "value": "Bold"
+        },
+        {
+            "label": "Book Open",
+            "value": "BookOpen"
+        },
+        {
+            "label": "Bookmark",
+            "value": "Bookmark"
+        },
+        {
+            "label": "Bookmark Plus",
+            "value": "BookmarkPlus"
+        },
+        {
+            "label": "Bot",
+            "value": "Bot"
+        },
+        {
+            "label": "Brain",
+            "value": "Brain"
+        },
+        {
+            "label": "Brush",
+            "value": "Brush"
+        },
+        {
+            "label": "Building",
+            "value": "Building"
+        },
+        {
+            "label": "Building2",
+            "value": "Building2"
+        },
+        {
+            "label": "Calculator",
+            "value": "Calculator"
+        },
+        {
+            "label": "Calendar",
+            "value": "Calendar"
+        },
+        {
+            "label": "Calendar Days",
+            "value": "CalendarDays"
+        },
+        {
+            "label": "Camera",
+            "value": "Camera"
+        },
+        {
+            "label": "Car",
+            "value": "Car"
+        },
+        {
+            "label": "Check",
+            "value": "Check"
+        },
+        {
+            "label": "Check Circle",
+            "value": "CheckCircle"
+        },
+        {
+            "label": "Chevron Down",
+            "value": "ChevronDown"
+        },
+        {
+            "label": "Chevron Left",
+            "value": "ChevronLeft"
+        },
+        {
+            "label": "Chevron Right",
+            "value": "ChevronRight"
+        },
+        {
+            "label": "Chevron Up",
+            "value": "ChevronUp"
+        },
+        {
+            "label": "Circle",
+            "value": "Circle"
+        },
+        {
+            "label": "Clock",
+            "value": "Clock"
+        },
+        {
+            "label": "Cloud",
+            "value": "Cloud"
+        },
+        {
+            "label": "Cloud Rain",
+            "value": "CloudRain"
+        },
+        {
+            "label": "Cloud Snow",
+            "value": "CloudSnow"
+        },
+        {
+            "label": "Code",
+            "value": "Code"
+        },
+        {
+            "label": "Cog",
+            "value": "Cog"
+        },
+        {
+            "label": "Compass",
+            "value": "Compass"
+        },
+        {
+            "label": "Copy",
+            "value": "Copy"
+        },
+        {
+            "label": "Cpu",
+            "value": "Cpu"
+        },
+        {
+            "label": "Credit Card",
+            "value": "CreditCard"
+        },
+        {
+            "label": "Database",
+            "value": "Database"
+        },
+        {
+            "label": "Diamond",
+            "value": "Diamond"
+        },
+        {
+            "label": "Divide",
+            "value": "Divide"
+        },
+        {
+            "label": "Dollar Sign",
+            "value": "DollarSign"
+        },
+        {
+            "label": "Dot",
+            "value": "Dot"
+        },
+        {
+            "label": "Download",
+            "value": "Download"
+        },
+        {
+            "label": "Edit",
+            "value": "Edit"
+        },
+        {
+            "label": "Equal",
+            "value": "Equal"
+        },
+        {
+            "label": "Eraser",
+            "value": "Eraser"
+        },
+        {
+            "label": "Euro",
+            "value": "Euro"
+        },
+        {
+            "label": "External Link",
+            "value": "ExternalLink"
+        },
+        {
+            "label": "Eye",
+            "value": "Eye"
+        },
+        {
+            "label": "Fa Brave",
+            "value": "FaBrave"
+        },
+        {
+            "label": "Factory",
+            "value": "Factory"
+        },
+        {
+            "label": "Fc Alphabetical Sorting Az",
+            "value": "FcAlphabeticalSortingAz"
+        },
+        {
+            "label": "Fc Alphabetical Sorting Za",
+            "value": "FcAlphabeticalSortingZa"
+        },
+        {
+            "label": "Fc Area Chart",
+            "value": "FcAreaChart"
+        },
+        {
+            "label": "Fc Assistant",
+            "value": "FcAssistant"
+        },
+        {
+            "label": "Fc Biotech",
+            "value": "FcBiotech"
+        },
+        {
+            "label": "Fc Broken Link",
+            "value": "FcBrokenLink"
+        },
+        {
+            "label": "Fc Business",
+            "value": "FcBusiness"
+        },
+        {
+            "label": "Fc Business Contact",
+            "value": "FcBusinessContact"
+        },
+        {
+            "label": "Fc Calendar",
+            "value": "FcCalendar"
+        },
+        {
+            "label": "Fc Command Line",
+            "value": "FcCommandLine"
+        },
+        {
+            "label": "Fc Conference Call",
+            "value": "FcConferenceCall"
+        },
+        {
+            "label": "Fc Data Protection",
+            "value": "FcDataProtection"
+        },
+        {
+            "label": "Fc Document",
+            "value": "FcDocument"
+        },
+        {
+            "label": "Fc Download",
+            "value": "FcDownload"
+        },
+        {
+            "label": "Fc Electronics",
+            "value": "FcElectronics"
+        },
+        {
+            "label": "Fc Engineering",
+            "value": "FcEngineering"
+        },
+        {
+            "label": "Fc Feedback",
+            "value": "FcFeedback"
+        },
+        {
+            "label": "Fc Film",
+            "value": "FcFilm"
+        },
+        {
+            "label": "Fc Google",
+            "value": "FcGoogle"
+        },
+        {
+            "label": "Fc Graduation Cap",
+            "value": "FcGraduationCap"
+        },
+        {
+            "label": "Fc Library",
+            "value": "FcLibrary"
+        },
+        {
+            "label": "Fc Manager",
+            "value": "FcManager"
+        },
+        {
+            "label": "Fc Multiple Inputs",
+            "value": "FcMultipleInputs"
+        },
+        {
+            "label": "Fc Music",
+            "value": "FcMusic"
+        },
+        {
+            "label": "Fc Parallel Tasks",
+            "value": "FcParallelTasks"
+        },
+        {
+            "label": "Fc Sales Performance",
+            "value": "FcSalesPerformance"
+        },
+        {
+            "label": "Fc Shipped",
+            "value": "FcShipped"
+        },
+        {
+            "label": "Fc Signature",
+            "value": "FcSignature"
+        },
+        {
+            "label": "Fc Sms",
+            "value": "FcSms"
+        },
+        {
+            "label": "Fc Todo List",
+            "value": "FcTodoList"
+        },
+        {
+            "label": "Fc Wikipedia",
+            "value": "FcWikipedia"
+        },
+        {
+            "label": "File",
+            "value": "File"
+        },
+        {
+            "label": "File Text",
+            "value": "FileText"
+        },
+        {
+            "label": "Filter",
+            "value": "Filter"
+        },
+        {
+            "label": "Folder",
+            "value": "Folder"
+        },
+        {
+            "label": "Folder Open",
+            "value": "FolderOpen"
+        },
+        {
+            "label": "Fuel",
+            "value": "Fuel"
+        },
+        {
+            "label": "Gift",
+            "value": "Gift"
+        },
+        {
+            "label": "Git Branch",
+            "value": "GitBranch"
+        },
+        {
+            "label": "Globe",
+            "value": "Globe"
+        },
+        {
+            "label": "Hash",
+            "value": "Hash"
+        },
+        {
+            "label": "Headphones",
+            "value": "Headphones"
+        },
+        {
+            "label": "Heart",
+            "value": "Heart"
+        },
+        {
+            "label": "Help Circle",
+            "value": "HelpCircle"
+        },
+        {
+            "label": "Hexagon",
+            "value": "Hexagon"
+        },
+        {
+            "label": "Highlighter",
+            "value": "Highlighter"
+        },
+        {
+            "label": "Home",
+            "value": "Home"
+        },
+        {
+            "label": "Image",
+            "value": "Image"
+        },
+        {
+            "label": "Inbox",
+            "value": "Inbox"
+        },
+        {
+            "label": "Indent",
+            "value": "Indent"
+        },
+        {
+            "label": "Info",
+            "value": "Info"
+        },
+        {
+            "label": "Italic",
+            "value": "Italic"
+        },
+        {
+            "label": "Key",
+            "value": "Key"
+        },
+        {
+            "label": "Laptop",
+            "value": "Laptop"
+        },
+        {
+            "label": "Layers",
+            "value": "Layers"
+        },
+        {
+            "label": "Line Chart",
+            "value": "LineChart"
+        },
+        {
+            "label": "Link",
+            "value": "Link"
+        },
+        {
+            "label": "List",
+            "value": "List"
+        },
+        {
+            "label": "List Ordered",
+            "value": "ListOrdered"
+        },
+        {
+            "label": "Lock",
+            "value": "Lock"
+        },
+        {
+            "label": "Log In",
+            "value": "LogIn"
+        },
+        {
+            "label": "Log Out",
+            "value": "LogOut"
+        },
+        {
+            "label": "Mail",
+            "value": "Mail"
+        },
+        {
+            "label": "Map",
+            "value": "Map"
+        },
+        {
+            "label": "Map Pin",
+            "value": "MapPin"
+        },
+        {
+            "label": "Menu",
+            "value": "Menu"
+        },
+        {
+            "label": "Message Circle",
+            "value": "MessageCircle"
+        },
+        {
+            "label": "Message Square",
+            "value": "MessageSquare"
+        },
+        {
+            "label": "Mic",
+            "value": "Mic"
+        },
+        {
+            "label": "Mic Off",
+            "value": "MicOff"
+        },
+        {
+            "label": "Minus",
+            "value": "Minus"
+        },
+        {
+            "label": "Monitor",
+            "value": "Monitor"
+        },
+        {
+            "label": "Monitor Speaker",
+            "value": "MonitorSpeaker"
+        },
+        {
+            "label": "Moon",
+            "value": "Moon"
+        },
+        {
+            "label": "More Horizontal",
+            "value": "MoreHorizontal"
+        },
+        {
+            "label": "More Vertical",
+            "value": "MoreVertical"
+        },
+        {
+            "label": "Move",
+            "value": "Move"
+        },
+        {
+            "label": "Music",
+            "value": "Music"
+        },
+        {
+            "label": "Music2",
+            "value": "Music2"
+        },
+        {
+            "label": "Navigation",
+            "value": "Navigation"
+        },
+        {
+            "label": "Octagon",
+            "value": "Octagon"
+        },
+        {
+            "label": "Outdent",
+            "value": "Outdent"
+        },
+        {
+            "label": "Package",
+            "value": "Package"
+        },
+        {
+            "label": "Paintbrush",
+            "value": "Paintbrush"
+        },
+        {
+            "label": "Palette",
+            "value": "Palette"
+        },
+        {
+            "label": "Pause Circle",
+            "value": "PauseCircle"
+        },
+        {
+            "label": "Pen",
+            "value": "Pen"
+        },
+        {
+            "label": "Pen Tool",
+            "value": "PenTool"
+        },
+        {
+            "label": "Pencil",
+            "value": "Pencil"
+        },
+        {
+            "label": "Percent",
+            "value": "Percent"
+        },
+        {
+            "label": "Phone",
+            "value": "Phone"
+        },
+        {
+            "label": "Phone Call",
+            "value": "PhoneCall"
+        },
+        {
+            "label": "Pie Chart",
+            "value": "PieChart"
+        },
+        {
+            "label": "Plane",
+            "value": "Plane"
+        },
+        {
+            "label": "Play",
+            "value": "Play"
+        },
+        {
+            "label": "Play Circle",
+            "value": "PlayCircle"
+        },
+        {
+            "label": "Plus",
+            "value": "Plus"
+        },
+        {
+            "label": "Pound Sterling",
+            "value": "PoundSterling"
+        },
+        {
+            "label": "Power",
+            "value": "Power"
+        },
+        {
+            "label": "Power Off",
+            "value": "PowerOff"
+        },
+        {
+            "label": "Puzzle",
+            "value": "Puzzle"
+        },
+        {
+            "label": "Quote",
+            "value": "Quote"
+        },
+        {
+            "label": "Receipt",
+            "value": "Receipt"
+        },
+        {
+            "label": "Refresh Cw",
+            "value": "RefreshCw"
+        },
+        {
+            "label": "Repeat",
+            "value": "Repeat"
+        },
+        {
+            "label": "Repeat1",
+            "value": "Repeat1"
+        },
+        {
+            "label": "Rotate Ccw",
+            "value": "RotateCcw"
+        },
+        {
+            "label": "Ruler",
+            "value": "Ruler"
+        },
+        {
+            "label": "Save",
+            "value": "Save"
+        },
+        {
+            "label": "Scissors",
+            "value": "Scissors"
+        },
+        {
+            "label": "Search",
+            "value": "Search"
+        },
+        {
+            "label": "Send",
+            "value": "Send"
+        },
+        {
+            "label": "Settings",
+            "value": "Settings"
+        },
+        {
+            "label": "Share",
+            "value": "Share"
+        },
+        {
+            "label": "Share2",
+            "value": "Share2"
+        },
+        {
+            "label": "Shield",
+            "value": "Shield"
+        },
+        {
+            "label": "Shield Check",
+            "value": "ShieldCheck"
+        },
+        {
+            "label": "Ship",
+            "value": "Ship"
+        },
+        {
+            "label": "Shopping Bag",
+            "value": "ShoppingBag"
+        },
+        {
+            "label": "Shopping Cart",
+            "value": "ShoppingCart"
+        },
+        {
+            "label": "Shuffle",
+            "value": "Shuffle"
+        },
+        {
+            "label": "Skip Back",
+            "value": "SkipBack"
+        },
+        {
+            "label": "Skip Forward",
+            "value": "SkipForward"
+        },
+        {
+            "label": "Smartphone",
+            "value": "Smartphone"
+        },
+        {
+            "label": "Square",
+            "value": "Square"
+        },
+        {
+            "label": "Star",
+            "value": "Star"
+        },
+        {
+            "label": "Stop Circle",
+            "value": "StopCircle"
+        },
+        {
+            "label": "Store",
+            "value": "Store"
+        },
+        {
+            "label": "Sun",
+            "value": "Sun"
+        },
+        {
+            "label": "Tablet",
+            "value": "Tablet"
+        },
+        {
+            "label": "Tag",
+            "value": "Tag"
+        },
+        {
+            "label": "Tags",
+            "value": "Tags"
+        },
+        {
+            "label": "Target",
+            "value": "Target"
+        },
+        {
+            "label": "Terminal",
+            "value": "Terminal"
+        },
+        {
+            "label": "Thermometer",
+            "value": "Thermometer"
+        },
+        {
+            "label": "Timer",
+            "value": "Timer"
+        },
+        {
+            "label": "Train",
+            "value": "Train"
+        },
+        {
+            "label": "Trash",
+            "value": "Trash"
+        },
+        {
+            "label": "Trending Down",
+            "value": "TrendingDown"
+        },
+        {
+            "label": "Trending Up",
+            "value": "TrendingUp"
+        },
+        {
+            "label": "Triangle",
+            "value": "Triangle"
+        },
+        {
+            "label": "Trophy",
+            "value": "Trophy"
+        },
+        {
+            "label": "Truck",
+            "value": "Truck"
+        },
+        {
+            "label": "Type",
+            "value": "Type"
+        },
+        {
+            "label": "Umbrella",
+            "value": "Umbrella"
+        },
+        {
+            "label": "Underline",
+            "value": "Underline"
+        },
+        {
+            "label": "Unlink",
+            "value": "Unlink"
+        },
+        {
+            "label": "Unlock",
+            "value": "Unlock"
+        },
+        {
+            "label": "Upload",
+            "value": "Upload"
+        },
+        {
+            "label": "User",
+            "value": "User"
+        },
+        {
+            "label": "User2",
+            "value": "User2"
+        },
+        {
+            "label": "User Minus",
+            "value": "UserMinus"
+        },
+        {
+            "label": "User Plus",
+            "value": "UserPlus"
+        },
+        {
+            "label": "Users",
+            "value": "Users"
+        },
+        {
+            "label": "Video",
+            "value": "Video"
+        },
+        {
+            "label": "Volume2",
+            "value": "Volume2"
+        },
+        {
+            "label": "Volume X",
+            "value": "VolumeX"
+        },
+        {
+            "label": "Wand2",
+            "value": "Wand2"
+        },
+        {
+            "label": "Webhook",
+            "value": "Webhook"
+        },
+        {
+            "label": "Wifi",
+            "value": "Wifi"
+        },
+        {
+            "label": "Wifi Off",
+            "value": "WifiOff"
+        },
+        {
+            "label": "Wrench",
+            "value": "Wrench"
+        },
+        {
+            "label": "X",
+            "value": "X"
+        },
+        {
+            "label": "X Circle",
+            "value": "XCircle"
+        },
+        {
+            "label": "Zap",
+            "value": "Zap"
+        }
+    ],
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<"Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "BookOpen" | "Bookmark" | "BookmarkPlus" | "Bot" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Cog" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Puzzle" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Terminal" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined>,
+            enumValues: ['Activity', 'AlertCircle', 'AlertTriangle', 'AlignCenter', 'AlignLeft', 'AlignRight', 'Archive', 'ArrowDown', 'ArrowLeft', 'ArrowLeftRight', 'ArrowRight', 'ArrowRightLeft', 'ArrowUp', 'Asterisk', 'AtSign', 'Award', 'Banknote', 'BarChart', 'Battery', 'BatteryLow', 'Bell', 'BellOff', 'Bike', 'Bitcoin', 'Bold', 'BookOpen', 'Bookmark', 'BookmarkPlus', 'Bot', 'Brain', 'Brush', 'Building', 'Building2', 'Calculator', 'Calendar', 'CalendarDays', 'Camera', 'Car', 'Check', 'CheckCircle', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp', 'Circle', 'Clock', 'Cloud', 'CloudRain', 'CloudSnow', 'Code', 'Cog', 'Compass', 'Copy', 'Cpu', 'CreditCard', 'Database', 'Diamond', 'Divide', 'DollarSign', 'Dot', 'Download', 'Edit', 'Equal', 'Eraser', 'Euro', 'ExternalLink', 'Eye', 'FaBrave', 'Factory', 'FcAlphabeticalSortingAz', 'FcAlphabeticalSortingZa', 'FcAreaChart', 'FcAssistant', 'FcBiotech', 'FcBrokenLink', 'FcBusiness', 'FcBusinessContact', 'FcCalendar', 'FcCommandLine', 'FcConferenceCall', 'FcDataProtection', 'FcDocument', 'FcDownload', 'FcElectronics', 'FcEngineering', 'FcFeedback', 'FcFilm', 'FcGoogle', 'FcGraduationCap', 'FcLibrary', 'FcManager', 'FcMultipleInputs', 'FcMusic', 'FcParallelTasks', 'FcSalesPerformance', 'FcShipped', 'FcSignature', 'FcSms', 'FcTodoList', 'FcWikipedia', 'File', 'FileText', 'Filter', 'Folder', 'FolderOpen', 'Fuel', 'Gift', 'GitBranch', 'Globe', 'Hash', 'Headphones', 'Heart', 'HelpCircle', 'Hexagon', 'Highlighter', 'Home', 'Image', 'Inbox', 'Indent', 'Info', 'Italic', 'Key', 'Laptop', 'Layers', 'LineChart', 'Link', 'List', 'ListOrdered', 'Lock', 'LogIn', 'LogOut', 'Mail', 'Map', 'MapPin', 'Menu', 'MessageCircle', 'MessageSquare', 'Mic', 'MicOff', 'Minus', 'Monitor', 'MonitorSpeaker', 'Moon', 'MoreHorizontal', 'MoreVertical', 'Move', 'Music', 'Music2', 'Navigation', 'Octagon', 'Outdent', 'Package', 'Paintbrush', 'Palette', 'PauseCircle', 'Pen', 'PenTool', 'Pencil', 'Percent', 'Phone', 'PhoneCall', 'PieChart', 'Plane', 'Play', 'PlayCircle', 'Plus', 'PoundSterling', 'Power', 'PowerOff', 'Puzzle', 'Quote', 'Receipt', 'RefreshCw', 'Repeat', 'Repeat1', 'RotateCcw', 'Ruler', 'Save', 'Scissors', 'Search', 'Send', 'Settings', 'Share', 'Share2', 'Shield', 'ShieldCheck', 'Ship', 'ShoppingBag', 'ShoppingCart', 'Shuffle', 'SkipBack', 'SkipForward', 'Smartphone', 'Square', 'Star', 'StopCircle', 'Store', 'Sun', 'Tablet', 'Tag', 'Tags', 'Target', 'Terminal', 'Thermometer', 'Timer', 'Train', 'Trash', 'TrendingDown', 'TrendingUp', 'Triangle', 'Trophy', 'Truck', 'Type', 'Umbrella', 'Underline', 'Unlink', 'Unlock', 'Upload', 'User', 'User2', 'UserMinus', 'UserPlus', 'Users', 'Video', 'Volume2', 'VolumeX', 'Wand2', 'Webhook', 'Wifi', 'WifiOff', 'Wrench', 'X', 'XCircle', 'Zap'] as const,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Icon" field for nodeCategory. This is an optional field. Your entry must be an string data type.',
+        },
+            color: {
+            fieldNameFormats: {
+    "frontend": "color",
+    "backend": "color",
+    "database": "color",
+    "pretty": "Color",
+    "component": "Color",
+    "kebab": "color",
+    "sqlFunctionRef": "p_color",
+    "RestAPI": "color",
+    "GraphQL": "color",
+    "custom": "color"
+} as const,
+            name: 'color',
+            displayName: 'Color',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:color',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:color',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "blue" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'SELECT' as const,
+            componentProps: {
+    "subComponent": "enumSelect",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": [
+        {
+            "label": "Bot",
+            "value": "Bot"
+        },
+        {
+            "label": "Amber",
+            "value": "amber"
+        },
+        {
+            "label": "Blue",
+            "value": "blue"
+        },
+        {
+            "label": "Cyan",
+            "value": "cyan"
+        },
+        {
+            "label": "Emerald",
+            "value": "emerald"
+        },
+        {
+            "label": "Fuchsia",
+            "value": "fuchsia"
+        },
+        {
+            "label": "Gray",
+            "value": "gray"
+        },
+        {
+            "label": "Green",
+            "value": "green"
+        },
+        {
+            "label": "Indigo",
+            "value": "indigo"
+        },
+        {
+            "label": "Lime",
+            "value": "lime"
+        },
+        {
+            "label": "Neutral",
+            "value": "neutral"
+        },
+        {
+            "label": "Orange",
+            "value": "orange"
+        },
+        {
+            "label": "Pink",
+            "value": "pink"
+        },
+        {
+            "label": "Purple",
+            "value": "purple"
+        },
+        {
+            "label": "Red",
+            "value": "red"
+        },
+        {
+            "label": "Rose",
+            "value": "rose"
+        },
+        {
+            "label": "Sky",
+            "value": "sky"
+        },
+        {
+            "label": "Slate",
+            "value": "slate"
+        },
+        {
+            "label": "Stone",
+            "value": "stone"
+        },
+        {
+            "label": "Teal",
+            "value": "teal"
+        },
+        {
+            "label": "Violet",
+            "value": "violet"
+        },
+        {
+            "label": "Yellow",
+            "value": "yellow"
+        },
+        {
+            "label": "Zinc",
+            "value": "zinc"
+        }
+    ],
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<"Bot" | "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined>,
+            enumValues: ['Bot', 'amber', 'blue', 'cyan', 'emerald', 'fuchsia', 'gray', 'green', 'indigo', 'lime', 'neutral', 'orange', 'pink', 'purple', 'red', 'rose', 'sky', 'slate', 'stone', 'teal', 'violet', 'yellow', 'zinc'] as const,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Color" field for nodeCategory. This is an optional field. Your entry must be an string data type.',
+        },
+            description: {
+            fieldNameFormats: {
+    "frontend": "description",
+    "backend": "description",
+    "database": "description",
+    "pretty": "Description",
+    "component": "Description",
+    "kebab": "description",
+    "sqlFunctionRef": "p_description",
+    "RestAPI": "description",
+    "GraphQL": "description",
+    "custom": "description"
+} as const,
+            name: 'description',
+            displayName: 'Description',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:node_category:description',
+            uniqueFieldId: 'supabase_automation_matrix:nodeCategory:description',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'TEXTAREA' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'nodeCategory',
+            databaseTable: 'node_category',
+            foreignKeyReference: null,
+            description: '"Description" field for nodeCategory. This is an optional field. Your entry must be an string data type.',
+        },
+            registeredNodeInverse: {
+    fieldNameFormats: {
+    "frontend": "registeredNodeInverse",
+    "backend": "registered_node_Inverse",
+    "database": "ifk_registered_node",
+    "pretty": "Registered Node Inverse",
+    "component": "RegisteredNodeInverse",
+    "kebab": "registered-nodeInverse",
+    "sqlFunctionRef": "p_ifk_registered_node",
+    "RestAPI": "registeredNodeInverse",
+    "GraphQL": "registeredNodeInverse",
+    "custom": "registeredNodeInverse"
+} as const,
+    uniqueTableId: 'supabase_automation_matrix:registered_node',
+    uniqueEntityId: 'supabase_automation_matrix:registeredNode',
+    name: 'registeredNodeInverse',
+    displayName: 'Registered Node Inverse',
+    dataType: 'object' as const,
+    isRequired: false,
+    maxLength: null,
+    isArray: true,
+    defaultValue: [],
+    isPrimaryKey: false,
+    defaultGeneratorFunction: null,
+    validationFunctions: ['isValidDatabaseEntry'],
+    exclusionRules: ['notCoreField'],
+    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+    structure: 'inverseForeignKey' as const,
+    isNative: false,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredNode'>[]>,
+    entityName: 'registeredNode',
+    databaseTable: 'registered_node',
+},
+        },
+        entityNameFormats: {
+    "frontend": "nodeCategory",
+    "backend": "node_category",
+    "database": "node_category",
+    "pretty": "Node Category",
+    "component": "NodeCategory",
+    "kebab": "node-category",
+    "sqlFunctionRef": "p_node_category",
+    "RestAPI": "nodeCategory",
+    "GraphQL": "nodeCategory",
+    "custom": "nodeCategory"
+},
+        relationships: [
+            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_node', relatedColumn: 'category', junctionTable: null }
+        ],
+    } as const;
+
 export const organizationInvitations = {
         schemaType: 'table' as const,
         entityName: 'organizationInvitations',
@@ -41055,6 +42695,70 @@ export const recipe = {
             foreignKeyReference: {"table": "users", "column": "id", "entity": "users", "field": "id"},
             description: '"User Id" field for recipe. This is an optional field. Your entry must be an uuid data type. This field is a reference to a users.',
         },
+            metadata: {
+            fieldNameFormats: {
+    "frontend": "metadata",
+    "backend": "metadata",
+    "database": "metadata",
+    "pretty": "Metadata",
+    "component": "Metadata",
+    "kebab": "metadata",
+    "sqlFunctionRef": "p_metadata",
+    "RestAPI": "metadata",
+    "GraphQL": "metadata",
+    "custom": "metadata"
+} as const,
+            name: 'metadata',
+            displayName: 'Metadata',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:recipe:metadata',
+            uniqueFieldId: 'supabase_automation_matrix:recipe:metadata',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'recipe',
+            databaseTable: 'recipe',
+            foreignKeyReference: null,
+            description: '"Metadata" field for recipe. This is an optional field. Your entry must be an object data type.',
+        },
             compiledRecipeInverse: {
     fieldNameFormats: {
     "frontend": "compiledRecipeInverse",
@@ -45414,12 +47118,20 @@ export const registeredFunction = {
             "value": "Bold"
         },
         {
+            "label": "Book Open",
+            "value": "BookOpen"
+        },
+        {
             "label": "Bookmark",
             "value": "Bookmark"
         },
         {
             "label": "Bookmark Plus",
             "value": "BookmarkPlus"
+        },
+        {
+            "label": "Bot",
+            "value": "Bot"
         },
         {
             "label": "Brain",
@@ -45504,6 +47216,10 @@ export const registeredFunction = {
         {
             "label": "Code",
             "value": "Code"
+        },
+        {
+            "label": "Cog",
+            "value": "Cog"
         },
         {
             "label": "Compass",
@@ -45978,6 +47694,10 @@ export const registeredFunction = {
             "value": "PowerOff"
         },
         {
+            "label": "Puzzle",
+            "value": "Puzzle"
+        },
+        {
             "label": "Quote",
             "value": "Quote"
         },
@@ -46104,6 +47824,10 @@ export const registeredFunction = {
         {
             "label": "Target",
             "value": "Target"
+        },
+        {
+            "label": "Terminal",
+            "value": "Terminal"
         },
         {
             "label": "Thermometer",
@@ -46234,8 +47958,8 @@ export const registeredFunction = {
 },
             structure: 'single' as const,
             isNative: true,
-            typeReference: {} as TypeBrand<"Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "Bookmark" | "BookmarkPlus" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined>,
-            enumValues: ['Activity', 'AlertCircle', 'AlertTriangle', 'AlignCenter', 'AlignLeft', 'AlignRight', 'Archive', 'ArrowDown', 'ArrowLeft', 'ArrowLeftRight', 'ArrowRight', 'ArrowRightLeft', 'ArrowUp', 'Asterisk', 'AtSign', 'Award', 'Banknote', 'BarChart', 'Battery', 'BatteryLow', 'Bell', 'BellOff', 'Bike', 'Bitcoin', 'Bold', 'Bookmark', 'BookmarkPlus', 'Brain', 'Brush', 'Building', 'Building2', 'Calculator', 'Calendar', 'CalendarDays', 'Camera', 'Car', 'Check', 'CheckCircle', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp', 'Circle', 'Clock', 'Cloud', 'CloudRain', 'CloudSnow', 'Code', 'Compass', 'Copy', 'Cpu', 'CreditCard', 'Database', 'Diamond', 'Divide', 'DollarSign', 'Dot', 'Download', 'Edit', 'Equal', 'Eraser', 'Euro', 'ExternalLink', 'Eye', 'FaBrave', 'Factory', 'FcAlphabeticalSortingAz', 'FcAlphabeticalSortingZa', 'FcAreaChart', 'FcAssistant', 'FcBiotech', 'FcBrokenLink', 'FcBusiness', 'FcBusinessContact', 'FcCalendar', 'FcCommandLine', 'FcConferenceCall', 'FcDataProtection', 'FcDocument', 'FcDownload', 'FcElectronics', 'FcEngineering', 'FcFeedback', 'FcFilm', 'FcGoogle', 'FcGraduationCap', 'FcLibrary', 'FcManager', 'FcMultipleInputs', 'FcMusic', 'FcParallelTasks', 'FcSalesPerformance', 'FcShipped', 'FcSignature', 'FcSms', 'FcTodoList', 'FcWikipedia', 'File', 'FileText', 'Filter', 'Folder', 'FolderOpen', 'Fuel', 'Gift', 'GitBranch', 'Globe', 'Hash', 'Headphones', 'Heart', 'HelpCircle', 'Hexagon', 'Highlighter', 'Home', 'Image', 'Inbox', 'Indent', 'Info', 'Italic', 'Key', 'Laptop', 'Layers', 'LineChart', 'Link', 'List', 'ListOrdered', 'Lock', 'LogIn', 'LogOut', 'Mail', 'Map', 'MapPin', 'Menu', 'MessageCircle', 'MessageSquare', 'Mic', 'MicOff', 'Minus', 'Monitor', 'MonitorSpeaker', 'Moon', 'MoreHorizontal', 'MoreVertical', 'Move', 'Music', 'Music2', 'Navigation', 'Octagon', 'Outdent', 'Package', 'Paintbrush', 'Palette', 'PauseCircle', 'Pen', 'PenTool', 'Pencil', 'Percent', 'Phone', 'PhoneCall', 'PieChart', 'Plane', 'Play', 'PlayCircle', 'Plus', 'PoundSterling', 'Power', 'PowerOff', 'Quote', 'Receipt', 'RefreshCw', 'Repeat', 'Repeat1', 'RotateCcw', 'Ruler', 'Save', 'Scissors', 'Search', 'Send', 'Settings', 'Share', 'Share2', 'Shield', 'ShieldCheck', 'Ship', 'ShoppingBag', 'ShoppingCart', 'Shuffle', 'SkipBack', 'SkipForward', 'Smartphone', 'Square', 'Star', 'StopCircle', 'Store', 'Sun', 'Tablet', 'Tag', 'Tags', 'Target', 'Thermometer', 'Timer', 'Train', 'Trash', 'TrendingDown', 'TrendingUp', 'Triangle', 'Trophy', 'Truck', 'Type', 'Umbrella', 'Underline', 'Unlink', 'Unlock', 'Upload', 'User', 'User2', 'UserMinus', 'UserPlus', 'Users', 'Video', 'Volume2', 'VolumeX', 'Wand2', 'Webhook', 'Wifi', 'WifiOff', 'Wrench', 'X', 'XCircle', 'Zap'] as const,
+            typeReference: {} as TypeBrand<"Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "BookOpen" | "Bookmark" | "BookmarkPlus" | "Bot" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Cog" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Puzzle" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Terminal" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined>,
+            enumValues: ['Activity', 'AlertCircle', 'AlertTriangle', 'AlignCenter', 'AlignLeft', 'AlignRight', 'Archive', 'ArrowDown', 'ArrowLeft', 'ArrowLeftRight', 'ArrowRight', 'ArrowRightLeft', 'ArrowUp', 'Asterisk', 'AtSign', 'Award', 'Banknote', 'BarChart', 'Battery', 'BatteryLow', 'Bell', 'BellOff', 'Bike', 'Bitcoin', 'Bold', 'BookOpen', 'Bookmark', 'BookmarkPlus', 'Bot', 'Brain', 'Brush', 'Building', 'Building2', 'Calculator', 'Calendar', 'CalendarDays', 'Camera', 'Car', 'Check', 'CheckCircle', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp', 'Circle', 'Clock', 'Cloud', 'CloudRain', 'CloudSnow', 'Code', 'Cog', 'Compass', 'Copy', 'Cpu', 'CreditCard', 'Database', 'Diamond', 'Divide', 'DollarSign', 'Dot', 'Download', 'Edit', 'Equal', 'Eraser', 'Euro', 'ExternalLink', 'Eye', 'FaBrave', 'Factory', 'FcAlphabeticalSortingAz', 'FcAlphabeticalSortingZa', 'FcAreaChart', 'FcAssistant', 'FcBiotech', 'FcBrokenLink', 'FcBusiness', 'FcBusinessContact', 'FcCalendar', 'FcCommandLine', 'FcConferenceCall', 'FcDataProtection', 'FcDocument', 'FcDownload', 'FcElectronics', 'FcEngineering', 'FcFeedback', 'FcFilm', 'FcGoogle', 'FcGraduationCap', 'FcLibrary', 'FcManager', 'FcMultipleInputs', 'FcMusic', 'FcParallelTasks', 'FcSalesPerformance', 'FcShipped', 'FcSignature', 'FcSms', 'FcTodoList', 'FcWikipedia', 'File', 'FileText', 'Filter', 'Folder', 'FolderOpen', 'Fuel', 'Gift', 'GitBranch', 'Globe', 'Hash', 'Headphones', 'Heart', 'HelpCircle', 'Hexagon', 'Highlighter', 'Home', 'Image', 'Inbox', 'Indent', 'Info', 'Italic', 'Key', 'Laptop', 'Layers', 'LineChart', 'Link', 'List', 'ListOrdered', 'Lock', 'LogIn', 'LogOut', 'Mail', 'Map', 'MapPin', 'Menu', 'MessageCircle', 'MessageSquare', 'Mic', 'MicOff', 'Minus', 'Monitor', 'MonitorSpeaker', 'Moon', 'MoreHorizontal', 'MoreVertical', 'Move', 'Music', 'Music2', 'Navigation', 'Octagon', 'Outdent', 'Package', 'Paintbrush', 'Palette', 'PauseCircle', 'Pen', 'PenTool', 'Pencil', 'Percent', 'Phone', 'PhoneCall', 'PieChart', 'Plane', 'Play', 'PlayCircle', 'Plus', 'PoundSterling', 'Power', 'PowerOff', 'Puzzle', 'Quote', 'Receipt', 'RefreshCw', 'Repeat', 'Repeat1', 'RotateCcw', 'Ruler', 'Save', 'Scissors', 'Search', 'Send', 'Settings', 'Share', 'Share2', 'Shield', 'ShieldCheck', 'Ship', 'ShoppingBag', 'ShoppingCart', 'Shuffle', 'SkipBack', 'SkipForward', 'Smartphone', 'Square', 'Star', 'StopCircle', 'Store', 'Sun', 'Tablet', 'Tag', 'Tags', 'Target', 'Terminal', 'Thermometer', 'Timer', 'Train', 'Trash', 'TrendingDown', 'TrendingUp', 'Triangle', 'Trophy', 'Truck', 'Type', 'Umbrella', 'Underline', 'Unlink', 'Unlock', 'Upload', 'User', 'User2', 'UserMinus', 'UserPlus', 'Users', 'Video', 'Volume2', 'VolumeX', 'Wand2', 'Webhook', 'Wifi', 'WifiOff', 'Wrench', 'X', 'XCircle', 'Zap'] as const,
             entityName: 'registeredFunction',
             databaseTable: 'registered_function',
             foreignKeyReference: null,
@@ -46438,6 +48162,39 @@ export const registeredFunction = {
     entityName: 'workflowNode',
     databaseTable: 'workflow_node',
 },
+            registeredNodeInverse: {
+    fieldNameFormats: {
+    "frontend": "registeredNodeInverse",
+    "backend": "registered_node_Inverse",
+    "database": "ifk_registered_node",
+    "pretty": "Registered Node Inverse",
+    "component": "RegisteredNodeInverse",
+    "kebab": "registered-nodeInverse",
+    "sqlFunctionRef": "p_ifk_registered_node",
+    "RestAPI": "registeredNodeInverse",
+    "GraphQL": "registeredNodeInverse",
+    "custom": "registeredNodeInverse"
+} as const,
+    uniqueTableId: 'supabase_automation_matrix:registered_node',
+    uniqueEntityId: 'supabase_automation_matrix:registeredNode',
+    name: 'registeredNodeInverse',
+    displayName: 'Registered Node Inverse',
+    dataType: 'object' as const,
+    isRequired: false,
+    maxLength: null,
+    isArray: true,
+    defaultValue: [],
+    isPrimaryKey: false,
+    defaultGeneratorFunction: null,
+    validationFunctions: ['isValidDatabaseEntry'],
+    exclusionRules: ['notCoreField'],
+    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+    structure: 'inverseForeignKey' as const,
+    isNative: false,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredNode'>[]>,
+    entityName: 'registeredNode',
+    databaseTable: 'registered_node',
+},
             workflowNodeDataInverse: {
     fieldNameFormats: {
     "frontend": "workflowNodeDataInverse",
@@ -46489,7 +48246,2419 @@ export const registeredFunction = {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'system_function', relatedColumn: 'rf_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'arg', relatedColumn: 'registered_function', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_node', relatedColumn: 'function_id', junctionTable: null },
+        { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_node', relatedColumn: 'registered_function_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_node_data', relatedColumn: 'function_id', junctionTable: null }
+        ],
+    } as const;
+
+export const registeredNode = {
+        schemaType: 'table' as const,
+        entityName: 'registeredNode',
+        displayName: 'Registered Node',
+        uniqueTableId: 'supabase_automation_matrix:public:registered_node',
+        uniqueEntityId: 'supabase_automation_matrix:registeredNode',
+        primaryKey: 'id',
+        primaryKeyMetadata: {
+    "type": "single",
+    "fields": [
+        "id"
+    ],
+    "database_fields": [
+        "id"
+    ],
+    "where_template": {
+        "id": null
+    }
+},
+        displayFieldMetadata: { fieldName: 'name', databaseFieldName: 'name' },
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "minDate": "default",
+    "maxDate": "default",
+    "numberType": "default"
+},
+        entityFields: {
+            id: {
+            fieldNameFormats: {
+    "frontend": "id",
+    "backend": "id",
+    "database": "id",
+    "pretty": "Id",
+    "component": "Id",
+    "kebab": "id",
+    "sqlFunctionRef": "p_id",
+    "RestAPI": "id",
+    "GraphQL": "id",
+    "custom": "id"
+} as const,
+            name: 'id',
+            displayName: 'Id',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:id',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:id',
+
+            dataType: 'uuid' as const,
+            isRequired: true,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: true,
+            isDisplayField: false,
+            defaultGeneratorFunction: "getUUID()",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'UUID_FIELD' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": true
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Id" field for registeredNode. This is a required field. Your entry must be an uuid data type.',
+        },
+            createdAt: {
+            fieldNameFormats: {
+    "frontend": "createdAt",
+    "backend": "created_at",
+    "database": "created_at",
+    "pretty": "Created At",
+    "component": "CreatedAt",
+    "kebab": "created-at",
+    "sqlFunctionRef": "p_created_at",
+    "RestAPI": "createdAt",
+    "GraphQL": "createdAt",
+    "custom": "createdAt"
+} as const,
+            name: 'createdAt',
+            displayName: 'Created At',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:created_at',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:createdAt',
+
+            dataType: 'date' as const,
+            isRequired: true,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "getCurrentTime()",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'DATE_PICKER' as const,
+            componentProps: {
+    "subComponent": "timestamptz",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": true
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Date>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Created At" field for registeredNode. This is a required field. Your entry must be an date data type.',
+        },
+            updatedAt: {
+            fieldNameFormats: {
+    "frontend": "updatedAt",
+    "backend": "updated_at",
+    "database": "updated_at",
+    "pretty": "Updated At",
+    "component": "UpdatedAt",
+    "kebab": "updated-at",
+    "sqlFunctionRef": "p_updated_at",
+    "RestAPI": "updatedAt",
+    "GraphQL": "updatedAt",
+    "custom": "updatedAt"
+} as const,
+            name: 'updatedAt',
+            displayName: 'Updated At',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:updated_at',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:updatedAt',
+
+            dataType: 'date' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "getCurrentTime()",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'DATE_PICKER' as const,
+            componentProps: {
+    "subComponent": "timestamptz",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Date>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Updated At" field for registeredNode. This is an optional field. Your entry must be an date data type.',
+        },
+            registeredFunctionId: {
+            fieldNameFormats: {
+    "frontend": "registeredFunctionId",
+    "backend": "registered_function_id",
+    "database": "registered_function_id",
+    "pretty": "Registered Function Id",
+    "component": "RegisteredFunctionId",
+    "kebab": "registered-function-id",
+    "sqlFunctionRef": "p_registered_function_id",
+    "RestAPI": "registeredFunctionId",
+    "GraphQL": "registeredFunctionId",
+    "custom": "registeredFunctionId"
+} as const,
+            name: 'registeredFunctionId',
+            displayName: 'Registered Function Id',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:registered_function_id',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:registeredFunctionId',
+
+            dataType: 'uuid' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'FK_SELECT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: {"table": "registered_function", "column": "id", "entity": "registeredFunction", "field": "id"},
+            description: '"Registered Function Id" field for registeredNode. This is an optional field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.',
+        },
+            name: {
+            fieldNameFormats: {
+    "frontend": "name",
+    "backend": "name",
+    "database": "name",
+    "pretty": "Name",
+    "component": "Name",
+    "kebab": "name",
+    "sqlFunctionRef": "p_name",
+    "RestAPI": "name",
+    "GraphQL": "name",
+    "custom": "name"
+} as const,
+            name: 'name',
+            displayName: 'Name',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:name',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:name',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: true,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'INPUT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Name" field for registeredNode. This is an optional field. Your entry must be an string data type.',
+        },
+            styles: {
+            fieldNameFormats: {
+    "frontend": "styles",
+    "backend": "styles",
+    "database": "styles",
+    "pretty": "Styles",
+    "component": "Styles",
+    "kebab": "styles",
+    "sqlFunctionRef": "p_styles",
+    "RestAPI": "styles",
+    "GraphQL": "styles",
+    "custom": "styles"
+} as const,
+            name: 'styles',
+            displayName: 'Styles',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:styles',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:styles',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Styles" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            nodeType: {
+            fieldNameFormats: {
+    "frontend": "nodeType",
+    "backend": "node_type",
+    "database": "node_type",
+    "pretty": "Node Type",
+    "component": "NodeType",
+    "kebab": "node-type",
+    "sqlFunctionRef": "p_node_type",
+    "RestAPI": "nodeType",
+    "GraphQL": "nodeType",
+    "custom": "nodeType"
+} as const,
+            name: 'nodeType',
+            displayName: 'Node Type',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:node_type',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:nodeType',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'INPUT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Node Type" field for registeredNode. This is an optional field. Your entry must be an string data type.',
+        },
+            description: {
+            fieldNameFormats: {
+    "frontend": "description",
+    "backend": "description",
+    "database": "description",
+    "pretty": "Description",
+    "component": "Description",
+    "kebab": "description",
+    "sqlFunctionRef": "p_description",
+    "RestAPI": "description",
+    "GraphQL": "description",
+    "custom": "description"
+} as const,
+            name: 'description',
+            displayName: 'Description',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:description',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:description',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'TEXTAREA' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Description" field for registeredNode. This is an optional field. Your entry must be an string data type.',
+        },
+            isActive: {
+            fieldNameFormats: {
+    "frontend": "isActive",
+    "backend": "is_active",
+    "database": "is_active",
+    "pretty": "Is Active",
+    "component": "IsActive",
+    "kebab": "is-active",
+    "sqlFunctionRef": "p_is_active",
+    "RestAPI": "isActive",
+    "GraphQL": "isActive",
+    "custom": "isActive"
+} as const,
+            name: 'isActive',
+            displayName: 'Is Active',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:is_active',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:isActive',
+
+            dataType: 'boolean' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'SWITCH' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<boolean>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Is Active" field for registeredNode. This is an optional field. Your entry must be an boolean data type.',
+        },
+            arguments: {
+            fieldNameFormats: {
+    "frontend": "arguments",
+    "backend": "arguments",
+    "database": "arguments",
+    "pretty": "Arguments",
+    "component": "Arguments",
+    "kebab": "arguments",
+    "sqlFunctionRef": "p_arguments",
+    "RestAPI": "arguments",
+    "GraphQL": "arguments",
+    "custom": "arguments"
+} as const,
+            name: 'arguments',
+            displayName: 'Arguments',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:arguments',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:arguments',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Arguments" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            inputs: {
+            fieldNameFormats: {
+    "frontend": "inputs",
+    "backend": "inputs",
+    "database": "inputs",
+    "pretty": "Inputs",
+    "component": "Inputs",
+    "kebab": "inputs",
+    "sqlFunctionRef": "p_inputs",
+    "RestAPI": "inputs",
+    "GraphQL": "inputs",
+    "custom": "inputs"
+} as const,
+            name: 'inputs',
+            displayName: 'Inputs',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:inputs',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:inputs',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Inputs" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            outputs: {
+            fieldNameFormats: {
+    "frontend": "outputs",
+    "backend": "outputs",
+    "database": "outputs",
+    "pretty": "Outputs",
+    "component": "Outputs",
+    "kebab": "outputs",
+    "sqlFunctionRef": "p_outputs",
+    "RestAPI": "outputs",
+    "GraphQL": "outputs",
+    "custom": "outputs"
+} as const,
+            name: 'outputs',
+            displayName: 'Outputs',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:outputs',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:outputs',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Outputs" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            customEditor: {
+            fieldNameFormats: {
+    "frontend": "customEditor",
+    "backend": "custom_editor",
+    "database": "custom_editor",
+    "pretty": "Custom Editor",
+    "component": "CustomEditor",
+    "kebab": "custom-editor",
+    "sqlFunctionRef": "p_custom_editor",
+    "RestAPI": "customEditor",
+    "GraphQL": "customEditor",
+    "custom": "customEditor"
+} as const,
+            name: 'customEditor',
+            displayName: 'Custom Editor',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:custom_editor',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:customEditor',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Custom Editor" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            metadata: {
+            fieldNameFormats: {
+    "frontend": "metadata",
+    "backend": "metadata",
+    "database": "metadata",
+    "pretty": "Metadata",
+    "component": "Metadata",
+    "kebab": "metadata",
+    "sqlFunctionRef": "p_metadata",
+    "RestAPI": "metadata",
+    "GraphQL": "metadata",
+    "custom": "metadata"
+} as const,
+            name: 'metadata',
+            displayName: 'Metadata',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:metadata',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:metadata',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Metadata" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            dependencies: {
+            fieldNameFormats: {
+    "frontend": "dependencies",
+    "backend": "dependencies",
+    "database": "dependencies",
+    "pretty": "Dependencies",
+    "component": "Dependencies",
+    "kebab": "dependencies",
+    "sqlFunctionRef": "p_dependencies",
+    "RestAPI": "dependencies",
+    "GraphQL": "dependencies",
+    "custom": "dependencies"
+} as const,
+            name: 'dependencies',
+            displayName: 'Dependencies',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:dependencies',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:dependencies',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Dependencies" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            depedencyFunction: {
+            fieldNameFormats: {
+    "frontend": "depedencyFunction",
+    "backend": "depedency_function",
+    "database": "depedency_function",
+    "pretty": "Depedency Function",
+    "component": "DepedencyFunction",
+    "kebab": "depedency-function",
+    "sqlFunctionRef": "p_depedency_function",
+    "RestAPI": "depedencyFunction",
+    "GraphQL": "depedencyFunction",
+    "custom": "depedencyFunction"
+} as const,
+            name: 'depedencyFunction',
+            displayName: 'Depedency Function',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:depedency_function',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:depedencyFunction',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'INPUT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Depedency Function" field for registeredNode. This is an optional field. Your entry must be an string data type.',
+        },
+            dynamicBrokerArgs: {
+            fieldNameFormats: {
+    "frontend": "dynamicBrokerArgs",
+    "backend": "dynamic_broker_args",
+    "database": "dynamic_broker_args",
+    "pretty": "Dynamic Broker Args",
+    "component": "DynamicBrokerArgs",
+    "kebab": "dynamic-broker-args",
+    "sqlFunctionRef": "p_dynamic_broker_args",
+    "RestAPI": "dynamicBrokerArgs",
+    "GraphQL": "dynamicBrokerArgs",
+    "custom": "dynamicBrokerArgs"
+} as const,
+            name: 'dynamicBrokerArgs',
+            displayName: 'Dynamic Broker Args',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:dynamic_broker_args',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:dynamicBrokerArgs',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Dynamic Broker Args" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            tags: {
+            fieldNameFormats: {
+    "frontend": "tags",
+    "backend": "tags",
+    "database": "tags",
+    "pretty": "Tags",
+    "component": "Tags",
+    "kebab": "tags",
+    "sqlFunctionRef": "p_tags",
+    "RestAPI": "tags",
+    "GraphQL": "tags",
+    "custom": "tags"
+} as const,
+            name: 'tags',
+            displayName: 'Tags',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:tags',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:tags',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Tags" field for registeredNode. This is an optional field. Your entry must be an object data type.',
+        },
+            functionDescription: {
+            fieldNameFormats: {
+    "frontend": "functionDescription",
+    "backend": "function_description",
+    "database": "function_description",
+    "pretty": "Function Description",
+    "component": "FunctionDescription",
+    "kebab": "function-description",
+    "sqlFunctionRef": "p_function_description",
+    "RestAPI": "functionDescription",
+    "GraphQL": "functionDescription",
+    "custom": "functionDescription"
+} as const,
+            name: 'functionDescription',
+            displayName: 'Function Description',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:function_description',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:functionDescription',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'TEXTAREA' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Function Description" field for registeredNode. This is an optional field. Your entry must be an string data type.',
+        },
+            icon: {
+            fieldNameFormats: {
+    "frontend": "icon",
+    "backend": "icon",
+    "database": "icon",
+    "pretty": "Icon",
+    "component": "Icon",
+    "kebab": "icon",
+    "sqlFunctionRef": "p_icon",
+    "RestAPI": "icon",
+    "GraphQL": "icon",
+    "custom": "icon"
+} as const,
+            name: 'icon',
+            displayName: 'Icon',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:icon',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:icon',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'SELECT' as const,
+            componentProps: {
+    "subComponent": "enumSelect",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": [
+        {
+            "label": "Activity",
+            "value": "Activity"
+        },
+        {
+            "label": "Alert Circle",
+            "value": "AlertCircle"
+        },
+        {
+            "label": "Alert Triangle",
+            "value": "AlertTriangle"
+        },
+        {
+            "label": "Align Center",
+            "value": "AlignCenter"
+        },
+        {
+            "label": "Align Left",
+            "value": "AlignLeft"
+        },
+        {
+            "label": "Align Right",
+            "value": "AlignRight"
+        },
+        {
+            "label": "Archive",
+            "value": "Archive"
+        },
+        {
+            "label": "Arrow Down",
+            "value": "ArrowDown"
+        },
+        {
+            "label": "Arrow Left",
+            "value": "ArrowLeft"
+        },
+        {
+            "label": "Arrow Left Right",
+            "value": "ArrowLeftRight"
+        },
+        {
+            "label": "Arrow Right",
+            "value": "ArrowRight"
+        },
+        {
+            "label": "Arrow Right Left",
+            "value": "ArrowRightLeft"
+        },
+        {
+            "label": "Arrow Up",
+            "value": "ArrowUp"
+        },
+        {
+            "label": "Asterisk",
+            "value": "Asterisk"
+        },
+        {
+            "label": "At Sign",
+            "value": "AtSign"
+        },
+        {
+            "label": "Award",
+            "value": "Award"
+        },
+        {
+            "label": "Banknote",
+            "value": "Banknote"
+        },
+        {
+            "label": "Bar Chart",
+            "value": "BarChart"
+        },
+        {
+            "label": "Battery",
+            "value": "Battery"
+        },
+        {
+            "label": "Battery Low",
+            "value": "BatteryLow"
+        },
+        {
+            "label": "Bell",
+            "value": "Bell"
+        },
+        {
+            "label": "Bell Off",
+            "value": "BellOff"
+        },
+        {
+            "label": "Bike",
+            "value": "Bike"
+        },
+        {
+            "label": "Bitcoin",
+            "value": "Bitcoin"
+        },
+        {
+            "label": "Bold",
+            "value": "Bold"
+        },
+        {
+            "label": "Book Open",
+            "value": "BookOpen"
+        },
+        {
+            "label": "Bookmark",
+            "value": "Bookmark"
+        },
+        {
+            "label": "Bookmark Plus",
+            "value": "BookmarkPlus"
+        },
+        {
+            "label": "Bot",
+            "value": "Bot"
+        },
+        {
+            "label": "Brain",
+            "value": "Brain"
+        },
+        {
+            "label": "Brush",
+            "value": "Brush"
+        },
+        {
+            "label": "Building",
+            "value": "Building"
+        },
+        {
+            "label": "Building2",
+            "value": "Building2"
+        },
+        {
+            "label": "Calculator",
+            "value": "Calculator"
+        },
+        {
+            "label": "Calendar",
+            "value": "Calendar"
+        },
+        {
+            "label": "Calendar Days",
+            "value": "CalendarDays"
+        },
+        {
+            "label": "Camera",
+            "value": "Camera"
+        },
+        {
+            "label": "Car",
+            "value": "Car"
+        },
+        {
+            "label": "Check",
+            "value": "Check"
+        },
+        {
+            "label": "Check Circle",
+            "value": "CheckCircle"
+        },
+        {
+            "label": "Chevron Down",
+            "value": "ChevronDown"
+        },
+        {
+            "label": "Chevron Left",
+            "value": "ChevronLeft"
+        },
+        {
+            "label": "Chevron Right",
+            "value": "ChevronRight"
+        },
+        {
+            "label": "Chevron Up",
+            "value": "ChevronUp"
+        },
+        {
+            "label": "Circle",
+            "value": "Circle"
+        },
+        {
+            "label": "Clock",
+            "value": "Clock"
+        },
+        {
+            "label": "Cloud",
+            "value": "Cloud"
+        },
+        {
+            "label": "Cloud Rain",
+            "value": "CloudRain"
+        },
+        {
+            "label": "Cloud Snow",
+            "value": "CloudSnow"
+        },
+        {
+            "label": "Code",
+            "value": "Code"
+        },
+        {
+            "label": "Cog",
+            "value": "Cog"
+        },
+        {
+            "label": "Compass",
+            "value": "Compass"
+        },
+        {
+            "label": "Copy",
+            "value": "Copy"
+        },
+        {
+            "label": "Cpu",
+            "value": "Cpu"
+        },
+        {
+            "label": "Credit Card",
+            "value": "CreditCard"
+        },
+        {
+            "label": "Database",
+            "value": "Database"
+        },
+        {
+            "label": "Diamond",
+            "value": "Diamond"
+        },
+        {
+            "label": "Divide",
+            "value": "Divide"
+        },
+        {
+            "label": "Dollar Sign",
+            "value": "DollarSign"
+        },
+        {
+            "label": "Dot",
+            "value": "Dot"
+        },
+        {
+            "label": "Download",
+            "value": "Download"
+        },
+        {
+            "label": "Edit",
+            "value": "Edit"
+        },
+        {
+            "label": "Equal",
+            "value": "Equal"
+        },
+        {
+            "label": "Eraser",
+            "value": "Eraser"
+        },
+        {
+            "label": "Euro",
+            "value": "Euro"
+        },
+        {
+            "label": "External Link",
+            "value": "ExternalLink"
+        },
+        {
+            "label": "Eye",
+            "value": "Eye"
+        },
+        {
+            "label": "Fa Brave",
+            "value": "FaBrave"
+        },
+        {
+            "label": "Factory",
+            "value": "Factory"
+        },
+        {
+            "label": "Fc Alphabetical Sorting Az",
+            "value": "FcAlphabeticalSortingAz"
+        },
+        {
+            "label": "Fc Alphabetical Sorting Za",
+            "value": "FcAlphabeticalSortingZa"
+        },
+        {
+            "label": "Fc Area Chart",
+            "value": "FcAreaChart"
+        },
+        {
+            "label": "Fc Assistant",
+            "value": "FcAssistant"
+        },
+        {
+            "label": "Fc Biotech",
+            "value": "FcBiotech"
+        },
+        {
+            "label": "Fc Broken Link",
+            "value": "FcBrokenLink"
+        },
+        {
+            "label": "Fc Business",
+            "value": "FcBusiness"
+        },
+        {
+            "label": "Fc Business Contact",
+            "value": "FcBusinessContact"
+        },
+        {
+            "label": "Fc Calendar",
+            "value": "FcCalendar"
+        },
+        {
+            "label": "Fc Command Line",
+            "value": "FcCommandLine"
+        },
+        {
+            "label": "Fc Conference Call",
+            "value": "FcConferenceCall"
+        },
+        {
+            "label": "Fc Data Protection",
+            "value": "FcDataProtection"
+        },
+        {
+            "label": "Fc Document",
+            "value": "FcDocument"
+        },
+        {
+            "label": "Fc Download",
+            "value": "FcDownload"
+        },
+        {
+            "label": "Fc Electronics",
+            "value": "FcElectronics"
+        },
+        {
+            "label": "Fc Engineering",
+            "value": "FcEngineering"
+        },
+        {
+            "label": "Fc Feedback",
+            "value": "FcFeedback"
+        },
+        {
+            "label": "Fc Film",
+            "value": "FcFilm"
+        },
+        {
+            "label": "Fc Google",
+            "value": "FcGoogle"
+        },
+        {
+            "label": "Fc Graduation Cap",
+            "value": "FcGraduationCap"
+        },
+        {
+            "label": "Fc Library",
+            "value": "FcLibrary"
+        },
+        {
+            "label": "Fc Manager",
+            "value": "FcManager"
+        },
+        {
+            "label": "Fc Multiple Inputs",
+            "value": "FcMultipleInputs"
+        },
+        {
+            "label": "Fc Music",
+            "value": "FcMusic"
+        },
+        {
+            "label": "Fc Parallel Tasks",
+            "value": "FcParallelTasks"
+        },
+        {
+            "label": "Fc Sales Performance",
+            "value": "FcSalesPerformance"
+        },
+        {
+            "label": "Fc Shipped",
+            "value": "FcShipped"
+        },
+        {
+            "label": "Fc Signature",
+            "value": "FcSignature"
+        },
+        {
+            "label": "Fc Sms",
+            "value": "FcSms"
+        },
+        {
+            "label": "Fc Todo List",
+            "value": "FcTodoList"
+        },
+        {
+            "label": "Fc Wikipedia",
+            "value": "FcWikipedia"
+        },
+        {
+            "label": "File",
+            "value": "File"
+        },
+        {
+            "label": "File Text",
+            "value": "FileText"
+        },
+        {
+            "label": "Filter",
+            "value": "Filter"
+        },
+        {
+            "label": "Folder",
+            "value": "Folder"
+        },
+        {
+            "label": "Folder Open",
+            "value": "FolderOpen"
+        },
+        {
+            "label": "Fuel",
+            "value": "Fuel"
+        },
+        {
+            "label": "Gift",
+            "value": "Gift"
+        },
+        {
+            "label": "Git Branch",
+            "value": "GitBranch"
+        },
+        {
+            "label": "Globe",
+            "value": "Globe"
+        },
+        {
+            "label": "Hash",
+            "value": "Hash"
+        },
+        {
+            "label": "Headphones",
+            "value": "Headphones"
+        },
+        {
+            "label": "Heart",
+            "value": "Heart"
+        },
+        {
+            "label": "Help Circle",
+            "value": "HelpCircle"
+        },
+        {
+            "label": "Hexagon",
+            "value": "Hexagon"
+        },
+        {
+            "label": "Highlighter",
+            "value": "Highlighter"
+        },
+        {
+            "label": "Home",
+            "value": "Home"
+        },
+        {
+            "label": "Image",
+            "value": "Image"
+        },
+        {
+            "label": "Inbox",
+            "value": "Inbox"
+        },
+        {
+            "label": "Indent",
+            "value": "Indent"
+        },
+        {
+            "label": "Info",
+            "value": "Info"
+        },
+        {
+            "label": "Italic",
+            "value": "Italic"
+        },
+        {
+            "label": "Key",
+            "value": "Key"
+        },
+        {
+            "label": "Laptop",
+            "value": "Laptop"
+        },
+        {
+            "label": "Layers",
+            "value": "Layers"
+        },
+        {
+            "label": "Line Chart",
+            "value": "LineChart"
+        },
+        {
+            "label": "Link",
+            "value": "Link"
+        },
+        {
+            "label": "List",
+            "value": "List"
+        },
+        {
+            "label": "List Ordered",
+            "value": "ListOrdered"
+        },
+        {
+            "label": "Lock",
+            "value": "Lock"
+        },
+        {
+            "label": "Log In",
+            "value": "LogIn"
+        },
+        {
+            "label": "Log Out",
+            "value": "LogOut"
+        },
+        {
+            "label": "Mail",
+            "value": "Mail"
+        },
+        {
+            "label": "Map",
+            "value": "Map"
+        },
+        {
+            "label": "Map Pin",
+            "value": "MapPin"
+        },
+        {
+            "label": "Menu",
+            "value": "Menu"
+        },
+        {
+            "label": "Message Circle",
+            "value": "MessageCircle"
+        },
+        {
+            "label": "Message Square",
+            "value": "MessageSquare"
+        },
+        {
+            "label": "Mic",
+            "value": "Mic"
+        },
+        {
+            "label": "Mic Off",
+            "value": "MicOff"
+        },
+        {
+            "label": "Minus",
+            "value": "Minus"
+        },
+        {
+            "label": "Monitor",
+            "value": "Monitor"
+        },
+        {
+            "label": "Monitor Speaker",
+            "value": "MonitorSpeaker"
+        },
+        {
+            "label": "Moon",
+            "value": "Moon"
+        },
+        {
+            "label": "More Horizontal",
+            "value": "MoreHorizontal"
+        },
+        {
+            "label": "More Vertical",
+            "value": "MoreVertical"
+        },
+        {
+            "label": "Move",
+            "value": "Move"
+        },
+        {
+            "label": "Music",
+            "value": "Music"
+        },
+        {
+            "label": "Music2",
+            "value": "Music2"
+        },
+        {
+            "label": "Navigation",
+            "value": "Navigation"
+        },
+        {
+            "label": "Octagon",
+            "value": "Octagon"
+        },
+        {
+            "label": "Outdent",
+            "value": "Outdent"
+        },
+        {
+            "label": "Package",
+            "value": "Package"
+        },
+        {
+            "label": "Paintbrush",
+            "value": "Paintbrush"
+        },
+        {
+            "label": "Palette",
+            "value": "Palette"
+        },
+        {
+            "label": "Pause Circle",
+            "value": "PauseCircle"
+        },
+        {
+            "label": "Pen",
+            "value": "Pen"
+        },
+        {
+            "label": "Pen Tool",
+            "value": "PenTool"
+        },
+        {
+            "label": "Pencil",
+            "value": "Pencil"
+        },
+        {
+            "label": "Percent",
+            "value": "Percent"
+        },
+        {
+            "label": "Phone",
+            "value": "Phone"
+        },
+        {
+            "label": "Phone Call",
+            "value": "PhoneCall"
+        },
+        {
+            "label": "Pie Chart",
+            "value": "PieChart"
+        },
+        {
+            "label": "Plane",
+            "value": "Plane"
+        },
+        {
+            "label": "Play",
+            "value": "Play"
+        },
+        {
+            "label": "Play Circle",
+            "value": "PlayCircle"
+        },
+        {
+            "label": "Plus",
+            "value": "Plus"
+        },
+        {
+            "label": "Pound Sterling",
+            "value": "PoundSterling"
+        },
+        {
+            "label": "Power",
+            "value": "Power"
+        },
+        {
+            "label": "Power Off",
+            "value": "PowerOff"
+        },
+        {
+            "label": "Puzzle",
+            "value": "Puzzle"
+        },
+        {
+            "label": "Quote",
+            "value": "Quote"
+        },
+        {
+            "label": "Receipt",
+            "value": "Receipt"
+        },
+        {
+            "label": "Refresh Cw",
+            "value": "RefreshCw"
+        },
+        {
+            "label": "Repeat",
+            "value": "Repeat"
+        },
+        {
+            "label": "Repeat1",
+            "value": "Repeat1"
+        },
+        {
+            "label": "Rotate Ccw",
+            "value": "RotateCcw"
+        },
+        {
+            "label": "Ruler",
+            "value": "Ruler"
+        },
+        {
+            "label": "Save",
+            "value": "Save"
+        },
+        {
+            "label": "Scissors",
+            "value": "Scissors"
+        },
+        {
+            "label": "Search",
+            "value": "Search"
+        },
+        {
+            "label": "Send",
+            "value": "Send"
+        },
+        {
+            "label": "Settings",
+            "value": "Settings"
+        },
+        {
+            "label": "Share",
+            "value": "Share"
+        },
+        {
+            "label": "Share2",
+            "value": "Share2"
+        },
+        {
+            "label": "Shield",
+            "value": "Shield"
+        },
+        {
+            "label": "Shield Check",
+            "value": "ShieldCheck"
+        },
+        {
+            "label": "Ship",
+            "value": "Ship"
+        },
+        {
+            "label": "Shopping Bag",
+            "value": "ShoppingBag"
+        },
+        {
+            "label": "Shopping Cart",
+            "value": "ShoppingCart"
+        },
+        {
+            "label": "Shuffle",
+            "value": "Shuffle"
+        },
+        {
+            "label": "Skip Back",
+            "value": "SkipBack"
+        },
+        {
+            "label": "Skip Forward",
+            "value": "SkipForward"
+        },
+        {
+            "label": "Smartphone",
+            "value": "Smartphone"
+        },
+        {
+            "label": "Square",
+            "value": "Square"
+        },
+        {
+            "label": "Star",
+            "value": "Star"
+        },
+        {
+            "label": "Stop Circle",
+            "value": "StopCircle"
+        },
+        {
+            "label": "Store",
+            "value": "Store"
+        },
+        {
+            "label": "Sun",
+            "value": "Sun"
+        },
+        {
+            "label": "Tablet",
+            "value": "Tablet"
+        },
+        {
+            "label": "Tag",
+            "value": "Tag"
+        },
+        {
+            "label": "Tags",
+            "value": "Tags"
+        },
+        {
+            "label": "Target",
+            "value": "Target"
+        },
+        {
+            "label": "Terminal",
+            "value": "Terminal"
+        },
+        {
+            "label": "Thermometer",
+            "value": "Thermometer"
+        },
+        {
+            "label": "Timer",
+            "value": "Timer"
+        },
+        {
+            "label": "Train",
+            "value": "Train"
+        },
+        {
+            "label": "Trash",
+            "value": "Trash"
+        },
+        {
+            "label": "Trending Down",
+            "value": "TrendingDown"
+        },
+        {
+            "label": "Trending Up",
+            "value": "TrendingUp"
+        },
+        {
+            "label": "Triangle",
+            "value": "Triangle"
+        },
+        {
+            "label": "Trophy",
+            "value": "Trophy"
+        },
+        {
+            "label": "Truck",
+            "value": "Truck"
+        },
+        {
+            "label": "Type",
+            "value": "Type"
+        },
+        {
+            "label": "Umbrella",
+            "value": "Umbrella"
+        },
+        {
+            "label": "Underline",
+            "value": "Underline"
+        },
+        {
+            "label": "Unlink",
+            "value": "Unlink"
+        },
+        {
+            "label": "Unlock",
+            "value": "Unlock"
+        },
+        {
+            "label": "Upload",
+            "value": "Upload"
+        },
+        {
+            "label": "User",
+            "value": "User"
+        },
+        {
+            "label": "User2",
+            "value": "User2"
+        },
+        {
+            "label": "User Minus",
+            "value": "UserMinus"
+        },
+        {
+            "label": "User Plus",
+            "value": "UserPlus"
+        },
+        {
+            "label": "Users",
+            "value": "Users"
+        },
+        {
+            "label": "Video",
+            "value": "Video"
+        },
+        {
+            "label": "Volume2",
+            "value": "Volume2"
+        },
+        {
+            "label": "Volume X",
+            "value": "VolumeX"
+        },
+        {
+            "label": "Wand2",
+            "value": "Wand2"
+        },
+        {
+            "label": "Webhook",
+            "value": "Webhook"
+        },
+        {
+            "label": "Wifi",
+            "value": "Wifi"
+        },
+        {
+            "label": "Wifi Off",
+            "value": "WifiOff"
+        },
+        {
+            "label": "Wrench",
+            "value": "Wrench"
+        },
+        {
+            "label": "X",
+            "value": "X"
+        },
+        {
+            "label": "X Circle",
+            "value": "XCircle"
+        },
+        {
+            "label": "Zap",
+            "value": "Zap"
+        }
+    ],
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<"Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "BookOpen" | "Bookmark" | "BookmarkPlus" | "Bot" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Cog" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Puzzle" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Terminal" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined>,
+            enumValues: ['Activity', 'AlertCircle', 'AlertTriangle', 'AlignCenter', 'AlignLeft', 'AlignRight', 'Archive', 'ArrowDown', 'ArrowLeft', 'ArrowLeftRight', 'ArrowRight', 'ArrowRightLeft', 'ArrowUp', 'Asterisk', 'AtSign', 'Award', 'Banknote', 'BarChart', 'Battery', 'BatteryLow', 'Bell', 'BellOff', 'Bike', 'Bitcoin', 'Bold', 'BookOpen', 'Bookmark', 'BookmarkPlus', 'Bot', 'Brain', 'Brush', 'Building', 'Building2', 'Calculator', 'Calendar', 'CalendarDays', 'Camera', 'Car', 'Check', 'CheckCircle', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp', 'Circle', 'Clock', 'Cloud', 'CloudRain', 'CloudSnow', 'Code', 'Cog', 'Compass', 'Copy', 'Cpu', 'CreditCard', 'Database', 'Diamond', 'Divide', 'DollarSign', 'Dot', 'Download', 'Edit', 'Equal', 'Eraser', 'Euro', 'ExternalLink', 'Eye', 'FaBrave', 'Factory', 'FcAlphabeticalSortingAz', 'FcAlphabeticalSortingZa', 'FcAreaChart', 'FcAssistant', 'FcBiotech', 'FcBrokenLink', 'FcBusiness', 'FcBusinessContact', 'FcCalendar', 'FcCommandLine', 'FcConferenceCall', 'FcDataProtection', 'FcDocument', 'FcDownload', 'FcElectronics', 'FcEngineering', 'FcFeedback', 'FcFilm', 'FcGoogle', 'FcGraduationCap', 'FcLibrary', 'FcManager', 'FcMultipleInputs', 'FcMusic', 'FcParallelTasks', 'FcSalesPerformance', 'FcShipped', 'FcSignature', 'FcSms', 'FcTodoList', 'FcWikipedia', 'File', 'FileText', 'Filter', 'Folder', 'FolderOpen', 'Fuel', 'Gift', 'GitBranch', 'Globe', 'Hash', 'Headphones', 'Heart', 'HelpCircle', 'Hexagon', 'Highlighter', 'Home', 'Image', 'Inbox', 'Indent', 'Info', 'Italic', 'Key', 'Laptop', 'Layers', 'LineChart', 'Link', 'List', 'ListOrdered', 'Lock', 'LogIn', 'LogOut', 'Mail', 'Map', 'MapPin', 'Menu', 'MessageCircle', 'MessageSquare', 'Mic', 'MicOff', 'Minus', 'Monitor', 'MonitorSpeaker', 'Moon', 'MoreHorizontal', 'MoreVertical', 'Move', 'Music', 'Music2', 'Navigation', 'Octagon', 'Outdent', 'Package', 'Paintbrush', 'Palette', 'PauseCircle', 'Pen', 'PenTool', 'Pencil', 'Percent', 'Phone', 'PhoneCall', 'PieChart', 'Plane', 'Play', 'PlayCircle', 'Plus', 'PoundSterling', 'Power', 'PowerOff', 'Puzzle', 'Quote', 'Receipt', 'RefreshCw', 'Repeat', 'Repeat1', 'RotateCcw', 'Ruler', 'Save', 'Scissors', 'Search', 'Send', 'Settings', 'Share', 'Share2', 'Shield', 'ShieldCheck', 'Ship', 'ShoppingBag', 'ShoppingCart', 'Shuffle', 'SkipBack', 'SkipForward', 'Smartphone', 'Square', 'Star', 'StopCircle', 'Store', 'Sun', 'Tablet', 'Tag', 'Tags', 'Target', 'Terminal', 'Thermometer', 'Timer', 'Train', 'Trash', 'TrendingDown', 'TrendingUp', 'Triangle', 'Trophy', 'Truck', 'Type', 'Umbrella', 'Underline', 'Unlink', 'Unlock', 'Upload', 'User', 'User2', 'UserMinus', 'UserPlus', 'Users', 'Video', 'Volume2', 'VolumeX', 'Wand2', 'Webhook', 'Wifi', 'WifiOff', 'Wrench', 'X', 'XCircle', 'Zap'] as const,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Icon" field for registeredNode. This is an optional field. Your entry must be an string data type.',
+        },
+            category: {
+            fieldNameFormats: {
+    "frontend": "category",
+    "backend": "category",
+    "database": "category",
+    "pretty": "Category",
+    "component": "Category",
+    "kebab": "category",
+    "sqlFunctionRef": "p_category",
+    "RestAPI": "category",
+    "GraphQL": "category",
+    "custom": "category"
+} as const,
+            name: 'category',
+            displayName: 'Category',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:category',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:category',
+
+            dataType: 'uuid' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'FK_SELECT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: {"table": "node_category", "column": "id", "entity": "nodeCategory", "field": "id"},
+            description: '"Category" field for registeredNode. This is an optional field. Your entry must be an uuid data type. This field is a reference to a nodeCategory.',
+        },
+            nodeCategoryReference: {
+    fieldNameFormats: {
+    "frontend": "nodeCategoryReference",
+    "backend": "node_category_reference",
+    "database": "ref_node_category",
+    "pretty": "Node Category Reference",
+    "component": "NodeCategoryReference",
+    "kebab": "node-categoryReference",
+    "sqlFunctionRef": "p_ref_node_category",
+    "RestAPI": "nodeCategoryReference",
+    "GraphQL": "nodeCategoryReference",
+    "custom": "nodeCategoryReference"
+} as const,
+    uniqueColumnId: 'supabase_automation_matrix:node_category:id',
+    uniqueFieldId: 'supabase_automation_matrix:nodeCategory:id',
+    name: 'nodeCategoryReference',
+    displayName: 'Node Category Reference',
+    dataType: 'object' as const,
+    isRequired: false,
+    maxLength: null,
+    isArray: true,
+    defaultValue: [],
+    isPrimaryKey: false,
+    defaultGeneratorFunction: null,
+    validationFunctions: ['isValidDatabaseEntry'],
+    exclusionRules: ['notCoreField'],
+    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+    structure: 'foreignKey' as const,
+    isNative: false,
+    typeReference: {} as TypeBrand<AutomationEntity<'nodeCategory'>[]>,
+    entityName: 'nodeCategory',
+    databaseTable: 'node_category',
+    relationshipMap: {node_category: 'id', registered_function: 'id'},
+},
+            registeredFunctionReference: {
+    fieldNameFormats: {
+    "frontend": "registeredFunctionReference",
+    "backend": "registered_function_reference",
+    "database": "ref_registered_function",
+    "pretty": "Registered Function Reference",
+    "component": "RegisteredFunctionReference",
+    "kebab": "registered-functionReference",
+    "sqlFunctionRef": "p_ref_registered_function",
+    "RestAPI": "registeredFunctionReference",
+    "GraphQL": "registeredFunctionReference",
+    "custom": "registeredFunctionReference"
+} as const,
+    uniqueColumnId: 'supabase_automation_matrix:registered_function:id',
+    uniqueFieldId: 'supabase_automation_matrix:registeredFunction:id',
+    name: 'registeredFunctionReference',
+    displayName: 'Registered Function Reference',
+    dataType: 'object' as const,
+    isRequired: false,
+    maxLength: null,
+    isArray: true,
+    defaultValue: [],
+    isPrimaryKey: false,
+    defaultGeneratorFunction: null,
+    validationFunctions: ['isValidDatabaseEntry'],
+    exclusionRules: ['notCoreField'],
+    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+    structure: 'foreignKey' as const,
+    isNative: false,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredFunction'>[]>,
+    entityName: 'registeredFunction',
+    databaseTable: 'registered_function',
+    relationshipMap: {node_category: 'id', registered_function: 'id'},
+},
+        },
+        entityNameFormats: {
+    "frontend": "registeredNode",
+    "backend": "registered_node",
+    "database": "registered_node",
+    "pretty": "Registered Node",
+    "component": "RegisteredNode",
+    "kebab": "registered-node",
+    "sqlFunctionRef": "p_registered_node",
+    "RestAPI": "registeredNode",
+    "GraphQL": "registeredNode",
+    "custom": "registeredNode"
+},
+        relationships: [
+            { relationshipType: 'foreignKey', column: 'category', relatedTable: 'node_category', relatedColumn: 'id', junctionTable: null },
+        { relationshipType: 'foreignKey', column: 'registered_function_id', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null }
         ],
     } as const;
 
@@ -73054,6 +77223,70 @@ export const userTables = {
             foreignKeyReference: null,
             description: '"Updated At" field for userTables. This is a required field. Your entry must be an date data type.',
         },
+            rowOrderingConfig: {
+            fieldNameFormats: {
+    "frontend": "rowOrderingConfig",
+    "backend": "row_ordering_config",
+    "database": "row_ordering_config",
+    "pretty": "Row Ordering Config",
+    "component": "RowOrderingConfig",
+    "kebab": "row-ordering-config",
+    "sqlFunctionRef": "p_row_ordering_config",
+    "RestAPI": "rowOrderingConfig",
+    "GraphQL": "rowOrderingConfig",
+    "custom": "rowOrderingConfig"
+} as const,
+            name: 'rowOrderingConfig',
+            displayName: 'Row Ordering Config',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:user_tables:row_ordering_config',
+            uniqueFieldId: 'supabase_automation_matrix:userTables:rowOrderingConfig',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'userTables',
+            databaseTable: 'user_tables',
+            foreignKeyReference: null,
+            description: '"Row Ordering Config" field for userTables. This is an optional field. Your entry must be an object data type.',
+        },
             tableFieldsInverse: {
     fieldNameFormats: {
     "frontend": "tableFieldsInverse",
@@ -81430,7 +85663,7 @@ export const workflowNodeData = {
             uniqueFieldId: 'supabase_automation_matrix:workflowNodeData:functionId',
 
             dataType: 'uuid' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
             defaultValue: "" as const,
@@ -81463,7 +85696,7 @@ export const workflowNodeData = {
     "step": "default",
     "numberType": "default",
     "options": "default",
-    "required": false
+    "required": true
 },
             structure: 'single' as const,
             isNative: true,
@@ -81472,7 +85705,7 @@ export const workflowNodeData = {
             entityName: 'workflowNodeData',
             databaseTable: 'workflow_node_data',
             foreignKeyReference: {"table": "registered_function", "column": "id", "entity": "registeredFunction", "field": "id"},
-            description: '"Function Id" field for workflowNodeData. This is an optional field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.',
+            description: '"Function Id" field for workflowNodeData. This is a required field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.',
         },
             type: {
             fieldNameFormats: {
@@ -81497,7 +85730,7 @@ export const workflowNodeData = {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: "" as const,
+            defaultValue: "workflowNode" as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: "",
@@ -81602,70 +85835,6 @@ export const workflowNodeData = {
             foreignKeyReference: null,
             description: '"Step Name" field for workflowNodeData. This is an optional field. Your entry must be an string data type.',
         },
-            nodeType: {
-            fieldNameFormats: {
-    "frontend": "nodeType",
-    "backend": "node_type",
-    "database": "node_type",
-    "pretty": "Node Type",
-    "component": "NodeType",
-    "kebab": "node-type",
-    "sqlFunctionRef": "p_node_type",
-    "RestAPI": "nodeType",
-    "GraphQL": "nodeType",
-    "custom": "nodeType"
-} as const,
-            name: 'nodeType',
-            displayName: 'Node Type',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:workflow_node_data:node_type',
-            uniqueFieldId: 'supabase_automation_matrix:workflowNodeData:nodeType',
-
-            dataType: 'string' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'INPUT' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": 5,
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": false
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            enumValues: null,
-            entityName: 'workflowNodeData',
-            databaseTable: 'workflow_node_data',
-            foreignKeyReference: null,
-            description: '"Node Type" field for workflowNodeData. This is an optional field. Your entry must be an string data type.',
-        },
             executionRequired: {
             fieldNameFormats: {
     "frontend": "executionRequired",
@@ -81689,7 +85858,7 @@ export const workflowNodeData = {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: "false" as const,
+            defaultValue: "true" as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: "",
@@ -82433,6 +86602,198 @@ export const workflowNodeData = {
             databaseTable: 'workflow_node_data',
             foreignKeyReference: {"table": "users", "column": "id", "entity": "users", "field": "id"},
             description: '"User Id" field for workflowNodeData. This is an optional field. Your entry must be an uuid data type. This field is a reference to a users.',
+        },
+            isActive: {
+            fieldNameFormats: {
+    "frontend": "isActive",
+    "backend": "is_active",
+    "database": "is_active",
+    "pretty": "Is Active",
+    "component": "IsActive",
+    "kebab": "is-active",
+    "sqlFunctionRef": "p_is_active",
+    "RestAPI": "isActive",
+    "GraphQL": "isActive",
+    "custom": "isActive"
+} as const,
+            name: 'isActive',
+            displayName: 'Is Active',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:workflow_node_data:is_active',
+            uniqueFieldId: 'supabase_automation_matrix:workflowNodeData:isActive',
+
+            dataType: 'boolean' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "true" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'SWITCH' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<boolean>,
+            enumValues: null,
+            entityName: 'workflowNodeData',
+            databaseTable: 'workflow_node_data',
+            foreignKeyReference: null,
+            description: '"Is Active" field for workflowNodeData. This is an optional field. Your entry must be an boolean data type.',
+        },
+            arguments: {
+            fieldNameFormats: {
+    "frontend": "arguments",
+    "backend": "arguments",
+    "database": "arguments",
+    "pretty": "Arguments",
+    "component": "Arguments",
+    "kebab": "arguments",
+    "sqlFunctionRef": "p_arguments",
+    "RestAPI": "arguments",
+    "GraphQL": "arguments",
+    "custom": "arguments"
+} as const,
+            name: 'arguments',
+            displayName: 'Arguments',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:workflow_node_data:arguments',
+            uniqueFieldId: 'supabase_automation_matrix:workflowNodeData:arguments',
+
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "[]" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'JSON_EDITOR' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<Record<string, unknown>>,
+            enumValues: null,
+            entityName: 'workflowNodeData',
+            databaseTable: 'workflow_node_data',
+            foreignKeyReference: null,
+            description: '"Arguments" field for workflowNodeData. This is an optional field. Your entry must be an object data type.',
+        },
+            nodeType: {
+            fieldNameFormats: {
+    "frontend": "nodeType",
+    "backend": "node_type",
+    "database": "node_type",
+    "pretty": "Node Type",
+    "component": "NodeType",
+    "kebab": "node-type",
+    "sqlFunctionRef": "p_node_type",
+    "RestAPI": "nodeType",
+    "GraphQL": "nodeType",
+    "custom": "nodeType"
+} as const,
+            name: 'nodeType',
+            displayName: 'Node Type',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:workflow_node_data:node_type',
+            uniqueFieldId: 'supabase_automation_matrix:workflowNodeData:nodeType',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'INPUT' as const,
+            componentProps: {
+    "subComponent": "default",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": 5,
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": "default",
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<string>,
+            enumValues: null,
+            entityName: 'workflowNodeData',
+            databaseTable: 'workflow_node_data',
+            foreignKeyReference: null,
+            description: '"Node Type" field for workflowNodeData. This is an optional field. Your entry must be an string data type.',
         },
             registeredFunctionReference: {
     fieldNameFormats: {

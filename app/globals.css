@@ -656,10 +656,14 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 }
 
 /* Custom node wrapper styles */
-.react-flow__node-workflowNode {
-  border-radius: var(--node-border-radius);
+.react-flow__node-workflowNode,
+.react-flow__node-default {
   position: relative;
-  box-shadow: var(--node-box-shadow);
+  /* Remove visual styling to prevent double backgrounds - let Card component handle all visuals */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 /* Floating icon container */

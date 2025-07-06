@@ -74,7 +74,7 @@ export function* withConversion<TEntity extends EntityKeys>(
 
         const result = yield call(sagaHandler, context);
 
-        if (action.payload.callbackId) {
+        if (action.payload?.callbackId) {
             const callbackData = {
                 success: true,
                 entityName: entityKey,
@@ -83,7 +83,7 @@ export function* withConversion<TEntity extends EntityKeys>(
                 originalPayload: action.payload,
             };
 
-            callbackManager.triggerWithContext(action.payload.callbackId, callbackData, {
+            callbackManager.triggerWithContext(action.payload?.callbackId, callbackData, {
                 progress: {
                     progress: 100,
                     status: 'completed',
@@ -102,7 +102,7 @@ export function* withConversion<TEntity extends EntityKeys>(
             })
         );
 
-        if (action.payload.callback) {
+        if (action.payload?.callback) {
             callbackManager.trigger(action.payload.callbackId, { success: false, error: 'Error message' });
         }
 

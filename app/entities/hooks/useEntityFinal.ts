@@ -164,12 +164,12 @@ export const useEntityFinal = <TEntity extends EntityKeys>(entityKey: TEntity) =
     }, [dispatch, actions]);
 
 
-    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, updates: Record<string, any>, callback?: Callback) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
             callback?.(result);
         };
         const callbackId = callbackManager.register(wrappedCallback);
-        dispatch(actions.updateRecord({matrxRecordId, callbackId,}));
+        dispatch(actions.updateRecord({matrxRecordId, data: updates, callbackId,}));
     }, [actions, dispatch]);
 
     const deleteRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {

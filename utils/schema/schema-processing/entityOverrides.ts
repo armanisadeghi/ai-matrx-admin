@@ -786,6 +786,23 @@ const messageTemplateEntityOverrides: EntityOverrides<'messageTemplate'> = {
 
 
 
+const nodeCategoryEntityOverrides: EntityOverrides<'nodeCategory'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const organizationInvitationsEntityOverrides: EntityOverrides<'organizationInvitations'> = {
     schemaType: null,
     entityName: null,
@@ -1076,6 +1093,23 @@ const recipeToolEntityOverrides: EntityOverrides<'recipeTool'> = {
 
 
 const registeredFunctionEntityOverrides: EntityOverrides<'registeredFunction'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const registeredNodeEntityOverrides: EntityOverrides<'registeredNode'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1937,6 +1971,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     message: messageEntityOverrides,
     messageBroker: messageBrokerEntityOverrides,
     messageTemplate: messageTemplateEntityOverrides,
+    nodeCategory: nodeCategoryEntityOverrides,
     organizationInvitations: organizationInvitationsEntityOverrides,
     organizationMembers: organizationMembersEntityOverrides,
     organizations: organizationsEntityOverrides,
@@ -1955,6 +1990,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     recipeProcessor: recipeProcessorEntityOverrides,
     recipeTool: recipeToolEntityOverrides,
     registeredFunction: registeredFunctionEntityOverrides,
+    registeredNode: registeredNodeEntityOverrides,
     schemaTemplates: schemaTemplatesEntityOverrides,
     scrapeBaseConfig: scrapeBaseConfigEntityOverrides,
     scrapeCachePolicy: scrapeCachePolicyEntityOverrides,

@@ -46,6 +46,7 @@ import {
     MessageBrokerData,
     MessageData,
     MessageTemplateData,
+    NodeCategoryData,
     OrganizationInvitationsData,
     OrganizationMembersData,
     OrganizationsData,
@@ -64,6 +65,7 @@ import {
     RecipeProcessorData,
     RecipeToolData,
     RegisteredFunctionData,
+    RegisteredNodeData,
     SchemaTemplatesData,
     ScrapeBaseConfigData,
     ScrapeCachePolicyData,
@@ -112,16 +114,17 @@ import {
     WorkflowRelayData,
     WorkflowUserInputData,
 } from "@/types";
-import { FilterPayload, MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
-import { EntitySelectors } from "../selectors";
-import { EntityActions } from "../slice";
-import { FetchMode, SortPayload } from "../actions";
-import { useEntityWithFetch } from "./useAllData";
+import { MatrxRecordId, QuickReferenceRecord, FilterPayload, SortPayload } from "@/lib/redux/entity/types/stateTypes";
+import { EntitySelectors } from "@/lib/redux/entity/selectors";
+import { EntityActions } from "@/lib/redux/entity/slice";
+import { FetchMode } from "@/lib/redux/entity/actions";
+import { useEntityWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 
 type UseActionWithFetchReturn = {
     actionSelectors: EntitySelectors<"action">;
     actionActions: EntityActions<"action">;
     actionRecords: Record<MatrxRecordId, ActionData>;
+    actionRecordsById: Record<string, ActionData>;
     actionUnsavedRecords: Record<MatrxRecordId, Partial<ActionData>>;
     actionSelectedRecordIds: MatrxRecordId[];
     actionIsLoading: boolean;
@@ -142,7 +145,11 @@ type UseActionWithFetchReturn = {
     fetchActionOne: (recordId: MatrxRecordId) => void;
     fetchActionOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchActionAll: () => void;
-    fetchActionPaginated: (page: number, pageSize: number) => void;
+    fetchActionPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useActionWithFetch = (): UseActionWithFetchReturn => {
@@ -150,6 +157,7 @@ export const useActionWithFetch = (): UseActionWithFetchReturn => {
         selectors: actionSelectors,
         actions: actionActions,
         allRecords: actionRecords,
+        recordsById: actionRecordsById,
         unsavedRecords: actionUnsavedRecords,
         selectedRecordIds: actionSelectedRecordIds,
         isLoading: actionIsLoading,
@@ -178,6 +186,7 @@ export const useActionWithFetch = (): UseActionWithFetchReturn => {
         actionSelectors,
         actionActions,
         actionRecords,
+        actionRecordsById,
         actionUnsavedRecords,
         actionSelectedRecordIds,
         actionIsLoading,
@@ -208,6 +217,7 @@ type UseAdminsWithFetchReturn = {
     adminsSelectors: EntitySelectors<"admins">;
     adminsActions: EntityActions<"admins">;
     adminsRecords: Record<MatrxRecordId, AdminsData>;
+    adminsRecordsById: Record<string, AdminsData>;
     adminsUnsavedRecords: Record<MatrxRecordId, Partial<AdminsData>>;
     adminsSelectedRecordIds: MatrxRecordId[];
     adminsIsLoading: boolean;
@@ -228,7 +238,11 @@ type UseAdminsWithFetchReturn = {
     fetchAdminsOne: (recordId: MatrxRecordId) => void;
     fetchAdminsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAdminsAll: () => void;
-    fetchAdminsPaginated: (page: number, pageSize: number) => void;
+    fetchAdminsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAdminsWithFetch = (): UseAdminsWithFetchReturn => {
@@ -236,6 +250,7 @@ export const useAdminsWithFetch = (): UseAdminsWithFetchReturn => {
         selectors: adminsSelectors,
         actions: adminsActions,
         allRecords: adminsRecords,
+        recordsById: adminsRecordsById,
         unsavedRecords: adminsUnsavedRecords,
         selectedRecordIds: adminsSelectedRecordIds,
         isLoading: adminsIsLoading,
@@ -264,6 +279,7 @@ export const useAdminsWithFetch = (): UseAdminsWithFetchReturn => {
         adminsSelectors,
         adminsActions,
         adminsRecords,
+        adminsRecordsById,
         adminsUnsavedRecords,
         adminsSelectedRecordIds,
         adminsIsLoading,
@@ -294,6 +310,7 @@ type UseAiAgentWithFetchReturn = {
     aiAgentSelectors: EntitySelectors<"aiAgent">;
     aiAgentActions: EntityActions<"aiAgent">;
     aiAgentRecords: Record<MatrxRecordId, AiAgentData>;
+    aiAgentRecordsById: Record<string, AiAgentData>;
     aiAgentUnsavedRecords: Record<MatrxRecordId, Partial<AiAgentData>>;
     aiAgentSelectedRecordIds: MatrxRecordId[];
     aiAgentIsLoading: boolean;
@@ -314,7 +331,11 @@ type UseAiAgentWithFetchReturn = {
     fetchAiAgentOne: (recordId: MatrxRecordId) => void;
     fetchAiAgentOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAiAgentAll: () => void;
-    fetchAiAgentPaginated: (page: number, pageSize: number) => void;
+    fetchAiAgentPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
@@ -322,6 +343,7 @@ export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
         selectors: aiAgentSelectors,
         actions: aiAgentActions,
         allRecords: aiAgentRecords,
+        recordsById: aiAgentRecordsById,
         unsavedRecords: aiAgentUnsavedRecords,
         selectedRecordIds: aiAgentSelectedRecordIds,
         isLoading: aiAgentIsLoading,
@@ -350,6 +372,7 @@ export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
         aiAgentSelectors,
         aiAgentActions,
         aiAgentRecords,
+        aiAgentRecordsById,
         aiAgentUnsavedRecords,
         aiAgentSelectedRecordIds,
         aiAgentIsLoading,
@@ -380,6 +403,7 @@ type UseAiEndpointWithFetchReturn = {
     aiEndpointSelectors: EntitySelectors<"aiEndpoint">;
     aiEndpointActions: EntityActions<"aiEndpoint">;
     aiEndpointRecords: Record<MatrxRecordId, AiEndpointData>;
+    aiEndpointRecordsById: Record<string, AiEndpointData>;
     aiEndpointUnsavedRecords: Record<MatrxRecordId, Partial<AiEndpointData>>;
     aiEndpointSelectedRecordIds: MatrxRecordId[];
     aiEndpointIsLoading: boolean;
@@ -400,7 +424,11 @@ type UseAiEndpointWithFetchReturn = {
     fetchAiEndpointOne: (recordId: MatrxRecordId) => void;
     fetchAiEndpointOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAiEndpointAll: () => void;
-    fetchAiEndpointPaginated: (page: number, pageSize: number) => void;
+    fetchAiEndpointPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
@@ -408,6 +436,7 @@ export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
         selectors: aiEndpointSelectors,
         actions: aiEndpointActions,
         allRecords: aiEndpointRecords,
+        recordsById: aiEndpointRecordsById,
         unsavedRecords: aiEndpointUnsavedRecords,
         selectedRecordIds: aiEndpointSelectedRecordIds,
         isLoading: aiEndpointIsLoading,
@@ -436,6 +465,7 @@ export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
         aiEndpointSelectors,
         aiEndpointActions,
         aiEndpointRecords,
+        aiEndpointRecordsById,
         aiEndpointUnsavedRecords,
         aiEndpointSelectedRecordIds,
         aiEndpointIsLoading,
@@ -466,6 +496,7 @@ type UseAiModelWithFetchReturn = {
     aiModelSelectors: EntitySelectors<"aiModel">;
     aiModelActions: EntityActions<"aiModel">;
     aiModelRecords: Record<MatrxRecordId, AiModelData>;
+    aiModelRecordsById: Record<string, AiModelData>;
     aiModelUnsavedRecords: Record<MatrxRecordId, Partial<AiModelData>>;
     aiModelSelectedRecordIds: MatrxRecordId[];
     aiModelIsLoading: boolean;
@@ -486,7 +517,11 @@ type UseAiModelWithFetchReturn = {
     fetchAiModelOne: (recordId: MatrxRecordId) => void;
     fetchAiModelOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAiModelAll: () => void;
-    fetchAiModelPaginated: (page: number, pageSize: number) => void;
+    fetchAiModelPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
@@ -494,6 +529,7 @@ export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
         selectors: aiModelSelectors,
         actions: aiModelActions,
         allRecords: aiModelRecords,
+        recordsById: aiModelRecordsById,
         unsavedRecords: aiModelUnsavedRecords,
         selectedRecordIds: aiModelSelectedRecordIds,
         isLoading: aiModelIsLoading,
@@ -522,6 +558,7 @@ export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
         aiModelSelectors,
         aiModelActions,
         aiModelRecords,
+        aiModelRecordsById,
         aiModelUnsavedRecords,
         aiModelSelectedRecordIds,
         aiModelIsLoading,
@@ -552,6 +589,7 @@ type UseAiModelEndpointWithFetchReturn = {
     aiModelEndpointSelectors: EntitySelectors<"aiModelEndpoint">;
     aiModelEndpointActions: EntityActions<"aiModelEndpoint">;
     aiModelEndpointRecords: Record<MatrxRecordId, AiModelEndpointData>;
+    aiModelEndpointRecordsById: Record<string, AiModelEndpointData>;
     aiModelEndpointUnsavedRecords: Record<MatrxRecordId, Partial<AiModelEndpointData>>;
     aiModelEndpointSelectedRecordIds: MatrxRecordId[];
     aiModelEndpointIsLoading: boolean;
@@ -572,7 +610,11 @@ type UseAiModelEndpointWithFetchReturn = {
     fetchAiModelEndpointOne: (recordId: MatrxRecordId) => void;
     fetchAiModelEndpointOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAiModelEndpointAll: () => void;
-    fetchAiModelEndpointPaginated: (page: number, pageSize: number) => void;
+    fetchAiModelEndpointPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn => {
@@ -580,6 +622,7 @@ export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn
         selectors: aiModelEndpointSelectors,
         actions: aiModelEndpointActions,
         allRecords: aiModelEndpointRecords,
+        recordsById: aiModelEndpointRecordsById,
         unsavedRecords: aiModelEndpointUnsavedRecords,
         selectedRecordIds: aiModelEndpointSelectedRecordIds,
         isLoading: aiModelEndpointIsLoading,
@@ -608,6 +651,7 @@ export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn
         aiModelEndpointSelectors,
         aiModelEndpointActions,
         aiModelEndpointRecords,
+        aiModelEndpointRecordsById,
         aiModelEndpointUnsavedRecords,
         aiModelEndpointSelectedRecordIds,
         aiModelEndpointIsLoading,
@@ -638,6 +682,7 @@ type UseAiProviderWithFetchReturn = {
     aiProviderSelectors: EntitySelectors<"aiProvider">;
     aiProviderActions: EntityActions<"aiProvider">;
     aiProviderRecords: Record<MatrxRecordId, AiProviderData>;
+    aiProviderRecordsById: Record<string, AiProviderData>;
     aiProviderUnsavedRecords: Record<MatrxRecordId, Partial<AiProviderData>>;
     aiProviderSelectedRecordIds: MatrxRecordId[];
     aiProviderIsLoading: boolean;
@@ -658,7 +703,11 @@ type UseAiProviderWithFetchReturn = {
     fetchAiProviderOne: (recordId: MatrxRecordId) => void;
     fetchAiProviderOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAiProviderAll: () => void;
-    fetchAiProviderPaginated: (page: number, pageSize: number) => void;
+    fetchAiProviderPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAiProviderWithFetch = (): UseAiProviderWithFetchReturn => {
@@ -666,6 +715,7 @@ export const useAiProviderWithFetch = (): UseAiProviderWithFetchReturn => {
         selectors: aiProviderSelectors,
         actions: aiProviderActions,
         allRecords: aiProviderRecords,
+        recordsById: aiProviderRecordsById,
         unsavedRecords: aiProviderUnsavedRecords,
         selectedRecordIds: aiProviderSelectedRecordIds,
         isLoading: aiProviderIsLoading,
@@ -694,6 +744,7 @@ export const useAiProviderWithFetch = (): UseAiProviderWithFetchReturn => {
         aiProviderSelectors,
         aiProviderActions,
         aiProviderRecords,
+        aiProviderRecordsById,
         aiProviderUnsavedRecords,
         aiProviderSelectedRecordIds,
         aiProviderIsLoading,
@@ -724,6 +775,7 @@ type UseAiSettingsWithFetchReturn = {
     aiSettingsSelectors: EntitySelectors<"aiSettings">;
     aiSettingsActions: EntityActions<"aiSettings">;
     aiSettingsRecords: Record<MatrxRecordId, AiSettingsData>;
+    aiSettingsRecordsById: Record<string, AiSettingsData>;
     aiSettingsUnsavedRecords: Record<MatrxRecordId, Partial<AiSettingsData>>;
     aiSettingsSelectedRecordIds: MatrxRecordId[];
     aiSettingsIsLoading: boolean;
@@ -744,7 +796,11 @@ type UseAiSettingsWithFetchReturn = {
     fetchAiSettingsOne: (recordId: MatrxRecordId) => void;
     fetchAiSettingsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAiSettingsAll: () => void;
-    fetchAiSettingsPaginated: (page: number, pageSize: number) => void;
+    fetchAiSettingsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
@@ -752,6 +808,7 @@ export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
         selectors: aiSettingsSelectors,
         actions: aiSettingsActions,
         allRecords: aiSettingsRecords,
+        recordsById: aiSettingsRecordsById,
         unsavedRecords: aiSettingsUnsavedRecords,
         selectedRecordIds: aiSettingsSelectedRecordIds,
         isLoading: aiSettingsIsLoading,
@@ -780,6 +837,7 @@ export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
         aiSettingsSelectors,
         aiSettingsActions,
         aiSettingsRecords,
+        aiSettingsRecordsById,
         aiSettingsUnsavedRecords,
         aiSettingsSelectedRecordIds,
         aiSettingsIsLoading,
@@ -810,6 +868,7 @@ type UseAiTrainingDataWithFetchReturn = {
     aiTrainingDataSelectors: EntitySelectors<"aiTrainingData">;
     aiTrainingDataActions: EntityActions<"aiTrainingData">;
     aiTrainingDataRecords: Record<MatrxRecordId, AiTrainingDataData>;
+    aiTrainingDataRecordsById: Record<string, AiTrainingDataData>;
     aiTrainingDataUnsavedRecords: Record<MatrxRecordId, Partial<AiTrainingDataData>>;
     aiTrainingDataSelectedRecordIds: MatrxRecordId[];
     aiTrainingDataIsLoading: boolean;
@@ -830,7 +889,11 @@ type UseAiTrainingDataWithFetchReturn = {
     fetchAiTrainingDataOne: (recordId: MatrxRecordId) => void;
     fetchAiTrainingDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAiTrainingDataAll: () => void;
-    fetchAiTrainingDataPaginated: (page: number, pageSize: number) => void;
+    fetchAiTrainingDataPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAiTrainingDataWithFetch = (): UseAiTrainingDataWithFetchReturn => {
@@ -838,6 +901,7 @@ export const useAiTrainingDataWithFetch = (): UseAiTrainingDataWithFetchReturn =
         selectors: aiTrainingDataSelectors,
         actions: aiTrainingDataActions,
         allRecords: aiTrainingDataRecords,
+        recordsById: aiTrainingDataRecordsById,
         unsavedRecords: aiTrainingDataUnsavedRecords,
         selectedRecordIds: aiTrainingDataSelectedRecordIds,
         isLoading: aiTrainingDataIsLoading,
@@ -866,6 +930,7 @@ export const useAiTrainingDataWithFetch = (): UseAiTrainingDataWithFetchReturn =
         aiTrainingDataSelectors,
         aiTrainingDataActions,
         aiTrainingDataRecords,
+        aiTrainingDataRecordsById,
         aiTrainingDataUnsavedRecords,
         aiTrainingDataSelectedRecordIds,
         aiTrainingDataIsLoading,
@@ -896,6 +961,7 @@ type UseAppletWithFetchReturn = {
     appletSelectors: EntitySelectors<"applet">;
     appletActions: EntityActions<"applet">;
     appletRecords: Record<MatrxRecordId, AppletData>;
+    appletRecordsById: Record<string, AppletData>;
     appletUnsavedRecords: Record<MatrxRecordId, Partial<AppletData>>;
     appletSelectedRecordIds: MatrxRecordId[];
     appletIsLoading: boolean;
@@ -916,7 +982,11 @@ type UseAppletWithFetchReturn = {
     fetchAppletOne: (recordId: MatrxRecordId) => void;
     fetchAppletOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAppletAll: () => void;
-    fetchAppletPaginated: (page: number, pageSize: number) => void;
+    fetchAppletPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAppletWithFetch = (): UseAppletWithFetchReturn => {
@@ -924,6 +994,7 @@ export const useAppletWithFetch = (): UseAppletWithFetchReturn => {
         selectors: appletSelectors,
         actions: appletActions,
         allRecords: appletRecords,
+        recordsById: appletRecordsById,
         unsavedRecords: appletUnsavedRecords,
         selectedRecordIds: appletSelectedRecordIds,
         isLoading: appletIsLoading,
@@ -952,6 +1023,7 @@ export const useAppletWithFetch = (): UseAppletWithFetchReturn => {
         appletSelectors,
         appletActions,
         appletRecords,
+        appletRecordsById,
         appletUnsavedRecords,
         appletSelectedRecordIds,
         appletIsLoading,
@@ -982,6 +1054,7 @@ type UseAppletContainersWithFetchReturn = {
     appletContainersSelectors: EntitySelectors<"appletContainers">;
     appletContainersActions: EntityActions<"appletContainers">;
     appletContainersRecords: Record<MatrxRecordId, AppletContainersData>;
+    appletContainersRecordsById: Record<string, AppletContainersData>;
     appletContainersUnsavedRecords: Record<MatrxRecordId, Partial<AppletContainersData>>;
     appletContainersSelectedRecordIds: MatrxRecordId[];
     appletContainersIsLoading: boolean;
@@ -1002,7 +1075,11 @@ type UseAppletContainersWithFetchReturn = {
     fetchAppletContainersOne: (recordId: MatrxRecordId) => void;
     fetchAppletContainersOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAppletContainersAll: () => void;
-    fetchAppletContainersPaginated: (page: number, pageSize: number) => void;
+    fetchAppletContainersPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAppletContainersWithFetch = (): UseAppletContainersWithFetchReturn => {
@@ -1010,6 +1087,7 @@ export const useAppletContainersWithFetch = (): UseAppletContainersWithFetchRetu
         selectors: appletContainersSelectors,
         actions: appletContainersActions,
         allRecords: appletContainersRecords,
+        recordsById: appletContainersRecordsById,
         unsavedRecords: appletContainersUnsavedRecords,
         selectedRecordIds: appletContainersSelectedRecordIds,
         isLoading: appletContainersIsLoading,
@@ -1038,6 +1116,7 @@ export const useAppletContainersWithFetch = (): UseAppletContainersWithFetchRetu
         appletContainersSelectors,
         appletContainersActions,
         appletContainersRecords,
+        appletContainersRecordsById,
         appletContainersUnsavedRecords,
         appletContainersSelectedRecordIds,
         appletContainersIsLoading,
@@ -1068,6 +1147,7 @@ type UseArgWithFetchReturn = {
     argSelectors: EntitySelectors<"arg">;
     argActions: EntityActions<"arg">;
     argRecords: Record<MatrxRecordId, ArgData>;
+    argRecordsById: Record<string, ArgData>;
     argUnsavedRecords: Record<MatrxRecordId, Partial<ArgData>>;
     argSelectedRecordIds: MatrxRecordId[];
     argIsLoading: boolean;
@@ -1088,7 +1168,11 @@ type UseArgWithFetchReturn = {
     fetchArgOne: (recordId: MatrxRecordId) => void;
     fetchArgOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchArgAll: () => void;
-    fetchArgPaginated: (page: number, pageSize: number) => void;
+    fetchArgPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useArgWithFetch = (): UseArgWithFetchReturn => {
@@ -1096,6 +1180,7 @@ export const useArgWithFetch = (): UseArgWithFetchReturn => {
         selectors: argSelectors,
         actions: argActions,
         allRecords: argRecords,
+        recordsById: argRecordsById,
         unsavedRecords: argUnsavedRecords,
         selectedRecordIds: argSelectedRecordIds,
         isLoading: argIsLoading,
@@ -1124,6 +1209,7 @@ export const useArgWithFetch = (): UseArgWithFetchReturn => {
         argSelectors,
         argActions,
         argRecords,
+        argRecordsById,
         argUnsavedRecords,
         argSelectedRecordIds,
         argIsLoading,
@@ -1154,6 +1240,7 @@ type UseAudioLabelWithFetchReturn = {
     audioLabelSelectors: EntitySelectors<"audioLabel">;
     audioLabelActions: EntityActions<"audioLabel">;
     audioLabelRecords: Record<MatrxRecordId, AudioLabelData>;
+    audioLabelRecordsById: Record<string, AudioLabelData>;
     audioLabelUnsavedRecords: Record<MatrxRecordId, Partial<AudioLabelData>>;
     audioLabelSelectedRecordIds: MatrxRecordId[];
     audioLabelIsLoading: boolean;
@@ -1174,7 +1261,11 @@ type UseAudioLabelWithFetchReturn = {
     fetchAudioLabelOne: (recordId: MatrxRecordId) => void;
     fetchAudioLabelOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAudioLabelAll: () => void;
-    fetchAudioLabelPaginated: (page: number, pageSize: number) => void;
+    fetchAudioLabelPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAudioLabelWithFetch = (): UseAudioLabelWithFetchReturn => {
@@ -1182,6 +1273,7 @@ export const useAudioLabelWithFetch = (): UseAudioLabelWithFetchReturn => {
         selectors: audioLabelSelectors,
         actions: audioLabelActions,
         allRecords: audioLabelRecords,
+        recordsById: audioLabelRecordsById,
         unsavedRecords: audioLabelUnsavedRecords,
         selectedRecordIds: audioLabelSelectedRecordIds,
         isLoading: audioLabelIsLoading,
@@ -1210,6 +1302,7 @@ export const useAudioLabelWithFetch = (): UseAudioLabelWithFetchReturn => {
         audioLabelSelectors,
         audioLabelActions,
         audioLabelRecords,
+        audioLabelRecordsById,
         audioLabelUnsavedRecords,
         audioLabelSelectedRecordIds,
         audioLabelIsLoading,
@@ -1240,6 +1333,7 @@ type UseAudioRecordingWithFetchReturn = {
     audioRecordingSelectors: EntitySelectors<"audioRecording">;
     audioRecordingActions: EntityActions<"audioRecording">;
     audioRecordingRecords: Record<MatrxRecordId, AudioRecordingData>;
+    audioRecordingRecordsById: Record<string, AudioRecordingData>;
     audioRecordingUnsavedRecords: Record<MatrxRecordId, Partial<AudioRecordingData>>;
     audioRecordingSelectedRecordIds: MatrxRecordId[];
     audioRecordingIsLoading: boolean;
@@ -1260,7 +1354,11 @@ type UseAudioRecordingWithFetchReturn = {
     fetchAudioRecordingOne: (recordId: MatrxRecordId) => void;
     fetchAudioRecordingOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAudioRecordingAll: () => void;
-    fetchAudioRecordingPaginated: (page: number, pageSize: number) => void;
+    fetchAudioRecordingPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAudioRecordingWithFetch = (): UseAudioRecordingWithFetchReturn => {
@@ -1268,6 +1366,7 @@ export const useAudioRecordingWithFetch = (): UseAudioRecordingWithFetchReturn =
         selectors: audioRecordingSelectors,
         actions: audioRecordingActions,
         allRecords: audioRecordingRecords,
+        recordsById: audioRecordingRecordsById,
         unsavedRecords: audioRecordingUnsavedRecords,
         selectedRecordIds: audioRecordingSelectedRecordIds,
         isLoading: audioRecordingIsLoading,
@@ -1296,6 +1395,7 @@ export const useAudioRecordingWithFetch = (): UseAudioRecordingWithFetchReturn =
         audioRecordingSelectors,
         audioRecordingActions,
         audioRecordingRecords,
+        audioRecordingRecordsById,
         audioRecordingUnsavedRecords,
         audioRecordingSelectedRecordIds,
         audioRecordingIsLoading,
@@ -1326,6 +1426,7 @@ type UseAudioRecordingUsersWithFetchReturn = {
     audioRecordingUsersSelectors: EntitySelectors<"audioRecordingUsers">;
     audioRecordingUsersActions: EntityActions<"audioRecordingUsers">;
     audioRecordingUsersRecords: Record<MatrxRecordId, AudioRecordingUsersData>;
+    audioRecordingUsersRecordsById: Record<string, AudioRecordingUsersData>;
     audioRecordingUsersUnsavedRecords: Record<MatrxRecordId, Partial<AudioRecordingUsersData>>;
     audioRecordingUsersSelectedRecordIds: MatrxRecordId[];
     audioRecordingUsersIsLoading: boolean;
@@ -1346,7 +1447,11 @@ type UseAudioRecordingUsersWithFetchReturn = {
     fetchAudioRecordingUsersOne: (recordId: MatrxRecordId) => void;
     fetchAudioRecordingUsersOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAudioRecordingUsersAll: () => void;
-    fetchAudioRecordingUsersPaginated: (page: number, pageSize: number) => void;
+    fetchAudioRecordingUsersPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAudioRecordingUsersWithFetch = (): UseAudioRecordingUsersWithFetchReturn => {
@@ -1354,6 +1459,7 @@ export const useAudioRecordingUsersWithFetch = (): UseAudioRecordingUsersWithFet
         selectors: audioRecordingUsersSelectors,
         actions: audioRecordingUsersActions,
         allRecords: audioRecordingUsersRecords,
+        recordsById: audioRecordingUsersRecordsById,
         unsavedRecords: audioRecordingUsersUnsavedRecords,
         selectedRecordIds: audioRecordingUsersSelectedRecordIds,
         isLoading: audioRecordingUsersIsLoading,
@@ -1382,6 +1488,7 @@ export const useAudioRecordingUsersWithFetch = (): UseAudioRecordingUsersWithFet
         audioRecordingUsersSelectors,
         audioRecordingUsersActions,
         audioRecordingUsersRecords,
+        audioRecordingUsersRecordsById,
         audioRecordingUsersUnsavedRecords,
         audioRecordingUsersSelectedRecordIds,
         audioRecordingUsersIsLoading,
@@ -1412,6 +1519,7 @@ type UseAutomationBoundaryBrokerWithFetchReturn = {
     automationBoundaryBrokerSelectors: EntitySelectors<"automationBoundaryBroker">;
     automationBoundaryBrokerActions: EntityActions<"automationBoundaryBroker">;
     automationBoundaryBrokerRecords: Record<MatrxRecordId, AutomationBoundaryBrokerData>;
+    automationBoundaryBrokerRecordsById: Record<string, AutomationBoundaryBrokerData>;
     automationBoundaryBrokerUnsavedRecords: Record<MatrxRecordId, Partial<AutomationBoundaryBrokerData>>;
     automationBoundaryBrokerSelectedRecordIds: MatrxRecordId[];
     automationBoundaryBrokerIsLoading: boolean;
@@ -1432,7 +1540,11 @@ type UseAutomationBoundaryBrokerWithFetchReturn = {
     fetchAutomationBoundaryBrokerOne: (recordId: MatrxRecordId) => void;
     fetchAutomationBoundaryBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAutomationBoundaryBrokerAll: () => void;
-    fetchAutomationBoundaryBrokerPaginated: (page: number, pageSize: number) => void;
+    fetchAutomationBoundaryBrokerPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAutomationBoundaryBrokerWithFetch = (): UseAutomationBoundaryBrokerWithFetchReturn => {
@@ -1440,6 +1552,7 @@ export const useAutomationBoundaryBrokerWithFetch = (): UseAutomationBoundaryBro
         selectors: automationBoundaryBrokerSelectors,
         actions: automationBoundaryBrokerActions,
         allRecords: automationBoundaryBrokerRecords,
+        recordsById: automationBoundaryBrokerRecordsById,
         unsavedRecords: automationBoundaryBrokerUnsavedRecords,
         selectedRecordIds: automationBoundaryBrokerSelectedRecordIds,
         isLoading: automationBoundaryBrokerIsLoading,
@@ -1468,6 +1581,7 @@ export const useAutomationBoundaryBrokerWithFetch = (): UseAutomationBoundaryBro
         automationBoundaryBrokerSelectors,
         automationBoundaryBrokerActions,
         automationBoundaryBrokerRecords,
+        automationBoundaryBrokerRecordsById,
         automationBoundaryBrokerUnsavedRecords,
         automationBoundaryBrokerSelectedRecordIds,
         automationBoundaryBrokerIsLoading,
@@ -1498,6 +1612,7 @@ type UseAutomationMatrixWithFetchReturn = {
     automationMatrixSelectors: EntitySelectors<"automationMatrix">;
     automationMatrixActions: EntityActions<"automationMatrix">;
     automationMatrixRecords: Record<MatrxRecordId, AutomationMatrixData>;
+    automationMatrixRecordsById: Record<string, AutomationMatrixData>;
     automationMatrixUnsavedRecords: Record<MatrxRecordId, Partial<AutomationMatrixData>>;
     automationMatrixSelectedRecordIds: MatrxRecordId[];
     automationMatrixIsLoading: boolean;
@@ -1518,7 +1633,11 @@ type UseAutomationMatrixWithFetchReturn = {
     fetchAutomationMatrixOne: (recordId: MatrxRecordId) => void;
     fetchAutomationMatrixOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchAutomationMatrixAll: () => void;
-    fetchAutomationMatrixPaginated: (page: number, pageSize: number) => void;
+    fetchAutomationMatrixPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useAutomationMatrixWithFetch = (): UseAutomationMatrixWithFetchReturn => {
@@ -1526,6 +1645,7 @@ export const useAutomationMatrixWithFetch = (): UseAutomationMatrixWithFetchRetu
         selectors: automationMatrixSelectors,
         actions: automationMatrixActions,
         allRecords: automationMatrixRecords,
+        recordsById: automationMatrixRecordsById,
         unsavedRecords: automationMatrixUnsavedRecords,
         selectedRecordIds: automationMatrixSelectedRecordIds,
         isLoading: automationMatrixIsLoading,
@@ -1554,6 +1674,7 @@ export const useAutomationMatrixWithFetch = (): UseAutomationMatrixWithFetchRetu
         automationMatrixSelectors,
         automationMatrixActions,
         automationMatrixRecords,
+        automationMatrixRecordsById,
         automationMatrixUnsavedRecords,
         automationMatrixSelectedRecordIds,
         automationMatrixIsLoading,
@@ -1584,6 +1705,7 @@ type UseBrokerWithFetchReturn = {
     brokerSelectors: EntitySelectors<"broker">;
     brokerActions: EntityActions<"broker">;
     brokerRecords: Record<MatrxRecordId, BrokerData>;
+    brokerRecordsById: Record<string, BrokerData>;
     brokerUnsavedRecords: Record<MatrxRecordId, Partial<BrokerData>>;
     brokerSelectedRecordIds: MatrxRecordId[];
     brokerIsLoading: boolean;
@@ -1604,7 +1726,11 @@ type UseBrokerWithFetchReturn = {
     fetchBrokerOne: (recordId: MatrxRecordId) => void;
     fetchBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchBrokerAll: () => void;
-    fetchBrokerPaginated: (page: number, pageSize: number) => void;
+    fetchBrokerPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useBrokerWithFetch = (): UseBrokerWithFetchReturn => {
@@ -1612,6 +1738,7 @@ export const useBrokerWithFetch = (): UseBrokerWithFetchReturn => {
         selectors: brokerSelectors,
         actions: brokerActions,
         allRecords: brokerRecords,
+        recordsById: brokerRecordsById,
         unsavedRecords: brokerUnsavedRecords,
         selectedRecordIds: brokerSelectedRecordIds,
         isLoading: brokerIsLoading,
@@ -1640,6 +1767,7 @@ export const useBrokerWithFetch = (): UseBrokerWithFetchReturn => {
         brokerSelectors,
         brokerActions,
         brokerRecords,
+        brokerRecordsById,
         brokerUnsavedRecords,
         brokerSelectedRecordIds,
         brokerIsLoading,
@@ -1670,6 +1798,7 @@ type UseBrokerValueWithFetchReturn = {
     brokerValueSelectors: EntitySelectors<"brokerValue">;
     brokerValueActions: EntityActions<"brokerValue">;
     brokerValueRecords: Record<MatrxRecordId, BrokerValueData>;
+    brokerValueRecordsById: Record<string, BrokerValueData>;
     brokerValueUnsavedRecords: Record<MatrxRecordId, Partial<BrokerValueData>>;
     brokerValueSelectedRecordIds: MatrxRecordId[];
     brokerValueIsLoading: boolean;
@@ -1690,7 +1819,11 @@ type UseBrokerValueWithFetchReturn = {
     fetchBrokerValueOne: (recordId: MatrxRecordId) => void;
     fetchBrokerValueOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchBrokerValueAll: () => void;
-    fetchBrokerValuePaginated: (page: number, pageSize: number) => void;
+    fetchBrokerValuePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useBrokerValueWithFetch = (): UseBrokerValueWithFetchReturn => {
@@ -1698,6 +1831,7 @@ export const useBrokerValueWithFetch = (): UseBrokerValueWithFetchReturn => {
         selectors: brokerValueSelectors,
         actions: brokerValueActions,
         allRecords: brokerValueRecords,
+        recordsById: brokerValueRecordsById,
         unsavedRecords: brokerValueUnsavedRecords,
         selectedRecordIds: brokerValueSelectedRecordIds,
         isLoading: brokerValueIsLoading,
@@ -1726,6 +1860,7 @@ export const useBrokerValueWithFetch = (): UseBrokerValueWithFetchReturn => {
         brokerValueSelectors,
         brokerValueActions,
         brokerValueRecords,
+        brokerValueRecordsById,
         brokerValueUnsavedRecords,
         brokerValueSelectedRecordIds,
         brokerValueIsLoading,
@@ -1756,6 +1891,7 @@ type UseBucketStructuresWithFetchReturn = {
     bucketStructuresSelectors: EntitySelectors<"bucketStructures">;
     bucketStructuresActions: EntityActions<"bucketStructures">;
     bucketStructuresRecords: Record<MatrxRecordId, BucketStructuresData>;
+    bucketStructuresRecordsById: Record<string, BucketStructuresData>;
     bucketStructuresUnsavedRecords: Record<MatrxRecordId, Partial<BucketStructuresData>>;
     bucketStructuresSelectedRecordIds: MatrxRecordId[];
     bucketStructuresIsLoading: boolean;
@@ -1776,7 +1912,11 @@ type UseBucketStructuresWithFetchReturn = {
     fetchBucketStructuresOne: (recordId: MatrxRecordId) => void;
     fetchBucketStructuresOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchBucketStructuresAll: () => void;
-    fetchBucketStructuresPaginated: (page: number, pageSize: number) => void;
+    fetchBucketStructuresPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useBucketStructuresWithFetch = (): UseBucketStructuresWithFetchReturn => {
@@ -1784,6 +1924,7 @@ export const useBucketStructuresWithFetch = (): UseBucketStructuresWithFetchRetu
         selectors: bucketStructuresSelectors,
         actions: bucketStructuresActions,
         allRecords: bucketStructuresRecords,
+        recordsById: bucketStructuresRecordsById,
         unsavedRecords: bucketStructuresUnsavedRecords,
         selectedRecordIds: bucketStructuresSelectedRecordIds,
         isLoading: bucketStructuresIsLoading,
@@ -1812,6 +1953,7 @@ export const useBucketStructuresWithFetch = (): UseBucketStructuresWithFetchRetu
         bucketStructuresSelectors,
         bucketStructuresActions,
         bucketStructuresRecords,
+        bucketStructuresRecordsById,
         bucketStructuresUnsavedRecords,
         bucketStructuresSelectedRecordIds,
         bucketStructuresIsLoading,
@@ -1842,6 +1984,7 @@ type UseBucketTreeStructuresWithFetchReturn = {
     bucketTreeStructuresSelectors: EntitySelectors<"bucketTreeStructures">;
     bucketTreeStructuresActions: EntityActions<"bucketTreeStructures">;
     bucketTreeStructuresRecords: Record<MatrxRecordId, BucketTreeStructuresData>;
+    bucketTreeStructuresRecordsById: Record<string, BucketTreeStructuresData>;
     bucketTreeStructuresUnsavedRecords: Record<MatrxRecordId, Partial<BucketTreeStructuresData>>;
     bucketTreeStructuresSelectedRecordIds: MatrxRecordId[];
     bucketTreeStructuresIsLoading: boolean;
@@ -1862,7 +2005,11 @@ type UseBucketTreeStructuresWithFetchReturn = {
     fetchBucketTreeStructuresOne: (recordId: MatrxRecordId) => void;
     fetchBucketTreeStructuresOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchBucketTreeStructuresAll: () => void;
-    fetchBucketTreeStructuresPaginated: (page: number, pageSize: number) => void;
+    fetchBucketTreeStructuresPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useBucketTreeStructuresWithFetch = (): UseBucketTreeStructuresWithFetchReturn => {
@@ -1870,6 +2017,7 @@ export const useBucketTreeStructuresWithFetch = (): UseBucketTreeStructuresWithF
         selectors: bucketTreeStructuresSelectors,
         actions: bucketTreeStructuresActions,
         allRecords: bucketTreeStructuresRecords,
+        recordsById: bucketTreeStructuresRecordsById,
         unsavedRecords: bucketTreeStructuresUnsavedRecords,
         selectedRecordIds: bucketTreeStructuresSelectedRecordIds,
         isLoading: bucketTreeStructuresIsLoading,
@@ -1898,6 +2046,7 @@ export const useBucketTreeStructuresWithFetch = (): UseBucketTreeStructuresWithF
         bucketTreeStructuresSelectors,
         bucketTreeStructuresActions,
         bucketTreeStructuresRecords,
+        bucketTreeStructuresRecordsById,
         bucketTreeStructuresUnsavedRecords,
         bucketTreeStructuresSelectedRecordIds,
         bucketTreeStructuresIsLoading,
@@ -1928,6 +2077,7 @@ type UseCategoryWithFetchReturn = {
     categorySelectors: EntitySelectors<"category">;
     categoryActions: EntityActions<"category">;
     categoryRecords: Record<MatrxRecordId, CategoryData>;
+    categoryRecordsById: Record<string, CategoryData>;
     categoryUnsavedRecords: Record<MatrxRecordId, Partial<CategoryData>>;
     categorySelectedRecordIds: MatrxRecordId[];
     categoryIsLoading: boolean;
@@ -1948,7 +2098,11 @@ type UseCategoryWithFetchReturn = {
     fetchCategoryOne: (recordId: MatrxRecordId) => void;
     fetchCategoryOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchCategoryAll: () => void;
-    fetchCategoryPaginated: (page: number, pageSize: number) => void;
+    fetchCategoryPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useCategoryWithFetch = (): UseCategoryWithFetchReturn => {
@@ -1956,6 +2110,7 @@ export const useCategoryWithFetch = (): UseCategoryWithFetchReturn => {
         selectors: categorySelectors,
         actions: categoryActions,
         allRecords: categoryRecords,
+        recordsById: categoryRecordsById,
         unsavedRecords: categoryUnsavedRecords,
         selectedRecordIds: categorySelectedRecordIds,
         isLoading: categoryIsLoading,
@@ -1984,6 +2139,7 @@ export const useCategoryWithFetch = (): UseCategoryWithFetchReturn => {
         categorySelectors,
         categoryActions,
         categoryRecords,
+        categoryRecordsById,
         categoryUnsavedRecords,
         categorySelectedRecordIds,
         categoryIsLoading,
@@ -2014,6 +2170,7 @@ type UseCompiledRecipeWithFetchReturn = {
     compiledRecipeSelectors: EntitySelectors<"compiledRecipe">;
     compiledRecipeActions: EntityActions<"compiledRecipe">;
     compiledRecipeRecords: Record<MatrxRecordId, CompiledRecipeData>;
+    compiledRecipeRecordsById: Record<string, CompiledRecipeData>;
     compiledRecipeUnsavedRecords: Record<MatrxRecordId, Partial<CompiledRecipeData>>;
     compiledRecipeSelectedRecordIds: MatrxRecordId[];
     compiledRecipeIsLoading: boolean;
@@ -2046,6 +2203,7 @@ export const useCompiledRecipeWithFetch = (): UseCompiledRecipeWithFetchReturn =
         selectors: compiledRecipeSelectors,
         actions: compiledRecipeActions,
         allRecords: compiledRecipeRecords,
+        recordsById: compiledRecipeRecordsById,
         unsavedRecords: compiledRecipeUnsavedRecords,
         selectedRecordIds: compiledRecipeSelectedRecordIds,
         isLoading: compiledRecipeIsLoading,
@@ -2074,6 +2232,7 @@ export const useCompiledRecipeWithFetch = (): UseCompiledRecipeWithFetchReturn =
         compiledRecipeSelectors,
         compiledRecipeActions,
         compiledRecipeRecords,
+        compiledRecipeRecordsById,
         compiledRecipeUnsavedRecords,
         compiledRecipeSelectedRecordIds,
         compiledRecipeIsLoading,
@@ -2104,6 +2263,7 @@ type UseComponentGroupsWithFetchReturn = {
     componentGroupsSelectors: EntitySelectors<"componentGroups">;
     componentGroupsActions: EntityActions<"componentGroups">;
     componentGroupsRecords: Record<MatrxRecordId, ComponentGroupsData>;
+    componentGroupsRecordsById: Record<string, ComponentGroupsData>;
     componentGroupsUnsavedRecords: Record<MatrxRecordId, Partial<ComponentGroupsData>>;
     componentGroupsSelectedRecordIds: MatrxRecordId[];
     componentGroupsIsLoading: boolean;
@@ -2124,7 +2284,11 @@ type UseComponentGroupsWithFetchReturn = {
     fetchComponentGroupsOne: (recordId: MatrxRecordId) => void;
     fetchComponentGroupsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchComponentGroupsAll: () => void;
-    fetchComponentGroupsPaginated: (page: number, pageSize: number) => void;
+    fetchComponentGroupsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useComponentGroupsWithFetch = (): UseComponentGroupsWithFetchReturn => {
@@ -2132,6 +2296,7 @@ export const useComponentGroupsWithFetch = (): UseComponentGroupsWithFetchReturn
         selectors: componentGroupsSelectors,
         actions: componentGroupsActions,
         allRecords: componentGroupsRecords,
+        recordsById: componentGroupsRecordsById,
         unsavedRecords: componentGroupsUnsavedRecords,
         selectedRecordIds: componentGroupsSelectedRecordIds,
         isLoading: componentGroupsIsLoading,
@@ -2160,6 +2325,7 @@ export const useComponentGroupsWithFetch = (): UseComponentGroupsWithFetchReturn
         componentGroupsSelectors,
         componentGroupsActions,
         componentGroupsRecords,
+        componentGroupsRecordsById,
         componentGroupsUnsavedRecords,
         componentGroupsSelectedRecordIds,
         componentGroupsIsLoading,
@@ -2190,6 +2356,7 @@ type UseContainerFieldsWithFetchReturn = {
     containerFieldsSelectors: EntitySelectors<"containerFields">;
     containerFieldsActions: EntityActions<"containerFields">;
     containerFieldsRecords: Record<MatrxRecordId, ContainerFieldsData>;
+    containerFieldsRecordsById: Record<string, ContainerFieldsData>;
     containerFieldsUnsavedRecords: Record<MatrxRecordId, Partial<ContainerFieldsData>>;
     containerFieldsSelectedRecordIds: MatrxRecordId[];
     containerFieldsIsLoading: boolean;
@@ -2210,7 +2377,11 @@ type UseContainerFieldsWithFetchReturn = {
     fetchContainerFieldsOne: (recordId: MatrxRecordId) => void;
     fetchContainerFieldsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchContainerFieldsAll: () => void;
-    fetchContainerFieldsPaginated: (page: number, pageSize: number) => void;
+    fetchContainerFieldsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useContainerFieldsWithFetch = (): UseContainerFieldsWithFetchReturn => {
@@ -2218,6 +2389,7 @@ export const useContainerFieldsWithFetch = (): UseContainerFieldsWithFetchReturn
         selectors: containerFieldsSelectors,
         actions: containerFieldsActions,
         allRecords: containerFieldsRecords,
+        recordsById: containerFieldsRecordsById,
         unsavedRecords: containerFieldsUnsavedRecords,
         selectedRecordIds: containerFieldsSelectedRecordIds,
         isLoading: containerFieldsIsLoading,
@@ -2246,6 +2418,7 @@ export const useContainerFieldsWithFetch = (): UseContainerFieldsWithFetchReturn
         containerFieldsSelectors,
         containerFieldsActions,
         containerFieldsRecords,
+        containerFieldsRecordsById,
         containerFieldsUnsavedRecords,
         containerFieldsSelectedRecordIds,
         containerFieldsIsLoading,
@@ -2276,6 +2449,7 @@ type UseConversationWithFetchReturn = {
     conversationSelectors: EntitySelectors<"conversation">;
     conversationActions: EntityActions<"conversation">;
     conversationRecords: Record<MatrxRecordId, ConversationData>;
+    conversationRecordsById: Record<string, ConversationData>;
     conversationUnsavedRecords: Record<MatrxRecordId, Partial<ConversationData>>;
     conversationSelectedRecordIds: MatrxRecordId[];
     conversationIsLoading: boolean;
@@ -2296,7 +2470,11 @@ type UseConversationWithFetchReturn = {
     fetchConversationOne: (recordId: MatrxRecordId) => void;
     fetchConversationOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchConversationAll: () => void;
-    fetchConversationPaginated: (page: number, pageSize: number) => void;
+    fetchConversationPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useConversationWithFetch = (): UseConversationWithFetchReturn => {
@@ -2304,6 +2482,7 @@ export const useConversationWithFetch = (): UseConversationWithFetchReturn => {
         selectors: conversationSelectors,
         actions: conversationActions,
         allRecords: conversationRecords,
+        recordsById: conversationRecordsById,
         unsavedRecords: conversationUnsavedRecords,
         selectedRecordIds: conversationSelectedRecordIds,
         isLoading: conversationIsLoading,
@@ -2332,6 +2511,7 @@ export const useConversationWithFetch = (): UseConversationWithFetchReturn => {
         conversationSelectors,
         conversationActions,
         conversationRecords,
+        conversationRecordsById,
         conversationUnsavedRecords,
         conversationSelectedRecordIds,
         conversationIsLoading,
@@ -2362,6 +2542,7 @@ type UseCustomAppConfigsWithFetchReturn = {
     customAppConfigsSelectors: EntitySelectors<"customAppConfigs">;
     customAppConfigsActions: EntityActions<"customAppConfigs">;
     customAppConfigsRecords: Record<MatrxRecordId, CustomAppConfigsData>;
+    customAppConfigsRecordsById: Record<string, CustomAppConfigsData>;
     customAppConfigsUnsavedRecords: Record<MatrxRecordId, Partial<CustomAppConfigsData>>;
     customAppConfigsSelectedRecordIds: MatrxRecordId[];
     customAppConfigsIsLoading: boolean;
@@ -2382,7 +2563,11 @@ type UseCustomAppConfigsWithFetchReturn = {
     fetchCustomAppConfigsOne: (recordId: MatrxRecordId) => void;
     fetchCustomAppConfigsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchCustomAppConfigsAll: () => void;
-    fetchCustomAppConfigsPaginated: (page: number, pageSize: number) => void;
+    fetchCustomAppConfigsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useCustomAppConfigsWithFetch = (): UseCustomAppConfigsWithFetchReturn => {
@@ -2390,6 +2575,7 @@ export const useCustomAppConfigsWithFetch = (): UseCustomAppConfigsWithFetchRetu
         selectors: customAppConfigsSelectors,
         actions: customAppConfigsActions,
         allRecords: customAppConfigsRecords,
+        recordsById: customAppConfigsRecordsById,
         unsavedRecords: customAppConfigsUnsavedRecords,
         selectedRecordIds: customAppConfigsSelectedRecordIds,
         isLoading: customAppConfigsIsLoading,
@@ -2418,6 +2604,7 @@ export const useCustomAppConfigsWithFetch = (): UseCustomAppConfigsWithFetchRetu
         customAppConfigsSelectors,
         customAppConfigsActions,
         customAppConfigsRecords,
+        customAppConfigsRecordsById,
         customAppConfigsUnsavedRecords,
         customAppConfigsSelectedRecordIds,
         customAppConfigsIsLoading,
@@ -2448,6 +2635,7 @@ type UseCustomAppletConfigsWithFetchReturn = {
     customAppletConfigsSelectors: EntitySelectors<"customAppletConfigs">;
     customAppletConfigsActions: EntityActions<"customAppletConfigs">;
     customAppletConfigsRecords: Record<MatrxRecordId, CustomAppletConfigsData>;
+    customAppletConfigsRecordsById: Record<string, CustomAppletConfigsData>;
     customAppletConfigsUnsavedRecords: Record<MatrxRecordId, Partial<CustomAppletConfigsData>>;
     customAppletConfigsSelectedRecordIds: MatrxRecordId[];
     customAppletConfigsIsLoading: boolean;
@@ -2468,7 +2656,11 @@ type UseCustomAppletConfigsWithFetchReturn = {
     fetchCustomAppletConfigsOne: (recordId: MatrxRecordId) => void;
     fetchCustomAppletConfigsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchCustomAppletConfigsAll: () => void;
-    fetchCustomAppletConfigsPaginated: (page: number, pageSize: number) => void;
+    fetchCustomAppletConfigsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useCustomAppletConfigsWithFetch = (): UseCustomAppletConfigsWithFetchReturn => {
@@ -2476,6 +2668,7 @@ export const useCustomAppletConfigsWithFetch = (): UseCustomAppletConfigsWithFet
         selectors: customAppletConfigsSelectors,
         actions: customAppletConfigsActions,
         allRecords: customAppletConfigsRecords,
+        recordsById: customAppletConfigsRecordsById,
         unsavedRecords: customAppletConfigsUnsavedRecords,
         selectedRecordIds: customAppletConfigsSelectedRecordIds,
         isLoading: customAppletConfigsIsLoading,
@@ -2504,6 +2697,7 @@ export const useCustomAppletConfigsWithFetch = (): UseCustomAppletConfigsWithFet
         customAppletConfigsSelectors,
         customAppletConfigsActions,
         customAppletConfigsRecords,
+        customAppletConfigsRecordsById,
         customAppletConfigsUnsavedRecords,
         customAppletConfigsSelectedRecordIds,
         customAppletConfigsIsLoading,
@@ -2555,16 +2749,19 @@ type UseDataBrokerWithFetchReturn = {
     fetchDataBrokerOne: (recordId: MatrxRecordId) => void;
     fetchDataBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchDataBrokerAll: () => void;
-    fetchDataBrokerPaginated: (page: number, pageSize: number) => void;
+    fetchDataBrokerPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
-
-import { useMemo } from 'react';
 
 export const useDataBrokerWithFetch = (): UseDataBrokerWithFetchReturn => {
     const {
         selectors: dataBrokerSelectors,
         actions: dataBrokerActions,
         allRecords: dataBrokerRecords,
+        recordsById: dataBrokerRecordsById,
         unsavedRecords: dataBrokerUnsavedRecords,
         selectedRecordIds: dataBrokerSelectedRecordIds,
         isLoading: dataBrokerIsLoading,
@@ -2588,16 +2785,6 @@ export const useDataBrokerWithFetch = (): UseDataBrokerWithFetchReturn => {
         fetchPaginated: fetchDataBrokerPaginated,
 
     } = useEntityWithFetch("dataBroker");
-
-    const dataBrokerRecordsById = useMemo(() => {
-        const recordsById: Record<string, any> = {};
-        Object.entries(dataBrokerRecords).forEach(([key, value]) => {
-            const cleanKey = key.startsWith('id:') ? key.slice(3) : key;
-            recordsById[cleanKey] = value;
-        });
-        
-        return recordsById;
-    }, [dataBrokerRecords]);
 
     return {
         dataBrokerSelectors,
@@ -2634,6 +2821,7 @@ type UseDataInputComponentWithFetchReturn = {
     dataInputComponentSelectors: EntitySelectors<"dataInputComponent">;
     dataInputComponentActions: EntityActions<"dataInputComponent">;
     dataInputComponentRecords: Record<MatrxRecordId, DataInputComponentData>;
+    dataInputComponentRecordsById: Record<string, DataInputComponentData>;
     dataInputComponentUnsavedRecords: Record<MatrxRecordId, Partial<DataInputComponentData>>;
     dataInputComponentSelectedRecordIds: MatrxRecordId[];
     dataInputComponentIsLoading: boolean;
@@ -2654,7 +2842,11 @@ type UseDataInputComponentWithFetchReturn = {
     fetchDataInputComponentOne: (recordId: MatrxRecordId) => void;
     fetchDataInputComponentOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchDataInputComponentAll: () => void;
-    fetchDataInputComponentPaginated: (page: number, pageSize: number) => void;
+    fetchDataInputComponentPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useDataInputComponentWithFetch = (): UseDataInputComponentWithFetchReturn => {
@@ -2662,6 +2854,7 @@ export const useDataInputComponentWithFetch = (): UseDataInputComponentWithFetch
         selectors: dataInputComponentSelectors,
         actions: dataInputComponentActions,
         allRecords: dataInputComponentRecords,
+        recordsById: dataInputComponentRecordsById,
         unsavedRecords: dataInputComponentUnsavedRecords,
         selectedRecordIds: dataInputComponentSelectedRecordIds,
         isLoading: dataInputComponentIsLoading,
@@ -2690,6 +2883,7 @@ export const useDataInputComponentWithFetch = (): UseDataInputComponentWithFetch
         dataInputComponentSelectors,
         dataInputComponentActions,
         dataInputComponentRecords,
+        dataInputComponentRecordsById,
         dataInputComponentUnsavedRecords,
         dataInputComponentSelectedRecordIds,
         dataInputComponentIsLoading,
@@ -2720,6 +2914,7 @@ type UseDataOutputComponentWithFetchReturn = {
     dataOutputComponentSelectors: EntitySelectors<"dataOutputComponent">;
     dataOutputComponentActions: EntityActions<"dataOutputComponent">;
     dataOutputComponentRecords: Record<MatrxRecordId, DataOutputComponentData>;
+    dataOutputComponentRecordsById: Record<string, DataOutputComponentData>;
     dataOutputComponentUnsavedRecords: Record<MatrxRecordId, Partial<DataOutputComponentData>>;
     dataOutputComponentSelectedRecordIds: MatrxRecordId[];
     dataOutputComponentIsLoading: boolean;
@@ -2740,7 +2935,11 @@ type UseDataOutputComponentWithFetchReturn = {
     fetchDataOutputComponentOne: (recordId: MatrxRecordId) => void;
     fetchDataOutputComponentOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchDataOutputComponentAll: () => void;
-    fetchDataOutputComponentPaginated: (page: number, pageSize: number) => void;
+    fetchDataOutputComponentPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useDataOutputComponentWithFetch = (): UseDataOutputComponentWithFetchReturn => {
@@ -2748,6 +2947,7 @@ export const useDataOutputComponentWithFetch = (): UseDataOutputComponentWithFet
         selectors: dataOutputComponentSelectors,
         actions: dataOutputComponentActions,
         allRecords: dataOutputComponentRecords,
+        recordsById: dataOutputComponentRecordsById,
         unsavedRecords: dataOutputComponentUnsavedRecords,
         selectedRecordIds: dataOutputComponentSelectedRecordIds,
         isLoading: dataOutputComponentIsLoading,
@@ -2776,6 +2976,7 @@ export const useDataOutputComponentWithFetch = (): UseDataOutputComponentWithFet
         dataOutputComponentSelectors,
         dataOutputComponentActions,
         dataOutputComponentRecords,
+        dataOutputComponentRecordsById,
         dataOutputComponentUnsavedRecords,
         dataOutputComponentSelectedRecordIds,
         dataOutputComponentIsLoading,
@@ -2806,6 +3007,7 @@ type UseDisplayOptionWithFetchReturn = {
     displayOptionSelectors: EntitySelectors<"displayOption">;
     displayOptionActions: EntityActions<"displayOption">;
     displayOptionRecords: Record<MatrxRecordId, DisplayOptionData>;
+    displayOptionRecordsById: Record<string, DisplayOptionData>;
     displayOptionUnsavedRecords: Record<MatrxRecordId, Partial<DisplayOptionData>>;
     displayOptionSelectedRecordIds: MatrxRecordId[];
     displayOptionIsLoading: boolean;
@@ -2826,7 +3028,11 @@ type UseDisplayOptionWithFetchReturn = {
     fetchDisplayOptionOne: (recordId: MatrxRecordId) => void;
     fetchDisplayOptionOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchDisplayOptionAll: () => void;
-    fetchDisplayOptionPaginated: (page: number, pageSize: number) => void;
+    fetchDisplayOptionPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useDisplayOptionWithFetch = (): UseDisplayOptionWithFetchReturn => {
@@ -2834,6 +3040,7 @@ export const useDisplayOptionWithFetch = (): UseDisplayOptionWithFetchReturn => 
         selectors: displayOptionSelectors,
         actions: displayOptionActions,
         allRecords: displayOptionRecords,
+        recordsById: displayOptionRecordsById,
         unsavedRecords: displayOptionUnsavedRecords,
         selectedRecordIds: displayOptionSelectedRecordIds,
         isLoading: displayOptionIsLoading,
@@ -2862,6 +3069,7 @@ export const useDisplayOptionWithFetch = (): UseDisplayOptionWithFetchReturn => 
         displayOptionSelectors,
         displayOptionActions,
         displayOptionRecords,
+        displayOptionRecordsById,
         displayOptionUnsavedRecords,
         displayOptionSelectedRecordIds,
         displayOptionIsLoading,
@@ -2892,6 +3100,7 @@ type UseEmailsWithFetchReturn = {
     emailsSelectors: EntitySelectors<"emails">;
     emailsActions: EntityActions<"emails">;
     emailsRecords: Record<MatrxRecordId, EmailsData>;
+    emailsRecordsById: Record<string, EmailsData>;
     emailsUnsavedRecords: Record<MatrxRecordId, Partial<EmailsData>>;
     emailsSelectedRecordIds: MatrxRecordId[];
     emailsIsLoading: boolean;
@@ -2912,7 +3121,11 @@ type UseEmailsWithFetchReturn = {
     fetchEmailsOne: (recordId: MatrxRecordId) => void;
     fetchEmailsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchEmailsAll: () => void;
-    fetchEmailsPaginated: (page: number, pageSize: number) => void;
+    fetchEmailsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useEmailsWithFetch = (): UseEmailsWithFetchReturn => {
@@ -2920,6 +3133,7 @@ export const useEmailsWithFetch = (): UseEmailsWithFetchReturn => {
         selectors: emailsSelectors,
         actions: emailsActions,
         allRecords: emailsRecords,
+        recordsById: emailsRecordsById,
         unsavedRecords: emailsUnsavedRecords,
         selectedRecordIds: emailsSelectedRecordIds,
         isLoading: emailsIsLoading,
@@ -2948,6 +3162,7 @@ export const useEmailsWithFetch = (): UseEmailsWithFetchReturn => {
         emailsSelectors,
         emailsActions,
         emailsRecords,
+        emailsRecordsById,
         emailsUnsavedRecords,
         emailsSelectedRecordIds,
         emailsIsLoading,
@@ -2978,6 +3193,7 @@ type UseExtractorWithFetchReturn = {
     extractorSelectors: EntitySelectors<"extractor">;
     extractorActions: EntityActions<"extractor">;
     extractorRecords: Record<MatrxRecordId, ExtractorData>;
+    extractorRecordsById: Record<string, ExtractorData>;
     extractorUnsavedRecords: Record<MatrxRecordId, Partial<ExtractorData>>;
     extractorSelectedRecordIds: MatrxRecordId[];
     extractorIsLoading: boolean;
@@ -2998,7 +3214,11 @@ type UseExtractorWithFetchReturn = {
     fetchExtractorOne: (recordId: MatrxRecordId) => void;
     fetchExtractorOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchExtractorAll: () => void;
-    fetchExtractorPaginated: (page: number, pageSize: number) => void;
+    fetchExtractorPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useExtractorWithFetch = (): UseExtractorWithFetchReturn => {
@@ -3006,6 +3226,7 @@ export const useExtractorWithFetch = (): UseExtractorWithFetchReturn => {
         selectors: extractorSelectors,
         actions: extractorActions,
         allRecords: extractorRecords,
+        recordsById: extractorRecordsById,
         unsavedRecords: extractorUnsavedRecords,
         selectedRecordIds: extractorSelectedRecordIds,
         isLoading: extractorIsLoading,
@@ -3034,6 +3255,7 @@ export const useExtractorWithFetch = (): UseExtractorWithFetchReturn => {
         extractorSelectors,
         extractorActions,
         extractorRecords,
+        extractorRecordsById,
         extractorUnsavedRecords,
         extractorSelectedRecordIds,
         extractorIsLoading,
@@ -3064,6 +3286,7 @@ type UseFieldComponentsWithFetchReturn = {
     fieldComponentsSelectors: EntitySelectors<"fieldComponents">;
     fieldComponentsActions: EntityActions<"fieldComponents">;
     fieldComponentsRecords: Record<MatrxRecordId, FieldComponentsData>;
+    fieldComponentsRecordsById: Record<string, FieldComponentsData>;
     fieldComponentsUnsavedRecords: Record<MatrxRecordId, Partial<FieldComponentsData>>;
     fieldComponentsSelectedRecordIds: MatrxRecordId[];
     fieldComponentsIsLoading: boolean;
@@ -3084,7 +3307,11 @@ type UseFieldComponentsWithFetchReturn = {
     fetchFieldComponentsOne: (recordId: MatrxRecordId) => void;
     fetchFieldComponentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFieldComponentsAll: () => void;
-    fetchFieldComponentsPaginated: (page: number, pageSize: number) => void;
+    fetchFieldComponentsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFieldComponentsWithFetch = (): UseFieldComponentsWithFetchReturn => {
@@ -3092,6 +3319,7 @@ export const useFieldComponentsWithFetch = (): UseFieldComponentsWithFetchReturn
         selectors: fieldComponentsSelectors,
         actions: fieldComponentsActions,
         allRecords: fieldComponentsRecords,
+        recordsById: fieldComponentsRecordsById,
         unsavedRecords: fieldComponentsUnsavedRecords,
         selectedRecordIds: fieldComponentsSelectedRecordIds,
         isLoading: fieldComponentsIsLoading,
@@ -3120,6 +3348,7 @@ export const useFieldComponentsWithFetch = (): UseFieldComponentsWithFetchReturn
         fieldComponentsSelectors,
         fieldComponentsActions,
         fieldComponentsRecords,
+        fieldComponentsRecordsById,
         fieldComponentsUnsavedRecords,
         fieldComponentsSelectedRecordIds,
         fieldComponentsIsLoading,
@@ -3150,6 +3379,7 @@ type UseFileStructureWithFetchReturn = {
     fileStructureSelectors: EntitySelectors<"fileStructure">;
     fileStructureActions: EntityActions<"fileStructure">;
     fileStructureRecords: Record<MatrxRecordId, FileStructureData>;
+    fileStructureRecordsById: Record<string, FileStructureData>;
     fileStructureUnsavedRecords: Record<MatrxRecordId, Partial<FileStructureData>>;
     fileStructureSelectedRecordIds: MatrxRecordId[];
     fileStructureIsLoading: boolean;
@@ -3170,7 +3400,11 @@ type UseFileStructureWithFetchReturn = {
     fetchFileStructureOne: (recordId: MatrxRecordId) => void;
     fetchFileStructureOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFileStructureAll: () => void;
-    fetchFileStructurePaginated: (page: number, pageSize: number) => void;
+    fetchFileStructurePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFileStructureWithFetch = (): UseFileStructureWithFetchReturn => {
@@ -3178,6 +3412,7 @@ export const useFileStructureWithFetch = (): UseFileStructureWithFetchReturn => 
         selectors: fileStructureSelectors,
         actions: fileStructureActions,
         allRecords: fileStructureRecords,
+        recordsById: fileStructureRecordsById,
         unsavedRecords: fileStructureUnsavedRecords,
         selectedRecordIds: fileStructureSelectedRecordIds,
         isLoading: fileStructureIsLoading,
@@ -3206,6 +3441,7 @@ export const useFileStructureWithFetch = (): UseFileStructureWithFetchReturn => 
         fileStructureSelectors,
         fileStructureActions,
         fileStructureRecords,
+        fileStructureRecordsById,
         fileStructureUnsavedRecords,
         fileStructureSelectedRecordIds,
         fileStructureIsLoading,
@@ -3236,6 +3472,7 @@ type UseFlashcardDataWithFetchReturn = {
     flashcardDataSelectors: EntitySelectors<"flashcardData">;
     flashcardDataActions: EntityActions<"flashcardData">;
     flashcardDataRecords: Record<MatrxRecordId, FlashcardDataData>;
+    flashcardDataRecordsById: Record<string, FlashcardDataData>;
     flashcardDataUnsavedRecords: Record<MatrxRecordId, Partial<FlashcardDataData>>;
     flashcardDataSelectedRecordIds: MatrxRecordId[];
     flashcardDataIsLoading: boolean;
@@ -3256,7 +3493,11 @@ type UseFlashcardDataWithFetchReturn = {
     fetchFlashcardDataOne: (recordId: MatrxRecordId) => void;
     fetchFlashcardDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFlashcardDataAll: () => void;
-    fetchFlashcardDataPaginated: (page: number, pageSize: number) => void;
+    fetchFlashcardDataPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFlashcardDataWithFetch = (): UseFlashcardDataWithFetchReturn => {
@@ -3264,6 +3505,7 @@ export const useFlashcardDataWithFetch = (): UseFlashcardDataWithFetchReturn => 
         selectors: flashcardDataSelectors,
         actions: flashcardDataActions,
         allRecords: flashcardDataRecords,
+        recordsById: flashcardDataRecordsById,
         unsavedRecords: flashcardDataUnsavedRecords,
         selectedRecordIds: flashcardDataSelectedRecordIds,
         isLoading: flashcardDataIsLoading,
@@ -3292,6 +3534,7 @@ export const useFlashcardDataWithFetch = (): UseFlashcardDataWithFetchReturn => 
         flashcardDataSelectors,
         flashcardDataActions,
         flashcardDataRecords,
+        flashcardDataRecordsById,
         flashcardDataUnsavedRecords,
         flashcardDataSelectedRecordIds,
         flashcardDataIsLoading,
@@ -3322,6 +3565,7 @@ type UseFlashcardHistoryWithFetchReturn = {
     flashcardHistorySelectors: EntitySelectors<"flashcardHistory">;
     flashcardHistoryActions: EntityActions<"flashcardHistory">;
     flashcardHistoryRecords: Record<MatrxRecordId, FlashcardHistoryData>;
+    flashcardHistoryRecordsById: Record<string, FlashcardHistoryData>;
     flashcardHistoryUnsavedRecords: Record<MatrxRecordId, Partial<FlashcardHistoryData>>;
     flashcardHistorySelectedRecordIds: MatrxRecordId[];
     flashcardHistoryIsLoading: boolean;
@@ -3342,7 +3586,11 @@ type UseFlashcardHistoryWithFetchReturn = {
     fetchFlashcardHistoryOne: (recordId: MatrxRecordId) => void;
     fetchFlashcardHistoryOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFlashcardHistoryAll: () => void;
-    fetchFlashcardHistoryPaginated: (page: number, pageSize: number) => void;
+    fetchFlashcardHistoryPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFlashcardHistoryWithFetch = (): UseFlashcardHistoryWithFetchReturn => {
@@ -3350,6 +3598,7 @@ export const useFlashcardHistoryWithFetch = (): UseFlashcardHistoryWithFetchRetu
         selectors: flashcardHistorySelectors,
         actions: flashcardHistoryActions,
         allRecords: flashcardHistoryRecords,
+        recordsById: flashcardHistoryRecordsById,
         unsavedRecords: flashcardHistoryUnsavedRecords,
         selectedRecordIds: flashcardHistorySelectedRecordIds,
         isLoading: flashcardHistoryIsLoading,
@@ -3378,6 +3627,7 @@ export const useFlashcardHistoryWithFetch = (): UseFlashcardHistoryWithFetchRetu
         flashcardHistorySelectors,
         flashcardHistoryActions,
         flashcardHistoryRecords,
+        flashcardHistoryRecordsById,
         flashcardHistoryUnsavedRecords,
         flashcardHistorySelectedRecordIds,
         flashcardHistoryIsLoading,
@@ -3408,6 +3658,7 @@ type UseFlashcardImagesWithFetchReturn = {
     flashcardImagesSelectors: EntitySelectors<"flashcardImages">;
     flashcardImagesActions: EntityActions<"flashcardImages">;
     flashcardImagesRecords: Record<MatrxRecordId, FlashcardImagesData>;
+    flashcardImagesRecordsById: Record<string, FlashcardImagesData>;
     flashcardImagesUnsavedRecords: Record<MatrxRecordId, Partial<FlashcardImagesData>>;
     flashcardImagesSelectedRecordIds: MatrxRecordId[];
     flashcardImagesIsLoading: boolean;
@@ -3428,7 +3679,11 @@ type UseFlashcardImagesWithFetchReturn = {
     fetchFlashcardImagesOne: (recordId: MatrxRecordId) => void;
     fetchFlashcardImagesOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFlashcardImagesAll: () => void;
-    fetchFlashcardImagesPaginated: (page: number, pageSize: number) => void;
+    fetchFlashcardImagesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFlashcardImagesWithFetch = (): UseFlashcardImagesWithFetchReturn => {
@@ -3436,6 +3691,7 @@ export const useFlashcardImagesWithFetch = (): UseFlashcardImagesWithFetchReturn
         selectors: flashcardImagesSelectors,
         actions: flashcardImagesActions,
         allRecords: flashcardImagesRecords,
+        recordsById: flashcardImagesRecordsById,
         unsavedRecords: flashcardImagesUnsavedRecords,
         selectedRecordIds: flashcardImagesSelectedRecordIds,
         isLoading: flashcardImagesIsLoading,
@@ -3464,6 +3720,7 @@ export const useFlashcardImagesWithFetch = (): UseFlashcardImagesWithFetchReturn
         flashcardImagesSelectors,
         flashcardImagesActions,
         flashcardImagesRecords,
+        flashcardImagesRecordsById,
         flashcardImagesUnsavedRecords,
         flashcardImagesSelectedRecordIds,
         flashcardImagesIsLoading,
@@ -3494,6 +3751,7 @@ type UseFlashcardSetRelationsWithFetchReturn = {
     flashcardSetRelationsSelectors: EntitySelectors<"flashcardSetRelations">;
     flashcardSetRelationsActions: EntityActions<"flashcardSetRelations">;
     flashcardSetRelationsRecords: Record<MatrxRecordId, FlashcardSetRelationsData>;
+    flashcardSetRelationsRecordsById: Record<string, FlashcardSetRelationsData>;
     flashcardSetRelationsUnsavedRecords: Record<MatrxRecordId, Partial<FlashcardSetRelationsData>>;
     flashcardSetRelationsSelectedRecordIds: MatrxRecordId[];
     flashcardSetRelationsIsLoading: boolean;
@@ -3514,7 +3772,11 @@ type UseFlashcardSetRelationsWithFetchReturn = {
     fetchFlashcardSetRelationsOne: (recordId: MatrxRecordId) => void;
     fetchFlashcardSetRelationsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFlashcardSetRelationsAll: () => void;
-    fetchFlashcardSetRelationsPaginated: (page: number, pageSize: number) => void;
+    fetchFlashcardSetRelationsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFlashcardSetRelationsWithFetch = (): UseFlashcardSetRelationsWithFetchReturn => {
@@ -3522,6 +3784,7 @@ export const useFlashcardSetRelationsWithFetch = (): UseFlashcardSetRelationsWit
         selectors: flashcardSetRelationsSelectors,
         actions: flashcardSetRelationsActions,
         allRecords: flashcardSetRelationsRecords,
+        recordsById: flashcardSetRelationsRecordsById,
         unsavedRecords: flashcardSetRelationsUnsavedRecords,
         selectedRecordIds: flashcardSetRelationsSelectedRecordIds,
         isLoading: flashcardSetRelationsIsLoading,
@@ -3550,6 +3813,7 @@ export const useFlashcardSetRelationsWithFetch = (): UseFlashcardSetRelationsWit
         flashcardSetRelationsSelectors,
         flashcardSetRelationsActions,
         flashcardSetRelationsRecords,
+        flashcardSetRelationsRecordsById,
         flashcardSetRelationsUnsavedRecords,
         flashcardSetRelationsSelectedRecordIds,
         flashcardSetRelationsIsLoading,
@@ -3580,6 +3844,7 @@ type UseFlashcardSetsWithFetchReturn = {
     flashcardSetsSelectors: EntitySelectors<"flashcardSets">;
     flashcardSetsActions: EntityActions<"flashcardSets">;
     flashcardSetsRecords: Record<MatrxRecordId, FlashcardSetsData>;
+    flashcardSetsRecordsById: Record<string, FlashcardSetsData>;
     flashcardSetsUnsavedRecords: Record<MatrxRecordId, Partial<FlashcardSetsData>>;
     flashcardSetsSelectedRecordIds: MatrxRecordId[];
     flashcardSetsIsLoading: boolean;
@@ -3600,7 +3865,11 @@ type UseFlashcardSetsWithFetchReturn = {
     fetchFlashcardSetsOne: (recordId: MatrxRecordId) => void;
     fetchFlashcardSetsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFlashcardSetsAll: () => void;
-    fetchFlashcardSetsPaginated: (page: number, pageSize: number) => void;
+    fetchFlashcardSetsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFlashcardSetsWithFetch = (): UseFlashcardSetsWithFetchReturn => {
@@ -3608,6 +3877,7 @@ export const useFlashcardSetsWithFetch = (): UseFlashcardSetsWithFetchReturn => 
         selectors: flashcardSetsSelectors,
         actions: flashcardSetsActions,
         allRecords: flashcardSetsRecords,
+        recordsById: flashcardSetsRecordsById,
         unsavedRecords: flashcardSetsUnsavedRecords,
         selectedRecordIds: flashcardSetsSelectedRecordIds,
         isLoading: flashcardSetsIsLoading,
@@ -3636,6 +3906,7 @@ export const useFlashcardSetsWithFetch = (): UseFlashcardSetsWithFetchReturn => 
         flashcardSetsSelectors,
         flashcardSetsActions,
         flashcardSetsRecords,
+        flashcardSetsRecordsById,
         flashcardSetsUnsavedRecords,
         flashcardSetsSelectedRecordIds,
         flashcardSetsIsLoading,
@@ -3666,6 +3937,7 @@ type UseFullSpectrumPositionsWithFetchReturn = {
     fullSpectrumPositionsSelectors: EntitySelectors<"fullSpectrumPositions">;
     fullSpectrumPositionsActions: EntityActions<"fullSpectrumPositions">;
     fullSpectrumPositionsRecords: Record<MatrxRecordId, FullSpectrumPositionsData>;
+    fullSpectrumPositionsRecordsById: Record<string, FullSpectrumPositionsData>;
     fullSpectrumPositionsUnsavedRecords: Record<MatrxRecordId, Partial<FullSpectrumPositionsData>>;
     fullSpectrumPositionsSelectedRecordIds: MatrxRecordId[];
     fullSpectrumPositionsIsLoading: boolean;
@@ -3686,7 +3958,11 @@ type UseFullSpectrumPositionsWithFetchReturn = {
     fetchFullSpectrumPositionsOne: (recordId: MatrxRecordId) => void;
     fetchFullSpectrumPositionsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchFullSpectrumPositionsAll: () => void;
-    fetchFullSpectrumPositionsPaginated: (page: number, pageSize: number) => void;
+    fetchFullSpectrumPositionsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useFullSpectrumPositionsWithFetch = (): UseFullSpectrumPositionsWithFetchReturn => {
@@ -3694,6 +3970,7 @@ export const useFullSpectrumPositionsWithFetch = (): UseFullSpectrumPositionsWit
         selectors: fullSpectrumPositionsSelectors,
         actions: fullSpectrumPositionsActions,
         allRecords: fullSpectrumPositionsRecords,
+        recordsById: fullSpectrumPositionsRecordsById,
         unsavedRecords: fullSpectrumPositionsUnsavedRecords,
         selectedRecordIds: fullSpectrumPositionsSelectedRecordIds,
         isLoading: fullSpectrumPositionsIsLoading,
@@ -3722,6 +3999,7 @@ export const useFullSpectrumPositionsWithFetch = (): UseFullSpectrumPositionsWit
         fullSpectrumPositionsSelectors,
         fullSpectrumPositionsActions,
         fullSpectrumPositionsRecords,
+        fullSpectrumPositionsRecordsById,
         fullSpectrumPositionsUnsavedRecords,
         fullSpectrumPositionsSelectedRecordIds,
         fullSpectrumPositionsIsLoading,
@@ -3752,6 +4030,7 @@ type UseHtmlExtractionsWithFetchReturn = {
     htmlExtractionsSelectors: EntitySelectors<"htmlExtractions">;
     htmlExtractionsActions: EntityActions<"htmlExtractions">;
     htmlExtractionsRecords: Record<MatrxRecordId, HtmlExtractionsData>;
+    htmlExtractionsRecordsById: Record<string, HtmlExtractionsData>;
     htmlExtractionsUnsavedRecords: Record<MatrxRecordId, Partial<HtmlExtractionsData>>;
     htmlExtractionsSelectedRecordIds: MatrxRecordId[];
     htmlExtractionsIsLoading: boolean;
@@ -3772,7 +4051,11 @@ type UseHtmlExtractionsWithFetchReturn = {
     fetchHtmlExtractionsOne: (recordId: MatrxRecordId) => void;
     fetchHtmlExtractionsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchHtmlExtractionsAll: () => void;
-    fetchHtmlExtractionsPaginated: (page: number, pageSize: number) => void;
+    fetchHtmlExtractionsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useHtmlExtractionsWithFetch = (): UseHtmlExtractionsWithFetchReturn => {
@@ -3780,6 +4063,7 @@ export const useHtmlExtractionsWithFetch = (): UseHtmlExtractionsWithFetchReturn
         selectors: htmlExtractionsSelectors,
         actions: htmlExtractionsActions,
         allRecords: htmlExtractionsRecords,
+        recordsById: htmlExtractionsRecordsById,
         unsavedRecords: htmlExtractionsUnsavedRecords,
         selectedRecordIds: htmlExtractionsSelectedRecordIds,
         isLoading: htmlExtractionsIsLoading,
@@ -3808,6 +4092,7 @@ export const useHtmlExtractionsWithFetch = (): UseHtmlExtractionsWithFetchReturn
         htmlExtractionsSelectors,
         htmlExtractionsActions,
         htmlExtractionsRecords,
+        htmlExtractionsRecordsById,
         htmlExtractionsUnsavedRecords,
         htmlExtractionsSelectedRecordIds,
         htmlExtractionsIsLoading,
@@ -3838,6 +4123,7 @@ type UseMessageWithFetchReturn = {
     messageSelectors: EntitySelectors<"message">;
     messageActions: EntityActions<"message">;
     messageRecords: Record<MatrxRecordId, MessageData>;
+    messageRecordsById: Record<string, MessageData>;
     messageUnsavedRecords: Record<MatrxRecordId, Partial<MessageData>>;
     messageSelectedRecordIds: MatrxRecordId[];
     messageIsLoading: boolean;
@@ -3858,7 +4144,11 @@ type UseMessageWithFetchReturn = {
     fetchMessageOne: (recordId: MatrxRecordId) => void;
     fetchMessageOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchMessageAll: () => void;
-    fetchMessagePaginated: (page: number, pageSize: number) => void;
+    fetchMessagePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useMessageWithFetch = (): UseMessageWithFetchReturn => {
@@ -3866,6 +4156,7 @@ export const useMessageWithFetch = (): UseMessageWithFetchReturn => {
         selectors: messageSelectors,
         actions: messageActions,
         allRecords: messageRecords,
+        recordsById: messageRecordsById,
         unsavedRecords: messageUnsavedRecords,
         selectedRecordIds: messageSelectedRecordIds,
         isLoading: messageIsLoading,
@@ -3894,6 +4185,7 @@ export const useMessageWithFetch = (): UseMessageWithFetchReturn => {
         messageSelectors,
         messageActions,
         messageRecords,
+        messageRecordsById,
         messageUnsavedRecords,
         messageSelectedRecordIds,
         messageIsLoading,
@@ -3924,6 +4216,7 @@ type UseMessageBrokerWithFetchReturn = {
     messageBrokerSelectors: EntitySelectors<"messageBroker">;
     messageBrokerActions: EntityActions<"messageBroker">;
     messageBrokerRecords: Record<MatrxRecordId, MessageBrokerData>;
+    messageBrokerRecordsById: Record<string, MessageBrokerData>;
     messageBrokerUnsavedRecords: Record<MatrxRecordId, Partial<MessageBrokerData>>;
     messageBrokerSelectedRecordIds: MatrxRecordId[];
     messageBrokerIsLoading: boolean;
@@ -3944,7 +4237,11 @@ type UseMessageBrokerWithFetchReturn = {
     fetchMessageBrokerOne: (recordId: MatrxRecordId) => void;
     fetchMessageBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchMessageBrokerAll: () => void;
-    fetchMessageBrokerPaginated: (page: number, pageSize: number) => void;
+    fetchMessageBrokerPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useMessageBrokerWithFetch = (): UseMessageBrokerWithFetchReturn => {
@@ -3952,6 +4249,7 @@ export const useMessageBrokerWithFetch = (): UseMessageBrokerWithFetchReturn => 
         selectors: messageBrokerSelectors,
         actions: messageBrokerActions,
         allRecords: messageBrokerRecords,
+        recordsById: messageBrokerRecordsById,
         unsavedRecords: messageBrokerUnsavedRecords,
         selectedRecordIds: messageBrokerSelectedRecordIds,
         isLoading: messageBrokerIsLoading,
@@ -3980,6 +4278,7 @@ export const useMessageBrokerWithFetch = (): UseMessageBrokerWithFetchReturn => 
         messageBrokerSelectors,
         messageBrokerActions,
         messageBrokerRecords,
+        messageBrokerRecordsById,
         messageBrokerUnsavedRecords,
         messageBrokerSelectedRecordIds,
         messageBrokerIsLoading,
@@ -4010,6 +4309,7 @@ type UseMessageTemplateWithFetchReturn = {
     messageTemplateSelectors: EntitySelectors<"messageTemplate">;
     messageTemplateActions: EntityActions<"messageTemplate">;
     messageTemplateRecords: Record<MatrxRecordId, MessageTemplateData>;
+    messageTemplateRecordsById: Record<string, MessageTemplateData>;
     messageTemplateUnsavedRecords: Record<MatrxRecordId, Partial<MessageTemplateData>>;
     messageTemplateSelectedRecordIds: MatrxRecordId[];
     messageTemplateIsLoading: boolean;
@@ -4030,7 +4330,11 @@ type UseMessageTemplateWithFetchReturn = {
     fetchMessageTemplateOne: (recordId: MatrxRecordId) => void;
     fetchMessageTemplateOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchMessageTemplateAll: () => void;
-    fetchMessageTemplatePaginated: (page: number, pageSize: number) => void;
+    fetchMessageTemplatePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn => {
@@ -4038,6 +4342,7 @@ export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn
         selectors: messageTemplateSelectors,
         actions: messageTemplateActions,
         allRecords: messageTemplateRecords,
+        recordsById: messageTemplateRecordsById,
         unsavedRecords: messageTemplateUnsavedRecords,
         selectedRecordIds: messageTemplateSelectedRecordIds,
         isLoading: messageTemplateIsLoading,
@@ -4066,6 +4371,7 @@ export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn
         messageTemplateSelectors,
         messageTemplateActions,
         messageTemplateRecords,
+        messageTemplateRecordsById,
         messageTemplateUnsavedRecords,
         messageTemplateSelectedRecordIds,
         messageTemplateIsLoading,
@@ -4092,10 +4398,104 @@ export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn
 
 
 
+type UseNodeCategoryWithFetchReturn = {
+    nodeCategorySelectors: EntitySelectors<"nodeCategory">;
+    nodeCategoryActions: EntityActions<"nodeCategory">;
+    nodeCategoryRecords: Record<MatrxRecordId, NodeCategoryData>;
+    nodeCategoryRecordsById: Record<string, NodeCategoryData>;
+    nodeCategoryUnsavedRecords: Record<MatrxRecordId, Partial<NodeCategoryData>>;
+    nodeCategorySelectedRecordIds: MatrxRecordId[];
+    nodeCategoryIsLoading: boolean;
+    nodeCategoryIsError: boolean;
+    nodeCategoryQuickRefRecords: QuickReferenceRecord[];
+    addNodeCategoryMatrxId: (recordId: MatrxRecordId) => void;
+    addNodeCategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeNodeCategoryMatrxId: (recordId: MatrxRecordId) => void;
+    removeNodeCategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addNodeCategoryPkValue: (pkValue: string) => void;
+    addNodeCategoryPkValues: (pkValues: Record<string, unknown>) => void;
+    removeNodeCategoryPkValue: (pkValue: string) => void;
+    removeNodeCategoryPkValues: (pkValues: Record<string, unknown>) => void;
+    isNodeCategoryMissingRecords: boolean;
+    setNodeCategoryShouldFetch: (shouldFetch: boolean) => void;
+    setNodeCategoryFetchMode: (fetchMode: FetchMode) => void;
+    fetchNodeCategoryQuickRefs: () => void;
+    fetchNodeCategoryOne: (recordId: MatrxRecordId) => void;
+    fetchNodeCategoryOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchNodeCategoryAll: () => void;
+    fetchNodeCategoryPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useNodeCategoryWithFetch = (): UseNodeCategoryWithFetchReturn => {
+    const {
+        selectors: nodeCategorySelectors,
+        actions: nodeCategoryActions,
+        allRecords: nodeCategoryRecords,
+        recordsById: nodeCategoryRecordsById,
+        unsavedRecords: nodeCategoryUnsavedRecords,
+        selectedRecordIds: nodeCategorySelectedRecordIds,
+        isLoading: nodeCategoryIsLoading,
+        isError: nodeCategoryIsError,
+        quickRefRecords: nodeCategoryQuickRefRecords,
+        addMatrxId: addNodeCategoryMatrxId,
+        addMatrxIds: addNodeCategoryMatrxIds,
+        removeMatrxId: removeNodeCategoryMatrxId,
+        removeMatrxIds: removeNodeCategoryMatrxIds,
+        addPkValue: addNodeCategoryPkValue,
+        addPkValues: addNodeCategoryPkValues,
+        removePkValue: removeNodeCategoryPkValue,
+        removePkValues: removeNodeCategoryPkValues,
+        isMissingRecords: isNodeCategoryMissingRecords,
+        setShouldFetch: setNodeCategoryShouldFetch,
+        setFetchMode: setNodeCategoryFetchMode,
+        fetchQuickRefs: fetchNodeCategoryQuickRefs,
+        fetchOne: fetchNodeCategoryOne,
+        fetchOneWithFkIfk: fetchNodeCategoryOneWithFkIfk,
+        fetchAll: fetchNodeCategoryAll,
+        fetchPaginated: fetchNodeCategoryPaginated,
+
+    } = useEntityWithFetch("nodeCategory");
+
+    return {
+        nodeCategorySelectors,
+        nodeCategoryActions,
+        nodeCategoryRecords,
+        nodeCategoryRecordsById,
+        nodeCategoryUnsavedRecords,
+        nodeCategorySelectedRecordIds,
+        nodeCategoryIsLoading,
+        nodeCategoryIsError,
+        nodeCategoryQuickRefRecords,
+        addNodeCategoryMatrxId,
+        addNodeCategoryMatrxIds,
+        removeNodeCategoryMatrxId,
+        removeNodeCategoryMatrxIds,
+        addNodeCategoryPkValue,
+        addNodeCategoryPkValues,
+        removeNodeCategoryPkValue,
+        removeNodeCategoryPkValues,
+        isNodeCategoryMissingRecords,
+        setNodeCategoryShouldFetch,
+        setNodeCategoryFetchMode,
+        fetchNodeCategoryQuickRefs,
+        fetchNodeCategoryOne,
+        fetchNodeCategoryOneWithFkIfk,
+        fetchNodeCategoryAll,
+        fetchNodeCategoryPaginated,
+    };
+};
+
+
+
 type UseOrganizationInvitationsWithFetchReturn = {
     organizationInvitationsSelectors: EntitySelectors<"organizationInvitations">;
     organizationInvitationsActions: EntityActions<"organizationInvitations">;
     organizationInvitationsRecords: Record<MatrxRecordId, OrganizationInvitationsData>;
+    organizationInvitationsRecordsById: Record<string, OrganizationInvitationsData>;
     organizationInvitationsUnsavedRecords: Record<MatrxRecordId, Partial<OrganizationInvitationsData>>;
     organizationInvitationsSelectedRecordIds: MatrxRecordId[];
     organizationInvitationsIsLoading: boolean;
@@ -4116,7 +4516,11 @@ type UseOrganizationInvitationsWithFetchReturn = {
     fetchOrganizationInvitationsOne: (recordId: MatrxRecordId) => void;
     fetchOrganizationInvitationsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchOrganizationInvitationsAll: () => void;
-    fetchOrganizationInvitationsPaginated: (page: number, pageSize: number) => void;
+    fetchOrganizationInvitationsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useOrganizationInvitationsWithFetch = (): UseOrganizationInvitationsWithFetchReturn => {
@@ -4124,6 +4528,7 @@ export const useOrganizationInvitationsWithFetch = (): UseOrganizationInvitation
         selectors: organizationInvitationsSelectors,
         actions: organizationInvitationsActions,
         allRecords: organizationInvitationsRecords,
+        recordsById: organizationInvitationsRecordsById,
         unsavedRecords: organizationInvitationsUnsavedRecords,
         selectedRecordIds: organizationInvitationsSelectedRecordIds,
         isLoading: organizationInvitationsIsLoading,
@@ -4152,6 +4557,7 @@ export const useOrganizationInvitationsWithFetch = (): UseOrganizationInvitation
         organizationInvitationsSelectors,
         organizationInvitationsActions,
         organizationInvitationsRecords,
+        organizationInvitationsRecordsById,
         organizationInvitationsUnsavedRecords,
         organizationInvitationsSelectedRecordIds,
         organizationInvitationsIsLoading,
@@ -4182,6 +4588,7 @@ type UseOrganizationMembersWithFetchReturn = {
     organizationMembersSelectors: EntitySelectors<"organizationMembers">;
     organizationMembersActions: EntityActions<"organizationMembers">;
     organizationMembersRecords: Record<MatrxRecordId, OrganizationMembersData>;
+    organizationMembersRecordsById: Record<string, OrganizationMembersData>;
     organizationMembersUnsavedRecords: Record<MatrxRecordId, Partial<OrganizationMembersData>>;
     organizationMembersSelectedRecordIds: MatrxRecordId[];
     organizationMembersIsLoading: boolean;
@@ -4202,7 +4609,11 @@ type UseOrganizationMembersWithFetchReturn = {
     fetchOrganizationMembersOne: (recordId: MatrxRecordId) => void;
     fetchOrganizationMembersOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchOrganizationMembersAll: () => void;
-    fetchOrganizationMembersPaginated: (page: number, pageSize: number) => void;
+    fetchOrganizationMembersPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useOrganizationMembersWithFetch = (): UseOrganizationMembersWithFetchReturn => {
@@ -4210,6 +4621,7 @@ export const useOrganizationMembersWithFetch = (): UseOrganizationMembersWithFet
         selectors: organizationMembersSelectors,
         actions: organizationMembersActions,
         allRecords: organizationMembersRecords,
+        recordsById: organizationMembersRecordsById,
         unsavedRecords: organizationMembersUnsavedRecords,
         selectedRecordIds: organizationMembersSelectedRecordIds,
         isLoading: organizationMembersIsLoading,
@@ -4238,6 +4650,7 @@ export const useOrganizationMembersWithFetch = (): UseOrganizationMembersWithFet
         organizationMembersSelectors,
         organizationMembersActions,
         organizationMembersRecords,
+        organizationMembersRecordsById,
         organizationMembersUnsavedRecords,
         organizationMembersSelectedRecordIds,
         organizationMembersIsLoading,
@@ -4268,6 +4681,7 @@ type UseOrganizationsWithFetchReturn = {
     organizationsSelectors: EntitySelectors<"organizations">;
     organizationsActions: EntityActions<"organizations">;
     organizationsRecords: Record<MatrxRecordId, OrganizationsData>;
+    organizationsRecordsById: Record<string, OrganizationsData>;
     organizationsUnsavedRecords: Record<MatrxRecordId, Partial<OrganizationsData>>;
     organizationsSelectedRecordIds: MatrxRecordId[];
     organizationsIsLoading: boolean;
@@ -4288,7 +4702,11 @@ type UseOrganizationsWithFetchReturn = {
     fetchOrganizationsOne: (recordId: MatrxRecordId) => void;
     fetchOrganizationsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchOrganizationsAll: () => void;
-    fetchOrganizationsPaginated: (page: number, pageSize: number) => void;
+    fetchOrganizationsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useOrganizationsWithFetch = (): UseOrganizationsWithFetchReturn => {
@@ -4296,6 +4714,7 @@ export const useOrganizationsWithFetch = (): UseOrganizationsWithFetchReturn => 
         selectors: organizationsSelectors,
         actions: organizationsActions,
         allRecords: organizationsRecords,
+        recordsById: organizationsRecordsById,
         unsavedRecords: organizationsUnsavedRecords,
         selectedRecordIds: organizationsSelectedRecordIds,
         isLoading: organizationsIsLoading,
@@ -4324,6 +4743,7 @@ export const useOrganizationsWithFetch = (): UseOrganizationsWithFetchReturn => 
         organizationsSelectors,
         organizationsActions,
         organizationsRecords,
+        organizationsRecordsById,
         organizationsUnsavedRecords,
         organizationsSelectedRecordIds,
         organizationsIsLoading,
@@ -4354,6 +4774,7 @@ type UsePermissionsWithFetchReturn = {
     permissionsSelectors: EntitySelectors<"permissions">;
     permissionsActions: EntityActions<"permissions">;
     permissionsRecords: Record<MatrxRecordId, PermissionsData>;
+    permissionsRecordsById: Record<string, PermissionsData>;
     permissionsUnsavedRecords: Record<MatrxRecordId, Partial<PermissionsData>>;
     permissionsSelectedRecordIds: MatrxRecordId[];
     permissionsIsLoading: boolean;
@@ -4374,7 +4795,11 @@ type UsePermissionsWithFetchReturn = {
     fetchPermissionsOne: (recordId: MatrxRecordId) => void;
     fetchPermissionsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchPermissionsAll: () => void;
-    fetchPermissionsPaginated: (page: number, pageSize: number) => void;
+    fetchPermissionsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const usePermissionsWithFetch = (): UsePermissionsWithFetchReturn => {
@@ -4382,6 +4807,7 @@ export const usePermissionsWithFetch = (): UsePermissionsWithFetchReturn => {
         selectors: permissionsSelectors,
         actions: permissionsActions,
         allRecords: permissionsRecords,
+        recordsById: permissionsRecordsById,
         unsavedRecords: permissionsUnsavedRecords,
         selectedRecordIds: permissionsSelectedRecordIds,
         isLoading: permissionsIsLoading,
@@ -4410,6 +4836,7 @@ export const usePermissionsWithFetch = (): UsePermissionsWithFetchReturn => {
         permissionsSelectors,
         permissionsActions,
         permissionsRecords,
+        permissionsRecordsById,
         permissionsUnsavedRecords,
         permissionsSelectedRecordIds,
         permissionsIsLoading,
@@ -4440,6 +4867,7 @@ type UseProcessorWithFetchReturn = {
     processorSelectors: EntitySelectors<"processor">;
     processorActions: EntityActions<"processor">;
     processorRecords: Record<MatrxRecordId, ProcessorData>;
+    processorRecordsById: Record<string, ProcessorData>;
     processorUnsavedRecords: Record<MatrxRecordId, Partial<ProcessorData>>;
     processorSelectedRecordIds: MatrxRecordId[];
     processorIsLoading: boolean;
@@ -4460,7 +4888,11 @@ type UseProcessorWithFetchReturn = {
     fetchProcessorOne: (recordId: MatrxRecordId) => void;
     fetchProcessorOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchProcessorAll: () => void;
-    fetchProcessorPaginated: (page: number, pageSize: number) => void;
+    fetchProcessorPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useProcessorWithFetch = (): UseProcessorWithFetchReturn => {
@@ -4468,6 +4900,7 @@ export const useProcessorWithFetch = (): UseProcessorWithFetchReturn => {
         selectors: processorSelectors,
         actions: processorActions,
         allRecords: processorRecords,
+        recordsById: processorRecordsById,
         unsavedRecords: processorUnsavedRecords,
         selectedRecordIds: processorSelectedRecordIds,
         isLoading: processorIsLoading,
@@ -4496,6 +4929,7 @@ export const useProcessorWithFetch = (): UseProcessorWithFetchReturn => {
         processorSelectors,
         processorActions,
         processorRecords,
+        processorRecordsById,
         processorUnsavedRecords,
         processorSelectedRecordIds,
         processorIsLoading,
@@ -4526,6 +4960,7 @@ type UseProjectMembersWithFetchReturn = {
     projectMembersSelectors: EntitySelectors<"projectMembers">;
     projectMembersActions: EntityActions<"projectMembers">;
     projectMembersRecords: Record<MatrxRecordId, ProjectMembersData>;
+    projectMembersRecordsById: Record<string, ProjectMembersData>;
     projectMembersUnsavedRecords: Record<MatrxRecordId, Partial<ProjectMembersData>>;
     projectMembersSelectedRecordIds: MatrxRecordId[];
     projectMembersIsLoading: boolean;
@@ -4546,7 +4981,11 @@ type UseProjectMembersWithFetchReturn = {
     fetchProjectMembersOne: (recordId: MatrxRecordId) => void;
     fetchProjectMembersOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchProjectMembersAll: () => void;
-    fetchProjectMembersPaginated: (page: number, pageSize: number) => void;
+    fetchProjectMembersPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useProjectMembersWithFetch = (): UseProjectMembersWithFetchReturn => {
@@ -4554,6 +4993,7 @@ export const useProjectMembersWithFetch = (): UseProjectMembersWithFetchReturn =
         selectors: projectMembersSelectors,
         actions: projectMembersActions,
         allRecords: projectMembersRecords,
+        recordsById: projectMembersRecordsById,
         unsavedRecords: projectMembersUnsavedRecords,
         selectedRecordIds: projectMembersSelectedRecordIds,
         isLoading: projectMembersIsLoading,
@@ -4582,6 +5022,7 @@ export const useProjectMembersWithFetch = (): UseProjectMembersWithFetchReturn =
         projectMembersSelectors,
         projectMembersActions,
         projectMembersRecords,
+        projectMembersRecordsById,
         projectMembersUnsavedRecords,
         projectMembersSelectedRecordIds,
         projectMembersIsLoading,
@@ -4612,6 +5053,7 @@ type UseProjectsWithFetchReturn = {
     projectsSelectors: EntitySelectors<"projects">;
     projectsActions: EntityActions<"projects">;
     projectsRecords: Record<MatrxRecordId, ProjectsData>;
+    projectsRecordsById: Record<string, ProjectsData>;
     projectsUnsavedRecords: Record<MatrxRecordId, Partial<ProjectsData>>;
     projectsSelectedRecordIds: MatrxRecordId[];
     projectsIsLoading: boolean;
@@ -4632,7 +5074,11 @@ type UseProjectsWithFetchReturn = {
     fetchProjectsOne: (recordId: MatrxRecordId) => void;
     fetchProjectsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchProjectsAll: () => void;
-    fetchProjectsPaginated: (page: number, pageSize: number) => void;
+    fetchProjectsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
@@ -4640,6 +5086,7 @@ export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
         selectors: projectsSelectors,
         actions: projectsActions,
         allRecords: projectsRecords,
+        recordsById: projectsRecordsById,
         unsavedRecords: projectsUnsavedRecords,
         selectedRecordIds: projectsSelectedRecordIds,
         isLoading: projectsIsLoading,
@@ -4668,6 +5115,7 @@ export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
         projectsSelectors,
         projectsActions,
         projectsRecords,
+        projectsRecordsById,
         projectsUnsavedRecords,
         projectsSelectedRecordIds,
         projectsIsLoading,
@@ -4698,6 +5146,7 @@ type UsePromptsWithFetchReturn = {
     promptsSelectors: EntitySelectors<"prompts">;
     promptsActions: EntityActions<"prompts">;
     promptsRecords: Record<MatrxRecordId, PromptsData>;
+    promptsRecordsById: Record<string, PromptsData>;
     promptsUnsavedRecords: Record<MatrxRecordId, Partial<PromptsData>>;
     promptsSelectedRecordIds: MatrxRecordId[];
     promptsIsLoading: boolean;
@@ -4718,7 +5167,11 @@ type UsePromptsWithFetchReturn = {
     fetchPromptsOne: (recordId: MatrxRecordId) => void;
     fetchPromptsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchPromptsAll: () => void;
-    fetchPromptsPaginated: (page: number, pageSize: number) => void;
+    fetchPromptsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
@@ -4726,6 +5179,7 @@ export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
         selectors: promptsSelectors,
         actions: promptsActions,
         allRecords: promptsRecords,
+        recordsById: promptsRecordsById,
         unsavedRecords: promptsUnsavedRecords,
         selectedRecordIds: promptsSelectedRecordIds,
         isLoading: promptsIsLoading,
@@ -4754,6 +5208,7 @@ export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
         promptsSelectors,
         promptsActions,
         promptsRecords,
+        promptsRecordsById,
         promptsUnsavedRecords,
         promptsSelectedRecordIds,
         promptsIsLoading,
@@ -4784,6 +5239,7 @@ type UseRecipeWithFetchReturn = {
     recipeSelectors: EntitySelectors<"recipe">;
     recipeActions: EntityActions<"recipe">;
     recipeRecords: Record<MatrxRecordId, RecipeData>;
+    recipeRecordsById: Record<string, RecipeData>;
     recipeUnsavedRecords: Record<MatrxRecordId, Partial<RecipeData>>;
     recipeSelectedRecordIds: MatrxRecordId[];
     recipeIsLoading: boolean;
@@ -4804,7 +5260,11 @@ type UseRecipeWithFetchReturn = {
     fetchRecipeOne: (recordId: MatrxRecordId) => void;
     fetchRecipeOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeAll: () => void;
-    fetchRecipePaginated: (page: number, pageSize: number) => void;
+    fetchRecipePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeWithFetch = (): UseRecipeWithFetchReturn => {
@@ -4812,6 +5272,7 @@ export const useRecipeWithFetch = (): UseRecipeWithFetchReturn => {
         selectors: recipeSelectors,
         actions: recipeActions,
         allRecords: recipeRecords,
+        recordsById: recipeRecordsById,
         unsavedRecords: recipeUnsavedRecords,
         selectedRecordIds: recipeSelectedRecordIds,
         isLoading: recipeIsLoading,
@@ -4840,6 +5301,7 @@ export const useRecipeWithFetch = (): UseRecipeWithFetchReturn => {
         recipeSelectors,
         recipeActions,
         recipeRecords,
+        recipeRecordsById,
         recipeUnsavedRecords,
         recipeSelectedRecordIds,
         recipeIsLoading,
@@ -4870,6 +5332,7 @@ type UseRecipeBrokerWithFetchReturn = {
     recipeBrokerSelectors: EntitySelectors<"recipeBroker">;
     recipeBrokerActions: EntityActions<"recipeBroker">;
     recipeBrokerRecords: Record<MatrxRecordId, RecipeBrokerData>;
+    recipeBrokerRecordsById: Record<string, RecipeBrokerData>;
     recipeBrokerUnsavedRecords: Record<MatrxRecordId, Partial<RecipeBrokerData>>;
     recipeBrokerSelectedRecordIds: MatrxRecordId[];
     recipeBrokerIsLoading: boolean;
@@ -4890,7 +5353,11 @@ type UseRecipeBrokerWithFetchReturn = {
     fetchRecipeBrokerOne: (recordId: MatrxRecordId) => void;
     fetchRecipeBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeBrokerAll: () => void;
-    fetchRecipeBrokerPaginated: (page: number, pageSize: number) => void;
+    fetchRecipeBrokerPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeBrokerWithFetch = (): UseRecipeBrokerWithFetchReturn => {
@@ -4898,6 +5365,7 @@ export const useRecipeBrokerWithFetch = (): UseRecipeBrokerWithFetchReturn => {
         selectors: recipeBrokerSelectors,
         actions: recipeBrokerActions,
         allRecords: recipeBrokerRecords,
+        recordsById: recipeBrokerRecordsById,
         unsavedRecords: recipeBrokerUnsavedRecords,
         selectedRecordIds: recipeBrokerSelectedRecordIds,
         isLoading: recipeBrokerIsLoading,
@@ -4926,6 +5394,7 @@ export const useRecipeBrokerWithFetch = (): UseRecipeBrokerWithFetchReturn => {
         recipeBrokerSelectors,
         recipeBrokerActions,
         recipeBrokerRecords,
+        recipeBrokerRecordsById,
         recipeBrokerUnsavedRecords,
         recipeBrokerSelectedRecordIds,
         recipeBrokerIsLoading,
@@ -4956,6 +5425,7 @@ type UseRecipeDisplayWithFetchReturn = {
     recipeDisplaySelectors: EntitySelectors<"recipeDisplay">;
     recipeDisplayActions: EntityActions<"recipeDisplay">;
     recipeDisplayRecords: Record<MatrxRecordId, RecipeDisplayData>;
+    recipeDisplayRecordsById: Record<string, RecipeDisplayData>;
     recipeDisplayUnsavedRecords: Record<MatrxRecordId, Partial<RecipeDisplayData>>;
     recipeDisplaySelectedRecordIds: MatrxRecordId[];
     recipeDisplayIsLoading: boolean;
@@ -4976,7 +5446,11 @@ type UseRecipeDisplayWithFetchReturn = {
     fetchRecipeDisplayOne: (recordId: MatrxRecordId) => void;
     fetchRecipeDisplayOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeDisplayAll: () => void;
-    fetchRecipeDisplayPaginated: (page: number, pageSize: number) => void;
+    fetchRecipeDisplayPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeDisplayWithFetch = (): UseRecipeDisplayWithFetchReturn => {
@@ -4984,6 +5458,7 @@ export const useRecipeDisplayWithFetch = (): UseRecipeDisplayWithFetchReturn => 
         selectors: recipeDisplaySelectors,
         actions: recipeDisplayActions,
         allRecords: recipeDisplayRecords,
+        recordsById: recipeDisplayRecordsById,
         unsavedRecords: recipeDisplayUnsavedRecords,
         selectedRecordIds: recipeDisplaySelectedRecordIds,
         isLoading: recipeDisplayIsLoading,
@@ -5012,6 +5487,7 @@ export const useRecipeDisplayWithFetch = (): UseRecipeDisplayWithFetchReturn => 
         recipeDisplaySelectors,
         recipeDisplayActions,
         recipeDisplayRecords,
+        recipeDisplayRecordsById,
         recipeDisplayUnsavedRecords,
         recipeDisplaySelectedRecordIds,
         recipeDisplayIsLoading,
@@ -5042,6 +5518,7 @@ type UseRecipeFunctionWithFetchReturn = {
     recipeFunctionSelectors: EntitySelectors<"recipeFunction">;
     recipeFunctionActions: EntityActions<"recipeFunction">;
     recipeFunctionRecords: Record<MatrxRecordId, RecipeFunctionData>;
+    recipeFunctionRecordsById: Record<string, RecipeFunctionData>;
     recipeFunctionUnsavedRecords: Record<MatrxRecordId, Partial<RecipeFunctionData>>;
     recipeFunctionSelectedRecordIds: MatrxRecordId[];
     recipeFunctionIsLoading: boolean;
@@ -5062,7 +5539,11 @@ type UseRecipeFunctionWithFetchReturn = {
     fetchRecipeFunctionOne: (recordId: MatrxRecordId) => void;
     fetchRecipeFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeFunctionAll: () => void;
-    fetchRecipeFunctionPaginated: (page: number, pageSize: number) => void;
+    fetchRecipeFunctionPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeFunctionWithFetch = (): UseRecipeFunctionWithFetchReturn => {
@@ -5070,6 +5551,7 @@ export const useRecipeFunctionWithFetch = (): UseRecipeFunctionWithFetchReturn =
         selectors: recipeFunctionSelectors,
         actions: recipeFunctionActions,
         allRecords: recipeFunctionRecords,
+        recordsById: recipeFunctionRecordsById,
         unsavedRecords: recipeFunctionUnsavedRecords,
         selectedRecordIds: recipeFunctionSelectedRecordIds,
         isLoading: recipeFunctionIsLoading,
@@ -5098,6 +5580,7 @@ export const useRecipeFunctionWithFetch = (): UseRecipeFunctionWithFetchReturn =
         recipeFunctionSelectors,
         recipeFunctionActions,
         recipeFunctionRecords,
+        recipeFunctionRecordsById,
         recipeFunctionUnsavedRecords,
         recipeFunctionSelectedRecordIds,
         recipeFunctionIsLoading,
@@ -5128,6 +5611,7 @@ type UseRecipeMessageWithFetchReturn = {
     recipeMessageSelectors: EntitySelectors<"recipeMessage">;
     recipeMessageActions: EntityActions<"recipeMessage">;
     recipeMessageRecords: Record<MatrxRecordId, RecipeMessageData>;
+    recipeMessageRecordsById: Record<string, RecipeMessageData>;
     recipeMessageUnsavedRecords: Record<MatrxRecordId, Partial<RecipeMessageData>>;
     recipeMessageSelectedRecordIds: MatrxRecordId[];
     recipeMessageIsLoading: boolean;
@@ -5148,7 +5632,11 @@ type UseRecipeMessageWithFetchReturn = {
     fetchRecipeMessageOne: (recordId: MatrxRecordId) => void;
     fetchRecipeMessageOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeMessageAll: () => void;
-    fetchRecipeMessagePaginated: (page: number, pageSize: number) => void;
+    fetchRecipeMessagePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeMessageWithFetch = (): UseRecipeMessageWithFetchReturn => {
@@ -5156,6 +5644,7 @@ export const useRecipeMessageWithFetch = (): UseRecipeMessageWithFetchReturn => 
         selectors: recipeMessageSelectors,
         actions: recipeMessageActions,
         allRecords: recipeMessageRecords,
+        recordsById: recipeMessageRecordsById,
         unsavedRecords: recipeMessageUnsavedRecords,
         selectedRecordIds: recipeMessageSelectedRecordIds,
         isLoading: recipeMessageIsLoading,
@@ -5184,6 +5673,7 @@ export const useRecipeMessageWithFetch = (): UseRecipeMessageWithFetchReturn => 
         recipeMessageSelectors,
         recipeMessageActions,
         recipeMessageRecords,
+        recipeMessageRecordsById,
         recipeMessageUnsavedRecords,
         recipeMessageSelectedRecordIds,
         recipeMessageIsLoading,
@@ -5214,6 +5704,7 @@ type UseRecipeMessageReorderQueueWithFetchReturn = {
     recipeMessageReorderQueueSelectors: EntitySelectors<"recipeMessageReorderQueue">;
     recipeMessageReorderQueueActions: EntityActions<"recipeMessageReorderQueue">;
     recipeMessageReorderQueueRecords: Record<MatrxRecordId, RecipeMessageReorderQueueData>;
+    recipeMessageReorderQueueRecordsById: Record<string, RecipeMessageReorderQueueData>;
     recipeMessageReorderQueueUnsavedRecords: Record<MatrxRecordId, Partial<RecipeMessageReorderQueueData>>;
     recipeMessageReorderQueueSelectedRecordIds: MatrxRecordId[];
     recipeMessageReorderQueueIsLoading: boolean;
@@ -5234,7 +5725,11 @@ type UseRecipeMessageReorderQueueWithFetchReturn = {
     fetchRecipeMessageReorderQueueOne: (recordId: MatrxRecordId) => void;
     fetchRecipeMessageReorderQueueOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeMessageReorderQueueAll: () => void;
-    fetchRecipeMessageReorderQueuePaginated: (page: number, pageSize: number) => void;
+    fetchRecipeMessageReorderQueuePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeMessageReorderQueueWithFetch = (): UseRecipeMessageReorderQueueWithFetchReturn => {
@@ -5242,6 +5737,7 @@ export const useRecipeMessageReorderQueueWithFetch = (): UseRecipeMessageReorder
         selectors: recipeMessageReorderQueueSelectors,
         actions: recipeMessageReorderQueueActions,
         allRecords: recipeMessageReorderQueueRecords,
+        recordsById: recipeMessageReorderQueueRecordsById,
         unsavedRecords: recipeMessageReorderQueueUnsavedRecords,
         selectedRecordIds: recipeMessageReorderQueueSelectedRecordIds,
         isLoading: recipeMessageReorderQueueIsLoading,
@@ -5270,6 +5766,7 @@ export const useRecipeMessageReorderQueueWithFetch = (): UseRecipeMessageReorder
         recipeMessageReorderQueueSelectors,
         recipeMessageReorderQueueActions,
         recipeMessageReorderQueueRecords,
+        recipeMessageReorderQueueRecordsById,
         recipeMessageReorderQueueUnsavedRecords,
         recipeMessageReorderQueueSelectedRecordIds,
         recipeMessageReorderQueueIsLoading,
@@ -5300,6 +5797,7 @@ type UseRecipeModelWithFetchReturn = {
     recipeModelSelectors: EntitySelectors<"recipeModel">;
     recipeModelActions: EntityActions<"recipeModel">;
     recipeModelRecords: Record<MatrxRecordId, RecipeModelData>;
+    recipeModelRecordsById: Record<string, RecipeModelData>;
     recipeModelUnsavedRecords: Record<MatrxRecordId, Partial<RecipeModelData>>;
     recipeModelSelectedRecordIds: MatrxRecordId[];
     recipeModelIsLoading: boolean;
@@ -5320,7 +5818,11 @@ type UseRecipeModelWithFetchReturn = {
     fetchRecipeModelOne: (recordId: MatrxRecordId) => void;
     fetchRecipeModelOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeModelAll: () => void;
-    fetchRecipeModelPaginated: (page: number, pageSize: number) => void;
+    fetchRecipeModelPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeModelWithFetch = (): UseRecipeModelWithFetchReturn => {
@@ -5328,6 +5830,7 @@ export const useRecipeModelWithFetch = (): UseRecipeModelWithFetchReturn => {
         selectors: recipeModelSelectors,
         actions: recipeModelActions,
         allRecords: recipeModelRecords,
+        recordsById: recipeModelRecordsById,
         unsavedRecords: recipeModelUnsavedRecords,
         selectedRecordIds: recipeModelSelectedRecordIds,
         isLoading: recipeModelIsLoading,
@@ -5356,6 +5859,7 @@ export const useRecipeModelWithFetch = (): UseRecipeModelWithFetchReturn => {
         recipeModelSelectors,
         recipeModelActions,
         recipeModelRecords,
+        recipeModelRecordsById,
         recipeModelUnsavedRecords,
         recipeModelSelectedRecordIds,
         recipeModelIsLoading,
@@ -5386,6 +5890,7 @@ type UseRecipeProcessorWithFetchReturn = {
     recipeProcessorSelectors: EntitySelectors<"recipeProcessor">;
     recipeProcessorActions: EntityActions<"recipeProcessor">;
     recipeProcessorRecords: Record<MatrxRecordId, RecipeProcessorData>;
+    recipeProcessorRecordsById: Record<string, RecipeProcessorData>;
     recipeProcessorUnsavedRecords: Record<MatrxRecordId, Partial<RecipeProcessorData>>;
     recipeProcessorSelectedRecordIds: MatrxRecordId[];
     recipeProcessorIsLoading: boolean;
@@ -5406,7 +5911,11 @@ type UseRecipeProcessorWithFetchReturn = {
     fetchRecipeProcessorOne: (recordId: MatrxRecordId) => void;
     fetchRecipeProcessorOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeProcessorAll: () => void;
-    fetchRecipeProcessorPaginated: (page: number, pageSize: number) => void;
+    fetchRecipeProcessorPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeProcessorWithFetch = (): UseRecipeProcessorWithFetchReturn => {
@@ -5414,6 +5923,7 @@ export const useRecipeProcessorWithFetch = (): UseRecipeProcessorWithFetchReturn
         selectors: recipeProcessorSelectors,
         actions: recipeProcessorActions,
         allRecords: recipeProcessorRecords,
+        recordsById: recipeProcessorRecordsById,
         unsavedRecords: recipeProcessorUnsavedRecords,
         selectedRecordIds: recipeProcessorSelectedRecordIds,
         isLoading: recipeProcessorIsLoading,
@@ -5442,6 +5952,7 @@ export const useRecipeProcessorWithFetch = (): UseRecipeProcessorWithFetchReturn
         recipeProcessorSelectors,
         recipeProcessorActions,
         recipeProcessorRecords,
+        recipeProcessorRecordsById,
         recipeProcessorUnsavedRecords,
         recipeProcessorSelectedRecordIds,
         recipeProcessorIsLoading,
@@ -5472,6 +5983,7 @@ type UseRecipeToolWithFetchReturn = {
     recipeToolSelectors: EntitySelectors<"recipeTool">;
     recipeToolActions: EntityActions<"recipeTool">;
     recipeToolRecords: Record<MatrxRecordId, RecipeToolData>;
+    recipeToolRecordsById: Record<string, RecipeToolData>;
     recipeToolUnsavedRecords: Record<MatrxRecordId, Partial<RecipeToolData>>;
     recipeToolSelectedRecordIds: MatrxRecordId[];
     recipeToolIsLoading: boolean;
@@ -5492,7 +6004,11 @@ type UseRecipeToolWithFetchReturn = {
     fetchRecipeToolOne: (recordId: MatrxRecordId) => void;
     fetchRecipeToolOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRecipeToolAll: () => void;
-    fetchRecipeToolPaginated: (page: number, pageSize: number) => void;
+    fetchRecipeToolPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRecipeToolWithFetch = (): UseRecipeToolWithFetchReturn => {
@@ -5500,6 +6016,7 @@ export const useRecipeToolWithFetch = (): UseRecipeToolWithFetchReturn => {
         selectors: recipeToolSelectors,
         actions: recipeToolActions,
         allRecords: recipeToolRecords,
+        recordsById: recipeToolRecordsById,
         unsavedRecords: recipeToolUnsavedRecords,
         selectedRecordIds: recipeToolSelectedRecordIds,
         isLoading: recipeToolIsLoading,
@@ -5528,6 +6045,7 @@ export const useRecipeToolWithFetch = (): UseRecipeToolWithFetchReturn => {
         recipeToolSelectors,
         recipeToolActions,
         recipeToolRecords,
+        recipeToolRecordsById,
         recipeToolUnsavedRecords,
         recipeToolSelectedRecordIds,
         recipeToolIsLoading,
@@ -5558,6 +6076,7 @@ type UseRegisteredFunctionWithFetchReturn = {
     registeredFunctionSelectors: EntitySelectors<"registeredFunction">;
     registeredFunctionActions: EntityActions<"registeredFunction">;
     registeredFunctionRecords: Record<MatrxRecordId, RegisteredFunctionData>;
+    registeredFunctionRecordsById: Record<string, RegisteredFunctionData>;
     registeredFunctionUnsavedRecords: Record<MatrxRecordId, Partial<RegisteredFunctionData>>;
     registeredFunctionSelectedRecordIds: MatrxRecordId[];
     registeredFunctionIsLoading: boolean;
@@ -5578,7 +6097,11 @@ type UseRegisteredFunctionWithFetchReturn = {
     fetchRegisteredFunctionOne: (recordId: MatrxRecordId) => void;
     fetchRegisteredFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchRegisteredFunctionAll: () => void;
-    fetchRegisteredFunctionPaginated: (page: number, pageSize: number) => void;
+    fetchRegisteredFunctionPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetchReturn => {
@@ -5586,6 +6109,7 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         selectors: registeredFunctionSelectors,
         actions: registeredFunctionActions,
         allRecords: registeredFunctionRecords,
+        recordsById: registeredFunctionRecordsById,
         unsavedRecords: registeredFunctionUnsavedRecords,
         selectedRecordIds: registeredFunctionSelectedRecordIds,
         isLoading: registeredFunctionIsLoading,
@@ -5614,6 +6138,7 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         registeredFunctionSelectors,
         registeredFunctionActions,
         registeredFunctionRecords,
+        registeredFunctionRecordsById,
         registeredFunctionUnsavedRecords,
         registeredFunctionSelectedRecordIds,
         registeredFunctionIsLoading,
@@ -5640,10 +6165,104 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
 
 
 
+type UseRegisteredNodeWithFetchReturn = {
+    registeredNodeSelectors: EntitySelectors<"registeredNode">;
+    registeredNodeActions: EntityActions<"registeredNode">;
+    registeredNodeRecords: Record<MatrxRecordId, RegisteredNodeData>;
+    registeredNodeRecordsById: Record<string, RegisteredNodeData>;
+    registeredNodeUnsavedRecords: Record<MatrxRecordId, Partial<RegisteredNodeData>>;
+    registeredNodeSelectedRecordIds: MatrxRecordId[];
+    registeredNodeIsLoading: boolean;
+    registeredNodeIsError: boolean;
+    registeredNodeQuickRefRecords: QuickReferenceRecord[];
+    addRegisteredNodeMatrxId: (recordId: MatrxRecordId) => void;
+    addRegisteredNodeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRegisteredNodeMatrxId: (recordId: MatrxRecordId) => void;
+    removeRegisteredNodeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRegisteredNodePkValue: (pkValue: string) => void;
+    addRegisteredNodePkValues: (pkValues: Record<string, unknown>) => void;
+    removeRegisteredNodePkValue: (pkValue: string) => void;
+    removeRegisteredNodePkValues: (pkValues: Record<string, unknown>) => void;
+    isRegisteredNodeMissingRecords: boolean;
+    setRegisteredNodeShouldFetch: (shouldFetch: boolean) => void;
+    setRegisteredNodeFetchMode: (fetchMode: FetchMode) => void;
+    fetchRegisteredNodeQuickRefs: () => void;
+    fetchRegisteredNodeOne: (recordId: MatrxRecordId) => void;
+    fetchRegisteredNodeOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRegisteredNodeAll: () => void;
+    fetchRegisteredNodePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useRegisteredNodeWithFetch = (): UseRegisteredNodeWithFetchReturn => {
+    const {
+        selectors: registeredNodeSelectors,
+        actions: registeredNodeActions,
+        allRecords: registeredNodeRecords,
+        recordsById: registeredNodeRecordsById,
+        unsavedRecords: registeredNodeUnsavedRecords,
+        selectedRecordIds: registeredNodeSelectedRecordIds,
+        isLoading: registeredNodeIsLoading,
+        isError: registeredNodeIsError,
+        quickRefRecords: registeredNodeQuickRefRecords,
+        addMatrxId: addRegisteredNodeMatrxId,
+        addMatrxIds: addRegisteredNodeMatrxIds,
+        removeMatrxId: removeRegisteredNodeMatrxId,
+        removeMatrxIds: removeRegisteredNodeMatrxIds,
+        addPkValue: addRegisteredNodePkValue,
+        addPkValues: addRegisteredNodePkValues,
+        removePkValue: removeRegisteredNodePkValue,
+        removePkValues: removeRegisteredNodePkValues,
+        isMissingRecords: isRegisteredNodeMissingRecords,
+        setShouldFetch: setRegisteredNodeShouldFetch,
+        setFetchMode: setRegisteredNodeFetchMode,
+        fetchQuickRefs: fetchRegisteredNodeQuickRefs,
+        fetchOne: fetchRegisteredNodeOne,
+        fetchOneWithFkIfk: fetchRegisteredNodeOneWithFkIfk,
+        fetchAll: fetchRegisteredNodeAll,
+        fetchPaginated: fetchRegisteredNodePaginated,
+
+    } = useEntityWithFetch("registeredNode");
+
+    return {
+        registeredNodeSelectors,
+        registeredNodeActions,
+        registeredNodeRecords,
+        registeredNodeRecordsById,
+        registeredNodeUnsavedRecords,
+        registeredNodeSelectedRecordIds,
+        registeredNodeIsLoading,
+        registeredNodeIsError,
+        registeredNodeQuickRefRecords,
+        addRegisteredNodeMatrxId,
+        addRegisteredNodeMatrxIds,
+        removeRegisteredNodeMatrxId,
+        removeRegisteredNodeMatrxIds,
+        addRegisteredNodePkValue,
+        addRegisteredNodePkValues,
+        removeRegisteredNodePkValue,
+        removeRegisteredNodePkValues,
+        isRegisteredNodeMissingRecords,
+        setRegisteredNodeShouldFetch,
+        setRegisteredNodeFetchMode,
+        fetchRegisteredNodeQuickRefs,
+        fetchRegisteredNodeOne,
+        fetchRegisteredNodeOneWithFkIfk,
+        fetchRegisteredNodeAll,
+        fetchRegisteredNodePaginated,
+    };
+};
+
+
+
 type UseSchemaTemplatesWithFetchReturn = {
     schemaTemplatesSelectors: EntitySelectors<"schemaTemplates">;
     schemaTemplatesActions: EntityActions<"schemaTemplates">;
     schemaTemplatesRecords: Record<MatrxRecordId, SchemaTemplatesData>;
+    schemaTemplatesRecordsById: Record<string, SchemaTemplatesData>;
     schemaTemplatesUnsavedRecords: Record<MatrxRecordId, Partial<SchemaTemplatesData>>;
     schemaTemplatesSelectedRecordIds: MatrxRecordId[];
     schemaTemplatesIsLoading: boolean;
@@ -5664,7 +6283,11 @@ type UseSchemaTemplatesWithFetchReturn = {
     fetchSchemaTemplatesOne: (recordId: MatrxRecordId) => void;
     fetchSchemaTemplatesOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchSchemaTemplatesAll: () => void;
-    fetchSchemaTemplatesPaginated: (page: number, pageSize: number) => void;
+    fetchSchemaTemplatesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useSchemaTemplatesWithFetch = (): UseSchemaTemplatesWithFetchReturn => {
@@ -5672,6 +6295,7 @@ export const useSchemaTemplatesWithFetch = (): UseSchemaTemplatesWithFetchReturn
         selectors: schemaTemplatesSelectors,
         actions: schemaTemplatesActions,
         allRecords: schemaTemplatesRecords,
+        recordsById: schemaTemplatesRecordsById,
         unsavedRecords: schemaTemplatesUnsavedRecords,
         selectedRecordIds: schemaTemplatesSelectedRecordIds,
         isLoading: schemaTemplatesIsLoading,
@@ -5700,6 +6324,7 @@ export const useSchemaTemplatesWithFetch = (): UseSchemaTemplatesWithFetchReturn
         schemaTemplatesSelectors,
         schemaTemplatesActions,
         schemaTemplatesRecords,
+        schemaTemplatesRecordsById,
         schemaTemplatesUnsavedRecords,
         schemaTemplatesSelectedRecordIds,
         schemaTemplatesIsLoading,
@@ -5730,6 +6355,7 @@ type UseScrapeBaseConfigWithFetchReturn = {
     scrapeBaseConfigSelectors: EntitySelectors<"scrapeBaseConfig">;
     scrapeBaseConfigActions: EntityActions<"scrapeBaseConfig">;
     scrapeBaseConfigRecords: Record<MatrxRecordId, ScrapeBaseConfigData>;
+    scrapeBaseConfigRecordsById: Record<string, ScrapeBaseConfigData>;
     scrapeBaseConfigUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeBaseConfigData>>;
     scrapeBaseConfigSelectedRecordIds: MatrxRecordId[];
     scrapeBaseConfigIsLoading: boolean;
@@ -5750,7 +6376,11 @@ type UseScrapeBaseConfigWithFetchReturn = {
     fetchScrapeBaseConfigOne: (recordId: MatrxRecordId) => void;
     fetchScrapeBaseConfigOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeBaseConfigAll: () => void;
-    fetchScrapeBaseConfigPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeBaseConfigPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeBaseConfigWithFetch = (): UseScrapeBaseConfigWithFetchReturn => {
@@ -5758,6 +6388,7 @@ export const useScrapeBaseConfigWithFetch = (): UseScrapeBaseConfigWithFetchRetu
         selectors: scrapeBaseConfigSelectors,
         actions: scrapeBaseConfigActions,
         allRecords: scrapeBaseConfigRecords,
+        recordsById: scrapeBaseConfigRecordsById,
         unsavedRecords: scrapeBaseConfigUnsavedRecords,
         selectedRecordIds: scrapeBaseConfigSelectedRecordIds,
         isLoading: scrapeBaseConfigIsLoading,
@@ -5786,6 +6417,7 @@ export const useScrapeBaseConfigWithFetch = (): UseScrapeBaseConfigWithFetchRetu
         scrapeBaseConfigSelectors,
         scrapeBaseConfigActions,
         scrapeBaseConfigRecords,
+        scrapeBaseConfigRecordsById,
         scrapeBaseConfigUnsavedRecords,
         scrapeBaseConfigSelectedRecordIds,
         scrapeBaseConfigIsLoading,
@@ -5816,6 +6448,7 @@ type UseScrapeCachePolicyWithFetchReturn = {
     scrapeCachePolicySelectors: EntitySelectors<"scrapeCachePolicy">;
     scrapeCachePolicyActions: EntityActions<"scrapeCachePolicy">;
     scrapeCachePolicyRecords: Record<MatrxRecordId, ScrapeCachePolicyData>;
+    scrapeCachePolicyRecordsById: Record<string, ScrapeCachePolicyData>;
     scrapeCachePolicyUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeCachePolicyData>>;
     scrapeCachePolicySelectedRecordIds: MatrxRecordId[];
     scrapeCachePolicyIsLoading: boolean;
@@ -5836,7 +6469,11 @@ type UseScrapeCachePolicyWithFetchReturn = {
     fetchScrapeCachePolicyOne: (recordId: MatrxRecordId) => void;
     fetchScrapeCachePolicyOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeCachePolicyAll: () => void;
-    fetchScrapeCachePolicyPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeCachePolicyPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeCachePolicyWithFetch = (): UseScrapeCachePolicyWithFetchReturn => {
@@ -5844,6 +6481,7 @@ export const useScrapeCachePolicyWithFetch = (): UseScrapeCachePolicyWithFetchRe
         selectors: scrapeCachePolicySelectors,
         actions: scrapeCachePolicyActions,
         allRecords: scrapeCachePolicyRecords,
+        recordsById: scrapeCachePolicyRecordsById,
         unsavedRecords: scrapeCachePolicyUnsavedRecords,
         selectedRecordIds: scrapeCachePolicySelectedRecordIds,
         isLoading: scrapeCachePolicyIsLoading,
@@ -5872,6 +6510,7 @@ export const useScrapeCachePolicyWithFetch = (): UseScrapeCachePolicyWithFetchRe
         scrapeCachePolicySelectors,
         scrapeCachePolicyActions,
         scrapeCachePolicyRecords,
+        scrapeCachePolicyRecordsById,
         scrapeCachePolicyUnsavedRecords,
         scrapeCachePolicySelectedRecordIds,
         scrapeCachePolicyIsLoading,
@@ -5902,6 +6541,7 @@ type UseScrapeConfigurationWithFetchReturn = {
     scrapeConfigurationSelectors: EntitySelectors<"scrapeConfiguration">;
     scrapeConfigurationActions: EntityActions<"scrapeConfiguration">;
     scrapeConfigurationRecords: Record<MatrxRecordId, ScrapeConfigurationData>;
+    scrapeConfigurationRecordsById: Record<string, ScrapeConfigurationData>;
     scrapeConfigurationUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeConfigurationData>>;
     scrapeConfigurationSelectedRecordIds: MatrxRecordId[];
     scrapeConfigurationIsLoading: boolean;
@@ -5922,7 +6562,11 @@ type UseScrapeConfigurationWithFetchReturn = {
     fetchScrapeConfigurationOne: (recordId: MatrxRecordId) => void;
     fetchScrapeConfigurationOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeConfigurationAll: () => void;
-    fetchScrapeConfigurationPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeConfigurationPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeConfigurationWithFetch = (): UseScrapeConfigurationWithFetchReturn => {
@@ -5930,6 +6574,7 @@ export const useScrapeConfigurationWithFetch = (): UseScrapeConfigurationWithFet
         selectors: scrapeConfigurationSelectors,
         actions: scrapeConfigurationActions,
         allRecords: scrapeConfigurationRecords,
+        recordsById: scrapeConfigurationRecordsById,
         unsavedRecords: scrapeConfigurationUnsavedRecords,
         selectedRecordIds: scrapeConfigurationSelectedRecordIds,
         isLoading: scrapeConfigurationIsLoading,
@@ -5958,6 +6603,7 @@ export const useScrapeConfigurationWithFetch = (): UseScrapeConfigurationWithFet
         scrapeConfigurationSelectors,
         scrapeConfigurationActions,
         scrapeConfigurationRecords,
+        scrapeConfigurationRecordsById,
         scrapeConfigurationUnsavedRecords,
         scrapeConfigurationSelectedRecordIds,
         scrapeConfigurationIsLoading,
@@ -5988,6 +6634,7 @@ type UseScrapeCycleRunWithFetchReturn = {
     scrapeCycleRunSelectors: EntitySelectors<"scrapeCycleRun">;
     scrapeCycleRunActions: EntityActions<"scrapeCycleRun">;
     scrapeCycleRunRecords: Record<MatrxRecordId, ScrapeCycleRunData>;
+    scrapeCycleRunRecordsById: Record<string, ScrapeCycleRunData>;
     scrapeCycleRunUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeCycleRunData>>;
     scrapeCycleRunSelectedRecordIds: MatrxRecordId[];
     scrapeCycleRunIsLoading: boolean;
@@ -6008,7 +6655,11 @@ type UseScrapeCycleRunWithFetchReturn = {
     fetchScrapeCycleRunOne: (recordId: MatrxRecordId) => void;
     fetchScrapeCycleRunOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeCycleRunAll: () => void;
-    fetchScrapeCycleRunPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeCycleRunPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeCycleRunWithFetch = (): UseScrapeCycleRunWithFetchReturn => {
@@ -6016,6 +6667,7 @@ export const useScrapeCycleRunWithFetch = (): UseScrapeCycleRunWithFetchReturn =
         selectors: scrapeCycleRunSelectors,
         actions: scrapeCycleRunActions,
         allRecords: scrapeCycleRunRecords,
+        recordsById: scrapeCycleRunRecordsById,
         unsavedRecords: scrapeCycleRunUnsavedRecords,
         selectedRecordIds: scrapeCycleRunSelectedRecordIds,
         isLoading: scrapeCycleRunIsLoading,
@@ -6044,6 +6696,7 @@ export const useScrapeCycleRunWithFetch = (): UseScrapeCycleRunWithFetchReturn =
         scrapeCycleRunSelectors,
         scrapeCycleRunActions,
         scrapeCycleRunRecords,
+        scrapeCycleRunRecordsById,
         scrapeCycleRunUnsavedRecords,
         scrapeCycleRunSelectedRecordIds,
         scrapeCycleRunIsLoading,
@@ -6074,6 +6727,7 @@ type UseScrapeCycleTrackerWithFetchReturn = {
     scrapeCycleTrackerSelectors: EntitySelectors<"scrapeCycleTracker">;
     scrapeCycleTrackerActions: EntityActions<"scrapeCycleTracker">;
     scrapeCycleTrackerRecords: Record<MatrxRecordId, ScrapeCycleTrackerData>;
+    scrapeCycleTrackerRecordsById: Record<string, ScrapeCycleTrackerData>;
     scrapeCycleTrackerUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeCycleTrackerData>>;
     scrapeCycleTrackerSelectedRecordIds: MatrxRecordId[];
     scrapeCycleTrackerIsLoading: boolean;
@@ -6094,7 +6748,11 @@ type UseScrapeCycleTrackerWithFetchReturn = {
     fetchScrapeCycleTrackerOne: (recordId: MatrxRecordId) => void;
     fetchScrapeCycleTrackerOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeCycleTrackerAll: () => void;
-    fetchScrapeCycleTrackerPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeCycleTrackerPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeCycleTrackerWithFetch = (): UseScrapeCycleTrackerWithFetchReturn => {
@@ -6102,6 +6760,7 @@ export const useScrapeCycleTrackerWithFetch = (): UseScrapeCycleTrackerWithFetch
         selectors: scrapeCycleTrackerSelectors,
         actions: scrapeCycleTrackerActions,
         allRecords: scrapeCycleTrackerRecords,
+        recordsById: scrapeCycleTrackerRecordsById,
         unsavedRecords: scrapeCycleTrackerUnsavedRecords,
         selectedRecordIds: scrapeCycleTrackerSelectedRecordIds,
         isLoading: scrapeCycleTrackerIsLoading,
@@ -6130,6 +6789,7 @@ export const useScrapeCycleTrackerWithFetch = (): UseScrapeCycleTrackerWithFetch
         scrapeCycleTrackerSelectors,
         scrapeCycleTrackerActions,
         scrapeCycleTrackerRecords,
+        scrapeCycleTrackerRecordsById,
         scrapeCycleTrackerUnsavedRecords,
         scrapeCycleTrackerSelectedRecordIds,
         scrapeCycleTrackerIsLoading,
@@ -6160,6 +6820,7 @@ type UseScrapeDomainWithFetchReturn = {
     scrapeDomainSelectors: EntitySelectors<"scrapeDomain">;
     scrapeDomainActions: EntityActions<"scrapeDomain">;
     scrapeDomainRecords: Record<MatrxRecordId, ScrapeDomainData>;
+    scrapeDomainRecordsById: Record<string, ScrapeDomainData>;
     scrapeDomainUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainData>>;
     scrapeDomainSelectedRecordIds: MatrxRecordId[];
     scrapeDomainIsLoading: boolean;
@@ -6180,7 +6841,11 @@ type UseScrapeDomainWithFetchReturn = {
     fetchScrapeDomainOne: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainAll: () => void;
-    fetchScrapeDomainPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeDomainPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeDomainWithFetch = (): UseScrapeDomainWithFetchReturn => {
@@ -6188,6 +6853,7 @@ export const useScrapeDomainWithFetch = (): UseScrapeDomainWithFetchReturn => {
         selectors: scrapeDomainSelectors,
         actions: scrapeDomainActions,
         allRecords: scrapeDomainRecords,
+        recordsById: scrapeDomainRecordsById,
         unsavedRecords: scrapeDomainUnsavedRecords,
         selectedRecordIds: scrapeDomainSelectedRecordIds,
         isLoading: scrapeDomainIsLoading,
@@ -6216,6 +6882,7 @@ export const useScrapeDomainWithFetch = (): UseScrapeDomainWithFetchReturn => {
         scrapeDomainSelectors,
         scrapeDomainActions,
         scrapeDomainRecords,
+        scrapeDomainRecordsById,
         scrapeDomainUnsavedRecords,
         scrapeDomainSelectedRecordIds,
         scrapeDomainIsLoading,
@@ -6246,6 +6913,7 @@ type UseScrapeDomainDisallowedNotesWithFetchReturn = {
     scrapeDomainDisallowedNotesSelectors: EntitySelectors<"scrapeDomainDisallowedNotes">;
     scrapeDomainDisallowedNotesActions: EntityActions<"scrapeDomainDisallowedNotes">;
     scrapeDomainDisallowedNotesRecords: Record<MatrxRecordId, ScrapeDomainDisallowedNotesData>;
+    scrapeDomainDisallowedNotesRecordsById: Record<string, ScrapeDomainDisallowedNotesData>;
     scrapeDomainDisallowedNotesUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainDisallowedNotesData>>;
     scrapeDomainDisallowedNotesSelectedRecordIds: MatrxRecordId[];
     scrapeDomainDisallowedNotesIsLoading: boolean;
@@ -6266,7 +6934,11 @@ type UseScrapeDomainDisallowedNotesWithFetchReturn = {
     fetchScrapeDomainDisallowedNotesOne: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainDisallowedNotesOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainDisallowedNotesAll: () => void;
-    fetchScrapeDomainDisallowedNotesPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeDomainDisallowedNotesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeDomainDisallowedNotesWithFetch = (): UseScrapeDomainDisallowedNotesWithFetchReturn => {
@@ -6274,6 +6946,7 @@ export const useScrapeDomainDisallowedNotesWithFetch = (): UseScrapeDomainDisall
         selectors: scrapeDomainDisallowedNotesSelectors,
         actions: scrapeDomainDisallowedNotesActions,
         allRecords: scrapeDomainDisallowedNotesRecords,
+        recordsById: scrapeDomainDisallowedNotesRecordsById,
         unsavedRecords: scrapeDomainDisallowedNotesUnsavedRecords,
         selectedRecordIds: scrapeDomainDisallowedNotesSelectedRecordIds,
         isLoading: scrapeDomainDisallowedNotesIsLoading,
@@ -6302,6 +6975,7 @@ export const useScrapeDomainDisallowedNotesWithFetch = (): UseScrapeDomainDisall
         scrapeDomainDisallowedNotesSelectors,
         scrapeDomainDisallowedNotesActions,
         scrapeDomainDisallowedNotesRecords,
+        scrapeDomainDisallowedNotesRecordsById,
         scrapeDomainDisallowedNotesUnsavedRecords,
         scrapeDomainDisallowedNotesSelectedRecordIds,
         scrapeDomainDisallowedNotesIsLoading,
@@ -6332,6 +7006,7 @@ type UseScrapeDomainNotesWithFetchReturn = {
     scrapeDomainNotesSelectors: EntitySelectors<"scrapeDomainNotes">;
     scrapeDomainNotesActions: EntityActions<"scrapeDomainNotes">;
     scrapeDomainNotesRecords: Record<MatrxRecordId, ScrapeDomainNotesData>;
+    scrapeDomainNotesRecordsById: Record<string, ScrapeDomainNotesData>;
     scrapeDomainNotesUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainNotesData>>;
     scrapeDomainNotesSelectedRecordIds: MatrxRecordId[];
     scrapeDomainNotesIsLoading: boolean;
@@ -6352,7 +7027,11 @@ type UseScrapeDomainNotesWithFetchReturn = {
     fetchScrapeDomainNotesOne: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainNotesOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainNotesAll: () => void;
-    fetchScrapeDomainNotesPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeDomainNotesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeDomainNotesWithFetch = (): UseScrapeDomainNotesWithFetchReturn => {
@@ -6360,6 +7039,7 @@ export const useScrapeDomainNotesWithFetch = (): UseScrapeDomainNotesWithFetchRe
         selectors: scrapeDomainNotesSelectors,
         actions: scrapeDomainNotesActions,
         allRecords: scrapeDomainNotesRecords,
+        recordsById: scrapeDomainNotesRecordsById,
         unsavedRecords: scrapeDomainNotesUnsavedRecords,
         selectedRecordIds: scrapeDomainNotesSelectedRecordIds,
         isLoading: scrapeDomainNotesIsLoading,
@@ -6388,6 +7068,7 @@ export const useScrapeDomainNotesWithFetch = (): UseScrapeDomainNotesWithFetchRe
         scrapeDomainNotesSelectors,
         scrapeDomainNotesActions,
         scrapeDomainNotesRecords,
+        scrapeDomainNotesRecordsById,
         scrapeDomainNotesUnsavedRecords,
         scrapeDomainNotesSelectedRecordIds,
         scrapeDomainNotesIsLoading,
@@ -6418,6 +7099,7 @@ type UseScrapeDomainQuickScrapeSettingsWithFetchReturn = {
     scrapeDomainQuickScrapeSettingsSelectors: EntitySelectors<"scrapeDomainQuickScrapeSettings">;
     scrapeDomainQuickScrapeSettingsActions: EntityActions<"scrapeDomainQuickScrapeSettings">;
     scrapeDomainQuickScrapeSettingsRecords: Record<MatrxRecordId, ScrapeDomainQuickScrapeSettingsData>;
+    scrapeDomainQuickScrapeSettingsRecordsById: Record<string, ScrapeDomainQuickScrapeSettingsData>;
     scrapeDomainQuickScrapeSettingsUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainQuickScrapeSettingsData>>;
     scrapeDomainQuickScrapeSettingsSelectedRecordIds: MatrxRecordId[];
     scrapeDomainQuickScrapeSettingsIsLoading: boolean;
@@ -6438,7 +7120,11 @@ type UseScrapeDomainQuickScrapeSettingsWithFetchReturn = {
     fetchScrapeDomainQuickScrapeSettingsOne: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainQuickScrapeSettingsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainQuickScrapeSettingsAll: () => void;
-    fetchScrapeDomainQuickScrapeSettingsPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeDomainQuickScrapeSettingsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeDomainQuickScrapeSettingsWithFetch = (): UseScrapeDomainQuickScrapeSettingsWithFetchReturn => {
@@ -6446,6 +7132,7 @@ export const useScrapeDomainQuickScrapeSettingsWithFetch = (): UseScrapeDomainQu
         selectors: scrapeDomainQuickScrapeSettingsSelectors,
         actions: scrapeDomainQuickScrapeSettingsActions,
         allRecords: scrapeDomainQuickScrapeSettingsRecords,
+        recordsById: scrapeDomainQuickScrapeSettingsRecordsById,
         unsavedRecords: scrapeDomainQuickScrapeSettingsUnsavedRecords,
         selectedRecordIds: scrapeDomainQuickScrapeSettingsSelectedRecordIds,
         isLoading: scrapeDomainQuickScrapeSettingsIsLoading,
@@ -6474,6 +7161,7 @@ export const useScrapeDomainQuickScrapeSettingsWithFetch = (): UseScrapeDomainQu
         scrapeDomainQuickScrapeSettingsSelectors,
         scrapeDomainQuickScrapeSettingsActions,
         scrapeDomainQuickScrapeSettingsRecords,
+        scrapeDomainQuickScrapeSettingsRecordsById,
         scrapeDomainQuickScrapeSettingsUnsavedRecords,
         scrapeDomainQuickScrapeSettingsSelectedRecordIds,
         scrapeDomainQuickScrapeSettingsIsLoading,
@@ -6504,6 +7192,7 @@ type UseScrapeDomainRobotsTxtWithFetchReturn = {
     scrapeDomainRobotsTxtSelectors: EntitySelectors<"scrapeDomainRobotsTxt">;
     scrapeDomainRobotsTxtActions: EntityActions<"scrapeDomainRobotsTxt">;
     scrapeDomainRobotsTxtRecords: Record<MatrxRecordId, ScrapeDomainRobotsTxtData>;
+    scrapeDomainRobotsTxtRecordsById: Record<string, ScrapeDomainRobotsTxtData>;
     scrapeDomainRobotsTxtUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainRobotsTxtData>>;
     scrapeDomainRobotsTxtSelectedRecordIds: MatrxRecordId[];
     scrapeDomainRobotsTxtIsLoading: boolean;
@@ -6524,7 +7213,11 @@ type UseScrapeDomainRobotsTxtWithFetchReturn = {
     fetchScrapeDomainRobotsTxtOne: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainRobotsTxtOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainRobotsTxtAll: () => void;
-    fetchScrapeDomainRobotsTxtPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeDomainRobotsTxtPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeDomainRobotsTxtWithFetch = (): UseScrapeDomainRobotsTxtWithFetchReturn => {
@@ -6532,6 +7225,7 @@ export const useScrapeDomainRobotsTxtWithFetch = (): UseScrapeDomainRobotsTxtWit
         selectors: scrapeDomainRobotsTxtSelectors,
         actions: scrapeDomainRobotsTxtActions,
         allRecords: scrapeDomainRobotsTxtRecords,
+        recordsById: scrapeDomainRobotsTxtRecordsById,
         unsavedRecords: scrapeDomainRobotsTxtUnsavedRecords,
         selectedRecordIds: scrapeDomainRobotsTxtSelectedRecordIds,
         isLoading: scrapeDomainRobotsTxtIsLoading,
@@ -6560,6 +7254,7 @@ export const useScrapeDomainRobotsTxtWithFetch = (): UseScrapeDomainRobotsTxtWit
         scrapeDomainRobotsTxtSelectors,
         scrapeDomainRobotsTxtActions,
         scrapeDomainRobotsTxtRecords,
+        scrapeDomainRobotsTxtRecordsById,
         scrapeDomainRobotsTxtUnsavedRecords,
         scrapeDomainRobotsTxtSelectedRecordIds,
         scrapeDomainRobotsTxtIsLoading,
@@ -6590,6 +7285,7 @@ type UseScrapeDomainSitemapWithFetchReturn = {
     scrapeDomainSitemapSelectors: EntitySelectors<"scrapeDomainSitemap">;
     scrapeDomainSitemapActions: EntityActions<"scrapeDomainSitemap">;
     scrapeDomainSitemapRecords: Record<MatrxRecordId, ScrapeDomainSitemapData>;
+    scrapeDomainSitemapRecordsById: Record<string, ScrapeDomainSitemapData>;
     scrapeDomainSitemapUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainSitemapData>>;
     scrapeDomainSitemapSelectedRecordIds: MatrxRecordId[];
     scrapeDomainSitemapIsLoading: boolean;
@@ -6610,7 +7306,11 @@ type UseScrapeDomainSitemapWithFetchReturn = {
     fetchScrapeDomainSitemapOne: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainSitemapOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeDomainSitemapAll: () => void;
-    fetchScrapeDomainSitemapPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeDomainSitemapPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeDomainSitemapWithFetch = (): UseScrapeDomainSitemapWithFetchReturn => {
@@ -6618,6 +7318,7 @@ export const useScrapeDomainSitemapWithFetch = (): UseScrapeDomainSitemapWithFet
         selectors: scrapeDomainSitemapSelectors,
         actions: scrapeDomainSitemapActions,
         allRecords: scrapeDomainSitemapRecords,
+        recordsById: scrapeDomainSitemapRecordsById,
         unsavedRecords: scrapeDomainSitemapUnsavedRecords,
         selectedRecordIds: scrapeDomainSitemapSelectedRecordIds,
         isLoading: scrapeDomainSitemapIsLoading,
@@ -6646,6 +7347,7 @@ export const useScrapeDomainSitemapWithFetch = (): UseScrapeDomainSitemapWithFet
         scrapeDomainSitemapSelectors,
         scrapeDomainSitemapActions,
         scrapeDomainSitemapRecords,
+        scrapeDomainSitemapRecordsById,
         scrapeDomainSitemapUnsavedRecords,
         scrapeDomainSitemapSelectedRecordIds,
         scrapeDomainSitemapIsLoading,
@@ -6676,6 +7378,7 @@ type UseScrapeJobWithFetchReturn = {
     scrapeJobSelectors: EntitySelectors<"scrapeJob">;
     scrapeJobActions: EntityActions<"scrapeJob">;
     scrapeJobRecords: Record<MatrxRecordId, ScrapeJobData>;
+    scrapeJobRecordsById: Record<string, ScrapeJobData>;
     scrapeJobUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeJobData>>;
     scrapeJobSelectedRecordIds: MatrxRecordId[];
     scrapeJobIsLoading: boolean;
@@ -6696,7 +7399,11 @@ type UseScrapeJobWithFetchReturn = {
     fetchScrapeJobOne: (recordId: MatrxRecordId) => void;
     fetchScrapeJobOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeJobAll: () => void;
-    fetchScrapeJobPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeJobPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeJobWithFetch = (): UseScrapeJobWithFetchReturn => {
@@ -6704,6 +7411,7 @@ export const useScrapeJobWithFetch = (): UseScrapeJobWithFetchReturn => {
         selectors: scrapeJobSelectors,
         actions: scrapeJobActions,
         allRecords: scrapeJobRecords,
+        recordsById: scrapeJobRecordsById,
         unsavedRecords: scrapeJobUnsavedRecords,
         selectedRecordIds: scrapeJobSelectedRecordIds,
         isLoading: scrapeJobIsLoading,
@@ -6732,6 +7440,7 @@ export const useScrapeJobWithFetch = (): UseScrapeJobWithFetchReturn => {
         scrapeJobSelectors,
         scrapeJobActions,
         scrapeJobRecords,
+        scrapeJobRecordsById,
         scrapeJobUnsavedRecords,
         scrapeJobSelectedRecordIds,
         scrapeJobIsLoading,
@@ -6762,6 +7471,7 @@ type UseScrapeOverrideWithFetchReturn = {
     scrapeOverrideSelectors: EntitySelectors<"scrapeOverride">;
     scrapeOverrideActions: EntityActions<"scrapeOverride">;
     scrapeOverrideRecords: Record<MatrxRecordId, ScrapeOverrideData>;
+    scrapeOverrideRecordsById: Record<string, ScrapeOverrideData>;
     scrapeOverrideUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeOverrideData>>;
     scrapeOverrideSelectedRecordIds: MatrxRecordId[];
     scrapeOverrideIsLoading: boolean;
@@ -6782,7 +7492,11 @@ type UseScrapeOverrideWithFetchReturn = {
     fetchScrapeOverrideOne: (recordId: MatrxRecordId) => void;
     fetchScrapeOverrideOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeOverrideAll: () => void;
-    fetchScrapeOverridePaginated: (page: number, pageSize: number) => void;
+    fetchScrapeOverridePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeOverrideWithFetch = (): UseScrapeOverrideWithFetchReturn => {
@@ -6790,6 +7504,7 @@ export const useScrapeOverrideWithFetch = (): UseScrapeOverrideWithFetchReturn =
         selectors: scrapeOverrideSelectors,
         actions: scrapeOverrideActions,
         allRecords: scrapeOverrideRecords,
+        recordsById: scrapeOverrideRecordsById,
         unsavedRecords: scrapeOverrideUnsavedRecords,
         selectedRecordIds: scrapeOverrideSelectedRecordIds,
         isLoading: scrapeOverrideIsLoading,
@@ -6818,6 +7533,7 @@ export const useScrapeOverrideWithFetch = (): UseScrapeOverrideWithFetchReturn =
         scrapeOverrideSelectors,
         scrapeOverrideActions,
         scrapeOverrideRecords,
+        scrapeOverrideRecordsById,
         scrapeOverrideUnsavedRecords,
         scrapeOverrideSelectedRecordIds,
         scrapeOverrideIsLoading,
@@ -6848,6 +7564,7 @@ type UseScrapeOverrideValueWithFetchReturn = {
     scrapeOverrideValueSelectors: EntitySelectors<"scrapeOverrideValue">;
     scrapeOverrideValueActions: EntityActions<"scrapeOverrideValue">;
     scrapeOverrideValueRecords: Record<MatrxRecordId, ScrapeOverrideValueData>;
+    scrapeOverrideValueRecordsById: Record<string, ScrapeOverrideValueData>;
     scrapeOverrideValueUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeOverrideValueData>>;
     scrapeOverrideValueSelectedRecordIds: MatrxRecordId[];
     scrapeOverrideValueIsLoading: boolean;
@@ -6868,7 +7585,11 @@ type UseScrapeOverrideValueWithFetchReturn = {
     fetchScrapeOverrideValueOne: (recordId: MatrxRecordId) => void;
     fetchScrapeOverrideValueOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeOverrideValueAll: () => void;
-    fetchScrapeOverrideValuePaginated: (page: number, pageSize: number) => void;
+    fetchScrapeOverrideValuePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeOverrideValueWithFetch = (): UseScrapeOverrideValueWithFetchReturn => {
@@ -6876,6 +7597,7 @@ export const useScrapeOverrideValueWithFetch = (): UseScrapeOverrideValueWithFet
         selectors: scrapeOverrideValueSelectors,
         actions: scrapeOverrideValueActions,
         allRecords: scrapeOverrideValueRecords,
+        recordsById: scrapeOverrideValueRecordsById,
         unsavedRecords: scrapeOverrideValueUnsavedRecords,
         selectedRecordIds: scrapeOverrideValueSelectedRecordIds,
         isLoading: scrapeOverrideValueIsLoading,
@@ -6904,6 +7626,7 @@ export const useScrapeOverrideValueWithFetch = (): UseScrapeOverrideValueWithFet
         scrapeOverrideValueSelectors,
         scrapeOverrideValueActions,
         scrapeOverrideValueRecords,
+        scrapeOverrideValueRecordsById,
         scrapeOverrideValueUnsavedRecords,
         scrapeOverrideValueSelectedRecordIds,
         scrapeOverrideValueIsLoading,
@@ -6934,6 +7657,7 @@ type UseScrapeParsedPageWithFetchReturn = {
     scrapeParsedPageSelectors: EntitySelectors<"scrapeParsedPage">;
     scrapeParsedPageActions: EntityActions<"scrapeParsedPage">;
     scrapeParsedPageRecords: Record<MatrxRecordId, ScrapeParsedPageData>;
+    scrapeParsedPageRecordsById: Record<string, ScrapeParsedPageData>;
     scrapeParsedPageUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeParsedPageData>>;
     scrapeParsedPageSelectedRecordIds: MatrxRecordId[];
     scrapeParsedPageIsLoading: boolean;
@@ -6954,7 +7678,11 @@ type UseScrapeParsedPageWithFetchReturn = {
     fetchScrapeParsedPageOne: (recordId: MatrxRecordId) => void;
     fetchScrapeParsedPageOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeParsedPageAll: () => void;
-    fetchScrapeParsedPagePaginated: (page: number, pageSize: number) => void;
+    fetchScrapeParsedPagePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeParsedPageWithFetch = (): UseScrapeParsedPageWithFetchReturn => {
@@ -6962,6 +7690,7 @@ export const useScrapeParsedPageWithFetch = (): UseScrapeParsedPageWithFetchRetu
         selectors: scrapeParsedPageSelectors,
         actions: scrapeParsedPageActions,
         allRecords: scrapeParsedPageRecords,
+        recordsById: scrapeParsedPageRecordsById,
         unsavedRecords: scrapeParsedPageUnsavedRecords,
         selectedRecordIds: scrapeParsedPageSelectedRecordIds,
         isLoading: scrapeParsedPageIsLoading,
@@ -6990,6 +7719,7 @@ export const useScrapeParsedPageWithFetch = (): UseScrapeParsedPageWithFetchRetu
         scrapeParsedPageSelectors,
         scrapeParsedPageActions,
         scrapeParsedPageRecords,
+        scrapeParsedPageRecordsById,
         scrapeParsedPageUnsavedRecords,
         scrapeParsedPageSelectedRecordIds,
         scrapeParsedPageIsLoading,
@@ -7020,6 +7750,7 @@ type UseScrapePathPatternWithFetchReturn = {
     scrapePathPatternSelectors: EntitySelectors<"scrapePathPattern">;
     scrapePathPatternActions: EntityActions<"scrapePathPattern">;
     scrapePathPatternRecords: Record<MatrxRecordId, ScrapePathPatternData>;
+    scrapePathPatternRecordsById: Record<string, ScrapePathPatternData>;
     scrapePathPatternUnsavedRecords: Record<MatrxRecordId, Partial<ScrapePathPatternData>>;
     scrapePathPatternSelectedRecordIds: MatrxRecordId[];
     scrapePathPatternIsLoading: boolean;
@@ -7040,7 +7771,11 @@ type UseScrapePathPatternWithFetchReturn = {
     fetchScrapePathPatternOne: (recordId: MatrxRecordId) => void;
     fetchScrapePathPatternOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapePathPatternAll: () => void;
-    fetchScrapePathPatternPaginated: (page: number, pageSize: number) => void;
+    fetchScrapePathPatternPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapePathPatternWithFetch = (): UseScrapePathPatternWithFetchReturn => {
@@ -7048,6 +7783,7 @@ export const useScrapePathPatternWithFetch = (): UseScrapePathPatternWithFetchRe
         selectors: scrapePathPatternSelectors,
         actions: scrapePathPatternActions,
         allRecords: scrapePathPatternRecords,
+        recordsById: scrapePathPatternRecordsById,
         unsavedRecords: scrapePathPatternUnsavedRecords,
         selectedRecordIds: scrapePathPatternSelectedRecordIds,
         isLoading: scrapePathPatternIsLoading,
@@ -7076,6 +7812,7 @@ export const useScrapePathPatternWithFetch = (): UseScrapePathPatternWithFetchRe
         scrapePathPatternSelectors,
         scrapePathPatternActions,
         scrapePathPatternRecords,
+        scrapePathPatternRecordsById,
         scrapePathPatternUnsavedRecords,
         scrapePathPatternSelectedRecordIds,
         scrapePathPatternIsLoading,
@@ -7106,6 +7843,7 @@ type UseScrapePathPatternCachePolicyWithFetchReturn = {
     scrapePathPatternCachePolicySelectors: EntitySelectors<"scrapePathPatternCachePolicy">;
     scrapePathPatternCachePolicyActions: EntityActions<"scrapePathPatternCachePolicy">;
     scrapePathPatternCachePolicyRecords: Record<MatrxRecordId, ScrapePathPatternCachePolicyData>;
+    scrapePathPatternCachePolicyRecordsById: Record<string, ScrapePathPatternCachePolicyData>;
     scrapePathPatternCachePolicyUnsavedRecords: Record<MatrxRecordId, Partial<ScrapePathPatternCachePolicyData>>;
     scrapePathPatternCachePolicySelectedRecordIds: MatrxRecordId[];
     scrapePathPatternCachePolicyIsLoading: boolean;
@@ -7126,7 +7864,11 @@ type UseScrapePathPatternCachePolicyWithFetchReturn = {
     fetchScrapePathPatternCachePolicyOne: (recordId: MatrxRecordId) => void;
     fetchScrapePathPatternCachePolicyOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapePathPatternCachePolicyAll: () => void;
-    fetchScrapePathPatternCachePolicyPaginated: (page: number, pageSize: number) => void;
+    fetchScrapePathPatternCachePolicyPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapePathPatternCachePolicyWithFetch = (): UseScrapePathPatternCachePolicyWithFetchReturn => {
@@ -7134,6 +7876,7 @@ export const useScrapePathPatternCachePolicyWithFetch = (): UseScrapePathPattern
         selectors: scrapePathPatternCachePolicySelectors,
         actions: scrapePathPatternCachePolicyActions,
         allRecords: scrapePathPatternCachePolicyRecords,
+        recordsById: scrapePathPatternCachePolicyRecordsById,
         unsavedRecords: scrapePathPatternCachePolicyUnsavedRecords,
         selectedRecordIds: scrapePathPatternCachePolicySelectedRecordIds,
         isLoading: scrapePathPatternCachePolicyIsLoading,
@@ -7162,6 +7905,7 @@ export const useScrapePathPatternCachePolicyWithFetch = (): UseScrapePathPattern
         scrapePathPatternCachePolicySelectors,
         scrapePathPatternCachePolicyActions,
         scrapePathPatternCachePolicyRecords,
+        scrapePathPatternCachePolicyRecordsById,
         scrapePathPatternCachePolicyUnsavedRecords,
         scrapePathPatternCachePolicySelectedRecordIds,
         scrapePathPatternCachePolicyIsLoading,
@@ -7192,6 +7936,7 @@ type UseScrapePathPatternOverrideWithFetchReturn = {
     scrapePathPatternOverrideSelectors: EntitySelectors<"scrapePathPatternOverride">;
     scrapePathPatternOverrideActions: EntityActions<"scrapePathPatternOverride">;
     scrapePathPatternOverrideRecords: Record<MatrxRecordId, ScrapePathPatternOverrideData>;
+    scrapePathPatternOverrideRecordsById: Record<string, ScrapePathPatternOverrideData>;
     scrapePathPatternOverrideUnsavedRecords: Record<MatrxRecordId, Partial<ScrapePathPatternOverrideData>>;
     scrapePathPatternOverrideSelectedRecordIds: MatrxRecordId[];
     scrapePathPatternOverrideIsLoading: boolean;
@@ -7212,7 +7957,11 @@ type UseScrapePathPatternOverrideWithFetchReturn = {
     fetchScrapePathPatternOverrideOne: (recordId: MatrxRecordId) => void;
     fetchScrapePathPatternOverrideOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapePathPatternOverrideAll: () => void;
-    fetchScrapePathPatternOverridePaginated: (page: number, pageSize: number) => void;
+    fetchScrapePathPatternOverridePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapePathPatternOverrideWithFetch = (): UseScrapePathPatternOverrideWithFetchReturn => {
@@ -7220,6 +7969,7 @@ export const useScrapePathPatternOverrideWithFetch = (): UseScrapePathPatternOve
         selectors: scrapePathPatternOverrideSelectors,
         actions: scrapePathPatternOverrideActions,
         allRecords: scrapePathPatternOverrideRecords,
+        recordsById: scrapePathPatternOverrideRecordsById,
         unsavedRecords: scrapePathPatternOverrideUnsavedRecords,
         selectedRecordIds: scrapePathPatternOverrideSelectedRecordIds,
         isLoading: scrapePathPatternOverrideIsLoading,
@@ -7248,6 +7998,7 @@ export const useScrapePathPatternOverrideWithFetch = (): UseScrapePathPatternOve
         scrapePathPatternOverrideSelectors,
         scrapePathPatternOverrideActions,
         scrapePathPatternOverrideRecords,
+        scrapePathPatternOverrideRecordsById,
         scrapePathPatternOverrideUnsavedRecords,
         scrapePathPatternOverrideSelectedRecordIds,
         scrapePathPatternOverrideIsLoading,
@@ -7278,6 +8029,7 @@ type UseScrapeQuickFailureLogWithFetchReturn = {
     scrapeQuickFailureLogSelectors: EntitySelectors<"scrapeQuickFailureLog">;
     scrapeQuickFailureLogActions: EntityActions<"scrapeQuickFailureLog">;
     scrapeQuickFailureLogRecords: Record<MatrxRecordId, ScrapeQuickFailureLogData>;
+    scrapeQuickFailureLogRecordsById: Record<string, ScrapeQuickFailureLogData>;
     scrapeQuickFailureLogUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeQuickFailureLogData>>;
     scrapeQuickFailureLogSelectedRecordIds: MatrxRecordId[];
     scrapeQuickFailureLogIsLoading: boolean;
@@ -7298,7 +8050,11 @@ type UseScrapeQuickFailureLogWithFetchReturn = {
     fetchScrapeQuickFailureLogOne: (recordId: MatrxRecordId) => void;
     fetchScrapeQuickFailureLogOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeQuickFailureLogAll: () => void;
-    fetchScrapeQuickFailureLogPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeQuickFailureLogPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeQuickFailureLogWithFetch = (): UseScrapeQuickFailureLogWithFetchReturn => {
@@ -7306,6 +8062,7 @@ export const useScrapeQuickFailureLogWithFetch = (): UseScrapeQuickFailureLogWit
         selectors: scrapeQuickFailureLogSelectors,
         actions: scrapeQuickFailureLogActions,
         allRecords: scrapeQuickFailureLogRecords,
+        recordsById: scrapeQuickFailureLogRecordsById,
         unsavedRecords: scrapeQuickFailureLogUnsavedRecords,
         selectedRecordIds: scrapeQuickFailureLogSelectedRecordIds,
         isLoading: scrapeQuickFailureLogIsLoading,
@@ -7334,6 +8091,7 @@ export const useScrapeQuickFailureLogWithFetch = (): UseScrapeQuickFailureLogWit
         scrapeQuickFailureLogSelectors,
         scrapeQuickFailureLogActions,
         scrapeQuickFailureLogRecords,
+        scrapeQuickFailureLogRecordsById,
         scrapeQuickFailureLogUnsavedRecords,
         scrapeQuickFailureLogSelectedRecordIds,
         scrapeQuickFailureLogIsLoading,
@@ -7364,6 +8122,7 @@ type UseScrapeTaskWithFetchReturn = {
     scrapeTaskSelectors: EntitySelectors<"scrapeTask">;
     scrapeTaskActions: EntityActions<"scrapeTask">;
     scrapeTaskRecords: Record<MatrxRecordId, ScrapeTaskData>;
+    scrapeTaskRecordsById: Record<string, ScrapeTaskData>;
     scrapeTaskUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeTaskData>>;
     scrapeTaskSelectedRecordIds: MatrxRecordId[];
     scrapeTaskIsLoading: boolean;
@@ -7384,7 +8143,11 @@ type UseScrapeTaskWithFetchReturn = {
     fetchScrapeTaskOne: (recordId: MatrxRecordId) => void;
     fetchScrapeTaskOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeTaskAll: () => void;
-    fetchScrapeTaskPaginated: (page: number, pageSize: number) => void;
+    fetchScrapeTaskPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeTaskWithFetch = (): UseScrapeTaskWithFetchReturn => {
@@ -7392,6 +8155,7 @@ export const useScrapeTaskWithFetch = (): UseScrapeTaskWithFetchReturn => {
         selectors: scrapeTaskSelectors,
         actions: scrapeTaskActions,
         allRecords: scrapeTaskRecords,
+        recordsById: scrapeTaskRecordsById,
         unsavedRecords: scrapeTaskUnsavedRecords,
         selectedRecordIds: scrapeTaskSelectedRecordIds,
         isLoading: scrapeTaskIsLoading,
@@ -7420,6 +8184,7 @@ export const useScrapeTaskWithFetch = (): UseScrapeTaskWithFetchReturn => {
         scrapeTaskSelectors,
         scrapeTaskActions,
         scrapeTaskRecords,
+        scrapeTaskRecordsById,
         scrapeTaskUnsavedRecords,
         scrapeTaskSelectedRecordIds,
         scrapeTaskIsLoading,
@@ -7450,6 +8215,7 @@ type UseScrapeTaskResponseWithFetchReturn = {
     scrapeTaskResponseSelectors: EntitySelectors<"scrapeTaskResponse">;
     scrapeTaskResponseActions: EntityActions<"scrapeTaskResponse">;
     scrapeTaskResponseRecords: Record<MatrxRecordId, ScrapeTaskResponseData>;
+    scrapeTaskResponseRecordsById: Record<string, ScrapeTaskResponseData>;
     scrapeTaskResponseUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeTaskResponseData>>;
     scrapeTaskResponseSelectedRecordIds: MatrxRecordId[];
     scrapeTaskResponseIsLoading: boolean;
@@ -7470,7 +8236,11 @@ type UseScrapeTaskResponseWithFetchReturn = {
     fetchScrapeTaskResponseOne: (recordId: MatrxRecordId) => void;
     fetchScrapeTaskResponseOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchScrapeTaskResponseAll: () => void;
-    fetchScrapeTaskResponsePaginated: (page: number, pageSize: number) => void;
+    fetchScrapeTaskResponsePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useScrapeTaskResponseWithFetch = (): UseScrapeTaskResponseWithFetchReturn => {
@@ -7478,6 +8248,7 @@ export const useScrapeTaskResponseWithFetch = (): UseScrapeTaskResponseWithFetch
         selectors: scrapeTaskResponseSelectors,
         actions: scrapeTaskResponseActions,
         allRecords: scrapeTaskResponseRecords,
+        recordsById: scrapeTaskResponseRecordsById,
         unsavedRecords: scrapeTaskResponseUnsavedRecords,
         selectedRecordIds: scrapeTaskResponseSelectedRecordIds,
         isLoading: scrapeTaskResponseIsLoading,
@@ -7506,6 +8277,7 @@ export const useScrapeTaskResponseWithFetch = (): UseScrapeTaskResponseWithFetch
         scrapeTaskResponseSelectors,
         scrapeTaskResponseActions,
         scrapeTaskResponseRecords,
+        scrapeTaskResponseRecordsById,
         scrapeTaskResponseUnsavedRecords,
         scrapeTaskResponseSelectedRecordIds,
         scrapeTaskResponseIsLoading,
@@ -7536,6 +8308,7 @@ type UseSubcategoryWithFetchReturn = {
     subcategorySelectors: EntitySelectors<"subcategory">;
     subcategoryActions: EntityActions<"subcategory">;
     subcategoryRecords: Record<MatrxRecordId, SubcategoryData>;
+    subcategoryRecordsById: Record<string, SubcategoryData>;
     subcategoryUnsavedRecords: Record<MatrxRecordId, Partial<SubcategoryData>>;
     subcategorySelectedRecordIds: MatrxRecordId[];
     subcategoryIsLoading: boolean;
@@ -7556,7 +8329,11 @@ type UseSubcategoryWithFetchReturn = {
     fetchSubcategoryOne: (recordId: MatrxRecordId) => void;
     fetchSubcategoryOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchSubcategoryAll: () => void;
-    fetchSubcategoryPaginated: (page: number, pageSize: number) => void;
+    fetchSubcategoryPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useSubcategoryWithFetch = (): UseSubcategoryWithFetchReturn => {
@@ -7564,6 +8341,7 @@ export const useSubcategoryWithFetch = (): UseSubcategoryWithFetchReturn => {
         selectors: subcategorySelectors,
         actions: subcategoryActions,
         allRecords: subcategoryRecords,
+        recordsById: subcategoryRecordsById,
         unsavedRecords: subcategoryUnsavedRecords,
         selectedRecordIds: subcategorySelectedRecordIds,
         isLoading: subcategoryIsLoading,
@@ -7592,6 +8370,7 @@ export const useSubcategoryWithFetch = (): UseSubcategoryWithFetchReturn => {
         subcategorySelectors,
         subcategoryActions,
         subcategoryRecords,
+        subcategoryRecordsById,
         subcategoryUnsavedRecords,
         subcategorySelectedRecordIds,
         subcategoryIsLoading,
@@ -7622,6 +8401,7 @@ type UseSystemFunctionWithFetchReturn = {
     systemFunctionSelectors: EntitySelectors<"systemFunction">;
     systemFunctionActions: EntityActions<"systemFunction">;
     systemFunctionRecords: Record<MatrxRecordId, SystemFunctionData>;
+    systemFunctionRecordsById: Record<string, SystemFunctionData>;
     systemFunctionUnsavedRecords: Record<MatrxRecordId, Partial<SystemFunctionData>>;
     systemFunctionSelectedRecordIds: MatrxRecordId[];
     systemFunctionIsLoading: boolean;
@@ -7642,7 +8422,11 @@ type UseSystemFunctionWithFetchReturn = {
     fetchSystemFunctionOne: (recordId: MatrxRecordId) => void;
     fetchSystemFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchSystemFunctionAll: () => void;
-    fetchSystemFunctionPaginated: (page: number, pageSize: number) => void;
+    fetchSystemFunctionPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useSystemFunctionWithFetch = (): UseSystemFunctionWithFetchReturn => {
@@ -7650,6 +8434,7 @@ export const useSystemFunctionWithFetch = (): UseSystemFunctionWithFetchReturn =
         selectors: systemFunctionSelectors,
         actions: systemFunctionActions,
         allRecords: systemFunctionRecords,
+        recordsById: systemFunctionRecordsById,
         unsavedRecords: systemFunctionUnsavedRecords,
         selectedRecordIds: systemFunctionSelectedRecordIds,
         isLoading: systemFunctionIsLoading,
@@ -7678,6 +8463,7 @@ export const useSystemFunctionWithFetch = (): UseSystemFunctionWithFetchReturn =
         systemFunctionSelectors,
         systemFunctionActions,
         systemFunctionRecords,
+        systemFunctionRecordsById,
         systemFunctionUnsavedRecords,
         systemFunctionSelectedRecordIds,
         systemFunctionIsLoading,
@@ -7708,6 +8494,7 @@ type UseTableDataWithFetchReturn = {
     tableDataSelectors: EntitySelectors<"tableData">;
     tableDataActions: EntityActions<"tableData">;
     tableDataRecords: Record<MatrxRecordId, TableDataData>;
+    tableDataRecordsById: Record<string, TableDataData>;
     tableDataUnsavedRecords: Record<MatrxRecordId, Partial<TableDataData>>;
     tableDataSelectedRecordIds: MatrxRecordId[];
     tableDataIsLoading: boolean;
@@ -7728,7 +8515,11 @@ type UseTableDataWithFetchReturn = {
     fetchTableDataOne: (recordId: MatrxRecordId) => void;
     fetchTableDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchTableDataAll: () => void;
-    fetchTableDataPaginated: (page: number, pageSize: number) => void;
+    fetchTableDataPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useTableDataWithFetch = (): UseTableDataWithFetchReturn => {
@@ -7736,6 +8527,7 @@ export const useTableDataWithFetch = (): UseTableDataWithFetchReturn => {
         selectors: tableDataSelectors,
         actions: tableDataActions,
         allRecords: tableDataRecords,
+        recordsById: tableDataRecordsById,
         unsavedRecords: tableDataUnsavedRecords,
         selectedRecordIds: tableDataSelectedRecordIds,
         isLoading: tableDataIsLoading,
@@ -7764,6 +8556,7 @@ export const useTableDataWithFetch = (): UseTableDataWithFetchReturn => {
         tableDataSelectors,
         tableDataActions,
         tableDataRecords,
+        tableDataRecordsById,
         tableDataUnsavedRecords,
         tableDataSelectedRecordIds,
         tableDataIsLoading,
@@ -7794,6 +8587,7 @@ type UseTableFieldsWithFetchReturn = {
     tableFieldsSelectors: EntitySelectors<"tableFields">;
     tableFieldsActions: EntityActions<"tableFields">;
     tableFieldsRecords: Record<MatrxRecordId, TableFieldsData>;
+    tableFieldsRecordsById: Record<string, TableFieldsData>;
     tableFieldsUnsavedRecords: Record<MatrxRecordId, Partial<TableFieldsData>>;
     tableFieldsSelectedRecordIds: MatrxRecordId[];
     tableFieldsIsLoading: boolean;
@@ -7814,7 +8608,11 @@ type UseTableFieldsWithFetchReturn = {
     fetchTableFieldsOne: (recordId: MatrxRecordId) => void;
     fetchTableFieldsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchTableFieldsAll: () => void;
-    fetchTableFieldsPaginated: (page: number, pageSize: number) => void;
+    fetchTableFieldsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useTableFieldsWithFetch = (): UseTableFieldsWithFetchReturn => {
@@ -7822,6 +8620,7 @@ export const useTableFieldsWithFetch = (): UseTableFieldsWithFetchReturn => {
         selectors: tableFieldsSelectors,
         actions: tableFieldsActions,
         allRecords: tableFieldsRecords,
+        recordsById: tableFieldsRecordsById,
         unsavedRecords: tableFieldsUnsavedRecords,
         selectedRecordIds: tableFieldsSelectedRecordIds,
         isLoading: tableFieldsIsLoading,
@@ -7850,6 +8649,7 @@ export const useTableFieldsWithFetch = (): UseTableFieldsWithFetchReturn => {
         tableFieldsSelectors,
         tableFieldsActions,
         tableFieldsRecords,
+        tableFieldsRecordsById,
         tableFieldsUnsavedRecords,
         tableFieldsSelectedRecordIds,
         tableFieldsIsLoading,
@@ -7880,6 +8680,7 @@ type UseTaskAssignmentsWithFetchReturn = {
     taskAssignmentsSelectors: EntitySelectors<"taskAssignments">;
     taskAssignmentsActions: EntityActions<"taskAssignments">;
     taskAssignmentsRecords: Record<MatrxRecordId, TaskAssignmentsData>;
+    taskAssignmentsRecordsById: Record<string, TaskAssignmentsData>;
     taskAssignmentsUnsavedRecords: Record<MatrxRecordId, Partial<TaskAssignmentsData>>;
     taskAssignmentsSelectedRecordIds: MatrxRecordId[];
     taskAssignmentsIsLoading: boolean;
@@ -7900,7 +8701,11 @@ type UseTaskAssignmentsWithFetchReturn = {
     fetchTaskAssignmentsOne: (recordId: MatrxRecordId) => void;
     fetchTaskAssignmentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchTaskAssignmentsAll: () => void;
-    fetchTaskAssignmentsPaginated: (page: number, pageSize: number) => void;
+    fetchTaskAssignmentsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useTaskAssignmentsWithFetch = (): UseTaskAssignmentsWithFetchReturn => {
@@ -7908,6 +8713,7 @@ export const useTaskAssignmentsWithFetch = (): UseTaskAssignmentsWithFetchReturn
         selectors: taskAssignmentsSelectors,
         actions: taskAssignmentsActions,
         allRecords: taskAssignmentsRecords,
+        recordsById: taskAssignmentsRecordsById,
         unsavedRecords: taskAssignmentsUnsavedRecords,
         selectedRecordIds: taskAssignmentsSelectedRecordIds,
         isLoading: taskAssignmentsIsLoading,
@@ -7936,6 +8742,7 @@ export const useTaskAssignmentsWithFetch = (): UseTaskAssignmentsWithFetchReturn
         taskAssignmentsSelectors,
         taskAssignmentsActions,
         taskAssignmentsRecords,
+        taskAssignmentsRecordsById,
         taskAssignmentsUnsavedRecords,
         taskAssignmentsSelectedRecordIds,
         taskAssignmentsIsLoading,
@@ -7966,6 +8773,7 @@ type UseTaskAttachmentsWithFetchReturn = {
     taskAttachmentsSelectors: EntitySelectors<"taskAttachments">;
     taskAttachmentsActions: EntityActions<"taskAttachments">;
     taskAttachmentsRecords: Record<MatrxRecordId, TaskAttachmentsData>;
+    taskAttachmentsRecordsById: Record<string, TaskAttachmentsData>;
     taskAttachmentsUnsavedRecords: Record<MatrxRecordId, Partial<TaskAttachmentsData>>;
     taskAttachmentsSelectedRecordIds: MatrxRecordId[];
     taskAttachmentsIsLoading: boolean;
@@ -7986,7 +8794,11 @@ type UseTaskAttachmentsWithFetchReturn = {
     fetchTaskAttachmentsOne: (recordId: MatrxRecordId) => void;
     fetchTaskAttachmentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchTaskAttachmentsAll: () => void;
-    fetchTaskAttachmentsPaginated: (page: number, pageSize: number) => void;
+    fetchTaskAttachmentsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useTaskAttachmentsWithFetch = (): UseTaskAttachmentsWithFetchReturn => {
@@ -7994,6 +8806,7 @@ export const useTaskAttachmentsWithFetch = (): UseTaskAttachmentsWithFetchReturn
         selectors: taskAttachmentsSelectors,
         actions: taskAttachmentsActions,
         allRecords: taskAttachmentsRecords,
+        recordsById: taskAttachmentsRecordsById,
         unsavedRecords: taskAttachmentsUnsavedRecords,
         selectedRecordIds: taskAttachmentsSelectedRecordIds,
         isLoading: taskAttachmentsIsLoading,
@@ -8022,6 +8835,7 @@ export const useTaskAttachmentsWithFetch = (): UseTaskAttachmentsWithFetchReturn
         taskAttachmentsSelectors,
         taskAttachmentsActions,
         taskAttachmentsRecords,
+        taskAttachmentsRecordsById,
         taskAttachmentsUnsavedRecords,
         taskAttachmentsSelectedRecordIds,
         taskAttachmentsIsLoading,
@@ -8052,6 +8866,7 @@ type UseTaskCommentsWithFetchReturn = {
     taskCommentsSelectors: EntitySelectors<"taskComments">;
     taskCommentsActions: EntityActions<"taskComments">;
     taskCommentsRecords: Record<MatrxRecordId, TaskCommentsData>;
+    taskCommentsRecordsById: Record<string, TaskCommentsData>;
     taskCommentsUnsavedRecords: Record<MatrxRecordId, Partial<TaskCommentsData>>;
     taskCommentsSelectedRecordIds: MatrxRecordId[];
     taskCommentsIsLoading: boolean;
@@ -8072,7 +8887,11 @@ type UseTaskCommentsWithFetchReturn = {
     fetchTaskCommentsOne: (recordId: MatrxRecordId) => void;
     fetchTaskCommentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchTaskCommentsAll: () => void;
-    fetchTaskCommentsPaginated: (page: number, pageSize: number) => void;
+    fetchTaskCommentsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useTaskCommentsWithFetch = (): UseTaskCommentsWithFetchReturn => {
@@ -8080,6 +8899,7 @@ export const useTaskCommentsWithFetch = (): UseTaskCommentsWithFetchReturn => {
         selectors: taskCommentsSelectors,
         actions: taskCommentsActions,
         allRecords: taskCommentsRecords,
+        recordsById: taskCommentsRecordsById,
         unsavedRecords: taskCommentsUnsavedRecords,
         selectedRecordIds: taskCommentsSelectedRecordIds,
         isLoading: taskCommentsIsLoading,
@@ -8108,6 +8928,7 @@ export const useTaskCommentsWithFetch = (): UseTaskCommentsWithFetchReturn => {
         taskCommentsSelectors,
         taskCommentsActions,
         taskCommentsRecords,
+        taskCommentsRecordsById,
         taskCommentsUnsavedRecords,
         taskCommentsSelectedRecordIds,
         taskCommentsIsLoading,
@@ -8138,6 +8959,7 @@ type UseTasksWithFetchReturn = {
     tasksSelectors: EntitySelectors<"tasks">;
     tasksActions: EntityActions<"tasks">;
     tasksRecords: Record<MatrxRecordId, TasksData>;
+    tasksRecordsById: Record<string, TasksData>;
     tasksUnsavedRecords: Record<MatrxRecordId, Partial<TasksData>>;
     tasksSelectedRecordIds: MatrxRecordId[];
     tasksIsLoading: boolean;
@@ -8158,7 +8980,11 @@ type UseTasksWithFetchReturn = {
     fetchTasksOne: (recordId: MatrxRecordId) => void;
     fetchTasksOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchTasksAll: () => void;
-    fetchTasksPaginated: (page: number, pageSize: number) => void;
+    fetchTasksPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useTasksWithFetch = (): UseTasksWithFetchReturn => {
@@ -8166,6 +8992,7 @@ export const useTasksWithFetch = (): UseTasksWithFetchReturn => {
         selectors: tasksSelectors,
         actions: tasksActions,
         allRecords: tasksRecords,
+        recordsById: tasksRecordsById,
         unsavedRecords: tasksUnsavedRecords,
         selectedRecordIds: tasksSelectedRecordIds,
         isLoading: tasksIsLoading,
@@ -8194,6 +9021,7 @@ export const useTasksWithFetch = (): UseTasksWithFetchReturn => {
         tasksSelectors,
         tasksActions,
         tasksRecords,
+        tasksRecordsById,
         tasksUnsavedRecords,
         tasksSelectedRecordIds,
         tasksIsLoading,
@@ -8224,6 +9052,7 @@ type UseToolWithFetchReturn = {
     toolSelectors: EntitySelectors<"tool">;
     toolActions: EntityActions<"tool">;
     toolRecords: Record<MatrxRecordId, ToolData>;
+    toolRecordsById: Record<string, ToolData>;
     toolUnsavedRecords: Record<MatrxRecordId, Partial<ToolData>>;
     toolSelectedRecordIds: MatrxRecordId[];
     toolIsLoading: boolean;
@@ -8244,7 +9073,11 @@ type UseToolWithFetchReturn = {
     fetchToolOne: (recordId: MatrxRecordId) => void;
     fetchToolOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchToolAll: () => void;
-    fetchToolPaginated: (page: number, pageSize: number) => void;
+    fetchToolPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useToolWithFetch = (): UseToolWithFetchReturn => {
@@ -8252,6 +9085,7 @@ export const useToolWithFetch = (): UseToolWithFetchReturn => {
         selectors: toolSelectors,
         actions: toolActions,
         allRecords: toolRecords,
+        recordsById: toolRecordsById,
         unsavedRecords: toolUnsavedRecords,
         selectedRecordIds: toolSelectedRecordIds,
         isLoading: toolIsLoading,
@@ -8280,6 +9114,7 @@ export const useToolWithFetch = (): UseToolWithFetchReturn => {
         toolSelectors,
         toolActions,
         toolRecords,
+        toolRecordsById,
         toolUnsavedRecords,
         toolSelectedRecordIds,
         toolIsLoading,
@@ -8310,6 +9145,7 @@ type UseTransformerWithFetchReturn = {
     transformerSelectors: EntitySelectors<"transformer">;
     transformerActions: EntityActions<"transformer">;
     transformerRecords: Record<MatrxRecordId, TransformerData>;
+    transformerRecordsById: Record<string, TransformerData>;
     transformerUnsavedRecords: Record<MatrxRecordId, Partial<TransformerData>>;
     transformerSelectedRecordIds: MatrxRecordId[];
     transformerIsLoading: boolean;
@@ -8330,7 +9166,11 @@ type UseTransformerWithFetchReturn = {
     fetchTransformerOne: (recordId: MatrxRecordId) => void;
     fetchTransformerOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchTransformerAll: () => void;
-    fetchTransformerPaginated: (page: number, pageSize: number) => void;
+    fetchTransformerPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
@@ -8338,6 +9178,7 @@ export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
         selectors: transformerSelectors,
         actions: transformerActions,
         allRecords: transformerRecords,
+        recordsById: transformerRecordsById,
         unsavedRecords: transformerUnsavedRecords,
         selectedRecordIds: transformerSelectedRecordIds,
         isLoading: transformerIsLoading,
@@ -8366,6 +9207,7 @@ export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
         transformerSelectors,
         transformerActions,
         transformerRecords,
+        transformerRecordsById,
         transformerUnsavedRecords,
         transformerSelectedRecordIds,
         transformerIsLoading,
@@ -8396,6 +9238,7 @@ type UseUserListItemsWithFetchReturn = {
     userListItemsSelectors: EntitySelectors<"userListItems">;
     userListItemsActions: EntityActions<"userListItems">;
     userListItemsRecords: Record<MatrxRecordId, UserListItemsData>;
+    userListItemsRecordsById: Record<string, UserListItemsData>;
     userListItemsUnsavedRecords: Record<MatrxRecordId, Partial<UserListItemsData>>;
     userListItemsSelectedRecordIds: MatrxRecordId[];
     userListItemsIsLoading: boolean;
@@ -8416,7 +9259,11 @@ type UseUserListItemsWithFetchReturn = {
     fetchUserListItemsOne: (recordId: MatrxRecordId) => void;
     fetchUserListItemsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchUserListItemsAll: () => void;
-    fetchUserListItemsPaginated: (page: number, pageSize: number) => void;
+    fetchUserListItemsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useUserListItemsWithFetch = (): UseUserListItemsWithFetchReturn => {
@@ -8424,6 +9271,7 @@ export const useUserListItemsWithFetch = (): UseUserListItemsWithFetchReturn => 
         selectors: userListItemsSelectors,
         actions: userListItemsActions,
         allRecords: userListItemsRecords,
+        recordsById: userListItemsRecordsById,
         unsavedRecords: userListItemsUnsavedRecords,
         selectedRecordIds: userListItemsSelectedRecordIds,
         isLoading: userListItemsIsLoading,
@@ -8452,6 +9300,7 @@ export const useUserListItemsWithFetch = (): UseUserListItemsWithFetchReturn => 
         userListItemsSelectors,
         userListItemsActions,
         userListItemsRecords,
+        userListItemsRecordsById,
         userListItemsUnsavedRecords,
         userListItemsSelectedRecordIds,
         userListItemsIsLoading,
@@ -8482,6 +9331,7 @@ type UseUserListsWithFetchReturn = {
     userListsSelectors: EntitySelectors<"userLists">;
     userListsActions: EntityActions<"userLists">;
     userListsRecords: Record<MatrxRecordId, UserListsData>;
+    userListsRecordsById: Record<string, UserListsData>;
     userListsUnsavedRecords: Record<MatrxRecordId, Partial<UserListsData>>;
     userListsSelectedRecordIds: MatrxRecordId[];
     userListsIsLoading: boolean;
@@ -8502,7 +9352,11 @@ type UseUserListsWithFetchReturn = {
     fetchUserListsOne: (recordId: MatrxRecordId) => void;
     fetchUserListsOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchUserListsAll: () => void;
-    fetchUserListsPaginated: (page: number, pageSize: number) => void;
+    fetchUserListsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useUserListsWithFetch = (): UseUserListsWithFetchReturn => {
@@ -8510,6 +9364,7 @@ export const useUserListsWithFetch = (): UseUserListsWithFetchReturn => {
         selectors: userListsSelectors,
         actions: userListsActions,
         allRecords: userListsRecords,
+        recordsById: userListsRecordsById,
         unsavedRecords: userListsUnsavedRecords,
         selectedRecordIds: userListsSelectedRecordIds,
         isLoading: userListsIsLoading,
@@ -8538,6 +9393,7 @@ export const useUserListsWithFetch = (): UseUserListsWithFetchReturn => {
         userListsSelectors,
         userListsActions,
         userListsRecords,
+        userListsRecordsById,
         userListsUnsavedRecords,
         userListsSelectedRecordIds,
         userListsIsLoading,
@@ -8568,6 +9424,7 @@ type UseUserPreferencesWithFetchReturn = {
     userPreferencesSelectors: EntitySelectors<"userPreferences">;
     userPreferencesActions: EntityActions<"userPreferences">;
     userPreferencesRecords: Record<MatrxRecordId, UserPreferencesData>;
+    userPreferencesRecordsById: Record<string, UserPreferencesData>;
     userPreferencesUnsavedRecords: Record<MatrxRecordId, Partial<UserPreferencesData>>;
     userPreferencesSelectedRecordIds: MatrxRecordId[];
     userPreferencesIsLoading: boolean;
@@ -8588,7 +9445,11 @@ type UseUserPreferencesWithFetchReturn = {
     fetchUserPreferencesOne: (recordId: MatrxRecordId) => void;
     fetchUserPreferencesOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchUserPreferencesAll: () => void;
-    fetchUserPreferencesPaginated: (page: number, pageSize: number) => void;
+    fetchUserPreferencesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn => {
@@ -8596,6 +9457,7 @@ export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn
         selectors: userPreferencesSelectors,
         actions: userPreferencesActions,
         allRecords: userPreferencesRecords,
+        recordsById: userPreferencesRecordsById,
         unsavedRecords: userPreferencesUnsavedRecords,
         selectedRecordIds: userPreferencesSelectedRecordIds,
         isLoading: userPreferencesIsLoading,
@@ -8624,6 +9486,7 @@ export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn
         userPreferencesSelectors,
         userPreferencesActions,
         userPreferencesRecords,
+        userPreferencesRecordsById,
         userPreferencesUnsavedRecords,
         userPreferencesSelectedRecordIds,
         userPreferencesIsLoading,
@@ -8654,6 +9517,7 @@ type UseUserTablesWithFetchReturn = {
     userTablesSelectors: EntitySelectors<"userTables">;
     userTablesActions: EntityActions<"userTables">;
     userTablesRecords: Record<MatrxRecordId, UserTablesData>;
+    userTablesRecordsById: Record<string, UserTablesData>;
     userTablesUnsavedRecords: Record<MatrxRecordId, Partial<UserTablesData>>;
     userTablesSelectedRecordIds: MatrxRecordId[];
     userTablesIsLoading: boolean;
@@ -8674,7 +9538,11 @@ type UseUserTablesWithFetchReturn = {
     fetchUserTablesOne: (recordId: MatrxRecordId) => void;
     fetchUserTablesOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchUserTablesAll: () => void;
-    fetchUserTablesPaginated: (page: number, pageSize: number) => void;
+    fetchUserTablesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useUserTablesWithFetch = (): UseUserTablesWithFetchReturn => {
@@ -8682,6 +9550,7 @@ export const useUserTablesWithFetch = (): UseUserTablesWithFetchReturn => {
         selectors: userTablesSelectors,
         actions: userTablesActions,
         allRecords: userTablesRecords,
+        recordsById: userTablesRecordsById,
         unsavedRecords: userTablesUnsavedRecords,
         selectedRecordIds: userTablesSelectedRecordIds,
         isLoading: userTablesIsLoading,
@@ -8710,6 +9579,7 @@ export const useUserTablesWithFetch = (): UseUserTablesWithFetchReturn => {
         userTablesSelectors,
         userTablesActions,
         userTablesRecords,
+        userTablesRecordsById,
         userTablesUnsavedRecords,
         userTablesSelectedRecordIds,
         userTablesIsLoading,
@@ -8740,6 +9610,7 @@ type UseWcClaimWithFetchReturn = {
     wcClaimSelectors: EntitySelectors<"wcClaim">;
     wcClaimActions: EntityActions<"wcClaim">;
     wcClaimRecords: Record<MatrxRecordId, WcClaimData>;
+    wcClaimRecordsById: Record<string, WcClaimData>;
     wcClaimUnsavedRecords: Record<MatrxRecordId, Partial<WcClaimData>>;
     wcClaimSelectedRecordIds: MatrxRecordId[];
     wcClaimIsLoading: boolean;
@@ -8760,7 +9631,11 @@ type UseWcClaimWithFetchReturn = {
     fetchWcClaimOne: (recordId: MatrxRecordId) => void;
     fetchWcClaimOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWcClaimAll: () => void;
-    fetchWcClaimPaginated: (page: number, pageSize: number) => void;
+    fetchWcClaimPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWcClaimWithFetch = (): UseWcClaimWithFetchReturn => {
@@ -8768,6 +9643,7 @@ export const useWcClaimWithFetch = (): UseWcClaimWithFetchReturn => {
         selectors: wcClaimSelectors,
         actions: wcClaimActions,
         allRecords: wcClaimRecords,
+        recordsById: wcClaimRecordsById,
         unsavedRecords: wcClaimUnsavedRecords,
         selectedRecordIds: wcClaimSelectedRecordIds,
         isLoading: wcClaimIsLoading,
@@ -8796,6 +9672,7 @@ export const useWcClaimWithFetch = (): UseWcClaimWithFetchReturn => {
         wcClaimSelectors,
         wcClaimActions,
         wcClaimRecords,
+        wcClaimRecordsById,
         wcClaimUnsavedRecords,
         wcClaimSelectedRecordIds,
         wcClaimIsLoading,
@@ -8826,6 +9703,7 @@ type UseWcImpairmentDefinitionWithFetchReturn = {
     wcImpairmentDefinitionSelectors: EntitySelectors<"wcImpairmentDefinition">;
     wcImpairmentDefinitionActions: EntityActions<"wcImpairmentDefinition">;
     wcImpairmentDefinitionRecords: Record<MatrxRecordId, WcImpairmentDefinitionData>;
+    wcImpairmentDefinitionRecordsById: Record<string, WcImpairmentDefinitionData>;
     wcImpairmentDefinitionUnsavedRecords: Record<MatrxRecordId, Partial<WcImpairmentDefinitionData>>;
     wcImpairmentDefinitionSelectedRecordIds: MatrxRecordId[];
     wcImpairmentDefinitionIsLoading: boolean;
@@ -8846,7 +9724,11 @@ type UseWcImpairmentDefinitionWithFetchReturn = {
     fetchWcImpairmentDefinitionOne: (recordId: MatrxRecordId) => void;
     fetchWcImpairmentDefinitionOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWcImpairmentDefinitionAll: () => void;
-    fetchWcImpairmentDefinitionPaginated: (page: number, pageSize: number) => void;
+    fetchWcImpairmentDefinitionPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWcImpairmentDefinitionWithFetch = (): UseWcImpairmentDefinitionWithFetchReturn => {
@@ -8854,6 +9736,7 @@ export const useWcImpairmentDefinitionWithFetch = (): UseWcImpairmentDefinitionW
         selectors: wcImpairmentDefinitionSelectors,
         actions: wcImpairmentDefinitionActions,
         allRecords: wcImpairmentDefinitionRecords,
+        recordsById: wcImpairmentDefinitionRecordsById,
         unsavedRecords: wcImpairmentDefinitionUnsavedRecords,
         selectedRecordIds: wcImpairmentDefinitionSelectedRecordIds,
         isLoading: wcImpairmentDefinitionIsLoading,
@@ -8882,6 +9765,7 @@ export const useWcImpairmentDefinitionWithFetch = (): UseWcImpairmentDefinitionW
         wcImpairmentDefinitionSelectors,
         wcImpairmentDefinitionActions,
         wcImpairmentDefinitionRecords,
+        wcImpairmentDefinitionRecordsById,
         wcImpairmentDefinitionUnsavedRecords,
         wcImpairmentDefinitionSelectedRecordIds,
         wcImpairmentDefinitionIsLoading,
@@ -8912,6 +9796,7 @@ type UseWcInjuryWithFetchReturn = {
     wcInjurySelectors: EntitySelectors<"wcInjury">;
     wcInjuryActions: EntityActions<"wcInjury">;
     wcInjuryRecords: Record<MatrxRecordId, WcInjuryData>;
+    wcInjuryRecordsById: Record<string, WcInjuryData>;
     wcInjuryUnsavedRecords: Record<MatrxRecordId, Partial<WcInjuryData>>;
     wcInjurySelectedRecordIds: MatrxRecordId[];
     wcInjuryIsLoading: boolean;
@@ -8932,7 +9817,11 @@ type UseWcInjuryWithFetchReturn = {
     fetchWcInjuryOne: (recordId: MatrxRecordId) => void;
     fetchWcInjuryOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWcInjuryAll: () => void;
-    fetchWcInjuryPaginated: (page: number, pageSize: number) => void;
+    fetchWcInjuryPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWcInjuryWithFetch = (): UseWcInjuryWithFetchReturn => {
@@ -8940,6 +9829,7 @@ export const useWcInjuryWithFetch = (): UseWcInjuryWithFetchReturn => {
         selectors: wcInjurySelectors,
         actions: wcInjuryActions,
         allRecords: wcInjuryRecords,
+        recordsById: wcInjuryRecordsById,
         unsavedRecords: wcInjuryUnsavedRecords,
         selectedRecordIds: wcInjurySelectedRecordIds,
         isLoading: wcInjuryIsLoading,
@@ -8968,6 +9858,7 @@ export const useWcInjuryWithFetch = (): UseWcInjuryWithFetchReturn => {
         wcInjurySelectors,
         wcInjuryActions,
         wcInjuryRecords,
+        wcInjuryRecordsById,
         wcInjuryUnsavedRecords,
         wcInjurySelectedRecordIds,
         wcInjuryIsLoading,
@@ -8998,6 +9889,7 @@ type UseWcReportWithFetchReturn = {
     wcReportSelectors: EntitySelectors<"wcReport">;
     wcReportActions: EntityActions<"wcReport">;
     wcReportRecords: Record<MatrxRecordId, WcReportData>;
+    wcReportRecordsById: Record<string, WcReportData>;
     wcReportUnsavedRecords: Record<MatrxRecordId, Partial<WcReportData>>;
     wcReportSelectedRecordIds: MatrxRecordId[];
     wcReportIsLoading: boolean;
@@ -9018,7 +9910,11 @@ type UseWcReportWithFetchReturn = {
     fetchWcReportOne: (recordId: MatrxRecordId) => void;
     fetchWcReportOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWcReportAll: () => void;
-    fetchWcReportPaginated: (page: number, pageSize: number) => void;
+    fetchWcReportPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWcReportWithFetch = (): UseWcReportWithFetchReturn => {
@@ -9026,6 +9922,7 @@ export const useWcReportWithFetch = (): UseWcReportWithFetchReturn => {
         selectors: wcReportSelectors,
         actions: wcReportActions,
         allRecords: wcReportRecords,
+        recordsById: wcReportRecordsById,
         unsavedRecords: wcReportUnsavedRecords,
         selectedRecordIds: wcReportSelectedRecordIds,
         isLoading: wcReportIsLoading,
@@ -9054,6 +9951,7 @@ export const useWcReportWithFetch = (): UseWcReportWithFetchReturn => {
         wcReportSelectors,
         wcReportActions,
         wcReportRecords,
+        wcReportRecordsById,
         wcReportUnsavedRecords,
         wcReportSelectedRecordIds,
         wcReportIsLoading,
@@ -9084,6 +9982,7 @@ type UseWorkflowWithFetchReturn = {
     workflowSelectors: EntitySelectors<"workflow">;
     workflowActions: EntityActions<"workflow">;
     workflowRecords: Record<MatrxRecordId, WorkflowData>;
+    workflowRecordsById: Record<string, WorkflowData>;
     workflowUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowData>>;
     workflowSelectedRecordIds: MatrxRecordId[];
     workflowIsLoading: boolean;
@@ -9104,7 +10003,11 @@ type UseWorkflowWithFetchReturn = {
     fetchWorkflowOne: (recordId: MatrxRecordId) => void;
     fetchWorkflowOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowAll: () => void;
-    fetchWorkflowPaginated: (page: number, pageSize: number) => void;
+    fetchWorkflowPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
@@ -9112,6 +10015,7 @@ export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
         selectors: workflowSelectors,
         actions: workflowActions,
         allRecords: workflowRecords,
+        recordsById: workflowRecordsById,
         unsavedRecords: workflowUnsavedRecords,
         selectedRecordIds: workflowSelectedRecordIds,
         isLoading: workflowIsLoading,
@@ -9140,6 +10044,7 @@ export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
         workflowSelectors,
         workflowActions,
         workflowRecords,
+        workflowRecordsById,
         workflowUnsavedRecords,
         workflowSelectedRecordIds,
         workflowIsLoading,
@@ -9170,6 +10075,7 @@ type UseWorkflowDataWithFetchReturn = {
     workflowDataSelectors: EntitySelectors<"workflowData">;
     workflowDataActions: EntityActions<"workflowData">;
     workflowDataRecords: Record<MatrxRecordId, WorkflowDataData>;
+    workflowDataRecordsById: Record<string, WorkflowDataData>;
     workflowDataUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowDataData>>;
     workflowDataSelectedRecordIds: MatrxRecordId[];
     workflowDataIsLoading: boolean;
@@ -9190,7 +10096,11 @@ type UseWorkflowDataWithFetchReturn = {
     fetchWorkflowDataOne: (recordId: MatrxRecordId) => void;
     fetchWorkflowDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowDataAll: () => void;
-    fetchWorkflowDataPaginated: (page: number, pageSize: number) => void;
+    fetchWorkflowDataPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWorkflowDataWithFetch = (): UseWorkflowDataWithFetchReturn => {
@@ -9198,6 +10108,7 @@ export const useWorkflowDataWithFetch = (): UseWorkflowDataWithFetchReturn => {
         selectors: workflowDataSelectors,
         actions: workflowDataActions,
         allRecords: workflowDataRecords,
+        recordsById: workflowDataRecordsById,
         unsavedRecords: workflowDataUnsavedRecords,
         selectedRecordIds: workflowDataSelectedRecordIds,
         isLoading: workflowDataIsLoading,
@@ -9226,6 +10137,7 @@ export const useWorkflowDataWithFetch = (): UseWorkflowDataWithFetchReturn => {
         workflowDataSelectors,
         workflowDataActions,
         workflowDataRecords,
+        workflowDataRecordsById,
         workflowDataUnsavedRecords,
         workflowDataSelectedRecordIds,
         workflowDataIsLoading,
@@ -9256,6 +10168,7 @@ type UseWorkflowEdgeWithFetchReturn = {
     workflowEdgeSelectors: EntitySelectors<"workflowEdge">;
     workflowEdgeActions: EntityActions<"workflowEdge">;
     workflowEdgeRecords: Record<MatrxRecordId, WorkflowEdgeData>;
+    workflowEdgeRecordsById: Record<string, WorkflowEdgeData>;
     workflowEdgeUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowEdgeData>>;
     workflowEdgeSelectedRecordIds: MatrxRecordId[];
     workflowEdgeIsLoading: boolean;
@@ -9276,7 +10189,11 @@ type UseWorkflowEdgeWithFetchReturn = {
     fetchWorkflowEdgeOne: (recordId: MatrxRecordId) => void;
     fetchWorkflowEdgeOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowEdgeAll: () => void;
-    fetchWorkflowEdgePaginated: (page: number, pageSize: number) => void;
+    fetchWorkflowEdgePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWorkflowEdgeWithFetch = (): UseWorkflowEdgeWithFetchReturn => {
@@ -9284,6 +10201,7 @@ export const useWorkflowEdgeWithFetch = (): UseWorkflowEdgeWithFetchReturn => {
         selectors: workflowEdgeSelectors,
         actions: workflowEdgeActions,
         allRecords: workflowEdgeRecords,
+        recordsById: workflowEdgeRecordsById,
         unsavedRecords: workflowEdgeUnsavedRecords,
         selectedRecordIds: workflowEdgeSelectedRecordIds,
         isLoading: workflowEdgeIsLoading,
@@ -9312,6 +10230,7 @@ export const useWorkflowEdgeWithFetch = (): UseWorkflowEdgeWithFetchReturn => {
         workflowEdgeSelectors,
         workflowEdgeActions,
         workflowEdgeRecords,
+        workflowEdgeRecordsById,
         workflowEdgeUnsavedRecords,
         workflowEdgeSelectedRecordIds,
         workflowEdgeIsLoading,
@@ -9342,6 +10261,7 @@ type UseWorkflowNodeWithFetchReturn = {
     workflowNodeSelectors: EntitySelectors<"workflowNode">;
     workflowNodeActions: EntityActions<"workflowNode">;
     workflowNodeRecords: Record<MatrxRecordId, WorkflowNodeData>;
+    workflowNodeRecordsById: Record<string, WorkflowNodeData>;
     workflowNodeUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowNodeData>>;
     workflowNodeSelectedRecordIds: MatrxRecordId[];
     workflowNodeIsLoading: boolean;
@@ -9362,7 +10282,11 @@ type UseWorkflowNodeWithFetchReturn = {
     fetchWorkflowNodeOne: (recordId: MatrxRecordId) => void;
     fetchWorkflowNodeOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowNodeAll: () => void;
-    fetchWorkflowNodePaginated: (page: number, pageSize: number) => void;
+    fetchWorkflowNodePaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWorkflowNodeWithFetch = (): UseWorkflowNodeWithFetchReturn => {
@@ -9370,6 +10294,7 @@ export const useWorkflowNodeWithFetch = (): UseWorkflowNodeWithFetchReturn => {
         selectors: workflowNodeSelectors,
         actions: workflowNodeActions,
         allRecords: workflowNodeRecords,
+        recordsById: workflowNodeRecordsById,
         unsavedRecords: workflowNodeUnsavedRecords,
         selectedRecordIds: workflowNodeSelectedRecordIds,
         isLoading: workflowNodeIsLoading,
@@ -9398,6 +10323,7 @@ export const useWorkflowNodeWithFetch = (): UseWorkflowNodeWithFetchReturn => {
         workflowNodeSelectors,
         workflowNodeActions,
         workflowNodeRecords,
+        workflowNodeRecordsById,
         workflowNodeUnsavedRecords,
         workflowNodeSelectedRecordIds,
         workflowNodeIsLoading,
@@ -9428,6 +10354,7 @@ type UseWorkflowNodeDataWithFetchReturn = {
     workflowNodeDataSelectors: EntitySelectors<"workflowNodeData">;
     workflowNodeDataActions: EntityActions<"workflowNodeData">;
     workflowNodeDataRecords: Record<MatrxRecordId, WorkflowNodeDataData>;
+    workflowNodeDataRecordsById: Record<string, WorkflowNodeDataData>;
     workflowNodeDataUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowNodeDataData>>;
     workflowNodeDataSelectedRecordIds: MatrxRecordId[];
     workflowNodeDataIsLoading: boolean;
@@ -9448,7 +10375,11 @@ type UseWorkflowNodeDataWithFetchReturn = {
     fetchWorkflowNodeDataOne: (recordId: MatrxRecordId) => void;
     fetchWorkflowNodeDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowNodeDataAll: () => void;
-    fetchWorkflowNodeDataPaginated: (page: number, pageSize: number) => void;
+    fetchWorkflowNodeDataPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWorkflowNodeDataWithFetch = (): UseWorkflowNodeDataWithFetchReturn => {
@@ -9456,6 +10387,7 @@ export const useWorkflowNodeDataWithFetch = (): UseWorkflowNodeDataWithFetchRetu
         selectors: workflowNodeDataSelectors,
         actions: workflowNodeDataActions,
         allRecords: workflowNodeDataRecords,
+        recordsById: workflowNodeDataRecordsById,
         unsavedRecords: workflowNodeDataUnsavedRecords,
         selectedRecordIds: workflowNodeDataSelectedRecordIds,
         isLoading: workflowNodeDataIsLoading,
@@ -9484,6 +10416,7 @@ export const useWorkflowNodeDataWithFetch = (): UseWorkflowNodeDataWithFetchRetu
         workflowNodeDataSelectors,
         workflowNodeDataActions,
         workflowNodeDataRecords,
+        workflowNodeDataRecordsById,
         workflowNodeDataUnsavedRecords,
         workflowNodeDataSelectedRecordIds,
         workflowNodeDataIsLoading,
@@ -9514,6 +10447,7 @@ type UseWorkflowRelayWithFetchReturn = {
     workflowRelaySelectors: EntitySelectors<"workflowRelay">;
     workflowRelayActions: EntityActions<"workflowRelay">;
     workflowRelayRecords: Record<MatrxRecordId, WorkflowRelayData>;
+    workflowRelayRecordsById: Record<string, WorkflowRelayData>;
     workflowRelayUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowRelayData>>;
     workflowRelaySelectedRecordIds: MatrxRecordId[];
     workflowRelayIsLoading: boolean;
@@ -9534,7 +10468,11 @@ type UseWorkflowRelayWithFetchReturn = {
     fetchWorkflowRelayOne: (recordId: MatrxRecordId) => void;
     fetchWorkflowRelayOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowRelayAll: () => void;
-    fetchWorkflowRelayPaginated: (page: number, pageSize: number) => void;
+    fetchWorkflowRelayPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWorkflowRelayWithFetch = (): UseWorkflowRelayWithFetchReturn => {
@@ -9542,6 +10480,7 @@ export const useWorkflowRelayWithFetch = (): UseWorkflowRelayWithFetchReturn => 
         selectors: workflowRelaySelectors,
         actions: workflowRelayActions,
         allRecords: workflowRelayRecords,
+        recordsById: workflowRelayRecordsById,
         unsavedRecords: workflowRelayUnsavedRecords,
         selectedRecordIds: workflowRelaySelectedRecordIds,
         isLoading: workflowRelayIsLoading,
@@ -9570,6 +10509,7 @@ export const useWorkflowRelayWithFetch = (): UseWorkflowRelayWithFetchReturn => 
         workflowRelaySelectors,
         workflowRelayActions,
         workflowRelayRecords,
+        workflowRelayRecordsById,
         workflowRelayUnsavedRecords,
         workflowRelaySelectedRecordIds,
         workflowRelayIsLoading,
@@ -9600,6 +10540,7 @@ type UseWorkflowUserInputWithFetchReturn = {
     workflowUserInputSelectors: EntitySelectors<"workflowUserInput">;
     workflowUserInputActions: EntityActions<"workflowUserInput">;
     workflowUserInputRecords: Record<MatrxRecordId, WorkflowUserInputData>;
+    workflowUserInputRecordsById: Record<string, WorkflowUserInputData>;
     workflowUserInputUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowUserInputData>>;
     workflowUserInputSelectedRecordIds: MatrxRecordId[];
     workflowUserInputIsLoading: boolean;
@@ -9620,7 +10561,11 @@ type UseWorkflowUserInputWithFetchReturn = {
     fetchWorkflowUserInputOne: (recordId: MatrxRecordId) => void;
     fetchWorkflowUserInputOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowUserInputAll: () => void;
-    fetchWorkflowUserInputPaginated: (page: number, pageSize: number) => void;
+    fetchWorkflowUserInputPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
 };
 
 export const useWorkflowUserInputWithFetch = (): UseWorkflowUserInputWithFetchReturn => {
@@ -9628,6 +10573,7 @@ export const useWorkflowUserInputWithFetch = (): UseWorkflowUserInputWithFetchRe
         selectors: workflowUserInputSelectors,
         actions: workflowUserInputActions,
         allRecords: workflowUserInputRecords,
+        recordsById: workflowUserInputRecordsById,
         unsavedRecords: workflowUserInputUnsavedRecords,
         selectedRecordIds: workflowUserInputSelectedRecordIds,
         isLoading: workflowUserInputIsLoading,
@@ -9656,6 +10602,7 @@ export const useWorkflowUserInputWithFetch = (): UseWorkflowUserInputWithFetchRe
         workflowUserInputSelectors,
         workflowUserInputActions,
         workflowUserInputRecords,
+        workflowUserInputRecordsById,
         workflowUserInputUnsavedRecords,
         workflowUserInputSelectedRecordIds,
         workflowUserInputIsLoading,

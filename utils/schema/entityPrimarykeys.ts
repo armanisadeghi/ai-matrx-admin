@@ -184,6 +184,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  nodeCategory: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   organizationInvitations: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -253,6 +257,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   registeredFunction: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  registeredNode: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },

@@ -131,6 +131,7 @@ export type AutomationTableName =
     | 'message'
     | 'messageBroker'
     | 'messageTemplate'
+    | 'nodeCategory'
     | 'organizationInvitations'
     | 'organizationMembers'
     | 'organizations'
@@ -149,6 +150,7 @@ export type AutomationTableName =
     | 'recipeProcessor'
     | 'recipeTool'
     | 'registeredFunction'
+    | 'registeredNode'
     | 'schemaTemplates'
     | 'scrapeBaseConfig'
     | 'scrapeCachePolicy'
@@ -632,6 +634,15 @@ export type MessageTemplateData = Expand<EntityDataMixed<"messageTemplate">>;
 export type MessageTemplateState = EntityStateType<"messageTemplate">;
 export type MessageTemplateRecordMap = Record<"messageTemplateRecordId", MessageTemplateData>;
 
+export type NodeCategoryType = AutomationEntity<"nodeCategory">;
+export type NodeCategoryDataRequired = Expand<EntityData<"nodeCategory">>;
+export type NodeCategoryDataOptional = Expand<EntityDataOptional<"nodeCategory">>;
+export type NodeCategoryRecordWithKey = Expand<EntityDataWithKey<"nodeCategory">>;
+export type NodeCategoryProcessed = Expand<ProcessedEntityData<"nodeCategory">>;
+export type NodeCategoryData = Expand<EntityDataMixed<"nodeCategory">>;
+export type NodeCategoryState = EntityStateType<"nodeCategory">;
+export type NodeCategoryRecordMap = Record<"nodeCategoryRecordId", NodeCategoryData>;
+
 export type OrganizationInvitationsType = AutomationEntity<"organizationInvitations">;
 export type OrganizationInvitationsDataRequired = Expand<EntityData<"organizationInvitations">>;
 export type OrganizationInvitationsDataOptional = Expand<EntityDataOptional<"organizationInvitations">>;
@@ -793,6 +804,15 @@ export type RegisteredFunctionProcessed = Expand<ProcessedEntityData<"registered
 export type RegisteredFunctionData = Expand<EntityDataMixed<"registeredFunction">>;
 export type RegisteredFunctionState = EntityStateType<"registeredFunction">;
 export type RegisteredFunctionRecordMap = Record<"registeredFunctionRecordId", RegisteredFunctionData>;
+
+export type RegisteredNodeType = AutomationEntity<"registeredNode">;
+export type RegisteredNodeDataRequired = Expand<EntityData<"registeredNode">>;
+export type RegisteredNodeDataOptional = Expand<EntityDataOptional<"registeredNode">>;
+export type RegisteredNodeRecordWithKey = Expand<EntityDataWithKey<"registeredNode">>;
+export type RegisteredNodeProcessed = Expand<ProcessedEntityData<"registeredNode">>;
+export type RegisteredNodeData = Expand<EntityDataMixed<"registeredNode">>;
+export type RegisteredNodeState = EntityStateType<"registeredNode">;
+export type RegisteredNodeRecordMap = Record<"registeredNodeRecordId", RegisteredNodeData>;
 
 export type SchemaTemplatesType = AutomationEntity<"schemaTemplates">;
 export type SchemaTemplatesDataRequired = Expand<EntityData<"schemaTemplates">>;

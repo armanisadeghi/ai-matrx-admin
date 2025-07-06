@@ -40,16 +40,15 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
 }) => {
     const updateNodeInternals = useUpdateNodeInternals();
     const nodeId = useNodeId();
-    const { setNodes } = useReactFlow();
+    const { updateNodeData } = useReactFlow();
     const dispatch = useAppDispatch();
 
     const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId || ""));
     const nodeStatus = useAppSelector((state) => workflowNodesSelectors.nodeStatus(state, nodeId || ""));
-    const [internalDisplayMode, setInternalDisplayMode] = useState<"detailed" | "compact">("detailed");
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
-    // Determine current display mode
-    const displayMode = data.displayMode ?? internalDisplayMode;
+    // Display mode is stored in React Flow node data (UI-only concern)
+    const displayMode = data.displayMode ?? "detailed";
     const isCompact = displayMode === "compact";
 
     // Update node internals when handles change
@@ -74,6 +73,7 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
         ...baseNodeStyles,
         borderColor: nodeData?.is_active ? baseNodeStyles.borderColor : "border-gray-500 dark:border-gray-400",
         backgroundColor: nodeData?.is_active ? baseNodeStyles.backgroundColor : "bg-gray-50 dark:bg-gray-950/20",
+        iconColor: "text-blue-500 dark:text-blue-400",
     };
 
     // Enhanced handle connection validation
@@ -96,31 +96,11 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
     const handleDisplayModeToggle = useCallback(() => {
         const newMode = displayMode === "detailed" ? "compact" : "detailed";
 
-        // Always update the React Flow node data to ensure consistency
+        // Use React Flow's direct method to update node data
         if (nodeId) {
-            setNodes((nds) =>
-                nds.map((node) =>
-                    node.id === nodeId
-                        ? {
-                              ...node,
-                              data: {
-                                  ...node.data,
-                                  displayMode: newMode,
-                              },
-                          }
-                        : node
-                )
-            );
+            updateNodeData(nodeId, { displayMode: newMode });
         }
-
-        // Also call the callback if provided (for external state management)
-        if (data.onDisplayModeChange) {
-            data.onDisplayModeChange(newMode);
-        } else {
-            // Update internal state as fallback
-            setInternalDisplayMode(newMode);
-        }
-    }, [displayMode, data.onDisplayModeChange, nodeId, setNodes]);
+    }, [displayMode, nodeId, updateNodeData]);
 
     // Handle opening node editor
     const handleOpenEditor = useCallback(() => {
@@ -172,25 +152,24 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
 
                 {/* Compact Node */}
                 <div
-                    className={`
-            relative w-16 h-16 rounded-full
-            ${nodeStyles.borderColor} 
-            ${nodeStyles.backgroundColor}
-            ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
-            ${dragging ? "shadow-2xl scale-110" : "shadow-lg hover:shadow-xl"}
-            ${!nodeData?.is_active ? "opacity-60" : ""}
-            transition-all duration-200
-            bg-background dark:bg-background
-            border-2
-            ${selected ? "z-10" : ""}
-            flex items-center justify-center
-            group
-            cursor-pointer
-          `}
+                    className={`relative w-16 h-16 rounded-full
+                                ${nodeStyles.borderColor} 
+                                ${nodeStyles.backgroundColor}
+                                ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
+                                ${dragging ? "shadow-2xl scale-110" : "shadow-lg hover:shadow-xl"}
+                                ${!nodeData?.is_active ? "opacity-60" : ""}
+                                transition-all duration-200
+                                bg-background dark:bg-background
+                                border-2
+                                ${selected ? "z-10" : ""}
+                                flex items-center justify-center
+                                group
+                                cursor-pointer
+                            `}
                     onDoubleClick={handleDoubleClick}
                 >
                     {/* Icon */}
-                    <NodeIcon className="w-4 h-4 text-foreground" />
+                    <NodeIcon className={`w-4 h-4 ${nodeStyles.iconColor}`} />
 
                     {/* Truncated name on hover */}
                     <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
@@ -226,33 +205,16 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                 onDisplayModeToggle={handleDisplayModeToggle}
             />
 
-            {/* Node Resizer */}
-            <NodeResizer
-                isVisible={selected}
-                minWidth={200}
-                minHeight={100}
-                handleStyle={{
-                    width: "8px",
-                    height: "8px",
-                    backgroundColor: "var(--primary)",
-                    border: "2px solid var(--background)",
-                }}
-                lineStyle={{
-                    borderColor: "var(--primary)",
-                }}
-            />
-
             {/* Main Node Card */}
             <Card
                 className={`
                   min-w-[200px] max-w-[300px] 
-                  ${nodeStyles.borderColor} 
+                  ${nodeStyles.borderColor}
                   ${nodeStyles.backgroundColor}
                   ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
                   ${dragging ? "shadow-2xl scale-105" : "shadow-lg hover:shadow-xl"}
                   ${!nodeData?.is_active ? "opacity-70" : ""}
                   transition-all duration-200
-                  bg-background dark:bg-background
                   border-2
                   ${selected ? "z-10" : ""}
                   group
@@ -263,8 +225,10 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
                 <CardHeader className="pb-2 relative">
                     <div className="flex items-center justify-between">
                         <div className="inline-flex items-center space-x-1">
-                            <NodeIcon className="w-3 h-3 text-foreground flex-shrink-0 align-middle" />
-                            <span className="font-medium text-xs truncate text-foreground align-middle">{nodeData?.step_name}</span>
+                            <NodeIcon className={`w-3 h-3 ${nodeStyles.iconColor} flex-shrink-0 align-middle`} />
+                            <span className="font-medium text-[10px] tracking-wide truncate text-white align-middle subpixel-antialiased">
+                                {nodeData?.step_name}
+                            </span>
                         </div>
                     </div>
                 </CardHeader>

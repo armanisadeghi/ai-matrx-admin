@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { databasePages } from './config';
-import { ArrowRight, Database, SquareFunction, Code } from 'lucide-react';
+import { ArrowRight, Database, SquareFunction, Code, List } from 'lucide-react';
 
 export const metadata = {
   title: 'Database Administration',
@@ -15,6 +15,8 @@ const getIconForPath = (path: string) => {
     return <SquareFunction className="h-8 w-8 text-slate-700 dark:text-slate-300" />;
   } else if (path.includes('sql-queries')) {
     return <Code className="h-8 w-8 text-slate-700 dark:text-slate-300" />;
+  } else if (path.includes('enums')) {
+    return <List className="h-8 w-8 text-slate-700 dark:text-slate-300" />;
   }
   return <Database className="h-8 w-8 text-slate-700 dark:text-slate-300" />;
 };

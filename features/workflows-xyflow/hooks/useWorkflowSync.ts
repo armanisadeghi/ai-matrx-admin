@@ -9,6 +9,13 @@ import { saveWorkflowFromReactFlow } from "@/lib/redux/workflow/thunks";
 import { brokerActions, BrokerMapEntry } from "@/lib/redux/brokerSlice";
 import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
 
+
+const SOURCE_TYPE_MAP = {
+    user_input: "userInput",
+    user_data_source: "userDataSource",
+} as const;
+
+
 export const useWorkflowSync = (workflowId: string) => {
     const dispatch = useAppDispatch();
 
@@ -54,7 +61,7 @@ export const useWorkflowSync = (workflowId: string) => {
         const sourceNodes = (workflowSources || []).map((source: BrokerSourceConfig, index) => {
             return {
                 id: `${source.sourceType}:${source.brokerId}`,
-                type: source.sourceType,
+                type: SOURCE_TYPE_MAP[source.sourceType],
                 position: { x: -300, y: index * 120 }, // Position to the left of regular nodes with more spacing
                 data: {
                     ...source,

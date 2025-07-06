@@ -355,7 +355,7 @@ export type DataBroker = {
     dataType?: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
     defaultValue?: string;
     inputComponent?: string;
-    color?: "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined;
+    color?: "Bot" | "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined;
     outputComponent?: string;
     fieldComponentId?: string;
     userId?: string;
@@ -584,6 +584,17 @@ export type MessageTemplate = {
     content?: string;
 }
 
+export type NodeCategory = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    name?: string;
+    label?: string;
+    icon?: "Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "BookOpen" | "Bookmark" | "BookmarkPlus" | "Bot" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Cog" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Puzzle" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Terminal" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined;
+    color?: "Bot" | "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined;
+    description?: string;
+}
+
 export type OrganizationInvitations = {
     id: string;
     organizationId: string;
@@ -680,6 +691,7 @@ export type Recipe = {
     version?: number;
     postResultOptions?: Record<string, unknown>;
     userId?: string;
+    metadata?: Record<string, unknown>;
 }
 
 export type RecipeBroker = {
@@ -750,8 +762,32 @@ export type RegisteredFunction = {
     name: string;
     tags?: Record<string, unknown>;
     category?: "API" | "Agents" | "Commands" | "Database" | "Documents" | "Executors" | "Extractors" | "Files" | "Integrations" | "Media" | "Other" | "Processors" | "Prompts" | "Recipes" | "Web" | undefined;
-    icon?: "Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "Bookmark" | "BookmarkPlus" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined;
+    icon?: "Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "BookOpen" | "Bookmark" | "BookmarkPlus" | "Bot" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Cog" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Puzzle" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Terminal" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined;
     nodeDescription?: string;
+}
+
+export type RegisteredNode = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    registeredFunctionId?: string;
+    name?: string;
+    styles?: Record<string, unknown>;
+    nodeType?: string;
+    description?: string;
+    isActive?: boolean;
+    arguments?: Record<string, unknown>;
+    inputs?: Record<string, unknown>;
+    outputs?: Record<string, unknown>;
+    customEditor?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+    dependencies?: Record<string, unknown>;
+    depedencyFunction?: string;
+    dynamicBrokerArgs?: Record<string, unknown>;
+    tags?: Record<string, unknown>;
+    functionDescription?: string;
+    icon?: "Activity" | "AlertCircle" | "AlertTriangle" | "AlignCenter" | "AlignLeft" | "AlignRight" | "Archive" | "ArrowDown" | "ArrowLeft" | "ArrowLeftRight" | "ArrowRight" | "ArrowRightLeft" | "ArrowUp" | "Asterisk" | "AtSign" | "Award" | "Banknote" | "BarChart" | "Battery" | "BatteryLow" | "Bell" | "BellOff" | "Bike" | "Bitcoin" | "Bold" | "BookOpen" | "Bookmark" | "BookmarkPlus" | "Bot" | "Brain" | "Brush" | "Building" | "Building2" | "Calculator" | "Calendar" | "CalendarDays" | "Camera" | "Car" | "Check" | "CheckCircle" | "ChevronDown" | "ChevronLeft" | "ChevronRight" | "ChevronUp" | "Circle" | "Clock" | "Cloud" | "CloudRain" | "CloudSnow" | "Code" | "Cog" | "Compass" | "Copy" | "Cpu" | "CreditCard" | "Database" | "Diamond" | "Divide" | "DollarSign" | "Dot" | "Download" | "Edit" | "Equal" | "Eraser" | "Euro" | "ExternalLink" | "Eye" | "FaBrave" | "Factory" | "FcAlphabeticalSortingAz" | "FcAlphabeticalSortingZa" | "FcAreaChart" | "FcAssistant" | "FcBiotech" | "FcBrokenLink" | "FcBusiness" | "FcBusinessContact" | "FcCalendar" | "FcCommandLine" | "FcConferenceCall" | "FcDataProtection" | "FcDocument" | "FcDownload" | "FcElectronics" | "FcEngineering" | "FcFeedback" | "FcFilm" | "FcGoogle" | "FcGraduationCap" | "FcLibrary" | "FcManager" | "FcMultipleInputs" | "FcMusic" | "FcParallelTasks" | "FcSalesPerformance" | "FcShipped" | "FcSignature" | "FcSms" | "FcTodoList" | "FcWikipedia" | "File" | "FileText" | "Filter" | "Folder" | "FolderOpen" | "Fuel" | "Gift" | "GitBranch" | "Globe" | "Hash" | "Headphones" | "Heart" | "HelpCircle" | "Hexagon" | "Highlighter" | "Home" | "Image" | "Inbox" | "Indent" | "Info" | "Italic" | "Key" | "Laptop" | "Layers" | "LineChart" | "Link" | "List" | "ListOrdered" | "Lock" | "LogIn" | "LogOut" | "Mail" | "Map" | "MapPin" | "Menu" | "MessageCircle" | "MessageSquare" | "Mic" | "MicOff" | "Minus" | "Monitor" | "MonitorSpeaker" | "Moon" | "MoreHorizontal" | "MoreVertical" | "Move" | "Music" | "Music2" | "Navigation" | "Octagon" | "Outdent" | "Package" | "Paintbrush" | "Palette" | "PauseCircle" | "Pen" | "PenTool" | "Pencil" | "Percent" | "Phone" | "PhoneCall" | "PieChart" | "Plane" | "Play" | "PlayCircle" | "Plus" | "PoundSterling" | "Power" | "PowerOff" | "Puzzle" | "Quote" | "Receipt" | "RefreshCw" | "Repeat" | "Repeat1" | "RotateCcw" | "Ruler" | "Save" | "Scissors" | "Search" | "Send" | "Settings" | "Share" | "Share2" | "Shield" | "ShieldCheck" | "Ship" | "ShoppingBag" | "ShoppingCart" | "Shuffle" | "SkipBack" | "SkipForward" | "Smartphone" | "Square" | "Star" | "StopCircle" | "Store" | "Sun" | "Tablet" | "Tag" | "Tags" | "Target" | "Terminal" | "Thermometer" | "Timer" | "Train" | "Trash" | "TrendingDown" | "TrendingUp" | "Triangle" | "Trophy" | "Truck" | "Type" | "Umbrella" | "Underline" | "Unlink" | "Unlock" | "Upload" | "User" | "User2" | "UserMinus" | "UserPlus" | "Users" | "Video" | "Volume2" | "VolumeX" | "Wand2" | "Webhook" | "Wifi" | "WifiOff" | "Wrench" | "X" | "XCircle" | "Zap" | undefined;
+    category?: string;
 }
 
 export type SchemaTemplates = {
@@ -1200,6 +1236,7 @@ export type UserTables = {
     authenticatedRead: boolean;
     createdAt: Date;
     updatedAt: Date;
+    rowOrderingConfig?: Record<string, unknown>;
 }
 
 export type WcClaim = {
@@ -1340,10 +1377,9 @@ export type WorkflowNode = {
 export type WorkflowNodeData = {
     id: string;
     workflowId?: string;
-    functionId?: string;
+    functionId: string;
     type?: string;
     stepName?: string;
-    nodeType?: string;
     executionRequired?: boolean;
     inputs?: Record<string, unknown>;
     outputs?: Record<string, unknown>;
@@ -1356,6 +1392,9 @@ export type WorkflowNodeData = {
     createdAt: Date;
     updatedAt?: Date;
     userId?: string;
+    isActive?: boolean;
+    arguments?: Record<string, unknown>;
+    nodeType?: string;
 }
 
 export type WorkflowRelay = {

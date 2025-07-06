@@ -949,17 +949,24 @@ function* handleFetchPaginated<TEntity extends EntityKeys>({
     const DEBUG_LEVEL = 'debug';
 
     try {
-        entityLogger.log(DEBUG_LEVEL, 'Starting fetchPaginated', action.payload);
+        // Define comprehensive defaults to prevent any errors
+        const payload = action.payload || {};
+        const page = payload.page || 1;
+        const pageSize = payload.pageSize || 10;
+        const options = payload.options || {};
+        const maxCount = payload.maxCount;
 
-        const from = (action.payload.page - 1) * action.payload.pageSize;
-        const to = action.payload.page * action.payload.pageSize - 1;
+        entityLogger.log(DEBUG_LEVEL, 'Starting fetchPaginated', { page, pageSize, options, maxCount });
+
+        const from = (page - 1) * pageSize;
+        const to = page * pageSize - 1;
 
         // Start building the query
         let query = api.select('*', { count: 'exact' });
 
         // Apply filters if they exist
-        if (action.payload.options?.filters?.conditions) {
-            for (const condition of action.payload.options.filters.conditions) {
+        if (options.filters?.conditions && Array.isArray(options.filters.conditions)) {
+            for (const condition of options.filters.conditions) {
                 // Handle nested AND/OR conditions
                 if (condition.and || condition.or) {
                     const nestedQuery = condition.and 
@@ -980,22 +987,24 @@ function* handleFetchPaginated<TEntity extends EntityKeys>({
         }
 
         // Apply sorting if it exists
-        if (action.payload.options?.sort) {
-            const sortArray = Array.isArray(action.payload.options.sort) 
-                ? action.payload.options.sort 
-                : [action.payload.options.sort];
+        if (options.sort) {
+            const sortArray = Array.isArray(options.sort) 
+                ? options.sort 
+                : [options.sort];
             
             sortArray.forEach(sort => {
-                query = query.order(sort.field, {
-                    ascending: sort.direction === 'asc'
-                });
+                if (sort && sort.field) {
+                    query = query.order(sort.field, {
+                        ascending: sort.direction === 'asc'
+                    });
+                }
             });
         }
 
         // Apply range last
         query = query.range(from, to);
 
-        entityLogger.log(DEBUG_LEVEL, 'Executing query', { from, to, options: action.payload.options });
+        entityLogger.log(DEBUG_LEVEL, 'Executing query', { from, to, options });
 
         const { data, error, count } = yield query;
 
@@ -1006,14 +1015,14 @@ function* handleFetchPaginated<TEntity extends EntityKeys>({
 
         entityLogger.log(DEBUG_LEVEL, 'Query successful', { dataCount: data?.length, totalCount: count });
 
-        const payload = { entityName: entityKey, data };
-        const frontendResponse = yield select(selectFrontendConversion, payload);
+        const conversionPayload = { entityName: entityKey, data: data || [] };
+        const frontendResponse = yield select(selectFrontendConversion, conversionPayload);
 
         yield put(
             actions.fetchRecordsSuccess({
                 data: frontendResponse,
-                page: action.payload.page,
-                pageSize: action.payload.pageSize,
+                page: page,
+                pageSize: pageSize,
                 totalCount: count || 0,
             })
         );
