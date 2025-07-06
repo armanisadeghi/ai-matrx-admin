@@ -47,6 +47,9 @@ const WorkflowNodeComponent: React.FC<WorkflowNodeComponentProps> = ({
     const nodeStatus = useAppSelector((state) => workflowNodesSelectors.nodeStatus(state, nodeId || ""));
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
+    const nodeDefinition = useAppSelector((state) => workflowNodesSelectors.nodeDefinition(state, nodeId || ""));
+    
+
     // Display mode is stored in React Flow node data (UI-only concern)
     const displayMode = data.displayMode ?? "detailed";
     const isCompact = displayMode === "compact";

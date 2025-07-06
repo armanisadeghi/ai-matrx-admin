@@ -9,6 +9,10 @@ import { useWorkflowSync } from "./hooks/useWorkflowSync";
 import FieldDisplaySheet from "./nodes/source-node/sheets/FieldDisplaySheet";
 import { WorkflowAdminOverlay } from "./admin/WorkflowAdminOverlay";
 import WorkflowLoading from "./common/workflow-loading";
+import RecipeNodeInitializer from "./custom-nodes/recipes/RecipeNodeInitializer";
+import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { saveWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
 
 interface WorkflowSystemProps {
     workflowId: string;
@@ -17,6 +21,7 @@ interface WorkflowSystemProps {
 
 export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode = "edit" }) => {
     const reactFlowInstance = useReactFlow();
+    const dispatch = useAppDispatch();
 
     // Get initial data and save function
     const { initialNodes, initialEdges, initialViewport, saveWorkflow, isLoading } = useWorkflowSync(workflowId);
@@ -24,6 +29,12 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
     // UI state management at top level
     const [isFieldDisplaySheetOpen, setIsFieldDisplaySheetOpen] = useState(false);
     const [isAdminOverlayOpen, setIsAdminOverlayOpen] = useState(false);
+    
+    // Recipe node initializer state (shared between access panel and header)
+    const [showRecipeInitializer, setShowRecipeInitializer] = useState(false);
+    const [pendingRecipeNode, setPendingRecipeNode] = useState<{
+        nodeData: WorkflowNode;
+    } | null>(null);
 
     // Save handler - gets current state directly from ReactFlow
     const handleSave = useCallback(async () => {
@@ -74,19 +85,39 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
 
         reactFlowInstance.setNodes(arrangedNodes);
 
-        // Fit view after arranging
         setTimeout(() => {
             reactFlowInstance.fitView({ duration: 800, padding: 0.2, maxZoom: 1.5 });
         }, 100);
     }, [reactFlowInstance]);
 
-    // UI overlay handlers
     const handleOpenFieldDisplay = useCallback(() => {
         setIsFieldDisplaySheetOpen(true);
     }, []);
 
     const handleOpenAdminOverlay = useCallback(() => {
         setIsAdminOverlayOpen(true);
+    }, []);
+
+    const handleRecipeNodeCreated = useCallback((nodeData: WorkflowNode) => {
+        setPendingRecipeNode({ nodeData });
+        setShowRecipeInitializer(true);
+    }, []);
+
+    const handleRecipeConfirm = useCallback(async () => {
+        if (pendingRecipeNode) {
+            try {
+                dispatch(saveWorkflowNode({ id: pendingRecipeNode.nodeData.id }));
+                setShowRecipeInitializer(false);
+                setPendingRecipeNode(null);
+            } catch (error) {
+                console.error("Error finalizing recipe node:", error);
+            }
+        }
+    }, [pendingRecipeNode, dispatch]);
+
+    const handleRecipeCancel = useCallback(() => {
+        setShowRecipeInitializer(false);
+        setPendingRecipeNode(null);
     }, []);
 
     if (isLoading) {
@@ -111,6 +142,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onAutoArrange={handleAutoArrange}
                 onOpenFieldDisplay={handleOpenFieldDisplay}
                 onOpenAdminOverlay={handleOpenAdminOverlay}
+                onRecipeNodeCreated={handleRecipeNodeCreated}
             />
 
             <WorkflowCanvas
@@ -123,6 +155,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onOpenFieldDisplaySheet={setIsFieldDisplaySheetOpen}
                 isAdminOverlayOpen={isAdminOverlayOpen}
                 onOpenAdminOverlay={setIsAdminOverlayOpen}
+                onRecipeNodeCreated={handleRecipeNodeCreated}
             />
 
             {/* Field Display Sheet */}
@@ -139,6 +172,16 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 onClose={() => setIsAdminOverlayOpen(false)}
                 workflowId={workflowId}
             />
+
+            {/* Shared Recipe Node Initializer */}
+            {pendingRecipeNode && (
+                <RecipeNodeInitializer
+                    nodeId={pendingRecipeNode.nodeData.id}
+                    onConfirm={handleRecipeConfirm}
+                    onCancel={handleRecipeCancel}
+                    open={showRecipeInitializer}
+                />
+            )}
         </div>
     );
 };

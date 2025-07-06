@@ -3,7 +3,7 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
 import { useEffect } from "react";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useDataBrokerWithFetch, useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { useAppDispatch } from "@/lib/redux";
 import WorkflowLoading from "@/features/workflows-xyflow/common/workflow-loading";
@@ -13,15 +13,20 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
     const { combinedFunctions, isLoading, isError, fetchAll } = useCombinedFunctionsWithArgs();
 
     const { fetchDataBrokerAll } = useDataBrokerWithFetch();
+    const categoryHook = useNodeCategoryWithFetch();
+    const registeredNodeHook = useRegisteredNodeWithFetch();
+
 
     useEffect(() => {
         fetchAll();
         fetchDataBrokerAll();
         dispatch(fetchFieldsThunk());
+        categoryHook.fetchNodeCategoryAll();
+        registeredNodeHook.fetchRegisteredNodeAll();
     }, []);
 
     // Show loading while data is being fetched
-    if (isLoading || combinedFunctions.length === 0) {
+    if (isLoading || combinedFunctions.length === 0 || Object.keys(categoryHook.nodeCategoryRecordsById).length === 0 || Object.keys(registeredNodeHook.registeredNodeRecordsById).length === 0) {
         return (
             <WorkflowLoading 
                 title="Loading Workflow System"

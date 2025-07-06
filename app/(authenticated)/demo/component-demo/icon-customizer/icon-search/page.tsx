@@ -1,6 +1,6 @@
 'use client';
 
-import IconSearchCard from './IconSearchCard';
+// import IconSearchCard from './IconSearchCard';
 
 export default function ParentComponent() {
     const handleIconSelect = (iconName) => {

@@ -6,8 +6,7 @@ import { NodeProps, Position, useNodeId, useReactFlow } from "@xyflow/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowsSelectors, workflowActions } from "@/lib/redux/workflow";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
-import { BaseNode, NodeConfig, BaseNodeData } from "@/features/workflows-xyflow/nodes/BaseNode";
-import { BaseNodeToolbar } from "@/features/workflows-xyflow/nodes/BaseNodeToolbar";
+import { BaseNode, NodeConfig, BaseNodeData } from "@/features/workflows-xyflow/nodes/base/BaseNode";
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
 import { toast } from "sonner";
 import UserDataSourceSettings from "@/features/workflows-xyflow/nodes/source-node/user-data/UserDataSourceSettings";
@@ -21,53 +20,6 @@ interface UserDataSourceNodeData extends BaseNodeData {
 interface UserDataSourceNodeProps extends NodeProps {
     data: UserDataSourceNodeData;
 }
-
-// Custom toolbar component
-const UserDataSourceNodeToolbar: React.FC<{
-    nodeId: string;
-    isVisible: boolean;
-    isCompact: boolean;
-    displayMode: "detailed" | "compact";
-    onDisplayModeToggle: () => void;
-    onSettings?: () => void;
-}> = (props) => {
-    const { getNode } = useReactFlow();
-    const dispatch = useAppDispatch();
-    
-    const node = getNode(props.nodeId);
-    const data = (node?.data || {}) as UserDataSourceNodeData;
-    
-    // Get Redux data for this source
-    const userDataSource = useAppSelector((state) => 
-        data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
-    );
-    
-    const handleCustomDelete = useCallback(async (nodeId: string) => {
-        if (!data.brokerId) {
-            throw new Error("No broker ID found for deletion");
-        }
-        
-        // Remove from workflow sources
-        if (data.workflowId) {
-            dispatch(workflowActions.setActive(data.workflowId));
-            dispatch(
-                workflowActions.removeSourceByBrokerId({
-                    id: data.workflowId,
-                    brokerId: data.brokerId,
-                })
-            );
-        }
-        
-        toast.success("User data source deleted successfully");
-    }, [data, dispatch]);
-    
-    return (
-        <BaseNodeToolbar
-            {...props}
-            onDelete={handleCustomDelete}
-        />
-    );
-};
 
 // Custom settings component wrapper
 const UserDataSourceSettingsWrapper: React.FC<{
@@ -134,8 +86,6 @@ const UserDataCompactContent: React.FC = () => {
     );
 };
 
-
-
 const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, ...nodeProps }) => {
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
     const dispatch = useAppDispatch();
@@ -146,29 +96,33 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
         data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
     );
 
-    // Custom display mode toggle handler that saves to metadata
-    const handleDisplayModeToggle = useCallback((nodeId: string, newDisplayMode: "detailed" | "compact") => {
-        if (userDataSource && data.workflowId) {
-            // Update the source metadata in Redux by removing and re-adding
-            const updatedSource = {
-                ...userDataSource,
-                metadata: {
-                    ...userDataSource.metadata,
-                    displayMode: newDisplayMode
-                }
-            };
-            
-            dispatch(workflowActions.removeSourceByBrokerId({
-                id: data.workflowId,
-                brokerId: userDataSource.brokerId,
-            }));
-            
-            dispatch(workflowActions.addSource({
-                id: data.workflowId,
-                source: updatedSource
-            }));
+    // Note: Display mode is handled by BaseNode using React Flow's node data
+
+    // Handle duplicate
+    const handleDuplicate = useCallback((nodeId: string) => {
+        console.log("Duplicate clicked for user data source node:", nodeId);
+        // TODO: Implement duplicate logic
+    }, []);
+
+    // Handle delete
+    const handleDelete = useCallback((nodeId: string) => {
+        if (!data.brokerId) {
+            console.error("No broker ID found for deletion");
+            return;
         }
-    }, [userDataSource, data.workflowId, dispatch]);
+        
+        // Remove from workflow sources
+        if (data.workflowId) {
+            dispatch(
+                workflowActions.removeSourceByBrokerId({
+                    id: data.workflowId,
+                    brokerId: data.brokerId,
+                })
+            );
+        }
+        
+        toast.success("User data source deleted successfully");
+    }, [data, dispatch]);
     
     const brokerId = data.brokerId;
     const brokerDisplayName = brokerId ? (dataBrokerRecordsById[brokerId]?.name || brokerId) : "Unknown";
@@ -214,15 +168,13 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
         
         // Custom components
         CompactContent: UserDataCompactContent,
-        ToolbarComponent: UserDataSourceNodeToolbar,
         SettingsComponent: UserDataSourceSettingsWrapper,
         
-        // Event handlers
-        onDisplayModeToggle: handleDisplayModeToggle,
+        // Handlers
+        onDuplicate: handleDuplicate,
+        onDelete: handleDelete,
         
         // Feature configuration
-        showActiveToggle: true,
-        showStatusIcons: true,
         allowCompactMode: true,
     };
     

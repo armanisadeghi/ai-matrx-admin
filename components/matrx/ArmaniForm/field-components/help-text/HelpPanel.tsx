@@ -14,6 +14,7 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ source, className }) => {
 
     // If no content is found, don't render anything
     if (!content) return null;
+    const sections = content.sections?.map(section => section.content) || [];
 
     return (
         <BaseHelpPanel
@@ -21,7 +22,7 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ source, className }) => {
             summary={content.summary}
             variant={content.variant}
             position={content.position}
-            sections={content.sections}
+            sections={sections}
             buttonLabels={content.buttonLabels}
             draggable={content.draggable}
             className={className}

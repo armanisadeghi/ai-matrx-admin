@@ -4,13 +4,17 @@ import { Node } from '@xyflow/react';
 
 const selectWorkflowNodeState = (state: RootState) => state.workflowNodes;
 
+// FIXED: Memoized selector to avoid array creation on every call
 export const selectAllWorkflowNodes = createSelector(
   [selectWorkflowNodeState],
-  (nodeState) => nodeState.ids.map(id => nodeState.entities[id])
+  (nodeState) => {
+    const nodes = nodeState.ids.map(id => nodeState.entities[id]);
+    return nodes;
+  }
 );
 
 export const selectWorkflowNodeById = createSelector(
-  [selectWorkflowNodeState, (state: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: RootState, id: string) => id],
   (nodeState, id) => nodeState.entities[id] || null
 );
 
@@ -20,10 +24,13 @@ export const selectActiveWorkflowNode = createSelector(
     nodeState.activeId ? nodeState.entities[nodeState.activeId] : null
 );
 
+// FIXED: Memoized selector to avoid array creation on every call
 export const selectSelectedWorkflowNodes = createSelector(
   [selectWorkflowNodeState],
-  (nodeState) => 
-    nodeState.selectedIds.map(id => nodeState.entities[id]).filter(Boolean)
+  (nodeState) => {
+    const selectedNodes = nodeState.selectedIds.map(id => nodeState.entities[id]).filter(Boolean);
+    return selectedNodes;
+  }
 );
 
 export const selectWorkflowNodesIsLoading = createSelector(
@@ -37,17 +44,17 @@ export const selectWorkflowNodesError = createSelector(
 );
 
 export const selectWorkflowNodeIsDirty = createSelector(
-  [selectWorkflowNodeState, (state: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: RootState, id: string) => id],
   (nodeState, id) => nodeState.isDirty[id] || false
 );
 
 export const selectWorkflowNodeStatus = createSelector(
-  [selectWorkflowNodeState, (state: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: RootState, id: string) => id],
   (nodeState, id) => nodeState.status[id] || 'pending'
 );
 
 export const selectWorkflowNodeResults = createSelector(
-  [selectWorkflowNodeState, (state: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: RootState, id: string) => id],
   (nodeState, id) => nodeState.results[id] || null
 );
 
@@ -61,18 +68,18 @@ export const selectWorkflowNodesDataFreshness = createSelector(
   })
 );
 
+// FIXED: Properly parameterized selector that accepts workflowId
 export const selectWorkflowNodesByWorkflowId = createSelector(
-  [selectAllWorkflowNodes],
-  (allNodes) => (workflowId: string) => 
+  [selectAllWorkflowNodes, (_: RootState, workflowId: string) => workflowId],
+  (allNodes, workflowId) => 
     allNodes.filter(node => node.workflow_id === workflowId)
 );
 
-// New selector: Extract ui_data and return ReactFlow Node[] - no transformations needed
+// FIXED: Properly parameterized selector that accepts workflowId for XyFlow nodes
 export const selectXyFlowNodesByWorkflowId = createSelector(
   [selectWorkflowNodesByWorkflowId],
-  (getNodesByWorkflowId) => (workflowId: string): Node[] => {
-    const nodes = getNodesByWorkflowId(workflowId);
-    return nodes
+  (workflowNodes): Node[] => {
+    return workflowNodes
       .filter(node => node.ui_data) // Only nodes with ui_data
       .map(node => ({
         ...node.ui_data!, // Spread ui_data (Omit<Node, "data">)
@@ -82,24 +89,28 @@ export const selectXyFlowNodesByWorkflowId = createSelector(
   }
 );
 
+// FIXED: Properly parameterized selector that accepts nodeType
 export const selectWorkflowNodesByType = createSelector(
-  [selectAllWorkflowNodes, (state: RootState, nodeType: string) => nodeType],
+  [selectAllWorkflowNodes, (_: RootState, nodeType: string) => nodeType],
   (nodes, nodeType) => nodes.filter(node => node.node_type === nodeType)
 );
 
+// FIXED: Memoized selector to avoid array creation
 export const selectExecutionRequiredNodes = createSelector(
   [selectAllWorkflowNodes],
   (nodes) => nodes.filter(node => node.execution_required)
 );
 
+// FIXED: Properly parameterized selector that accepts functionId
 export const selectWorkflowNodesByFunctionId = createSelector(
-  [selectAllWorkflowNodes, (state: RootState, functionId: string) => functionId],
+  [selectAllWorkflowNodes, (_: RootState, functionId: string) => functionId],
   (nodes, functionId) => nodes.filter(node => node.function_id === functionId)
 );
 
+// FIXED: Properly parameterized selector that accepts status
 export const selectWorkflowNodesByStatus = createSelector(
-  [selectAllWorkflowNodes, selectWorkflowNodeState],
-  (nodes, nodeState) => (status: string) => 
+  [selectAllWorkflowNodes, selectWorkflowNodeState, (_: RootState, status: string) => status],
+  (nodes, nodeState, status) => 
     nodes.filter(node => (nodeState.status[node.id] || 'pending') === status)
 );
 
@@ -113,20 +124,20 @@ export const selectAllWorkflowNodeResults = createSelector(
   (nodeState) => nodeState.results
 );
 
-// Complex Array Selectors for Workflow Nodes
+// FIXED: Complex Array Selectors that properly accept node ID parameter
 export const selectWorkflowNodeInputs = createSelector(
-  [selectWorkflowNodeById],
-  (node) => node?.inputs || []
+  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  (nodeState, id) => nodeState.entities[id]?.inputs || []
 );
 
 export const selectWorkflowNodeOutputs = createSelector(
-  [selectWorkflowNodeById],
-  (node) => node?.outputs || []
+  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  (nodeState, id) => nodeState.entities[id]?.outputs || []
 );
 
 export const selectWorkflowNodeDependencies = createSelector(
-  [selectWorkflowNodeById],
-  (node) => node?.dependencies || []
+  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  (nodeState, id) => nodeState.entities[id]?.dependencies || []
 );
 
 // Active Node Complex Array Selectors
@@ -145,16 +156,47 @@ export const selectActiveWorkflowNodeDependencies = createSelector(
   (node) => node?.dependencies || []
 );
 
-// Simple utility selectors
+// FIXED: Utility selectors with proper input selectors
 export const selectWorkflowNodeInputById = createSelector(
-  [selectWorkflowNodeInputs, (state: RootState, nodeId: string, index: number) => index],
+  [selectWorkflowNodeInputs, (_: RootState, __: string, index: number) => index],
   (inputs, index) => inputs[index] || null
 );
 
 export const selectWorkflowNodeOutputById = createSelector(
-  [selectWorkflowNodeOutputs, (state: RootState, nodeId: string, index: number) => index],
+  [selectWorkflowNodeOutputs, (_: RootState, __: string, index: number) => index],
   (outputs, index) => outputs[index] || null
 );
+
+// Safe metadata selectors
+export const selectWorkflowNodeMetadata = createSelector(
+  [selectWorkflowNodeById],
+  (node) => node?.metadata || null
+);
+
+export const selectWorkflowNodeDefinition = createSelector(
+  [selectWorkflowNodeMetadata],
+  (metadata) => metadata?.nodeDefinition || null
+);
+
+// ADDITIONAL: Factory functions for creating parameterized selectors
+export const createWorkflowNodesByWorkflowIdSelector = (workflowId: string) =>
+  createSelector(
+    [selectAllWorkflowNodes],
+    (allNodes) => allNodes.filter(node => node.workflow_id === workflowId)
+  );
+
+export const createXyFlowNodesByWorkflowIdSelector = (workflowId: string) =>
+  createSelector(
+    [createWorkflowNodesByWorkflowIdSelector(workflowId)],
+    (workflowNodes): Node[] => {
+      return workflowNodes
+        .filter(node => node.ui_data)
+        .map(node => ({
+          ...node.ui_data!,
+          id: node.id,
+        })) as Node[];
+    }
+  );
 
 export const workflowNodesSelectors = {
   // Basic node selectors
@@ -175,7 +217,7 @@ export const workflowNodesSelectors = {
   allStatuses: selectAllWorkflowNodeStatuses,
   allResults: selectAllWorkflowNodeResults,
   
-  // Filter selectors
+  // Filter selectors (require parameters)
   nodesByWorkflowId: selectWorkflowNodesByWorkflowId,
   xyFlowNodesByWorkflowId: selectXyFlowNodesByWorkflowId,
   nodesByType: selectWorkflowNodesByType,
@@ -183,17 +225,25 @@ export const workflowNodesSelectors = {
   executionRequiredNodes: selectExecutionRequiredNodes,
   nodesByFunctionId: selectWorkflowNodesByFunctionId,
   
-  // Node array property selectors
+  // Node array property selectors (require node ID parameter)
   nodeInputs: selectWorkflowNodeInputs,
   nodeOutputs: selectWorkflowNodeOutputs,
   nodeDependencies: selectWorkflowNodeDependencies,
   
-  // Active node array property selectors
+  // Active node array property selectors (no ID needed)
   activeNodeInputs: selectActiveWorkflowNodeInputs,
   activeNodeOutputs: selectActiveWorkflowNodeOutputs,
   activeNodeDependencies: selectActiveWorkflowNodeDependencies,
   
-  // Utility selectors
+  // Utility selectors (require node ID parameter)
   nodeInputById: selectWorkflowNodeInputById,
   nodeOutputById: selectWorkflowNodeOutputById,
+
+  // Safe metadata selectors
+  nodeMetadata: selectWorkflowNodeMetadata,
+  nodeDefinition: selectWorkflowNodeDefinition,
+  
+  // Factory functions for creating parameterized selectors
+  createNodesByWorkflowIdSelector: createWorkflowNodesByWorkflowIdSelector,
+  createXyFlowNodesByWorkflowIdSelector: createXyFlowNodesByWorkflowIdSelector,
 };

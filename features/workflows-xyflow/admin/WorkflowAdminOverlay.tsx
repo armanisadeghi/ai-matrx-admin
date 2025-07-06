@@ -28,7 +28,7 @@ export const WorkflowAdminOverlay: React.FC<WorkflowAdminOverlayProps> = ({
 }) => {
     // Redux state
     const workflow = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
-    const workflowNodes = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state)(workflowId));
+    const workflowNodes = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId));
     const workflowWithNodes = useAppSelector((state) => workflowsSelectors.workflowWithNodes(state, workflowId));
 
     // React Flow direct state hooks

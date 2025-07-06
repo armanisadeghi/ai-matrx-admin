@@ -11,7 +11,7 @@ export interface WorkflowNodeUiData extends Omit<Node, "id" | "data"> {
     data?: never; // data should never be present!
 }
 
-export type XyFlowNodeType = "default" | "workflowNode" | "userInput" | "userDataSource";
+export type XyFlowNodeType = "default" | "functionNode" | "workflowNode" | "userInput" | "userDataSource";
 
 export interface WorkflowNode {
     id: string;
@@ -53,3 +53,7 @@ export interface WorkflowNodeState {
 
 export type WorkflowNodeCreateInput = Omit<WorkflowNode, "id" | "created_at" | "updated_at" | "user_id">;
 export type WorkflowNodeUpdateInput = Partial<Omit<WorkflowNode, "id" | "created_at" | "updated_at" | "user_id">>;
+
+
+
+

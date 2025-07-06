@@ -6,6 +6,7 @@ import {availableIcons} from './icons';
 import {Check, ClipboardCopy} from 'lucide-react';
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import IconSearchCard from "@/app/(authenticated)/demo/component-demo/icon-customizer/icon-search/IconSearchCard";
+import { Checkbox } from '@/components/ui/checkbox';
 
 const IconCustomizer = () => {
     const VALID_SIZES = [
@@ -205,12 +206,10 @@ const IconCustomizer = () => {
 
                         {/* Hover Effect Toggle */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <input
-                                    type="checkbox"
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <Checkbox
                                     checked={hover}
-                                    onChange={(e) => setHover(e.target.checked)}
-                                    className="mr-2"
+                                    onCheckedChange={(checked) => setHover(checked === 'indeterminate' ? false : checked)}
                                 />
                                 Add hover effect
                             </label>

@@ -339,9 +339,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["funcName", "modulePath", "className", "description", "returnBroker", "name", "tags", "category", "icon", "nodeDescription"]
 },
   registeredNode: {
-  nativeFields: ["id", "createdAt", "updatedAt", "registeredFunctionId", "name", "styles", "nodeType", "description", "isActive", "arguments", "inputs", "outputs", "customEditor", "metadata", "dependencies", "depedencyFunction", "dynamicBrokerArgs", "tags", "functionDescription", "icon", "category"],
+  nativeFields: ["id", "createdAt", "updatedAt", "registeredFunctionId", "name", "styles", "nodeType", "description", "isActive", "arguments", "inputs", "outputs", "customEditor", "metadata", "dependencies", "depedencyFunction", "dynamicBrokerArgs", "tags", "functionDescription", "icon", "category", "color"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "registeredFunctionId", "name", "styles", "nodeType", "description", "isActive", "arguments", "inputs", "outputs", "customEditor", "metadata", "dependencies", "depedencyFunction", "dynamicBrokerArgs", "tags", "functionDescription", "icon", "category"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "registeredFunctionId", "name", "styles", "nodeType", "description", "isActive", "arguments", "inputs", "outputs", "customEditor", "metadata", "dependencies", "depedencyFunction", "dynamicBrokerArgs", "tags", "functionDescription", "icon", "category", "color"]
 },
   schemaTemplates: {
   nativeFields: ["id", "templateName", "description", "fields", "version", "createdAt"],

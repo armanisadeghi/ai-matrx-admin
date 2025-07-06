@@ -3,8 +3,7 @@
 import React, { memo, useCallback } from "react";
 import { NodeProps, Position, useNodeId, useReactFlow } from "@xyflow/react";
 import { Download } from "lucide-react";
-import { BaseNode, NodeConfig, BaseNodeData } from "../../BaseNode";
-import { BaseNodeToolbar } from "../../BaseNodeToolbar";
+import { BaseNode, NodeConfig, BaseNodeData } from "../../base/BaseNode";
 import UserInputNodeSettings from "./UserInputNodeSettings";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
@@ -25,72 +24,6 @@ interface SourceInputNodeData extends BaseNodeData {
 interface SourceInputNodeProps extends NodeProps {
     data: SourceInputNodeData;
 }
-
-// Custom toolbar component
-const SourceInputNodeToolbar: React.FC<{
-    nodeId: string;
-    isVisible: boolean;
-    isCompact: boolean;
-    displayMode: "detailed" | "compact";
-    onDisplayModeToggle: () => void;
-    onSettings?: () => void;
-}> = (props) => {
-    const { getNode } = useReactFlow();
-    const dispatch = useAppDispatch();
-    const { toast } = useToast();
-
-    const node = getNode(props.nodeId);
-    const data = (node?.data || {}) as SourceInputNodeData;
-
-    // Get Redux data for this source
-    const currentSource = useAppSelector((state) =>
-        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, data.sourceId || "", data.brokerId) : null
-    );
-
-    const handleCustomDelete = useCallback(
-        async (nodeId: string) => {
-            const currentMapping = {
-                brokerId: currentSource?.brokerId || data.brokerId,
-                mappedItemId: currentSource?.sourceDetails?.mappedItemId || data.mappedItemId,
-                source: currentSource?.sourceDetails?.source || data.source,
-                sourceId: currentSource?.sourceDetails?.sourceId || data.sourceId,
-            };
-
-            if (!currentMapping.brokerId) {
-                throw new Error("No broker ID found for deletion");
-            }
-
-            // Remove from workflow sources
-            if (currentMapping.sourceId) {
-                dispatch(workflowActions.setActive(currentMapping.sourceId));
-                dispatch(
-                    workflowActions.removeSourceByBrokerId({
-                        id: currentMapping.sourceId,
-                        brokerId: currentMapping.brokerId,
-                    })
-                );
-            }
-
-            // Remove from broker registry
-            if (currentMapping.source && currentMapping.mappedItemId) {
-                dispatch(
-                    brokerActions.removeRegisterEntry({
-                        source: currentMapping.source,
-                        mappedItemId: currentMapping.mappedItemId,
-                    })
-                );
-            }
-
-            toast({
-                title: "Source Input Deleted",
-                description: "Source input node deleted successfully.",
-            });
-        },
-        [currentSource, data, dispatch, toast]
-    );
-
-    return <BaseNodeToolbar {...props} onDelete={handleCustomDelete} />;
-};
 
 // Custom settings component wrapper
 const SourceInputSettings: React.FC<{
@@ -138,35 +71,60 @@ const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nod
     const nodeId = useNodeId();
     const dispatch = useAppDispatch();
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
+    const { toast } = useToast();
 
     // Get Redux data for this source
     const currentSource = useAppSelector((state) =>
         data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, (data.workflowId as string) || "", data.brokerId) : null
     );
 
-    // Custom display mode toggle handler that saves to metadata
-    const handleDisplayModeToggle = useCallback((nodeId: string, newDisplayMode: "detailed" | "compact") => {
-        if (currentSource && data.workflowId) {
-            // Update the source metadata in Redux by removing and re-adding
-            const updatedSource = {
-                ...currentSource,
-                metadata: {
-                    ...currentSource.metadata,
-                    displayMode: newDisplayMode
-                }
-            };
-            
-            dispatch(workflowActions.removeSourceByBrokerId({
-                id: data.workflowId as string,
-                brokerId: currentSource.brokerId,
-            }));
-            
-            dispatch(workflowActions.addSource({
-                id: data.workflowId as string,
-                source: updatedSource
-            }));
+    // Note: Display mode is handled by BaseNode using React Flow's node data
+
+    // Handle duplicate
+    const handleDuplicate = useCallback((nodeId: string) => {
+        console.log("Duplicate clicked for source input node:", nodeId);
+        // TODO: Implement duplicate logic
+    }, []);
+
+    // Handle delete
+    const handleDelete = useCallback((nodeId: string) => {
+        const currentMapping = {
+            brokerId: currentSource?.brokerId || data.brokerId,
+            mappedItemId: currentSource?.sourceDetails?.mappedItemId || data.mappedItemId,
+            source: currentSource?.sourceDetails?.source || data.source,
+            sourceId: currentSource?.sourceDetails?.sourceId || data.sourceId,
+        };
+
+        if (!currentMapping.brokerId) {
+            console.error("No broker ID found for deletion");
+            return;
         }
-    }, [currentSource, data.workflowId, dispatch]);
+
+        // Remove from workflow sources
+        if (currentMapping.sourceId) {
+            dispatch(
+                workflowActions.removeSourceByBrokerId({
+                    id: currentMapping.sourceId,
+                    brokerId: currentMapping.brokerId,
+                })
+            );
+        }
+
+        // Remove from broker registry
+        if (currentMapping.source && currentMapping.mappedItemId) {
+            dispatch(
+                brokerActions.removeRegisterEntry({
+                    source: currentMapping.source,
+                    mappedItemId: currentMapping.mappedItemId,
+                })
+            );
+        }
+
+        toast({
+            title: "Source Input Deleted",
+            description: "Source input node deleted successfully.",
+        });
+    }, [currentSource, data, dispatch, toast]);
 
     const brokerId = currentSource?.brokerId || data.brokerId;
     const mappedItemId = currentSource?.sourceDetails?.mappedItemId || data.mappedItemId;
@@ -198,16 +156,14 @@ const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nod
             },
         ],
 
-        // Custom components
-        ToolbarComponent: SourceInputNodeToolbar,
+        // Settings modal
         SettingsComponent: SourceInputSettings,
 
-        // Event handlers
-        onDisplayModeToggle: handleDisplayModeToggle,
+        // Handlers
+        onDuplicate: handleDuplicate,
+        onDelete: handleDelete,
 
         // Feature configuration
-        showActiveToggle: true,
-        showStatusIcons: true,
         allowCompactMode: true,
     };
 

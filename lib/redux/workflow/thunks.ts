@@ -114,7 +114,7 @@ export const saveWorkflowFromReactFlow = createAsyncThunk(
 
         // 2. Get current workflow nodes from Redux
         const state = getState() as RootState;
-        const workflowNodes = workflowNodesSelectors.nodesByWorkflowId(state)(workflowId);
+        const workflowNodes = workflowNodesSelectors.nodesByWorkflowId(state, workflowId);
 
         // 3. Update ui_data for each workflow node with matching ReactFlow node
         workflowNodes.forEach((workflowNode) => {
@@ -137,7 +137,7 @@ export const saveWorkflowFromReactFlow = createAsyncThunk(
         // 4. Get updated state and save everything
         const updatedState = getState() as RootState;
         const updatedWorkflow = workflowsSelectors.workflowById(updatedState, workflowId);
-        const updatedWorkflowNodes = workflowNodesSelectors.nodesByWorkflowId(updatedState)(workflowId);
+        const updatedWorkflowNodes = workflowNodesSelectors.nodesByWorkflowId(updatedState, workflowId);
 
         if (!updatedWorkflow) {
             throw new Error(`Workflow not found: ${workflowId}`);

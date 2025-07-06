@@ -17,12 +17,7 @@ import {
     Play,
     Plus,
     Settings,
-    SquareFunction,
-    Users,
-    Shuffle,
     MoreHorizontal,
-    GitBranch,
-    Zap,
     Maximize,
     Grid3X3,
     CheckCircle2,
@@ -40,6 +35,9 @@ import { FiEdit } from "react-icons/fi";
 import { WorkflowEditOverlay } from "@/features/workflows-xyflow/common/WorkflowEditOverlay";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
+import { NodesMenu } from "@/features/workflows-xyflow/common/NodesMenu";
+import { BsFillNodePlusFill } from "react-icons/bs";
+import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 
 interface WorkflowHeaderProps {
     mode: "edit" | "view" | "execute";
@@ -48,6 +46,7 @@ interface WorkflowHeaderProps {
     workflowId: string;
     onOpenFieldDisplay?: () => void;
     onOpenAdminOverlay?: () => void;
+    onRecipeNodeCreated?: (nodeData: WorkflowNode) => void;
 }
 
 export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
@@ -57,6 +56,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     workflowId,
     onOpenFieldDisplay,
     onOpenAdminOverlay,
+    onRecipeNodeCreated,
 }) => {
     const dispatch = useAppDispatch();
     const reactFlowInstance = useReactFlow();
@@ -64,14 +64,15 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     // Get data from Redux using correct selectors
     const workflowData = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
     const isLoading = useAppSelector(workflowsSelectors.isLoading);
-    const allNodesArray = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state)(workflowId));
+    const allNodesArray = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId));
     const nodeCount = allNodesArray.length;
     const userId = useAppSelector(selectUserId);
 
-    const [isAddingNode, setIsAddingNode] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
     const [isWorkflowEditOpen, setIsWorkflowEditOpen] = useState(false);
+    const [isAddNodeDropdownOpen, setIsAddNodeDropdownOpen] = useState(false);
+    const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
     // Proper undo/redo state management
     const [history, setHistory] = useState<{ nodes: any[]; edges: any[] }[]>([]);
@@ -133,6 +134,31 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     // Check if undo/redo is available
     const canUndo = historyIndex > 0;
     const canRedo = historyIndex < history.length - 1;
+
+    // Handle hover delays for node menu
+    const handleMouseEnterNodeMenu = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+        setIsAddNodeDropdownOpen(true);
+    };
+
+    const handleMouseLeaveNodeMenu = () => {
+        const timeout = setTimeout(() => {
+            setIsAddNodeDropdownOpen(false);
+        }, 500); // 500ms delay before closing
+        setHoverTimeout(timeout);
+    };
+
+    // Cleanup timeout on unmount
+    React.useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
 
     // Handle save with loading state
     const handleSave = async () => {
@@ -198,18 +224,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
         reactFlowInstance.setNodes(updatedNodes);
     };
 
-    const nodeTypes = [
-        // COMPLETELY FAKE! These are not our real node categories!
-        { type: "functionNode", label: "Function", icon: <SquareFunction className="h-4 w-4" /> },
-        { type: "userInput", label: "User Input", icon: <Users className="h-4 w-4" /> },
-        { type: "brokerRelay", label: "Broker Relay", icon: <Shuffle className="h-4 w-4" /> },
-        { type: "trigger", label: "Trigger", icon: <Zap className="h-4 w-4" /> },
-        { type: "action", label: "Action", icon: <GitBranch className="h-4 w-4" /> },
-    ];
-
-    const handleAddNode = async (nodeType: string) => {
-        console.log("Adding nodes will need major modifications to ensure it uses the same logic as the QuickAccessPanel    ");
-    };
+    // Node creation handled by NodesMenu component with shared hook logic
 
     return (
         <div className="border-b border-border bg-background px-3 py-2">
@@ -233,6 +248,33 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
 
                 {/* Right side - Actions */}
                 <div className="flex items-center space-x-1">
+                    {mode === "edit" && (
+                        <>
+                            {/* Add Node Dropdown with Single Hover Area */}
+                            <div className="relative" onMouseEnter={handleMouseEnterNodeMenu} onMouseLeave={handleMouseLeaveNodeMenu}>
+                                <DropdownMenu open={isAddNodeDropdownOpen}>
+                                    <DropdownMenuTrigger asChild>
+                                        <div className="cursor-pointer inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent/50 transition-colors">
+                                            <BsFillNodePlusFill className="h-5 w-5 text-foreground hover:text-primary transition-colors" />
+                                        </div>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-64 bg-background border-border">
+                                        <NodesMenu
+                                            workflowId={workflowId}
+                                            onNodeCreated={(node) => {
+                                                console.log("Node created from header:", node);
+                                                // Optionally save to history or perform other actions
+                                                saveToHistory();
+                                                setIsAddNodeDropdownOpen(false);
+                                            }}
+                                            onRecipeNodeCreated={onRecipeNodeCreated}
+                                        />
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </>
+                    )}
+
                     {/* History Controls */}
                     {mode === "edit" && (
                         <div className="flex items-center space-x-1">
@@ -325,39 +367,6 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                         )}
                     </div>
 
-                    {mode === "edit" && (
-                        <>
-                            {/* Add Node Dropdown */}
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <IconButton
-                                        icon={isAddingNode ? <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4" /> : <Plus className="h-4 w-4" />}
-                                        tooltip={isAddingNode ? "Adding node..." : "Add Node"}
-                                        variant="ghost"
-                                        size="sm"
-                                        disabled={isAddingNode}
-                                        disabledTooltip="Adding node..."
-                                    />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48 bg-background border-border">
-                                    {nodeTypes.map((nodeType) => (
-                                        <DropdownMenuItem
-                                            key={nodeType.type}
-                                            onClick={() => handleAddNode(nodeType.type)}
-                                            className="cursor-pointer hover:bg-accent"
-                                            disabled={isAddingNode}
-                                        >
-                                            <div className="flex items-center space-x-2">
-                                                {nodeType.icon}
-                                                <span className="text-sm">{nodeType.label}</span>
-                                            </div>
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </>
-                    )}
-
                     {/* More Actions */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -366,7 +375,11 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                         <DropdownMenuContent align="end" className="bg-background border-border">
                             <DropdownMenuItem onClick={handleExecute} className="cursor-pointer hover:bg-accent" disabled={isExecuting}>
                                 <div className="flex items-center">
-                                    {isExecuting ? <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                                    {isExecuting ? (
+                                        <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4 mr-2" />
+                                    ) : (
+                                        <Play className="h-4 w-4 mr-2" />
+                                    )}
                                     Execute
                                 </div>
                             </DropdownMenuItem>
@@ -390,7 +403,13 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                     {/* Save Button */}
                     {mode === "edit" && onSave && (
                         <ActionFeedbackButton
-                            icon={isSaving ? <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4" /> : <Save className="h-4 w-4" />}
+                            icon={
+                                isSaving ? (
+                                    <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4" />
+                                ) : (
+                                    <Save className="h-4 w-4" />
+                                )
+                            }
                             tooltip={isSaving ? "Saving..." : "Save Workflow"}
                             variant="default"
                             size="sm"

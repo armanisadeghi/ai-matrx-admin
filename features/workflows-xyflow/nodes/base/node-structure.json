@@ -1,0 +1,91 @@
+[
+    {
+        "id": "69d82a37-6080-4053-95b0-3dce26fd41da",
+        "registered_function_id": "f3a6f690-deb5-4bc6-a34f-841556cf10d8",
+        "name": "Get Google Search Results Node",
+        "node_type": "functionNode",
+        "description": "Uses the SERPI API to get the top Google Search Results. Does not allow for specific location.",
+        "is_active": true,
+        "arguments": [
+            {
+                "name": "search_query",
+                "ready": false,
+                "managed": false,
+                "required": true,
+                "data_type": "str",
+                "default_value": {
+                    "value": null
+                }
+            },
+            {
+                "name": "country",
+                "ready": false,
+                "managed": false,
+                "required": false,
+                "data_type": "str",
+                "default_value": {
+                    "value": "us"
+                }
+            },
+            {
+                "name": "language",
+                "ready": false,
+                "managed": false,
+                "required": false,
+                "data_type": "str",
+                "default_value": {
+                    "value": "en"
+                }
+            }
+        ],
+        "inputs": [
+            {
+                "name": "search_query",
+                "required": true,
+                "component": "DefaultInput",
+                "data_type": "str"
+            },
+            {
+                "name": "country",
+                "required": false,
+                "component": "DefaultInput",
+                "data_type": "str"
+            },
+            {
+                "name": "language",
+                "required": false,
+                "component": "DefaultInput",
+                "data_type": "str"
+            }
+        ],
+        "outputs": [
+            {
+                "id": "7b601ec6-c20a-40d9-8d35-80796083f8db",
+                "name": "Output",
+                "component": "DefaultOutput",
+                "data_type": "any",
+                "description": "The output of the function"
+            }
+        ],
+        "custom_editor": null,
+        "metadata": {},
+        "dependencies": [],
+        "depedency_function": null,
+        "dynamic_broker_args": [],
+        "tags": [
+            "web search",
+            "google",
+            "information retrieval",
+            "search results",
+            "text query",
+            "country localization",
+            "language support",
+            "online search",
+            "data extraction",
+            "user query"
+        ],
+        "function_description": "\n    Searches Google for a query and returns search results.\n\n    Args:\n        search_query (str): The text query to search for.\n        country (str): Country code for localized search (default: \"us\").\n        language (str): Language code for results (default: \"en\").\n\n    Returns:\n        dict: Dictionary containing Google search results, with keys such as 'results', 'titles', 'links', etc.\n\n    Tags:\n        'web search', 'google', 'information retrieval', 'search results', 'text query', 'country localization', 'language support', 'online search', 'data extraction', 'user query'\n    ",
+        "icon": "Search",
+        "category": "2278dea5-48da-4528-9b94-4a7c9a281371"
+    }
+]

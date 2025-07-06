@@ -3,48 +3,21 @@
 import React, { useState } from "react";
 import { User } from "lucide-react";
 import CategoryNodeSection from "./CategoryNodeSection";
-import RecipeNodeInitializer from "../custom-nodes/recipes/RecipeNodeInitializer";
 import SourceTypeSelector from "../nodes/source-node/SourceTypeSelector";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { saveWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
 
 interface QuickAccessPanelProps {
     workflowId: string;
     onOpenFieldDisplay: () => void;
+    onRecipeNodeCreated?: (nodeData: WorkflowNode) => void;
 }
 
-const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onOpenFieldDisplay }) => {
-    const [showRecipeInitializer, setShowRecipeInitializer] = useState(false);
+const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ 
+    workflowId, 
+    onOpenFieldDisplay, 
+    onRecipeNodeCreated 
+}) => {
     const [showSourceInputCreator, setShowSourceInputCreator] = useState(false);
-    const [pendingRecipeNode, setPendingRecipeNode] = useState<{
-        nodeData: WorkflowNode;
-    } | null>(null);
-
-    const dispatch = useAppDispatch();
-
-    const handleRecipeNodeCreated = (nodeData: WorkflowNode) => {
-        console.log("Setting pending recipe node from QuickAccessPanel");
-        setPendingRecipeNode({ nodeData });
-        setShowRecipeInitializer(true);
-    };
-
-    const handleRecipeConfirm = async () => {
-        if (pendingRecipeNode) {
-            try {
-                dispatch(saveWorkflowNode({ id: pendingRecipeNode.nodeData.id }));
-                setShowRecipeInitializer(false);
-                setPendingRecipeNode(null);
-            } catch (error) {
-                console.error("Error finalizing recipe node:", error);
-            }
-        }
-    };
-
-    const handleRecipeCancel = () => {
-        setShowRecipeInitializer(false);
-        setPendingRecipeNode(null);
-    };
 
     return (
         <div className="w-32 bg-white dark:bg-gray-800 flex flex-col">
@@ -66,19 +39,9 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ workflowId, onOpenF
                 {/* Categories Section - Self-contained component */}
                 <CategoryNodeSection 
                     workflowId={workflowId}
-                    onRecipeNodeCreated={handleRecipeNodeCreated}
+                    onRecipeNodeCreated={onRecipeNodeCreated}
                 />
             </div>
-
-            {/* Recipe Node Initializer */}
-            {pendingRecipeNode && (
-                <RecipeNodeInitializer
-                    nodeId={pendingRecipeNode.nodeData.id}
-                    onConfirm={handleRecipeConfirm}
-                    onCancel={handleRecipeCancel}
-                    open={showRecipeInitializer}
-                />
-            )}
 
             {/* Source Input Creator */}
             <SourceTypeSelector

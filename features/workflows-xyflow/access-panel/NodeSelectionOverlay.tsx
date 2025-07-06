@@ -1,26 +1,31 @@
 "use client";
 
 import React from "react";
-import { X, LucideIcon, Zap } from "lucide-react";
+import { X } from "lucide-react";
+import { Icon } from "@/components/common/IconResolver";
+import { CategoryNodeData } from "@/features/workflows-xyflow/hooks/useCategoryNodeData";
 
-interface CategoryNodeDefinition {
+interface CategoryRecord {
     id: string;
-    name: string;
+    label?: string;
+    icon?: string;
+    color?: string;
     description?: string;
-    icon?: LucideIcon;
 }
 
 interface NodeSelectionOverlayProps {
-    title: string;
-    categoryId: string;
-    nodes: CategoryNodeDefinition[];
+    category: CategoryRecord;
+    nodesByCategory: Record<string, CategoryNodeData[]>;
     onAddNode: (functionId: string) => void;
     onClose: () => void;
     isOpen: boolean;
 }
 
-const NodeSelectionOverlay: React.FC<NodeSelectionOverlayProps> = ({ title, categoryId, nodes, onAddNode, onClose, isOpen }) => {
-    const handleNodeClick = (node: CategoryNodeDefinition) => {
+const NodeSelectionOverlay: React.FC<NodeSelectionOverlayProps> = ({ category, nodesByCategory, onAddNode, onClose, isOpen }) => {
+    const nodes = nodesByCategory[category.id] || [];
+    const title = category.label || category.id;
+
+    const handleNodeClick = (node: CategoryNodeData) => {
         onAddNode(node.id);
     };
 
@@ -48,7 +53,6 @@ const NodeSelectionOverlay: React.FC<NodeSelectionOverlayProps> = ({ title, cate
                     {nodes.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {nodes.map((node) => {
-                                const IconComponent = node.icon || Zap; // Default to Zap if no icon provided
                                 return (
                                     <button
                                         key={node.id}
@@ -56,8 +60,8 @@ const NodeSelectionOverlay: React.FC<NodeSelectionOverlayProps> = ({ title, cate
                                         className="group p-4 bg-white dark:bg-gray-700/50 border border-blue-200 dark:border-blue-800/50 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 text-left h-full flex flex-col"
                                     >
                                         <div className="flex items-start gap-3 flex-1">
-                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800/40 transition-all duration-200 flex-shrink-0">
-                                                <IconComponent className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                            <div className={`p-2 bg-${node.color}-50 dark:bg-${node.color}-900/30 rounded-lg border border-${node.color}-200 dark:border-${node.color}-700 group-hover:bg-${node.color}-100 dark:group-hover:bg-${node.color}-800/40 transition-all duration-200 flex-shrink-0`}>
+                                                <Icon name={node.icon} color={node.color} size={5} />
                                             </div>
                                             <div className="flex-1 min-w-0 flex flex-col">
                                                 <h3 className="font-medium text-sm text-blue-900 dark:text-blue-100 mb-1 group-hover:text-blue-700 dark:group-hover:text-blue-200 transition-colors">

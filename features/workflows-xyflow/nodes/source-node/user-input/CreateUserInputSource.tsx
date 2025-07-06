@@ -144,9 +144,6 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
                 sourceDetails: mapEntry,
             };
 
-            // Ensure workflow is active
-            dispatch(workflowActions.setActive(workflowId));
-
             // Add the source
             dispatch(workflowActions.addSource({
                 id: workflowId,

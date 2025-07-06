@@ -13,6 +13,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import ConfigJSONViewer from "./ConfigJSONViewer";
 import { Label, RadioGroup, RadioGroupItem } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -212,19 +222,19 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, className }: ConfigBuild
                     <RadioGroup
                         defaultValue={value}
                         onValueChange={setValue}
-                        className="flex gap-4 pl-2"
+                        className="flex gap-3 pl-1"
                         ref={valueInputRef}
                         onKeyDown={(e) => handleKeyDown(e, "value")}
                     >
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="true" id="true" />
-                            <Label htmlFor="true" className="text-sm font-extralight">
+                        <div className="flex items-center space-x-1">
+                            <RadioGroupItem value="true" id="true" className="h-3 w-3" />
+                            <Label htmlFor="true" className="text-xs font-extralight">
                                 True
                             </Label>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="false" id="false" />
-                            <Label htmlFor="false" className="text-sm font-extralight">
+                        <div className="flex items-center space-x-1">
+                            <RadioGroupItem value="false" id="false" className="h-3 w-3" />
+                            <Label htmlFor="false" className="text-xs font-extralight">
                                 False
                             </Label>
                         </div>
@@ -234,32 +244,34 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, className }: ConfigBuild
             case "list":
                 return (
                     <div className="relative">
-                        <textarea
+                        <Textarea
                             ref={valueInputRef as unknown as React.RefObject<HTMLTextAreaElement>}
                             value={value}
                             onChange={(e) => setValue(e.target.value)}
                             onBlur={handleBlur}
-                            className="w-full h-24 px-2 py-1 border rounded border-gray-300 dark:border-gray-600 text-sm font-extralight font-mono bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                            className="h-16 font-mono text-xs p-1"
                             placeholder={getPlaceholder()}
                         />
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={handleFormatValue}
-                            className="absolute top-1 right-3 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-gray-100"
+                            className="absolute top-0 right-0 h-6 w-6 p-0"
                             title="Format JSON"
                         >
-                            <AlignLeft className="h-5 w-5" />
-                        </button>
+                            <AlignLeft className="h-3 w-3" />
+                        </Button>
                     </div>
                 );
             default:
                 return (
-                    <input
+                    <Input
                         ref={valueInputRef as React.RefObject<HTMLInputElement>}
                         type="text"
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onKeyDown={(e) => handleKeyDown(e, "value")}
-                        className="w-full px-2 py-1 border rounded border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-700 dark:placeholder-gray-300"
+                        className="text-xs h-7"
                         placeholder={getPlaceholder()}
                     />
                 );
@@ -269,102 +281,105 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, className }: ConfigBuild
     return (
         <div
             className={cn(
-                `border rounded border-gray-200 dark:border-gray-700 ${inter.className} bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-extralight tracking-tight antialiased h-full`,
+                `border rounded-lg bg-card text-card-foreground shadow-sm ${inter.className} text-sm font-extralight tracking-tight antialiased h-full`,
                 className
             )}
         >
-            <div className="flex gap-2 p-2">
-                <div className="w-1/2">
-                    <div className="space-y-2">
-                        <div className="flex gap-1">
-                            <input
-                                type="text"
-                                value={field}
-                                onChange={(e) => setField(e.target.value)}
-                                onKeyDown={(e) => handleKeyDown(e, "field")}
-                                className="flex-1 px-2 py-1 border rounded border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-700 dark:placeholder-gray-300"
-                                placeholder="Enter field name..."
-                                disabled={isEditing}
-                            />
-                            <select
-                                ref={typeSelectRef}
-                                value={type}
-                                onChange={(e) => setType(e.target.value as ConfigType)}
-                                onKeyDown={(e) => handleKeyDown(e, "type")}
-                                className="w-32 px-2 py-1 border rounded border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                            >
+            <div className="flex gap-3 p-2 h-full">
+                <div className="w-1/2 space-y-2">
+                    <div className="flex gap-1">
+                        <Input
+                            type="text"
+                            value={field}
+                            onChange={(e) => setField(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, "field")}
+                            className="flex-1 text-xs h-7"
+                            placeholder="Field name..."
+                            disabled={isEditing}
+                        />
+                        <Select value={type} onValueChange={(value) => setType(value as ConfigType)}>
+                            <SelectTrigger className="w-20 h-7 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
                                 {types.map((t) => (
-                                    <option key={t} value={t} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                                    <SelectItem key={t} value={t} className="text-xs">
                                         {t}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
-                        </div>
-                        <div>{renderValueInput()}</div>
-                        {error && (
-                            <Alert variant="destructive" className="py-1">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription className="text-sm font-extralight">{error}</AlertDescription>
-                            </Alert>
-                        )}
-                        <div className="flex gap-1">
-                            <button
-                                ref={addButtonRef}
-                                onClick={validateAndAddField}
-                                className="flex-1 bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
-                            >
-                                {isEditing ? "Update Field" : "Add Field"}
-                            </button>
-                            <select
-                                value={deleteKey}
-                                onChange={(e) => {
-                                    setDeleteKey(e.target.value);
-                                    if (e.target.value) setShowDeleteDialog(true);
-                                }}
-                                className="px-2 py-1 border rounded border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                            >
-                                <option value="" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                                    Delete Field
-                                </option>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    
+                    <div>{renderValueInput()}</div>
+                    
+                    {error && (
+                        <Alert variant="destructive" className="py-1">
+                            <AlertCircle className="h-3 w-3" />
+                            <AlertDescription className="text-xs font-extralight">{error}</AlertDescription>
+                        </Alert>
+                    )}
+                    
+                    <div className="flex gap-1">
+                        <Button
+                            ref={addButtonRef}
+                            onClick={validateAndAddField}
+                            className="flex-1 text-xs h-7"
+                            size="sm"
+                        >
+                            {isEditing ? "Update" : "Add"}
+                        </Button>
+                        
+                        <Select value={deleteKey} onValueChange={(value) => {
+                            setDeleteKey(value);
+                            if (value) setShowDeleteDialog(true);
+                        }}>
+                            <SelectTrigger className="flex-1 h-7 text-xs">
+                                <SelectValue placeholder="Delete" />
+                            </SelectTrigger>
+                            <SelectContent>
                                 {Object.keys(config).map((key) => (
-                                    <option key={key} value={key} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                                    <SelectItem key={key} value={key} className="text-xs">
                                         {key}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
-                            <select
-                                value=""
-                                onChange={(e) => {
-                                    if (e.target.value) handleEdit(e.target.value);
-                                }}
-                                className="px-2 py-1 border rounded border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                            >
-                                <option value="" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                                    Edit Field
-                                </option>
+                            </SelectContent>
+                        </Select>
+                        
+                        <Select value="" onValueChange={(value) => {
+                            if (value) handleEdit(value);
+                        }}>
+                            <SelectTrigger className="flex-1 h-7 text-xs">
+                                <SelectValue placeholder="Edit" />
+                            </SelectTrigger>
+                            <SelectContent>
                                 {Object.keys(config).map((key) => (
-                                    <option key={key} value={key} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                                    <SelectItem key={key} value={key} className="text-xs">
                                         {key}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
-                        </div>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
-                <ConfigJSONViewer data={config} copied={copied} onCopy={copyToClipboard} />
+                
+                <div className="w-1/2">
+                    <ConfigJSONViewer data={config} copied={copied} onCopy={copyToClipboard} />
+                </div>
             </div>
+            
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-base font-normal">Confirm Deletion</AlertDialogTitle>
-                        <AlertDialogDescription className="text-sm font-extralight text-gray-700 dark:text-gray-300">
+                        <AlertDialogDescription className="text-sm font-extralight">
                             Are you sure you want to delete the field "{deleteKey}"?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel
                             onClick={() => setDeleteKey("")}
-                            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-extralight"
+                            className="text-sm font-extralight"
                         >
                             Cancel
                         </AlertDialogCancel>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
@@ -20,6 +20,7 @@ import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socke
 import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
 import AdminMenu from "./AdminMenu";
 import CreatorMenu from "./CreatorMenu";
+import { useMenuAnimations } from "./useMenuAnimations";
 
 interface NavigationItem {
     label: string;
@@ -29,6 +30,12 @@ interface NavigationItem {
     dashboard?: boolean;
 }
 
+interface MenuSection {
+    component: React.ComponentType<any>;
+    props?: Record<string, any>;
+    shouldRender?: boolean;
+}
+
 interface NavigationMenuProps {
     customLinks?: NavigationItem[];
     triggerClassName?: string;
@@ -36,6 +43,13 @@ interface NavigationMenuProps {
     itemClassName?: string;
     position?: "left" | "right";
     mobileBreakpoint?: "sm" | "md" | "lg";
+    // New props for modularity
+    additionalMenuSections?: MenuSection[];
+    showCreatorFeatures?: boolean;
+    showAdminFeatures?: boolean;
+    // Animation props
+    enableAnimations?: boolean;
+    animationTrigger?: string | null;
 }
 
 export const NavigationMenu: React.FC<NavigationMenuProps> = ({
@@ -45,139 +59,54 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     itemClassName = "",
     position = "right",
     mobileBreakpoint = "md",
+    additionalMenuSections = [],
+    showCreatorFeatures = true,
+    showAdminFeatures = true,
+    enableAnimations = true,
+    animationTrigger = null,
 }) => {
     const router = useRouter();
     const isMobile = useIsMobile();
     const user = useAppSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata.picture || null;
+    
+    // Creator and admin status
     const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"));
     const isAdmin = useAppSelector((state) => brokerSelectors.selectValue(state, "GLOBAL_USER_IS_ADMIN"));
-
-    // Get current task information from redux state
+    
+    // Get current task information from redux state (only for applet-specific animations)
     const currentTaskId = useAppSelector((state) => brokerSelectors.selectValue(state, "CURRENT_TASK_ID"));
     const firstListenerId = useAppSelector((state) => (currentTaskId ? selectTaskFirstListenerId(state, currentTaskId) : null));
     const textResponse = useAppSelector((state) => (firstListenerId ? selectResponseTextByListenerId(firstListenerId)(state) : ""));
-
+    
+    // Use the custom hook for animations
+    const {
+        shouldShowAnimation,
+        creatorAnimClass,
+        creatorButtonClass
+    } = useMenuAnimations({
+        enabled: enableAnimations,
+        userIsCreator,
+        firstListenerId,
+        customTrigger: animationTrigger,
+    });
+    
     // Filter navigation links to only show those with profileMenu: true
     const defaultFilteredLinks = navigationLinks.filter((link) => link.profileMenu);
-
+    
     // Use custom links if provided, otherwise use default filtered links
     const menuLinks = customLinks || defaultFilteredLinks;
-
-    // Track listenerId changes to trigger the animation effect
-    const [prevListenerId, setPrevListenerId] = useState<string | null>(null);
-    const [showAnimation, setShowAnimation] = useState(userIsCreator);
-
-    useEffect(() => {
-        if (firstListenerId && firstListenerId !== prevListenerId) {
-            setPrevListenerId(firstListenerId);
-            setShowAnimation(true);
-
-            // Reset animation after 3 seconds
-            const timer = setTimeout(() => {
-                setShowAnimation(false);
-            }, 3000);
-
-            return () => clearTimeout(timer);
-        }
-    }, [firstListenerId, prevListenerId]);
-
-    // Add CSS for animation when component mounts
-    useEffect(() => {
-        if (userIsCreator || showAnimation) {
-            // Add the animation styles to the document if they don't exist
-            if (!document.getElementById("creator-animation-styles")) {
-                const styleSheet = document.createElement("style");
-                styleSheet.id = "creator-animation-styles";
-                styleSheet.innerHTML = `
-          @keyframes creator-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-            50% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3); }
-            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-          }
-          
-          .creator-button {
-            position: relative;
-          }
-          
-          .creator-button::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border-radius: 9999px;
-            z-index: -1;
-            animation: creator-pulse 2s 1.5;
-            animation-fill-mode: forwards;
-          }
-          
-          .creator-menu-highlight {
-            position: relative;
-          }
-          
-          .creator-menu-highlight::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: 0.375rem;
-            border: 1px solid transparent;
-            background: linear-gradient(90deg, rgba(245, 158, 11, 0.7), rgba(249, 115, 22, 0.7), rgba(217, 70, 239, 0.7), rgba(245, 158, 11, 0.7));
-            background-size: 400% 100%;
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-            animation: gradient-rotate 3s ease;
-            animation-fill-mode: forwards;
-          }
-          
-          @keyframes gradient-rotate {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-        `;
-                document.head.appendChild(styleSheet);
-            }
-
-            // Remove animation classes after 3 seconds
-            const timer = setTimeout(() => {
-                const menuElements = document.querySelectorAll(".creator-menu-highlight");
-                const buttonElements = document.querySelectorAll(".creator-button");
-
-                menuElements.forEach((element) => {
-                    element.classList.remove("creator-menu-highlight");
-                });
-
-                buttonElements.forEach((element) => {
-                    element.classList.remove("creator-button");
-                });
-            }, 3000);
-
-            return () => {
-                clearTimeout(timer);
-                // Clean up is optional since this is a persistent component
-                const styleSheet = document.getElementById("creator-animation-styles");
-                if (styleSheet && !userIsCreator && !showAnimation) {
-                    styleSheet.remove();
-                }
-            };
-        }
-    }, [userIsCreator, showAnimation]);
-
-    // Animation effect for creators or when there's a new response
-    const creatorAnimClass = userIsCreator || showAnimation ? "creator-menu-highlight" : "";
-
+    
+    // Determine which menu sections to show
+    const shouldShowCreatorMenu = showCreatorFeatures && (userIsCreator || isAdmin);
+    const shouldShowAdminMenu = showAdminFeatures && isAdmin;
+    
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
-                    className={`flex items-center rounded-full pl-2 pr-1 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md transition bg-white dark:bg-gray-800 cursor-pointer focus:outline-none ${
-                        userIsCreator || showAnimation ? "creator-button" : ""
-                    } ${triggerClassName}`}
+                    className={`flex items-center rounded-full pl-2 pr-1 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md transition bg-white dark:bg-gray-800 cursor-pointer focus:outline-none ${creatorButtonClass} ${triggerClassName}`}
                 >
                     {userIsCreator && <Crown size={16} className="mr-1 text-amber-400" />}
                     <Menu size={18} className="ml-2 text-gray-600 dark:text-gray-400" />
@@ -217,7 +146,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-
+                
                 {/* Navigation links */}
                 {menuLinks.map((link, index) => (
                     <DropdownMenuItem key={link.href} asChild>
@@ -230,16 +159,31 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                         </Link>
                     </DropdownMenuItem>
                 ))}
-
-                {/* Creator Menu - now fully self-contained */}
-                <CreatorMenu />
-
-                {/* Admin Menu */}
-                <AdminMenu 
-                    isAdmin={isAdmin} 
-                    itemClassName={itemClassName} 
-                />
-
+                
+                {/* Creator Menu - conditionally rendered */}
+                {shouldShowCreatorMenu && <CreatorMenu />}
+                
+                {/* Admin Menu - conditionally rendered */}
+                {shouldShowAdminMenu && (
+                    <AdminMenu 
+                        isAdmin={isAdmin} 
+                        itemClassName={itemClassName} 
+                    />
+                )}
+                
+                {/* Additional Menu Sections */}
+                {additionalMenuSections.map((section, index) => {
+                    if (section.shouldRender === false) return null;
+                    
+                    const Component = section.component;
+                    return (
+                        <Component
+                            key={`additional-section-${index}`}
+                            {...section.props}
+                        />
+                    );
+                })}
+                
                 {/* Sign out section */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>

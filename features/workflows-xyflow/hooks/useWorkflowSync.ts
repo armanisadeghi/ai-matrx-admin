@@ -21,8 +21,8 @@ export const useWorkflowSync = (workflowId: string) => {
 
     // Get Redux state using correct selectors
     const workflowData = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
-    const workflowNodes = useAppSelector((state) => workflowNodesSelectors.xyFlowNodesByWorkflowId(state)(workflowId)); // Returns Node[] directly - no transformations needed!
-    const workflowNodesData = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state)(workflowId)); // Returns WorkflowNode[] for business data (inputs/outputs)
+    const workflowNodes = useAppSelector((state) => workflowNodesSelectors.xyFlowNodesByWorkflowId(state, workflowId)); // Returns Node[] directly - no transformations needed!
+    const workflowNodesData = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId)); // Returns WorkflowNode[] for business data (inputs/outputs)
     const workflowSources = useAppSelector((state) => workflowsSelectors.workflowSources(state, workflowId));
     const isLoading = useAppSelector(workflowsSelectors.isLoading);
 

@@ -13,7 +13,6 @@ import {
     IconFileTypeTsx,
 } from "@tabler/icons-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {searchAllIcons} from "@/app/(authenticated)/demo/component-demo/icon-customizer/icon-search";
 
 const IconCustomizer = () => {
     const VALID_SIZES = [

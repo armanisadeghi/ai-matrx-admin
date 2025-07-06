@@ -1,5 +1,7 @@
 import React from 'react';
 import { Copy, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ConfigJSONViewerProps {
   data: any;
@@ -39,35 +41,27 @@ const ConfigJSONViewer = ({
   const cleanedData = cleanJsonData(data);
 
   return (
-    <div className="w-1/2">
+    <div className="flex-1">
       <div 
-        className={`
-          relative
-          border
-          rounded
-          border border-gray-300 dark:border-gray-700
-          p-2
-          resize
-          overflow-auto
-          min-h-[100px]
-          min-w-[200px]
-          bg-white 
-          dark:bg-gray-800
-          ${className}
-        `}
+        className={cn(
+          'relative border rounded-lg bg-card text-card-foreground shadow-sm p-2 resize overflow-auto min-h-[200px] min-w-[75px]',
+          className
+        )}
         style={{
           resize: 'both',
           overflow: 'auto'
         }}
       >
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onCopy}
-          className="absolute top-1 right-1 p-1  hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+          className="absolute top-0 right-0 h-6 w-6 p-0"
           title="Copy to clipboard"
         >
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-        </button>
-        <pre className="text-xs leading-tight whitespace-pre-wrap font-mono text-gray-900 dark:text-gray-100">
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+        </Button>
+        <pre className="text-xs leading-tight whitespace-pre-wrap font-mono text-muted-foreground pr-6">
           {JSON.stringify(cleanedData, null, 2)}
         </pre>
       </div>

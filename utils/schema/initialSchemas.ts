@@ -50512,6 +50512,163 @@ registeredNode: {
             foreignKeyReference: {"table": "node_category", "column": "id", "entity": "nodeCategory", "field": "id"},
             description: '"Category" field for registeredNode. This is an optional field. Your entry must be an uuid data type. This field is a reference to a nodeCategory.',
         },
+            color: {
+            fieldNameFormats: {
+    "frontend": "color",
+    "backend": "color",
+    "database": "color",
+    "pretty": "Color",
+    "component": "Color",
+    "kebab": "color",
+    "sqlFunctionRef": "p_color",
+    "RestAPI": "color",
+    "GraphQL": "color",
+    "custom": "color"
+} as const,
+            name: 'color',
+            displayName: 'Color',
+
+            uniqueColumnId: 'supabase_automation_matrix:public:registered_node:color',
+            uniqueFieldId: 'supabase_automation_matrix:registeredNode:color',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: "blue" as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: "",
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'SELECT' as const,
+            componentProps: {
+    "subComponent": "enumSelect",
+    "variant": "default",
+    "section": "default",
+    "placeholder": "default",
+    "size": "default",
+    "textSize": "default",
+    "textColor": "default",
+    "rows": "default",
+    "animation": "default",
+    "fullWidthValue": "default",
+    "fullWidth": "default",
+    "disabled": "default",
+    "className": "default",
+    "type": "default",
+    "onChange": "default",
+    "onBlur": "default",
+    "formatString": "default",
+    "min": "default",
+    "max": "default",
+    "step": "default",
+    "numberType": "default",
+    "options": [
+        {
+            "label": "Bot",
+            "value": "Bot"
+        },
+        {
+            "label": "Amber",
+            "value": "amber"
+        },
+        {
+            "label": "Blue",
+            "value": "blue"
+        },
+        {
+            "label": "Cyan",
+            "value": "cyan"
+        },
+        {
+            "label": "Emerald",
+            "value": "emerald"
+        },
+        {
+            "label": "Fuchsia",
+            "value": "fuchsia"
+        },
+        {
+            "label": "Gray",
+            "value": "gray"
+        },
+        {
+            "label": "Green",
+            "value": "green"
+        },
+        {
+            "label": "Indigo",
+            "value": "indigo"
+        },
+        {
+            "label": "Lime",
+            "value": "lime"
+        },
+        {
+            "label": "Neutral",
+            "value": "neutral"
+        },
+        {
+            "label": "Orange",
+            "value": "orange"
+        },
+        {
+            "label": "Pink",
+            "value": "pink"
+        },
+        {
+            "label": "Purple",
+            "value": "purple"
+        },
+        {
+            "label": "Red",
+            "value": "red"
+        },
+        {
+            "label": "Rose",
+            "value": "rose"
+        },
+        {
+            "label": "Sky",
+            "value": "sky"
+        },
+        {
+            "label": "Slate",
+            "value": "slate"
+        },
+        {
+            "label": "Stone",
+            "value": "stone"
+        },
+        {
+            "label": "Teal",
+            "value": "teal"
+        },
+        {
+            "label": "Violet",
+            "value": "violet"
+        },
+        {
+            "label": "Yellow",
+            "value": "yellow"
+        },
+        {
+            "label": "Zinc",
+            "value": "zinc"
+        }
+    ],
+    "required": false
+},
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<"Bot" | "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined>,
+            enumValues: ['Bot', 'amber', 'blue', 'cyan', 'emerald', 'fuchsia', 'gray', 'green', 'indigo', 'lime', 'neutral', 'orange', 'pink', 'purple', 'red', 'rose', 'sky', 'slate', 'stone', 'teal', 'violet', 'yellow', 'zinc'] as const,
+            entityName: 'registeredNode',
+            databaseTable: 'registered_node',
+            foreignKeyReference: null,
+            description: '"Color" field for registeredNode. This is an optional field. Your entry must be an string data type.',
+        },
             nodeCategoryReference: {
     fieldNameFormats: {
     "frontend": "nodeCategoryReference",

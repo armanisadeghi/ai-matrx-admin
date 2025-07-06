@@ -41,6 +41,7 @@ import { WorkflowEdge } from "../edges/WorkflowEdge";
 
 import { getNodeMinimapColor } from "../utils/nodeStyles";
 import QuickAccessPanel from "../access-panel/QuickAccessPanel";
+import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 
 interface WorkflowCanvasProps {
     workflowId: string;
@@ -62,6 +63,7 @@ interface WorkflowCanvasProps {
     onOpenFieldDisplaySheet?: (open: boolean) => void;
     isAdminOverlayOpen?: boolean;
     onOpenAdminOverlay?: (open: boolean) => void;
+    onRecipeNodeCreated?: (nodeData: WorkflowNode) => void;
 }
 
 export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
@@ -83,6 +85,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     onOpenFieldDisplaySheet,
     isAdminOverlayOpen,
     onOpenAdminOverlay,
+    onRecipeNodeCreated,
 }) => {
     const reactFlowInstance = useReactFlow();
 
@@ -542,6 +545,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                         <QuickAccessPanel 
                             workflowId={workflowId} 
                             onOpenFieldDisplay={() => onOpenFieldDisplaySheet?.(true)}
+                            onRecipeNodeCreated={onRecipeNodeCreated}
                         />
                     </Panel>
                 )}
