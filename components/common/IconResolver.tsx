@@ -187,7 +187,7 @@ interface IconProps {
     className?: string;
 }
 
-export const Icon: React.FC<IconProps> = ({ name, color = "gray", size = 4, className }) => {
+export const DynamicIcon: React.FC<IconProps> = ({ name, color = "gray", size = 4, className }) => {
     const IconComponent = getIconComponent(name);
     const colorClass = getTextColorClass(color);
     const sizeClass = `h-${size} w-${size}`;

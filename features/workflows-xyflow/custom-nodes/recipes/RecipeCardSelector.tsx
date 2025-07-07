@@ -3,9 +3,8 @@ import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { NodeDefinitionType } from "../custom-node-definitions";
-import { workflowNodesActions, workflowNodesSelectors } from "@/lib/redux/workflow-nodes";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { workflowNodesActions } from "@/lib/redux/workflow-nodes";
+import { useAppDispatch } from "@/lib/redux";
 
 interface RecipeOption {
     value: string;

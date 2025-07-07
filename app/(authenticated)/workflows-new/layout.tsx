@@ -7,6 +7,7 @@ import { useDataBrokerWithFetch, useNodeCategoryWithFetch, useRegisteredNodeWith
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { useAppDispatch } from "@/lib/redux";
 import WorkflowLoading from "@/features/workflows-xyflow/common/workflow-loading";
+import { useAiModelWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 
 export default function WorkflowLayout({ children }: { children: React.ReactNode }) {
     const dispatch = useAppDispatch();
@@ -15,6 +16,7 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
     const { fetchDataBrokerAll } = useDataBrokerWithFetch();
     const categoryHook = useNodeCategoryWithFetch();
     const registeredNodeHook = useRegisteredNodeWithFetch();
+    const aiModelHook = useAiModelWithFetch();
 
 
     useEffect(() => {
@@ -23,6 +25,7 @@ export default function WorkflowLayout({ children }: { children: React.ReactNode
         dispatch(fetchFieldsThunk());
         categoryHook.fetchNodeCategoryAll();
         registeredNodeHook.fetchRegisteredNodeAll();
+        aiModelHook.fetchAiModelAll();
     }, []);
 
     // Show loading while data is being fetched

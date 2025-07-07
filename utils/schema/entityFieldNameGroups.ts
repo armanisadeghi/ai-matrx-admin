@@ -154,9 +154,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId", "brokerMap", "overviewLabel", "dataDestinationConfig"]
 },
   dataBroker: {
-  nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent", "fieldComponentId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "publicRead", "defaultScope"],
+  nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent", "fieldComponentId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "publicRead", "defaultScope", "description"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent", "fieldComponentId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "publicRead", "defaultScope"]
+  nativeFieldsNoPk: ["name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent", "fieldComponentId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "publicRead", "defaultScope", "description"]
 },
   dataInputComponent: {
   nativeFields: ["id", "options", "includeOther", "min", "max", "step", "acceptableFiletypes", "src", "colorOverrides", "additionalParams", "subComponent", "component", "name", "description", "placeholder", "containerClassName", "collapsibleClassName", "labelClassName", "descriptionClassName", "componentClassName", "size", "height", "width", "minHeight", "maxHeight", "minWidth", "maxWidth", "orientation"],

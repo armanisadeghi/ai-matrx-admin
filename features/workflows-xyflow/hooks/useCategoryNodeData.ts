@@ -5,19 +5,20 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { WorkflowNode, WorkflowNodeUiData } from "@/lib/redux/workflow-nodes/types";
 import { createWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
+import { RegisteredNodeData } from "@/types/AutomationSchemaTypes";
 
 export interface CategoryNodeData {
     id: string;
     name: string;
     description?: string;
-    icon?: any;
+    icon?: string;
     color?: string;
 }
 
 const RECIPE_FUNCTION_ID = "2ac5576b-d1ab-45b1-ab48-4e196629fdd8";
 
 export function newNodeFunction(
-    nodeDefinition: any,
+    nodeDefinition: RegisteredNodeData,
     workflowId: string,
     userId: string,
     categoryName: string,

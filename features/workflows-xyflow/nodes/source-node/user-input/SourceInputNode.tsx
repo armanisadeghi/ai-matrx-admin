@@ -67,7 +67,7 @@ const SourceInputSettings: React.FC<{
     );
 };
 
-const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nodeProps }) => {
+const UserInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nodeProps }) => {
     const nodeId = useNodeId();
     const dispatch = useAppDispatch();
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
@@ -136,23 +136,23 @@ const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nod
     // Generate display text
     const displayText = `${brokerDisplayName} Input`;
 
-    // Configure the BaseNode with simple handle arrays
+    // Configure the BaseNode with custom handles
     const config: NodeConfig = {
         nodeType: "userInput",
         icon: Download,
         displayText,
 
-        // Simple handles - just labels and dots
-        inputHandles: [
+        // Custom handles for source nodes
+        customInputs: [], // User input nodes typically don't have input handles
+        
+        customOutputs: [
             {
-                id: `${nodeId}-${mappedItemId}`,
-                label: fieldLabel || "Missing Field Label",
-            },
-        ],
-        outputHandles: [
-            {
-                id: `${nodeId}-${brokerId}`,
-                label: brokerDisplayName || "Missing Broker Display Name",
+                name: brokerDisplayName || "Missing Broker Display Name",
+                broker_id: brokerId || "",
+                component: "UserInput",
+                data_type: "string",
+                description: fieldLabel || "User input field",
+                output_type: "user_input",
             },
         ],
 
@@ -165,9 +165,10 @@ const SourceInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nod
 
         // Feature configuration
         allowCompactMode: true,
+        useWorkflowActions: false, // This is a source node, not a workflow node
     };
 
     return <BaseNode config={config} {...nodeProps} />;
 };
 
-export const SourceInputNode = memo(SourceInputNodeComponent);
+export const SourceInputNode = memo(UserInputNodeComponent);

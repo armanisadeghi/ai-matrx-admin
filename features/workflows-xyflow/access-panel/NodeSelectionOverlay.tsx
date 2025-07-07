@@ -2,7 +2,7 @@
 
 import React from "react";
 import { X } from "lucide-react";
-import { Icon } from "@/components/common/IconResolver";
+import { DynamicIcon } from "@/components/common/IconResolver";
 import { CategoryNodeData } from "@/features/workflows-xyflow/hooks/useCategoryNodeData";
 
 interface CategoryRecord {
@@ -61,7 +61,7 @@ const NodeSelectionOverlay: React.FC<NodeSelectionOverlayProps> = ({ category, n
                                     >
                                         <div className="flex items-start gap-3 flex-1">
                                             <div className={`p-2 bg-${node.color}-50 dark:bg-${node.color}-900/30 rounded-lg border border-${node.color}-200 dark:border-${node.color}-700 group-hover:bg-${node.color}-100 dark:group-hover:bg-${node.color}-800/40 transition-all duration-200 flex-shrink-0`}>
-                                                <Icon name={node.icon} color={node.color} size={5} />
+                                                <DynamicIcon name={node.icon} color={node.color} size={5} />
                                             </div>
                                             <div className="flex-1 min-w-0 flex flex-col">
                                                 <h3 className="font-medium text-sm text-blue-900 dark:text-blue-100 mb-1 group-hover:text-blue-700 dark:group-hover:text-blue-200 transition-colors">

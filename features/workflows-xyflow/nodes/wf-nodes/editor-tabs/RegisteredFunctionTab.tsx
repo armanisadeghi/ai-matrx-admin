@@ -23,7 +23,7 @@ export const RegisteredFunctionTab: React.FC<DefaultTabProps> = ({ nodeId }) => 
     if (!registeredFunction) {
         return (
             <div className="h-full flex items-center justify-center text-muted-foreground">
-                No registered function data available
+                No registered function data available for this node
             </div>
         );
     }

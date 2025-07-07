@@ -4,250 +4,258 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { DefaultTabProps } from "./types";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
+import { SectionContainer, SectionTable, TableRowData } from "./common";
+import { TableCell } from "@/components/ui/table";
+import { toTitleCase } from "@/utils/dataUtils";
+
+export type NodeInput = {
+    name: string;
+    required: boolean;
+    component: string;
+    data_type: string;
+    input_type: string;
+};
+
+export type NodeOutput = {
+    name: string;
+    broker_id: string;
+    component: string;
+    data_type: string;
+    description: string | null;
+    output_type: string;
+};
+
+// =============== FOR REFERENCE ONLY ===============
+// const inputSample: NodeInput[] = [
+//     { name: "results_object", required: true, component: "ArrayInput", data_type: "list", input_type: "argument" },
+//     { name: "enhanced_bookmarks", required: true, component: "ObjectInput", data_type: "dict", input_type: "argument" },
+// ];
+
+// const outputSample: NodeOutput[] = [
+//     {
+//         name: "Extracted Text From Dict",
+//         broker_id: "e3a6d1cc-12fe-4e8d-b0e8-ff0e888c1da0",
+//         component: "DefaultOutput",
+//         data_type: "str",
+//         description: null,
+//         output_type: "default_function_result",
+//     },
+// ];
 
 export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
+    const nodeDefinition = nodeData?.metadata?.nodeDefinition;
+    const inputs = nodeDefinition?.inputs || [];
+    const outputs = nodeDefinition?.outputs || [];
     const dispatch = useAppDispatch();
 
     if (!nodeData) {
         return <div className="text-muted-foreground">Node not found</div>;
     }
 
+    const getInputFromNodeData = (inputName: string) => {
+        return nodeData.inputs.find((input) => input.arg_name === inputName);
+    };
+
+    // Basic Information rows
+    const basicInfoRows: TableRowData[] = [
+        {
+            key: "step_name",
+            label: "Step Name",
+            content: (
+                <input
+                    type="text"
+                    value={nodeData.step_name}
+                    className="w-full bg-background dark:bg-background border-none outline-none text-sm text-foreground dark:text-foreground placeholder:text-muted-foreground focus:ring-0 p-2 rounded"
+                    placeholder="Enter step name..."
+                    onChange={(e) => {
+                        dispatch(
+                            workflowNodesActions.updateField({
+                                id: nodeId,
+                                field: "step_name",
+                                value: e.target.value,
+                            })
+                        );
+                    }}
+                />
+            ),
+        },
+        {
+            key: "execution_required",
+            label: "Execution Required",
+            content: (
+                <div className="flex items-center space-x-2">
+                    <Switch
+                        checked={nodeData.execution_required}
+                        onCheckedChange={(checked) => {
+                            dispatch(
+                                workflowNodesActions.updateField({
+                                    id: nodeId,
+                                    field: "execution_required",
+                                    value: checked,
+                                })
+                            );
+                        }}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                        {nodeData.execution_required ? "Current Setting: Required" : "Current Setting: Optional"}
+                    </span>
+                </div>
+            ),
+        },
+        {
+            key: "is_active",
+            label: "Active",
+            content: (
+                <div className="flex items-center space-x-2">
+                    <Switch
+                        checked={nodeData.is_active}
+                        onCheckedChange={(checked) => {
+                            dispatch(
+                                workflowNodesActions.updateField({
+                                    id: nodeId,
+                                    field: "is_active",
+                                    value: checked,
+                                })
+                            );
+                        }}
+                        className="data-[state=checked]:bg-green-500 dark:data-[state=checked]:bg-green-600"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                        {nodeData.is_active ? "Current Setting: Active" : "Current Setting: Inactive"}
+                    </span>
+                </div>
+            ),
+        },
+    ];
+
     return (
-        <div className="h-full overflow-auto pr-2 space-y-4">
+        <div className="h-full overflow-auto pr-2 space-y-6">
             {/* Basic Information */}
-            <div className="border rounded-lg overflow-hidden">
-                <div className="bg-muted/50 dark:bg-muted/50 px-4 py-2 border-b">
-                    <h4 className="text-sm font-medium text-foreground dark:text-foreground">Basic Information</h4>
-                </div>
-                <Table>
-                    <TableBody>
-                        <TableRow className="bg-background dark:bg-background">
-                            <TableCell className="font-medium text-xs w-48 border-r border-border dark:border-border">Step Name</TableCell>
-                            <TableCell className="p-0 m-0">
-                                <input
-                                    type="text"
-                                    value={nodeData.step_name}
-                                    className="w-full bg-gray-100 dark:bg-gray-800 border-none outline-none text-sm text-foreground dark:text-foreground placeholder:text-muted-foreground focus:ring-0 p-2 rounded"
-                                    placeholder="Enter step name..."
-                                    onChange={(e) => {
-                                        dispatch(
-                                            workflowNodesActions.updateField({
-                                                id: nodeId,
-                                                field: "step_name",
-                                                value: e.target.value,
-                                            })
-                                        );
-                                    }}
-                                />
-                            </TableCell>
-                        </TableRow>
-                        <TableRow className="bg-muted/30 dark:bg-muted/30">
-                            <TableCell className="font-medium text-xs w-48 border-r border-border dark:border-border">Execution Required</TableCell>
-                            <TableCell>
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        checked={nodeData.execution_required}
-                                        onCheckedChange={(checked) => {
-                                            dispatch(
-                                                workflowNodesActions.updateField({
-                                                    id: nodeId,
-                                                    field: "execution_required",
-                                                    value: checked,
-                                                })
-                                            );
-                                        }}
-                                    />
-                                    <span className="text-xs text-muted-foreground">
-                                        {nodeData.execution_required ? "Current Setting: Required" : "Current Setting: Optional"}
-                                    </span>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow className="bg-background dark:bg-background">
-                            <TableCell className="font-medium text-xs w-48 border-r border-border dark:border-border">Active</TableCell>
-                            <TableCell>
-                                <div className="flex items-center space-x-2">
-                                    <Switch
-                                        checked={nodeData.is_active}
-                                        onCheckedChange={(checked) => {
-                                            dispatch(
-                                                workflowNodesActions.updateField({
-                                                    id: nodeId,
-                                                    field: "is_active",
-                                                    value: checked,
-                                                })
-                                            );
-                                        }}
-                                        className="data-[state=checked]:bg-green-500 dark:data-[state=checked]:bg-green-600"
-                                    />
-                                    <span className="text-xs text-muted-foreground">
-                                        {nodeData.is_active ? "Current Setting: Active" : "Current Setting: Inactive"}
-                                    </span>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow className="bg-background dark:bg-background">
-                            <TableCell className="font-medium text-xs w-48 border-r border-border dark:border-border">Type</TableCell>
-                            <TableCell>
-                                <Badge variant="secondary" className="text-xs">
-                                    {nodeData.type}
-                                </Badge>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow className="bg-muted/30 dark:bg-muted/30">
-                            <TableCell className="font-medium text-xs w-48 border-r border-border dark:border-border">Node Type</TableCell>
-                            <TableCell>
-                                <Badge variant="outline" className="text-xs">
-                                    {nodeData.node_type}
-                                </Badge>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </div>
-
-            {/* Inputs */}
-            {nodeData.inputs && nodeData.inputs.length > 0 && (
-                <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-muted/50 dark:bg-muted/50 px-4 py-2 border-b">
-                        <h4 className="text-sm font-medium text-foreground dark:text-foreground">Inputs</h4>
-                    </div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/20 dark:bg-muted/20">
-                                <TableHead className="font-semibold w-48 border-r border-border dark:border-border">Name</TableHead>
-                                <TableHead className="font-semibold">Type</TableHead>
-                                <TableHead className="font-semibold">Status</TableHead>
-                                <TableHead className="font-semibold">Required</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {nodeData.inputs.map((input, index) => (
-                                <TableRow
-                                    key={index}
-                                    className={index % 2 === 0 ? "bg-background dark:bg-background" : "bg-muted/30 dark:bg-muted/30"}
-                                >
-                                    <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">{input.arg_name}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary" className="text-xs">
-                                            {input.metadata.data_type}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={input.ready ? "default" : "destructive"} className="text-xs">
-                                            {input.ready ? "ready" : "not ready"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={input.metadata.required ? "destructive" : "secondary"} className="text-xs">
-                                            {input.metadata.required ? "required" : "optional"}
-                                        </Badge>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            )}
-
-            {/* Outputs */}
-            {nodeData.outputs && nodeData.outputs.length > 0 && (
-                <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-muted/50 dark:bg-muted/50 px-4 py-2 border-b">
-                        <h4 className="text-sm font-medium text-foreground dark:text-foreground">Outputs</h4>
-                    </div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/20 dark:bg-muted/20">
-                                <TableHead className="font-semibold w-48 border-r border-border dark:border-border">Name</TableHead>
-                                <TableHead className="font-semibold">Data Type</TableHead>
-                                <TableHead className="font-semibold">Broker ID</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {nodeData.outputs.map((output, index) => (
-                                <TableRow
-                                    key={index}
-                                    className={index % 2 === 0 ? "bg-background dark:bg-background" : "bg-muted/30 dark:bg-muted/30"}
-                                >
-                                    <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">{output.name}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary" className="text-xs">
-                                            {output.data_type}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <code className="bg-muted dark:bg-muted px-2 py-1 rounded text-xs font-mono">
-                                            {output.broker_id}
-                                        </code>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            )}
+            <SectionTable title="Basic Information" rows={basicInfoRows} />
 
             {/* Dependencies */}
-            <div className="border rounded-lg overflow-hidden">
-                <div className="bg-muted/50 dark:bg-muted/50 px-4 py-2 border-b">
-                    <h4 className="text-sm font-medium text-foreground dark:text-foreground">Dependencies</h4>
-                </div>
-                {nodeData.dependencies && nodeData.dependencies.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/20 dark:bg-muted/20">
-                                <TableHead className="font-semibold w-48 border-r border-border dark:border-border">Type</TableHead>
-                                <TableHead className="font-semibold">ID</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {nodeData.dependencies.map((dependency, index) => (
-                                <TableRow
-                                    key={index}
-                                    className={index % 2 === 0 ? "bg-background dark:bg-background" : "bg-muted/30 dark:bg-muted/30"}
-                                >
-                                    <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
-                                        {dependency.type ? (
-                                            <Badge variant="secondary" className="text-xs">
-                                                {dependency.type}
-                                            </Badge>
-                                        ) : (
-                                            <span className="text-muted-foreground text-sm">None</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="font-mono text-xs">
-                                        {dependency.id ? (
-                                            <code className="bg-muted dark:bg-muted px-2 py-1 rounded text-xs font-mono break-all">
-                                                {dependency.id}
-                                            </code>
-                                        ) : (
-                                            <span className="text-muted-foreground text-sm">None</span>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                ) : (
-                    <div className="p-4 bg-muted/30 dark:bg-muted/30">
-                        <p className="text-sm text-muted-foreground dark:text-muted-foreground">No dependencies</p>
-                    </div>
+            {/* <SectionTable
+                title="Dependencies"
+                headers={["Name", "Type", "ID", "Required", "Status", "Info"]}
+                data={nodeData.dependencies || []}
+                renderRow={(dependency, index) => (
+                    <>
+                        <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
+                            {toTitleCase(dependency.metadata?.name || "No Name")}
+                        </TableCell>
+                        <TableCell className="font-medium text-center text-sm w-48 border-r border-border dark:border-border">
+                            {dependency.type ? (
+                                <Badge variant="secondary" className="text-xs">
+                                    {toTitleCase(dependency.type)}
+                                </Badge>
+                            ) : (
+                                <span className="text-muted-foreground text-sm">None</span>
+                            )}
+                        </TableCell>
+                        <TableCell className="font-medium text-[10px] w-96 border-r border-border dark:border-border">
+                            <code className="px-2 py-1 rounded text-xs font-mono break-all">{dependency.id}</code>
+                        </TableCell>
+                        <TableCell className="font-medium text-center text-sm w-48 border-r border-border dark:border-border">
+                            <Badge variant={dependency.required ? "destructive" : "secondary"} className="text-xs">
+                                {dependency.required ? "Required" : "Optional"}
+                            </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium text-center text-sm w-48 border-r border-border dark:border-border">
+                            <Badge variant={dependency.connected ? "default" : "destructive"} className="text-xs">
+                                {dependency.connected ? "Connected" : "Not Connected"}
+                            </Badge>
+                        </TableCell>
+                        <TableCell></TableCell>
+                    </>
                 )}
-            </div>
+                emptyMessage="No dependencies"
+            /> */}
+
+            {/* Inputs */}
+            <SectionTable
+                title="Inputs"
+                headers={["Name", "ID", "Type", "Required", "Status", "Info"]}
+                data={inputs}
+                renderRow={(input, index) => (
+                    <>
+                        <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
+                            {toTitleCase(input.name)}
+                        </TableCell>
+                        <TableCell className="font-medium text-[10px] w-96 border-r border-border dark:border-border">
+                            <code className="px-2 py-1 rounded text-xs font-mono break-all">{input.id}</code>
+                        </TableCell>
+                        <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
+                            {input.input_type}
+                        </TableCell>
+                        <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
+                            <Badge variant={input.required ? "destructive" : "secondary"} className="text-xs">
+                                {input.required ? "Required" : "Optional"}
+                            </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium text-center text-xs w-32 border-r border-border dark:border-border">
+                            {(() => {
+                                const inputData = getInputFromNodeData(input.name);
+                                const isReady = inputData?.ready;
+                                const isRequired = input.required;
+
+                                if (isReady) {
+                                    return (
+                                        <Badge variant="default" className="text-xs">
+                                            Ready
+                                        </Badge>
+                                    );
+                                } else if (isRequired) {
+                                    return (
+                                        <Badge variant="destructive" className="text-xs">
+                                            Not Ready
+                                        </Badge>
+                                    );
+                                } else {
+                                    return (
+                                        <Badge variant="outline" className="text-xs">
+                                            Not Used
+                                        </Badge>
+                                    );
+                                }
+                            })()}
+                        </TableCell>
+                        <TableCell></TableCell>
+                    </>
+                )}
+                emptyMessage="No inputs"
+            />
+
+            {/* Outputs */}
+            <SectionTable
+                title="Outputs"
+                headers={["Name", "Broker ID", "Data Type", "Info"]}
+                data={outputs}
+                renderRow={(output, index) => (
+                    <>
+                        <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
+                            {toTitleCase(output.name)}
+                        </TableCell>
+                        <TableCell className="font-medium text-[10px] w-96 border-r border-border dark:border-border">
+                            <code className="px-2 py-1 rounded text-xs font-mono break-all">{output.broker_id}</code>
+                        </TableCell>
+                        <TableCell className="font-medium text-center text-sm w-48 border-r border-border dark:border-border">
+                            <Badge variant="outline" className="text-xs">
+                                {output.data_type}
+                            </Badge>
+                        </TableCell>
+                        <TableCell></TableCell>
+                    </>
+                )}
+                emptyMessage="No outputs"
+            />
 
             {/* Admin Reference - Raw Data */}
-            <div className="h-full">
-                Raw Node Data:{" "}
+            <SectionContainer title="Raw Node Data">
                 <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto h-full">{JSON.stringify(nodeData, null, 2)}</pre>
-            </div>
+            </SectionContainer>
         </div>
     );
 };

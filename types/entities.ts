@@ -365,6 +365,7 @@ export type DataBroker = {
     authenticatedRead?: boolean;
     publicRead?: boolean;
     defaultScope?: string;
+    description?: string;
 }
 
 export type DataInputComponent = {

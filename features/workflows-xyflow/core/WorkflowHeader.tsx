@@ -27,6 +27,8 @@ import {
     Minimize2,
     Maximize2,
     Database,
+    Eye,
+    EyeOff,
 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -73,6 +75,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     const [isWorkflowEditOpen, setIsWorkflowEditOpen] = useState(false);
     const [isAddNodeDropdownOpen, setIsAddNodeDropdownOpen] = useState(false);
     const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [showOptionalInputs, setShowOptionalInputs] = useState(true);
 
     // Proper undo/redo state management
     const [history, setHistory] = useState<{ nodes: any[]; edges: any[] }[]>([]);
@@ -110,6 +113,16 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
             }
         }
     }, [allNodesArray.length, history.length, reactFlowInstance]);
+
+    // Initialize showOptionalInputs state from nodes
+    React.useEffect(() => {
+        const currentNodes = reactFlowInstance.getNodes();
+        if (currentNodes.length > 0) {
+            // Check if any node has showOptionalInputs set to false
+            const hasHiddenOptional = currentNodes.some(node => node.data?.showOptionalInputs === false);
+            setShowOptionalInputs(!hasHiddenOptional);
+        }
+    }, [allNodesArray.length, reactFlowInstance]);
 
     // Undo functionality
     const handleUndo = () => {
@@ -224,6 +237,19 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
         reactFlowInstance.setNodes(updatedNodes);
     };
 
+    const handleShowOptionalInputs = (show: boolean) => {
+        const currentNodes = reactFlowInstance.getNodes();
+        const updatedNodes = currentNodes.map((node) => ({
+            ...node,
+            data: {
+                ...node.data,
+                showOptionalInputs: show,
+            },
+        }));
+        reactFlowInstance.setNodes(updatedNodes);
+        setShowOptionalInputs(show);
+    };
+
     // Node creation handled by NodesMenu component with shared hook logic
 
     return (
@@ -321,6 +347,16 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                             successTooltip="All nodes expanded!"
                             feedbackDuration={500}
                             successIcon={<Maximize2 className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
+                        />
+                        <ActionFeedbackButton
+                            icon={showOptionalInputs ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            tooltip={showOptionalInputs ? "Hide Optional Inputs" : "Show Optional Inputs"}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleShowOptionalInputs(!showOptionalInputs)}
+                            successTooltip={showOptionalInputs ? "Optional inputs hidden!" : "Optional inputs shown!"}
+                            feedbackDuration={500}
+                            successIcon={showOptionalInputs ? <EyeOff className="h-4 w-4 text-blue-500 dark:text-blue-400" /> : <Eye className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
                         />
                         <div className="w-px h-4 bg-border mx-1" />
                     </div>

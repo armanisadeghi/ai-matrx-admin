@@ -12,7 +12,7 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { cn } from "@/styles/themes/utils";
 import { useCategoryNodeData } from "@/features/workflows-xyflow/hooks/useCategoryNodeData";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
-import { Icon } from "@/components/common/IconResolver";
+import { DynamicIcon } from "@/components/common/IconResolver";
 
 // Truncate text to specified length with ellipsis
 const truncateText = (text: string, maxLength: number = 30): string => {
@@ -144,7 +144,7 @@ export const NodesMenu: React.FC<NodesMenuProps> = ({
                             <div className="flex items-center gap-3 w-full">
                                 <DynamicChevron />
                                 <div className="w-5 h-5 flex items-center justify-center">
-                                    <Icon name={category.icon} color={category.color} size={4} />
+                                    <DynamicIcon name={category.icon} color={category.color} size={4} />
                                 </div>
                                 <span className="text-sm text-gray-700 dark:text-gray-300 font-medium flex-1" title={categoryLabel}>
                                     {truncatedCategoryLabel}
@@ -165,7 +165,7 @@ export const NodesMenu: React.FC<NodesMenuProps> = ({
                                         >
                                             <div className={`flex items-center gap-3 w-full px-2 py-2 cursor-pointer ${itemClassName}`}>
                                                 <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
-                                                    <Icon name={registeredNode.icon} color={registeredNode?.color} size={4} />
+                                                    <DynamicIcon name={registeredNode.icon} color={registeredNode?.color} size={4} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <span 

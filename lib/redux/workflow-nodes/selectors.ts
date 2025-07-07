@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { Node } from '@xyflow/react';
+import { RegisteredNodeData } from '@/types/AutomationSchemaTypes';
 
 const selectWorkflowNodeState = (state: RootState) => state.workflowNodes;
 
@@ -175,7 +176,7 @@ export const selectWorkflowNodeMetadata = createSelector(
 
 export const selectWorkflowNodeDefinition = createSelector(
   [selectWorkflowNodeMetadata],
-  (metadata) => metadata?.nodeDefinition || null
+  (metadata) => metadata?.nodeDefinition as RegisteredNodeData || null
 );
 
 // ADDITIONAL: Factory functions for creating parameterized selectors

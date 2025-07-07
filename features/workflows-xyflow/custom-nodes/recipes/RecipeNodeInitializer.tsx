@@ -16,7 +16,6 @@ import { workflowNodesActions, workflowNodesSelectors } from "@/lib/redux/workfl
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { useRegisteredFunctionWithFetch } from "@/lib/redux/entity/hooks/functions-and-args";
-import { RegisteredFunctionData, RegisteredFunctionRecordWithKey } from "@/types";
 import { RECIPE_NODE_DEFINITION } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
 
 interface RecipeNodeInitializerProps {
@@ -31,12 +30,8 @@ const DEBUG = false;
 const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, onCancel, open, onConfirm }) => {
     const dispatch = useAppDispatch();
     const node = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
+    const nodeDefinitioninputs = useMemo(() => node?.metadata?.nodeDefinition?.inputs || [], [node]);
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
-    const { registeredFunctionSelectors } = useRegisteredFunctionWithFetch();
-
-    const functionData = useAppSelector((state) =>
-        registeredFunctionSelectors.selectRecordWithKey(state, `id:${node?.function_id}`)
-    ) as RegisteredFunctionRecordWithKey;
 
     const allReturnBrokers = RECIPE_NODE_DEFINITION.predefined_brokers;
 
@@ -61,9 +56,10 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
             const allDependencies = neededBrokers.map((broker) => ({
                 type: "broker",
                 id: broker.id,
+                required: true,
                 metadata: dataBrokerRecordsById[broker.id],
             }));
-            const newInputs = neededBrokers.map((broker) => ({
+            const newDataInputs = neededBrokers.map((broker) => ({
                 type: "arg_mapping" as const,
                 ready: false,
                 arg_name: broker.name,
@@ -77,8 +73,17 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                     broker: dataBrokerRecordsById[broker.id],
                 },
             }));
+            const newNodeInputs = neededBrokers.map((broker) => ({
+                id: broker.id,
+                name: broker.name,
+                required: true,
+                component: broker.fieldComponentId,
+                data_type: broker.dataType,
+                input_type: "broker",
+            }));
+            dispatch(workflowNodesActions.addInputsToNodeDefinition({ id: nodeId, inputs: newNodeInputs }));
             dispatch(workflowNodesActions.updateDependencies({ id: nodeId, dependencies: allDependencies }));
-            dispatch(workflowNodesActions.updateInputs({ id: nodeId, inputs: newInputs }));
+            dispatch(workflowNodesActions.updateInputs({ id: nodeId, inputs: newDataInputs }));
         } else {
             dispatch(workflowNodesActions.clearDependencies({ id: nodeId }));
         }
@@ -143,7 +148,6 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                 );
             }
             if (neededBrokers && neededBrokers.length > 0) {
-                console.log("setting needed brokers", neededBrokers);
                 neededBrokers.forEach((broker) => {
                     dispatch(
                         workflowNodesActions.addDependency({

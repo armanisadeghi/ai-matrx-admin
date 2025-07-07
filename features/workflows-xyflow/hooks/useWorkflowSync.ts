@@ -12,7 +12,7 @@ import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
 
 const SOURCE_TYPE_MAP = {
     user_input: "userInput",
-    user_data_source: "userDataSource",
+    user_data: "userDataSource", // Fixed: should be "user_data" not "user_data_source"
 } as const;
 
 

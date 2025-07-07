@@ -10,6 +10,8 @@ import {
     deleteWorkflowNode,
     duplicateWorkflowNode,
 } from "./thunks";
+import { RegisteredNodeData } from "@/types";
+import { NodeInput } from "@/features/workflows-xyflow/nodes/handles/NodeHandles";
 
 export const DEFAULT_WORKFLOW_NODE: Omit<WorkflowNode, "id" | "created_at" | "updated_at" | "user_id"> = {
     workflow_id: null,
@@ -183,6 +185,13 @@ const workflowNodeSlice = createSlice({
             const { id, metadata } = action.payload;
             if (state.entities[id]) {
                 state.entities[id].metadata = metadata;
+                state.isDirty[id] = true;
+            }
+        },
+        addInputsToNodeDefinition: (state, action: PayloadAction<{ id: string; inputs: NodeInput[] }>) => {
+            const { id, inputs } = action.payload;
+            if (state.entities[id]) {
+                state.entities[id].metadata.nodeDefinition.inputs = [...(state.entities[id].metadata.nodeDefinition.inputs || []), ...inputs];
                 state.isDirty[id] = true;
             }
         },

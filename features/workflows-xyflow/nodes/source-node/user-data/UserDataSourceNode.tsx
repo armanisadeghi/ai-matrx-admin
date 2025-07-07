@@ -4,7 +4,7 @@ import React, { useCallback, memo } from "react";
 import { Database } from "lucide-react";
 import { NodeProps, Position, useNodeId, useReactFlow } from "@xyflow/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { workflowsSelectors, workflowActions } from "@/lib/redux/workflow";
+import { workflowsSelectors, workflowActions, BrokerSourceConfig } from "@/lib/redux/workflow";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { BaseNode, NodeConfig, BaseNodeData } from "@/features/workflows-xyflow/nodes/base/BaseNode";
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
@@ -90,28 +90,24 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
     const dispatch = useAppDispatch();
     const nodeId = useNodeId();
+
+    if (!data || !data.brokerId || !data.workflowId) {
+        return null;
+    }
     
-    // Get Redux data for this source
-    const userDataSource = useAppSelector((state) => 
-        data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
-    );
+    const userDataSource = useAppSelector((state) => workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId, data.brokerId)) as BrokerSourceConfig<"user_data">;
 
-    // Note: Display mode is handled by BaseNode using React Flow's node data
-
-    // Handle duplicate
     const handleDuplicate = useCallback((nodeId: string) => {
         console.log("Duplicate clicked for user data source node:", nodeId);
         // TODO: Implement duplicate logic
     }, []);
 
-    // Handle delete
     const handleDelete = useCallback((nodeId: string) => {
         if (!data.brokerId) {
             console.error("No broker ID found for deletion");
             return;
         }
         
-        // Remove from workflow sources
         if (data.workflowId) {
             dispatch(
                 workflowActions.removeSourceByBrokerId({
@@ -127,42 +123,31 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
     const brokerId = data.brokerId;
     const brokerDisplayName = brokerId ? (dataBrokerRecordsById[brokerId]?.name || brokerId) : "Unknown";
     const selectedTable = userDataSource?.sourceDetails;
+    const sourceDataType = selectedTable?.type as "table_row" | "table_column" | "table_cell" | "full_table";
+    const typeToComponentMap = {
+        table_cell: "UserTableCell",
+        table_row: "UserTableRow",
+        table_column: "UserTableColumn",
+        full_table: "UserDataTable",
+    };
     
-    // Helper function to get display text for reference type
-    const getReferenceDisplayText = useCallback((reference: UserDataReference) => {
-        const typeMap = {
-            table: "Entire Table",
-            table_row: "Row",
-            table_column: "Column",
-            table_cell: "Cell"
-        };
-        
-        const typeText = typeMap[reference.type as keyof typeof typeMap] || reference.type;
-        return `${typeText}: ${reference.table_name}`;
-    }, []);
-    
-    // Generate display text based on reference type
-    const displayText = selectedTable ? 
-        getReferenceDisplayText(selectedTable) : 
-        "User Data Source";
-    
-    // Configure the BaseNode with simple handle arrays
+    // Configure the BaseNode with custom handles
     const config: NodeConfig = {
-        nodeType: "userDataSource",
+        nodeType: "user_data",
         icon: Database,
-        displayText,
+        displayText: selectedTable?.table_name || "Unknown Table",
         
-        // Simple handles - just labels and dots
-        inputHandles: [
-            { 
-                id: `${nodeId}-${selectedTable?.table_id}`, 
-                label: displayText
-            }
-        ], // Source nodes don't have inputs
-        outputHandles: [
+        // Custom handles for source nodes
+        customInputs: [],
+        
+        customOutputs: [
             {
-                id: `${nodeId}-${brokerId}`,
-                label: brokerDisplayName || "Missing Broker Display Name",
+                name: brokerDisplayName || "Missing Broker Display Name",
+                broker_id: userDataSource?.brokerId,
+                component: typeToComponentMap[sourceDataType || "DefaultComponent"],
+                data_type: "dict",
+                description: selectedTable?.description || null,
+                output_type: "user_data",
             },
         ],
         
@@ -176,6 +161,7 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
         
         // Feature configuration
         allowCompactMode: true,
+        useWorkflowActions: false, // This is a source node, not a workflow node
     };
     
     return <BaseNode config={config} {...nodeProps} />;
