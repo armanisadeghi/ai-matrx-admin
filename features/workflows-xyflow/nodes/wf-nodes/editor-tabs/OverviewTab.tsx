@@ -136,43 +136,7 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
             {/* Basic Information */}
             <SectionTable title="Basic Information" rows={basicInfoRows} />
 
-            {/* Dependencies */}
-            {/* <SectionTable
-                title="Dependencies"
-                headers={["Name", "Type", "ID", "Required", "Status", "Info"]}
-                data={nodeData.dependencies || []}
-                renderRow={(dependency, index) => (
-                    <>
-                        <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
-                            {toTitleCase(dependency.metadata?.name || "No Name")}
-                        </TableCell>
-                        <TableCell className="font-medium text-center text-sm w-48 border-r border-border dark:border-border">
-                            {dependency.type ? (
-                                <Badge variant="secondary" className="text-xs">
-                                    {toTitleCase(dependency.type)}
-                                </Badge>
-                            ) : (
-                                <span className="text-muted-foreground text-sm">None</span>
-                            )}
-                        </TableCell>
-                        <TableCell className="font-medium text-[10px] w-96 border-r border-border dark:border-border">
-                            <code className="px-2 py-1 rounded text-xs font-mono break-all">{dependency.id}</code>
-                        </TableCell>
-                        <TableCell className="font-medium text-center text-sm w-48 border-r border-border dark:border-border">
-                            <Badge variant={dependency.required ? "destructive" : "secondary"} className="text-xs">
-                                {dependency.required ? "Required" : "Optional"}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium text-center text-sm w-48 border-r border-border dark:border-border">
-                            <Badge variant={dependency.connected ? "default" : "destructive"} className="text-xs">
-                                {dependency.connected ? "Connected" : "Not Connected"}
-                            </Badge>
-                        </TableCell>
-                        <TableCell></TableCell>
-                    </>
-                )}
-                emptyMessage="No dependencies"
-            /> */}
+
 
             {/* Inputs */}
             <SectionTable
@@ -252,10 +216,7 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                 emptyMessage="No outputs"
             />
 
-            {/* Admin Reference - Raw Data */}
-            <SectionContainer title="Raw Node Data">
-                <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto h-full">{JSON.stringify(nodeData, null, 2)}</pre>
-            </SectionContainer>
+
         </div>
     );
 };

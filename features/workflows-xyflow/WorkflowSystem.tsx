@@ -120,19 +120,6 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         setPendingRecipeNode(null);
     }, []);
 
-    if (isLoading) {
-        return (
-            <WorkflowLoading 
-                title="Loading Workflow System"
-                subtitle="Initializing functions, data brokers, and workflow components..."
-                step1="Functions"
-                step2="Data Brokers"
-                step3="Ready"
-                fullscreen={false}
-            />
-        );
-    }
-
     return (
         <div className="h-screen w-full flex flex-col bg-background">
             <WorkflowHeader

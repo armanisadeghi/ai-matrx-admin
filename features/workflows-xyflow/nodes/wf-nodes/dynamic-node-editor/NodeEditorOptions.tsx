@@ -1,6 +1,6 @@
 import React from "react";
 import { DynamicNodeEditor, TabConfig } from "./DynamicNodeEditor";
-import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab } from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
+import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RawDataTab } from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
 
 // Example 1: Original full editor with all tabs
 const DefaultNodeEditor: React.FC<{nodeId: string, isOpen: boolean, onOpenChange: (open: boolean) => void}> = ({
@@ -15,6 +15,7 @@ const DefaultNodeEditor: React.FC<{nodeId: string, isOpen: boolean, onOpenChange
         { id: "dependencies", label: "Dependencies", component: <DependenciesTab nodeId={nodeId} /> },
         { id: "metadata", label: "Metadata", component: <MetadataTab nodeId={nodeId} /> },
         { id: "admin", label: "Admin", component: <AdminTab nodeId={nodeId} /> },
+        { id: "rawdata", label: "Raw Data", component: <RawDataTab nodeId={nodeId} /> },
     ];
 
     return (

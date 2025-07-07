@@ -60,6 +60,15 @@ export interface NodeConfig {
     CompactContent?: React.ComponentType;
     DetailedContent?: React.ComponentType;
 
+    // Custom styling
+    customStyles?: {
+        cardClass?: string;
+        headerClass?: string;
+        contentClass?: string;
+        footerClass?: string;
+        compactClass?: string;
+    };
+
     // Settings modal
     SettingsComponent?: React.ComponentType<{
         nodeId: string;
@@ -115,6 +124,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
         customOutputs,
         CompactContent,
         DetailedContent,
+        customStyles,
         SettingsComponent,
         onDuplicate,
         onDelete,
@@ -311,8 +321,8 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
                 {/* Compact Node */}
                 <div
                     className={`relative w-16 h-16 rounded-full
-                                ${nodeStyles.borderColor} 
-                                ${nodeStyles.backgroundColor}
+                                ${customStyles?.compactClass || nodeStyles.borderColor} 
+                                ${customStyles?.compactClass || nodeStyles.backgroundColor}
                                 ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
                                 ${dragging ? "shadow-2xl scale-110" : "shadow-lg hover:shadow-xl"}
                                 ${!isActive ? "opacity-60" : ""}
@@ -334,7 +344,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
 
                     {/* Truncated name on hover */}
                     <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                        <div className="bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-lg border border-border whitespace-nowrap max-w-32 truncate">
+                        <div className="bg-popover text-popover-foreground text-[9px] px-2 py-1 rounded shadow-lg border border-border whitespace-nowrap max-w-48 truncate">
                             {nodeData?.step_name || displayText}
                         </div>
                     </div>
@@ -377,8 +387,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
             <Card
                 className={`
                   min-w-[200px] max-w-[300px] 
-                  ${nodeStyles.borderColor}
-                  ${nodeStyles.backgroundColor}
+                  ${customStyles?.cardClass || `${nodeStyles.borderColor} ${nodeStyles.backgroundColor}`}
                   ${selected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-background" : ""}
                   ${dragging ? "shadow-2xl scale-105" : "shadow-lg hover:shadow-xl"}
                   ${!isActive ? "opacity-70" : ""}
@@ -390,7 +399,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
                 `}
                 onDoubleClick={handleDoubleClick}
             >
-                <CardHeader className="pb-2 relative border-b border-border">
+                <CardHeader className={`pb-2 relative border-b border-border ${customStyles?.headerClass || ""}`}>
                     <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-1 flex-1 min-w-0">
                             <DynamicIcon
@@ -406,7 +415,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
                     </div>
                 </CardHeader>
 
-                <CardContent className="pt-2 relative">
+                <CardContent className={`pt-2 relative ${customStyles?.contentClass || ""}`}>
                     {/* Middle section with minimum height */}
                     <div className="min-h-[80px] flex flex-col">
                         {/* Handles Component */}
@@ -422,7 +431,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
                     </div>
 
                     {/* Status indicators */}
-                    <div className="flex items-center justify-between mt-2 pt-1 border-t border-border">
+                    <div className={`flex items-center justify-between mt-2 pt-1 border-t border-border ${customStyles?.footerClass || ""}`}>
                         {/* Toggle Switches */}
                         <div className="flex flex-col gap-1">
                             {/* Active Toggle Switch */}

@@ -1,6 +1,6 @@
 import React from "react";
 import { DynamicNodeEditor, TabConfig } from "./DynamicNodeEditor";
-import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RegisteredFunctionTab } from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
+import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RegisteredFunctionTab, RawDataTab } from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
 import InputEditor from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs/InputEditor";
 
 // Helper component to make tab creation easier
@@ -41,6 +41,7 @@ export const NodeEditorOne = ({ nodeId, isOpen, onOpenChange }: { nodeId: string
             <Tab id="dependencies" label="Dependencies" component={DependenciesTab} />
             <Tab id="admin" label="Admin" component={AdminTab} />
             <Tab id="metadata" label="Metadata" component={MetadataTab} />
+            <Tab id="rawdata" label="Raw Data" component={RawDataTab} />
             <Tab id="registered-function" label="Registered Function" component={RegisteredFunctionTab} />
         </FlexibleNodeEditor>
     );

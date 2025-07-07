@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
 import { ALL_HIDDEN_CONNECTIONS, generateNodeInputs } from "@/features/workflows-xyflow/utils";
 import DataTypeInput from "./common/DataTypeInput";
+import { SectionContainer } from "./common";
 import { DefaultTabProps } from "./types";
 import { toTitleCase } from "@/utils/dataUtils";
 
@@ -171,7 +172,7 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
             return;
         }
 
-        // Generate fresh default inputs from the registered function
+        // ================================================================= REPLACE WITH SOMETHING THAT GETS IT FROM THE NODE DEFINITION =========================
         const defaultInputs = generateNodeInputs(registeredFunction);
         
         // Preserve any existing inputs that have allow_reset: false
@@ -227,158 +228,165 @@ const InputEditor: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const visibleInputs = inputs.filter((input) => !hiddenArgNames.includes(input.arg_name));
 
     return (
-        <div className="space-y-6 p-4">
-            {/* Header with reset button */}
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Input Configuration</h3>
-                <Button
-                    onClick={handleResetToDefaults}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                    disabled={!registeredFunction}
-                >
-                    <RotateCcw className="h-4 w-4" />
-                    Reset to Defaults
-                </Button>
-            </div>
+        <div className="h-full overflow-auto pr-2 space-y-6">
+            {/* Input Configuration Table */}
+            <SectionContainer title="Input Configuration">
+                <div className="p-4 space-y-4">
+                    {/* Header with reset button */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Configure input sources and defaults</span>
+                        <Button
+                            onClick={handleResetToDefaults}
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                            disabled={!registeredFunction}
+                        >
+                            <RotateCcw className="h-4 w-4" />
+                            Reset to Defaults
+                        </Button>
+                    </div>
 
-            {/* Clean table-like configuration section */}
-            <div className="space-y-3 border rounded-lg p-3">                
-                {/* Table headers */}
-                <div className="grid grid-cols-5 gap-4 px-3 py-2 text-sm text-muted-foreground font-medium border-b">
-                    <div>Input Name</div>
-                    <div className="text-center">Use System Default</div>
-                    <div className="text-center">Source</div>
-                    <div className="text-center">Manual (Admin)</div>
-                    <div></div> {/* Spacer */}
-                </div>
-                
-                {/* Table rows */}
-                <div className="space-y-1">
-                    {visibleInputs.map((input) => {
-                        const useSystemDefault = isUsingSystemDefault(input);
-                        const setManually = isSetManually(input);
+                    {/* Clean table-like configuration section */}
+                    <div className="space-y-3 border rounded-lg p-3">                
+                        {/* Table headers */}
+                        <div className="grid grid-cols-5 gap-4 px-3 py-2 text-sm text-muted-foreground font-medium border-b">
+                            <div>Input Name</div>
+                            <div className="text-center">Use System Default</div>
+                            <div className="text-center">Source</div>
+                            <div className="text-center">Manual (Admin)</div>
+                            <div></div> {/* Spacer */}
+                        </div>
                         
-                        return (
-                            <div key={input.arg_name} className="grid grid-cols-5 gap-4 px-3 py-2 items-center hover:bg-muted/50 rounded border-b last:border-none min-h-[40px]">
-                                {/* Input Name */}
-                                <div className="text-sm flex items-center">{toTitleCase(input.arg_name)}</div>
+                        {/* Table rows */}
+                        <div className="space-y-1">
+                            {visibleInputs.map((input) => {
+                                const useSystemDefault = isUsingSystemDefault(input);
+                                const setManually = isSetManually(input);
                                 
-                                {/* Use System Default */}
-                                <div className="flex justify-center items-center">
-                                    <Switch
-                                        checked={useSystemDefault}
-                                        onCheckedChange={(checked) => handleSystemDefaultToggle(input.arg_name, checked)}
-                                        className="scale-75"
-                                    />
-                                </div>
-                                
-                                {/* Source */}
-                                <div className="flex justify-center items-center h-full">
-                                    <Select
-                                        value={input.type}
-                                        onValueChange={(value) => handleSourceChange(input.arg_name, value)}
-                                        disabled={useSystemDefault}
-                                    >
-                                        <SelectTrigger className={`h-7 w-full text-xs ${useSystemDefault ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                            <SelectValue placeholder="Select source..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {typeOptions.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                
-                                {/* Set Manually */}
-                                <div className="flex justify-center items-center">
-                                    <Switch
-                                        checked={setManually}
-                                        onCheckedChange={(checked) => handleSetManuallyToggle(input.arg_name, checked)}
-                                        className="scale-75"
-                                    />
-                                </div>
-                                
-                                {/* Spacer */}
-                                <div></div>
-                            </div>
-                        );
-                    })}
+                                return (
+                                    <div key={input.arg_name} className="grid grid-cols-5 gap-4 px-3 py-2 items-center hover:bg-muted/50 rounded border-b last:border-none min-h-[40px]">
+                                        {/* Input Name */}
+                                        <div className="text-sm flex items-center">{toTitleCase(input.arg_name)}</div>
+                                        
+                                        {/* Use System Default */}
+                                        <div className="flex justify-center items-center">
+                                            <Switch
+                                                checked={useSystemDefault}
+                                                onCheckedChange={(checked) => handleSystemDefaultToggle(input.arg_name, checked)}
+                                                className="scale-75"
+                                            />
+                                        </div>
+                                        
+                                        {/* Source */}
+                                        <div className="flex justify-center items-center h-full">
+                                            <Select
+                                                value={input.type}
+                                                onValueChange={(value) => handleSourceChange(input.arg_name, value)}
+                                                disabled={useSystemDefault}
+                                            >
+                                                <SelectTrigger className={`h-7 w-full text-xs bg-transparent border border-gray-300 dark:border-gray-700 ${useSystemDefault ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                                    <SelectValue placeholder="Select source..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {typeOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        
+                                        {/* Set Manually */}
+                                        <div className="flex justify-center items-center">
+                                            <Switch
+                                                checked={setManually}
+                                                onCheckedChange={(checked) => handleSetManuallyToggle(input.arg_name, checked)}
+                                                className="scale-75"
+                                            />
+                                        </div>
+                                        
+                                        {/* Spacer */}
+                                        <div></div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </SectionContainer>
 
-            {/* Detailed input editors - show based on new logic */}
-            <div className="space-y-4">
-                {visibleInputs
-                    .filter((input) => shouldShowInDetailedEditor(input))
-                    .map((input) => {
-                        const showRedBorder = shouldShowRedBorder(input);
-                        
-                        return (
-                            <div 
-                                key={input.arg_name} 
-                                className={`border rounded-lg p-3 space-y-3 bg-card ${
-                                    showRedBorder ? 'border-red-500 border-2' : ''
-                                }`}
-                            >
-                                {/* Single row with arg name, badges, and controls */}
-                                <div className="flex items-center gap-3">
-                                    {/* Left side: arg name and badges */}
-                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                        <span className="font-medium text-sm truncate">{toTitleCase(input.arg_name)}</span>
-                                        <Badge
-                                            variant={input.metadata?.required ? "destructive" : "secondary"}
-                                            className="text-xs whitespace-nowrap"
-                                        >
-                                            {input.metadata?.required ? "Required" : "Optional"}
-                                        </Badge>
-                                        <Badge variant="outline" className="text-xs whitespace-nowrap">
-                                            {getTypeDisplay(input.metadata?.data_type)}
-                                        </Badge>
+            {/* Detailed Input Editors */}
+            <SectionContainer title="Detailed Input Configuration">
+                <div className="p-4 space-y-4">
+                    {visibleInputs
+                        .filter((input) => shouldShowInDetailedEditor(input))
+                        .map((input) => {
+                            const showRedBorder = shouldShowRedBorder(input);
+                            
+                            return (
+                                <div 
+                                    key={input.arg_name} 
+                                    className={`border rounded-lg p-3 space-y-3 bg-card ${
+                                        showRedBorder ? 'border-red-500 border-2' : ''
+                                    }`}
+                                >
+                                    {/* Single row with arg name, badges, and controls */}
+                                    <div className="flex items-center gap-3">
+                                        {/* Left side: arg name and badges */}
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <span className="font-medium text-sm truncate">{toTitleCase(input.arg_name)}</span>
+                                            <Badge
+                                                variant={input.metadata?.required ? "destructive" : "secondary"}
+                                                className="text-xs whitespace-nowrap"
+                                            >
+                                                {input.metadata?.required ? "Required" : "Optional"}
+                                            </Badge>
+                                            <Badge variant="outline" className="text-xs whitespace-nowrap">
+                                                {getTypeDisplay(input.metadata?.data_type)}
+                                            </Badge>
+                                        </div>
+                                        {/* Right side: controls */}
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            {/* Type selector */}
+                                            <Select
+                                                value={input.type}
+                                                onValueChange={(value) => handleTypeChange(input.arg_name, value)}
+                                            >
+                                                <SelectTrigger className="h-8 min-w-64 bg-transparent border border-gray-300 dark:border-gray-700">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {typeOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {/* Ready selector */}
+                                            <Select
+                                                value={input.ready?.toString()}
+                                                onValueChange={(value) => handleReadyChange(input.arg_name, value)}
+                                            >
+                                                <SelectTrigger className="h-8 min-w-32 bg-transparent border border-gray-300 dark:border-gray-700">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="true">Ready</SelectItem>
+                                                    <SelectItem value="false">Not Ready</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
-                                    {/* Right side: controls */}
-                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                        {/* Type selector */}
-                                        <Select
-                                            value={input.type}
-                                            onValueChange={(value) => handleTypeChange(input.arg_name, value)}
-                                        >
-                                            <SelectTrigger className="h-8 w-full">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {typeOptions.map((option) => (
-                                                    <SelectItem key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {/* Ready selector */}
-                                        <Select
-                                            value={input.ready?.toString()}
-                                            onValueChange={(value) => handleReadyChange(input.arg_name, value)}
-                                        >
-                                            <SelectTrigger className="h-8 w-full">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="true">Ready</SelectItem>
-                                                <SelectItem value="false">Not Ready</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                    {/* Dynamic value input based on type */}
+                                    {renderValueInput(input)}
                                 </div>
-                                {/* Dynamic value input based on type */}
-                                {renderValueInput(input)}
-                            </div>
-                        );
-                    })}
-            </div>
+                            );
+                        })}
+                </div>
+            </SectionContainer>
         </div>
     );
 };

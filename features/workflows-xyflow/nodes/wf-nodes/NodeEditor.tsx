@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 // Tab components
-import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab } from "./editor-tabs";
+import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RawDataTab } from "./editor-tabs";
 
 interface NodeEditorProps {
     nodeId: string;
@@ -56,13 +56,14 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ nodeId, isOpen, onOpenCh
                 {/* Tabs Content */}
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                        <TabsList className="flex-shrink-0 grid w-full grid-cols-6">
+                        <TabsList className="flex-shrink-0 grid w-full grid-cols-7">
                             <TabsTrigger value="overview">Overview</TabsTrigger>
                             <TabsTrigger value="inputs">Inputs</TabsTrigger>
                             <TabsTrigger value="outputs">Outputs</TabsTrigger>
                             <TabsTrigger value="dependencies">Dependencies</TabsTrigger>
                             <TabsTrigger value="metadata">Metadata</TabsTrigger>
                             <TabsTrigger value="admin">Admin</TabsTrigger>
+                            <TabsTrigger value="rawdata">Raw Data</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="overview" className="flex-1 overflow-auto mt-2">
@@ -87,6 +88,10 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ nodeId, isOpen, onOpenCh
 
                         <TabsContent value="admin" className="flex-1 overflow-auto mt-2">
                             <AdminTab nodeId={nodeId} />
+                        </TabsContent>
+
+                        <TabsContent value="rawdata" className="flex-1 overflow-auto mt-2">
+                            <RawDataTab nodeId={nodeId} />
                         </TabsContent>
                     </Tabs>
                 </div>

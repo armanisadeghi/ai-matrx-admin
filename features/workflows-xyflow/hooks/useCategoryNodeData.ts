@@ -17,6 +17,18 @@ export interface CategoryNodeData {
 
 const RECIPE_FUNCTION_ID = "2ac5576b-d1ab-45b1-ab48-4e196629fdd8";
 
+// interface Output {
+//     broker_id: string | null;
+//     is_default_output: boolean;
+//     name: string | null;
+//     bookmark: Bookmark | null;
+//     conversion: any;
+//     data_type: string | null;
+//     result: Result | null;
+//     relays?: Relay[];
+//     metadata: Record<string, any>;
+// }
+
 export function newNodeFunction(
     nodeDefinition: RegisteredNodeData,
     workflowId: string,
@@ -26,6 +38,19 @@ export function newNodeFunction(
 ): Omit<WorkflowNode, "id" | "created_at" | "updated_at"> {
     const randomXOffset = Math.floor(Math.random() * 11) * 10;
     const randomYOffset = Math.floor(Math.random() * 11) * 10;
+    const outputs = (nodeDefinition.outputs as unknown as any[]).map((output) => ({
+        broker_id: output.broker_id,
+        is_default_output: output.output_type === "default_function_result"? true : false,
+        name: output.name,
+        bookmark: null,
+        conversion: null,
+        data_type: output.data_type,
+        result: null,
+        relays: [],
+        metadata: {
+            component: output.component,
+        },
+    }));
 
     return {
         function_id: nodeDefinition.registeredFunctionId,
@@ -35,7 +60,7 @@ export function newNodeFunction(
         step_name: nodeDefinition.name,
         execution_required: true,
         inputs: [],
-        outputs: [],
+        outputs: outputs,
         user_id: userId,
         is_active: true,
         ui_data: uiData || {

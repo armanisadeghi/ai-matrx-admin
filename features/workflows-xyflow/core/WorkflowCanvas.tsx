@@ -42,6 +42,7 @@ import { WorkflowEdge } from "../edges/WorkflowEdge";
 import { getNodeMinimapColor } from "../utils/nodeStyles";
 import QuickAccessPanel from "../access-panel/QuickAccessPanel";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
+import { DefaultNode } from "../nodes/base/DefaultNode";
 
 interface WorkflowCanvasProps {
     workflowId: string;
@@ -205,7 +206,8 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     // Enhanced node types with better performance
     const nodeTypes: NodeTypes = useMemo(
         () => ({
-            default: WorkflowNodeItem,
+            default: DefaultNode,
+            functionNode: WorkflowNodeItem,
             workflowNode: WorkflowNodeItem,
 
             userInput: SourceInputNode,

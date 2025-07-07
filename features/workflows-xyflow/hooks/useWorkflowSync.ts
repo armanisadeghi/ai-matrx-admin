@@ -49,8 +49,9 @@ export const useWorkflowSync = (workflowId: string) => {
     const initialNodes = useMemo(() => {
         // Regular workflow nodes - ensure it's an array and add displayMode if needed
         // xyFlowNodesByWorkflowId returns Node[] directly from stored ui_data
-        const regularNodes = (workflowNodes || []).map((node) => ({
+        const functionNodes = (workflowNodes || []).map((node) => ({
             ...node,
+            type: "functionNode",
             data: {
                 ...node.data,
                 displayMode: node.data?.displayMode || "detailed",
@@ -62,17 +63,17 @@ export const useWorkflowSync = (workflowId: string) => {
             return {
                 id: `${source.sourceType}:${source.brokerId}`,
                 type: SOURCE_TYPE_MAP[source.sourceType],
-                position: { x: -300, y: index * 120 }, // Position to the left of regular nodes with more spacing
+                position: { x: -150, y: index * 120 }, // Position to the left of regular nodes with more spacing
                 data: {
                     ...source,
                     isActive: true, // Default to active
-                    displayMode: source.metadata?.displayMode || "detailed", // Use saved displayMode or default to detailed
+                    displayMode: source.metadata?.displayMode || "compact", // Use saved displayMode or default to detailed
                     workflowId, // Add workflowId to the data
                 },
             };
         });
 
-        return [...regularNodes, ...sourceNodes];
+        return [...functionNodes, ...sourceNodes];
     }, [workflowNodes, workflowSources, workflowId]);
 
     // Generate edges from business data connections ONCE
