@@ -4,7 +4,7 @@ import React, { memo, useCallback } from "react";
 import { NodeProps, useNodeId } from "@xyflow/react";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import { BaseNode, NodeConfig } from "../base/BaseNode";
-import { NodeEditorOne } from "./dynamic-node-editor/FlexibleNodeEditor";
+import { NodeEditorOne } from "./FlexibleNodeEditor";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 

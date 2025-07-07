@@ -49,12 +49,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const isMobile = useIsMobile();
 
     useEffect(() => {
-        if (code !== initialCode) {
-            setCode(initialCode);
-        }
-    }, [initialCode, code]);
+        setCode(initialCode);
+    }, [initialCode]);
 
-    
     useEffect(() => {
         const observerOptions = {
             root: null,

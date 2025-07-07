@@ -1,7 +1,16 @@
 import React from "react";
-import { DynamicNodeEditor, TabConfig } from "./DynamicNodeEditor";
-import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RegisteredFunctionTab, RawDataTab } from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
-import InputEditor from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs/InputEditor";
+import { DynamicNodeEditor, TabConfig } from "./editor-options/DynamicNodeEditor";
+import {
+    OverviewTab,
+    InputsTab,
+    OutputsTab,
+    DependenciesTab,
+    AdminTab,
+    MetadataTab,
+    RegisteredFunctionTab,
+    RawDataTab,
+    NodeDefinitionTab,
+} from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
 
 // Helper component to make tab creation easier
 interface TabProps {
@@ -32,13 +41,22 @@ const FlexibleNodeEditor: React.FC<FlexibleNodeEditorProps> = ({ nodeId, isOpen,
     return <DynamicNodeEditor nodeId={nodeId} isOpen={isOpen} onOpenChange={onOpenChange} tabs={tabs} />;
 };
 
-export const NodeEditorOne = ({ nodeId, isOpen, onOpenChange }: { nodeId: string; isOpen: boolean; onOpenChange: (open: boolean) => void }) => {
+export const NodeEditorOne = ({
+    nodeId,
+    isOpen,
+    onOpenChange,
+}: {
+    nodeId: string;
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+}) => {
     return (
         <FlexibleNodeEditor nodeId={nodeId} isOpen={isOpen} onOpenChange={onOpenChange}>
             <Tab id="overview" label="Overview" component={OverviewTab} />
-            <Tab id="inputs" label="Inputs" component={InputEditor} />
+            <Tab id="inputs" label="Inputs" component={InputsTab} />
             <Tab id="outputs" label="Outputs" component={OutputsTab} />
             <Tab id="dependencies" label="Dependencies" component={DependenciesTab} />
+            <Tab id="definition" label="Node Definition" component={NodeDefinitionTab} />
             <Tab id="admin" label="Admin" component={AdminTab} />
             <Tab id="metadata" label="Metadata" component={MetadataTab} />
             <Tab id="rawdata" label="Raw Data" component={RawDataTab} />

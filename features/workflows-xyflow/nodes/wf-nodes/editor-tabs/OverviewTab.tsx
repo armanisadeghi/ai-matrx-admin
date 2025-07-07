@@ -1,14 +1,16 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { DefaultTabProps } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
-import { SectionContainer, SectionTable, TableRowData } from "./common";
+import { SectionTable, TableRowData } from "./common";
 import { TableCell } from "@/components/ui/table";
 import { toTitleCase } from "@/utils/dataUtils";
+import { Output } from "@/lib/redux/workflow/types";
+import { NodeInputsTable } from "./common/NodeInputsTable";
 
 export type NodeInput = {
     name: string;
@@ -27,37 +29,20 @@ export type NodeOutput = {
     output_type: string;
 };
 
-// =============== FOR REFERENCE ONLY ===============
-// const inputSample: NodeInput[] = [
-//     { name: "results_object", required: true, component: "ArrayInput", data_type: "list", input_type: "argument" },
-//     { name: "enhanced_bookmarks", required: true, component: "ObjectInput", data_type: "dict", input_type: "argument" },
-// ];
-
-// const outputSample: NodeOutput[] = [
-//     {
-//         name: "Extracted Text From Dict",
-//         broker_id: "e3a6d1cc-12fe-4e8d-b0e8-ff0e888c1da0",
-//         component: "DefaultOutput",
-//         data_type: "str",
-//         description: null,
-//         output_type: "default_function_result",
-//     },
-// ];
 
 export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
     const nodeDefinition = nodeData?.metadata?.nodeDefinition;
-    const inputs = nodeDefinition?.inputs || [];
     const outputs = nodeDefinition?.outputs || [];
     const dispatch = useAppDispatch();
+
+    const updateOutputs = useCallback((outputs: Output[]) => {
+        dispatch(workflowNodesActions.updateOutputs({ id: nodeId, outputs }));
+    }, [nodeId, dispatch]);
 
     if (!nodeData) {
         return <div className="text-muted-foreground">Node not found</div>;
     }
-
-    const getInputFromNodeData = (inputName: string) => {
-        return nodeData.inputs.find((input) => input.arg_name === inputName);
-    };
 
     // Basic Information rows
     const basicInfoRows: TableRowData[] = [
@@ -136,61 +121,8 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
             {/* Basic Information */}
             <SectionTable title="Basic Information" rows={basicInfoRows} />
 
-
-
             {/* Inputs */}
-            <SectionTable
-                title="Inputs"
-                headers={["Name", "ID", "Type", "Required", "Status", "Info"]}
-                data={inputs}
-                renderRow={(input, index) => (
-                    <>
-                        <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
-                            {toTitleCase(input.name)}
-                        </TableCell>
-                        <TableCell className="font-medium text-[10px] w-96 border-r border-border dark:border-border">
-                            <code className="px-2 py-1 rounded text-xs font-mono break-all">{input.id}</code>
-                        </TableCell>
-                        <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
-                            {input.input_type}
-                        </TableCell>
-                        <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
-                            <Badge variant={input.required ? "destructive" : "secondary"} className="text-xs">
-                                {input.required ? "Required" : "Optional"}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium text-center text-xs w-32 border-r border-border dark:border-border">
-                            {(() => {
-                                const inputData = getInputFromNodeData(input.name);
-                                const isReady = inputData?.ready;
-                                const isRequired = input.required;
-
-                                if (isReady) {
-                                    return (
-                                        <Badge variant="default" className="text-xs">
-                                            Ready
-                                        </Badge>
-                                    );
-                                } else if (isRequired) {
-                                    return (
-                                        <Badge variant="destructive" className="text-xs">
-                                            Not Ready
-                                        </Badge>
-                                    );
-                                } else {
-                                    return (
-                                        <Badge variant="outline" className="text-xs">
-                                            Not Used
-                                        </Badge>
-                                    );
-                                }
-                            })()}
-                        </TableCell>
-                        <TableCell></TableCell>
-                    </>
-                )}
-                emptyMessage="No inputs"
-            />
+            <NodeInputsTable nodeId={nodeId} />
 
             {/* Outputs */}
             <SectionTable
@@ -215,8 +147,6 @@ export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                 )}
                 emptyMessage="No outputs"
             />
-
-
         </div>
     );
 };

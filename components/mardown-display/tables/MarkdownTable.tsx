@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
@@ -41,6 +41,7 @@ interface ExportDropdownMenuProps {
   copyJsonToClipboard: () => void;
   downloadCSV: () => void;
   downloadMarkdown: () => void;
+  isStreamActive?: boolean;
 }
 
 const ExportDropdownMenu: React.FC<ExportDropdownMenuProps> = ({
@@ -51,24 +52,55 @@ const ExportDropdownMenu: React.FC<ExportDropdownMenuProps> = ({
   copyJsonToClipboard,
   downloadCSV,
   downloadMarkdown,
+  isStreamActive = false,
 }) => {
   const [isDataStable, setIsDataStable] = useState(false);
+  const stabilityTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Memoize the tableData to prevent unnecessary re-renders when references change but content is same
+  const stableTableData = useMemo(() => ({
+    headers: tableData.headers,
+    rows: tableData.rows,
+    normalizedData: tableData.normalizedData,
+  }), [
+    JSON.stringify(tableData.headers), 
+    JSON.stringify(tableData.rows), 
+    JSON.stringify(tableData.normalizedData)
+  ]);
 
   useEffect(() => {
+    // Don't process stability during streaming
+    if (isStreamActive) {
+      setIsDataStable(false);
+      if (stabilityTimerRef.current) {
+        clearTimeout(stabilityTimerRef.current);
+        stabilityTimerRef.current = null;
+      }
+      return;
+    }
+
+    // Clear any existing timer
+    if (stabilityTimerRef.current) {
+      clearTimeout(stabilityTimerRef.current);
+    }
+
     // Hide menu immediately when data changes
     setIsDataStable(false);
 
     // Set a timeout to show menu after 1 second of stability
-    const stabilityTimer = setTimeout(() => {
+    stabilityTimerRef.current = setTimeout(() => {
       setIsDataStable(true);
     }, 1000);
 
     return () => {
-      clearTimeout(stabilityTimer);
+      if (stabilityTimerRef.current) {
+        clearTimeout(stabilityTimerRef.current);
+      }
     };
-  }, [tableData.headers, tableData.rows, tableData.normalizedData, content]);
+  }, [stableTableData, content, isStreamActive]);
 
-  if (!isDataStable) {
+  // Don't render anything during streaming or if data is not stable
+  if (isStreamActive || !isDataStable) {
     return null;
   }
 
@@ -145,15 +177,30 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     onContentChange,
     isStreamActive = false,
 }) => {
-    const [tableData, setTableData] = useState<{
-        headers: string[];
-        rows: string[][];
-        normalizedData?: Array<{ [key: string]: string }>;
-    }>({
-        headers: [],
-        rows: [],
-        normalizedData: data?.normalizedData,
-    });
+    const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
+
+    // Use useMemo to create stable table data based on content, not object references
+    const tableData = useMemo(() => {
+        if (!data) {
+            return {
+                headers: [],
+                rows: [],
+                normalizedData: undefined,
+            };
+        }
+        
+        return {
+            headers: data.headers || [],
+            rows: data.rows || [],
+            normalizedData: data.normalizedData,
+        };
+    }, [
+        JSON.stringify(data?.headers || []),
+        JSON.stringify(data?.rows || []),
+        JSON.stringify(data?.normalizedData || [])
+    ]);
+
+    const [internalTableData, setInternalTableData] = useState(tableData);
     const [showNormalized, setShowNormalized] = useState(false);
     const [editMode, setEditMode] = useState<"none" | "header" | number>("none");
     const tableFontsize = fontSize;
@@ -161,15 +208,31 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
-    const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
+    const previousDataRef = useRef<string>("");
+
+    // Update internal state when tableData changes
+    useEffect(() => {
+        setInternalTableData(tableData);
+    }, [tableData]);
 
     useEffect(() => {
         if (data) {
-            setTableData({
+            // Create a stable hash of the data to detect actual changes
+            const dataHash = JSON.stringify({
                 headers: data.headers || [],
                 rows: data.rows || [],
                 normalizedData: data.normalizedData,
             });
+            
+            // Only update if the data has actually changed
+            if (dataHash !== previousDataRef.current) {
+                previousDataRef.current = dataHash;
+                setInternalTableData({
+                    headers: data.headers || [],
+                    rows: data.rows || [],
+                    normalizedData: data.normalizedData,
+                });
+            }
         }
     }, [data]);
 
@@ -184,7 +247,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const generateMarkdownTable = () => {
-        const dataToUse = editMode !== "none" ? tableData : tableData;
+        const dataToUse = editMode !== "none" ? internalTableData : internalTableData;
         const maxLengths = Array(dataToUse.headers.length).fill(0);
         [dataToUse.headers, ...dataToUse.rows].forEach((row) => {
             row.forEach((cell, i) => {
@@ -215,7 +278,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     const copyJsonToClipboard = async () => {
         try {
-            await navigator.clipboard.writeText(JSON.stringify(tableData.normalizedData, null, 2));
+            await navigator.clipboard.writeText(JSON.stringify(internalTableData.normalizedData, null, 2));
             toast.success("JSON copied to clipboard");
         } catch (err: any) {
             toast.error(err.message || "Failed to copy JSON");
@@ -238,8 +301,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const downloadCSV = () => {
         try {
             const csvContent = [
-                tableData.headers.map((h) => h.replace(/"/g, '""')).join(","),
-                ...tableData.rows.map((row) =>
+                internalTableData.headers.map((h) => h.replace(/"/g, '""')).join(","),
+                ...internalTableData.rows.map((row) =>
                     row
                         .map((cell) => {
                             const escaped = cell.replace(/"/g, '""');
@@ -270,8 +333,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const downloadMarkdown = () => {
         try {
             const markdownContent = content || '';
-            const fileName = tableData.headers && tableData.headers[0] 
-                ? `${tableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
+            const fileName = internalTableData.headers && internalTableData.headers[0] 
+                ? `${internalTableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
                 : 'table_data.md';
             const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -303,7 +366,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     const toggleGlobalEditMode = () => {
         if (editMode !== "none") {
-            onSave(tableData);
+            onSave(internalTableData);
             setEditMode("none");
             toast.info("Edit mode deactivated");
             notifyContentChange();
@@ -314,31 +377,31 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const handleHeaderChange = (index: number, value: string) => {
-        const newHeaders = [...tableData.headers];
+        const newHeaders = [...internalTableData.headers];
         newHeaders[index] = value;
-        setTableData({ ...tableData, headers: newHeaders });
+        setInternalTableData({ ...internalTableData, headers: newHeaders });
     };
 
     const handleCellChange = (rowIndex: number, colIndex: number, value: string) => {
-        const newRows = [...tableData.rows];
+        const newRows = [...internalTableData.rows];
         newRows[rowIndex][colIndex] = value;
-        setTableData({ ...tableData, rows: newRows });
+        setInternalTableData({ ...internalTableData, rows: newRows });
     };
 
     const handleRowClick = (rowIndex: number) => {
         if (editMode === "none") return;
-        onSave(tableData);
+        onSave(internalTableData);
         setEditMode(rowIndex);
     };
 
     const handleHeaderClick = () => {
         if (editMode === "none") return;
-        onSave(tableData);
+        onSave(internalTableData);
         setEditMode("header");
     };
 
     const handleSave = () => {
-        onSave(tableData);
+        onSave(internalTableData);
         setEditMode("none");
         toast.success("Table data saved");
         notifyContentChange();
@@ -346,7 +409,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     const handleCancel = () => {
         if (data) {
-            setTableData({
+            setInternalTableData({
                 headers: data.headers || [],
                 rows: data.rows || [],
                 normalizedData: data.normalizedData,
@@ -368,7 +431,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const renderTableActionButton = () => {
-        if (!tableData.normalizedData) return null;
+        if (!internalTableData.normalizedData) return null;
         if (savedTableInfo) {
             return (
                 <Button
@@ -398,9 +461,9 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     return (
         <div className={cn("relative", className)}>
-            {showNormalized && tableData.normalizedData ? (
+            {showNormalized && internalTableData.normalizedData ? (
                 <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <pre className="text-sm overflow-auto">{JSON.stringify(tableData.normalizedData, null, 2)}</pre>
+                    <pre className="text-sm overflow-auto">{JSON.stringify(internalTableData.normalizedData, null, 2)}</pre>
                     <Button
                         variant="outline"
                         size="sm"
@@ -416,12 +479,12 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     <table className="w-full border-collapse" style={{ fontSize: `${tableFontsize}px` }}>
                         <thead className={tableTheme.header}>
                             <tr onClick={handleHeaderClick}>
-                                {tableData.headers.map((header, i) => (
+                                {internalTableData.headers.map((header, i) => (
                                     <th key={i} className={cn("p-2 text-left", tableTheme.headerText)}>
                                         {isEditingHeader ? (
                                             <input
                                                 type="text"
-                                                value={tableData.headers[i] || header}
+                                                value={internalTableData.headers[i] || header}
                                                 onChange={(e) => handleHeaderChange(i, e.target.value)}
                                                 className={cn(
                                                     "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
@@ -437,7 +500,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                             </tr>
                         </thead>
                         <tbody>
-                            {tableData.rows.map((row, rowIndex) => (
+                            {internalTableData.rows.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
                                     className={cn("border-t", tableTheme.row, editMode === rowIndex && "bg-blue-50 dark:bg-blue-900/20")}
@@ -447,7 +510,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                         <td key={colIndex} className={cn("p-2", colIndex === 0 && "font-semibold")}>
                                             {editMode === rowIndex ? (
                                                 <textarea
-                                                    value={tableData.rows[rowIndex]?.[colIndex] || cell}
+                                                    value={internalTableData.rows[rowIndex]?.[colIndex] || cell}
                                                     onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
                                                     className={cn(
                                                         "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
@@ -469,7 +532,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 </div>
             )}
             <div className="flex justify-end gap-2 mt-2">
-                {tableData.normalizedData && (
+                {internalTableData.normalizedData && (
                     <Button
                         variant="outline"
                         size="sm"
@@ -482,13 +545,14 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 )}
                 {renderTableActionButton()}
                 <ExportDropdownMenu
-                    tableData={tableData}
+                    tableData={internalTableData}
                     content={content}
                     copyTableToClipboard={copyTableToClipboard}
                     copyMarkdownToClipboard={copyMarkdownToClipboard}
                     copyJsonToClipboard={copyJsonToClipboard}
                     downloadCSV={downloadCSV}
                     downloadMarkdown={downloadMarkdown}
+                    isStreamActive={isStreamActive}
                 />
                 {isEditingEnabled ? (
                     <>
@@ -528,7 +592,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     isOpen={showSaveModal}
                     onClose={() => setShowSaveModal(false)}
                     onSaveComplete={handleSaveComplete}
-                    tableData={tableData.normalizedData}
+                    tableData={internalTableData.normalizedData}
                 />
             )}
             {showViewModal && savedTableInfo && (

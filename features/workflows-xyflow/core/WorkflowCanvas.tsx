@@ -277,29 +277,29 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
 
     // Connection Event Handlers - Added comprehensive logging
     const handleConnectStart: OnConnectStart = useCallback((event, params) => {
-        console.log('🔄 onConnectStart called with:', {
-            event: {
-                type: event.type,
-                clientX: 'clientX' in event ? event.clientX : undefined,
-                clientY: 'clientY' in event ? event.clientY : undefined,
-                target: event.target,
-            },
-            connectionData: {
-                nodeId: params.nodeId,
-                handleId: params.handleId,
-                handleType: params.handleType,
-            }
-        });
+        // console.log('🔄 onConnectStart called with:', {
+        //     event: {
+        //         type: event.type,
+        //         clientX: 'clientX' in event ? event.clientX : undefined,
+        //         clientY: 'clientY' in event ? event.clientY : undefined,
+        //         target: event.target,
+        //     },
+        //     connectionData: {
+        //         nodeId: params.nodeId,
+        //         handleId: params.handleId,
+        //         handleType: params.handleType,
+        //     }
+        // });
     }, []);
 
     const handleConnect: OnConnect = useCallback(
         (connection) => {
-            console.log('🔗 onConnect called with connection:', {
-                connection,
+            console.log('-> onConnect called with connection:', {
                 isValid: isValidConnection(connection),
                 sourceNode: nodes.find(n => n.id === connection.source),
                 targetNode: nodes.find(n => n.id === connection.target),
             });
+            console.log(JSON.stringify(connection, null, 2));
 
             if (isValidConnection(connection)) {
                 // Create a new edge with proper styling and ID

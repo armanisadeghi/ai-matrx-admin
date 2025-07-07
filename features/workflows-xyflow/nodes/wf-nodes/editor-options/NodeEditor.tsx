@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 // Tab components
-import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RawDataTab } from "./editor-tabs";
+import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RawDataTab, NodeDefinitionTab } from "../editor-tabs";
 
 interface NodeEditorProps {
     nodeId: string;
@@ -61,6 +61,7 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ nodeId, isOpen, onOpenCh
                             <TabsTrigger value="inputs">Inputs</TabsTrigger>
                             <TabsTrigger value="outputs">Outputs</TabsTrigger>
                             <TabsTrigger value="dependencies">Dependencies</TabsTrigger>
+                            <TabsTrigger value="definition">Definition</TabsTrigger>
                             <TabsTrigger value="metadata">Metadata</TabsTrigger>
                             <TabsTrigger value="admin">Admin</TabsTrigger>
                             <TabsTrigger value="rawdata">Raw Data</TabsTrigger>
@@ -80,6 +81,10 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ nodeId, isOpen, onOpenCh
 
                         <TabsContent value="dependencies" className="flex-1 overflow-auto mt-2">
                             <DependenciesTab nodeId={nodeId} />
+                        </TabsContent>
+
+                        <TabsContent value="definition" className="flex-1 overflow-auto mt-2">
+                            <NodeDefinitionTab nodeId={nodeId} />
                         </TabsContent>
 
                         <TabsContent value="metadata" className="flex-1 overflow-auto mt-2">

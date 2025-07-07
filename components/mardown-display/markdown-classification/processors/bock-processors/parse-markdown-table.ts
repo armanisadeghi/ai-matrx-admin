@@ -29,7 +29,8 @@ type NormalizedTableData = Array<{ [key: string]: string }>;
 */
 
 export const parseMarkdownTable = (
-    content: string
+    content: string,
+    isStreamActive: boolean = false
 ): {
     markdown: MarkdownTableData | null;
     data: NormalizedTableData | null;
@@ -43,7 +44,15 @@ export const parseMarkdownTable = (
         const tableLines = lines.slice(tableStartIndex);
         if (tableLines.length < 3) return { markdown: null, data: null };
 
-        if (!tableLines[1].includes("-")) return { markdown: null, data: null };
+        // More robust separator validation
+        const separatorLine = tableLines[1].trim();
+        if (!separatorLine.includes("-") || !separatorLine.match(/^\|[-:\s|]+\|?$/)) {
+            // Only log during development and not during streaming to reduce noise
+            if (!isStreamActive && process.env.NODE_ENV === 'development') {
+                console.warn("Invalid table separator format:", separatorLine);
+            }
+            return { markdown: null, data: null };
+        }
 
         // Process rows, preserving empty cells
         const processRow = (line: string) => {
@@ -63,6 +72,18 @@ export const parseMarkdownTable = (
             .filter((row) => row.some((cell) => cell.length > 0)); // Only filter completely empty rows
 
         if (rows.length === 0) return { markdown: null, data: null };
+
+        // Light validation for table structure - don't be too aggressive during streaming
+        const hasValidStructure = rows.every(row => 
+            row.length > 0 && row.length <= Math.max(headers.length * 2, 10) // Allow flexibility
+        );
+        
+        if (!hasValidStructure) {
+            if (!isStreamActive && process.env.NODE_ENV === 'development') {
+                console.warn("Table structure validation failed - inconsistent row lengths");
+            }
+            return { markdown: null, data: null };
+        }
 
         // Clean markdown formatting for normalized data only
         const cleanText = (text: string) => {

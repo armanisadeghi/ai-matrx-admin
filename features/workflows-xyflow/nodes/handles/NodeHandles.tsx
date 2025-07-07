@@ -132,7 +132,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                             key={`compact-input-${handle.id}`}
                             type="target"
                             position={position}
-                            id={`input-${handle.input_type}-${handle.name}`}
+                            id={`${handle.input_type}-${handle.id}`}
                             className={`!w-3 !h-3 !border-2 !border-white dark:!border-background ${
                                 handle.required ? "!bg-amber-500 !border-amber-400" : "!bg-blue-500 !border-blue-400"
                             }`}
@@ -156,7 +156,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                             key={`compact-output-${handle.broker_id}`}
                             type="source"
                             position={position}
-                            id={`${handle.broker_id}-${index}`}
+                            id={`${handle.broker_id}`}
                             className="!w-3 !h-3 !border-2 !border-white dark:!border-background !bg-green-500 !border-green-400"
                             style={{ 
                                 left: `calc(50% + ${x}px - 6px)`,
@@ -179,7 +179,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                     <Handle
                         type="target"
                         position={Position.Left}
-                        id={`input-${handle.input_type}-${handle.name}`}
+                        id={`${handle.input_type}-${handle.id}`}
                         className={handle.required ? "!bg-amber-500 !border-amber-400 !w-2 !h-2" : "!bg-blue-500 !border-blue-400 !w-2 !h-2"}
                         style={{
                             left: -10,
@@ -201,7 +201,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                     <Handle
                         type="source"
                         position={Position.Right}
-                        id={`${handle.broker_id}-${index}`}
+                        id={`${handle.broker_id}`}
                         className="!bg-green-500 !border-green-400 !w-2 !h-2"
                         style={{
                             right: -10,

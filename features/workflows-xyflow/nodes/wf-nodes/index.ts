@@ -1,17 +1,15 @@
 // Main workflow node components
 export { WorkflowNodeItem as WorkflowNode } from './WorkflowNode';
-export { NodeToolbar } from './NodeToolbar';
-export { WorkflowCompactNodeHandles } from './WorkflowCompactNodeHandles';
-export { NodeEditor } from './NodeEditor';
+export { NodeEditor } from './editor-options/NodeEditor';
 
 // Dynamic node editor components
-export { DynamicNodeEditor } from './dynamic-node-editor/DynamicNodeEditor';
-export { default as DynamicNodeEditorDefault } from './dynamic-node-editor/DynamicNodeEditor';
-export { NodeEditorOne } from './dynamic-node-editor/FlexibleNodeEditor';
-export { DefaultNodeEditor, SimpleNodeEditor } from './dynamic-node-editor/NodeEditorOptions';
+export { DynamicNodeEditor } from './editor-options/DynamicNodeEditor';
+export { default as DynamicNodeEditorDefault } from './editor-options/DynamicNodeEditor';
+export { NodeEditorOne } from './FlexibleNodeEditor';
+export { DefaultNodeEditor, SimpleNodeEditor } from './editor-options/NodeEditorOptions';
 
 // Dynamic node editor types
-export type { TabConfig } from './dynamic-node-editor/DynamicNodeEditor';
+export type { TabConfig } from './editor-options/DynamicNodeEditor';
 
 // All editor tabs and components
 export * from './editor-tabs'; 

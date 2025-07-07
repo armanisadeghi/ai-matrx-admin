@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { cn } from "@/styles/themes/utils";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
@@ -47,32 +47,40 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         setCurrentContent(content);
     }, [content]);
 
-    
-    const handleOpenEditor = () => {
-        if (isStreamActive) return;
-        setIsEditorOpen(true);
-    };
+    // Memoize the content splitting to avoid unnecessary re-processing
+    const blocks = useMemo(() => {
+        return splitContentIntoBlocks(currentContent);
+    }, [currentContent]);
 
-    const handleCancelEdit = () => {
-        setIsEditorOpen(false);
-    };
-
-    const handleSaveEdit = (newContent: string) => {
-        setCurrentContent(newContent);
-        onContentChange?.(newContent);
-        setIsEditorOpen(false);
-    };
+    // Memoize parsed table data to prevent infinite loops from new object references
+    const parsedTableData = useMemo(() => {
+        const tableDataMap = new Map<string, any>();
+        
+        blocks.forEach((block, index) => {
+            if (block.type === "table") {
+                const tableData = parseMarkdownTable(block.content, isStreamActive);
+                if (tableData.markdown && tableData.markdown.headers.length > 0 && tableData.markdown.rows.length > 0) {
+                    tableDataMap.set(`${index}-${block.content}`, {
+                        ...tableData.markdown,
+                        normalizedData: tableData.data
+                    });
+                }
+            }
+        });
+        
+        return tableDataMap;
+    }, [blocks, isStreamActive]);
 
     // Handler for code changes within CodeBlock components
-    const handleCodeChange = (newCode: string, originalCode: string) => {
+    const handleCodeChange = useCallback((newCode: string, originalCode: string) => {
         // Replace the original code with new code in the full content
         const updatedContent = currentContent.replace(originalCode, newCode);
         setCurrentContent(updatedContent);
         onContentChange?.(updatedContent);
-    };
+    }, [currentContent, onContentChange]);
 
     // Handler for table changes
-    const handleTableChange = (updatedTableMarkdown: string, originalBlockContent: string) => {
+    const handleTableChange = useCallback((updatedTableMarkdown: string, originalBlockContent: string) => {
         // We need to find the original table in the markdown and replace it
         if (onContentChange) {
             try {
@@ -85,13 +93,28 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 console.error("Error updating table content:", error);
             }
         }
-    };
+    }, [currentContent, onContentChange]);
 
-    const handleMatrxBrokerChange = (updatedBrokerContent: string, originalBrokerContent: string) => {
+    const handleMatrxBrokerChange = useCallback((updatedBrokerContent: string, originalBrokerContent: string) => {
         const updatedContent = currentContent.replace(originalBrokerContent, updatedBrokerContent);
         setCurrentContent(updatedContent);
         onContentChange?.(updatedContent);
-    };
+    }, [currentContent, onContentChange]);
+
+    const handleOpenEditor = useCallback(() => {
+        if (isStreamActive) return;
+        setIsEditorOpen(true);
+    }, [isStreamActive]);
+
+    const handleCancelEdit = useCallback(() => {
+        setIsEditorOpen(false);
+    }, []);
+
+    const handleSaveEdit = useCallback((newContent: string) => {
+        setCurrentContent(newContent);
+        onContentChange?.(newContent);
+        setIsEditorOpen(false);
+    }, [onContentChange]);
 
     // const preprocessContent = (mdContent: string): string => {
     //     // Match the format [Image URL: https://example.com/image.png]
@@ -101,10 +124,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
 
     // const processedContent = preprocessContent(currentContent);
 
-
-    const blocks = splitContentIntoBlocks(currentContent);
-
-    const renderBlock = (block: ContentBlock, index: number) => {
+    // Memoize the render block function to prevent unnecessary re-renders
+    const renderBlock = useCallback((block: ContentBlock, index: number) => {
         switch (block.type) {
             case "image":
                 return <ImageBlock key={index} src={block.src!} alt={block.alt} />;
@@ -123,15 +144,17 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     />
                 );
             case "table":
-                const tableData = parseMarkdownTable(block.content);
-                if (!tableData.markdown || tableData.markdown.headers.length === 0 || tableData.markdown.rows.length === 0) {
-                    console.warn("Skipping invalid or empty table:", block.content);
+                const tableData = parsedTableData.get(`${index}-${block.content}`);
+                if (!tableData) {
+                    if (!isStreamActive && process.env.NODE_ENV === 'development') {
+                        console.warn("Skipping invalid or empty table:", block.content);
+                    }
                     return null;
                 }
                 return (
                     <MarkdownTable 
                         key={index} 
-                        data={{ ...tableData.markdown, normalizedData: tableData.data }} 
+                        data={tableData} 
                         content={block.content}
                         onContentChange={onContentChange ? (updatedTable) => handleTableChange(updatedTable, block.content) : undefined}
                         isStreamActive={isStreamActive}
@@ -176,7 +199,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     />
                 ) : null;
         }
-    };
+    }, [currentContent, isStreamActive, onContentChange, messageId, handleCodeChange, handleTableChange, handleMatrxBrokerChange, handleOpenEditor, parsedTableData]);
 
     const containerStyles = cn(
         "py-3 px-0 space-y-4 font-sans text-md antialiased leading-relaxed tracking-wide",

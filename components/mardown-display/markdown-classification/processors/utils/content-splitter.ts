@@ -275,13 +275,13 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             continue;
         }
 
-        // Table detection
+        // Table detection - improved for streaming scenarios
         if (
             processedTrimmedLine.startsWith("|") &&
             processedTrimmedLine.endsWith("|") &&
             processedTrimmedLine.includes("|", 1) &&
             i + 1 < lines.length &&
-            removeMatrxPattern(lines[i + 1]).trim().match(/^\|[-:\s|]+$/m)
+            removeMatrxPattern(lines[i + 1]).trim().match(/^\|[-:\s|]+\|?$/m)
         ) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
@@ -290,8 +290,23 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             const tableContent: string[] = [];
             tableContent.push(lines[i]);
             i++;
+            
+            // Validate that we have a proper separator line
+            const separatorLine = removeMatrxPattern(lines[i]).trim();
+            if (!separatorLine.match(/^\|[-:\s|]+\|?$/)) {
+                // Invalid separator, treat as text
+                currentText += tableContent.join("\n") + "\n" + lines[i] + "\n";
+                i++;
+                continue;
+            }
+            
             tableContent.push(lines[i]);
             i++;
+            
+            // Count data rows to ensure we have a complete table
+            let dataRowCount = 0;
+            const startI = i;
+            
             while (
                 i < lines.length &&
                 removeMatrxPattern(lines[i]).trim().startsWith("|") &&
@@ -299,12 +314,21 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 removeMatrxPattern(lines[i]).trim().includes("|", 1)
             ) {
                 tableContent.push(lines[i]);
+                dataRowCount++;
                 i++;
             }
-            blocks.push({
-                type: "table",
-                content: tableContent.join("\n"),
-            });
+            
+            // Only create table block if we have at least one data row
+            // This prevents incomplete tables during streaming
+            if (dataRowCount > 0) {
+                blocks.push({
+                    type: "table",
+                    content: tableContent.join("\n"),
+                });
+            } else {
+                // Incomplete table, treat as text
+                currentText += tableContent.join("\n") + "\n";
+            }
             continue;
         }
 
