@@ -47,9 +47,9 @@ export const useWorkflowSync = (workflowId: string) => {
     const initialNodes = useMemo(() => {
         // Regular workflow nodes - ensure it's an array and add displayMode if needed
         // xyFlowNodesByWorkflowId returns Node[] directly from stored ui_data
-        const functionNodes = (workflowNodes || []).map((node) => ({
+        const nodesFromRedux = (workflowNodes || []).map((node) => ({
             ...node,
-            type: "functionNode",
+            type: node.type,
             data: {
                 ...node.data,
                 displayMode: node.data?.displayMode || "detailed",
@@ -71,7 +71,7 @@ export const useWorkflowSync = (workflowId: string) => {
             };
         });
 
-        return [...functionNodes, ...sourceNodes];
+        return [...nodesFromRedux, ...sourceNodes];
     }, [workflowNodes, workflowSources, workflowId]);
 
 

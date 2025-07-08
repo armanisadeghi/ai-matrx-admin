@@ -3,7 +3,7 @@ import { getIconComponent } from "@/components/common/IconResolver";
 import { useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { WorkflowNode, WorkflowNodeUiData } from "@/lib/redux/workflow-nodes/types";
+import { WorkflowNode, WorkflowNodeUiData, XyFlowNodeType } from "@/lib/redux/workflow-nodes/types";
 import { createWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
 import { RegisteredNodeData } from "@/types/AutomationSchemaTypes";
 
@@ -40,7 +40,7 @@ export function newNodeFunction(
     const randomYOffset = Math.floor(Math.random() * 11) * 10;
     const outputs = (nodeDefinition.outputs as unknown as any[]).map((output) => ({
         broker_id: output.broker_id,
-        is_default_output: output.output_type === "default_function_result"? true : false,
+        is_default_output: output.output_type === "default_function_result" ? true : false,
         name: output.name,
         bookmark: null,
         conversion: null,
@@ -81,10 +81,64 @@ export function newNodeFunction(
     };
 }
 
+export function createCustomInputNode(
+    nodeDefinition: RegisteredNodeData,
+    workflowId: string,
+    userId: string,
+    categoryName: string,
+    nodeType: XyFlowNodeType,
+    uiData?: WorkflowNodeUiData
+): Omit<WorkflowNode, "id" | "created_at" | "updated_at"> {
+    const randomXOffset = Math.floor(Math.random() * 11) * 10;
+    const randomYOffset = Math.floor(Math.random() * 11) * 10;
+    const outputs = (nodeDefinition.outputs as unknown as any[]).map((output) => ({
+        broker_id: output.broker_id,
+        is_default_output: output.output_type === "default_function_result" ? true : false,
+        name: output.name,
+        bookmark: null,
+        conversion: null,
+        data_type: output.data_type,
+        result: null,
+        relays: [],
+        metadata: {
+            component: output.component,
+        },
+    }));
+
+    return {
+        function_id: null,
+        workflow_id: workflowId,
+        type: nodeType,
+        node_type: nodeType,
+        step_name: nodeDefinition.name,
+        execution_required: false,
+        inputs: [],
+        outputs: outputs,
+        user_id: userId,
+        is_active: true,
+        ui_data: uiData || {
+            width: 250,
+            height: 125,
+            position: {
+                x: 300 + randomXOffset,
+                y: 150 + randomYOffset,
+            },
+        },
+        dependencies: [],
+        metadata: {
+            nodeDefinition: nodeDefinition,
+        },
+        is_public: false,
+        authenticated_read: true,
+        public_read: false,
+    };
+}
+
+
 export const useCategoryNodeData = (workflowId?: string) => {
     const dispatch = useAppDispatch();
     const userId = useAppSelector(selectUserId);
-    
+
     const categoryHook = useNodeCategoryWithFetch();
     const registeredNodeHook = useRegisteredNodeWithFetch();
 
@@ -114,11 +168,17 @@ export const useCategoryNodeData = (workflowId?: string) => {
         return grouped;
     }, [registeredNodeRecords]);
 
+    const getRegisteredNodeById = (nodeId: string) => {
+        return registeredNodeRecords[nodeId];
+    };
+    const getNodeType = (nodeId: string) => {
+        return registeredNodeRecords[nodeId]?.nodeType;
+    };
     const getNodeFunctionId = (nodeId: string) => {
         return registeredNodeRecords[nodeId]?.registeredFunctionId;
     };
 
-    const getRegisteredNode = (functionId: string) => {
+    const getRegisteredNodeByFunctionId = (functionId: string) => {
         return Object.values(registeredNodeRecords).find((node) => node.registeredFunctionId === functionId);
     };
 
@@ -126,22 +186,17 @@ export const useCategoryNodeData = (workflowId?: string) => {
         if (!workflowId && !targetWorkflowId) {
             throw new Error("Workflow ID is required to add nodes");
         }
-        
+
         const useWorkflowId = targetWorkflowId || workflowId!;
         setIsAddingNode(true);
-        
-        const registeredNode = getRegisteredNode(functionId);
+
+        const registeredNode = getRegisteredNodeByFunctionId(functionId);
         if (!registeredNode) {
             throw new Error("Registered node not found");
         }
-        
+
         try {
-            const newNodeData = newNodeFunction(
-                registeredNode,
-                useWorkflowId,
-                userId,
-                registeredNode.category
-            );
+            const newNodeData = newNodeFunction(registeredNode, useWorkflowId, userId, registeredNode.category);
             const newNode = await dispatch(createWorkflowNode(newNodeData)).unwrap();
             return newNode;
         } catch (error) {
@@ -152,25 +207,46 @@ export const useCategoryNodeData = (workflowId?: string) => {
         }
     };
 
-    const handleNodeAdd = async (
-        nodeId: string, 
-        targetWorkflowId?: string,
-        onRecipeNodeCreated?: (nodeData: WorkflowNode) => void
-    ) => {
-        const functionId = getNodeFunctionId(nodeId);
-        if (!functionId) {
-            throw new Error("Function ID not found for node");
+    const handleAddCustomInputNode = async (nodeId: string, targetWorkflowId?: string) => {
+        setIsAddingNode(true);
+
+        try {
+            const registeredNode = getRegisteredNodeById(nodeId);
+            const nodeCategory = categoryRecords[registeredNode.category];
+            const nodeType = registeredNode.nodeType as XyFlowNodeType;
+            console.log("nodeType", nodeType);
+            const newNodeData = createCustomInputNode(registeredNode, workflowId, userId, nodeCategory.name, nodeType);
+            console.log("newNodeData", newNodeData);
+            const newNode = await dispatch(createWorkflowNode(newNodeData)).unwrap();
+            console.log("newNode", newNode);
+            return newNode;
+        } catch (error) {
+            console.error("Failed to add node:", error);
+            throw error;
+        } finally {
+            setIsAddingNode(false);
         }
-        
-        // Check if this is a recipe node
-        if (functionId === RECIPE_FUNCTION_ID) {
-            const result = await handleAddWorkflowNode(functionId, targetWorkflowId);
-            if (result && onRecipeNodeCreated) {
-                onRecipeNodeCreated(result);
+    };
+
+    const handleNodeAdd = async (nodeId: string, targetWorkflowId?: string, onRecipeNodeCreated?: (nodeData: WorkflowNode) => void) => {
+        const nodeType = getNodeType(nodeId);
+        if (nodeType === "functionNode") {
+            const functionId = getNodeFunctionId(nodeId);
+            if (!functionId) {
+                throw new Error("Function ID not found for node");
             }
-            return result;
-        } else {
-            return await handleAddWorkflowNode(functionId, targetWorkflowId);
+            // Check if this is a recipe node
+            if (functionId === RECIPE_FUNCTION_ID) {
+                const result = await handleAddWorkflowNode(functionId, targetWorkflowId);
+                if (result && onRecipeNodeCreated) {
+                    onRecipeNodeCreated(result);
+                }
+                return result;
+            } else {
+                return await handleAddWorkflowNode(functionId, targetWorkflowId);
+            }
+        } else if (nodeType === "userInput" || nodeType === "directInput") {
+            return await handleAddCustomInputNode(nodeId, targetWorkflowId);
         }
     };
 
@@ -179,10 +255,10 @@ export const useCategoryNodeData = (workflowId?: string) => {
         registeredNodeRecords,
         nodesByCategory,
         getNodeFunctionId,
-        getRegisteredNode,
+        getRegisteredNode: getRegisteredNodeByFunctionId,
         handleAddWorkflowNode,
         handleNodeAdd,
         isAddingNode,
         newNodeFunction,
     };
-}; 
+};

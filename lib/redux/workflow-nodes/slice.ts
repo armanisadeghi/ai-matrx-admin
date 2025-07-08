@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { WorkflowNode, WorkflowNodeMetadata, WorkflowNodeState, WorkflowNodeUiData, WorkflowNodeStatus } from "./types";
-import { InputMapping, Output, Dependency } from "../workflow/types";
+import { InputMapping, Output, Dependency, NodeInputType } from "../workflow/types";
 import {
     fetchAllWorkflowNodes,
     fetchOneWorkflowNode,
@@ -104,6 +104,32 @@ const workflowNodeSlice = createSlice({
                     Object.assign(input, updates);
                     state.isDirty[nodeId] = true;
                 }
+            }
+        },
+        updateInputValue: (state, action: PayloadAction<{ nodeId: string; inputId: string; value: any; inputType: string }>) => {
+            const { nodeId, inputId, value, inputType } = action.payload;
+            const node = state.entities[nodeId];
+            if (node) {
+                if (!node.inputs) {
+                    node.inputs = [];
+                }
+                
+                // Find existing input or create new one
+                let input = node.inputs.find((input) => input.arg_name === inputId);
+                if (!input) {
+                    input = {
+                        type: inputType as NodeInputType,
+                        arg_name: inputId,
+                        default_value: value,
+                        ready: true,
+                        metadata: {}
+                    };
+                    node.inputs.push(input);
+                } else {
+                    input.default_value = value;
+                }
+                
+                state.isDirty[nodeId] = true;
             }
         },
 
@@ -444,6 +470,8 @@ export const {
     addInput,
     removeInput,
     updateInputItem,
+    updateInputValue,
+    updateNodeInputByArgName,
     
     // Output Management
     updateOutputs,

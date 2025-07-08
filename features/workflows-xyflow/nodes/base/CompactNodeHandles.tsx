@@ -92,7 +92,7 @@ export const CompactNodeHandles: React.FC<CompactNodeHandlesProps> = ({
         
         return (
           <Handle
-            key={`compact-input-${handle.id}`}
+            key={`compact-input-${handle.id}-${index}`}
             type="target"
             position={position}
             id={handle.id}
@@ -114,7 +114,7 @@ export const CompactNodeHandles: React.FC<CompactNodeHandlesProps> = ({
         
         return (
           <Handle
-            key={`compact-output-${handle.id}`}
+            key={`compact-output-${handle.id}-${index}`}
             type="source"
             position={position}
             id={handle.id}

@@ -85,6 +85,7 @@ export const selectXyFlowNodesByWorkflowId = createSelector(
       .map(node => ({
         ...node.ui_data!, // Spread ui_data (Omit<Node, "data">)
         id: node.id, // Add back the id from WorkflowNode
+        type: node.type,
         // No data property - ui_data explicitly excludes it
       })) as Node[];
   }
@@ -174,6 +175,15 @@ export const selectWorkflowNodeOutputByBrokerId = createSelector(
   }
 );
 
+export const selectWorkflowNodeInputValue = createSelector(
+  [selectWorkflowNodeState, (_: RootState, nodeId: string, inputId: string) => ({ nodeId, inputId })],
+  (nodeState, { nodeId, inputId }) => {
+    const inputs = nodeState.entities[nodeId]?.inputs || [];
+    const input = inputs.find(input => input.arg_name === inputId);
+    return input?.default_value || null;
+  }
+);
+
 // Safe metadata selectors
 export const selectWorkflowNodeMetadata = createSelector(
   [selectWorkflowNodeById],
@@ -245,6 +255,7 @@ export const workflowNodesSelectors = {
   // Utility selectors (require node ID and additional parameters)
   nodeInputById: selectWorkflowNodeInputById, // (nodeId, index)
   nodeOutputByBrokerId: selectWorkflowNodeOutputByBrokerId, // (nodeId, brokerId)
+  nodeInputValue: selectWorkflowNodeInputValue, // (nodeId, inputId)
 
   // Safe metadata selectors
   nodeMetadata: selectWorkflowNodeMetadata,

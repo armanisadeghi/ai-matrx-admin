@@ -8,7 +8,6 @@ import { WorkflowHeader } from "./core/WorkflowHeader";
 import { useWorkflowSync } from "./hooks/useWorkflowSync";
 import FieldDisplaySheet from "./nodes/source-node/sheets/FieldDisplaySheet";
 import { WorkflowAdminOverlay } from "./admin/WorkflowAdminOverlay";
-import WorkflowLoading from "./common/workflow-loading";
 import RecipeNodeInitializer from "./custom-nodes/recipes/RecipeNodeInitializer";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import { useAppDispatch } from "@/lib/redux/hooks";

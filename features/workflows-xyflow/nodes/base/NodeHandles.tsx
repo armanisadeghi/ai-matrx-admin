@@ -9,6 +9,10 @@ export type NodeInput = {
     name: string;
     required: boolean;
     component: string;
+    options?: Array<{
+        value: string;
+        label: string;
+    }>;
     data_type: string;
     input_type: string;
 };
@@ -127,7 +131,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                     
                     return (
                         <Handle
-                            key={`compact-input-${handle.id}`}
+                            key={`compact-input-${handle.id}-${index}`}
                             type="target"
                             position={position}
                             id={`${handle.input_type}-${handle.id}`}
@@ -151,7 +155,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                     
                     return (
                         <Handle
-                            key={`compact-output-${handle.broker_id}`}
+                            key={`compact-output-${handle.broker_id}-${index}`}
                             type="source"
                             position={position}
                             id={`${handle.broker_id}`}
@@ -173,7 +177,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
         <>
             {/* Input handles */}
             {inputHandles.map((handle, index) => (
-                <div key={`input-${handle.id}`} className="relative flex items-center mb-1">
+                <div key={`input-${handle.id}-${index}`} className="relative flex items-center mb-1">
                     <Handle
                         type="target"
                         position={Position.Left}
@@ -192,7 +196,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
 
             {/* Output handles */}
             {outputHandles.map((handle, index) => (
-                <div key={`output-${handle.broker_id}`} className="relative flex items-center justify-end mb-1">
+                <div key={`output-${handle.broker_id}-${index}`} className="relative flex items-center justify-end mb-1">
                     <div className="text-[8px] text-muted-foreground pl-2 text-right">
                         <div className="font-small leading-tight">{toTitleCase(handle.name)}</div>
                     </div>

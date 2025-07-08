@@ -33,6 +33,8 @@ import {
     Sun,
     Moon,
     Clock,
+    Zap,
+    ZapOff,
 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -88,6 +90,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     const [isAddNodeDropdownOpen, setIsAddNodeDropdownOpen] = useState(false);
     const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
     const [showOptionalInputs, setShowOptionalInputs] = useState(true);
+    const [showEdges, setShowEdges] = useState(true);
 
     // Proper undo/redo state management
     const [history, setHistory] = useState<{ nodes: any[]; edges: any[] }[]>([]);
@@ -176,6 +179,16 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
             setShowOptionalInputs(!hasHiddenOptional);
         }
     }, [allNodesArray.length, reactFlowInstance]);
+
+    // Initialize showEdges state from edges
+    React.useEffect(() => {
+        const currentEdges = reactFlowInstance.getEdges();
+        if (currentEdges.length > 0) {
+            // Check if any edge is hidden
+            const hasHiddenEdges = currentEdges.some(edge => edge.hidden === true);
+            setShowEdges(!hasHiddenEdges);
+        }
+    }, [reactFlowInstance]);
 
     // Undo functionality
     const handleUndo = () => {
@@ -302,6 +315,16 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
         }));
         reactFlowInstance.setNodes(updatedNodes);
         setShowOptionalInputs(show);
+    };
+
+    const handleShowEdges = (show: boolean) => {
+        const currentEdges = reactFlowInstance.getEdges();
+        const updatedEdges = currentEdges.map((edge) => ({
+            ...edge,
+            hidden: !show,
+        }));
+        reactFlowInstance.setEdges(updatedEdges);
+        setShowEdges(show);
     };
 
     // Node creation handled by NodesMenu component with shared hook logic
@@ -464,6 +487,16 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                             successTooltip={showOptionalInputs ? "Optional inputs hidden!" : "Optional inputs shown!"}
                             feedbackDuration={500}
                             successIcon={showOptionalInputs ? <EyeOff className="h-4 w-4 text-blue-500 dark:text-blue-400" /> : <Eye className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
+                        />
+                        <ActionFeedbackButton
+                            icon={showEdges ? <ZapOff className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+                            tooltip={showEdges ? "Hide Edges" : "Show Edges"}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleShowEdges(!showEdges)}
+                            successTooltip={showEdges ? "Edges hidden!" : "Edges shown!"}
+                            feedbackDuration={500}
+                            successIcon={showEdges ? <ZapOff className="h-4 w-4 text-blue-500 dark:text-blue-400" /> : <Zap className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
                         />
                         <div className="w-px h-4 bg-border mx-1" />
                     </div>

@@ -4,7 +4,7 @@ import { UserDataReference } from "@/components/user-generated-table-data/tableR
 import { BrokerMapEntry } from "../brokerSlice";
 import { Viewport } from "@xyflow/react";
 
-export type NodeInputType = "arg_override" | "arg_mapping" | "user_input" | "environment" | "broker";
+export type NodeInputType = "arg_override" | "arg_mapping" | "user_input" | "environment" | "broker" | "direct";
 
 export interface InputMapping {
     type?: NodeInputType;

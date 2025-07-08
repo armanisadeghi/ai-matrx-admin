@@ -38,6 +38,7 @@ import { WorkflowNodeItem } from "../nodes/wf-nodes/WorkflowNode";
 import { SourceInputNode } from "../nodes/source-node/user-input/SourceInputNode";
 import { UserDataSourceNode } from "../nodes/source-node/user-data/UserDataSourceNode";
 import { WorkflowEdge } from "../edges/WorkflowEdge";
+import { DirectInputNode } from "../nodes/custom-nodes/DirectInputNode";
 
 import { getNodeMinimapColor } from "../utils/nodeStyles";
 import QuickAccessPanel from "../access-panel/QuickAccessPanel";
@@ -211,6 +212,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     const nodeTypes: NodeTypes = useMemo(
         () => ({
             default: DefaultNode,
+            directInput: DirectInputNode,
             functionNode: WorkflowNodeItem,
             workflowNode: WorkflowNodeItem,
 

@@ -13,6 +13,7 @@ import {
     getStatusIconStyle,
     NODE_ICON_SIZES,
     getNodeConfig,
+    getTextColorClass,
 } from "@/features/workflows-xyflow/utils/nodeStyles";
 import BaseNodeToolbar, { ToolbarAction } from "./BaseNodeToolbar";
 import { NodeHandles } from "./NodeHandles";
@@ -20,6 +21,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { DynamicIcon } from "@/components/common/IconResolver";
+import { useTheme } from '@/styles/themes/ThemeProvider';
 
 export interface BaseNodeData extends Record<string, unknown> {
     nodeType?: string;
@@ -101,7 +103,9 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
     const updateNodeInternals = useUpdateNodeInternals();
     const nodeId = useNodeId();
     const { updateNodeData, getNode, deleteElements } = useReactFlow();
-
+    const { mode } = useTheme();
+    const isDarkMode = mode === "dark";
+    const isLightMode = mode === "light";
     if (!nodeId) {
         console.error("BaseNode: nodeId is required");
         return null;
@@ -402,14 +406,14 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
             >
                 <CardHeader className={`pb-2 relative border-b border-border ${customStyles?.headerClass || ""}`}>
                     <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-1 flex-1 min-w-0">
+                        <div className="flex items-center space-x-1 flex-1 min-w-0">
                             <DynamicIcon
                                 name={nodeDefinition?.icon || nodeConfig.icon?.name}
                                 color={nodeDefinition?.color}
                                 size={4}
-                                className="flex-shrink-0 mt-0.5"
+                                className="flex-shrink-0"
                             />
-                            <span className="font-medium text-[10px] tracking-wide text-white align-middle subpixel-antialiased break-words hyphens-auto leading-tight">
+                            <span className={`font-medium text-[10px] tracking-wide ${getTextColorClass(nodeDefinition?.color)} subpixel-antialiased break-words hyphens-auto leading-tight`}>
                                 {nodeData?.step_name || displayText}
                             </span>
                         </div>
