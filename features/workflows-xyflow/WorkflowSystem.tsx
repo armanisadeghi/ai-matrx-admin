@@ -143,6 +143,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 isAdminOverlayOpen={isAdminOverlayOpen}
                 onOpenAdminOverlay={setIsAdminOverlayOpen}
                 onRecipeNodeCreated={handleRecipeNodeCreated}
+                handleSave={handleSave}
             />
 
             {/* Field Display Sheet */}

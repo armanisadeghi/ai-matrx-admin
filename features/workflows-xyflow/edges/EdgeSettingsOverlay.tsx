@@ -3,6 +3,43 @@
 import React from "react";
 import FullScreenOverlay, { TabDefinition } from '@/components/official/FullScreenOverlay';
 import { Edge } from '@xyflow/react';
+import { SectionContainer, SectionTable, TableRowData } from '@/features/workflows-xyflow/common';
+import { Badge } from '@/components/ui/badge';
+import { TableCell } from '@/components/ui/table';
+
+interface WorkflowEdgeData {
+    connectionType?: string;
+    sourceNode?: {
+        id: string;
+        step_name?: string;
+        node_type?: string;
+    };
+    targetNode?: {
+        id: string;
+        step_name?: string;
+        node_type?: string;
+    };
+    sourceOutput?: {
+        broker_id?: string;
+        name?: string;
+        type?: string;
+        format?: string;
+        description?: string;
+    };
+    targetInput?: {
+        arg_name?: string;
+        type?: string;
+        source_broker_id?: string;
+        ready?: boolean;
+        metadata?: any;
+    };
+    relay?: {
+        type?: string;
+        id?: string;
+    };
+    isTemporary?: boolean;
+    createdAt?: string;
+}
 
 interface EdgeSettingsOverlayProps {
     isOpen: boolean;
@@ -17,108 +54,314 @@ export const EdgeSettingsOverlay: React.FC<EdgeSettingsOverlayProps> = ({
 }) => {
     if (!edge) return null;
 
+    // Cast edge data to our typed interface
+    const edgeData = edge.data as WorkflowEdgeData;
+
+    // Core edge information rows
+    const coreInfoRows: TableRowData[] = [
+        {
+            key: "id",
+            label: "Edge ID",
+            content: <code className="px-2 py-1 rounded text-xs font-mono break-all">{edge.id}</code>,
+        },
+        {
+            key: "type",
+            label: "Edge Type",
+            content: <Badge variant="secondary" className="text-xs">{edge.type || 'default'}</Badge>,
+        },
+        {
+            key: "source",
+            label: "Source Node",
+            content: <code className="px-2 py-1 rounded text-xs font-mono break-all">{edge.source}</code>,
+        },
+        {
+            key: "target",
+            label: "Target Node",
+            content: <code className="px-2 py-1 rounded text-xs font-mono break-all">{edge.target}</code>,
+        },
+        {
+            key: "sourceHandle",
+            label: "Source Handle",
+            content: edge.sourceHandle ? (
+                <code className="px-2 py-1 rounded text-xs font-mono break-all">{edge.sourceHandle}</code>
+            ) : (
+                <span className="text-xs text-muted-foreground">None</span>
+            ),
+        },
+        {
+            key: "targetHandle",
+            label: "Target Handle",
+            content: edge.targetHandle ? (
+                <code className="px-2 py-1 rounded text-xs font-mono break-all">{edge.targetHandle}</code>
+            ) : (
+                <span className="text-xs text-muted-foreground">None</span>
+            ),
+        },
+    ];
+
+    // Workflow connection information rows
+    const workflowInfoRows: TableRowData[] = [
+        {
+            key: "connectionType",
+            label: "Connection Type",
+            content: edgeData?.connectionType ? (
+                <Badge variant="outline" className="text-xs">{edgeData.connectionType.replace('_', ' ')}</Badge>
+            ) : (
+                <span className="text-xs text-muted-foreground">Not specified</span>
+            ),
+        },
+        {
+            key: "isTemporary",
+            label: "Temporary",
+            content: (
+                <Badge variant={edgeData?.isTemporary ? "destructive" : "secondary"} className="text-xs">
+                    {edgeData?.isTemporary ? 'Temporary' : 'Permanent'}
+                </Badge>
+            ),
+        },
+        {
+            key: "createdAt",
+            label: "Created",
+            content: edgeData?.createdAt ? (
+                <span className="text-xs">{new Date(edgeData.createdAt).toLocaleString()}</span>
+            ) : (
+                <span className="text-xs text-muted-foreground">Unknown</span>
+            ),
+        },
+    ];
+
+    // Status information rows
+    const statusRows: TableRowData[] = [
+        {
+            key: "selected",
+            label: "Selected",
+            content: (
+                <Badge variant={edge.selected ? "default" : "secondary"} className="text-xs">
+                    {edge.selected ? 'Selected' : 'Not Selected'}
+                </Badge>
+            ),
+        },
+        {
+            key: "animated",
+            label: "Animation",
+            content: (
+                <Badge variant={edge.animated ? "default" : "secondary"} className="text-xs">
+                    {edge.animated ? 'Animated' : 'Static'}
+                </Badge>
+            ),
+        },
+        {
+            key: "hidden",
+            label: "Visibility",
+            content: (
+                <Badge variant={edge.hidden ? "destructive" : "default"} className="text-xs">
+                    {edge.hidden ? 'Hidden' : 'Visible'}
+                </Badge>
+            ),
+        },
+        {
+            key: "selectable",
+            label: "Selectable",
+            content: (
+                <Badge variant={edge.selectable !== false ? "default" : "secondary"} className="text-xs">
+                    {edge.selectable !== false ? 'Selectable' : 'Not Selectable'}
+                </Badge>
+            ),
+        },
+    ];
+
+    // Styling rows
+    const stylingRows: TableRowData[] = [
+        {
+            key: "className",
+            label: "CSS Classes",
+            content: edge.className ? (
+                <code className="px-2 py-1 rounded text-xs font-mono break-all">{edge.className}</code>
+            ) : (
+                <span className="text-xs text-muted-foreground">No classes</span>
+            ),
+        },
+        {
+            key: "markerStart",
+            label: "Start Marker",
+            content: edge.markerStart ? (
+                <code className="px-2 py-1 rounded text-xs font-mono">
+                    {typeof edge.markerStart === 'string' ? edge.markerStart : JSON.stringify(edge.markerStart)}
+                </code>
+            ) : (
+                <span className="text-xs text-muted-foreground">None</span>
+            ),
+        },
+        {
+            key: "markerEnd",
+            label: "End Marker",
+            content: edge.markerEnd ? (
+                <code className="px-2 py-1 rounded text-xs font-mono">
+                    {typeof edge.markerEnd === 'string' ? edge.markerEnd : JSON.stringify(edge.markerEnd)}
+                </code>
+            ) : (
+                <span className="text-xs text-muted-foreground">None</span>
+            ),
+        },
+    ];
+
+    // Label configuration rows
+    const labelRows: TableRowData[] = [
+        {
+            key: "label",
+            label: "Label Content",
+            content: edge.label ? (
+                <code className="px-2 py-1 rounded text-xs font-mono">
+                    {typeof edge.label === 'string' ? edge.label : 'React Component'}
+                </code>
+            ) : (
+                <span className="text-xs text-muted-foreground">No label</span>
+            ),
+        },
+        {
+            key: "labelShowBg",
+            label: "Show Background",
+            content: (
+                <Badge variant={edge.labelShowBg ? "default" : "secondary"} className="text-xs">
+                    {edge.labelShowBg ? 'Enabled' : 'Disabled'}
+                </Badge>
+            ),
+        },
+        {
+            key: "labelBgBorderRadius",
+            label: "Border Radius",
+            content: edge.labelBgBorderRadius ? (
+                <code className="px-2 py-1 rounded text-xs font-mono">{edge.labelBgBorderRadius}px</code>
+            ) : (
+                <span className="text-xs text-muted-foreground">Default</span>
+            ),
+        },
+        {
+            key: "labelBgPadding",
+            label: "Background Padding",
+            content: edge.labelBgPadding ? (
+                <code className="px-2 py-1 rounded text-xs font-mono">[{edge.labelBgPadding.join(', ')}]</code>
+            ) : (
+                <span className="text-xs text-muted-foreground">Default</span>
+            ),
+        },
+    ];
+
+    // Get arrays for workflow data tables
+    const sourceOutputs = edgeData?.sourceOutput ? [edgeData.sourceOutput] : [];
+    const targetInputs = edgeData?.targetInput ? [edgeData.targetInput] : [];
+    const relays = edgeData?.relay ? [edgeData.relay] : [];
+
     // Define tab content
     const tabs: TabDefinition[] = [
         {
             id: 'basic-info',
             label: 'Basic Info',
             content: (
-                <div className="p-6">
-                    <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Edge Information
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Basic edge properties and connection details
-                        </p>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Edge ID</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <code className="text-sm text-gray-700 dark:text-gray-300">{edge.id}</code>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Edge Type</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <code className="text-sm text-gray-700 dark:text-gray-300">{edge.type || 'default'}</code>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Source Node</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <code className="text-sm text-gray-700 dark:text-gray-300">{edge.source}</code>
-                                    {edge.sourceHandle && (
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            Handle: {edge.sourceHandle}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Target Node</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <code className="text-sm text-gray-700 dark:text-gray-300">{edge.target}</code>
-                                    {edge.targetHandle && (
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            Handle: {edge.targetHandle}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                <div className="h-full overflow-auto pr-2 space-y-6">
+                    {/* Core Information */}
+                    <SectionTable title="Core Information" rows={coreInfoRows} />
 
-                        <div>
-                            <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Status</h4>
-                            <div className="flex gap-2">
-                                <span className={`px-2 py-1 rounded text-sm font-medium ${
-                                    edge.selected 
-                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
-                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                }`}>
-                                    {edge.selected ? 'Selected' : 'Not Selected'}
-                                </span>
-                                <span className={`px-2 py-1 rounded text-sm font-medium ${
-                                    edge.animated 
-                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                }`}>
-                                    {edge.animated ? 'Animated' : 'Static'}
-                                </span>
-                                {edge.hidden && (
-                                    <span className="px-2 py-1 rounded text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                        Hidden
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    {/* Workflow Connection Information */}
+                    <SectionTable title="Workflow Connection" rows={workflowInfoRows} />
+
+                    {/* Status Information */}
+                    <SectionTable title="Status" rows={statusRows} />
                 </div>
             )
         },
         {
-            id: 'edge-data',
-            label: 'Edge Data',
+            id: 'workflow-connection',
+            label: 'Workflow Connection',
             content: (
-                <div className="p-6">
-                    <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Custom Edge Data
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Custom data attached to this edge
-                        </p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-auto max-h-full">
-                        <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                            {edge.data ? JSON.stringify(edge.data, null, 2) : 'No custom data'}
-                        </pre>
-                    </div>
+                <div className="h-full overflow-auto pr-2 space-y-6">
+                    {/* Source Outputs */}
+                    <SectionTable
+                        title="Source Outputs"
+                        headers={["Broker ID", "Name", "Type", "Format", "Description"]}
+                        data={sourceOutputs}
+                        renderRow={(output, index) => (
+                            <>
+                                <TableCell className="font-medium text-[10px] w-64 border-r border-border dark:border-border">
+                                    <code className="px-2 py-1 rounded text-xs font-mono break-all">{output.broker_id || 'N/A'}</code>
+                                </TableCell>
+                                <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
+                                    {output.name || 'N/A'}
+                                </TableCell>
+                                <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
+                                    <Badge variant="secondary" className="text-xs">
+                                        {output.type || 'N/A'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
+                                    <Badge variant="outline" className="text-xs">
+                                        {output.format || 'N/A'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium text-sm">
+                                    {output.description || 'No description'}
+                                </TableCell>
+                            </>
+                        )}
+                        emptyMessage="No source outputs defined"
+                    />
+
+                    {/* Target Inputs */}
+                    <SectionTable
+                        title="Target Inputs"
+                        headers={["Argument Name", "Type", "Source Broker ID", "Ready", "Metadata"]}
+                        data={targetInputs}
+                        renderRow={(input, index) => (
+                            <>
+                                <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
+                                    {input.arg_name || 'N/A'}
+                                </TableCell>
+                                <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
+                                    <Badge variant="secondary" className="text-xs">
+                                        {input.type || 'N/A'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium text-[10px] w-64 border-r border-border dark:border-border">
+                                    <code className="px-2 py-1 rounded text-xs font-mono break-all">{input.source_broker_id || 'N/A'}</code>
+                                </TableCell>
+                                <TableCell className="font-medium text-center text-xs w-24 border-r border-border dark:border-border">
+                                    <Badge variant={input.ready ? "default" : "destructive"} className="text-xs">
+                                        {input.ready ? 'Ready' : 'Not Ready'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium text-xs">
+                                    {input.metadata ? (
+                                        <code className="px-2 py-1 rounded text-xs font-mono bg-muted">
+                                            {JSON.stringify(input.metadata).substring(0, 50)}...
+                                        </code>
+                                    ) : (
+                                        'None'
+                                    )}
+                                </TableCell>
+                            </>
+                        )}
+                        emptyMessage="No target inputs defined"
+                    />
+
+                    {/* Relays */}
+                    <SectionTable
+                        title="Relays"
+                        headers={["Type", "ID"]}
+                        data={relays}
+                        renderRow={(relay, index) => (
+                            <>
+                                <TableCell className="font-medium text-sm w-48 border-r border-border dark:border-border">
+                                    <Badge variant="outline" className="text-xs">
+                                        {relay.type || 'N/A'}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="font-medium text-xs">
+                                    <code className="px-2 py-1 rounded text-xs font-mono break-all">{relay.id || 'N/A'}</code>
+                                </TableCell>
+                            </>
+                        )}
+                        emptyMessage="No relays defined"
+                    />
                 </div>
             )
         },
@@ -126,60 +369,16 @@ export const EdgeSettingsOverlay: React.FC<EdgeSettingsOverlayProps> = ({
             id: 'styling',
             label: 'Styling',
             content: (
-                <div className="p-6">
-                    <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Edge Styling
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Style properties, classes, and visual settings
-                        </p>
-                    </div>
-                    <div className="space-y-4">
-                        {edge.style && (
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Inline Styles</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                                    <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                                        {JSON.stringify(edge.style, null, 2)}
-                                    </pre>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {edge.className && (
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">CSS Classes</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <code className="text-sm text-gray-700 dark:text-gray-300">{edge.className}</code>
-                                </div>
-                            </div>
-                        )}
+                <div className="h-full overflow-auto pr-2 space-y-6">
+                    {/* Styling Properties */}
+                    <SectionTable title="Styling Properties" rows={stylingRows} />
 
-                        <div className="grid grid-cols-2 gap-4">
-                            {edge.markerStart && (
-                                <div>
-                                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Start Marker</h4>
-                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                        <code className="text-sm text-gray-700 dark:text-gray-300">
-                                            {typeof edge.markerStart === 'string' ? edge.markerStart : JSON.stringify(edge.markerStart)}
-                                        </code>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {edge.markerEnd && (
-                                <div>
-                                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">End Marker</h4>
-                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                        <code className="text-sm text-gray-700 dark:text-gray-300">
-                                            {typeof edge.markerEnd === 'string' ? edge.markerEnd : JSON.stringify(edge.markerEnd)}
-                                        </code>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    {/* Inline Styles */}
+                    {edge.style && (
+                        <SectionContainer title="Inline Styles">
+                            <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap font-mono">{JSON.stringify(edge.style, null, 2)}</pre>
+                        </SectionContainer>
+                    )}
                 </div>
             )
         },
@@ -187,109 +386,44 @@ export const EdgeSettingsOverlay: React.FC<EdgeSettingsOverlayProps> = ({
             id: 'labels',
             label: 'Labels',
             content: (
-                <div className="p-6">
-                    <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Edge Labels
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Label content and styling properties
-                        </p>
-                    </div>
-                    <div className="space-y-4">
-                        {edge.label && (
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Label Content</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <code className="text-sm text-gray-700 dark:text-gray-300">
-                                        {typeof edge.label === 'string' ? edge.label : 'React Component'}
-                                    </code>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {edge.labelStyle && (
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Label Style</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                                    <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                                        {JSON.stringify(edge.labelStyle, null, 2)}
-                                    </pre>
-                                </div>
-                            </div>
-                        )}
+                <div className="h-full overflow-auto pr-2 space-y-6">
+                    {/* Label Configuration */}
+                    <SectionTable title="Label Configuration" rows={labelRows} />
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Label Background</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <span className={`px-2 py-1 rounded text-sm font-medium ${
-                                        edge.labelShowBg 
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                    }`}>
-                                        {edge.labelShowBg ? 'Enabled' : 'Disabled'}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            {edge.labelBgBorderRadius && (
-                                <div>
-                                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Border Radius</h4>
-                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                        <code className="text-sm text-gray-700 dark:text-gray-300">{edge.labelBgBorderRadius}px</code>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                    {/* Label Style */}
+                    {edge.labelStyle && (
+                        <SectionContainer title="Label Style">
+                            <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap font-mono">{JSON.stringify(edge.labelStyle, null, 2)}</pre>
+                        </SectionContainer>
+                    )}
 
-                        {edge.labelBgStyle && (
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Label Background Style</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                                    <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                                        {JSON.stringify(edge.labelBgStyle, null, 2)}
-                                    </pre>
-                                </div>
-                            </div>
-                        )}
-
-                        {edge.labelBgPadding && (
-                            <div>
-                                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Label Background Padding</h4>
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                    <code className="text-sm text-gray-700 dark:text-gray-300">[{edge.labelBgPadding.join(', ')}]</code>
-                                </div>
-                            </div>
-                        )}
-
-                        {!edge.label && !edge.labelStyle && !edge.labelShowBg && (
-                            <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                                No label properties configured
-                            </div>
-                        )}
-                    </div>
+                    {/* Label Background Style */}
+                    {edge.labelBgStyle && (
+                        <SectionContainer title="Label Background Style">
+                            <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap font-mono">{JSON.stringify(edge.labelBgStyle, null, 2)}</pre>
+                        </SectionContainer>
+                    )}
                 </div>
             )
         },
         {
-            id: 'complete-edge',
-            label: 'Complete Edge Object',
+            id: 'raw-data',
+            label: 'Raw Data',
             content: (
-                <div className="p-6">
-                    <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            Complete Edge Data
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Full edge object with all properties and data
-                        </p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-auto max-h-full">
-                        <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                <div className="h-full overflow-auto pr-2 space-y-6">
+                    {/* Custom Edge Data */}
+                    <SectionContainer title="Custom Edge Data">
+                        <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap font-mono">
+                            {edge.data ? JSON.stringify(edge.data, null, 2) : 'No custom data'}
+                        </pre>
+                    </SectionContainer>
+
+                    {/* Complete Edge Object */}
+                    <SectionContainer title="Complete Edge Object">
+                        <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap font-mono">
                             {JSON.stringify(edge, null, 2)}
                         </pre>
-                    </div>
+                    </SectionContainer>
                 </div>
             )
         }

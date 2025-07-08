@@ -259,12 +259,12 @@ const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                         
                         {/* Table rows */}
                         <div className="space-y-1">
-                            {visibleInputs.map((input) => {
+                            {visibleInputs.map((input, index) => {
                                 const useSystemDefault = isUsingSystemDefault(input);
                                 const setManually = isSetManually(input);
                                 
                                 return (
-                                    <div key={input.arg_name} className="grid grid-cols-5 gap-4 px-3 py-2 items-center hover:bg-muted/50 rounded border-b last:border-none min-h-[40px]">
+                                    <div key={`${input.arg_name}-${index}`} className="grid grid-cols-5 gap-4 px-3 py-2 items-center hover:bg-muted/50 rounded border-b last:border-none min-h-[40px]">
                                         {/* Input Name */}
                                         <div className="text-sm flex items-center">{toTitleCase(input.arg_name)}</div>
                                         

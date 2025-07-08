@@ -92,6 +92,8 @@ export interface BrokerSourceConfig<T extends keyof SourceDetailsMap = keyof Sou
     scope: "global" | "session" | "task" | "organization" | "user" | "workflow" | "action" | "temporary" | string;
     sourceType: T;
     sourceDetails: SourceDetailsMap[T];
+    extraction?: "label" | "id" | "object" | "string" | null;
+    relays?: Relay[];
     metadata?: Record<string, any> | null;
 }
 

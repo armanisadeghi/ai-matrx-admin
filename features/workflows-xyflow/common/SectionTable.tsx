@@ -1,5 +1,5 @@
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import SectionContainer from "./SectionContainer";
+import { SectionContainer } from "./SectionContainer";
 
 export interface TableRowData {
     key: string;

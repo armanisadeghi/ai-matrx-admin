@@ -1,13 +1,12 @@
 import { useCallback, useMemo, useEffect } from "react";
 import { Node, Edge } from "@xyflow/react";
-import { useSelector } from "react-redux";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { saveWorkflowFromReactFlow } from "@/lib/redux/workflow/thunks";
 import { brokerActions, BrokerMapEntry } from "@/lib/redux/brokerSlice";
 import { BrokerSourceConfig } from "@/lib/redux/workflow/types";
+import { useWorkflowEdges } from "./useWorkflowEdges";
 
 
 const SOURCE_TYPE_MAP = {
@@ -22,12 +21,11 @@ export const useWorkflowSync = (workflowId: string) => {
     // Get Redux state using correct selectors
     const workflowData = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
     const workflowNodes = useAppSelector((state) => workflowNodesSelectors.xyFlowNodesByWorkflowId(state, workflowId)); // Returns Node[] directly - no transformations needed!
-    const workflowNodesData = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId)); // Returns WorkflowNode[] for business data (inputs/outputs)
     const workflowSources = useAppSelector((state) => workflowsSelectors.workflowSources(state, workflowId));
     const isLoading = useAppSelector(workflowsSelectors.isLoading);
 
-    // Get current theme
-    const currentTheme = useSelector((state: RootState) => state.theme.mode);
+    // Use dedicated edge generation hook
+    const { edges: initialEdges } = useWorkflowEdges({ workflowId });
 
     // Ensure broker mappings exist for workflow sources on load
     useEffect(() => {
@@ -61,7 +59,7 @@ export const useWorkflowSync = (workflowId: string) => {
         // Generate source input nodes from workflow sources (these are auto-generated, not stored)
         const sourceNodes = (workflowSources || []).map((source: BrokerSourceConfig, index) => {
             return {
-                id: `${source.sourceType}:${source.brokerId}`,
+                id: `sourceNode:${source.sourceType}:${source.brokerId}`,
                 type: SOURCE_TYPE_MAP[source.sourceType],
                 position: { x: -150, y: index * 120 }, // Position to the left of regular nodes with more spacing
                 data: {
@@ -76,66 +74,7 @@ export const useWorkflowSync = (workflowId: string) => {
         return [...functionNodes, ...sourceNodes];
     }, [workflowNodes, workflowSources, workflowId]);
 
-    // Generate edges from business data connections ONCE
-    const initialEdges = useMemo(() => {
-        const edges: Edge[] = [];
 
-        // Use workflowNodesData for business logic (inputs/outputs)
-        workflowNodesData.forEach((node) => {
-            if (node.inputs) {
-                node.inputs.forEach((input, inputIndex) => {
-                    if (input.source_broker_id) {
-                        // First check if there's a source input node with this broker ID
-                        const sourceInputNode = workflowSources?.find((source) => source.brokerId === input.source_broker_id);
-
-                        if (sourceInputNode) {
-                            const sourceMapKey = `${sourceInputNode.sourceType}:${sourceInputNode.brokerId}`;
-                            // Connect from source input node to this node
-                            edges.push({
-                                id: `${sourceMapKey}-${node.id}-${inputIndex}`,
-                                source: sourceMapKey,
-                                target: node.id,
-                                sourceHandle: "broker-id",
-                                targetHandle: input.arg_name, // Use the actual arg_name as the target handle
-                                type: "smoothstep",
-                                animated: false,
-                                style: {
-                                    strokeWidth: 2,
-                                    stroke: currentTheme === "dark" ? "#3b82f6" : "#2563eb", // Blue color for source connections
-                                },
-                            });
-                        } else {
-                            // Find the source node that provides this broker (within the same workflow)
-                            const sourceNode = workflowNodesData.find((n) =>
-                                n.outputs?.some((output) => output.broker_id === input.source_broker_id)
-                            );
-
-                            if (sourceNode) {
-                                const outputIndex =
-                                    sourceNode.outputs?.findIndex((output) => output.broker_id === input.source_broker_id) ?? 0;
-
-                                edges.push({
-                                    id: `${sourceNode.id}-${node.id}-${inputIndex}`,
-                                    source: sourceNode.id,
-                                    target: node.id,
-                                    sourceHandle: sourceNode.outputs?.[outputIndex]?.name || `output-${outputIndex}`,
-                                    targetHandle: input.arg_name, // Use the actual arg_name as the target handle
-                                    type: "smoothstep",
-                                    animated: false,
-                                    style: {
-                                        strokeWidth: 2,
-                                        stroke: currentTheme === "dark" ? "#6b7280" : "#374151",
-                                    },
-                                });
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
-        return edges;
-    }, [workflowNodesData, workflowSources, currentTheme]);
 
     // UPDATED: Save function using new saveWorkflowFromReactFlow thunk
     const saveWorkflow = useCallback(

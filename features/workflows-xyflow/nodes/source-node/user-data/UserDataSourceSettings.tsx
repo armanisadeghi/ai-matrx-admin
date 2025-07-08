@@ -1,15 +1,14 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Database, Check, ChevronsUpDown } from "lucide-react";
+import { ArrowLeft, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TableReferenceIcon from "@/components/user-generated-table-data/TableReferenceIcon";
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
@@ -20,6 +19,7 @@ import { toast } from "sonner";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { BrokerMapEntry } from "@/lib/redux/brokerSlice/types";
+import BrokerSelect from "@/features/workflows-xyflow/common/BrokerSelect";
 
 interface UserDataSourceSettingsProps {
     isOpen: boolean;
@@ -63,18 +63,7 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
     });
 
     // UI state
-    const [isManualBroker, setIsManualBroker] = useState(false);
-    const [isBrokerSelectOpen, setIsBrokerSelectOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
-
-    // Get sorted brokers for display
-    const sortedBrokers = useMemo(() => {
-        return Object.values(dataBrokerRecordsById).sort((a, b) => {
-            const nameA = (a.name || a.id).toLowerCase();
-            const nameB = (b.name || b.id).toLowerCase();
-            return nameA.localeCompare(nameB);
-        });
-    }, [dataBrokerRecordsById]);
 
     const resetForm = useCallback(() => {
         setFormData({
@@ -83,12 +72,10 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
             source: "workflow",
             sourceId: workflowId,
         });
-        setIsManualBroker(false);
     }, [workflowId]);
 
-    const handleBrokerSelect = useCallback((brokerId: string) => {
+    const handleBrokerChange = useCallback((brokerId: string) => {
         setFormData((prev) => ({ ...prev, brokerId }));
-        setIsBrokerSelectOpen(false);
     }, []);
 
     const handleSourceChange = useCallback(
@@ -104,10 +91,6 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
 
     const handleSourceIdChange = useCallback((sourceId: string) => {
         setFormData((prev) => ({ ...prev, sourceId }));
-    }, []);
-
-    const handleBrokerIdChange = useCallback((brokerId: string) => {
-        setFormData((prev) => ({ ...prev, brokerId }));
     }, []);
 
     // Handle table reference selection
@@ -137,16 +120,19 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                     sourceType: "user_data" as const,
                     brokerId: formData.brokerId,
                     scope: formData.source as any,
+                    relays: [],
+                    extraction: null,
                     sourceDetails: formData.selectedReference,
-                    metadata: null,
+                    metadata: {},
                 };
 
-
                 // Add the source
-                dispatch(workflowActions.addSource({
-                    id: workflowId,
-                    source: sourceConfig,
-                }));
+                dispatch(
+                    workflowActions.addSource({
+                        id: workflowId,
+                        source: sourceConfig,
+                    })
+                );
 
                 // Update broker registry
                 dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));
@@ -169,8 +155,10 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                     sourceType: "user_data" as const,
                     brokerId: formData.brokerId,
                     scope: formData.source as any,
+                    relays: [],
+                    extraction: null,
                     sourceDetails: formData.selectedReference,
-                    metadata: null,
+                    metadata: {},
                 };
 
                 // If broker ID changed, remove old and add new
@@ -181,10 +169,12 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                             brokerId: currentMapping.brokerId,
                         })
                     );
-                    dispatch(workflowActions.addSource({
-                        id: workflowId,
-                        source: sourceConfig,
-                    }));
+                    dispatch(
+                        workflowActions.addSource({
+                            id: workflowId,
+                            source: sourceConfig,
+                        })
+                    );
                 } else {
                     // Update existing source by removing and re-adding
                     dispatch(
@@ -193,10 +183,12 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                             brokerId: formData.brokerId,
                         })
                     );
-                    dispatch(workflowActions.addSource({
-                        id: workflowId,
-                        source: sourceConfig,
-                    }));
+                    dispatch(
+                        workflowActions.addSource({
+                            id: workflowId,
+                            source: sourceConfig,
+                        })
+                    );
                 }
 
                 // Update broker registry
@@ -255,9 +247,7 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                                 key={index}
                                 className={cn(
                                     "border-b transition-colors hover:bg-muted/50",
-                                    index % 2 === 0 
-                                        ? "bg-slate-50/50 dark:bg-slate-800/30" 
-                                        : "bg-slate-100/50 dark:bg-slate-700/30"
+                                    index % 2 === 0 ? "bg-slate-50/50 dark:bg-slate-800/30" : "bg-slate-100/50 dark:bg-slate-700/30"
                                 )}
                             >
                                 <TableCell className="text-sm font-medium text-slate-600 dark:text-slate-400 w-32 py-2">
@@ -283,7 +273,7 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-5xl">
+            <DialogContent className="sm:max-w-5xl aria-describedby={undefined}">
                 <DialogHeader>
                     <div className="flex items-center gap-2">
                         {onBack && (
@@ -297,6 +287,7 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                                 ? "Create Data Source"
                                 : `Edit Data Source${brokerDisplayName ? ` - ${brokerDisplayName}` : ""}`}
                         </DialogTitle>
+                        <DialogDescription className="sr-only">Manage sources for this workflow.</DialogDescription>
                     </div>
                 </DialogHeader>
 
@@ -308,84 +299,13 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                     </div>
 
                     {/* Broker Selection */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-sm font-medium">Broker</Label>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setIsManualBroker(!isManualBroker)}
-                                disabled={isCreating}
-                            >
-                                {isManualBroker ? "Use Database Selection" : "Enter Manually"}
-                            </Button>
-                        </div>
-
-                        {isManualBroker ? (
-                            <Input
-                                value={formData.brokerId}
-                                onChange={(e) => handleBrokerIdChange(e.target.value)}
-                                placeholder="Enter broker ID manually"
-                                disabled={isCreating}
-                            />
-                        ) : (
-                            <Popover open={isBrokerSelectOpen} onOpenChange={setIsBrokerSelectOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={isBrokerSelectOpen}
-                                        className="w-full justify-between"
-                                        disabled={isCreating}
-                                    >
-                                        {formData.brokerId
-                                            ? dataBrokerRecordsById[formData.brokerId]?.name || formData.brokerId
-                                            : "Select a broker..."}
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-full p-0">
-                                    <Command>
-                                        <CommandInput placeholder="Search brokers..." />
-                                        <CommandList>
-                                            <CommandEmpty>No broker found.</CommandEmpty>
-                                            <CommandGroup>
-                                                {sortedBrokers.map((broker) => (
-                                                    <CommandItem
-                                                        key={broker.id}
-                                                        value={`${broker.name || broker.id} ${broker.id}`}
-                                                        onSelect={() => handleBrokerSelect(broker.id)}
-                                                    >
-                                                        <Check
-                                                            className={cn(
-                                                                "mr-2 h-4 w-4",
-                                                                formData.brokerId === broker.id ? "opacity-100" : "opacity-0"
-                                                            )}
-                                                        />
-                                                        <div className="flex flex-col">
-                                                            <span className="font-medium">{broker.name || broker.id}</span>
-                                                            {broker.name && (
-                                                                <span className="text-xs text-muted-foreground">ID: {broker.id}</span>
-                                                            )}
-                                                        </div>
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                        )}
-                    </div>
+                    <BrokerSelect value={formData.brokerId} onValueChange={handleBrokerChange} disabled={isCreating} />
 
                     {/* Data Reference Selection */}
                     <div className="space-y-2">
                         <Label className="text-sm font-medium">Data Reference</Label>
                         {formData.selectedReference ? (
-                            <div className="p-4 bg-background rounded-lg border">
-                                {renderReferenceDetails(formData.selectedReference)}
-                            </div>
+                            <div className="p-4 bg-background rounded-lg border">{renderReferenceDetails(formData.selectedReference)}</div>
                         ) : (
                             <div className="flex flex-col items-center gap-3 p-6 bg-background border-2 border-dashed border-muted-foreground/30 rounded-2xl">
                                 <Database className="w-8 h-8 text-muted-foreground" />

@@ -15,7 +15,7 @@ import {
     getNodeConfig,
 } from "@/features/workflows-xyflow/utils/nodeStyles";
 import BaseNodeToolbar, { ToolbarAction } from "./BaseNodeToolbar";
-import { NodeHandles } from "../handles/NodeHandles";
+import { NodeHandles } from "./NodeHandles";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";

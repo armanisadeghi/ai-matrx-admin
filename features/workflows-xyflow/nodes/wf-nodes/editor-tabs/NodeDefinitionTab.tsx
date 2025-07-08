@@ -3,7 +3,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
-import { SectionContainer, SectionTable, TableRowData } from "./common";
+import { SectionContainer, SectionTable, TableRowData } from "@/features/workflows-xyflow/common";
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toTitleCase } from "@/utils/dataUtils";

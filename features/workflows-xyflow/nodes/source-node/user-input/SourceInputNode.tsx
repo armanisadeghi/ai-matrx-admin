@@ -152,7 +152,7 @@ const UserInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nodeP
                 component: "UserInput",
                 data_type: "string",
                 description: fieldLabel || "User input field",
-                output_type: "user_input",
+                output_type: "userInput",
             },
         ],
 

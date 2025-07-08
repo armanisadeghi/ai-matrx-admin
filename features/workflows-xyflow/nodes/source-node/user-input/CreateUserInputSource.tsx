@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, ChevronsUpDown, ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
 import { brokerActions } from "@/lib/redux/brokerSlice";
@@ -18,8 +15,9 @@ import { workflowActions } from "@/lib/redux/workflow/slice";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+
 import { BrokerSourceConfig } from "@/lib/redux/workflow";
+import BrokerSelect from "@/features/workflows-xyflow/common/BrokerSelect";
 
 interface CreateUserInputSourceProps {
     isOpen: boolean;
@@ -38,7 +36,6 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
 }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
-    const { dataBrokerRecordsById } = useDataBrokerWithFetch();
 
     // Local state for the form
     const [formData, setFormData] = useState({
@@ -50,20 +47,9 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
 
     // UI state
     const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
-    const [isManualBroker, setIsManualBroker] = useState(false);
-    const [isBrokerSelectOpen, setIsBrokerSelectOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
     const fieldLabel = useAppSelector((state) => selectFieldLabel(state, formData.fieldComponentId));
-
-    // Get sorted brokers for display
-    const sortedBrokers = useMemo(() => {
-        return Object.values(dataBrokerRecordsById).sort((a, b) => {
-            const nameA = (a.name || a.id).toLowerCase();
-            const nameB = (b.name || b.id).toLowerCase();
-            return nameA.localeCompare(nameB);
-        });
-    }, [dataBrokerRecordsById]);
 
     const resetForm = useCallback(() => {
         setFormData({
@@ -72,7 +58,6 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
             source: "workflow",
             sourceId: workflowId,
         });
-        setIsManualBroker(false);
     }, [workflowId]);
 
     const handleFieldSelect = useCallback((fieldId: string) => {
@@ -96,9 +81,8 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
         });
     }, [toast]);
 
-    const handleBrokerSelect = useCallback((brokerId: string) => {
+    const handleBrokerChange = useCallback((brokerId: string) => {
         setFormData(prev => ({ ...prev, brokerId }));
-        setIsBrokerSelectOpen(false);
     }, []);
 
     const handleSourceChange = useCallback((newSource: string) => {
@@ -113,9 +97,7 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
         setFormData(prev => ({ ...prev, sourceId }));
     }, []);
 
-    const handleBrokerIdChange = useCallback((brokerId: string) => {
-        setFormData(prev => ({ ...prev, brokerId }));
-    }, []);
+
 
     const handleCreate = useCallback(async () => {
         if (!formData.brokerId.trim() || !formData.fieldComponentId) {
@@ -141,7 +123,10 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
                 brokerId: formData.brokerId,
                 scope: "workflow",
                 sourceType: "user_input",
+                relays: [],
+                extraction: null,
                 sourceDetails: mapEntry,
+                metadata: {},
             };
 
             // Add the source
@@ -206,77 +191,11 @@ const CreateUserInputSource: React.FC<CreateUserInputSourceProps> = ({
 
                     <div className="space-y-4 py-4">
                         {/* Broker Selection */}
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">Broker</Label>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setIsManualBroker(!isManualBroker)}
-                                    disabled={isCreating}
-                                >
-                                    {isManualBroker ? "Use Database Selection" : "Enter Manually"}
-                                </Button>
-                            </div>
-
-                            {isManualBroker ? (
-                                <Input
-                                    value={formData.brokerId}
-                                    onChange={(e) => handleBrokerIdChange(e.target.value)}
-                                    placeholder="Enter broker ID manually"
-                                    disabled={isCreating}
-                                />
-                            ) : (
-                                <Popover open={isBrokerSelectOpen} onOpenChange={setIsBrokerSelectOpen}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            aria-expanded={isBrokerSelectOpen}
-                                            className="w-full justify-between"
-                                            disabled={isCreating}
-                                        >
-                                            {formData.brokerId ? 
-                                                dataBrokerRecordsById[formData.brokerId]?.name || formData.brokerId : 
-                                                "Select a broker..."
-                                            }
-                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-full p-0">
-                                        <Command>
-                                            <CommandInput placeholder="Search brokers..." />
-                                            <CommandList>
-                                                <CommandEmpty>No broker found.</CommandEmpty>
-                                                <CommandGroup>
-                                                    {sortedBrokers.map((broker) => (
-                                                        <CommandItem
-                                                            key={broker.id}
-                                                            value={`${broker.name || broker.id} ${broker.id}`}
-                                                            onSelect={() => handleBrokerSelect(broker.id)}
-                                                        >
-                                                            <Check
-                                                                className={cn(
-                                                                    "mr-2 h-4 w-4",
-                                                                    formData.brokerId === broker.id ? "opacity-100" : "opacity-0"
-                                                                )}
-                                                            />
-                                                            <div className="flex flex-col">
-                                                                <span className="font-medium">{broker.name || broker.id}</span>
-                                                                {broker.name && (
-                                                                    <span className="text-xs text-muted-foreground">ID: {broker.id}</span>
-                                                                )}
-                                                            </div>
-                                                        </CommandItem>
-                                                    ))}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-                            )}
-                        </div>
+                        <BrokerSelect
+                            value={formData.brokerId}
+                            onValueChange={handleBrokerChange}
+                            disabled={isCreating}
+                        />
 
                         {/* Field Component */}
                         <div className="space-y-2">

@@ -159,13 +159,19 @@ export const selectActiveWorkflowNodeDependencies = createSelector(
 
 // FIXED: Utility selectors with proper input selectors
 export const selectWorkflowNodeInputById = createSelector(
-  [selectWorkflowNodeInputs, (_: RootState, __: string, index: number) => index],
-  (inputs, index) => inputs[index] || null
+  [selectWorkflowNodeState, (_: RootState, nodeId: string, index: number) => ({ nodeId, index })],
+  (nodeState, { nodeId, index }) => {
+    const inputs = nodeState.entities[nodeId]?.inputs || [];
+    return inputs[index] || null;
+  }
 );
 
-export const selectWorkflowNodeOutputById = createSelector(
-  [selectWorkflowNodeOutputs, (_: RootState, __: string, index: number) => index],
-  (outputs, index) => outputs[index] || null
+export const selectWorkflowNodeOutputByBrokerId = createSelector(
+  [selectWorkflowNodeState, (_: RootState, nodeId: string, brokerId: string) => ({ nodeId, brokerId })],
+  (nodeState, { nodeId, brokerId }) => {
+    const outputs = nodeState.entities[nodeId]?.outputs || [];
+    return outputs.find(output => output.broker_id === brokerId) || null;
+  }
 );
 
 // Safe metadata selectors
@@ -236,9 +242,9 @@ export const workflowNodesSelectors = {
   activeNodeOutputs: selectActiveWorkflowNodeOutputs,
   activeNodeDependencies: selectActiveWorkflowNodeDependencies,
   
-  // Utility selectors (require node ID parameter)
-  nodeInputById: selectWorkflowNodeInputById,
-  nodeOutputById: selectWorkflowNodeOutputById,
+  // Utility selectors (require node ID and additional parameters)
+  nodeInputById: selectWorkflowNodeInputById, // (nodeId, index)
+  nodeOutputByBrokerId: selectWorkflowNodeOutputByBrokerId, // (nodeId, brokerId)
 
   // Safe metadata selectors
   nodeMetadata: selectWorkflowNodeMetadata,

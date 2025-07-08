@@ -2,8 +2,6 @@
 
 import React, { useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { getHandleColor } from "../../utils/nodeStyles";
-import { RegisteredNodeData } from "@/types/AutomationSchemaTypes";
 import { toTitleCase } from "@/utils/dataUtils";
 
 export type NodeInput = {

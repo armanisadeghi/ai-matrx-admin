@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useReactFlow } from "@xyflow/react";
 import { IconButton } from "@/components/ui/icon-button";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
@@ -11,6 +11,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from '@/styles/themes/ThemeProvider';
 
 import {
     Save,
@@ -29,6 +30,9 @@ import {
     Database,
     Eye,
     EyeOff,
+    Sun,
+    Moon,
+    Clock,
 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -37,6 +41,7 @@ import { FiEdit } from "react-icons/fi";
 import { WorkflowEditOverlay } from "@/features/workflows-xyflow/common/WorkflowEditOverlay";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
+import { selectWorkflowIsDirty } from "@/lib/redux/workflow/selectors";
 import { NodesMenu } from "@/features/workflows-xyflow/common/NodesMenu";
 import { BsFillNodePlusFill } from "react-icons/bs";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
@@ -69,8 +74,15 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     const allNodesArray = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId));
     const nodeCount = allNodesArray.length;
     const userId = useAppSelector(selectUserId);
+    const { mode: themeMode, toggleMode } = useTheme();
+    
+    // Auto-save functionality - watch for workflow dirty state
+    const isWorkflowDirty = useAppSelector(state => selectWorkflowIsDirty(state, workflowId));
+    const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isAutoSaving, setIsAutoSaving] = useState(false);
+    const [lastAutoSaveTime, setLastAutoSaveTime] = useState<Date | null>(null);
     const [isExecuting, setIsExecuting] = useState(false);
     const [isWorkflowEditOpen, setIsWorkflowEditOpen] = useState(false);
     const [isAddNodeDropdownOpen, setIsAddNodeDropdownOpen] = useState(false);
@@ -80,6 +92,47 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     // Proper undo/redo state management
     const [history, setHistory] = useState<{ nodes: any[]; edges: any[] }[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
+
+    // Auto-save effect - debounced save when workflow becomes dirty
+    useEffect(() => {
+        if (isWorkflowDirty && mode === "edit" && onSave) {
+            // Clear any existing timeout
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+
+            // Set up debounced save - wait 2 seconds after last change
+            autoSaveTimeoutRef.current = setTimeout(async () => {
+                console.log('🔄 Auto-saving workflow due to changes...');
+                setIsAutoSaving(true);
+                try {
+                    await onSave();
+                    setLastAutoSaveTime(new Date());
+                    console.log('✅ Auto-save completed');
+                } catch (error) {
+                    console.error('❌ Auto-save failed:', error);
+                } finally {
+                    setIsAutoSaving(false);
+                }
+            }, 2000);
+        }
+
+        // Cleanup function
+        return () => {
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+        };
+    }, [isWorkflowDirty, mode, onSave]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Save current state to history
     const saveToHistory = () => {
@@ -175,10 +228,11 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
 
     // Handle save with loading state
     const handleSave = async () => {
-        if (onSave && !isSaving) {
+        if (onSave && !isSaving && !isAutoSaving) {
             setIsSaving(true);
             try {
                 await onSave();
+                setLastAutoSaveTime(new Date());
             } catch (error) {
                 console.error("Save failed:", error);
                 throw error; // Re-throw to prevent success feedback on error
@@ -272,6 +326,59 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                     </div>
                 </div>
 
+                    {/* Save Button with Auto-Save Status */}
+                    {mode === "edit" && onSave && (
+                        <div className="flex items-center space-x-2">
+                            {/* Auto-Save Status Indicator */}
+                            {isAutoSaving && (
+                                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                                    <Clock className="h-3 w-3 animate-spin" />
+                                    <span>Auto-saving...</span>
+                                </div>
+                            )}
+                            {lastAutoSaveTime && !isAutoSaving && !isSaving && (
+                                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                    <span>Saved {lastAutoSaveTime.toLocaleTimeString()}</span>
+                                </div>
+                            )}
+                            
+                            <ActionFeedbackButton
+                                icon={
+                                    isSaving || isAutoSaving ? (
+                                        <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4" />
+                                    ) : (
+                                        <Save className="h-4 w-4" />
+                                    )
+                                }
+                                tooltip={
+                                    isSaving || isAutoSaving 
+                                        ? "Saving..." 
+                                        : isWorkflowDirty 
+                                            ? "Save Workflow" 
+                                            : "No changes to save"
+                                }
+                                variant={isWorkflowDirty ? "default" : "ghost"}
+                                size="sm"
+                                onClick={handleSave}
+                                disabled={isSaving || isAutoSaving || !isWorkflowDirty}
+                                disabledTooltip={
+                                    isSaving || isAutoSaving 
+                                        ? "Saving workflow..." 
+                                        : "No changes to save"
+                                }
+                                successIcon={<CheckCircle2 className="h-4 w-4 text-green-500 dark:text-green-400" />}
+                                successTooltip={isAutoSaving ? "Workflow auto-saved!" : "Workflow saved!"}
+                                feedbackDuration={2000}
+                                className={
+                                    isWorkflowDirty 
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                                        : "bg-muted text-muted-foreground"
+                                }
+                            />
+                        </div>
+                    )}
+
                 {/* Right side - Actions */}
                 <div className="flex items-center space-x-1">
                     {mode === "edit" && (
@@ -361,6 +468,20 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                         <div className="w-px h-4 bg-border mx-1" />
                     </div>
 
+                    {/* Theme Toggle */}
+                    <ActionFeedbackButton
+                        icon={themeMode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        tooltip={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                        variant="ghost"
+                        size="sm"
+                        onClick={toggleMode}
+                        successTooltip={themeMode === 'dark' ? 'Switched to Light Mode!' : 'Switched to Dark Mode!'}
+                        feedbackDuration={500}
+                        successIcon={themeMode === 'dark' ? <Sun className="h-4 w-4 text-blue-500 dark:text-blue-400" /> : <Moon className="h-4 w-4 text-blue-500 dark:text-blue-400" />}
+                    />
+
+                    <div className="w-px h-4 bg-border mx-1" />
+
                     {/* View Controls */}
                     <div className="hidden sm:flex items-center space-x-1">
                         <ActionFeedbackButton
@@ -436,28 +557,6 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Save Button */}
-                    {mode === "edit" && onSave && (
-                        <ActionFeedbackButton
-                            icon={
-                                isSaving ? (
-                                    <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4" />
-                                ) : (
-                                    <Save className="h-4 w-4" />
-                                )
-                            }
-                            tooltip={isSaving ? "Saving..." : "Save Workflow"}
-                            variant="default"
-                            size="sm"
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            disabledTooltip="Saving workflow..."
-                            successIcon={<CheckCircle2 className="h-4 w-4 text-green-500 dark:text-green-400" />}
-                            successTooltip="Workflow saved!"
-                            feedbackDuration={2000}
-                            className="bg-primary text-primary-foreground hover:bg-primary/90"
-                        />
-                    )}
                 </div>
             </div>
 

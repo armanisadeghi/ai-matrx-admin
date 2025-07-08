@@ -3,13 +3,13 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { getHandleColor } from '../../utils/nodeStyles';
-import { NodeHandle } from './NodeHandles';
+import { InputHandle, OutputHandle } from './NodeHandles';
 
 interface CompactNodeHandlesProps {
   /** Array of input handles to render */
-  inputHandles?: NodeHandle[];
+  inputHandles?: InputHandle[];
   /** Array of output handles to render */
-  outputHandles?: NodeHandle[];
+  outputHandles?: OutputHandle[];
   /** Optional validation function for connections */
   isValidConnection?: (connection: any) => boolean;
 }

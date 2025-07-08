@@ -43,6 +43,8 @@ import { getNodeMinimapColor } from "../utils/nodeStyles";
 import QuickAccessPanel from "../access-panel/QuickAccessPanel";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import { DefaultNode } from "../nodes/base/DefaultNode";
+import { ArgMapping, InputConfig, Output, Relay } from "@/lib/redux/workflow/types";
+import { useProcessConnection } from "../hooks/useProcessConnection";
 
 interface WorkflowCanvasProps {
     workflowId: string;
@@ -65,6 +67,7 @@ interface WorkflowCanvasProps {
     isAdminOverlayOpen?: boolean;
     onOpenAdminOverlay?: (open: boolean) => void;
     onRecipeNodeCreated?: (nodeData: WorkflowNode) => void;
+    handleSave?: () => void;
 }
 
 export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
@@ -87,6 +90,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     isAdminOverlayOpen,
     onOpenAdminOverlay,
     onRecipeNodeCreated,
+    handleSave,
 }) => {
     const reactFlowInstance = useReactFlow();
 
@@ -239,6 +243,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         [currentTheme]
     );
 
+    const { handleProcessConnection } = useProcessConnection({ workflowId, handleSave });
+
+
     // Enhanced connection validation
     const isValidConnection = useCallback(
         (connection: Connection) => {
@@ -275,34 +282,15 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         [edges, nodes]
     );
 
-    // Connection Event Handlers - Added comprehensive logging
-    const handleConnectStart: OnConnectStart = useCallback((event, params) => {
-        // console.log('🔄 onConnectStart called with:', {
-        //     event: {
-        //         type: event.type,
-        //         clientX: 'clientX' in event ? event.clientX : undefined,
-        //         clientY: 'clientY' in event ? event.clientY : undefined,
-        //         target: event.target,
-        //     },
-        //     connectionData: {
-        //         nodeId: params.nodeId,
-        //         handleId: params.handleId,
-        //         handleType: params.handleType,
-        //     }
-        // });
-    }, []);
 
     const handleConnect: OnConnect = useCallback(
         (connection) => {
-            console.log('-> onConnect called with connection:', {
-                isValid: isValidConnection(connection),
-                sourceNode: nodes.find(n => n.id === connection.source),
-                targetNode: nodes.find(n => n.id === connection.target),
-            });
             console.log(JSON.stringify(connection, null, 2));
-
+        
             if (isValidConnection(connection)) {
-                // Create a new edge with proper styling and ID
+                
+                const connectionData = handleProcessConnection(connection);
+                
                 const newEdge: Edge = {
                     id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
                     source: connection.source!,
@@ -316,37 +304,21 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                         stroke: currentTheme === "dark" ? "#6b7280" : "#374151",
                     },
                     data: {
-                        // Store connection metadata for future use
-                        createdAt: new Date().toISOString(),
+                        ...connectionData,
                         isTemporary: true, // Mark as temporary until backend is implemented
+                        createdAt: new Date().toISOString(),
                     },
                 };
-
-                console.log('✅ Creating new edge:', newEdge);
                 setEdges((eds) => [...eds, newEdge]);
             } else {
                 console.log('❌ Connection rejected - validation failed');
             }
         },
-        [setEdges, isValidConnection, currentTheme, nodes]
+        [setEdges, isValidConnection, currentTheme, nodes, handleProcessConnection]
     );
 
-    const handleConnectEnd: OnConnectEnd = useCallback((event) => {
-        console.log('🏁 onConnectEnd called with event:', {
-            type: event.type,
-            clientX: 'clientX' in event ? event.clientX : undefined,
-            clientY: 'clientY' in event ? event.clientY : undefined,
-            target: event.target,
-        });
-    }, []);
 
     const handleReconnect: OnReconnect = useCallback((oldEdge, newConnection) => {
-        console.log('🔄 onReconnect called with:', {
-            oldEdge,
-            newConnection,
-            isValidNewConnection: isValidConnection(newConnection),
-        });
-
         if (isValidConnection(newConnection)) {
             console.log('✅ Reconnecting edge');
             setEdges((eds) => eds.map((edge) => 
@@ -461,8 +433,6 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 onNodesChange={handleNodesChange}
                 onEdgesChange={handleEdgesChange}
                 onConnect={handleConnect}
-                onConnectStart={handleConnectStart}
-                onConnectEnd={handleConnectEnd}
                 onReconnect={handleReconnect}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}

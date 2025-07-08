@@ -1,3 +1,3 @@
-export * from "./SectionContainer";
-export * from "./SectionTable";
+export * from "../../../../common/SectionContainer";
+export * from "../../../../common/SectionTable";
 export * from "./DataTypeInput";

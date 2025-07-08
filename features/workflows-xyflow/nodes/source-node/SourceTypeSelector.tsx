@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Database, ArrowLeft } from "lucide-react";
@@ -93,6 +93,9 @@ const SourceTypeSelector: React.FC<SourceTypeSelectorProps> = ({
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>Select Source Type</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Choose between user input source for collecting data from users or data source for referencing existing database tables.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-3">

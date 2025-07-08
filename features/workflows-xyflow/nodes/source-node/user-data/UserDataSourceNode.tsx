@@ -147,7 +147,7 @@ const UserDataSourceNodeComponent: React.FC<UserDataSourceNodeProps> = ({ data, 
                 component: typeToComponentMap[sourceDataType || "DefaultComponent"],
                 data_type: "dict",
                 description: selectedTable?.description || null,
-                output_type: "user_data",
+                output_type: "userData",
             },
         ],
         

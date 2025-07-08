@@ -11,7 +11,7 @@ import {
     duplicateWorkflowNode,
 } from "./thunks";
 import { RegisteredNodeData } from "@/types";
-import { NodeInput } from "@/features/workflows-xyflow/nodes/handles/NodeHandles";
+import { NodeInput } from "@/features/workflows-xyflow/nodes/base/NodeHandles";
 
 export const DEFAULT_WORKFLOW_NODE: Omit<WorkflowNode, "id" | "created_at" | "updated_at" | "user_id"> = {
     workflow_id: null,
@@ -136,6 +136,29 @@ const workflowNodeSlice = createSlice({
             const { id, index, output } = action.payload;
             if (state.entities[id] && state.entities[id].outputs && state.entities[id].outputs![index]) {
                 state.entities[id].outputs![index] = output;
+                state.isDirty[id] = true;
+            }
+        },
+
+        addOrUpdateOutput: (state, action: PayloadAction<{ id: string; output: Output }>) => {
+            const { id, output } = action.payload;
+            if (state.entities[id]) {
+                if (!state.entities[id].outputs) {
+                    state.entities[id].outputs = [];
+                }
+                
+                const brokerId = output.broker_id;
+                if (brokerId) {
+                    const existingOutputIndex = state.entities[id].outputs!.findIndex(o => o.broker_id === brokerId);
+                    if (existingOutputIndex !== -1) {
+                        state.entities[id].outputs![existingOutputIndex] = output;
+                    } else {
+                        state.entities[id].outputs!.push(output);
+                    }
+                } else {
+                    state.entities[id].outputs!.push(output);
+                }
+                
                 state.isDirty[id] = true;
             }
         },

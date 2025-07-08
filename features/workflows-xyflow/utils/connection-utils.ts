@@ -1,6 +1,5 @@
 import { Connection, Edge } from "@xyflow/react";
 
-
 // const handleConnect: OnConnect = useCallback(
 //     (connection) => {
 //         console.log('-> onConnect called with connection:', {
@@ -9,7 +8,6 @@ import { Connection, Edge } from "@xyflow/react";
 //             targetNode: nodes.find(n => n.id === connection.target),
 //         });
 //         console.log(JSON.stringify(connection, null, 2));
-
 
 //         if (isValidConnection(connection)) {
 //             // Create a new edge with proper styling and ID
@@ -54,7 +52,7 @@ import { Connection, Edge } from "@xyflow/react";
 //     "target": "7c55700f-3e38-4ee3-b2a7-85e3c425a3e3",
 //     "targetHandle": "broker-5d8c5ed2-5a84-476a-9258-6123a45f996a"
 //   }
-//   
+//
 // Example connection to argument
 // {
 //     "animated": false,
@@ -69,20 +67,100 @@ import { Connection, Edge } from "@xyflow/react";
 //     "targetHandle": "argument-keyword"
 //   }
 
-const filterBrokerData = (connection: Connection): any => {
-    const sourceId = connection.sourceHandle
-    const targetType = connection.targetHandle?.split("-")[0];
-    const targetId = connection.targetHandle?.split("-")[1];
+interface ArgMapping {
+    arg_name: string;
+    ready: boolean;
+}
 
-    if (targetType === "broker") {
+// Simple type mapping
+type MappingDetails = {
+    user_input: any;
+    arg_mapping: ArgMapping;
+    dependency: Record<string, any>;
+    environment: Record<string, any>;
+    other: Record<string, any>;
+};
+
+interface InputConfig<T extends keyof MappingDetails = keyof MappingDetails> {
+    mappingType: T;
+    scope: "global" | "session" | "task" | "organization" | "user" | "workflow" | "action" | "temporary" | string;
+    scopeId: string;
+    brokerId: string;
+    mappingDetails: MappingDetails[T];
+    extraction?: "label" | "id" | "object" | "string" | null;
+    metadata?: Record<string, any> | null;
+}
+
+interface Bookmark {
+    name?: string | null;
+    path?: string[];
+}
+
+interface Result {
+    component?: string | null;
+    bookmark?: Bookmark | null;
+    metadata?: Record<string, any>;
+}
+
+
+interface Relay {
+    type?: string | null;
+    id?: string | null;
+}
+
+interface Output {
+    broker_id: string | null;
+    is_default_output: boolean;
+    name: string | null;
+    bookmark: Bookmark | null;
+    conversion: any;
+    data_type: string | null;
+    result: Result | null;
+    relays?: Relay[];
+    metadata: Record<string, any>;
+}
+
+
+interface ConnectionResult {
+    edge: Edge;
+    inputConfig: InputConfig;
+    output: Output;
+}
+
+
+const filterBrokerData = (connection: Connection, workflowId: string, sourceOutput: Output): ConnectionResult => {
+    const sourceHandleId = connection.sourceHandle;
+    const targetType = connection.targetHandle?.split("-")[0];
+    const targetHandleId = connection.targetHandle?.split("-")[1];
+    let updatedInput: InputConfig;
+    let updatedOutput: Output;
+
+    if (sourceHandleId === targetHandleId) {
+        console.log("-> source and target are the same. No node changes needed. Just create an edge.");
+    } else if (targetType === "broker") {
         console.log("-> target is a broker");
+        const relay: Relay = {
+            type: "broker",
+            id: targetHandleId,
+        };
+        updatedOutput = {
+            ...sourceOutput,
+            relays: [...sourceOutput.relays, relay],
+        }
     } else if (targetType === "argument") {
         console.log("-> target is an argument");
+        const mappingEntry: ArgMapping = {
+            arg_name: targetHandleId,
+            ready: true,
+        };
+        const inputConfig: InputConfig<"arg_mapping"> = {
+            mappingType: "arg_mapping",
+            scope: "workflow",
+            scopeId: workflowId,
+            brokerId: sourceHandleId,
+            mappingDetails: mappingEntry,
+        };
     }
-    
-    
-
-
 
     const newEdge: Edge = {
         id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
@@ -102,9 +180,58 @@ const filterBrokerData = (connection: Connection): any => {
         },
     };
 
-
-
-
     return {
+        edge: newEdge,
+        inputConfig: updatedInput,
+        output: updatedOutput,
     };
 };
+
+const processConnectionToBroker = (connection: Connection, workflowId: string, sourceOutput: Output): Output => {
+    const sourceHandleId = connection.sourceHandle;
+    const targetType = connection.targetHandle?.split("-")[0];
+    const targetHandleId = connection.targetHandle?.split("-")[1];
+    const relay: Relay = {
+        type: "broker",
+        id: targetHandleId,
+    };
+    const updatedOutput: Output = {
+        ...sourceOutput,
+        relays: [...sourceOutput.relays, relay],
+    }
+
+    return updatedOutput;
+}
+
+const processConnectionToArgument = (connection: Connection, workflowId: string): InputConfig<"arg_mapping"> => {
+    const sourceHandleId = connection.sourceHandle;
+    const targetType = connection.targetHandle?.split("-")[0];
+    const targetHandleId = connection.targetHandle?.split("-")[1];
+    const mappingEntry: ArgMapping = {
+        arg_name: targetHandleId,
+        ready: true,
+    };
+    const inputConfig: InputConfig<"arg_mapping"> = {
+        mappingType: "arg_mapping",
+        scope: "workflow",
+        scopeId: workflowId,
+        brokerId: sourceHandleId,
+        mappingDetails: mappingEntry,
+    };
+
+    return inputConfig;
+}
+
+const createEdgeFromConnection = (connection: Connection): Edge => {
+    const newEdge: Edge = {
+        id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
+        source: connection.source!,
+        target: connection.target!,
+        sourceHandle: connection.sourceHandle,
+        targetHandle: connection.targetHandle,
+        type: "smoothstep",
+        animated: false,
+    };
+    return newEdge;
+}
+

@@ -60,12 +60,14 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                 metadata: dataBrokerRecordsById[broker.id],
             }));
             const newDataInputs = neededBrokers.map((broker) => ({
-                type: "arg_mapping" as const,
-                ready: false,
-                arg_name: broker.name,
-                id: broker.id,
+                type: "broker" as const,
+                arg_name: null,
+                source_broker_id: broker.id,
+                ready: true,
                 default_value: broker.defaultValue,
                 metadata: {
+                    scope: "workflow",
+                    scopeId: node.workflow_id,
                     required: true,
                     data_type: broker.dataType,
                     use_system_default: false,
