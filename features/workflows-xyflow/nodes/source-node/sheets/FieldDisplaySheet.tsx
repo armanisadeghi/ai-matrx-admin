@@ -26,10 +26,9 @@ const FieldDisplaySheet: React.FC<FieldDisplaySheetProps> = ({ isOpen, onOpenCha
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
-    const workflow = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
     const isDirty = useAppSelector((state) => workflowsSelectors.isDirty(state, workflowId));
 
-    const userInputSources = useAppSelector((state) => workflowsSelectors.workflowSources(state, workflowId));
+    const userInputSources = useAppSelector((state) => workflowsSelectors.workflowUserInputSources(state, workflowId));
     const sourceFieldIds = userInputSources
         .map((source) => (source as BrokerSourceConfig<"user_input">).sourceDetails?.mappedItemId)
         .filter((id) => id !== null && id !== undefined && id !== "");
@@ -37,25 +36,20 @@ const FieldDisplaySheet: React.FC<FieldDisplaySheetProps> = ({ isOpen, onOpenCha
     // Get field labels for displaying alongside broker IDs
     const fieldLabels = useAppSelector((state) => selectFieldLabelsByIds(state, sourceFieldIds));
 
-    // Determine default tab based on whether sources exist
+    // Determine default tab based on whether we have any mapped fields
     const defaultTab = useMemo(() => {
-        return userInputSources.length > 0 ? "fields" : "mappings";
-    }, [userInputSources.length]);
+        return sourceFieldIds.length > 0 ? "fields" : "mappings";
+    }, [sourceFieldIds.length]);
 
     const [activeTab, setActiveTab] = useState(defaultTab);
     const [showMappingForm, setShowMappingForm] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // Update active tab when sources change and we're currently on the default
+    // Update active tab when the default tab changes
     React.useEffect(() => {
-        if (activeTab === defaultTab) {
-            const newDefaultTab = userInputSources.length > 0 ? "fields" : "mappings";
-            if (newDefaultTab !== activeTab) {
-                setActiveTab(newDefaultTab);
-            }
-        }
-    }, [userInputSources.length, activeTab, defaultTab]);
+        setActiveTab(defaultTab);
+    }, [defaultTab]);
 
     const handleMappingCreated = useCallback(() => {
         setShowMappingForm(false);

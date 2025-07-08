@@ -34,10 +34,11 @@ const SourceInputSettings: React.FC<{
     const { getNode } = useReactFlow();
     const node = getNode(nodeId);
     const data = (node?.data || {}) as SourceInputNodeData;
+    const workflowId = data.workflowId as string;
 
     // Get Redux data for this source
     const currentSource = useAppSelector((state) =>
-        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, data.sourceId || "", data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, workflowId, data.brokerId) : null
     );
 
     // Determine mode based on whether we have an existing source
@@ -57,7 +58,7 @@ const SourceInputSettings: React.FC<{
         <UserInputNodeSettings
             isOpen={isOpen}
             onOpenChange={onOpenChange}
-            workflowId={data.sourceId || ""}
+            workflowId={workflowId}
             mode={mode}
             currentMapping={currentMapping}
             onSuccess={() => {
@@ -72,10 +73,10 @@ const UserInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nodeP
     const dispatch = useAppDispatch();
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
     const { toast } = useToast();
-
+    const workflowId = data.workflowId as string;
     // Get Redux data for this source
     const currentSource = useAppSelector((state) =>
-        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, (data.workflowId as string) || "", data.brokerId) : null
+        data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, workflowId, data.brokerId) : null
     );
 
     // Note: Display mode is handled by BaseNode using React Flow's node data

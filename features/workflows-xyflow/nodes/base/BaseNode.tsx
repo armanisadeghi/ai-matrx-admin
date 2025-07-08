@@ -27,6 +27,7 @@ export interface BaseNodeData extends Record<string, unknown> {
     isActive?: boolean;
     status?: string;
     executionRequired?: boolean;
+    workflowId?: string;
 }
 
 // Configuration interface for node customization
