@@ -13,6 +13,7 @@ import RecipeNodeInitializer from "./custom-nodes/recipes/RecipeNodeInitializer"
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { saveWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
+import { autoArrangeNodes } from "./utils/auto-arrange";
 
 interface WorkflowSystemProps {
     workflowId: string;
@@ -46,43 +47,14 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
         }
     }, [saveWorkflow, reactFlowInstance]);
 
-    // Auto arrange handler - implements custom layout logic at top level
+    // Auto arrange handler - uses our dedicated utility
     const handleAutoArrange = useCallback(() => {
         const currentNodes = reactFlowInstance.getNodes();
+        const currentEdges = reactFlowInstance.getEdges();
 
-        // Separate source input nodes from regular workflow nodes
-        const sourceNodes = currentNodes.filter(node => node.type === 'userInput' || node.type === 'userDataSource');
-        const regularNodes = currentNodes.filter(node => node.type !== 'userInput' && node.type !== 'userDataSource');
-
-        const arrangedNodes = [
-            // Position source nodes on the left in compact mode (like initial render)
-            ...sourceNodes.map((node, index) => ({
-                ...node,
-                position: {
-                    x: -300, // Same as initial positioning
-                    y: index * 120, // Same spacing as initial positioning
-                },
-                data: {
-                    ...node.data,
-                    displayMode: "compact", // Ensure they're compact
-                },
-            })),
-            // Arrange regular nodes in a grid to the right
-            ...regularNodes.map((node, index) => {
-                const cols = Math.ceil(Math.sqrt(regularNodes.length));
-                const row = Math.floor(index / cols);
-                const col = index % cols;
-
-                return {
-                    ...node,
-                    position: {
-                        x: col * 350 + 100, // Start at x: 100 to leave space for source nodes
-                        y: row * 350 + 100,
-                    },
-                };
-            }),
-        ];
-
+        // Use our dedicated auto-arrange utility
+        const arrangedNodes = autoArrangeNodes(currentNodes, currentEdges);
+        
         reactFlowInstance.setNodes(arrangedNodes);
 
         setTimeout(() => {
