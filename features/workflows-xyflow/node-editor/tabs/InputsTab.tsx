@@ -9,8 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
 import { ALL_HIDDEN_CONNECTIONS, generateNodeInputs } from "@/features/workflows-xyflow/utils";
-import DataTypeInput from "./common/DataTypeInput";
-import { SectionContainer } from "./common";
+import DataTypeInput from "@/features/workflows-xyflow/node-editor/common/DataTypeInput";
+import { SectionContainer, SectionTable } from "@/features/workflows-xyflow/common";
 import { DefaultTabProps } from "./types";
 import { toTitleCase } from "@/utils/dataUtils";
 
@@ -321,12 +321,12 @@ const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                 <div className="p-4 space-y-4">
                     {visibleInputs
                         .filter((input) => shouldShowInDetailedEditor(input))
-                        .map((input) => {
+                        .map((input, index) => {
                             const showRedBorder = shouldShowRedBorder(input);
                             
                             return (
                                 <div 
-                                    key={input.arg_name} 
+                                    key={`${input.arg_name}-${index}`} 
                                     className={`border rounded-lg p-3 space-y-3 bg-card ${
                                         showRedBorder ? 'border-red-500 border-2' : ''
                                     }`}

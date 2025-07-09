@@ -6,11 +6,11 @@ import { DefaultTabProps } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
-import { SectionTable, TableRowData } from "./common";
+import { SectionTable, TableRowData } from "@/features/workflows-xyflow/common";
 import { TableCell } from "@/components/ui/table";
 import { toTitleCase } from "@/utils/dataUtils";
 import { Output } from "@/lib/redux/workflow/types";
-import { NodeInputsTable } from "./common/NodeInputsTable";
+import { NodeInputsTable } from "@/features/workflows-xyflow/node-editor/common";
 
 export type NodeInput = {
     name: string;

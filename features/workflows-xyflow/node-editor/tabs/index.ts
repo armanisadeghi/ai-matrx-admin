@@ -8,12 +8,7 @@ export { default as RawDataTab } from "./RawDataTab";
 export { default as RegisteredFunctionTab } from "./RegisteredFunctionTab";
 export { default as InputsTab } from "./InputsTab";
 export { default as NodeDefinitionTab } from "./NodeDefinitionTab";
-
-// Reusable components
-export { default as NodeInputsTable } from "./common/NodeInputsTable";
-
-// Common components
-export { default as DataTypeInput } from "./common/DataTypeInput";
+export { default as SampleResultsTab } from "./SampleResultsTab";
 
 // Types
 export type { DefaultTabProps } from "./types";

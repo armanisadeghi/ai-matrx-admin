@@ -5,7 +5,7 @@ import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionTable } from ".";
+import { SectionTable } from "@/features/workflows-xyflow/common";
 import { TableCell } from "@/components/ui/table";
 import { toTitleCase } from "@/utils/dataUtils";
 import { InputMapping } from "@/lib/redux/workflow/types";

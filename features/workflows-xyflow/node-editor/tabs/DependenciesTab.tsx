@@ -5,7 +5,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { DefaultTabProps } from "./types";
 import { Badge } from "@/components/ui/badge";
-import { SectionContainer, SectionTable } from "./common";
+import { SectionContainer, SectionTable } from "@/features/workflows-xyflow/common";
 import { TableCell } from "@/components/ui/table";
 import { toTitleCase } from "@/utils/dataUtils";
 

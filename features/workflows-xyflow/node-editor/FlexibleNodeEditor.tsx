@@ -10,7 +10,8 @@ import {
     RegisteredFunctionTab,
     RawDataTab,
     NodeDefinitionTab,
-} from "@/features/workflows-xyflow/nodes/wf-nodes/editor-tabs";
+    SampleResultsTab,
+} from "@/features/workflows-xyflow/node-editor/tabs";
 
 // Helper component to make tab creation easier
 interface TabProps {
@@ -57,6 +58,7 @@ export const NodeEditorOne = ({
             <Tab id="outputs" label="Outputs" component={OutputsTab} />
             <Tab id="dependencies" label="Dependencies" component={DependenciesTab} />
             <Tab id="definition" label="Node Definition" component={NodeDefinitionTab} />
+            <Tab id="sample-results" label="Sample Results" component={SampleResultsTab} />
             <Tab id="admin" label="Admin" component={AdminTab} />
             <Tab id="metadata" label="Metadata" component={MetadataTab} />
             <Tab id="rawdata" label="Raw Data" component={RawDataTab} />

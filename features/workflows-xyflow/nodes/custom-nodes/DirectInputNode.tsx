@@ -13,8 +13,7 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
-import { NodeEditorOne } from "../wf-nodes/FlexibleNodeEditor";
-import { toTitleCase } from "@/utils/dataUtils";
+import { NodeEditorOne } from "@/features/workflows-xyflow/node-editor/FlexibleNodeEditor";
 import { NodeInput } from "../base/NodeHandles";
 import { DIALOG_REGISTRY, DialogType } from "./custom-components";
 

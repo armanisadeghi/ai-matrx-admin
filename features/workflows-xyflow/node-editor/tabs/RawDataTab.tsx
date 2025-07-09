@@ -3,7 +3,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
-import { SectionContainer } from "./common";
+import { SectionContainer, SectionTable } from "@/features/workflows-xyflow/common";
 
 interface RawDataTabProps {
     nodeId: string;

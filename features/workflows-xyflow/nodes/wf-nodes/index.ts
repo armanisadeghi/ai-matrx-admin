@@ -12,4 +12,4 @@ export { DefaultNodeEditor, SimpleNodeEditor } from './editor-options/NodeEditor
 export type { TabConfig } from './editor-options/DynamicNodeEditor';
 
 // All editor tabs and components
-export * from './editor-tabs'; 
+export * from '../../node-editor/tabs'; 

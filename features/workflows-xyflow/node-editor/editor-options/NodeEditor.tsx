@@ -9,7 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 // Tab components
-import { OverviewTab, InputsTab, OutputsTab, DependenciesTab, AdminTab, MetadataTab, RawDataTab, NodeDefinitionTab } from "../editor-tabs";
+import {
+    OverviewTab,
+    InputsTab,
+    OutputsTab,
+    DependenciesTab,
+    AdminTab,
+    MetadataTab,
+    RawDataTab,
+    NodeDefinitionTab,
+} from "@/features/workflows-xyflow/node-editor/tabs";
 
 interface NodeEditorProps {
     nodeId: string;

@@ -1,10 +1,9 @@
 "use client";
 
-import React, { memo, useCallback, useState, useMemo, useEffect } from "react";
-import { NodeProps, useNodeId } from "@xyflow/react";
-import { BaseNode, NodeConfig } from "../base/BaseNode";
+import React, { useCallback, useState, useEffect } from "react";
+import { NodeProps } from "@xyflow/react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -13,9 +12,6 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
-import { NodeEditorOne } from "../wf-nodes/FlexibleNodeEditor";
-import { toTitleCase } from "@/utils/dataUtils";
-import { NodeInput } from "../base/NodeHandles";
 import UserInputSourceDialog from "../source-node/user-input/UserInputSourceDialog";
 import UserDataSourceSettings from "../source-node/user-data/UserDataSourceSettings";
 

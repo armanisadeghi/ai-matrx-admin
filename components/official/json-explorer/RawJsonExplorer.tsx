@@ -24,9 +24,10 @@ interface RawJsonExplorerProps {
     pageData: any;
     ignorePrefix?: string;
     withSelect?: boolean;
+    onPathCopy?: (path: string) => void;
 }
 
-const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefix = undefined, withSelect = true }) => {
+const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefix = undefined, withSelect = true, onPathCopy = undefined }) => {
     // Initialize with cleaned data
     const [originalData, setOriginalData] = useState(null);
     const [currentPath, setCurrentPath] = useState<PathArray>([[0, "All"]]); // [[rowIndex, selectedKey], ...]
@@ -288,6 +289,9 @@ const RawJsonExplorer: React.FC<RawJsonExplorerProps> = ({ pageData, ignorePrefi
     // Function for copying access path to clipboard
     const copyAccessPath = () => {
         copyToClipboard(generateAccessPath(currentPath));
+        if (onPathCopy) {
+            onPathCopy(generateAccessPath(currentPath));
+        }
     };
 
     const handleExportBookmarks = () => {
