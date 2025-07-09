@@ -13,6 +13,7 @@ import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { saveWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
 import { autoArrangeNodes } from "./utils/auto-arrange";
+import SourceTypeSelector from "./nodes/source-node/SourceTypeSelector";
 
 interface WorkflowSystemProps {
     workflowId: string;
@@ -29,6 +30,15 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
     // UI state management at top level
     const [isFieldDisplaySheetOpen, setIsFieldDisplaySheetOpen] = useState(false);
     const [isAdminOverlayOpen, setIsAdminOverlayOpen] = useState(false);
+    
+    // Source Type Selector state - now supports optional brokerId
+    const [sourceInputCreatorState, setSourceInputCreatorState] = useState<{
+        isOpen: boolean;
+        brokerId?: string;
+    }>({
+        isOpen: false,
+        brokerId: undefined,
+    });
     
     // Recipe node initializer state (shared between access panel and header)
     const [showRecipeInitializer, setShowRecipeInitializer] = useState(false);
@@ -67,6 +77,23 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
 
     const handleOpenAdminOverlay = useCallback(() => {
         setIsAdminOverlayOpen(true);
+    }, []);
+
+    // Updated handler to support optional brokerId
+    const handleOpenSourceInputCreator = useCallback((brokerId?: string) => {
+        setSourceInputCreatorState({
+            isOpen: true,
+            brokerId,
+        });
+    }, []);
+
+    const handleCloseSourceInputCreator = useCallback((open: boolean) => {
+        if (!open) {
+            setSourceInputCreatorState({
+                isOpen: false,
+                brokerId: undefined,
+            });
+        }
     }, []);
 
     const handleRecipeNodeCreated = useCallback((nodeData: WorkflowNode) => {
@@ -109,12 +136,9 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 initialEdges={initialEdges}
                 initialViewport={initialViewport}
                 mode={mode}
-                isFieldDisplaySheetOpen={isFieldDisplaySheetOpen}
-                onOpenFieldDisplaySheet={setIsFieldDisplaySheetOpen}
-                isAdminOverlayOpen={isAdminOverlayOpen}
-                onOpenAdminOverlay={setIsAdminOverlayOpen}
                 onRecipeNodeCreated={handleRecipeNodeCreated}
                 handleSave={handleSave}
+                onOpenSourceInputCreator={handleOpenSourceInputCreator}
             />
 
             {/* Field Display Sheet */}
@@ -130,6 +154,14 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({ workflowId, mode
                 isOpen={isAdminOverlayOpen}
                 onClose={() => setIsAdminOverlayOpen(false)}
                 workflowId={workflowId}
+            />
+
+            {/* Source Type Selector */}
+            <SourceTypeSelector
+                isOpen={sourceInputCreatorState.isOpen}
+                onOpenChange={handleCloseSourceInputCreator}
+                workflowId={workflowId}
+                brokerId={sourceInputCreatorState.brokerId}
             />
 
             {/* Shared Recipe Node Initializer */}

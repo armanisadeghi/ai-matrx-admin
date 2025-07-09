@@ -16,6 +16,7 @@ import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 import { NodeEditorOne } from "../wf-nodes/FlexibleNodeEditor";
 import { toTitleCase } from "@/utils/dataUtils";
 import { NodeInput } from "../base/NodeHandles";
+import { DIALOG_REGISTRY, DialogType } from "./custom-components";
 
 interface DirectInputNodeComponentProps extends Omit<NodeProps, "data"> {
     data: WorkflowNode & {
@@ -38,90 +39,51 @@ const INPUT_COMPONENTS = {
 
 type ComponentName = keyof typeof INPUT_COMPONENTS;
 
-// Self-managing dialog component interface
-interface DialogComponentProps {
-    nodeId: string;
-    inputId: string;
-    inputType: string;
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-    buttonText?: string;
+type DialogNodeInput = NodeInput & {
+    dialogType?: string;
     dialogConfig?: Record<string, any>;
-}
+};
 
-// Long text dialog component - self-managing with Redux
-const LongTextDialog: React.FC<DialogComponentProps> = ({ 
-    nodeId, 
-    inputId, 
-    inputType,
-    isOpen, 
-    onOpenChange, 
-    buttonText = "Edit Text",
-    dialogConfig = {}
-}) => {
-    const dispatch = useAppDispatch();
-    
-    // Get current value from Redux
-    const currentValue = useAppSelector((state) => 
-        workflowNodesSelectors.nodeInputValue(state, nodeId, inputId)
-    );
-    
-    const [tempValue, setTempValue] = useState(currentValue || "");
+const SmartDialogButton: React.FC<{
+    nodeId: string;
+    input: DialogNodeInput;
+}> = ({ nodeId, input }) => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Sync tempValue when dialog opens or currentValue changes
-    useEffect(() => {
-        if (isOpen) {
-            setTempValue(currentValue || "");
-        }
-    }, [isOpen, currentValue]);
+    // Get current value to determine button text
+    const currentValue = useAppSelector((state) => workflowNodesSelectors.nodeInputValue(state, nodeId, input.id));
 
-    const handleSave = useCallback(() => {
-        dispatch(workflowNodesActions.updateInputValue({
-            nodeId,
-            inputId,
-            value: tempValue,
-            inputType
-        }));
-        onOpenChange(false);
-    }, [dispatch, nodeId, inputId, inputType, tempValue, onOpenChange]);
+    // Determine which dialog to use
+    const dialogType = (input.dialogType || "text") as DialogType;
+    const DialogComponent = DIALOG_REGISTRY[dialogType];
 
-    const handleCancel = useCallback(() => {
-        setTempValue(currentValue || "");
-        onOpenChange(false);
-    }, [currentValue, onOpenChange]);
+    if (!DialogComponent) {
+        console.error(`Dialog type "${dialogType}" not found in registry`);
+        return <div className="text-red-500 text-xs">Invalid dialog type: {dialogType}</div>;
+    }
 
-    const placeholder = dialogConfig.placeholder || "Enter text...";
-    const title = dialogConfig.title || "Text Input";
-    const minHeight = dialogConfig.minHeight || "200px";
+    const buttonText = currentValue ? `Edit ${input.name}` : `Add ${input.name}`;
 
     return (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                    <Textarea
-                        value={tempValue}
-                        onChange={(e) => setTempValue(e.target.value)}
-                        placeholder={placeholder}
-                        style={{ minHeight }}
-                        className="min-h-[200px]"
-                    />
-                    <div className="flex justify-end space-x-2">
-                        <Button variant="outline" onClick={handleCancel}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleSave}>Save</Button>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
+        <>
+            <Button variant="outline" size="sm" className="h-5 text-xs px-1.5 py-0.5 w-full" onClick={() => setIsDialogOpen(true)}>
+                {buttonText}
+            </Button>
+
+            <DialogComponent
+                nodeId={nodeId}
+                inputId={input.id}
+                inputType={input.input_type}
+                isOpen={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                buttonText={buttonText}
+                dialogConfig={input.dialogConfig}
+            />
+        </>
     );
 };
 
-// Legacy dialog component for backwards compatibility
-const LegacyLongTextDialog: React.FC<{
+const DirectTextarea: React.FC<{
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
@@ -181,106 +143,37 @@ const LegacyLongTextDialog: React.FC<{
     );
 };
 
-// Dialog Registry - maps dialog types to components
-const DIALOG_REGISTRY = {
-    'text': LongTextDialog,
-    'textarea': LongTextDialog,
-    // Add more dialog types here as needed
-    // 'code': CodeEditorDialog,
-    // 'json': JsonEditorDialog,
-    // 'file-picker': FilePickerDialog,
-} as const;
-
-type DialogType = keyof typeof DIALOG_REGISTRY;
-
-// Extended NodeInput type for dialog configuration
-type DialogNodeInput = NodeInput & { 
-    dialogType?: string; 
-    dialogConfig?: Record<string, any> 
-};
-
-// Smart button component that uses dialog registry
-const SmartDialogButton: React.FC<{
-    nodeId: string;
-    input: DialogNodeInput;
-}> = ({ nodeId, input }) => {
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    
-    // Get current value to determine button text
-    const currentValue = useAppSelector((state) => 
-        workflowNodesSelectors.nodeInputValue(state, nodeId, input.id)
-    );
-    
-    // Determine which dialog to use
-    const dialogType = (input.dialogType || 'text') as DialogType;
-    const DialogComponent = DIALOG_REGISTRY[dialogType];
-    
-    if (!DialogComponent) {
-        console.error(`Dialog type "${dialogType}" not found in registry`);
-        return <div className="text-red-500 text-xs">Invalid dialog type: {dialogType}</div>;
-    }
-    
-    const buttonText = currentValue 
-        ? `Edit ${input.name}` 
-        : `Add ${input.name}`;
-    
-    return (
-        <>
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-5 text-xs px-1.5 py-0.5 w-full"
-                onClick={() => setIsDialogOpen(true)}
-            >
-                {buttonText}
-            </Button>
-            
-            <DialogComponent
-                nodeId={nodeId}
-                inputId={input.id}
-                inputType={input.input_type}
-                isOpen={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                buttonText={buttonText}
-                dialogConfig={input.dialogConfig}
-            />
-        </>
-    );
-};
-
-// Individual input renderer with local state to prevent focus loss
-// Uses local state for immediate updates and syncs to Redux on blur
 const DirectInputField: React.FC<{
     nodeId: string;
     input: NodeInput;
 }> = memo(({ nodeId, input }) => {
     const dispatch = useAppDispatch();
-    
+
     // Get the initial value from Redux state
-    const reduxValue = useAppSelector((state) => 
-        workflowNodesSelectors.nodeInputValue(state, nodeId, input.id)
-    );
-    
+    const reduxValue = useAppSelector((state) => workflowNodesSelectors.nodeInputValue(state, nodeId, input.id));
+
     // Local state to prevent focus loss on each keystroke
     const [localValue, setLocalValue] = useState(reduxValue || "");
-    
+
     // Sync local state with Redux when Redux value changes (on mount/external changes)
     useEffect(() => {
         setLocalValue(reduxValue || "");
     }, [reduxValue]);
-    
+
     // Update Redux on blur to persist the value
     const handleBlur = useCallback(() => {
         if (localValue !== reduxValue) {
-            dispatch(workflowNodesActions.updateInputValue({
-                nodeId,
-                inputId: input.id,
-                value: localValue,
-                inputType: input.input_type
-            }));
+            dispatch(
+                workflowNodesActions.updateInputValue({
+                    nodeId,
+                    inputId: input.id,
+                    value: localValue,
+                    inputType: input.input_type,
+                })
+            );
         }
     }, [dispatch, nodeId, input.id, input.input_type, localValue, reduxValue]);
-    
+
     // Handle local value changes (immediate UI updates)
     const onChange = useCallback((newValue: any) => {
         setLocalValue(newValue);
@@ -296,12 +189,14 @@ const DirectInputField: React.FC<{
                         onCheckedChange={(checked) => {
                             onChange(checked);
                             // Immediately sync to Redux for switch changes
-                            dispatch(workflowNodesActions.updateInputValue({
-                                nodeId,
-                                inputId: input.id,
-                                value: checked,
-                                inputType: input.input_type
-                            }));
+                            dispatch(
+                                workflowNodesActions.updateInputValue({
+                                    nodeId,
+                                    inputId: input.id,
+                                    value: checked,
+                                    inputType: input.input_type,
+                                })
+                            );
                         }}
                         className="h-2.5 w-5 [&>*]:h-2 [&>*]:w-2 [&>*]:data-[state=checked]:translate-x-2.5"
                     />
@@ -309,16 +204,21 @@ const DirectInputField: React.FC<{
 
             case "DirectSelect":
                 return (
-                    <Select value={localValue || ""} onValueChange={(newValue) => {
-                        onChange(newValue);
-                        // Immediately sync to Redux for select changes
-                        dispatch(workflowNodesActions.updateInputValue({
-                            nodeId,
-                            inputId: input.id,
-                            value: newValue,
-                            inputType: input.input_type
-                        }));
-                    }}>
+                    <Select
+                        value={localValue || ""}
+                        onValueChange={(newValue) => {
+                            onChange(newValue);
+                            // Immediately sync to Redux for select changes
+                            dispatch(
+                                workflowNodesActions.updateInputValue({
+                                    nodeId,
+                                    inputId: input.id,
+                                    value: newValue,
+                                    inputType: input.input_type,
+                                })
+                            );
+                        }}
+                    >
                         <SelectTrigger className="h-5 text-xs px-1.5 py-0.5">
                             <SelectValue placeholder={`Select ${input.name}`} />
                         </SelectTrigger>
@@ -338,17 +238,19 @@ const DirectInputField: React.FC<{
 
             case "DirectTextarea":
                 return (
-                    <LegacyLongTextDialog
+                    <DirectTextarea
                         value={localValue || ""}
                         onChange={(newValue) => {
                             onChange(newValue);
                             // Immediately sync to Redux for dialog changes
-                            dispatch(workflowNodesActions.updateInputValue({
-                                nodeId,
-                                inputId: input.id,
-                                value: newValue,
-                                inputType: input.input_type
-                            }));
+                            dispatch(
+                                workflowNodesActions.updateInputValue({
+                                    nodeId,
+                                    inputId: input.id,
+                                    value: newValue,
+                                    inputType: input.input_type,
+                                })
+                            );
                         }}
                         placeholder={`Enter ${input.name}`}
                         buttonText={`Edit ${input.name}`}
@@ -356,12 +258,7 @@ const DirectInputField: React.FC<{
                 );
 
             case "DirectButton":
-                return (
-                    <SmartDialogButton
-                        nodeId={nodeId}
-                        input={input}
-                    />
-                );
+                return <SmartDialogButton nodeId={nodeId} input={input} />;
 
             case "DirectNumberInput":
                 return (
@@ -413,11 +310,7 @@ const DirectInputContent: React.FC<{ nodeId: string }> = memo(({ nodeId }) => {
     return (
         <div className="space-y-0.5 p-0.5 w-full">
             {inputHandles.map((input) => (
-                <DirectInputField
-                    key={input.id}
-                    nodeId={nodeId}
-                    input={input}
-                />
+                <DirectInputField key={input.id} nodeId={nodeId} input={input} />
             ))}
         </div>
     );

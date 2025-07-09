@@ -31,27 +31,12 @@ const UserDataSourceSettingsWrapper: React.FC<{
     const node = getNode(nodeId);
     const data = (node?.data || {}) as UserDataSourceNodeData;
     
-    // Get Redux data for this source
-    const userDataSource = useAppSelector((state) => 
-        data.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, data.workflowId || "", data.brokerId) : null
-    );
-    
-    const selectedTable = userDataSource?.sourceDetails;
-    const mode = data.brokerId && selectedTable ? "edit" : "create";
-    
     return (
         <UserDataSourceSettings
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             workflowId={data.workflowId || ""}
-            mode={mode}
-            currentMapping={mode === "edit" ? {
-                brokerId: data.brokerId || "",
-                mappedItemId: selectedTable?.table_id || selectedTable?.table_name || "",
-                source: userDataSource?.scope || "workflow",
-                sourceId: data.workflowId || "",
-                sourceType: "user_data"
-            } : undefined}
+            brokerId={data.brokerId || ""}
             onSuccess={() => {
                 console.log("User data source saved successfully");
             }}

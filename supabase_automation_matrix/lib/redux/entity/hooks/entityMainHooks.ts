@@ -66,7 +66,6 @@ import {
     RecipeToolData,
     RegisteredFunctionData,
     RegisteredNodeData,
-    RegisteredNodeResultsData,
     SchemaTemplatesData,
     ScrapeBaseConfigData,
     ScrapeCachePolicyData,
@@ -6254,99 +6253,6 @@ export const useRegisteredNodeWithFetch = (): UseRegisteredNodeWithFetchReturn =
         fetchRegisteredNodeOneWithFkIfk,
         fetchRegisteredNodeAll,
         fetchRegisteredNodePaginated,
-    };
-};
-
-
-
-type UseRegisteredNodeResultsWithFetchReturn = {
-    registeredNodeResultsSelectors: EntitySelectors<"registeredNodeResults">;
-    registeredNodeResultsActions: EntityActions<"registeredNodeResults">;
-    registeredNodeResultsRecords: Record<MatrxRecordId, RegisteredNodeResultsData>;
-    registeredNodeResultsRecordsById: Record<string, RegisteredNodeResultsData>;
-    registeredNodeResultsUnsavedRecords: Record<MatrxRecordId, Partial<RegisteredNodeResultsData>>;
-    registeredNodeResultsSelectedRecordIds: MatrxRecordId[];
-    registeredNodeResultsIsLoading: boolean;
-    registeredNodeResultsIsError: boolean;
-    registeredNodeResultsQuickRefRecords: QuickReferenceRecord[];
-    addRegisteredNodeResultsMatrxId: (recordId: MatrxRecordId) => void;
-    addRegisteredNodeResultsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeRegisteredNodeResultsMatrxId: (recordId: MatrxRecordId) => void;
-    removeRegisteredNodeResultsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addRegisteredNodeResultsPkValue: (pkValue: string) => void;
-    addRegisteredNodeResultsPkValues: (pkValues: Record<string, unknown>) => void;
-    removeRegisteredNodeResultsPkValue: (pkValue: string) => void;
-    removeRegisteredNodeResultsPkValues: (pkValues: Record<string, unknown>) => void;
-    isRegisteredNodeResultsMissingRecords: boolean;
-    setRegisteredNodeResultsShouldFetch: (shouldFetch: boolean) => void;
-    setRegisteredNodeResultsFetchMode: (fetchMode: FetchMode) => void;
-    fetchRegisteredNodeResultsQuickRefs: () => void;
-    fetchRegisteredNodeResultsOne: (recordId: MatrxRecordId) => void;
-    fetchRegisteredNodeResultsOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchRegisteredNodeResultsAll: () => void;
-    fetchRegisteredNodeResultsPaginated: (page: number, pageSize: number, options?: {
-        maxCount?: number;
-        filters?: FilterPayload;
-        sort?: SortPayload;
-    }) => void
-};
-
-export const useRegisteredNodeResultsWithFetch = (): UseRegisteredNodeResultsWithFetchReturn => {
-    const {
-        selectors: registeredNodeResultsSelectors,
-        actions: registeredNodeResultsActions,
-        allRecords: registeredNodeResultsRecords,
-        recordsById: registeredNodeResultsRecordsById,
-        unsavedRecords: registeredNodeResultsUnsavedRecords,
-        selectedRecordIds: registeredNodeResultsSelectedRecordIds,
-        isLoading: registeredNodeResultsIsLoading,
-        isError: registeredNodeResultsIsError,
-        quickRefRecords: registeredNodeResultsQuickRefRecords,
-        addMatrxId: addRegisteredNodeResultsMatrxId,
-        addMatrxIds: addRegisteredNodeResultsMatrxIds,
-        removeMatrxId: removeRegisteredNodeResultsMatrxId,
-        removeMatrxIds: removeRegisteredNodeResultsMatrxIds,
-        addPkValue: addRegisteredNodeResultsPkValue,
-        addPkValues: addRegisteredNodeResultsPkValues,
-        removePkValue: removeRegisteredNodeResultsPkValue,
-        removePkValues: removeRegisteredNodeResultsPkValues,
-        isMissingRecords: isRegisteredNodeResultsMissingRecords,
-        setShouldFetch: setRegisteredNodeResultsShouldFetch,
-        setFetchMode: setRegisteredNodeResultsFetchMode,
-        fetchQuickRefs: fetchRegisteredNodeResultsQuickRefs,
-        fetchOne: fetchRegisteredNodeResultsOne,
-        fetchOneWithFkIfk: fetchRegisteredNodeResultsOneWithFkIfk,
-        fetchAll: fetchRegisteredNodeResultsAll,
-        fetchPaginated: fetchRegisteredNodeResultsPaginated,
-
-    } = useEntityWithFetch("registeredNodeResults");
-
-    return {
-        registeredNodeResultsSelectors,
-        registeredNodeResultsActions,
-        registeredNodeResultsRecords,
-        registeredNodeResultsRecordsById,
-        registeredNodeResultsUnsavedRecords,
-        registeredNodeResultsSelectedRecordIds,
-        registeredNodeResultsIsLoading,
-        registeredNodeResultsIsError,
-        registeredNodeResultsQuickRefRecords,
-        addRegisteredNodeResultsMatrxId,
-        addRegisteredNodeResultsMatrxIds,
-        removeRegisteredNodeResultsMatrxId,
-        removeRegisteredNodeResultsMatrxIds,
-        addRegisteredNodeResultsPkValue,
-        addRegisteredNodeResultsPkValues,
-        removeRegisteredNodeResultsPkValue,
-        removeRegisteredNodeResultsPkValues,
-        isRegisteredNodeResultsMissingRecords,
-        setRegisteredNodeResultsShouldFetch,
-        setRegisteredNodeResultsFetchMode,
-        fetchRegisteredNodeResultsQuickRefs,
-        fetchRegisteredNodeResultsOne,
-        fetchRegisteredNodeResultsOneWithFkIfk,
-        fetchRegisteredNodeResultsAll,
-        fetchRegisteredNodeResultsPaginated,
     };
 };
 

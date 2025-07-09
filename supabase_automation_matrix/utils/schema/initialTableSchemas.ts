@@ -1,9 +1,7 @@
-// File: utils/schema/initialSchemas.ts
-import {AutomationTableName,DataStructure,FetchStrategy,NameFormat,FieldDataOptionsType} from '@/types/AutomationSchemaTypes';
-import {AutomationEntity, EntityData, EntityDataMixed, EntityDataOptional, EntityDataWithKey, ProcessedEntityData} from '@/types/entityTypes';
+// File: utils/schema/initialTableSchemas.ts
+import {AutomationEntity, TypeBrand} from '@/types/entityTypes';
 
-export const initialAutomationTableSchema = {
-action: {
+export const action = {
         schemaType: 'table' as const,
         entityName: 'action',
         displayName: 'Action',
@@ -459,7 +457,7 @@ action: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'automationMatrix'>[]>,
     entityName: 'automationMatrix',
     databaseTable: 'automation_matrix',
     relationshipMap: {automation_matrix: 'id', transformer: 'id'},
@@ -493,7 +491,7 @@ action: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'transformer'>[]>,
     entityName: 'transformer',
     databaseTable: 'transformer',
     relationshipMap: {automation_matrix: 'id', transformer: 'id'},
@@ -515,8 +513,9 @@ action: {
             { relationshipType: 'foreignKey', column: 'matrix', relatedTable: 'automation_matrix', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'transformer', relatedTable: 'transformer', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-admins: {
+    } as const;
+
+export const admins = {
         schemaType: 'table' as const,
         entityName: 'admins',
         displayName: 'Admins',
@@ -703,8 +702,9 @@ admins: {
         relationships: [
             
         ],
-    },
-aiAgent: {
+    } as const;
+
+export const aiAgent = {
         schemaType: 'table' as const,
         entityName: 'aiAgent',
         displayName: 'Ai Agent',
@@ -1096,7 +1096,7 @@ aiAgent: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiSettings'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiSettings'>[]>,
     entityName: 'aiSettings',
     databaseTable: 'ai_settings',
     relationshipMap: {ai_settings: 'id', recipe: 'id'},
@@ -1130,7 +1130,7 @@ aiAgent: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {ai_settings: 'id', recipe: 'id'},
@@ -1152,8 +1152,9 @@ aiAgent: {
             { relationshipType: 'foreignKey', column: 'ai_settings_id', relatedTable: 'ai_settings', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'recipe_id', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-aiEndpoint: {
+    } as const;
+
+export const aiEndpoint = {
         schemaType: 'table' as const,
         entityName: 'aiEndpoint',
         displayName: 'Ai Endpoint',
@@ -1673,7 +1674,7 @@ aiEndpoint: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiModelEndpoint'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiModelEndpoint'>[]>,
     entityName: 'aiModelEndpoint',
     databaseTable: 'ai_model_endpoint',
 },
@@ -1706,7 +1707,7 @@ aiEndpoint: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiSettings'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiSettings'>[]>,
     entityName: 'aiSettings',
     databaseTable: 'ai_settings',
 },
@@ -1727,8 +1728,9 @@ aiEndpoint: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_model_endpoint', relatedColumn: 'ai_endpoint_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_settings', relatedColumn: 'ai_endpoint', junctionTable: null }
         ],
-    },
-aiModel: {
+    } as const;
+
+export const aiModel = {
         schemaType: 'table' as const,
         entityName: 'aiModel',
         displayName: 'Ai Model',
@@ -2504,7 +2506,7 @@ aiModel: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiProvider'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiProvider'>[]>,
     entityName: 'aiProvider',
     databaseTable: 'ai_provider',
     relationshipMap: {ai_provider: 'id'},
@@ -2538,7 +2540,7 @@ aiModel: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiModelEndpoint'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiModelEndpoint'>[]>,
     entityName: 'aiModelEndpoint',
     databaseTable: 'ai_model_endpoint',
 },
@@ -2571,7 +2573,7 @@ aiModel: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiSettings'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiSettings'>[]>,
     entityName: 'aiSettings',
     databaseTable: 'ai_settings',
 },
@@ -2604,7 +2606,7 @@ aiModel: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeModel'>[]>,
     entityName: 'recipeModel',
     databaseTable: 'recipe_model',
 },
@@ -2627,8 +2629,9 @@ aiModel: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_settings', relatedColumn: 'ai_model', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_model', relatedColumn: 'ai_model', junctionTable: null }
         ],
-    },
-aiModelEndpoint: {
+    } as const;
+
+export const aiModelEndpoint = {
         schemaType: 'table' as const,
         entityName: 'aiModelEndpoint',
         displayName: 'Ai Model Endpoint',
@@ -3212,7 +3215,7 @@ aiModelEndpoint: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiEndpoint'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiEndpoint'>[]>,
     entityName: 'aiEndpoint',
     databaseTable: 'ai_endpoint',
     relationshipMap: {ai_endpoint: 'id', ai_model: 'id'},
@@ -3246,7 +3249,7 @@ aiModelEndpoint: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiModel'>[]>,
     entityName: 'aiModel',
     databaseTable: 'ai_model',
     relationshipMap: {ai_endpoint: 'id', ai_model: 'id'},
@@ -3268,8 +3271,9 @@ aiModelEndpoint: {
             { relationshipType: 'foreignKey', column: 'ai_endpoint_id', relatedTable: 'ai_endpoint', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'ai_model_id', relatedTable: 'ai_model', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-aiProvider: {
+    } as const;
+
+export const aiProvider = {
         schemaType: 'table' as const,
         entityName: 'aiProvider',
         displayName: 'Ai Provider',
@@ -3661,7 +3665,7 @@ aiProvider: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiSettings'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiSettings'>[]>,
     entityName: 'aiSettings',
     databaseTable: 'ai_settings',
 },
@@ -3694,7 +3698,7 @@ aiProvider: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiModel'>[]>,
     entityName: 'aiModel',
     databaseTable: 'ai_model',
 },
@@ -3715,8 +3719,9 @@ aiProvider: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_settings', relatedColumn: 'ai_provider', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_model', relatedColumn: 'model_provider', junctionTable: null }
         ],
-    },
-aiSettings: {
+    } as const;
+
+export const aiSettings = {
         schemaType: 'table' as const,
         entityName: 'aiSettings',
         displayName: 'Ai Settings',
@@ -5004,7 +5009,7 @@ aiSettings: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiEndpoint'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiEndpoint'>[]>,
     entityName: 'aiEndpoint',
     databaseTable: 'ai_endpoint',
     relationshipMap: {ai_endpoint: 'id', ai_model: 'id', ai_provider: 'id'},
@@ -5038,7 +5043,7 @@ aiSettings: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiModel'>[]>,
     entityName: 'aiModel',
     databaseTable: 'ai_model',
     relationshipMap: {ai_endpoint: 'id', ai_model: 'id', ai_provider: 'id'},
@@ -5072,7 +5077,7 @@ aiSettings: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiProvider'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiProvider'>[]>,
     entityName: 'aiProvider',
     databaseTable: 'ai_provider',
     relationshipMap: {ai_endpoint: 'id', ai_model: 'id', ai_provider: 'id'},
@@ -5106,7 +5111,7 @@ aiSettings: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiAgent'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiAgent'>[]>,
     entityName: 'aiAgent',
     databaseTable: 'ai_agent',
 },
@@ -5129,8 +5134,9 @@ aiSettings: {
         { relationshipType: 'foreignKey', column: 'ai_provider', relatedTable: 'ai_provider', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_agent', relatedColumn: 'ai_settings_id', junctionTable: null }
         ],
-    },
-aiTrainingData: {
+    } as const;
+
+export const aiTrainingData = {
         schemaType: 'table' as const,
         entityName: 'aiTrainingData',
         displayName: 'Ai Training Data',
@@ -6277,8 +6283,9 @@ aiTrainingData: {
         relationships: [
             
         ],
-    },
-applet: {
+    } as const;
+
+export const applet = {
         schemaType: 'table' as const,
         entityName: 'applet',
         displayName: 'Applet',
@@ -7387,7 +7394,7 @@ applet: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['compiledRecipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'compiledRecipe'>[]>,
     entityName: 'compiledRecipe',
     databaseTable: 'compiled_recipe',
     relationshipMap: {compiled_recipe: 'id', subcategory: 'id'},
@@ -7421,7 +7428,7 @@ applet: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['subcategory'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'subcategory'>[]>,
     entityName: 'subcategory',
     databaseTable: 'subcategory',
     relationshipMap: {compiled_recipe: 'id', subcategory: 'id'},
@@ -7443,8 +7450,9 @@ applet: {
             { relationshipType: 'foreignKey', column: 'compiled_recipe_id', relatedTable: 'compiled_recipe', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'subcategory_id', relatedTable: 'subcategory', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-appletContainers: {
+    } as const;
+
+export const appletContainers = {
         schemaType: 'table' as const,
         entityName: 'appletContainers',
         displayName: 'Applet Containers',
@@ -7900,7 +7908,7 @@ appletContainers: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['customAppletConfigs'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'customAppletConfigs'>[]>,
     entityName: 'customAppletConfigs',
     databaseTable: 'custom_applet_configs',
     relationshipMap: {custom_applet_configs: 'id', component_groups: 'id'},
@@ -7934,7 +7942,7 @@ appletContainers: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['componentGroups'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'componentGroups'>[]>,
     entityName: 'componentGroups',
     databaseTable: 'component_groups',
     relationshipMap: {custom_applet_configs: 'id', component_groups: 'id'},
@@ -7956,8 +7964,9 @@ appletContainers: {
             { relationshipType: 'foreignKey', column: 'applet_id', relatedTable: 'custom_applet_configs', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'container_id', relatedTable: 'component_groups', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-arg: {
+    } as const;
+
+export const arg = {
         schemaType: 'table' as const,
         entityName: 'arg',
         displayName: 'Arg',
@@ -8698,7 +8707,7 @@ arg: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredFunction'>[]>,
     entityName: 'registeredFunction',
     databaseTable: 'registered_function',
     relationshipMap: {registered_function: 'id'},
@@ -8719,8 +8728,9 @@ arg: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'registered_function', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-audioLabel: {
+    } as const;
+
+export const audioLabel = {
         schemaType: 'table' as const,
         entityName: 'audioLabel',
         displayName: 'Audio Label',
@@ -9048,7 +9058,7 @@ audioLabel: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['audioRecording'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'audioRecording'>[]>,
     entityName: 'audioRecording',
     databaseTable: 'audio_recording',
 },
@@ -9068,8 +9078,9 @@ audioLabel: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'audio_recording', relatedColumn: 'label', junctionTable: null }
         ],
-    },
-audioRecording: {
+    } as const;
+
+export const audioRecording = {
         schemaType: 'table' as const,
         entityName: 'audioRecording',
         displayName: 'Audio Recording',
@@ -9781,7 +9792,7 @@ audioRecording: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['audioLabel'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'audioLabel'>[]>,
     entityName: 'audioLabel',
     databaseTable: 'audio_label',
     relationshipMap: {audio_label: 'id'},
@@ -9802,8 +9813,9 @@ audioRecording: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'label', relatedTable: 'audio_label', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-audioRecordingUsers: {
+    } as const;
+
+export const audioRecordingUsers = {
         schemaType: 'table' as const,
         entityName: 'audioRecordingUsers',
         displayName: 'Audio Recording Users',
@@ -10182,8 +10194,9 @@ audioRecordingUsers: {
         relationships: [
             
         ],
-    },
-automationBoundaryBroker: {
+    } as const;
+
+export const automationBoundaryBroker = {
         schemaType: 'table' as const,
         entityName: 'automationBoundaryBroker',
         displayName: 'Automation Boundary Broker',
@@ -10633,7 +10646,7 @@ automationBoundaryBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'broker'>[]>,
     entityName: 'broker',
     databaseTable: 'broker',
     relationshipMap: {broker: 'id', automation_matrix: 'id'},
@@ -10667,7 +10680,7 @@ automationBoundaryBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'automationMatrix'>[]>,
     entityName: 'automationMatrix',
     databaseTable: 'automation_matrix',
     relationshipMap: {broker: 'id', automation_matrix: 'id'},
@@ -10689,8 +10702,9 @@ automationBoundaryBroker: {
             { relationshipType: 'foreignKey', column: 'broker', relatedTable: 'broker', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'matrix', relatedTable: 'automation_matrix', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-automationMatrix: {
+    } as const;
+
+export const automationMatrix = {
         schemaType: 'table' as const,
         entityName: 'automationMatrix',
         displayName: 'Automation Matrix',
@@ -11179,7 +11193,7 @@ automationMatrix: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'action'>[]>,
     entityName: 'action',
     databaseTable: 'action',
 },
@@ -11212,7 +11226,7 @@ automationMatrix: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'automationBoundaryBroker'>[]>,
     entityName: 'automationBoundaryBroker',
     databaseTable: 'automation_boundary_broker',
 },
@@ -11233,8 +11247,9 @@ automationMatrix: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'action', relatedColumn: 'matrix', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'automation_boundary_broker', relatedColumn: 'matrix', junctionTable: null }
         ],
-    },
-broker: {
+    } as const;
+
+export const broker = {
         schemaType: 'table' as const,
         entityName: 'broker',
         displayName: 'Broker',
@@ -12810,7 +12825,7 @@ broker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataInputComponent'>[]>,
     entityName: 'dataInputComponent',
     databaseTable: 'data_input_component',
     relationshipMap: {data_input_component: 'id'},
@@ -12844,7 +12859,7 @@ broker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeBroker'>[]>,
     entityName: 'recipeBroker',
     databaseTable: 'recipe_broker',
 },
@@ -12877,7 +12892,7 @@ broker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'automationBoundaryBroker'>[]>,
     entityName: 'automationBoundaryBroker',
     databaseTable: 'automation_boundary_broker',
 },
@@ -12899,8 +12914,9 @@ broker: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_broker', relatedColumn: 'broker', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'automation_boundary_broker', relatedColumn: 'broker', junctionTable: null }
         ],
-    },
-brokerValue: {
+    } as const;
+
+export const brokerValue = {
         schemaType: 'table' as const,
         entityName: 'brokerValue',
         displayName: 'Broker Value',
@@ -13548,7 +13564,7 @@ brokerValue: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataBroker'>[]>,
     entityName: 'dataBroker',
     databaseTable: 'data_broker',
     relationshipMap: {data_broker: 'id'},
@@ -13569,8 +13585,9 @@ brokerValue: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'data_broker', relatedTable: 'data_broker', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-bucketStructures: {
+    } as const;
+
+export const bucketStructures = {
         schemaType: 'table' as const,
         entityName: 'bucketStructures',
         displayName: 'Bucket Structures',
@@ -13821,8 +13838,9 @@ bucketStructures: {
         relationships: [
             
         ],
-    },
-bucketTreeStructures: {
+    } as const;
+
+export const bucketTreeStructures = {
         schemaType: 'table' as const,
         entityName: 'bucketTreeStructures',
         displayName: 'Bucket Tree Structures',
@@ -14073,8 +14091,9 @@ bucketTreeStructures: {
         relationships: [
             
         ],
-    },
-category: {
+    } as const;
+
+export const category = {
         schemaType: 'table' as const,
         entityName: 'category',
         displayName: 'Category',
@@ -14530,7 +14549,7 @@ category: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['subcategory'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'subcategory'>[]>,
     entityName: 'subcategory',
     databaseTable: 'subcategory',
 },
@@ -14550,8 +14569,9 @@ category: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'subcategory', relatedColumn: 'category_id', junctionTable: null }
         ],
-    },
-compiledRecipe: {
+    } as const;
+
+export const compiledRecipe = {
         schemaType: 'table' as const,
         entityName: 'compiledRecipe',
         displayName: 'Compiled Recipe',
@@ -15199,7 +15219,7 @@ compiledRecipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {recipe: 'id'},
@@ -15233,7 +15253,7 @@ compiledRecipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['applet'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'applet'>[]>,
     entityName: 'applet',
     databaseTable: 'applet',
 },
@@ -15266,7 +15286,7 @@ compiledRecipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['customAppletConfigs'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'customAppletConfigs'>[]>,
     entityName: 'customAppletConfigs',
     databaseTable: 'custom_applet_configs',
 },
@@ -15288,8 +15308,9 @@ compiledRecipe: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'applet', relatedColumn: 'compiled_recipe_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'custom_applet_configs', relatedColumn: 'compiled_recipe_id', junctionTable: null }
         ],
-    },
-componentGroups: {
+    } as const;
+
+export const componentGroups = {
         schemaType: 'table' as const,
         entityName: 'componentGroups',
         displayName: 'Component Groups',
@@ -16193,7 +16214,7 @@ componentGroups: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['appletContainers'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'appletContainers'>[]>,
     entityName: 'appletContainers',
     databaseTable: 'applet_containers',
 },
@@ -16226,7 +16247,7 @@ componentGroups: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['containerFields'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'containerFields'>[]>,
     entityName: 'containerFields',
     databaseTable: 'container_fields',
 },
@@ -16247,8 +16268,9 @@ componentGroups: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'applet_containers', relatedColumn: 'container_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'container_fields', relatedColumn: 'container_id', junctionTable: null }
         ],
-    },
-containerFields: {
+    } as const;
+
+export const containerFields = {
         schemaType: 'table' as const,
         entityName: 'containerFields',
         displayName: 'Container Fields',
@@ -16704,7 +16726,7 @@ containerFields: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['componentGroups'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'componentGroups'>[]>,
     entityName: 'componentGroups',
     databaseTable: 'component_groups',
     relationshipMap: {component_groups: 'id', field_components: 'id'},
@@ -16738,7 +16760,7 @@ containerFields: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['fieldComponents'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'fieldComponents'>[]>,
     entityName: 'fieldComponents',
     databaseTable: 'field_components',
     relationshipMap: {component_groups: 'id', field_components: 'id'},
@@ -16760,8 +16782,9 @@ containerFields: {
             { relationshipType: 'foreignKey', column: 'container_id', relatedTable: 'component_groups', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'field_id', relatedTable: 'field_components', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-conversation: {
+    } as const;
+
+export const conversation = {
         schemaType: 'table' as const,
         entityName: 'conversation',
         displayName: 'Conversation',
@@ -17473,7 +17496,7 @@ conversation: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['message'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'message'>[]>,
     entityName: 'message',
     databaseTable: 'message',
 },
@@ -17493,8 +17516,9 @@ conversation: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'message', relatedColumn: 'conversation_id', junctionTable: null }
         ],
-    },
-customAppConfigs: {
+    } as const;
+
+export const customAppConfigs = {
         schemaType: 'table' as const,
         entityName: 'customAppConfigs',
         displayName: 'Custom App Configs',
@@ -18846,7 +18870,7 @@ customAppConfigs: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['customAppletConfigs'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'customAppletConfigs'>[]>,
     entityName: 'customAppletConfigs',
     databaseTable: 'custom_applet_configs',
 },
@@ -18866,8 +18890,9 @@ customAppConfigs: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'custom_applet_configs', relatedColumn: 'app_id', junctionTable: null }
         ],
-    },
-customAppletConfigs: {
+    } as const;
+
+export const customAppletConfigs = {
         schemaType: 'table' as const,
         entityName: 'customAppletConfigs',
         displayName: 'Custom Applet Configs',
@@ -20667,7 +20692,7 @@ customAppletConfigs: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['customAppConfigs'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'customAppConfigs'>[]>,
     entityName: 'customAppConfigs',
     databaseTable: 'custom_app_configs',
     relationshipMap: {custom_app_configs: 'id', compiled_recipe: 'id', subcategory: 'id'},
@@ -20701,7 +20726,7 @@ customAppletConfigs: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['compiledRecipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'compiledRecipe'>[]>,
     entityName: 'compiledRecipe',
     databaseTable: 'compiled_recipe',
     relationshipMap: {custom_app_configs: 'id', compiled_recipe: 'id', subcategory: 'id'},
@@ -20735,7 +20760,7 @@ customAppletConfigs: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['subcategory'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'subcategory'>[]>,
     entityName: 'subcategory',
     databaseTable: 'subcategory',
     relationshipMap: {custom_app_configs: 'id', compiled_recipe: 'id', subcategory: 'id'},
@@ -20769,7 +20794,7 @@ customAppletConfigs: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['appletContainers'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'appletContainers'>[]>,
     entityName: 'appletContainers',
     databaseTable: 'applet_containers',
 },
@@ -20792,8 +20817,9 @@ customAppletConfigs: {
         { relationshipType: 'foreignKey', column: 'subcategory_id', relatedTable: 'subcategory', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'applet_containers', relatedColumn: 'applet_id', junctionTable: null }
         ],
-    },
-dataBroker: {
+    } as const;
+
+export const dataBroker = {
         schemaType: 'table' as const,
         entityName: 'dataBroker',
         displayName: 'Data Broker',
@@ -22011,7 +22037,7 @@ dataBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataInputComponent'>[]>,
     entityName: 'dataInputComponent',
     databaseTable: 'data_input_component',
     relationshipMap: {data_input_component: 'id', field_components: 'id', data_output_component: 'id'},
@@ -22045,7 +22071,7 @@ dataBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['fieldComponents'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'fieldComponents'>[]>,
     entityName: 'fieldComponents',
     databaseTable: 'field_components',
     relationshipMap: {data_input_component: 'id', field_components: 'id', data_output_component: 'id'},
@@ -22079,7 +22105,7 @@ dataBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataOutputComponent'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataOutputComponent'>[]>,
     entityName: 'dataOutputComponent',
     databaseTable: 'data_output_component',
     relationshipMap: {data_input_component: 'id', field_components: 'id', data_output_component: 'id'},
@@ -22113,7 +22139,7 @@ dataBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['brokerValue'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'brokerValue'>[]>,
     entityName: 'brokerValue',
     databaseTable: 'broker_value',
 },
@@ -22146,7 +22172,7 @@ dataBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['messageBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'messageBroker'>[]>,
     entityName: 'messageBroker',
     databaseTable: 'message_broker',
 },
@@ -22179,7 +22205,7 @@ dataBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredFunction'>[]>,
     entityName: 'registeredFunction',
     databaseTable: 'registered_function',
 },
@@ -22204,8 +22230,9 @@ dataBroker: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'message_broker', relatedColumn: 'broker_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_function', relatedColumn: 'return_broker', junctionTable: null }
         ],
-    },
-dataInputComponent: {
+    } as const;
+
+export const dataInputComponent = {
         schemaType: 'table' as const,
         entityName: 'dataInputComponent',
         displayName: 'Data Input Component',
@@ -24606,7 +24633,7 @@ dataInputComponent: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['messageBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'messageBroker'>[]>,
     entityName: 'messageBroker',
     databaseTable: 'message_broker',
 },
@@ -24639,7 +24666,7 @@ dataInputComponent: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataBroker'>[]>,
     entityName: 'dataBroker',
     databaseTable: 'data_broker',
 },
@@ -24672,7 +24699,7 @@ dataInputComponent: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'broker'>[]>,
     entityName: 'broker',
     databaseTable: 'broker',
 },
@@ -24694,8 +24721,9 @@ dataInputComponent: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'data_broker', relatedColumn: 'input_component', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'broker', relatedColumn: 'custom_source_component', junctionTable: null }
         ],
-    },
-dataOutputComponent: {
+    } as const;
+
+export const dataOutputComponent = {
         schemaType: 'table' as const,
         entityName: 'dataOutputComponent',
         displayName: 'Data Output Component',
@@ -25352,7 +25380,7 @@ dataOutputComponent: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataBroker'>[]>,
     entityName: 'dataBroker',
     databaseTable: 'data_broker',
 },
@@ -25372,8 +25400,9 @@ dataOutputComponent: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'data_broker', relatedColumn: 'output_component', junctionTable: null }
         ],
-    },
-displayOption: {
+    } as const;
+
+export const displayOption = {
         schemaType: 'table' as const,
         entityName: 'displayOption',
         displayName: 'Display Option',
@@ -25765,7 +25794,7 @@ displayOption: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeDisplay'>[]>,
     entityName: 'recipeDisplay',
     databaseTable: 'recipe_display',
 },
@@ -25785,8 +25814,9 @@ displayOption: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_display', relatedColumn: 'display', junctionTable: null }
         ],
-    },
-emails: {
+    } as const;
+
+export const emails = {
         schemaType: 'table' as const,
         entityName: 'emails',
         displayName: 'Emails',
@@ -26293,8 +26323,9 @@ emails: {
         relationships: [
             
         ],
-    },
-extractor: {
+    } as const;
+
+export const extractor = {
         schemaType: 'table' as const,
         entityName: 'extractor',
         displayName: 'Extractor',
@@ -26702,8 +26733,9 @@ extractor: {
         relationships: [
             
         ],
-    },
-fieldComponents: {
+    } as const;
+
+export const fieldComponents = {
         schemaType: 'table' as const,
         entityName: 'fieldComponents',
         displayName: 'Field Components',
@@ -27991,7 +28023,7 @@ fieldComponents: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataBroker'>[]>,
     entityName: 'dataBroker',
     databaseTable: 'data_broker',
 },
@@ -28024,7 +28056,7 @@ fieldComponents: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['containerFields'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'containerFields'>[]>,
     entityName: 'containerFields',
     databaseTable: 'container_fields',
 },
@@ -28057,7 +28089,7 @@ fieldComponents: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowUserInput'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowUserInput'>[]>,
     entityName: 'workflowUserInput',
     databaseTable: 'workflow_user_input',
 },
@@ -28079,8 +28111,9 @@ fieldComponents: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'container_fields', relatedColumn: 'field_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_user_input', relatedColumn: 'field_component_id', junctionTable: null }
         ],
-    },
-fileStructure: {
+    } as const;
+
+export const fileStructure = {
         schemaType: 'table' as const,
         entityName: 'fileStructure',
         displayName: 'File Structure',
@@ -28779,8 +28812,9 @@ fileStructure: {
         relationships: [
             
         ],
-    },
-flashcardData: {
+    } as const;
+
+export const flashcardData = {
         schemaType: 'table' as const,
         entityName: 'flashcardData',
         displayName: 'Flashcard Data',
@@ -29876,7 +29910,7 @@ flashcardData: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardHistory'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardHistory'>[]>,
     entityName: 'flashcardHistory',
     databaseTable: 'flashcard_history',
 },
@@ -29909,7 +29943,7 @@ flashcardData: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardSetRelations'>[]>,
     entityName: 'flashcardSetRelations',
     databaseTable: 'flashcard_set_relations',
 },
@@ -29942,7 +29976,7 @@ flashcardData: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardImages'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardImages'>[]>,
     entityName: 'flashcardImages',
     databaseTable: 'flashcard_images',
 },
@@ -29964,8 +29998,9 @@ flashcardData: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'flashcard_set_relations', relatedColumn: 'flashcard_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'flashcard_images', relatedColumn: 'flashcard_id', junctionTable: null }
         ],
-    },
-flashcardHistory: {
+    } as const;
+
+export const flashcardHistory = {
         schemaType: 'table' as const,
         entityName: 'flashcardHistory',
         displayName: 'Flashcard History',
@@ -30549,7 +30584,7 @@ flashcardHistory: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardData'>[]>,
     entityName: 'flashcardData',
     databaseTable: 'flashcard_data',
     relationshipMap: {flashcard_data: 'id'},
@@ -30570,8 +30605,9 @@ flashcardHistory: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-flashcardImages: {
+    } as const;
+
+export const flashcardImages = {
         schemaType: 'table' as const,
         entityName: 'flashcardImages',
         displayName: 'Flashcard Images',
@@ -31091,7 +31127,7 @@ flashcardImages: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardData'>[]>,
     entityName: 'flashcardData',
     databaseTable: 'flashcard_data',
     relationshipMap: {flashcard_data: 'id'},
@@ -31112,8 +31148,9 @@ flashcardImages: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-flashcardSetRelations: {
+    } as const;
+
+export const flashcardSetRelations = {
         schemaType: 'table' as const,
         entityName: 'flashcardSetRelations',
         displayName: 'Flashcard Set Relations',
@@ -31380,7 +31417,7 @@ flashcardSetRelations: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardData'>[]>,
     entityName: 'flashcardData',
     databaseTable: 'flashcard_data',
     relationshipMap: {flashcard_data: 'id', flashcard_sets: 'set_id'},
@@ -31414,7 +31451,7 @@ flashcardSetRelations: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSets'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardSets'>[]>,
     entityName: 'flashcardSets',
     databaseTable: 'flashcard_sets',
     relationshipMap: {flashcard_data: 'id', flashcard_sets: 'set_id'},
@@ -31436,8 +31473,9 @@ flashcardSetRelations: {
             { relationshipType: 'foreignKey', column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'set_id', relatedTable: 'flashcard_sets', relatedColumn: 'set_id', junctionTable: null }
         ],
-    },
-flashcardSets: {
+    } as const;
+
+export const flashcardSets = {
         schemaType: 'table' as const,
         entityName: 'flashcardSets',
         displayName: 'Flashcard Sets',
@@ -32213,7 +32251,7 @@ flashcardSets: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'flashcardSetRelations'>[]>,
     entityName: 'flashcardSetRelations',
     databaseTable: 'flashcard_set_relations',
 },
@@ -32233,8 +32271,9 @@ flashcardSets: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'set_id', relatedTable: 'flashcard_set_relations', relatedColumn: 'set_id', junctionTable: null }
         ],
-    },
-fullSpectrumPositions: {
+    } as const;
+
+export const fullSpectrumPositions = {
         schemaType: 'table' as const,
         entityName: 'fullSpectrumPositions',
         displayName: 'Full Spectrum Positions',
@@ -32933,8 +32972,9 @@ fullSpectrumPositions: {
         relationships: [
             
         ],
-    },
-htmlExtractions: {
+    } as const;
+
+export const htmlExtractions = {
         schemaType: 'table' as const,
         entityName: 'htmlExtractions',
         displayName: 'Html Extractions',
@@ -33697,8 +33737,9 @@ htmlExtractions: {
         relationships: [
             
         ],
-    },
-message: {
+    } as const;
+
+export const message = {
         schemaType: 'table' as const,
         entityName: 'message',
         displayName: 'Message',
@@ -34524,7 +34565,7 @@ message: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['conversation'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'conversation'>[]>,
     entityName: 'conversation',
     databaseTable: 'conversation',
     relationshipMap: {conversation: 'id'},
@@ -34545,8 +34586,9 @@ message: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'conversation_id', relatedTable: 'conversation', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-messageBroker: {
+    } as const;
+
+export const messageBroker = {
         schemaType: 'table' as const,
         entityName: 'messageBroker',
         displayName: 'Message Broker',
@@ -34938,7 +34980,7 @@ messageBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataBroker'>[]>,
     entityName: 'dataBroker',
     databaseTable: 'data_broker',
     relationshipMap: {data_broker: 'id', data_input_component: 'id', message_template: 'id'},
@@ -34972,7 +35014,7 @@ messageBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataInputComponent'>[]>,
     entityName: 'dataInputComponent',
     databaseTable: 'data_input_component',
     relationshipMap: {data_broker: 'id', data_input_component: 'id', message_template: 'id'},
@@ -35006,7 +35048,7 @@ messageBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['messageTemplate'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'messageTemplate'>[]>,
     entityName: 'messageTemplate',
     databaseTable: 'message_template',
     relationshipMap: {data_broker: 'id', data_input_component: 'id', message_template: 'id'},
@@ -35029,8 +35071,9 @@ messageBroker: {
         { relationshipType: 'foreignKey', column: 'default_component', relatedTable: 'data_input_component', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'message_id', relatedTable: 'message_template', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-messageTemplate: {
+    } as const;
+
+export const messageTemplate = {
         schemaType: 'table' as const,
         entityName: 'messageTemplate',
         displayName: 'Message Template',
@@ -35472,7 +35515,7 @@ messageTemplate: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['messageBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'messageBroker'>[]>,
     entityName: 'messageBroker',
     databaseTable: 'message_broker',
 },
@@ -35505,7 +35548,7 @@ messageTemplate: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeMessage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeMessage'>[]>,
     entityName: 'recipeMessage',
     databaseTable: 'recipe_message',
 },
@@ -35526,8 +35569,9 @@ messageTemplate: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'message_broker', relatedColumn: 'message_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_message', relatedColumn: 'message_id', junctionTable: null }
         ],
-    },
-nodeCategory: {
+    } as const;
+
+export const nodeCategory = {
         schemaType: 'table' as const,
         entityName: 'nodeCategory',
         displayName: 'Node Category',
@@ -35547,7 +35591,7 @@ nodeCategory: {
     }
 },
         displayFieldMetadata: { fieldName: 'name', databaseFieldName: 'name' },
-        defaultFetchStrategy: 'ifk',
+        defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
     "subComponent": "default",
     "variant": "default",
@@ -37141,7 +37185,7 @@ nodeCategory: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredNode'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredNode'>[]>,
     entityName: 'registeredNode',
     databaseTable: 'registered_node',
 },
@@ -37161,8 +37205,9 @@ nodeCategory: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_node', relatedColumn: 'category', junctionTable: null }
         ],
-    },
-organizationInvitations: {
+    } as const;
+
+export const organizationInvitations = {
         schemaType: 'table' as const,
         entityName: 'organizationInvitations',
         displayName: 'Organization Invitations',
@@ -37759,7 +37804,7 @@ organizationInvitations: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['organizations'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'organizations'>[]>,
     entityName: 'organizations',
     databaseTable: 'organizations',
     relationshipMap: {organizations: 'id'},
@@ -37780,8 +37825,9 @@ organizationInvitations: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'organization_id', relatedTable: 'organizations', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-organizationMembers: {
+    } as const;
+
+export const organizationMembers = {
         schemaType: 'table' as const,
         entityName: 'organizationMembers',
         displayName: 'Organization Members',
@@ -38250,7 +38296,7 @@ organizationMembers: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['organizations'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'organizations'>[]>,
     entityName: 'organizations',
     databaseTable: 'organizations',
     relationshipMap: {organizations: 'id'},
@@ -38271,8 +38317,9 @@ organizationMembers: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'organization_id', relatedTable: 'organizations', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-organizations: {
+    } as const;
+
+export const organizations = {
         schemaType: 'table' as const,
         entityName: 'organizations',
         displayName: 'Organizations',
@@ -39048,7 +39095,7 @@ organizations: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['permissions'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'permissions'>[]>,
     entityName: 'permissions',
     databaseTable: 'permissions',
 },
@@ -39081,7 +39128,7 @@ organizations: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['organizationMembers'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'organizationMembers'>[]>,
     entityName: 'organizationMembers',
     databaseTable: 'organization_members',
 },
@@ -39114,7 +39161,7 @@ organizations: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['organizationInvitations'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'organizationInvitations'>[]>,
     entityName: 'organizationInvitations',
     databaseTable: 'organization_invitations',
 },
@@ -39136,8 +39183,9 @@ organizations: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'organization_members', relatedColumn: 'organization_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'organization_invitations', relatedColumn: 'organization_id', junctionTable: null }
         ],
-    },
-permissions: {
+    } as const;
+
+export const permissions = {
         schemaType: 'table' as const,
         entityName: 'permissions',
         displayName: 'Permissions',
@@ -39839,7 +39887,7 @@ permissions: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['organizations'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'organizations'>[]>,
     entityName: 'organizations',
     databaseTable: 'organizations',
     relationshipMap: {organizations: 'id'},
@@ -39860,8 +39908,9 @@ permissions: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'granted_to_organization_id', relatedTable: 'organizations', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-processor: {
+    } as const;
+
+export const processor = {
         schemaType: 'table' as const,
         entityName: 'processor',
         displayName: 'Processor',
@@ -40253,7 +40302,7 @@ processor: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'processor'>[]>,
     entityName: 'processor',
     databaseTable: 'processor',
     relationshipMap: {None: 'id'},
@@ -40287,7 +40336,7 @@ processor: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeProcessor'>[]>,
     entityName: 'recipeProcessor',
     databaseTable: 'recipe_processor',
 },
@@ -40308,8 +40357,9 @@ processor: {
             { relationshipType: 'foreignKey', column: 'depends_default', relatedTable: 'self_reference', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_processor', relatedColumn: 'processor', junctionTable: null }
         ],
-    },
-projectMembers: {
+    } as const;
+
+export const projectMembers = {
         schemaType: 'table' as const,
         entityName: 'projectMembers',
         displayName: 'Project Members',
@@ -40701,7 +40751,7 @@ projectMembers: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['projects'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'projects'>[]>,
     entityName: 'projects',
     databaseTable: 'projects',
     relationshipMap: {projects: 'id'},
@@ -40722,8 +40772,9 @@ projectMembers: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'project_id', relatedTable: 'projects', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-projects: {
+    } as const;
+
+export const projects = {
         schemaType: 'table' as const,
         entityName: 'projects',
         displayName: 'Projects',
@@ -41179,7 +41230,7 @@ projects: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['projectMembers'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'projectMembers'>[]>,
     entityName: 'projectMembers',
     databaseTable: 'project_members',
 },
@@ -41212,7 +41263,7 @@ projects: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tasks'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tasks'>[]>,
     entityName: 'tasks',
     databaseTable: 'tasks',
 },
@@ -41233,8 +41284,9 @@ projects: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'project_members', relatedColumn: 'project_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'tasks', relatedColumn: 'project_id', junctionTable: null }
         ],
-    },
-prompts: {
+    } as const;
+
+export const prompts = {
         schemaType: 'table' as const,
         entityName: 'prompts',
         displayName: 'Prompts',
@@ -41997,8 +42049,9 @@ prompts: {
         relationships: [
             
         ],
-    },
-recipe: {
+    } as const;
+
+export const recipe = {
         schemaType: 'table' as const,
         entityName: 'recipe',
         displayName: 'Recipe',
@@ -42799,7 +42852,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['compiledRecipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'compiledRecipe'>[]>,
     entityName: 'compiledRecipe',
     databaseTable: 'compiled_recipe',
 },
@@ -42832,7 +42885,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiAgent'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiAgent'>[]>,
     entityName: 'aiAgent',
     databaseTable: 'ai_agent',
 },
@@ -42865,7 +42918,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeDisplay'>[]>,
     entityName: 'recipeDisplay',
     databaseTable: 'recipe_display',
 },
@@ -42898,7 +42951,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeProcessor'>[]>,
     entityName: 'recipeProcessor',
     databaseTable: 'recipe_processor',
 },
@@ -42931,7 +42984,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeModel'>[]>,
     entityName: 'recipeModel',
     databaseTable: 'recipe_model',
 },
@@ -42964,7 +43017,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeBroker'>[]>,
     entityName: 'recipeBroker',
     databaseTable: 'recipe_broker',
 },
@@ -42997,7 +43050,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeMessage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeMessage'>[]>,
     entityName: 'recipeMessage',
     databaseTable: 'recipe_message',
 },
@@ -43030,7 +43083,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeTool'>[]>,
     entityName: 'recipeTool',
     databaseTable: 'recipe_tool',
 },
@@ -43063,7 +43116,7 @@ recipe: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeFunction'>[]>,
     entityName: 'recipeFunction',
     databaseTable: 'recipe_function',
 },
@@ -43091,8 +43144,9 @@ recipe: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_tool', relatedColumn: 'recipe', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_function', relatedColumn: 'recipe', junctionTable: null }
         ],
-    },
-recipeBroker: {
+    } as const;
+
+export const recipeBroker = {
         schemaType: 'table' as const,
         entityName: 'recipeBroker',
         displayName: 'Recipe Broker',
@@ -43493,7 +43547,7 @@ recipeBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'broker'>[]>,
     entityName: 'broker',
     databaseTable: 'broker',
     relationshipMap: {broker: 'id', recipe: 'id'},
@@ -43527,7 +43581,7 @@ recipeBroker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {broker: 'id', recipe: 'id'},
@@ -43549,8 +43603,9 @@ recipeBroker: {
             { relationshipType: 'foreignKey', column: 'broker', relatedTable: 'broker', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-recipeDisplay: {
+    } as const;
+
+export const recipeDisplay = {
         schemaType: 'table' as const,
         entityName: 'recipeDisplay',
         displayName: 'Recipe Display',
@@ -43942,7 +43997,7 @@ recipeDisplay: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['displayOption'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'displayOption'>[]>,
     entityName: 'displayOption',
     databaseTable: 'display_option',
     relationshipMap: {display_option: 'id', recipe: 'id'},
@@ -43976,7 +44031,7 @@ recipeDisplay: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {display_option: 'id', recipe: 'id'},
@@ -43998,8 +44053,9 @@ recipeDisplay: {
             { relationshipType: 'foreignKey', column: 'display', relatedTable: 'display_option', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-recipeFunction: {
+    } as const;
+
+export const recipeFunction = {
         schemaType: 'table' as const,
         entityName: 'recipeFunction',
         displayName: 'Recipe Function',
@@ -44424,7 +44480,7 @@ recipeFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'systemFunction'>[]>,
     entityName: 'systemFunction',
     databaseTable: 'system_function',
     relationshipMap: {system_function: 'id', recipe: 'id'},
@@ -44458,7 +44514,7 @@ recipeFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {system_function: 'id', recipe: 'id'},
@@ -44480,8 +44536,9 @@ recipeFunction: {
             { relationshipType: 'foreignKey', column: 'function', relatedTable: 'system_function', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-recipeMessage: {
+    } as const;
+
+export const recipeMessage = {
         schemaType: 'table' as const,
         entityName: 'recipeMessage',
         displayName: 'Recipe Message',
@@ -44809,7 +44866,7 @@ recipeMessage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['messageTemplate'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'messageTemplate'>[]>,
     entityName: 'messageTemplate',
     databaseTable: 'message_template',
     relationshipMap: {message_template: 'id', recipe: 'id'},
@@ -44843,7 +44900,7 @@ recipeMessage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {message_template: 'id', recipe: 'id'},
@@ -44865,8 +44922,9 @@ recipeMessage: {
             { relationshipType: 'foreignKey', column: 'message_id', relatedTable: 'message_template', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'recipe_id', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-recipeMessageReorderQueue: {
+    } as const;
+
+export const recipeMessageReorderQueue = {
         schemaType: 'table' as const,
         entityName: 'recipeMessageReorderQueue',
         displayName: 'Recipe Message Reorder Queue',
@@ -45053,8 +45111,9 @@ recipeMessageReorderQueue: {
         relationships: [
             
         ],
-    },
-recipeModel: {
+    } as const;
+
+export const recipeModel = {
         schemaType: 'table' as const,
         entityName: 'recipeModel',
         displayName: 'Recipe Model',
@@ -45459,7 +45518,7 @@ recipeModel: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'aiModel'>[]>,
     entityName: 'aiModel',
     databaseTable: 'ai_model',
     relationshipMap: {ai_model: 'id', recipe: 'id'},
@@ -45493,7 +45552,7 @@ recipeModel: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {ai_model: 'id', recipe: 'id'},
@@ -45515,8 +45574,9 @@ recipeModel: {
             { relationshipType: 'foreignKey', column: 'ai_model', relatedTable: 'ai_model', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-recipeProcessor: {
+    } as const;
+
+export const recipeProcessor = {
         schemaType: 'table' as const,
         entityName: 'recipeProcessor',
         displayName: 'Recipe Processor',
@@ -45844,7 +45904,7 @@ recipeProcessor: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'processor'>[]>,
     entityName: 'processor',
     databaseTable: 'processor',
     relationshipMap: {processor: 'id', recipe: 'id'},
@@ -45878,7 +45938,7 @@ recipeProcessor: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {processor: 'id', recipe: 'id'},
@@ -45900,8 +45960,9 @@ recipeProcessor: {
             { relationshipType: 'foreignKey', column: 'processor', relatedTable: 'processor', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-recipeTool: {
+    } as const;
+
+export const recipeTool = {
         schemaType: 'table' as const,
         entityName: 'recipeTool',
         displayName: 'Recipe Tool',
@@ -46229,7 +46290,7 @@ recipeTool: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
     entityName: 'recipe',
     databaseTable: 'recipe',
     relationshipMap: {recipe: 'id', tool: 'id'},
@@ -46263,7 +46324,7 @@ recipeTool: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tool'>[]>,
     entityName: 'tool',
     databaseTable: 'tool',
     relationshipMap: {recipe: 'id', tool: 'id'},
@@ -46285,8 +46346,9 @@ recipeTool: {
             { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'tool', relatedTable: 'tool', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-registeredFunction: {
+    } as const;
+
+export const registeredFunction = {
         schemaType: 'table' as const,
         entityName: 'registeredFunction',
         displayName: 'Registered Function',
@@ -48060,7 +48122,7 @@ registeredFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['dataBroker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'dataBroker'>[]>,
     entityName: 'dataBroker',
     databaseTable: 'data_broker',
     relationshipMap: {data_broker: 'id'},
@@ -48094,7 +48156,7 @@ registeredFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'systemFunction'>[]>,
     entityName: 'systemFunction',
     databaseTable: 'system_function',
 },
@@ -48127,7 +48189,7 @@ registeredFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['arg'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'arg'>[]>,
     entityName: 'arg',
     databaseTable: 'arg',
 },
@@ -48160,7 +48222,7 @@ registeredFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowNode'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowNode'>[]>,
     entityName: 'workflowNode',
     databaseTable: 'workflow_node',
 },
@@ -48193,7 +48255,7 @@ registeredFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredNode'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredNode'>[]>,
     entityName: 'registeredNode',
     databaseTable: 'registered_node',
 },
@@ -48226,7 +48288,7 @@ registeredFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowNodeData'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowNodeData'>[]>,
     entityName: 'workflowNodeData',
     databaseTable: 'workflow_node_data',
 },
@@ -48251,8 +48313,9 @@ registeredFunction: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_node', relatedColumn: 'registered_function_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_node_data', relatedColumn: 'function_id', junctionTable: null }
         ],
-    },
-registeredNode: {
+    } as const;
+
+export const registeredNode = {
         schemaType: 'table' as const,
         entityName: 'registeredNode',
         displayName: 'Registered Node',
@@ -48272,7 +48335,7 @@ registeredNode: {
     }
 },
         displayFieldMetadata: { fieldName: 'name', databaseFieldName: 'name' },
-        defaultFetchStrategy: 'fkIfkAndM2M',
+        defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
     "subComponent": "default",
     "variant": "default",
@@ -50826,7 +50889,7 @@ registeredNode: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['nodeCategory'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'nodeCategory'>[]>,
     entityName: 'nodeCategory',
     databaseTable: 'node_category',
     relationshipMap: {node_category: 'id', registered_function: 'id'},
@@ -50860,43 +50923,10 @@ registeredNode: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredFunction'>[]>,
     entityName: 'registeredFunction',
     databaseTable: 'registered_function',
     relationshipMap: {node_category: 'id', registered_function: 'id'},
-},
-            registeredNodeResultsInverse: {
-    fieldNameFormats: {
-    "frontend": "registeredNodeResultsInverse",
-    "backend": "registered_node_results_Inverse",
-    "database": "ifk_registered_node_results",
-    "pretty": "Registered Node Results Inverse",
-    "component": "RegisteredNodeResultsInverse",
-    "kebab": "registered-node-resultsInverse",
-    "sqlFunctionRef": "p_ifk_registered_node_results",
-    "RestAPI": "registeredNodeResultsInverse",
-    "GraphQL": "registeredNodeResultsInverse",
-    "custom": "registeredNodeResultsInverse"
-} as const,
-    uniqueTableId: 'supabase_automation_matrix:registered_node_results',
-    uniqueEntityId: 'supabase_automation_matrix:registeredNodeResults',
-    name: 'registeredNodeResultsInverse',
-    displayName: 'Registered Node Results Inverse',
-    dataType: 'object' as const,
-    isRequired: false,
-    maxLength: null,
-    isArray: true,
-    defaultValue: [],
-    isPrimaryKey: false,
-    defaultGeneratorFunction: null,
-    validationFunctions: ['isValidDatabaseEntry'],
-    exclusionRules: ['notCoreField'],
-    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
-    structure: 'inverseForeignKey' as const,
-    isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredNodeResults'][]>,
-    entityName: 'registeredNodeResults',
-    databaseTable: 'registered_node_results',
 },
         },
         entityNameFormats: {
@@ -50913,652 +50943,11 @@ registeredNode: {
 },
         relationships: [
             { relationshipType: 'foreignKey', column: 'category', relatedTable: 'node_category', relatedColumn: 'id', junctionTable: null },
-        { relationshipType: 'foreignKey', column: 'registered_function_id', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null },
-        { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_node_results', relatedColumn: 'registered_node_id', junctionTable: null }
+        { relationshipType: 'foreignKey', column: 'registered_function_id', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-registeredNodeResults: {
-        schemaType: 'table' as const,
-        entityName: 'registeredNodeResults',
-        displayName: 'Registered Node Results',
-        uniqueTableId: 'supabase_automation_matrix:public:registered_node_results',
-        uniqueEntityId: 'supabase_automation_matrix:registeredNodeResults',
-        primaryKey: 'id',
-        primaryKeyMetadata: {
-    "type": "single",
-    "fields": [
-        "id"
-    ],
-    "database_fields": [
-        "id"
-    ],
-    "where_template": {
-        "id": null
-    }
-},
-        displayFieldMetadata: { fieldName: 'id', databaseFieldName: 'id' },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "minDate": "default",
-    "maxDate": "default",
-    "numberType": "default"
-},
-        entityFields: {
-            id: {
-            fieldNameFormats: {
-    "frontend": "id",
-    "backend": "id",
-    "database": "id",
-    "pretty": "Id",
-    "component": "Id",
-    "kebab": "id",
-    "sqlFunctionRef": "p_id",
-    "RestAPI": "id",
-    "GraphQL": "id",
-    "custom": "id"
-} as const,
-            name: 'id',
-            displayName: 'Id',
+    } as const;
 
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:id',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:id',
-
-            dataType: 'uuid' as const,
-            isRequired: true,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: true,
-            isDisplayField: true,
-            defaultGeneratorFunction: "getUUID()",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": true
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: null,
-            description: '"Id" field for registeredNodeResults. This is a required field. Your entry must be an uuid data type.',
-        },
-            createdAt: {
-            fieldNameFormats: {
-    "frontend": "createdAt",
-    "backend": "created_at",
-    "database": "created_at",
-    "pretty": "Created At",
-    "component": "CreatedAt",
-    "kebab": "created-at",
-    "sqlFunctionRef": "p_created_at",
-    "RestAPI": "createdAt",
-    "GraphQL": "createdAt",
-    "custom": "createdAt"
-} as const,
-            name: 'createdAt',
-            displayName: 'Created At',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:created_at',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:createdAt',
-
-            dataType: 'date' as const,
-            isRequired: true,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "getCurrentTime()",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'DATE_PICKER' as const,
-            componentProps: {
-    "subComponent": "timestamptz",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": true
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<Date>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: null,
-            description: '"Created At" field for registeredNodeResults. This is a required field. Your entry must be an date data type.',
-        },
-            workflowId: {
-            fieldNameFormats: {
-    "frontend": "workflowId",
-    "backend": "workflow_id",
-    "database": "workflow_id",
-    "pretty": "Workflow Id",
-    "component": "WorkflowId",
-    "kebab": "workflow-id",
-    "sqlFunctionRef": "p_workflow_id",
-    "RestAPI": "workflowId",
-    "GraphQL": "workflowId",
-    "custom": "workflowId"
-} as const,
-            name: 'workflowId',
-            displayName: 'Workflow Id',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:workflow_id',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:workflowId',
-
-            dataType: 'uuid' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": false
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: {"table": "workflow_data", "column": "id", "entity": "workflowData", "field": "id"},
-            description: '"Workflow Id" field for registeredNodeResults. This is an optional field. Your entry must be an uuid data type. This field is a reference to a workflowData.',
-        },
-            userId: {
-            fieldNameFormats: {
-    "frontend": "userId",
-    "backend": "user_id",
-    "database": "user_id",
-    "pretty": "User Id",
-    "component": "UserId",
-    "kebab": "user-id",
-    "sqlFunctionRef": "p_user_id",
-    "RestAPI": "userId",
-    "GraphQL": "userId",
-    "custom": "userId"
-} as const,
-            name: 'userId',
-            displayName: 'User Id',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:user_id',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:userId',
-
-            dataType: 'uuid' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": false
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: {"table": "users", "column": "id", "entity": "users", "field": "id"},
-            description: '"User Id" field for registeredNodeResults. This is an optional field. Your entry must be an uuid data type. This field is a reference to a users.',
-        },
-            data: {
-            fieldNameFormats: {
-    "frontend": "data",
-    "backend": "data",
-    "database": "data",
-    "pretty": "Data",
-    "component": "Data",
-    "kebab": "data",
-    "sqlFunctionRef": "p_data",
-    "RestAPI": "data",
-    "GraphQL": "data",
-    "custom": "data"
-} as const,
-            name: 'data',
-            displayName: 'Data',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:data',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:data',
-
-            dataType: 'object' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'JSON_EDITOR' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": false
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<Record<string, unknown>>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: null,
-            description: '"Data" field for registeredNodeResults. This is an optional field. Your entry must be an object data type.',
-        },
-            metadata: {
-            fieldNameFormats: {
-    "frontend": "metadata",
-    "backend": "metadata",
-    "database": "metadata",
-    "pretty": "Metadata",
-    "component": "Metadata",
-    "kebab": "metadata",
-    "sqlFunctionRef": "p_metadata",
-    "RestAPI": "metadata",
-    "GraphQL": "metadata",
-    "custom": "metadata"
-} as const,
-            name: 'metadata',
-            displayName: 'Metadata',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:metadata',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:metadata',
-
-            dataType: 'object' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'JSON_EDITOR' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": false
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<Record<string, unknown>>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: null,
-            description: '"Metadata" field for registeredNodeResults. This is an optional field. Your entry must be an object data type.',
-        },
-            isPublic: {
-            fieldNameFormats: {
-    "frontend": "isPublic",
-    "backend": "is_public",
-    "database": "is_public",
-    "pretty": "Is Public",
-    "component": "IsPublic",
-    "kebab": "is-public",
-    "sqlFunctionRef": "p_is_public",
-    "RestAPI": "isPublic",
-    "GraphQL": "isPublic",
-    "custom": "isPublic"
-} as const,
-            name: 'isPublic',
-            displayName: 'Is Public',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:is_public',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:isPublic',
-
-            dataType: 'boolean' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "false" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'SWITCH' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": false
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<boolean>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: null,
-            description: '"Is Public" field for registeredNodeResults. This is an optional field. Your entry must be an boolean data type.',
-        },
-            registeredNodeId: {
-            fieldNameFormats: {
-    "frontend": "registeredNodeId",
-    "backend": "registered_node_id",
-    "database": "registered_node_id",
-    "pretty": "Registered Node Id",
-    "component": "RegisteredNodeId",
-    "kebab": "registered-node-id",
-    "sqlFunctionRef": "p_registered_node_id",
-    "RestAPI": "registeredNodeId",
-    "GraphQL": "registeredNodeId",
-    "custom": "registeredNodeId"
-} as const,
-            name: 'registeredNodeId',
-            displayName: 'Registered Node Id',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:registered_node_results:registered_node_id',
-            uniqueFieldId: 'supabase_automation_matrix:registeredNodeResults:registeredNodeId',
-
-            dataType: 'uuid' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: "",
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
-            componentProps: {
-    "subComponent": "default",
-    "variant": "default",
-    "section": "default",
-    "placeholder": "default",
-    "size": "default",
-    "textSize": "default",
-    "textColor": "default",
-    "rows": "default",
-    "animation": "default",
-    "fullWidthValue": "default",
-    "fullWidth": "default",
-    "disabled": "default",
-    "className": "default",
-    "type": "default",
-    "onChange": "default",
-    "onBlur": "default",
-    "formatString": "default",
-    "min": "default",
-    "max": "default",
-    "step": "default",
-    "numberType": "default",
-    "options": "default",
-    "required": false
-},
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            enumValues: null,
-            entityName: 'registeredNodeResults',
-            databaseTable: 'registered_node_results',
-            foreignKeyReference: {"table": "registered_node", "column": "id", "entity": "registeredNode", "field": "id"},
-            description: '"Registered Node Id" field for registeredNodeResults. This is an optional field. Your entry must be an uuid data type. This field is a reference to a registeredNode.',
-        },
-            registeredNodeReference: {
-    fieldNameFormats: {
-    "frontend": "registeredNodeReference",
-    "backend": "registered_node_reference",
-    "database": "ref_registered_node",
-    "pretty": "Registered Node Reference",
-    "component": "RegisteredNodeReference",
-    "kebab": "registered-nodeReference",
-    "sqlFunctionRef": "p_ref_registered_node",
-    "RestAPI": "registeredNodeReference",
-    "GraphQL": "registeredNodeReference",
-    "custom": "registeredNodeReference"
-} as const,
-    uniqueColumnId: 'supabase_automation_matrix:registered_node:id',
-    uniqueFieldId: 'supabase_automation_matrix:registeredNode:id',
-    name: 'registeredNodeReference',
-    displayName: 'Registered Node Reference',
-    dataType: 'object' as const,
-    isRequired: false,
-    maxLength: null,
-    isArray: true,
-    defaultValue: [],
-    isPrimaryKey: false,
-    defaultGeneratorFunction: null,
-    validationFunctions: ['isValidDatabaseEntry'],
-    exclusionRules: ['notCoreField'],
-    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
-    structure: 'foreignKey' as const,
-    isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredNode'][]>,
-    entityName: 'registeredNode',
-    databaseTable: 'registered_node',
-    relationshipMap: {registered_node: 'id', workflow_data: 'id'},
-},
-            workflowDataReference: {
-    fieldNameFormats: {
-    "frontend": "workflowDataReference",
-    "backend": "workflow_data_reference",
-    "database": "ref_workflow_data",
-    "pretty": "Workflow Data Reference",
-    "component": "WorkflowDataReference",
-    "kebab": "workflow-dataReference",
-    "sqlFunctionRef": "p_ref_workflow_data",
-    "RestAPI": "workflowDataReference",
-    "GraphQL": "workflowDataReference",
-    "custom": "workflowDataReference"
-} as const,
-    uniqueColumnId: 'supabase_automation_matrix:workflow_data:id',
-    uniqueFieldId: 'supabase_automation_matrix:workflowData:id',
-    name: 'workflowDataReference',
-    displayName: 'Workflow Data Reference',
-    dataType: 'object' as const,
-    isRequired: false,
-    maxLength: null,
-    isArray: true,
-    defaultValue: [],
-    isPrimaryKey: false,
-    defaultGeneratorFunction: null,
-    validationFunctions: ['isValidDatabaseEntry'],
-    exclusionRules: ['notCoreField'],
-    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
-    structure: 'foreignKey' as const,
-    isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowData'][]>,
-    entityName: 'workflowData',
-    databaseTable: 'workflow_data',
-    relationshipMap: {registered_node: 'id', workflow_data: 'id'},
-},
-        },
-        entityNameFormats: {
-    "frontend": "registeredNodeResults",
-    "backend": "registered_node_results",
-    "database": "registered_node_results",
-    "pretty": "Registered Node Results",
-    "component": "RegisteredNodeResults",
-    "kebab": "registered-node-results",
-    "sqlFunctionRef": "p_registered_node_results",
-    "RestAPI": "registeredNodeResults",
-    "GraphQL": "registeredNodeResults",
-    "custom": "registeredNodeResults"
-},
-        relationships: [
-            { relationshipType: 'foreignKey', column: 'registered_node_id', relatedTable: 'registered_node', relatedColumn: 'id', junctionTable: null },
-        { relationshipType: 'foreignKey', column: 'workflow_id', relatedTable: 'workflow_data', relatedColumn: 'id', junctionTable: null }
-        ],
-    },
-schemaTemplates: {
+export const schemaTemplates = {
         schemaType: 'table' as const,
         entityName: 'schemaTemplates',
         displayName: 'Schema Templates',
@@ -52001,8 +51390,9 @@ schemaTemplates: {
         relationships: [
             
         ],
-    },
-scrapeBaseConfig: {
+    } as const;
+
+export const scrapeBaseConfig = {
         schemaType: 'table' as const,
         entityName: 'scrapeBaseConfig',
         displayName: 'Scrape Base Config',
@@ -52637,8 +52027,9 @@ scrapeBaseConfig: {
         relationships: [
             
         ],
-    },
-scrapeCachePolicy: {
+    } as const;
+
+export const scrapeCachePolicy = {
         schemaType: 'table' as const,
         entityName: 'scrapeCachePolicy',
         displayName: 'Scrape Cache Policy',
@@ -53222,7 +52613,7 @@ scrapeCachePolicy: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPatternCachePolicy'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPatternCachePolicy'>[]>,
     entityName: 'scrapePathPatternCachePolicy',
     databaseTable: 'scrape_path_pattern_cache_policy',
 },
@@ -53242,8 +52633,9 @@ scrapeCachePolicy: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_path_pattern_cache_policy', relatedColumn: 'scrape_cache_policy_id', junctionTable: null }
         ],
-    },
-scrapeConfiguration: {
+    } as const;
+
+export const scrapeConfiguration = {
         schemaType: 'table' as const,
         entityName: 'scrapeConfiguration',
         displayName: 'Scrape Configuration',
@@ -53955,7 +53347,7 @@ scrapeConfiguration: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPattern'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPattern'>[]>,
     entityName: 'scrapePathPattern',
     databaseTable: 'scrape_path_pattern',
     relationshipMap: {scrape_path_pattern: 'id'},
@@ -53989,7 +53381,7 @@ scrapeConfiguration: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeParsedPage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeParsedPage'>[]>,
     entityName: 'scrapeParsedPage',
     databaseTable: 'scrape_parsed_page',
 },
@@ -54010,8 +53402,9 @@ scrapeConfiguration: {
             { relationshipType: 'foreignKey', column: 'scrape_path_pattern_id', relatedTable: 'scrape_path_pattern', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_parsed_page', relatedColumn: 'scrape_configuration_id', junctionTable: null }
         ],
-    },
-scrapeCycleRun: {
+    } as const;
+
+export const scrapeCycleRun = {
         schemaType: 'table' as const,
         entityName: 'scrapeCycleRun',
         displayName: 'Scrape Cycle Run',
@@ -54787,7 +54180,7 @@ scrapeCycleRun: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCycleTracker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCycleTracker'>[]>,
     entityName: 'scrapeCycleTracker',
     databaseTable: 'scrape_cycle_tracker',
     relationshipMap: {scrape_cycle_tracker: 'id'},
@@ -54821,7 +54214,7 @@ scrapeCycleRun: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeTask'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeTask'>[]>,
     entityName: 'scrapeTask',
     databaseTable: 'scrape_task',
 },
@@ -54854,7 +54247,7 @@ scrapeCycleRun: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeParsedPage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeParsedPage'>[]>,
     entityName: 'scrapeParsedPage',
     databaseTable: 'scrape_parsed_page',
 },
@@ -54876,8 +54269,9 @@ scrapeCycleRun: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_task', relatedColumn: 'scrape_cycle_run_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_parsed_page', relatedColumn: 'scrape_cycle_run_id', junctionTable: null }
         ],
-    },
-scrapeCycleTracker: {
+    } as const;
+
+export const scrapeCycleTracker = {
         schemaType: 'table' as const,
         entityName: 'scrapeCycleTracker',
         displayName: 'Scrape Cycle Tracker',
@@ -55781,7 +55175,7 @@ scrapeCycleTracker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeJob'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeJob'>[]>,
     entityName: 'scrapeJob',
     databaseTable: 'scrape_job',
     relationshipMap: {scrape_job: 'id', scrape_path_pattern_cache_policy: 'id'},
@@ -55815,7 +55209,7 @@ scrapeCycleTracker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPatternCachePolicy'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPatternCachePolicy'>[]>,
     entityName: 'scrapePathPatternCachePolicy',
     databaseTable: 'scrape_path_pattern_cache_policy',
     relationshipMap: {scrape_job: 'id', scrape_path_pattern_cache_policy: 'id'},
@@ -55849,7 +55243,7 @@ scrapeCycleTracker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCycleRun'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCycleRun'>[]>,
     entityName: 'scrapeCycleRun',
     databaseTable: 'scrape_cycle_run',
 },
@@ -55882,7 +55276,7 @@ scrapeCycleTracker: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeParsedPage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeParsedPage'>[]>,
     entityName: 'scrapeParsedPage',
     databaseTable: 'scrape_parsed_page',
 },
@@ -55905,8 +55299,9 @@ scrapeCycleTracker: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_cycle_run', relatedColumn: 'scrape_cycle_tracker_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_parsed_page', relatedColumn: 'scrape_cycle_tracker_id', junctionTable: null }
         ],
-    },
-scrapeDomain: {
+    } as const;
+
+export const scrapeDomain = {
         schemaType: 'table' as const,
         entityName: 'scrapeDomain',
         displayName: 'Scrape Domain',
@@ -56490,7 +55885,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPattern'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPattern'>[]>,
     entityName: 'scrapePathPattern',
     databaseTable: 'scrape_path_pattern',
 },
@@ -56523,7 +55918,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeJob'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeJob'>[]>,
     entityName: 'scrapeJob',
     databaseTable: 'scrape_job',
 },
@@ -56556,7 +55951,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomainQuickScrapeSettings'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomainQuickScrapeSettings'>[]>,
     entityName: 'scrapeDomainQuickScrapeSettings',
     databaseTable: 'scrape_domain_quick_scrape_settings',
 },
@@ -56589,7 +55984,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomainDisallowedNotes'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomainDisallowedNotes'>[]>,
     entityName: 'scrapeDomainDisallowedNotes',
     databaseTable: 'scrape_domain_disallowed_notes',
 },
@@ -56622,7 +56017,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomainRobotsTxt'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomainRobotsTxt'>[]>,
     entityName: 'scrapeDomainRobotsTxt',
     databaseTable: 'scrape_domain_robots_txt',
 },
@@ -56655,7 +56050,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomainNotes'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomainNotes'>[]>,
     entityName: 'scrapeDomainNotes',
     databaseTable: 'scrape_domain_notes',
 },
@@ -56688,7 +56083,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomainSitemap'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomainSitemap'>[]>,
     entityName: 'scrapeDomainSitemap',
     databaseTable: 'scrape_domain_sitemap',
 },
@@ -56721,7 +56116,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeTask'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeTask'>[]>,
     entityName: 'scrapeTask',
     databaseTable: 'scrape_task',
 },
@@ -56754,7 +56149,7 @@ scrapeDomain: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeQuickFailureLog'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeQuickFailureLog'>[]>,
     entityName: 'scrapeQuickFailureLog',
     databaseTable: 'scrape_quick_failure_log',
 },
@@ -56782,8 +56177,9 @@ scrapeDomain: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_task', relatedColumn: 'scrape_domain_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_quick_failure_log', relatedColumn: 'scrape_domain_id', junctionTable: null }
         ],
-    },
-scrapeDomainDisallowedNotes: {
+    } as const;
+
+export const scrapeDomainDisallowedNotes = {
         schemaType: 'table' as const,
         entityName: 'scrapeDomainDisallowedNotes',
         displayName: 'Scrape Domain Disallowed Notes',
@@ -57303,7 +56699,7 @@ scrapeDomainDisallowedNotes: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -57324,8 +56720,9 @@ scrapeDomainDisallowedNotes: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'scrape_domain_id', relatedTable: 'scrape_domain', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapeDomainNotes: {
+    } as const;
+
+export const scrapeDomainNotes = {
         schemaType: 'table' as const,
         entityName: 'scrapeDomainNotes',
         displayName: 'Scrape Domain Notes',
@@ -57845,7 +57242,7 @@ scrapeDomainNotes: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -57866,8 +57263,9 @@ scrapeDomainNotes: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'scrape_domain_id', relatedTable: 'scrape_domain', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapeDomainQuickScrapeSettings: {
+    } as const;
+
+export const scrapeDomainQuickScrapeSettings = {
         schemaType: 'table' as const,
         entityName: 'scrapeDomainQuickScrapeSettings',
         displayName: 'Scrape Domain Quick Scrape Settings',
@@ -58451,7 +57849,7 @@ scrapeDomainQuickScrapeSettings: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -58472,8 +57870,9 @@ scrapeDomainQuickScrapeSettings: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'scrape_domain_id', relatedTable: 'scrape_domain', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapeDomainRobotsTxt: {
+    } as const;
+
+export const scrapeDomainRobotsTxt = {
         schemaType: 'table' as const,
         entityName: 'scrapeDomainRobotsTxt',
         displayName: 'Scrape Domain Robots Txt',
@@ -58993,7 +58392,7 @@ scrapeDomainRobotsTxt: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -59014,8 +58413,9 @@ scrapeDomainRobotsTxt: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'scrape_domain_id', relatedTable: 'scrape_domain', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapeDomainSitemap: {
+    } as const;
+
+export const scrapeDomainSitemap = {
         schemaType: 'table' as const,
         entityName: 'scrapeDomainSitemap',
         displayName: 'Scrape Domain Sitemap',
@@ -59535,7 +58935,7 @@ scrapeDomainSitemap: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -59556,8 +58956,9 @@ scrapeDomainSitemap: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'scrape_domain_id', relatedTable: 'scrape_domain', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapeJob: {
+    } as const;
+
+export const scrapeJob = {
         schemaType: 'table' as const,
         entityName: 'scrapeJob',
         displayName: 'Scrape Job',
@@ -60589,7 +59990,7 @@ scrapeJob: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -60623,7 +60024,7 @@ scrapeJob: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCycleTracker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCycleTracker'>[]>,
     entityName: 'scrapeCycleTracker',
     databaseTable: 'scrape_cycle_tracker',
 },
@@ -60656,7 +60057,7 @@ scrapeJob: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeTask'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeTask'>[]>,
     entityName: 'scrapeTask',
     databaseTable: 'scrape_task',
 },
@@ -60678,8 +60079,9 @@ scrapeJob: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_cycle_tracker', relatedColumn: 'scrape_job_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_task', relatedColumn: 'scrape_job_id', junctionTable: null }
         ],
-    },
-scrapeOverride: {
+    } as const;
+
+export const scrapeOverride = {
         schemaType: 'table' as const,
         entityName: 'scrapeOverride',
         displayName: 'Scrape Override',
@@ -61455,7 +60857,7 @@ scrapeOverride: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeOverrideValue'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeOverrideValue'>[]>,
     entityName: 'scrapeOverrideValue',
     databaseTable: 'scrape_override_value',
 },
@@ -61488,7 +60890,7 @@ scrapeOverride: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPatternOverride'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPatternOverride'>[]>,
     entityName: 'scrapePathPatternOverride',
     databaseTable: 'scrape_path_pattern_override',
 },
@@ -61509,8 +60911,9 @@ scrapeOverride: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_override_value', relatedColumn: 'scrape_override_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_path_pattern_override', relatedColumn: 'scrape_override_id', junctionTable: null }
         ],
-    },
-scrapeOverrideValue: {
+    } as const;
+
+export const scrapeOverrideValue = {
         schemaType: 'table' as const,
         entityName: 'scrapeOverrideValue',
         displayName: 'Scrape Override Value',
@@ -62094,7 +61497,7 @@ scrapeOverrideValue: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeOverride'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeOverride'>[]>,
     entityName: 'scrapeOverride',
     databaseTable: 'scrape_override',
     relationshipMap: {scrape_override: 'id'},
@@ -62115,8 +61518,9 @@ scrapeOverrideValue: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'scrape_override_id', relatedTable: 'scrape_override', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapeParsedPage: {
+    } as const;
+
+export const scrapeParsedPage = {
         schemaType: 'table' as const,
         entityName: 'scrapeParsedPage',
         displayName: 'Scrape Parsed Page',
@@ -63404,7 +62808,7 @@ scrapeParsedPage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeConfiguration'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeConfiguration'>[]>,
     entityName: 'scrapeConfiguration',
     databaseTable: 'scrape_configuration',
     relationshipMap: {scrape_configuration: 'id', scrape_cycle_run: 'id', scrape_cycle_tracker: 'id', scrape_path_pattern_cache_policy: 'id', scrape_path_pattern_override: 'id', scrape_task: 'id', scrape_task_response: 'id'},
@@ -63438,7 +62842,7 @@ scrapeParsedPage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCycleRun'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCycleRun'>[]>,
     entityName: 'scrapeCycleRun',
     databaseTable: 'scrape_cycle_run',
     relationshipMap: {scrape_configuration: 'id', scrape_cycle_run: 'id', scrape_cycle_tracker: 'id', scrape_path_pattern_cache_policy: 'id', scrape_path_pattern_override: 'id', scrape_task: 'id', scrape_task_response: 'id'},
@@ -63472,7 +62876,7 @@ scrapeParsedPage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCycleTracker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCycleTracker'>[]>,
     entityName: 'scrapeCycleTracker',
     databaseTable: 'scrape_cycle_tracker',
     relationshipMap: {scrape_configuration: 'id', scrape_cycle_run: 'id', scrape_cycle_tracker: 'id', scrape_path_pattern_cache_policy: 'id', scrape_path_pattern_override: 'id', scrape_task: 'id', scrape_task_response: 'id'},
@@ -63506,7 +62910,7 @@ scrapeParsedPage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPatternCachePolicy'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPatternCachePolicy'>[]>,
     entityName: 'scrapePathPatternCachePolicy',
     databaseTable: 'scrape_path_pattern_cache_policy',
     relationshipMap: {scrape_configuration: 'id', scrape_cycle_run: 'id', scrape_cycle_tracker: 'id', scrape_path_pattern_cache_policy: 'id', scrape_path_pattern_override: 'id', scrape_task: 'id', scrape_task_response: 'id'},
@@ -63540,7 +62944,7 @@ scrapeParsedPage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPatternOverride'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPatternOverride'>[]>,
     entityName: 'scrapePathPatternOverride',
     databaseTable: 'scrape_path_pattern_override',
     relationshipMap: {scrape_configuration: 'id', scrape_cycle_run: 'id', scrape_cycle_tracker: 'id', scrape_path_pattern_cache_policy: 'id', scrape_path_pattern_override: 'id', scrape_task: 'id', scrape_task_response: 'id'},
@@ -63574,7 +62978,7 @@ scrapeParsedPage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeTask'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeTask'>[]>,
     entityName: 'scrapeTask',
     databaseTable: 'scrape_task',
     relationshipMap: {scrape_configuration: 'id', scrape_cycle_run: 'id', scrape_cycle_tracker: 'id', scrape_path_pattern_cache_policy: 'id', scrape_path_pattern_override: 'id', scrape_task: 'id', scrape_task_response: 'id'},
@@ -63608,7 +63012,7 @@ scrapeParsedPage: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeTaskResponse'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeTaskResponse'>[]>,
     entityName: 'scrapeTaskResponse',
     databaseTable: 'scrape_task_response',
     relationshipMap: {scrape_configuration: 'id', scrape_cycle_run: 'id', scrape_cycle_tracker: 'id', scrape_path_pattern_cache_policy: 'id', scrape_path_pattern_override: 'id', scrape_task: 'id', scrape_task_response: 'id'},
@@ -63635,8 +63039,9 @@ scrapeParsedPage: {
         { relationshipType: 'foreignKey', column: 'scrape_task_id', relatedTable: 'scrape_task', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'scrape_task_response_id', relatedTable: 'scrape_task_response', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapePathPattern: {
+    } as const;
+
+export const scrapePathPattern = {
         schemaType: 'table' as const,
         entityName: 'scrapePathPattern',
         displayName: 'Scrape Path Pattern',
@@ -64156,7 +63561,7 @@ scrapePathPattern: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -64190,7 +63595,7 @@ scrapePathPattern: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeConfiguration'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeConfiguration'>[]>,
     entityName: 'scrapeConfiguration',
     databaseTable: 'scrape_configuration',
 },
@@ -64223,7 +63628,7 @@ scrapePathPattern: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPatternOverride'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPatternOverride'>[]>,
     entityName: 'scrapePathPatternOverride',
     databaseTable: 'scrape_path_pattern_override',
 },
@@ -64256,7 +63661,7 @@ scrapePathPattern: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPatternCachePolicy'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPatternCachePolicy'>[]>,
     entityName: 'scrapePathPatternCachePolicy',
     databaseTable: 'scrape_path_pattern_cache_policy',
 },
@@ -64279,8 +63684,9 @@ scrapePathPattern: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_path_pattern_override', relatedColumn: 'scrape_path_pattern_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_path_pattern_cache_policy', relatedColumn: 'scrape_path_pattern_id', junctionTable: null }
         ],
-    },
-scrapePathPatternCachePolicy: {
+    } as const;
+
+export const scrapePathPatternCachePolicy = {
         schemaType: 'table' as const,
         entityName: 'scrapePathPatternCachePolicy',
         displayName: 'Scrape Path Pattern Cache Policy',
@@ -64864,7 +64270,7 @@ scrapePathPatternCachePolicy: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCachePolicy'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCachePolicy'>[]>,
     entityName: 'scrapeCachePolicy',
     databaseTable: 'scrape_cache_policy',
     relationshipMap: {scrape_cache_policy: 'id', scrape_path_pattern: 'id'},
@@ -64898,7 +64304,7 @@ scrapePathPatternCachePolicy: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPattern'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPattern'>[]>,
     entityName: 'scrapePathPattern',
     databaseTable: 'scrape_path_pattern',
     relationshipMap: {scrape_cache_policy: 'id', scrape_path_pattern: 'id'},
@@ -64932,7 +64338,7 @@ scrapePathPatternCachePolicy: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCycleTracker'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCycleTracker'>[]>,
     entityName: 'scrapeCycleTracker',
     databaseTable: 'scrape_cycle_tracker',
 },
@@ -64965,7 +64371,7 @@ scrapePathPatternCachePolicy: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeParsedPage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeParsedPage'>[]>,
     entityName: 'scrapeParsedPage',
     databaseTable: 'scrape_parsed_page',
 },
@@ -64988,8 +64394,9 @@ scrapePathPatternCachePolicy: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_cycle_tracker', relatedColumn: 'scrape_path_pattern_cache_policy_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_parsed_page', relatedColumn: 'scrape_path_pattern_cache_policy_id', junctionTable: null }
         ],
-    },
-scrapePathPatternOverride: {
+    } as const;
+
+export const scrapePathPatternOverride = {
         schemaType: 'table' as const,
         entityName: 'scrapePathPatternOverride',
         displayName: 'Scrape Path Pattern Override',
@@ -65701,7 +65108,7 @@ scrapePathPatternOverride: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeOverride'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeOverride'>[]>,
     entityName: 'scrapeOverride',
     databaseTable: 'scrape_override',
     relationshipMap: {scrape_override: 'id', scrape_path_pattern: 'id'},
@@ -65735,7 +65142,7 @@ scrapePathPatternOverride: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapePathPattern'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapePathPattern'>[]>,
     entityName: 'scrapePathPattern',
     databaseTable: 'scrape_path_pattern',
     relationshipMap: {scrape_override: 'id', scrape_path_pattern: 'id'},
@@ -65769,7 +65176,7 @@ scrapePathPatternOverride: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeParsedPage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeParsedPage'>[]>,
     entityName: 'scrapeParsedPage',
     databaseTable: 'scrape_parsed_page',
 },
@@ -65791,8 +65198,9 @@ scrapePathPatternOverride: {
         { relationshipType: 'foreignKey', column: 'scrape_path_pattern_id', relatedTable: 'scrape_path_pattern', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_parsed_page', relatedColumn: 'scrape_path_pattern_override_id', junctionTable: null }
         ],
-    },
-scrapeQuickFailureLog: {
+    } as const;
+
+export const scrapeQuickFailureLog = {
         schemaType: 'table' as const,
         entityName: 'scrapeQuickFailureLog',
         displayName: 'Scrape Quick Failure Log',
@@ -66568,7 +65976,7 @@ scrapeQuickFailureLog: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_domain: 'id'},
@@ -66589,8 +65997,9 @@ scrapeQuickFailureLog: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'scrape_domain_id', relatedTable: 'scrape_domain', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-scrapeTask: {
+    } as const;
+
+export const scrapeTask = {
         schemaType: 'table' as const,
         entityName: 'scrapeTask',
         displayName: 'Scrape Task',
@@ -68070,7 +67479,7 @@ scrapeTask: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeCycleRun'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeCycleRun'>[]>,
     entityName: 'scrapeCycleRun',
     databaseTable: 'scrape_cycle_run',
     relationshipMap: {scrape_cycle_run: 'id', scrape_domain: 'id', scrape_job: 'id'},
@@ -68104,7 +67513,7 @@ scrapeTask: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeDomain'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeDomain'>[]>,
     entityName: 'scrapeDomain',
     databaseTable: 'scrape_domain',
     relationshipMap: {scrape_cycle_run: 'id', scrape_domain: 'id', scrape_job: 'id'},
@@ -68138,7 +67547,7 @@ scrapeTask: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeJob'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeJob'>[]>,
     entityName: 'scrapeJob',
     databaseTable: 'scrape_job',
     relationshipMap: {scrape_cycle_run: 'id', scrape_domain: 'id', scrape_job: 'id'},
@@ -68172,7 +67581,7 @@ scrapeTask: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeTaskResponse'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeTaskResponse'>[]>,
     entityName: 'scrapeTaskResponse',
     databaseTable: 'scrape_task_response',
 },
@@ -68205,7 +67614,7 @@ scrapeTask: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeParsedPage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeParsedPage'>[]>,
     entityName: 'scrapeParsedPage',
     databaseTable: 'scrape_parsed_page',
 },
@@ -68229,8 +67638,9 @@ scrapeTask: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_task_response', relatedColumn: 'scrape_task_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_parsed_page', relatedColumn: 'scrape_task_id', junctionTable: null }
         ],
-    },
-scrapeTaskResponse: {
+    } as const;
+
+export const scrapeTaskResponse = {
         schemaType: 'table' as const,
         entityName: 'scrapeTaskResponse',
         displayName: 'Scrape Task Response',
@@ -69262,7 +68672,7 @@ scrapeTaskResponse: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeTask'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeTask'>[]>,
     entityName: 'scrapeTask',
     databaseTable: 'scrape_task',
     relationshipMap: {scrape_task: 'id'},
@@ -69296,7 +68706,7 @@ scrapeTaskResponse: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['scrapeParsedPage'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'scrapeParsedPage'>[]>,
     entityName: 'scrapeParsedPage',
     databaseTable: 'scrape_parsed_page',
 },
@@ -69317,8 +68727,9 @@ scrapeTaskResponse: {
             { relationshipType: 'foreignKey', column: 'scrape_task_id', relatedTable: 'scrape_task', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'scrape_parsed_page', relatedColumn: 'scrape_task_response_id', junctionTable: null }
         ],
-    },
-subcategory: {
+    } as const;
+
+export const subcategory = {
         schemaType: 'table' as const,
         entityName: 'subcategory',
         displayName: 'Subcategory',
@@ -69902,7 +69313,7 @@ subcategory: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['category'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'category'>[]>,
     entityName: 'category',
     databaseTable: 'category',
     relationshipMap: {category: 'id'},
@@ -69936,7 +69347,7 @@ subcategory: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['applet'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'applet'>[]>,
     entityName: 'applet',
     databaseTable: 'applet',
 },
@@ -69969,7 +69380,7 @@ subcategory: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['customAppletConfigs'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'customAppletConfigs'>[]>,
     entityName: 'customAppletConfigs',
     databaseTable: 'custom_applet_configs',
 },
@@ -69991,8 +69402,9 @@ subcategory: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'applet', relatedColumn: 'subcategory_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'custom_applet_configs', relatedColumn: 'subcategory_id', junctionTable: null }
         ],
-    },
-systemFunction: {
+    } as const;
+
+export const systemFunction = {
         schemaType: 'table' as const,
         entityName: 'systemFunction',
         displayName: 'System Function',
@@ -70512,7 +69924,7 @@ systemFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredFunction'>[]>,
     entityName: 'registeredFunction',
     databaseTable: 'registered_function',
     relationshipMap: {registered_function: 'id'},
@@ -70546,7 +69958,7 @@ systemFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tool'>[]>,
     entityName: 'tool',
     databaseTable: 'tool',
 },
@@ -70579,7 +69991,7 @@ systemFunction: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeFunction'>[]>,
     entityName: 'recipeFunction',
     databaseTable: 'recipe_function',
 },
@@ -70601,8 +70013,9 @@ systemFunction: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'tool', relatedColumn: 'system_function', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_function', relatedColumn: 'function', junctionTable: null }
         ],
-    },
-tableData: {
+    } as const;
+
+export const tableData = {
         schemaType: 'table' as const,
         entityName: 'tableData',
         displayName: 'Table Data',
@@ -71186,7 +70599,7 @@ tableData: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['userTables'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'userTables'>[]>,
     entityName: 'userTables',
     databaseTable: 'user_tables',
     relationshipMap: {user_tables: 'id'},
@@ -71207,8 +70620,9 @@ tableData: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'table_id', relatedTable: 'user_tables', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-tableFields: {
+    } as const;
+
+export const tableFields = {
         schemaType: 'table' as const,
         entityName: 'tableFields',
         displayName: 'Table Fields',
@@ -72209,7 +71623,7 @@ tableFields: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['userTables'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'userTables'>[]>,
     entityName: 'userTables',
     databaseTable: 'user_tables',
     relationshipMap: {user_tables: 'id'},
@@ -72230,8 +71644,9 @@ tableFields: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'table_id', relatedTable: 'user_tables', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-taskAssignments: {
+    } as const;
+
+export const taskAssignments = {
         schemaType: 'table' as const,
         entityName: 'taskAssignments',
         displayName: 'Task Assignments',
@@ -72623,7 +72038,7 @@ taskAssignments: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tasks'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tasks'>[]>,
     entityName: 'tasks',
     databaseTable: 'tasks',
     relationshipMap: {tasks: 'id'},
@@ -72644,8 +72059,9 @@ taskAssignments: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'task_id', relatedTable: 'tasks', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-taskAttachments: {
+    } as const;
+
+export const taskAttachments = {
         schemaType: 'table' as const,
         entityName: 'taskAttachments',
         displayName: 'Task Attachments',
@@ -73229,7 +72645,7 @@ taskAttachments: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tasks'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tasks'>[]>,
     entityName: 'tasks',
     databaseTable: 'tasks',
     relationshipMap: {tasks: 'id'},
@@ -73250,8 +72666,9 @@ taskAttachments: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'task_id', relatedTable: 'tasks', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-taskComments: {
+    } as const;
+
+export const taskComments = {
         schemaType: 'table' as const,
         entityName: 'taskComments',
         displayName: 'Task Comments',
@@ -73707,7 +73124,7 @@ taskComments: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tasks'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tasks'>[]>,
     entityName: 'tasks',
     databaseTable: 'tasks',
     relationshipMap: {tasks: 'id'},
@@ -73728,8 +73145,9 @@ taskComments: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'task_id', relatedTable: 'tasks', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-tasks: {
+    } as const;
+
+export const tasks = {
         schemaType: 'table' as const,
         entityName: 'tasks',
         displayName: 'Tasks',
@@ -74441,7 +73859,7 @@ tasks: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['projects'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'projects'>[]>,
     entityName: 'projects',
     databaseTable: 'projects',
     relationshipMap: {projects: 'id'},
@@ -74475,7 +73893,7 @@ tasks: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['taskAssignments'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'taskAssignments'>[]>,
     entityName: 'taskAssignments',
     databaseTable: 'task_assignments',
 },
@@ -74508,7 +73926,7 @@ tasks: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['taskAttachments'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'taskAttachments'>[]>,
     entityName: 'taskAttachments',
     databaseTable: 'task_attachments',
 },
@@ -74541,7 +73959,7 @@ tasks: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['taskComments'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'taskComments'>[]>,
     entityName: 'taskComments',
     databaseTable: 'task_comments',
 },
@@ -74564,8 +73982,9 @@ tasks: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'task_attachments', relatedColumn: 'task_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'task_comments', relatedColumn: 'task_id', junctionTable: null }
         ],
-    },
-tool: {
+    } as const;
+
+export const tool = {
         schemaType: 'table' as const,
         entityName: 'tool',
         displayName: 'Tool',
@@ -75149,7 +74568,7 @@ tool: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'systemFunction'>[]>,
     entityName: 'systemFunction',
     databaseTable: 'system_function',
     relationshipMap: {system_function: 'id'},
@@ -75183,7 +74602,7 @@ tool: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'recipeTool'>[]>,
     entityName: 'recipeTool',
     databaseTable: 'recipe_tool',
 },
@@ -75204,8 +74623,9 @@ tool: {
             { relationshipType: 'foreignKey', column: 'system_function', relatedTable: 'system_function', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_tool', relatedColumn: 'tool', junctionTable: null }
         ],
-    },
-transformer: {
+    } as const;
+
+export const transformer = {
         schemaType: 'table' as const,
         entityName: 'transformer',
         displayName: 'Transformer',
@@ -75533,7 +74953,7 @@ transformer: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'action'>[]>,
     entityName: 'action',
     databaseTable: 'action',
 },
@@ -75553,8 +74973,9 @@ transformer: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'action', relatedColumn: 'transformer', junctionTable: null }
         ],
-    },
-userListItems: {
+    } as const;
+
+export const userListItems = {
         schemaType: 'table' as const,
         entityName: 'userListItems',
         displayName: 'User List Items',
@@ -76458,7 +75879,7 @@ userListItems: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['userLists'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'userLists'>[]>,
     entityName: 'userLists',
     databaseTable: 'user_lists',
     relationshipMap: {user_lists: 'id'},
@@ -76479,8 +75900,9 @@ userListItems: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'list_id', relatedTable: 'user_lists', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-userLists: {
+    } as const;
+
+export const userLists = {
         schemaType: 'table' as const,
         entityName: 'userLists',
         displayName: 'User Lists',
@@ -77128,7 +76550,7 @@ userLists: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['userListItems'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'userListItems'>[]>,
     entityName: 'userListItems',
     databaseTable: 'user_list_items',
 },
@@ -77148,8 +76570,9 @@ userLists: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'user_list_items', relatedColumn: 'list_id', junctionTable: null }
         ],
-    },
-userPreferences: {
+    } as const;
+
+export const userPreferences = {
         schemaType: 'table' as const,
         entityName: 'userPreferences',
         displayName: 'User Preferences',
@@ -77464,8 +76887,9 @@ userPreferences: {
         relationships: [
             
         ],
-    },
-userTables: {
+    } as const;
+
+export const userTables = {
         schemaType: 'table' as const,
         entityName: 'userTables',
         displayName: 'User Tables',
@@ -78177,7 +77601,7 @@ userTables: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tableFields'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tableFields'>[]>,
     entityName: 'tableFields',
     databaseTable: 'table_fields',
 },
@@ -78210,7 +77634,7 @@ userTables: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['tableData'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'tableData'>[]>,
     entityName: 'tableData',
     databaseTable: 'table_data',
 },
@@ -78231,8 +77655,9 @@ userTables: {
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'table_fields', relatedColumn: 'table_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'table_data', relatedColumn: 'table_id', junctionTable: null }
         ],
-    },
-wcClaim: {
+    } as const;
+
+export const wcClaim = {
         schemaType: 'table' as const,
         entityName: 'wcClaim',
         displayName: 'Wc Claim',
@@ -78880,7 +78305,7 @@ wcClaim: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['wcReport'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'wcReport'>[]>,
     entityName: 'wcReport',
     databaseTable: 'wc_report',
 },
@@ -78900,8 +78325,9 @@ wcClaim: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'wc_report', relatedColumn: 'claim_id', junctionTable: null }
         ],
-    },
-wcImpairmentDefinition: {
+    } as const;
+
+export const wcImpairmentDefinition = {
         schemaType: 'table' as const,
         entityName: 'wcImpairmentDefinition',
         displayName: 'Wc Impairment Definition',
@@ -79378,7 +78804,7 @@ wcImpairmentDefinition: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['wcInjury'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'wcInjury'>[]>,
     entityName: 'wcInjury',
     databaseTable: 'wc_injury',
 },
@@ -79398,8 +78824,9 @@ wcImpairmentDefinition: {
         relationships: [
             { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'wc_injury', relatedColumn: 'impairment_definition_id', junctionTable: null }
         ],
-    },
-wcInjury: {
+    } as const;
+
+export const wcInjury = {
         schemaType: 'table' as const,
         entityName: 'wcInjury',
         displayName: 'Wc Injury',
@@ -80380,7 +79807,7 @@ wcInjury: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['wcImpairmentDefinition'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'wcImpairmentDefinition'>[]>,
     entityName: 'wcImpairmentDefinition',
     databaseTable: 'wc_impairment_definition',
     relationshipMap: {wc_impairment_definition: 'id', wc_report: 'id'},
@@ -80414,7 +79841,7 @@ wcInjury: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['wcReport'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'wcReport'>[]>,
     entityName: 'wcReport',
     databaseTable: 'wc_report',
     relationshipMap: {wc_impairment_definition: 'id', wc_report: 'id'},
@@ -80436,8 +79863,9 @@ wcInjury: {
             { relationshipType: 'foreignKey', column: 'impairment_definition_id', relatedTable: 'wc_impairment_definition', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'report_id', relatedTable: 'wc_report', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-wcReport: {
+    } as const;
+
+export const wcReport = {
         schemaType: 'table' as const,
         entityName: 'wcReport',
         displayName: 'Wc Report',
@@ -81149,7 +80577,7 @@ wcReport: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['wcClaim'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'wcClaim'>[]>,
     entityName: 'wcClaim',
     databaseTable: 'wc_claim',
     relationshipMap: {wc_claim: 'id'},
@@ -81183,7 +80611,7 @@ wcReport: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['wcInjury'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'wcInjury'>[]>,
     entityName: 'wcInjury',
     databaseTable: 'wc_injury',
 },
@@ -81204,8 +80632,9 @@ wcReport: {
             { relationshipType: 'foreignKey', column: 'claim_id', relatedTable: 'wc_claim', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'wc_injury', relatedColumn: 'report_id', junctionTable: null }
         ],
-    },
-workflow: {
+    } as const;
+
+export const workflow = {
         schemaType: 'table' as const,
         entityName: 'workflow',
         displayName: 'Workflow',
@@ -82365,7 +81794,7 @@ workflow: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowNode'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowNode'>[]>,
     entityName: 'workflowNode',
     databaseTable: 'workflow_node',
 },
@@ -82398,7 +81827,7 @@ workflow: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowEdge'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowEdge'>[]>,
     entityName: 'workflowEdge',
     databaseTable: 'workflow_edge',
 },
@@ -82431,7 +81860,7 @@ workflow: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowRelay'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowRelay'>[]>,
     entityName: 'workflowRelay',
     databaseTable: 'workflow_relay',
 },
@@ -82464,7 +81893,7 @@ workflow: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowUserInput'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowUserInput'>[]>,
     entityName: 'workflowUserInput',
     databaseTable: 'workflow_user_input',
 },
@@ -82487,8 +81916,9 @@ workflow: {
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_relay', relatedColumn: 'workflow_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_user_input', relatedColumn: 'workflow_id', junctionTable: null }
         ],
-    },
-workflowData: {
+    } as const;
+
+export const workflowData = {
         schemaType: 'table' as const,
         entityName: 'workflowData',
         displayName: 'Workflow Data',
@@ -84067,39 +83497,6 @@ workflowData: {
             foreignKeyReference: null,
             description: '"Updated At" field for workflowData. This is an optional field. Your entry must be an date data type.',
         },
-            registeredNodeResultsInverse: {
-    fieldNameFormats: {
-    "frontend": "registeredNodeResultsInverse",
-    "backend": "registered_node_results_Inverse",
-    "database": "ifk_registered_node_results",
-    "pretty": "Registered Node Results Inverse",
-    "component": "RegisteredNodeResultsInverse",
-    "kebab": "registered-node-resultsInverse",
-    "sqlFunctionRef": "p_ifk_registered_node_results",
-    "RestAPI": "registeredNodeResultsInverse",
-    "GraphQL": "registeredNodeResultsInverse",
-    "custom": "registeredNodeResultsInverse"
-} as const,
-    uniqueTableId: 'supabase_automation_matrix:registered_node_results',
-    uniqueEntityId: 'supabase_automation_matrix:registeredNodeResults',
-    name: 'registeredNodeResultsInverse',
-    displayName: 'Registered Node Results Inverse',
-    dataType: 'object' as const,
-    isRequired: false,
-    maxLength: null,
-    isArray: true,
-    defaultValue: [],
-    isPrimaryKey: false,
-    defaultGeneratorFunction: null,
-    validationFunctions: ['isValidDatabaseEntry'],
-    exclusionRules: ['notCoreField'],
-    defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
-    structure: 'inverseForeignKey' as const,
-    isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredNodeResults'][]>,
-    entityName: 'registeredNodeResults',
-    databaseTable: 'registered_node_results',
-},
             workflowNodeDataInverse: {
     fieldNameFormats: {
     "frontend": "workflowNodeDataInverse",
@@ -84129,7 +83526,7 @@ workflowData: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'inverseForeignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowNodeData'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowNodeData'>[]>,
     entityName: 'workflowNodeData',
     databaseTable: 'workflow_node_data',
 },
@@ -84147,11 +83544,11 @@ workflowData: {
     "custom": "workflowData"
 },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_node_results', relatedColumn: 'workflow_id', junctionTable: null },
-        { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_node_data', relatedColumn: 'workflow_id', junctionTable: null }
+            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'workflow_node_data', relatedColumn: 'workflow_id', junctionTable: null }
         ],
-    },
-workflowEdge: {
+    } as const;
+
+export const workflowEdge = {
         schemaType: 'table' as const,
         entityName: 'workflowEdge',
         displayName: 'Workflow Edge',
@@ -84927,7 +84324,7 @@ workflowEdge: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflow'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflow'>[]>,
     entityName: 'workflow',
     databaseTable: 'workflow',
     relationshipMap: {workflow: 'id'},
@@ -84948,8 +84345,9 @@ workflowEdge: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'workflow_id', relatedTable: 'workflow', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-workflowNode: {
+    } as const;
+
+export const workflowNode = {
         schemaType: 'table' as const,
         entityName: 'workflowNode',
         displayName: 'Workflow Node',
@@ -86301,7 +85699,7 @@ workflowNode: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredFunction'>[]>,
     entityName: 'registeredFunction',
     databaseTable: 'registered_function',
     relationshipMap: {registered_function: 'id', workflow: 'id'},
@@ -86335,7 +85733,7 @@ workflowNode: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflow'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflow'>[]>,
     entityName: 'workflow',
     databaseTable: 'workflow',
     relationshipMap: {registered_function: 'id', workflow: 'id'},
@@ -86357,8 +85755,9 @@ workflowNode: {
             { relationshipType: 'foreignKey', column: 'function_id', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'workflow_id', relatedTable: 'workflow', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-workflowNodeData: {
+    } as const;
+
+export const workflowNodeData = {
         schemaType: 'table' as const,
         entityName: 'workflowNodeData',
         displayName: 'Workflow Node Data',
@@ -87710,7 +87109,7 @@ workflowNodeData: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'registeredFunction'>[]>,
     entityName: 'registeredFunction',
     databaseTable: 'registered_function',
     relationshipMap: {registered_function: 'id', workflow_data: 'id'},
@@ -87744,7 +87143,7 @@ workflowNodeData: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflowData'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflowData'>[]>,
     entityName: 'workflowData',
     databaseTable: 'workflow_data',
     relationshipMap: {registered_function: 'id', workflow_data: 'id'},
@@ -87766,8 +87165,9 @@ workflowNodeData: {
             { relationshipType: 'foreignKey', column: 'function_id', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'workflow_id', relatedTable: 'workflow_data', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-workflowRelay: {
+    } as const;
+
+export const workflowRelay = {
         schemaType: 'table' as const,
         entityName: 'workflowRelay',
         displayName: 'Workflow Relay',
@@ -88479,7 +87879,7 @@ workflowRelay: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflow'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflow'>[]>,
     entityName: 'workflow',
     databaseTable: 'workflow',
     relationshipMap: {workflow: 'id'},
@@ -88500,8 +87900,9 @@ workflowRelay: {
         relationships: [
             { relationshipType: 'foreignKey', column: 'workflow_id', relatedTable: 'workflow', relatedColumn: 'id', junctionTable: null }
         ],
-    },
-workflowUserInput: {
+    } as const;
+
+export const workflowUserInput = {
         schemaType: 'table' as const,
         entityName: 'workflowUserInput',
         displayName: 'Workflow User Input',
@@ -89405,7 +88806,7 @@ workflowUserInput: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['fieldComponents'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'fieldComponents'>[]>,
     entityName: 'fieldComponents',
     databaseTable: 'field_components',
     relationshipMap: {field_components: 'id', workflow: 'id'},
@@ -89439,7 +88840,7 @@ workflowUserInput: {
     defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
     structure: 'foreignKey' as const,
     isNative: false,
-    typeReference: {} as TypeBrand<TableSchemaStructure['workflow'][]>,
+    typeReference: {} as TypeBrand<AutomationEntity<'workflow'>[]>,
     entityName: 'workflow',
     databaseTable: 'workflow',
     relationshipMap: {field_components: 'id', workflow: 'id'},
@@ -89461,70 +88862,4 @@ workflowUserInput: {
             { relationshipType: 'foreignKey', column: 'field_component_id', relatedTable: 'field_components', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'workflow_id', relatedTable: 'workflow', relatedColumn: 'id', junctionTable: null }
         ],
-    }
-} as const;
-
-export type TypeBrand<DataType> = { _typeBrand: DataType };
-export type EnumValues<T> = T extends TypeBrand<infer U> ? U : never;
-export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
-
-export type InitialTableSchema = {
-    schemaType: 'table';
-    entityName: string;
-    displayName: string;
-    uniqueTableId: string;
-    uniqueEntityId: string;
-    primaryKey: string[];
-    primaryKeyMetadata: {
-        type: 'single' | 'composite';
-        fields: string[];
-        database_fields: string[];
-        where_template: Record<string, any>;
-    };
-    displayFieldMetadata: {
-        fieldName: string;
-        databaseFieldName: string;
-    };
-    defaultFetchStrategy: FetchStrategy;
-    componentProps: Record<string, any>;
-    entityNameFormats: {
-        [key in NameFormat]?: string;
-    };
-    entityFields: {
-        [fieldName: string]: {
-            fieldNameFormats: {
-                [key in NameFormat]?: string;
-            };
-            dataType: FieldDataOptionsType;
-            isRequired: boolean;
-            maxLength: number | null;
-            isArray: boolean;
-            defaultValue: any;
-            isPrimaryKey: boolean;
-            isDisplayField?: boolean;
-            defaultGeneratorFunction: string | null;
-            validationFunctions: readonly string[];
-            exclusionRules: readonly string[];
-            defaultComponent?: string;
-            componentProps?: Record<string, unknown>;
-            structure: DataStructure;
-            isNative: boolean;
-            typeReference: TypeBrand<any>;
-            enumValues: readonly string[];
-            entityName: string;
-            databaseTable: string;
-            description: string;
-        };
-    };
-    relationships: Array<{
-        relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
-        column: string;
-        relatedTable: string;
-        relatedColumn: string;
-        junctionTable: string | null;
-    }>;
-};
-
-export type TableSchemaStructure = {
-    [entityName in AutomationTableName]: InitialTableSchema;
-};
+    } as const;

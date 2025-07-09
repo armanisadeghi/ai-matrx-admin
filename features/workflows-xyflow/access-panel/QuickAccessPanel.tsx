@@ -1,24 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { User } from "lucide-react";
 import CategoryNodeSection from "./CategoryNodeSection";
-import SourceTypeSelector from "../nodes/source-node/SourceTypeSelector";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 
 interface QuickAccessPanelProps {
     workflowId: string;
-    onOpenFieldDisplay: () => void;
     onRecipeNodeCreated?: (nodeData: WorkflowNode) => void;
+    onOpenSourceInputCreator?: () => void;
 }
 
 const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ 
     workflowId, 
-    onOpenFieldDisplay, 
-    onRecipeNodeCreated 
+    onRecipeNodeCreated,
+    onOpenSourceInputCreator
 }) => {
-    const [showSourceInputCreator, setShowSourceInputCreator] = useState(false);
-
     return (
         <div className="w-32 bg-white dark:bg-gray-800 flex flex-col">
             {/* Content */}
@@ -27,7 +24,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({
                 <div className="px-0 pb-2">
                     <div className="grid grid-cols-2 gap-2 mb-2">
                         <button
-                            onClick={() => setShowSourceInputCreator(true)}
+                            onClick={() => onOpenSourceInputCreator?.()}
                             className="flex flex-col items-center gap-1 p-1 pt-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                         >
                             <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -42,14 +39,6 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({
                     onRecipeNodeCreated={onRecipeNodeCreated}
                 />
             </div>
-
-            {/* Source Input Creator */}
-            <SourceTypeSelector
-                isOpen={showSourceInputCreator}
-                onOpenChange={setShowSourceInputCreator}
-                workflowId={workflowId}
-                mode="create"
-            />
         </div>
     );
 };

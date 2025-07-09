@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo, useCallback } from "react";
-import { NodeProps, Position, useNodeId, useReactFlow } from "@xyflow/react";
+import { NodeProps, useReactFlow } from "@xyflow/react";
 import { Download } from "lucide-react";
 import { BaseNode, NodeConfig, BaseNodeData } from "../../base/BaseNode";
 import UserInputNodeSettings from "./UserInputNodeSettings";
@@ -11,7 +11,6 @@ import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowActions } from "@/lib/redux/workflow/slice";
 import { brokerActions } from "@/lib/redux/brokerSlice";
-import { useToast } from "@/components/ui/use-toast";
 
 // Extend BaseNodeData with source-specific properties
 interface SourceInputNodeData extends BaseNodeData {
@@ -69,17 +68,13 @@ const SourceInputSettings: React.FC<{
 };
 
 const UserInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nodeProps }) => {
-    const nodeId = useNodeId();
     const dispatch = useAppDispatch();
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
-    const { toast } = useToast();
-    const workflowId = data.workflowId as string;
-    // Get Redux data for this source
+    const workflowId = data.workflowId;
+
     const currentSource = useAppSelector((state) =>
         data.brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, workflowId, data.brokerId) : null
     );
-
-    // Note: Display mode is handled by BaseNode using React Flow's node data
 
     // Handle duplicate
     const handleDuplicate = useCallback((nodeId: string) => {
@@ -121,11 +116,7 @@ const UserInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nodeP
             );
         }
 
-        toast({
-            title: "Source Input Deleted",
-            description: "Source input node deleted successfully.",
-        });
-    }, [currentSource, data, dispatch, toast]);
+    }, [currentSource, data, dispatch]);
 
     const brokerId = currentSource?.brokerId || data.brokerId;
     const mappedItemId = currentSource?.sourceDetails?.mappedItemId || data.mappedItemId;
@@ -172,4 +163,4 @@ const UserInputNodeComponent: React.FC<SourceInputNodeProps> = ({ data, ...nodeP
     return <BaseNode config={config} {...nodeProps} />;
 };
 
-export const SourceInputNode = memo(UserInputNodeComponent);
+export const UserInputSourceNode = memo(UserInputNodeComponent);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { workflowActions } from '@/lib/redux/workflow/slice';
 import { updateWorkflow } from '@/lib/redux/workflow/thunks';
@@ -11,13 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Save, X } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Save, X, Plus } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import LoadingSpinner from '@/components/ui/loading-spinner';
 
 interface WorkflowEditOverlayProps {
   workflowId: string;
@@ -27,116 +24,108 @@ interface WorkflowEditOverlayProps {
 
 export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEditOverlayProps) {
   const dispatch = useAppDispatch();
-  const loading = useAppSelector(workflowsSelectors.isLoading);
-  const error = useAppSelector(workflowsSelectors.error);
-  
-  // Get the complete workflow object
   const workflow = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
-  
-  // Extract individual fields from the workflow object
-  const name = workflow?.name || '';
-  const description = workflow?.description || '';
-  const workflowType = workflow?.workflow_type || '';
-  const category = workflow?.category || '';
-  const inputs = workflow?.inputs || [];
-  const outputs = workflow?.outputs || [];
-  const dependencies = workflow?.dependencies || [];
-  const sources = workflow?.sources || [];
-  const destinations = workflow?.destinations || [];
-  const actions = workflow?.actions || null;
-  const tags = workflow?.tags || null;
-  const metadata = workflow?.metadata || null;
-  const viewport = workflow?.viewport || null;
-  const isActive = workflow?.is_active || false;
-  const isDeleted = workflow?.is_deleted || false;
-  const autoExecute = workflow?.auto_execute || false;
-  const isPublic = workflow?.is_public || false;
-  const authenticatedRead = workflow?.authenticated_read || false;
-  const publicRead = workflow?.public_read || false;
-  const currentId = workflow?.id || null;
-  const version = workflow?.version || null;
-  const createdAt = workflow?.created_at || null;
-  const updatedAt = workflow?.updated_at || null;
+  const [isSaving, setIsSaving] = useState(false);
 
+  // Local state for JSON fields - only for editing, not validation (sources removed - handled separately)
   const [jsonFields, setJsonFields] = useState({
-    inputs: '',
-    outputs: '',
-    dependencies: '',
-    sources: '',
-    destinations: '',
-    actions: '',
-    tags: '',
-    metadata: '',
-    viewport: ''
+    inputs: workflow?.inputs ? JSON.stringify(workflow.inputs, null, 2) : '',
+    outputs: workflow?.outputs ? JSON.stringify(workflow.outputs, null, 2) : '',
+    dependencies: workflow?.dependencies ? JSON.stringify(workflow.dependencies, null, 2) : '',
+    destinations: workflow?.destinations ? JSON.stringify(workflow.destinations, null, 2) : '',
+    actions: workflow?.actions ? JSON.stringify(workflow.actions, null, 2) : '',
+    tags: workflow?.tags ? JSON.stringify(workflow.tags, null, 2) : '',
+    metadata: workflow?.metadata ? JSON.stringify(workflow.metadata, null, 2) : '',
   });
 
-  const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
-
-  // NO FETCHING - workflow is already loaded by the page
-
-  // Initialize JSON fields when workflow data changes
-  useEffect(() => {
-    if (!isOpen) return;
-    if (workflow && currentId === workflowId) {
-      setJsonFields({
-        inputs: inputs ? JSON.stringify(inputs, null, 2) : '',
-        outputs: outputs ? JSON.stringify(outputs, null, 2) : '',
-        dependencies: dependencies ? JSON.stringify(dependencies, null, 2) : '',
-        sources: sources ? JSON.stringify(sources, null, 2) : '',
-        destinations: destinations ? JSON.stringify(destinations, null, 2) : '',
-        actions: actions ? JSON.stringify(actions, null, 2) : '',
-        tags: tags ? JSON.stringify(tags, null, 2) : '',
-        metadata: metadata ? JSON.stringify(metadata, null, 2) : '',
-        viewport: viewport ? JSON.stringify(viewport, null, 2) : ''
-      });
+  // Local state for sources - each source as individual JSON string
+  const [sourceEntries, setSourceEntries] = useState<string[]>(() => {
+    if (workflow?.sources && Array.isArray(workflow.sources)) {
+      return workflow.sources.map(source => JSON.stringify(source, null, 2));
     }
-  }, [workflow, currentId, workflowId, inputs, outputs, dependencies, sources, destinations, actions, tags, metadata, viewport]);
+    return [];
+  });
+
+  // Update JSON fields and sources when workflow changes
+  React.useEffect(() => {
+    if (workflow) {
+      setJsonFields({
+        inputs: workflow.inputs ? JSON.stringify(workflow.inputs, null, 2) : '',
+        outputs: workflow.outputs ? JSON.stringify(workflow.outputs, null, 2) : '',
+        dependencies: workflow.dependencies ? JSON.stringify(workflow.dependencies, null, 2) : '',
+        destinations: workflow.destinations ? JSON.stringify(workflow.destinations, null, 2) : '',
+        actions: workflow.actions ? JSON.stringify(workflow.actions, null, 2) : '',
+        tags: workflow.tags ? JSON.stringify(workflow.tags, null, 2) : '',
+        metadata: workflow.metadata ? JSON.stringify(workflow.metadata, null, 2) : '',
+      });
+      if (workflow.sources && Array.isArray(workflow.sources)) {
+        setSourceEntries(workflow.sources.map(source => JSON.stringify(source, null, 2)));
+      } else {
+        setSourceEntries([]);
+      }
+    }
+  }, [workflow]);
 
   const handleSave = async () => {
+    if (!workflow) return;
+
+    setIsSaving(true);
     try {
-      // Validate and parse JSON fields
+      // Parse JSON fields and validate
       const parsedJsonFields: Record<string, any> = {};
-      const newJsonErrors: Record<string, string> = {};
+      const errors: string[] = [];
 
       Object.entries(jsonFields).forEach(([key, value]) => {
         if (value.trim()) {
           try {
             parsedJsonFields[key] = JSON.parse(value);
           } catch (err) {
-            newJsonErrors[key] = 'Invalid JSON format';
+            errors.push(`Invalid JSON in ${key}`);
           }
         } else {
           parsedJsonFields[key] = null;
         }
       });
 
-      setJsonErrors(newJsonErrors);
+      // Parse sources JSON from individual entries
+      let parsedSources = null;
+      if (sourceEntries.length > 0) {
+        try {
+          parsedSources = sourceEntries.map((entry, index) => {
+            if (entry.trim()) {
+              try {
+                return JSON.parse(entry);
+              } catch (err) {
+                errors.push(`Invalid JSON in source entry ${index + 1}`);
+                return null;
+              }
+            }
+            return null;
+          }).filter(source => source !== null);
+        } catch (err) {
+          errors.push('Error processing source entries');
+        }
+      }
 
-      if (Object.keys(newJsonErrors).length > 0) {
+      if (errors.length > 0) {
         toast({
           title: "Validation Error",
-          description: "Please fix JSON formatting errors before saving.",
+          description: errors.join(', '),
           variant: "destructive"
         });
+        setIsSaving(false);
         return;
       }
 
-      // Prepare update data
-      const updateData = {
-        name: name,
-        description: description,
-        workflow_type: workflowType,
-        category: category,
-        is_active: isActive,
-        is_deleted: isDeleted,
-        auto_execute: autoExecute,
-        is_public: isPublic,
-        authenticated_read: authenticatedRead,
-        public_read: publicRead,
-        ...parsedJsonFields
-      };
-
-      await dispatch(updateWorkflow({ id: workflowId, updates: updateData })).unwrap();
+      // Update workflow
+      await dispatch(updateWorkflow({ 
+        id: workflowId, 
+        updates: {
+          ...parsedJsonFields,
+          sources: parsedSources,
+          // Basic fields are already updated via Redux actions
+        }
+      })).unwrap();
       
       toast({
         title: "Success",
@@ -150,336 +139,231 @@ export function WorkflowEditOverlay({ workflowId, isOpen, onClose }: WorkflowEdi
         description: "Failed to update workflow. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleJsonFieldChange = (field: string, value: string) => {
-    setJsonFields(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (jsonErrors[field]) {
-      setJsonErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const renderJsonField = (field: string, label: string, description?: string) => (
-    <div className="space-y-2">
-      <Label htmlFor={field} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-        {label}
-      </Label>
-      {description && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
-      )}
-      <Textarea
-        id={field}
-        value={jsonFields[field]}
-        onChange={(e) => handleJsonFieldChange(field, e.target.value)}
-        placeholder={`Enter ${label.toLowerCase()} as JSON`}
-        className={`min-h-[100px] font-mono text-sm ${
-          jsonErrors[field] 
-            ? 'border-red-500 dark:border-red-400' 
-            : 'border-gray-300 dark:border-gray-600'
-        } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-      />
-      {jsonErrors[field] && (
-        <p className="text-sm text-red-500 dark:text-red-400">{jsonErrors[field]}</p>
-      )}
-    </div>
-  );
-
-  if (!isOpen) return null;
-
-  const isCurrentWorkflow = workflow && currentId === workflowId;
-  const showContent = isCurrentWorkflow && !loading;
-  const showLoadingState = loading || !isCurrentWorkflow;
+  if (!workflow) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[60vw] max-w-none h-[90vh] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex flex-col p-0">
-        {showLoadingState && (
-          <div className="flex items-center justify-center py-8 h-full">
-            <LoadingSpinner variant="brain" size="lg" message="Loading workflow..." />
-          </div>
-        )}
+      <DialogContent className="max-w-2xl max-h-[80vh] bg-background border-border">
+        <DialogHeader>
+          <DialogTitle>Edit Workflow</DialogTitle>
+        </DialogHeader>
 
-        {error && !loading && (
-          <div className="flex items-center justify-center py-8 h-full">
-            <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md max-w-md">
-              <h3 className="text-lg font-medium text-red-700 dark:text-red-300 mb-2">Failed to Load Workflow</h3>
-              <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-              <div className="flex gap-2">
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="basic">Basic</TabsTrigger>
+            <TabsTrigger value="sources">Sources</TabsTrigger>
+            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+          </TabsList>
+
+          <div className="overflow-y-auto max-h-[60vh] px-1">
+            <TabsContent value="basic" className="space-y-4 mt-4">
+              {/* Basic Fields */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    value={workflow.name || ''}
+                    onChange={(e) => dispatch(workflowActions.updateField({ 
+                      id: workflowId, 
+                      field: 'name', 
+                      value: e.target.value 
+                    }))}
+                    placeholder="Enter workflow name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={workflow.description || ''}
+                    onChange={(e) => dispatch(workflowActions.updateField({ 
+                      id: workflowId, 
+                      field: 'description', 
+                      value: e.target.value 
+                    }))}
+                    placeholder="Enter workflow description"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="workflow_type">Type</Label>
+                    <Input
+                      id="workflow_type"
+                      value={workflow.workflow_type || ''}
+                      onChange={(e) => dispatch(workflowActions.updateField({ 
+                        id: workflowId, 
+                        field: 'workflow_type', 
+                        value: e.target.value 
+                      }))}
+                      placeholder="Workflow type"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                      id="category"
+                      value={workflow.category || ''}
+                      onChange={(e) => dispatch(workflowActions.updateField({ 
+                        id: workflowId, 
+                        field: 'category', 
+                        value: e.target.value 
+                      }))}
+                      placeholder="Category"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Toggles */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Active</Label>
+                    <p className="text-sm text-muted-foreground">Enable or disable this workflow</p>
+                  </div>
+                  <Switch
+                    checked={workflow.is_active || false}
+                    onCheckedChange={(checked) => dispatch(workflowActions.updateField({ 
+                      id: workflowId, 
+                      field: 'is_active', 
+                      value: checked 
+                    }))}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Auto Execute</Label>
+                    <p className="text-sm text-muted-foreground">Automatically execute this workflow</p>
+                  </div>
+                  <Switch
+                    checked={workflow.auto_execute || false}
+                    onCheckedChange={(checked) => dispatch(workflowActions.updateField({ 
+                      id: workflowId, 
+                      field: 'auto_execute', 
+                      value: checked 
+                    }))}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Public</Label>
+                    <p className="text-sm text-muted-foreground">Make this workflow publicly accessible</p>
+                  </div>
+                  <Switch
+                    checked={workflow.is_public || false}
+                    onCheckedChange={(checked) => dispatch(workflowActions.updateField({ 
+                      id: workflowId, 
+                      field: 'is_public', 
+                      value: checked 
+                    }))}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="sources" className="space-y-4 mt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Workflow Sources</h3>
+                  <p className="text-sm text-muted-foreground">Each source entry as individual JSON</p>
+                </div>
                 <Button
+                  type="button"
                   variant="outline"
-                  onClick={onClose}
                   size="sm"
-                  className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300"
+                  onClick={() => setSourceEntries(prev => [...prev, '{\n  \n}'])}
                 >
-                  Close
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={onClose}
-                  size="sm"
-                  className="border-gray-300 dark:border-gray-600"
-                >
-                  Close
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Source
                 </Button>
               </div>
-            </div>
-          </div>
-        )}
 
-        {showContent && (
-          <Tabs defaultValue="basic" className="w-full h-full flex flex-col">
-            {/* Fixed Header */}
-            <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Edit Workflow
-                </DialogTitle>
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="outline" className="text-xs">
-                    ID: {currentId}
-                  </Badge>
-                  {version && (
-                    <Badge variant="outline" className="text-xs">
-                      Version: {version}
-                    </Badge>
-                  )}
-                </div>
-              </DialogHeader>
+              <div className="space-y-4">
+                {sourceEntries.map((entry, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`source-${index}`}>Source {index + 1}</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSourceEntries(prev => prev.filter((_, i) => i !== index))}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Textarea
+                      id={`source-${index}`}
+                      value={entry}
+                      onChange={(e) => {
+                        const newEntries = [...sourceEntries];
+                        newEntries[index] = e.target.value;
+                        setSourceEntries(newEntries);
+                      }}
+                      placeholder="Enter source as JSON object"
+                      className="font-mono text-sm"
+                      rows={8}
+                    />
+                  </div>
+                ))}
 
-              {/* Fixed Tabs Header */}
-              <div className="mt-4">
-                <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800">
-                  <TabsTrigger value="basic" className="text-sm">Basic Info</TabsTrigger>
-                  <TabsTrigger value="data" className="text-sm">Data & Config</TabsTrigger>
-                  <TabsTrigger value="permissions" className="text-sm">Permissions</TabsTrigger>
-                  <TabsTrigger value="advanced" className="text-sm">Advanced</TabsTrigger>
-                </TabsList>
+                {sourceEntries.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No sources configured</p>
+                    <p className="text-sm">Click "Add Source" to create your first source</p>
+                  </div>
+                )}
               </div>
-            </div>
+            </TabsContent>
 
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <TabsContent value="basic" className="space-y-4 mt-0">
-                <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Basic Information</CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Essential workflow details and configuration
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Name *
-                      </Label>
-                                          <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'name', value: e.target.value }))}
-                      placeholder="Enter workflow name"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+            <TabsContent value="advanced" className="space-y-4 mt-4">
+              {/* JSON Fields */}
+              <div className="space-y-4">
+                <h3 className="font-medium">Advanced Configuration (JSON)</h3>
+                
+                {Object.entries(jsonFields).map(([key, value]) => (
+                  <div key={key} className="space-y-2">
+                    <Label htmlFor={key} className="capitalize">{key}</Label>
+                    <Textarea
+                      id={key}
+                      value={value}
+                      onChange={(e) => setJsonFields(prev => ({ ...prev, [key]: e.target.value }))}
+                      placeholder={`Enter ${key} as JSON`}
+                      className="font-mono text-sm"
+                      rows={20}
                     />
-                    </div>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          </div>
+        </Tabs>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Description
-                      </Label>
-                                          <Textarea
-                      id="description"
-                      value={description || ''}
-                      onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'description', value: e.target.value || null }))}
-                      placeholder="Enter workflow description"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-                    />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="workflow_type" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Workflow Type
-                        </Label>
-                        <Input
-                          id="workflow_type"
-                          value={workflowType || ''}
-                          onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'workflow_type', value: e.target.value || null }))}
-                          placeholder="Enter workflow type"
-                          className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="category" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Category
-                        </Label>
-                        <Input
-                          id="category"
-                          value={category || ''}
-                          onChange={(e) => dispatch(workflowActions.updateField({ id: workflowId, field: 'category', value: e.target.value || null }))}
-                          placeholder="Enter category"
-                          className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="data" className="space-y-4 mt-0">
-                <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Data Configuration</CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Configure inputs, outputs, dependencies, and other data structures
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {renderJsonField('inputs', 'Inputs', 'Define input mappings for the workflow')}
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                    {renderJsonField('outputs', 'Outputs', 'Define output configurations for the workflow')}
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                    {renderJsonField('dependencies', 'Dependencies', 'Define workflow dependencies')}
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                    {renderJsonField('sources', 'Sources', 'Configure broker source configurations')}
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                    {renderJsonField('destinations', 'Destinations', 'Configure broker destinations')}
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                    {renderJsonField('actions', 'Actions', 'Define workflow actions')}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="permissions" className="space-y-4 mt-0">
-                <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Permissions & Visibility</CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Configure workflow access and visibility settings
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Public Workflow</Label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Make this workflow publicly accessible</p>
-                      </div>
-                                          <Switch
-                      checked={isPublic || false}
-                      onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'is_public', value: checked }))}
-                    />
-                    </div>
-
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Authenticated Read</Label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Allow authenticated users to read this workflow</p>
-                      </div>
-                                          <Switch
-                      checked={authenticatedRead || false}
-                      onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'authenticated_read', value: checked }))}
-                    />
-                    </div>
-
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Public Read</Label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Allow public read access to this workflow</p>
-                      </div>
-                                          <Switch
-                      checked={publicRead || false}
-                      onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'public_read', value: checked }))}
-                    />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="advanced" className="space-y-4 mt-0">
-                <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Advanced Settings</CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Advanced workflow configuration and metadata
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Active</Label>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Enable or disable this workflow</p>
-                        </div>
-                                              <Switch
-                        checked={isActive || false}
-                        onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'is_active', value: checked }))}
-                      />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto Execute</Label>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Automatically execute this workflow</p>
-                        </div>
-                                              <Switch
-                        checked={autoExecute || false}
-                        onCheckedChange={(checked) => dispatch(workflowActions.updateField({ id: workflowId, field: 'auto_execute', value: checked }))}
-                      />
-                      </div>
-                    </div>
-
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-
-                    {renderJsonField('tags', 'Tags', 'Add tags for organization and search')}
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                    {renderJsonField('metadata', 'Metadata', 'Additional metadata for the workflow')}
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                    {renderJsonField('viewport', 'Viewport', 'Viewport configuration for visual workflows')}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-                        </div>
-
-            {/* Fixed Footer */}
-            <div className="flex-shrink-0 p-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <DialogFooter className="flex items-center justify-between">
-                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                  <>
-                    Created: {new Date(createdAt).toLocaleDateString()} | 
-                    Updated: {new Date(updatedAt).toLocaleDateString()}
-                  </>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={onClose}
-                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={loading || !showContent || !isCurrentWorkflow}
-                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
-                  >
-                    {loading ? (
-                      <LoadingSpinner variant="minimal" size="sm" showMessage={false} className="w-4 h-4 mr-2" />
-                    ) : (
-                      <Save className="h-4 w-4 mr-2" />
-                    )}
-                    Save Changes
-                  </Button>
-                </div>
-              </DialogFooter>
-            </div>
-          </Tabs>
-        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            <X className="h-4 w-4 mr-2" />
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            <Save className="h-4 w-4 mr-2" />
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

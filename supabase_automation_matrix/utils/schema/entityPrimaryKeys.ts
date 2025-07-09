@@ -264,10 +264,6 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
-  registeredNodeResults: {
-    frontendFields: ['id'],
-    databaseColumns: ['id'],
-  },
   schemaTemplates: {
     frontendFields: ['id'],
     databaseColumns: ['id'],

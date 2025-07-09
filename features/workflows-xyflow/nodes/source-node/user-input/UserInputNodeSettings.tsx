@@ -1,20 +1,21 @@
 "use client";
 
 import React from "react";
-import CreateUserInputSource from "./CreateUserInputSource";
-import EditUserInputSource from "./EditUserInputSource";
+import UserInputSourceDialog from "./UserInputSourceDialog";
 
 interface SourceInputNodeSettingsProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     workflowId: string;
+    brokerId?: string; // New simplified prop
+    // Legacy props for backwards compatibility
     currentMapping?: {
         brokerId: string;
         mappedItemId: string;
         source: string;
         sourceId: string;
     };
-    mode?: "create" | "edit";
+    mode?: "create" | "edit"; // Ignored now, but kept for backwards compatibility
     onSuccess?: () => void;
     onBack?: () => void;
 }
@@ -23,40 +24,25 @@ const UserInputNodeSettings: React.FC<SourceInputNodeSettingsProps> = ({
     isOpen,
     onOpenChange,
     workflowId,
+    brokerId,
     currentMapping,
-    mode = "edit",
+    mode, // Ignored
     onSuccess,
     onBack,
 }) => {
+    // Use the direct brokerId prop if provided, otherwise fall back to currentMapping for backwards compatibility
+    const effectiveBrokerId = brokerId || currentMapping?.brokerId;
 
-    
-    if (mode === "create") {
-        return (
-            <CreateUserInputSource
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
-                workflowId={workflowId}
-                onSuccess={onSuccess}
-                onBack={onBack}
-            />
-        );
-    }
-
-    if (mode === "edit" && currentMapping?.brokerId) {
-        return (
-            <EditUserInputSource
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
-                workflowId={workflowId}
-                brokerId={currentMapping.brokerId}
-                onSuccess={onSuccess}
-            />
-        );
-    }
-
-    // Invalid state - should not happen
-    console.warn("SourceInputNodeSettings: Invalid mode or missing brokerId for edit mode");
-    return null;
+    return (
+        <UserInputSourceDialog
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            workflowId={workflowId}
+            brokerId={effectiveBrokerId}
+            onSuccess={onSuccess}
+            onBack={onBack}
+        />
+    );
 };
 
 export default UserInputNodeSettings;

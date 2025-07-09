@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useReactFlow } from "@xyflow/react";
+import { useRouter } from "next/navigation";
 import { IconButton } from "@/components/ui/icon-button";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
 import {
@@ -35,6 +36,7 @@ import {
     Clock,
     Zap,
     ZapOff,
+    ArrowLeft,
 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -69,6 +71,7 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
 }) => {
     const dispatch = useAppDispatch();
     const reactFlowInstance = useReactFlow();
+    const router = useRouter();
 
     // Get data from Redux using correct selectors
     const workflowData = useAppSelector((state) => workflowsSelectors.workflowById(state, workflowId));
@@ -327,13 +330,28 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
         setShowEdges(show);
     };
 
+    // Handle back navigation
+    const handleBackClick = () => {
+        router.push('/workflows-new');
+    };
+
     // Node creation handled by NodesMenu component with shared hook logic
 
     return (
         <div className="border-b border-border bg-background px-3 py-2">
             <div className="flex items-center justify-between">
-                {/* Left side - Workflow info */}
+                {/* Left side - Back button and Workflow info */}
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    {/* Back Button */}
+                    <IconButton
+                        icon={<ArrowLeft className="h-4 w-4" />}
+                        tooltip="Back to Workflows"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8"
+                        onClick={handleBackClick}
+                    />
+                    
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2">
                             <h1 className="font-medium text-sm truncate text-foreground">{workflowData?.name || "Untitled Workflow"}</h1>

@@ -5,91 +5,81 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2 } from "lucide-react";
-
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { BrokerMapEntry } from "@/lib/redux/brokerSlice/types";
 import { useAppDispatch } from "@/lib/redux";
 import { workflowActions } from "@/lib/redux/workflow/slice";
-import { useToast } from "@/components/ui/use-toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-
 import { BrokerSourceConfig, workflowsSelectors } from "@/lib/redux/workflow";
 import BrokerSelect from "@/features/workflows-xyflow/common/BrokerSelect";
 
-interface EditUserInputSourceProps {
+interface UserInputSourceDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     workflowId: string;
-    brokerId: string;
+    brokerId?: string;
     onSuccess?: () => void;
+    onBack?: () => void;
 }
 
-const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
+const UserInputSourceDialog: React.FC<UserInputSourceDialogProps> = ({
     isOpen,
     onOpenChange,
     workflowId,
     brokerId,
     onSuccess,
+    onBack,
 }) => {
     const dispatch = useAppDispatch();
-    const { toast } = useToast();
 
-    // Get current source from Redux (single source of truth)
-    const currentSource = useAppSelector((state) => 
-        workflowsSelectors.userInputSourceByBrokerId(state, workflowId, brokerId)
+    // Check if mapping exists in Redux (regardless of whether we're "creating" or "editing")
+    const existingSource = useAppSelector((state) => 
+        brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, workflowId, brokerId) : null
     );
 
-    // Local state for UI only - initialized from Redux state
+    // Local state for the form
     const [formData, setFormData] = useState({
-        brokerId: "",
+        brokerId: brokerId || "",
         fieldComponentId: "",
-        source: "workflow" as string,
+        source: "workflow",
         sourceId: workflowId,
     });
 
     // UI state
     const [isFieldSelectorOpen, setIsFieldSelectorOpen] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const fieldLabel = useAppSelector((state) => selectFieldLabel(state, formData.fieldComponentId));
 
-    // Initialize form data from Redux state when source changes
+    // Initialize form data from Redux state if mapping exists
     useEffect(() => {
-        if (currentSource?.sourceDetails) {
+        if (existingSource?.sourceDetails) {
             setFormData({
-                brokerId: currentSource.brokerId,
-                fieldComponentId: currentSource.sourceDetails.mappedItemId,
-                source: currentSource.sourceDetails.source,
-                sourceId: currentSource.sourceDetails.sourceId,
+                brokerId: existingSource.brokerId,
+                fieldComponentId: existingSource.sourceDetails.mappedItemId,
+                source: existingSource.sourceDetails.source,
+                sourceId: existingSource.sourceDetails.sourceId,
+            });
+        } else {
+            // Reset form when no existing source or when brokerId changes
+            setFormData({
+                brokerId: brokerId || "",
+                fieldComponentId: "",
+                source: "workflow",
+                sourceId: workflowId,
             });
         }
-    }, [currentSource]);
+    }, [existingSource, brokerId, workflowId]);
 
     const handleFieldSelect = useCallback((fieldId: string) => {
         setFormData(prev => ({ ...prev, fieldComponentId: fieldId }));
         setIsFieldSelectorOpen(false);
     }, []);
-
-    const handleFieldCreated = useCallback((fieldId: string) => {
-        setFormData(prev => ({ ...prev, fieldComponentId: fieldId }));
-        setIsFieldSelectorOpen(false);
-        toast({
-            title: "Field Created",
-            description: "Field component created successfully and selected for mapping.",
-        });
-    }, [toast]);
-
-    const handleFieldUpdated = useCallback((fieldId: string) => {
-        toast({
-            title: "Field Updated",
-            description: "Field component updated successfully.",
-        });
-    }, [toast]);
 
     const handleBrokerChange = useCallback((newBrokerId: string) => {
         setFormData(prev => ({ ...prev, brokerId: newBrokerId }));
@@ -107,19 +97,12 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
         setFormData(prev => ({ ...prev, sourceId }));
     }, []);
 
-
-
-    const handleUpdate = useCallback(async () => {
-        if (!formData.brokerId.trim() || !formData.fieldComponentId || !currentSource) {
-            toast({
-                title: "Validation Error",
-                description: "Please ensure all fields are filled.",
-                variant: "destructive",
-            });
+    const handleSubmit = useCallback(async () => {
+        if (!formData.brokerId.trim() || !formData.fieldComponentId) {
             return;
         }
 
-        setIsUpdating(true);
+        setIsSubmitting(true);
 
         try {
             const mapEntry: BrokerMapEntry = {
@@ -129,7 +112,7 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                 sourceId: formData.sourceId,
             };
 
-            const updatedSource: BrokerSourceConfig<"user_input"> = {
+            const sourceConfig: BrokerSourceConfig<"user_input"> = {
                 brokerId: formData.brokerId,
                 scope: "workflow",
                 sourceType: "user_input",
@@ -139,63 +122,42 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                 metadata: {},
             };
 
-            // If broker ID changed, we need to remove old and add new
-            if (formData.brokerId !== currentSource.brokerId) {
-                // Remove old source
+            // If there's an existing source, remove it first
+            if (existingSource) {
                 dispatch(workflowActions.removeSourceByBrokerId({ 
                     id: workflowId,
-                    brokerId: currentSource.brokerId 
+                    brokerId: existingSource.brokerId 
                 }));
 
-                // Add new source
-                dispatch(workflowActions.addSource({
-                    id: workflowId,
-                    source: updatedSource
-                }));
-
-                // Remove old broker registry entry
-                if (currentSource.sourceDetails) {
+                // If broker ID changed, remove old registry entry
+                if (existingSource.sourceDetails && formData.brokerId !== existingSource.brokerId) {
                     dispatch(brokerActions.removeRegisterEntry({
-                        source: currentSource.sourceDetails.source,
-                        mappedItemId: currentSource.sourceDetails.mappedItemId,
+                        source: existingSource.sourceDetails.source,
+                        mappedItemId: existingSource.sourceDetails.mappedItemId,
                     }));
                 }
-            } else {
-                // Update existing source by removing and re-adding
-                dispatch(workflowActions.removeSourceByBrokerId({ 
-                    id: workflowId,
-                    brokerId: currentSource.brokerId 
-                }));
-                dispatch(workflowActions.addSource({
-                    id: workflowId,
-                    source: updatedSource
-                }));
             }
+            
+            // Add the source (create or update)
+            dispatch(workflowActions.addSource({
+                id: workflowId,
+                source: sourceConfig
+            }));
 
             // Update broker registry
             dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));
 
-            toast({
-                title: "Source Updated",
-                description: "User input source updated successfully.",
-            });
-
             onOpenChange(false);
             onSuccess?.();
         } catch (error) {
-            console.error("Failed to update source:", error);
-            toast({
-                title: "Update Failed",
-                description: "Failed to update user input source. Please try again.",
-                variant: "destructive",
-            });
+            console.error("Failed to save source:", error);
         } finally {
-            setIsUpdating(false);
+            setIsSubmitting(false);
         }
-    }, [formData, currentSource, workflowId, dispatch, toast, onOpenChange, onSuccess]);
+    }, [formData, workflowId, existingSource, dispatch, onOpenChange, onSuccess]);
 
     const handleDelete = useCallback(async () => {
-        if (!currentSource) return;
+        if (!existingSource) return;
 
         setIsDeleting(true);
 
@@ -203,57 +165,59 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
             // Remove from workflow sources
             dispatch(workflowActions.removeSourceByBrokerId({ 
                 id: workflowId,
-                brokerId: currentSource.brokerId 
+                brokerId: existingSource.brokerId 
             }));
 
             // Remove from broker registry
-            if (currentSource.sourceDetails) {
+            if (existingSource.sourceDetails) {
                 dispatch(brokerActions.removeRegisterEntry({
-                    source: currentSource.sourceDetails.source,
-                    mappedItemId: currentSource.sourceDetails.mappedItemId,
+                    source: existingSource.sourceDetails.source,
+                    mappedItemId: existingSource.sourceDetails.mappedItemId,
                 }));
             }
-
-            toast({
-                title: "Source Deleted",
-                description: "User input source deleted successfully.",
-            });
 
             onOpenChange(false);
             onSuccess?.();
         } catch (error) {
             console.error("Failed to delete source:", error);
-            toast({
-                title: "Delete Failed",
-                description: "Failed to delete user input source. Please try again.",
-                variant: "destructive",
-            });
         } finally {
             setIsDeleting(false);
         }
-    }, [currentSource, dispatch, toast, onOpenChange, onSuccess]);
+    }, [existingSource, workflowId, dispatch, onOpenChange, onSuccess]);
+
+    const handleCancel = useCallback(() => {
+        onOpenChange(false);
+    }, [onOpenChange]);
 
     const isFormValid = formData.fieldComponentId && formData.brokerId.trim();
-    const hasChanges = currentSource?.sourceDetails && (
-        formData.brokerId !== currentSource.brokerId ||
-        formData.fieldComponentId !== currentSource.sourceDetails.mappedItemId ||
-        formData.source !== currentSource.sourceDetails.source ||
-        formData.sourceId !== currentSource.sourceDetails.sourceId
+    const hasChanges = !existingSource || !existingSource.sourceDetails || (
+        formData.brokerId !== existingSource.brokerId ||
+        formData.fieldComponentId !== existingSource.sourceDetails.mappedItemId ||
+        formData.source !== existingSource.sourceDetails.source ||
+        formData.sourceId !== existingSource.sourceDetails.sourceId
     );
-
-    // Don't render if no current source
-    if (!currentSource) {
-        return null;
-    }
 
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
-                        <DialogTitle>Edit User Input Source</DialogTitle>
+                        <div className="flex items-center gap-2">
+                            {onBack && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onBack}
+                                    className="p-1 h-auto"
+                                    disabled={isSubmitting || isDeleting}
+                                >
+                                    <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                            )}
+                            <DialogTitle>User Input Source</DialogTitle>
+                        </div>
                         <DialogDescription>
-                            Edit the configuration for this user input source.
+                            Configure the user input source for this workflow.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -262,7 +226,7 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                         <BrokerSelect
                             value={formData.brokerId}
                             onValueChange={handleBrokerChange}
-                            disabled={isUpdating || isDeleting}
+                            disabled={isSubmitting || isDeleting}
                         />
 
                         {/* Field Component */}
@@ -272,7 +236,7 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                                 variant="outline"
                                 onClick={() => setIsFieldSelectorOpen(true)}
                                 className="w-full justify-start"
-                                disabled={isUpdating || isDeleting}
+                                disabled={isSubmitting || isDeleting}
                             >
                                 {fieldLabel || formData.fieldComponentId || "Browse Fields"}
                             </Button>
@@ -280,11 +244,11 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
 
                         {/* Source (Scope) */}
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium">Source (Scope)</Label>
+                            <Label className="text-sm font-medium">Source</Label>
                             <Select 
                                 value={formData.source} 
                                 onValueChange={handleSourceChange} 
-                                disabled={isUpdating || isDeleting}
+                                disabled={isSubmitting || isDeleting}
                             >
                                 <SelectTrigger>
                                     <SelectValue />
@@ -308,38 +272,40 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                                 value={formData.sourceId}
                                 onChange={(e) => handleSourceIdChange(e.target.value)}
                                 placeholder="Enter source ID"
-                                disabled={isUpdating || isDeleting}
+                                disabled={isSubmitting || isDeleting}
                             />
                         </div>
                     </div>
 
                     <DialogFooter className="flex gap-2">
-                        <Button 
-                            variant="destructive" 
-                            size="sm" 
-                            onClick={handleDelete} 
-                            disabled={isUpdating || isDeleting} 
-                            className="mr-auto"
-                        >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            {isDeleting ? "Deleting..." : "Delete"}
-                        </Button>
+                        {existingSource && (
+                            <Button 
+                                variant="destructive" 
+                                size="sm" 
+                                onClick={handleDelete} 
+                                disabled={isSubmitting || isDeleting} 
+                                className="mr-auto"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {isDeleting ? "Deleting..." : "Delete"}
+                            </Button>
+                        )}
 
                         <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => onOpenChange(false)} 
-                            disabled={isUpdating || isDeleting}
+                            onClick={handleCancel} 
+                            disabled={isSubmitting || isDeleting}
                         >
-                            Close
+                            Cancel
                         </Button>
 
                         <Button 
                             size="sm" 
-                            onClick={handleUpdate} 
-                            disabled={!isFormValid || !hasChanges || isUpdating || isDeleting}
+                            onClick={handleSubmit} 
+                            disabled={!isFormValid || !hasChanges || isSubmitting || isDeleting}
                         >
-                            {isUpdating ? "Updating..." : "Update Source"}
+                            {isSubmitting ? "Saving..." : "Save"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -350,11 +316,11 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
                 isOpen={isFieldSelectorOpen}
                 onOpenChange={setIsFieldSelectorOpen}
                 onFieldSelect={handleFieldSelect}
-                onFieldCreated={handleFieldCreated}
-                onFieldUpdated={handleFieldUpdated}
+                onFieldCreated={handleFieldSelect}
                 overlayTitle="Select Field Component"
+                overlayDescription="Select a field component to map to the user input source."
                 overlaySize="3xl"
-                defaultPageSize={20}
+                defaultPageSize={15}
                 closeOnSelect={true}
                 autoConfigureForOverlay={true}
                 allowCreate={true}
@@ -369,4 +335,4 @@ const EditUserInputSource: React.FC<EditUserInputSourceProps> = ({
     );
 };
 
-export default EditUserInputSource; 
+export default UserInputSourceDialog; 

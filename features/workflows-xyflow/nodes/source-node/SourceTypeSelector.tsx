@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Database, ArrowLeft } from "lucide-react";
+import { User, Database } from "lucide-react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { workflowsSelectors } from "@/lib/redux/workflow";
 import UserInputNodeSettings from "./user-input/UserInputNodeSettings";
 import UserDataSourceSettings from "./user-data/UserDataSourceSettings";
 
@@ -14,14 +16,7 @@ interface SourceTypeSelectorProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     workflowId: string;
-    mode?: "create" | "edit";
-    currentMapping?: {
-        brokerId: string;
-        mappedItemId: string;
-        source: string;
-        sourceId: string;
-        sourceType?: SourceType;
-    };
+    brokerId?: string;
     onSuccess?: () => void;
 }
 
@@ -29,11 +24,31 @@ const SourceTypeSelector: React.FC<SourceTypeSelectorProps> = ({
     isOpen,
     onOpenChange,
     workflowId,
-    mode = "create",
-    currentMapping,
+    brokerId,
     onSuccess,
 }) => {
     const [selectedSourceType, setSelectedSourceType] = useState<SourceType | null>(null);
+
+    // Check if we have an existing source in Redux
+    const existingUserInputSource = useAppSelector((state) => 
+        brokerId ? workflowsSelectors.userInputSourceByBrokerId(state, workflowId, brokerId) : null
+    );
+    
+    const existingUserDataSource = useAppSelector((state) => 
+        brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, workflowId, brokerId) : null
+    );
+
+    // Determine source type from existing source
+    useEffect(() => {
+        if (brokerId) {
+            if (existingUserInputSource) {
+                setSelectedSourceType("user_input");
+            } else if (existingUserDataSource) {
+                setSelectedSourceType("user_data");
+            }
+            // If brokerId provided but no existing source, show selector for creating new
+        }
+    }, [brokerId, existingUserInputSource, existingUserDataSource]);
 
     const handleBack = () => {
         setSelectedSourceType(null);
@@ -51,13 +66,6 @@ const SourceTypeSelector: React.FC<SourceTypeSelectorProps> = ({
         onSuccess?.();
     };
 
-    // If in edit mode and we have a current mapping, determine the source type and go directly to edit
-    React.useEffect(() => {
-        if (mode === "edit" && currentMapping?.sourceType) {
-            setSelectedSourceType(currentMapping.sourceType);
-        }
-    }, [mode, currentMapping?.sourceType]);
-
     // Render the selected source component
     if (selectedSourceType === "user_input") {
         return (
@@ -65,10 +73,9 @@ const SourceTypeSelector: React.FC<SourceTypeSelectorProps> = ({
                 isOpen={isOpen}
                 onOpenChange={handleClose}
                 workflowId={workflowId}
-                currentMapping={currentMapping}
-                mode={mode}
+                brokerId={brokerId}
                 onSuccess={handleSuccess}
-                onBack={mode === "create" ? handleBack : undefined}
+                onBack={!brokerId || !existingUserInputSource ? handleBack : undefined}
             />
         );
     }
@@ -79,15 +86,14 @@ const SourceTypeSelector: React.FC<SourceTypeSelectorProps> = ({
                 isOpen={isOpen}
                 onOpenChange={handleClose}
                 workflowId={workflowId}
-                currentMapping={currentMapping}
-                mode={mode}
+                brokerId={brokerId}
                 onSuccess={handleSuccess}
-                onBack={mode === "create" ? handleBack : undefined}
+                onBack={!brokerId || !existingUserDataSource ? handleBack : undefined}
             />
         );
     }
 
-    // Show source type selection (only in create mode)
+    // Show source type selection
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="max-w-md">

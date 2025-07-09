@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { toTitleCase } from "@/utils/dataUtils";
+import { getCompactHandlePosition, getHandlePositionType } from "@/features/workflows-xyflow/utils/handle-position";
 
 export type NodeInput = {
     id: string;
@@ -39,18 +40,16 @@ export interface OutputHandle extends NodeOutput {
 export interface NodeHandlesProps {
     nodeData: any;
     isValidConnection?: (connection: any) => boolean;
-    compact?: boolean; // New prop to enable compact mode
-    showOptional?: boolean; // Control whether to show optional inputs
+    compact?: boolean;
+    showOptional?: boolean;
 }
 
 export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConnection, compact = false, showOptional = true }) => {
     const nodeDefinition = nodeData?.metadata?.nodeDefinition;
+    
     const inputHandles = useMemo(() => {
         const inputs = (nodeDefinition?.inputs || []) as NodeInput[];
-        // Filter based on showOptional flag
-        const filteredInputs = showOptional 
-            ? inputs // Show all handles if showOptional is true
-            : inputs.filter(input => input.required); // Show only required handles if showOptional is false
+        const filteredInputs = showOptional ? inputs : inputs.filter(input => input.required);
         
         return [...filteredInputs].sort((a, b) => {
             if (a.input_type === "broker" && b.input_type !== "broker") return -1;
@@ -58,75 +57,16 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
             return 0;
         });
     }, [nodeDefinition, showOptional]);
+    
     const outputHandles = useMemo(() => (nodeDefinition?.outputs || []) as NodeOutput[], [nodeDefinition]);
-
-    // Compact mode: calculate positions around a circle
-    const getCompactHandlePosition = (index: number, total: number, isInput: boolean) => {
-        const radius = 32; // Half of the 64px (w-16 h-16) node size
-        let angle: number;
-        
-        if (total === 1) {
-            // Single handle: input on left, output on right
-            angle = isInput ? Math.PI : 0;
-        } else if (total === 2) {
-            // Two handles: one on left, one on right
-            angle = isInput ? Math.PI : 0;
-        } else {
-            // Multiple handles: distribute around the circle
-            const inputCount = inputHandles.length;
-            const outputCount = outputHandles.length;
-            
-            if (isInput) {
-                if (inputCount === 1) {
-                    angle = Math.PI; // Single input on the left
-                } else {
-                    // Distribute inputs on left side (π/2 to 3π/2)
-                    const inputAngleStep = Math.PI / (inputCount + 1);
-                    angle = Math.PI / 2 + (index + 1) * inputAngleStep;
-                }
-            } else {
-                if (outputCount === 1) {
-                    angle = 0; // Single output on the right
-                } else {
-                    // Distribute outputs on right side (-π/2 to π/2)
-                    const outputAngleStep = Math.PI / (outputCount + 1);
-                    const outputIndex = index - inputCount;
-                    angle = -Math.PI / 2 + (outputIndex + 1) * outputAngleStep;
-                }
-            }
-        }
-        
-        // Convert angle to x,y coordinates
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        
-        return { x, y, angle };
-    };
-
-    // Determine handle position based on angle
-    const getHandlePositionType = (angle: number): Position => {
-        // Normalize angle to 0-2π
-        const normalizedAngle = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-        
-        if (normalizedAngle >= 7 * Math.PI / 4 || normalizedAngle < Math.PI / 4) {
-            return Position.Right;
-        } else if (normalizedAngle >= Math.PI / 4 && normalizedAngle < 3 * Math.PI / 4) {
-            return Position.Bottom;
-        } else if (normalizedAngle >= 3 * Math.PI / 4 && normalizedAngle < 5 * Math.PI / 4) {
-            return Position.Left;
-        } else {
-            return Position.Top;
-        }
-    };
 
     if (compact) {
         const totalHandles = inputHandles.length + outputHandles.length;
         
         return (
             <>
-                {/* Compact Input handles */}
                 {inputHandles.map((handle, index) => {
-                    const { x, y, angle } = getCompactHandlePosition(index, totalHandles, true);
+                    const { x, y, angle } = getCompactHandlePosition(index, totalHandles, true, inputHandles.length, outputHandles.length);
                     const position = getHandlePositionType(angle);
                     
                     return (
@@ -147,10 +87,9 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                     );
                 })}
                 
-                {/* Compact Output handles */}
                 {outputHandles.map((handle, index) => {
                     const globalIndex = inputHandles.length + index;
-                    const { x, y, angle } = getCompactHandlePosition(globalIndex, totalHandles, false);
+                    const { x, y, angle } = getCompactHandlePosition(globalIndex, totalHandles, false, inputHandles.length, outputHandles.length);
                     const position = getHandlePositionType(angle);
                     
                     return (
@@ -172,10 +111,8 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
         );
     }
 
-    // Detailed mode (original rendering)
     return (
         <>
-            {/* Input handles */}
             {inputHandles.map((handle, index) => (
                 <div key={`input-${handle.id}-${index}`} className="relative flex items-center mb-1">
                     <Handle
@@ -183,9 +120,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                         position={Position.Left}
                         id={`${handle.input_type}-${handle.id}`}
                         className={handle.required ? "!bg-amber-500 !border-amber-400 !w-2 !h-2" : "!bg-blue-500 !border-blue-400 !w-2 !h-2"}
-                        style={{
-                            left: -10,
-                        }}
+                        style={{ left: -10 }}
                         isValidConnection={isValidConnection}
                     />
                     <div className="text-[8px] text-muted-foreground pr-2">
@@ -194,7 +129,6 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                 </div>
             ))}
 
-            {/* Output handles */}
             {outputHandles.map((handle, index) => (
                 <div key={`output-${handle.broker_id}-${index}`} className="relative flex items-center justify-end mb-1">
                     <div className="text-[8px] text-muted-foreground pl-2 text-right">
@@ -205,9 +139,7 @@ export const NodeHandles: React.FC<NodeHandlesProps> = ({ nodeData, isValidConne
                         position={Position.Right}
                         id={`${handle.broker_id}`}
                         className="!bg-green-500 !border-green-400 !w-2 !h-2"
-                        style={{
-                            right: -10,
-                        }}
+                        style={{ right: -10 }}
                         isValidConnection={isValidConnection}
                     />
                 </div>

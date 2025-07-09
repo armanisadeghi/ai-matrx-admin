@@ -151,7 +151,6 @@ export type AutomationTableName =
     | 'recipeTool'
     | 'registeredFunction'
     | 'registeredNode'
-    | 'registeredNodeResults'
     | 'schemaTemplates'
     | 'scrapeBaseConfig'
     | 'scrapeCachePolicy'
@@ -814,15 +813,6 @@ export type RegisteredNodeProcessed = Expand<ProcessedEntityData<"registeredNode
 export type RegisteredNodeData = Expand<EntityDataMixed<"registeredNode">>;
 export type RegisteredNodeState = EntityStateType<"registeredNode">;
 export type RegisteredNodeRecordMap = Record<"registeredNodeRecordId", RegisteredNodeData>;
-
-export type RegisteredNodeResultsType = AutomationEntity<"registeredNodeResults">;
-export type RegisteredNodeResultsDataRequired = Expand<EntityData<"registeredNodeResults">>;
-export type RegisteredNodeResultsDataOptional = Expand<EntityDataOptional<"registeredNodeResults">>;
-export type RegisteredNodeResultsRecordWithKey = Expand<EntityDataWithKey<"registeredNodeResults">>;
-export type RegisteredNodeResultsProcessed = Expand<ProcessedEntityData<"registeredNodeResults">>;
-export type RegisteredNodeResultsData = Expand<EntityDataMixed<"registeredNodeResults">>;
-export type RegisteredNodeResultsState = EntityStateType<"registeredNodeResults">;
-export type RegisteredNodeResultsRecordMap = Record<"registeredNodeResultsRecordId", RegisteredNodeResultsData>;
 
 export type SchemaTemplatesType = AutomationEntity<"schemaTemplates">;
 export type SchemaTemplatesDataRequired = Expand<EntityData<"schemaTemplates">>;

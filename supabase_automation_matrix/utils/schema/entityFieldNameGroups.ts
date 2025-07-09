@@ -343,11 +343,6 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "updatedAt", "registeredFunctionId", "name", "styles", "nodeType", "description", "isActive", "arguments", "inputs", "outputs", "customEditor", "metadata", "dependencies", "depedencyFunction", "dynamicBrokerArgs", "tags", "functionDescription", "icon", "category", "color", "dynamicOutputs"]
 },
-  registeredNodeResults: {
-  nativeFields: ["id", "createdAt", "workflowId", "userId", "data", "metadata", "isPublic", "registeredNodeId"],
-  primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "workflowId", "userId", "data", "metadata", "isPublic", "registeredNodeId"]
-},
   schemaTemplates: {
   nativeFields: ["id", "templateName", "description", "fields", "version", "createdAt"],
   primaryKeyFields: ["id"],

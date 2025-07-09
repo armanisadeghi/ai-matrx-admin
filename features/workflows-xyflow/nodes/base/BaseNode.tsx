@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, memo, useEffect, useMemo } from "react";
+import React, { useState, useCallback, memo, useEffect, useMemo, useRef } from "react";
 import { NodeProps, useNodeId, useReactFlow, useUpdateNodeInternals } from "@xyflow/react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -30,6 +30,8 @@ export interface BaseNodeData extends Record<string, unknown> {
     status?: string;
     executionRequired?: boolean;
     workflowId?: string;
+    // Add height tracking
+    measuredHeight?: number;
 }
 
 // Configuration interface for node customization
@@ -106,6 +108,10 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
     const { mode } = useTheme();
     const isDarkMode = mode === "dark";
     const isLightMode = mode === "light";
+    
+    // Add ref for height measurement
+    const nodeRef = useRef<HTMLDivElement>(null);
+    
     if (!nodeId) {
         console.error("BaseNode: nodeId is required");
         return null;
@@ -197,6 +203,30 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
         nodeId,
         updateNodeInternals,
     ]);
+
+    // Add height measurement effect
+    useEffect(() => {
+        if (nodeRef.current && nodeId) {
+            const measureHeight = () => {
+                const height = nodeRef.current?.getBoundingClientRect().height;
+                if (height && Math.abs(height - (data.measuredHeight || 0)) > 1) {
+                    // Only update if height changed significantly (> 1px to avoid micro-updates)
+                    updateNodeData(nodeId, { measuredHeight: height });
+                }
+            };
+
+            // Measure immediately
+            measureHeight();
+
+            // Also measure after layout changes
+            const resizeObserver = new ResizeObserver(measureHeight);
+            resizeObserver.observe(nodeRef.current);
+
+            return () => {
+                resizeObserver.disconnect();
+            };
+        }
+    }, [nodeId, updateNodeData, data.measuredHeight, displayMode, isActive, data.showOptionalInputs]);
 
     // Set default active state if not already set
     useEffect(() => {
@@ -306,7 +336,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
     // Compact mode rendering
     if (isCompact) {
         return (
-            <>
+            <div ref={nodeRef}>
                 {/* Built-in Toolbar */}
                 <BaseNodeToolbar
                     nodeId={nodeId}
@@ -365,13 +395,13 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
 
                 {/* Settings Modal */}
                 {SettingsComponent && <SettingsComponent nodeId={nodeId} isOpen={isSettingsOpen} onOpenChange={setIsSettingsOpen} />}
-            </>
+            </div>
         );
     }
 
     // Detailed mode rendering
     return (
-        <>
+        <div ref={nodeRef}>
             {/* Built-in Toolbar */}
             <BaseNodeToolbar
                 nodeId={nodeId}
@@ -479,7 +509,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
 
             {/* Settings Modal */}
             {SettingsComponent && <SettingsComponent nodeId={nodeId} isOpen={isSettingsOpen} onOpenChange={setIsSettingsOpen} />}
-        </>
+        </div>
     );
 };
 

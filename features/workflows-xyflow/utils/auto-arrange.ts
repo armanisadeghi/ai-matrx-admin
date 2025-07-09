@@ -7,6 +7,10 @@ export interface ArrangeConfig {
     nodeSpacing: number;
     levelStartX: number;
     sourceNodeX: number;
+    // Add padding between nodes
+    verticalPadding: number;
+    defaultNodeHeight: number;
+    defaultCompactNodeHeight: number;
 }
 
 export interface DependencyGraph {
@@ -27,7 +31,25 @@ const DEFAULT_CONFIG: ArrangeConfig = {
     nodeSpacing: 120,
     levelStartX: 100,
     sourceNodeX: -300,
+    verticalPadding: 20,
+    defaultNodeHeight: 160, // Default height for detailed nodes
+    defaultCompactNodeHeight: 64, // Default height for compact nodes
 };
+
+/**
+ * Get the measured height of a node or fallback to default
+ */
+function getNodeHeight(node: Node, config: ArrangeConfig): number {
+    // Check if the node has a measured height
+    const measuredHeight = node.data?.measuredHeight;
+    if (typeof measuredHeight === 'number' && measuredHeight > 0) {
+        return measuredHeight;
+    }
+    
+    // Fallback based on display mode
+    const displayMode = node.data?.displayMode || "detailed";
+    return displayMode === "compact" ? config.defaultCompactNodeHeight : config.defaultNodeHeight;
+}
 
 /**
  * Main auto-arrange function that orchestrates the entire process
@@ -175,27 +197,37 @@ export function groupNodesByLevel(
 }
 
 /**
- * Positions source nodes on the left side
+ * Positions source nodes on the left side using actual heights
  */
 export function positionSourceNodes(
     sourceNodes: Node[],
     config: ArrangeConfig
 ): Node[] {
-    return sourceNodes.map((node, index) => ({
-        ...node,
-        position: {
-            x: config.sourceNodeX,
-            y: index * config.sourceNodeSpacing,
-        },
-        data: {
-            ...node.data,
-            displayMode: "compact", // Ensure they're compact
-        },
-    }));
+    let currentY = 0;
+    
+    return sourceNodes.map((node, index) => {
+        const nodeHeight = getNodeHeight(node, config);
+        const y = currentY;
+        
+        // Update currentY for the next node
+        currentY += nodeHeight + config.verticalPadding;
+        
+        return {
+            ...node,
+            position: {
+                x: config.sourceNodeX,
+                y: y,
+            },
+            data: {
+                ...node.data,
+                displayMode: "compact", // Ensure they're compact
+            },
+        };
+    });
 }
 
 /**
- * Positions regular nodes based on their dependency levels
+ * Positions regular nodes based on their dependency levels using actual heights
  */
 export function positionRegularNodes(
     dependencyGraph: DependencyGraph,
@@ -210,18 +242,32 @@ export function positionRegularNodes(
     sortedLevels.forEach(([level, nodes]) => {
         const x = config.levelStartX + (level * config.levelWidth);
         
-        // Center nodes vertically within their level
-        const totalHeight = (nodes.length - 1) * config.nodeSpacing;
+        // Calculate total height needed for this level
+        const totalContentHeight = nodes.reduce((sum, node) => {
+            return sum + getNodeHeight(node, config);
+        }, 0);
+        
+        // Add padding between nodes (but not after the last one)
+        const totalPaddingHeight = Math.max(0, nodes.length - 1) * config.verticalPadding;
+        const totalHeight = totalContentHeight + totalPaddingHeight;
+        
+        // Start from a center point and work up and down
         const startY = 100 - (totalHeight / 2);
+        let currentY = startY;
         
         nodes.forEach((node, index) => {
+            const nodeHeight = getNodeHeight(node, config);
+            
             arrangedNodes.push({
                 ...node,
                 position: {
                     x,
-                    y: startY + (index * config.nodeSpacing),
+                    y: currentY,
                 },
             });
+            
+            // Move to next position
+            currentY += nodeHeight + config.verticalPadding;
         });
     });
     
@@ -330,5 +376,18 @@ export namespace AnalysisUtils {
             averageEdgeLength: 0,
             layoutCompactness: 0,
         };
+    }
+    
+    /**
+     * Debug function to log node heights
+     */
+    export function logNodeHeights(nodes: Node[], config: ArrangeConfig) {
+        console.log("Node Heights:");
+        nodes.forEach(node => {
+            const height = getNodeHeight(node, config);
+            const measuredHeight = node.data?.measuredHeight;
+            const displayMode = node.data?.displayMode || "detailed";
+            console.log(`${node.id}: ${height}px (measured: ${measuredHeight || 'none'}, mode: ${displayMode})`);
+        });
     }
 }

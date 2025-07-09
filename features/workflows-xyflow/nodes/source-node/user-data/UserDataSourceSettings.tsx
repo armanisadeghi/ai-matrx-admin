@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Database } from "lucide-react";
+import { ArrowLeft, Database, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TableReferenceIcon from "@/components/user-generated-table-data/TableReferenceIcon";
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
@@ -25,14 +24,7 @@ interface UserDataSourceSettingsProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     workflowId: string;
-    mode?: "create" | "edit";
-    currentMapping?: {
-        brokerId: string;
-        mappedItemId: string;
-        source: string;
-        sourceId: string;
-        sourceType?: string;
-    };
+    brokerId?: string;
     onSuccess?: () => void;
     onBack?: () => void;
 }
@@ -41,41 +33,52 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
     isOpen,
     onOpenChange,
     workflowId,
-    mode = "create",
-    currentMapping,
+    brokerId,
     onSuccess,
     onBack,
 }) => {
     const dispatch = useAppDispatch();
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
 
-    // Get current source data from Redux (for edit mode)
-    const userDataSource = useAppSelector((state) =>
-        currentMapping?.brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, workflowId, currentMapping.brokerId) : null
+    // Check if mapping exists in Redux
+    const existingSource = useAppSelector((state) =>
+        brokerId ? workflowsSelectors.userDataSourceByBrokerId(state, workflowId, brokerId) : null
     );
 
     // Local state for the form
     const [formData, setFormData] = useState({
-        brokerId: currentMapping?.brokerId || "",
-        selectedReference: (userDataSource?.sourceDetails as UserDataReference) || (null as UserDataReference | null),
-        source: userDataSource?.scope || ("workflow" as string),
+        brokerId: brokerId || "",
+        selectedReference: null as UserDataReference | null,
+        source: "workflow",
         sourceId: workflowId,
     });
 
     // UI state
-    const [isCreating, setIsCreating] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const resetForm = useCallback(() => {
-        setFormData({
-            brokerId: "",
-            selectedReference: null,
-            source: "workflow",
-            sourceId: workflowId,
-        });
-    }, [workflowId]);
+    // Initialize form data from Redux state if mapping exists
+    useEffect(() => {
+        if (existingSource?.sourceDetails) {
+            setFormData({
+                brokerId: existingSource.brokerId,
+                selectedReference: existingSource.sourceDetails as UserDataReference,
+                source: existingSource.scope || "workflow",
+                sourceId: workflowId,
+            });
+        } else {
+            // Reset form when no existing source or when brokerId changes
+            setFormData({
+                brokerId: brokerId || "",
+                selectedReference: null,
+                source: "workflow",
+                sourceId: workflowId,
+            });
+        }
+    }, [existingSource, brokerId, workflowId]);
 
-    const handleBrokerChange = useCallback((brokerId: string) => {
-        setFormData((prev) => ({ ...prev, brokerId }));
+    const handleBrokerChange = useCallback((newBrokerId: string) => {
+        setFormData((prev) => ({ ...prev, brokerId: newBrokerId }));
     }, []);
 
     const handleSourceChange = useCallback(
@@ -93,124 +96,112 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
         setFormData((prev) => ({ ...prev, sourceId }));
     }, []);
 
-    // Handle table reference selection
     const handleReferenceSelect = useCallback((reference: UserDataReference) => {
         setFormData((prev) => ({ ...prev, selectedReference: reference }));
     }, []);
 
-    const handleSave = useCallback(async () => {
+    const handleSubmit = useCallback(async () => {
         if (!formData.brokerId.trim() || !formData.selectedReference) {
             toast.error("Please select both a broker and data reference.");
             return;
         }
 
-        setIsCreating(true);
+        setIsSubmitting(true);
 
         try {
-            if (mode === "create") {
-                // Create mode: Create broker map entry and source
-                const mapEntry: BrokerMapEntry = {
-                    brokerId: formData.brokerId,
-                    mappedItemId: formData.selectedReference.table_id || formData.selectedReference.table_name,
-                    source: formData.source,
-                    sourceId: formData.sourceId,
-                };
+            const mapEntry: BrokerMapEntry = {
+                brokerId: formData.brokerId,
+                mappedItemId: formData.selectedReference.table_id || formData.selectedReference.table_name,
+                source: formData.source,
+                sourceId: formData.sourceId,
+            };
 
-                const sourceConfig: BrokerSourceConfig<"user_data"> = {
-                    sourceType: "user_data" as const,
-                    brokerId: formData.brokerId,
-                    scope: formData.source as any,
-                    relays: [],
-                    extraction: null,
-                    sourceDetails: formData.selectedReference,
-                    metadata: {},
-                };
+            const sourceConfig: BrokerSourceConfig<"user_data"> = {
+                sourceType: "user_data" as const,
+                brokerId: formData.brokerId,
+                scope: formData.source as any,
+                relays: [],
+                extraction: null,
+                sourceDetails: formData.selectedReference,
+                metadata: {},
+            };
 
-                // Add the source
+            // If there's an existing source, remove it first
+            if (existingSource) {
                 dispatch(
-                    workflowActions.addSource({
+                    workflowActions.removeSourceByBrokerId({
                         id: workflowId,
-                        source: sourceConfig,
+                        brokerId: existingSource.brokerId,
                     })
                 );
 
-                // Update broker registry
-                dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));
-
-                toast.success("Data source created successfully");
-
-                resetForm();
-                onOpenChange(false);
-                onSuccess?.();
-            } else if (mode === "edit" && currentMapping?.brokerId) {
-                // Edit mode: Update existing source
-                const mapEntry: BrokerMapEntry = {
-                    brokerId: formData.brokerId,
-                    mappedItemId: formData.selectedReference.table_id || formData.selectedReference.table_name,
-                    source: formData.source,
-                    sourceId: formData.sourceId,
-                };
-
-                const sourceConfig: BrokerSourceConfig<"user_data"> = {
-                    sourceType: "user_data" as const,
-                    brokerId: formData.brokerId,
-                    scope: formData.source as any,
-                    relays: [],
-                    extraction: null,
-                    sourceDetails: formData.selectedReference,
-                    metadata: {},
-                };
-
-                // If broker ID changed, remove old and add new
-                if (formData.brokerId !== currentMapping.brokerId) {
-                    dispatch(
-                        workflowActions.removeSourceByBrokerId({
-                            id: workflowId,
-                            brokerId: currentMapping.brokerId,
-                        })
-                    );
-                    dispatch(
-                        workflowActions.addSource({
-                            id: workflowId,
-                            source: sourceConfig,
-                        })
-                    );
-                } else {
-                    // Update existing source by removing and re-adding
-                    dispatch(
-                        workflowActions.removeSourceByBrokerId({
-                            id: workflowId,
-                            brokerId: formData.brokerId,
-                        })
-                    );
-                    dispatch(
-                        workflowActions.addSource({
-                            id: workflowId,
-                            source: sourceConfig,
-                        })
-                    );
+                // If broker ID changed, remove old registry entry
+                if (existingSource.sourceDetails && formData.brokerId !== existingSource.brokerId) {
+                    dispatch(brokerActions.removeRegisterEntry({
+                        source: existingSource.scope || "workflow",
+                        mappedItemId: (existingSource.sourceDetails as UserDataReference).table_id || (existingSource.sourceDetails as UserDataReference).table_name,
+                    }));
                 }
-
-                // Update broker registry
-                dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));
-
-                toast.success("Data source updated successfully");
-
-                onOpenChange(false);
-                onSuccess?.();
             }
+
+            // Add the source (create or update)
+            dispatch(
+                workflowActions.addSource({
+                    id: workflowId,
+                    source: sourceConfig,
+                })
+            );
+
+            // Update broker registry
+            dispatch(brokerActions.addOrUpdateRegisterEntry(mapEntry));
+
+            toast.success("Data source saved successfully");
+            onOpenChange(false);
+            onSuccess?.();
         } catch (error) {
             console.error("Error saving data source:", error);
             toast.error("Failed to save data source");
         } finally {
-            setIsCreating(false);
+            setIsSubmitting(false);
         }
-    }, [formData, mode, currentMapping, workflowId, dispatch, resetForm, onOpenChange, onSuccess]);
+    }, [formData, existingSource, workflowId, dispatch, onOpenChange, onSuccess]);
+
+    const handleDelete = useCallback(async () => {
+        if (!existingSource) return;
+
+        setIsDeleting(true);
+
+        try {
+            // Remove from workflow sources
+            dispatch(
+                workflowActions.removeSourceByBrokerId({
+                    id: workflowId,
+                    brokerId: existingSource.brokerId,
+                })
+            );
+
+            // Remove from broker registry
+            if (existingSource.sourceDetails) {
+                dispatch(brokerActions.removeRegisterEntry({
+                    source: existingSource.scope || "workflow",
+                    mappedItemId: (existingSource.sourceDetails as UserDataReference).table_id || (existingSource.sourceDetails as UserDataReference).table_name,
+                }));
+            }
+
+            toast.success("Data source deleted successfully");
+            onOpenChange(false);
+            onSuccess?.();
+        } catch (error) {
+            console.error("Error deleting data source:", error);
+            toast.error("Failed to delete data source");
+        } finally {
+            setIsDeleting(false);
+        }
+    }, [existingSource, workflowId, dispatch, onOpenChange, onSuccess]);
 
     const handleCancel = useCallback(() => {
-        resetForm();
         onOpenChange(false);
-    }, [resetForm, onOpenChange]);
+    }, [onOpenChange]);
 
     // Helper function to render reference details in a structured format
     const renderReferenceDetails = (reference: UserDataReference) => {
@@ -265,11 +256,15 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
     };
 
     const isFormValid = formData.brokerId.trim() && formData.selectedReference;
+    const hasChanges = !existingSource || !existingSource.sourceDetails || (
+        formData.brokerId !== existingSource.brokerId ||
+        JSON.stringify(formData.selectedReference) !== JSON.stringify(existingSource.sourceDetails) ||
+        formData.source !== (existingSource.scope || "workflow") ||
+        formData.sourceId !== workflowId
+    );
 
     // Get broker display name
-    const brokerDisplayName = currentMapping?.brokerId
-        ? dataBrokerRecordsById[currentMapping.brokerId]?.name || currentMapping.brokerId
-        : null;
+    const brokerDisplayName = brokerId && dataBrokerRecordsById[brokerId]?.name || brokerId;
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -277,29 +272,35 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                 <DialogHeader>
                     <div className="flex items-center gap-2">
                         {onBack && (
-                            <Button variant="ghost" size="sm" onClick={onBack} className="p-1 h-auto">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={onBack} 
+                                className="p-1 h-auto"
+                                disabled={isSubmitting || isDeleting}
+                            >
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
                         )}
                         <DialogTitle className="flex items-center gap-2">
                             <Database className="h-5 w-5 text-green-600 dark:text-green-400" />
-                            {mode === "create"
-                                ? "Create Data Source"
-                                : `Edit Data Source${brokerDisplayName ? ` - ${brokerDisplayName}` : ""}`}
+                            Data Source{brokerDisplayName ? ` - ${brokerDisplayName}` : ""}
                         </DialogTitle>
-                        <DialogDescription className="sr-only">Manage sources for this workflow.</DialogDescription>
+                        <DialogDescription className="sr-only">Manage data sources for this workflow.</DialogDescription>
                     </div>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     <div className="text-sm text-muted-foreground">
-                        {mode === "create"
-                            ? "Select a data table to use as a source for this workflow. The selected table's data will be available to workflow nodes."
-                            : "Change the data table used by this source."}
+                        Configure the data table to use as a source for this workflow. The selected table's data will be available to workflow nodes.
                     </div>
 
                     {/* Broker Selection */}
-                    <BrokerSelect value={formData.brokerId} onValueChange={handleBrokerChange} disabled={isCreating} />
+                    <BrokerSelect 
+                        value={formData.brokerId} 
+                        onValueChange={handleBrokerChange} 
+                        disabled={isSubmitting || isDeleting} 
+                    />
 
                     {/* Data Reference Selection */}
                     <div className="space-y-2">
@@ -325,8 +326,12 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
 
                     {/* Source (Scope) */}
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium">Source (Scope)</Label>
-                        <Select value={formData.source} onValueChange={handleSourceChange} disabled={isCreating}>
+                        <Label className="text-sm font-medium">Source</Label>
+                        <Select 
+                            value={formData.source} 
+                            onValueChange={handleSourceChange} 
+                            disabled={isSubmitting || isDeleting}
+                        >
                             <SelectTrigger>
                                 <SelectValue />
                             </SelectTrigger>
@@ -349,17 +354,38 @@ const UserDataSourceSettings: React.FC<UserDataSourceSettingsProps> = ({
                             value={formData.sourceId}
                             onChange={(e) => handleSourceIdChange(e.target.value)}
                             placeholder="Enter source ID"
-                            disabled={isCreating}
+                            disabled={isSubmitting || isDeleting}
                         />
                     </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={handleCancel} disabled={isCreating}>
+                    {existingSource && (
+                        <Button 
+                            variant="destructive" 
+                            size="sm" 
+                            onClick={handleDelete} 
+                            disabled={isSubmitting || isDeleting} 
+                            className="mr-auto"
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </Button>
+                    )}
+
+                    <Button 
+                        variant="outline" 
+                        onClick={handleCancel} 
+                        disabled={isSubmitting || isDeleting}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={!isFormValid || isCreating}>
-                        {isCreating ? "Saving..." : mode === "create" ? "Create Source" : "Update Source"}
+                    
+                    <Button 
+                        onClick={handleSubmit} 
+                        disabled={!isFormValid || !hasChanges || isSubmitting || isDeleting}
+                    >
+                        {isSubmitting ? "Saving..." : "Save"}
                     </Button>
                 </div>
             </DialogContent>

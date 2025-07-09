@@ -384,8 +384,6 @@ const registeredFunctionFieldOverrides: AllFieldOverrides = {};
 
 const registeredNodeFieldOverrides: AllFieldOverrides = {};
 
-const registeredNodeResultsFieldOverrides: AllFieldOverrides = {};
-
 const schemaTemplatesFieldOverrides: AllFieldOverrides = {};
 
 const scrapeBaseConfigFieldOverrides: AllFieldOverrides = {};
@@ -548,7 +546,6 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     recipeTool: recipeToolFieldOverrides,
     registeredFunction: registeredFunctionFieldOverrides,
     registeredNode: registeredNodeFieldOverrides,
-    registeredNodeResults: registeredNodeResultsFieldOverrides,
     schemaTemplates: schemaTemplatesFieldOverrides,
     scrapeBaseConfig: scrapeBaseConfigFieldOverrides,
     scrapeCachePolicy: scrapeCachePolicyFieldOverrides,

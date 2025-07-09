@@ -35,7 +35,7 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { WorkflowNodeItem } from "../nodes/wf-nodes/WorkflowNode";
-import { SourceInputNode } from "../nodes/source-node/user-input/SourceInputNode";
+import { UserInputSourceNode } from "../nodes/source-node/user-input/UserInputSourceNode";
 import { UserDataSourceNode } from "../nodes/source-node/user-data/UserDataSourceNode";
 import { WorkflowEdge } from "../edges/WorkflowEdge";
 import { DirectInputNode } from "../nodes/custom-nodes/DirectInputNode";
@@ -62,13 +62,9 @@ interface WorkflowCanvasProps {
     showControls?: boolean;
     connectionMode?: ConnectionMode;
     selectionMode?: SelectionMode;
-    // UI overlay props (managed at top level)
-    isFieldDisplaySheetOpen?: boolean;
-    onOpenFieldDisplaySheet?: (open: boolean) => void;
-    isAdminOverlayOpen?: boolean;
-    onOpenAdminOverlay?: (open: boolean) => void;
     onRecipeNodeCreated?: (nodeData: WorkflowNode) => void;
     handleSave?: () => void;
+    onOpenSourceInputCreator?: () => void;
 }
 
 export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
@@ -86,12 +82,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     showControls = true,
     connectionMode = ConnectionMode.Strict,
     selectionMode = SelectionMode.Partial,
-    isFieldDisplaySheetOpen,
-    onOpenFieldDisplaySheet,
-    isAdminOverlayOpen,
-    onOpenAdminOverlay,
     onRecipeNodeCreated,
     handleSave,
+    onOpenSourceInputCreator,
 }) => {
     const reactFlowInstance = useReactFlow();
 
@@ -216,7 +209,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
             functionNode: WorkflowNodeItem,
             workflowNode: WorkflowNodeItem,
 
-            userInput: SourceInputNode,
+            userInput: UserInputSourceNode,
             userDataSource: UserDataSourceNode,
         }),
         []
@@ -518,8 +511,8 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                     <Panel position="top-left" className="p-0">
                         <QuickAccessPanel 
                             workflowId={workflowId} 
-                            onOpenFieldDisplay={() => onOpenFieldDisplaySheet?.(true)}
                             onRecipeNodeCreated={onRecipeNodeCreated}
+                            onOpenSourceInputCreator={onOpenSourceInputCreator}
                         />
                     </Panel>
                 )}
@@ -527,5 +520,5 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         </div>
     );
 };
-
 WorkflowCanvas.displayName = "WorkflowCanvas";
+

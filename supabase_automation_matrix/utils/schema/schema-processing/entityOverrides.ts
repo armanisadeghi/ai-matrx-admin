@@ -1126,23 +1126,6 @@ const registeredNodeEntityOverrides: EntityOverrides<'registeredNode'> = {
 
 
 
-const registeredNodeResultsEntityOverrides: EntityOverrides<'registeredNodeResults'> = {
-    schemaType: null,
-    entityName: null,
-    uniqueTableId: null,
-    uniqueEntityId: null,
-    primaryKey: null,
-    primaryKeyMetadata: null,
-    displayFieldMetadata: null,
-    defaultFetchStrategy: null,
-    componentProps: null,
-    entityNameFormats: null,
-    relationships: null,
-    entityFields: null
-};
-
-
-
 const schemaTemplatesEntityOverrides: EntityOverrides<'schemaTemplates'> = {
     schemaType: null,
     entityName: null,
@@ -2008,7 +1991,6 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     recipeTool: recipeToolEntityOverrides,
     registeredFunction: registeredFunctionEntityOverrides,
     registeredNode: registeredNodeEntityOverrides,
-    registeredNodeResults: registeredNodeResultsEntityOverrides,
     schemaTemplates: schemaTemplatesEntityOverrides,
     scrapeBaseConfig: scrapeBaseConfigEntityOverrides,
     scrapeCachePolicy: scrapeCachePolicyEntityOverrides,

@@ -793,17 +793,6 @@ export type RegisteredNode = {
     dynamicOutputs?: Record<string, unknown>;
 }
 
-export type RegisteredNodeResults = {
-    id: string;
-    createdAt: Date;
-    workflowId?: string;
-    userId?: string;
-    data?: Record<string, unknown>;
-    metadata?: Record<string, unknown>;
-    isPublic?: boolean;
-    registeredNodeId?: string;
-}
-
 export type SchemaTemplates = {
     id: string;
     templateName: string;
