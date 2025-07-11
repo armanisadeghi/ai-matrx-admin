@@ -6,6 +6,8 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { WorkflowNode, WorkflowNodeUiData, XyFlowNodeType } from "@/lib/redux/workflow-nodes/types";
 import { createWorkflowNode } from "@/lib/redux/workflow-nodes/thunks";
 import { RegisteredNodeData } from "@/types/AutomationSchemaTypes";
+import { normalizeInputMapping } from "../utils/normalizers";
+import { InputMapping } from "@/lib/redux/workflow/types";
 
 export interface CategoryNodeData {
     id: string;
@@ -59,7 +61,9 @@ export function newNodeFunction(
         node_type: categoryName,
         step_name: nodeDefinition.name,
         execution_required: true,
-        inputs: [],
+        inputs: Array.isArray(normalizeInputMapping(nodeDefinition.inputs)) 
+            ? normalizeInputMapping(nodeDefinition.inputs) as InputMapping[]
+            : [normalizeInputMapping(nodeDefinition.inputs) as InputMapping],
         outputs: outputs,
         user_id: userId,
         is_active: true,
@@ -73,6 +77,7 @@ export function newNodeFunction(
         },
         dependencies: [],
         metadata: {
+            nodeDefinitionId: nodeDefinition.id,
             nodeDefinition: nodeDefinition,
         },
         is_public: false,
@@ -126,6 +131,7 @@ export function createCustomInputNode(
         },
         dependencies: [],
         metadata: {
+            nodeDefinitionId: nodeDefinition.id,
             nodeDefinition: nodeDefinition,
         },
         is_public: false,
@@ -214,11 +220,8 @@ export const useCategoryNodeData = (workflowId?: string) => {
             const registeredNode = getRegisteredNodeById(nodeId);
             const nodeCategory = categoryRecords[registeredNode.category];
             const nodeType = registeredNode.nodeType as XyFlowNodeType;
-            console.log("nodeType", nodeType);
             const newNodeData = createCustomInputNode(registeredNode, workflowId, userId, nodeCategory.name, nodeType);
-            console.log("newNodeData", newNodeData);
             const newNode = await dispatch(createWorkflowNode(newNodeData)).unwrap();
-            console.log("newNode", newNode);
             return newNode;
         } catch (error) {
             console.error("Failed to add node:", error);

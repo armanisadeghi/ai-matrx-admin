@@ -15,8 +15,8 @@ import RecipeCardSelector from "./RecipeCardSelector";
 import { workflowNodesActions, workflowNodesSelectors } from "@/lib/redux/workflow-nodes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
-import { useRegisteredFunctionWithFetch } from "@/lib/redux/entity/hooks/functions-and-args";
 import { RECIPE_NODE_DEFINITION } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
+import { normalizeBroker, normalizeInputMapping } from "@/features/workflows-xyflow/utils/normalizers";
 
 interface RecipeNodeInitializerProps {
     nodeId: string;
@@ -26,6 +26,8 @@ interface RecipeNodeInitializerProps {
 }
 
 const DEBUG = false;
+
+
 
 const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, onCancel, open, onConfirm }) => {
     const dispatch = useAppDispatch();
@@ -57,13 +59,14 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                 type: "broker",
                 id: broker.id,
                 required: true,
-                metadata: dataBrokerRecordsById[broker.id],
+                metadata: normalizeBroker(dataBrokerRecordsById[broker.id]),
             }));
-            const newDataInputs = neededBrokers.map((broker) => ({
+            const newDataInputs = neededBrokers.map((broker) => normalizeInputMapping({
                 type: "broker" as const,
                 arg_name: null,
                 source_broker_id: broker.id,
                 ready: true,
+                use_system_default: false,
                 default_value: broker.defaultValue,
                 metadata: {
                     scope: "workflow",
@@ -72,9 +75,9 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
                     data_type: broker.dataType,
                     use_system_default: false,
                     allow_reset: false,
-                    broker: dataBrokerRecordsById[broker.id],
+                    broker: normalizeBroker(dataBrokerRecordsById[broker.id]),
                 },
-            }));
+            })).flat();
             const newNodeInputs = neededBrokers.map((broker) => ({
                 id: broker.id,
                 name: broker.name,
@@ -85,7 +88,7 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, o
             }));
             dispatch(workflowNodesActions.addInputsToNodeDefinition({ id: nodeId, inputs: newNodeInputs }));
             dispatch(workflowNodesActions.updateDependencies({ id: nodeId, dependencies: allDependencies }));
-            dispatch(workflowNodesActions.updateInputs({ id: nodeId, inputs: newDataInputs }));
+            dispatch(workflowNodesActions.addInputs({ id: nodeId, inputs: newDataInputs }));
         } else {
             dispatch(workflowNodesActions.clearDependencies({ id: nodeId }));
         }

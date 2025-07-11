@@ -102,11 +102,8 @@ export default function GoogleAPIProvider({ children, scopes }: GoogleAPIProvide
     const defaultScopes = [
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/gmail.send",
-        "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/documents",
         "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/presentations",
-        "https://www.googleapis.com/auth/tasks",
     ];
 
     const allScopes = scopes || defaultScopes;

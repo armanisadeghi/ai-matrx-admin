@@ -25,8 +25,9 @@ const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
 
     const typeOptions = [
         { value: "arg_override", label: "Enter Direct Value" },
-        { value: "arg_mapping", label: "Get From Input" },
-        { value: "broker", label: "Use Environment Broker" },
+        { value: "arg_mapping", label: "From Broker Mapping" },
+        { value: "broker", label: "From Environment Broker" },
+        { value: "unused", label: "System Default" },
     ];
 
     // Mapping from Python types to user-friendly names
@@ -69,7 +70,7 @@ const InputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
         }
         
         // If source is "Get From Input", hide it
-        if (input.type === "arg_mapping") {
+        if (input.type === "arg_mapping" || input.type === "unused" || input.type === "broker") {
             return false;
         }
         

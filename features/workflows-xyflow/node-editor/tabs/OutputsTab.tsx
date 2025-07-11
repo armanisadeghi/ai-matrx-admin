@@ -4,15 +4,15 @@ import React, { useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ButtonMine";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Plus, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { DefaultTabProps } from "./types";
 import { Output, Relay, Bookmark } from "@/lib/redux/workflow/types";
-
+import { SectionContainer } from "@/features/workflows-xyflow/common";
 
 const DATA_TYPES = [
     { label: "Dict", value: "dict" },
@@ -26,7 +26,7 @@ const DATA_TYPES = [
 
 export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const dispatch = useAppDispatch();
-    const outputs = useAppSelector((state) => workflowNodesSelectors.nodeOutputs(state, nodeId)) as Output[] || [];
+    const outputs = (useAppSelector((state) => workflowNodesSelectors.nodeOutputs(state, nodeId)) as Output[]) || [];
 
     const createDefaultOutput = (): Output => ({
         name: "New Output",
@@ -38,10 +38,10 @@ export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
         result: {
             component: null,
             bookmark: null,
-            metadata: {}
+            metadata: {},
         },
         relays: [],
-        metadata: {}
+        metadata: {},
     });
 
     const addOutput = () => {
@@ -59,40 +59,54 @@ export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
         dispatch(workflowNodesActions.removeOutput({ id: nodeId, index }));
     };
 
-    const updateBookmark = (index: number, bookmarkField: keyof Bookmark, value: any) => {
-        const currentBookmark = outputs[index]?.bookmark || {};
-        const updatedBookmark = { ...currentBookmark, [bookmarkField]: value };
-        updateOutput(index, 'bookmark', updatedBookmark);
+    const updateBookmarkJSON = (index: number, jsonString: string) => {
+        try {
+            const bookmarkObj = jsonString.trim() === "" ? null : JSON.parse(jsonString);
+            updateOutput(index, "bookmark", bookmarkObj);
+        } catch (error) {
+            // If JSON is invalid, don't update the bookmark
+            console.warn("Invalid JSON for bookmark:", error);
+        }
     };
 
     const addRelay = (outputIndex: number) => {
         const currentRelays = outputs[outputIndex]?.relays || [];
-        const newRelay: Relay = { type: null, id: null };
+        const newRelay: Relay = { type: "broker", id: null };
         const updatedRelays = [...currentRelays, newRelay];
-        updateOutput(outputIndex, 'relays', updatedRelays);
+        updateOutput(outputIndex, "relays", updatedRelays);
     };
 
     const updateRelay = (outputIndex: number, relayIndex: number, field: keyof Relay, value: any) => {
         const currentRelays = outputs[outputIndex]?.relays || [];
         const updatedRelays = [...currentRelays];
         updatedRelays[relayIndex] = { ...updatedRelays[relayIndex], [field]: value };
-        updateOutput(outputIndex, 'relays', updatedRelays);
+        updateOutput(outputIndex, "relays", updatedRelays);
     };
 
     const removeRelay = (outputIndex: number, relayIndex: number) => {
         const currentRelays = outputs[outputIndex]?.relays || [];
         const updatedRelays = currentRelays.filter((_, idx) => idx !== relayIndex);
-        updateOutput(outputIndex, 'relays', updatedRelays);
+        updateOutput(outputIndex, "relays", updatedRelays);
     };
 
     return (
         <div className="h-full flex flex-col space-y-3">
-            <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Outputs ({outputs.length})</span>
-                <Button onClick={addOutput} size="sm" variant="outline" className="h-7 px-2">
-                    <Plus className="h-3 w-3 mr-1" />
-                    Add
-                </Button>
+            <div className="flex items-start justify-between py-3">
+                <div className="flex-1 pr-4">
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Outputs allow you to define one or more variations of the node's output and set them to different brokers
+                    </p>
+                    <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                        <li>• Apply bookmarks to get different parts of the output object</li>
+                        <li>• Use relays to forward the same result to multiple brokers</li>
+                    </ul>
+                </div>
+                <div className="flex-shrink-0">
+                    <Button onClick={addOutput} size="sm" variant="outline" className="h-7 px-2">
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add New Output Variation
+                    </Button>
+                </div>
             </div>
 
             <div className="flex-1 overflow-auto space-y-2">
@@ -102,135 +116,140 @@ export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                     </Card>
                 ) : (
                     outputs.map((output, index) => (
-                        <Card key={index} className="p-3 space-y-2">
-                            {/* Main output fields in a compact grid */}
-                            <div className="grid grid-cols-12 gap-2 items-center">
-                                <div className="col-span-4">
-                                    <Input
-                                        placeholder="Output name"
-                                        value={output.name || ""}
-                                        onChange={(e) => updateOutput(index, 'name', e.target.value)}
-                                        className="h-7 text-xs"
-                                    />
-                                </div>
-                                <div className="col-span-3">
-                                    <Select
-                                        value={output.data_type || "dict"}
-                                        onValueChange={(value) => updateOutput(index, 'data_type', value)}
-                                    >
-                                        <SelectTrigger className="h-7 text-xs">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {DATA_TYPES.map((type) => (
-                                                <SelectItem key={type.value} value={type.value}>
-                                                    {type.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="col-span-4">
-                                    <Input
-                                        placeholder="Broker ID"
-                                        value={output.broker_id || ""}
-                                        onChange={(e) => updateOutput(index, 'broker_id', e.target.value)}
-                                        className="h-7 text-xs font-mono"
-                                    />
-                                </div>
-                                <div className="col-span-1 flex justify-end">
-                                    <Button
-                                        onClick={() => removeOutput(index)}
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    >
-                                        <X className="h-3 w-3" />
+                        <SectionContainer
+                            key={index}
+                            title={
+                                <div className="flex items-center justify-between w-full">
+                                    <span>{`${output.name || "Unnamed Output"} ${
+                                        output.is_default_output ? "(Default Node Output)" : "(Alternate Output)"
+                                    }`}</span>
+                                    <Button onClick={() => removeOutput(index)} size="xs" variant="destructive" className="px-2">
+                                        <Trash2 />
+                                        Remove
                                     </Button>
                                 </div>
-                            </div>
-
-                            {/* Bookmark section */}
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input
-                                    placeholder="Bookmark name"
-                                    value={output.bookmark?.name || ""}
-                                    onChange={(e) => updateBookmark(index, 'name', e.target.value)}
-                                    className="h-7 text-xs"
-                                />
-                                <Input
-                                    placeholder="Bookmark path (comma-separated)"
-                                    value={output.bookmark?.path?.join(', ') || ""}
-                                    onChange={(e) => updateBookmark(index, 'path', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                                    className="h-7 text-xs"
-                                />
-                            </div>
-
-                            {/* Relays section */}
-                            {output.relays && output.relays.length > 0 && (
-                                <div className="space-y-1">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs text-gray-600 dark:text-gray-400">Relays</span>
-                                        <Button
-                                            onClick={() => addRelay(index)}
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-6 px-2 text-xs"
-                                        >
-                                            <Plus className="h-2 w-2 mr-1" />
-                                            Relay
-                                        </Button>
+                            }
+                        >
+                            <div className="p-3 space-y-3">
+                                {/* Main output fields in a compact grid */}
+                                <div className="grid grid-cols-11 gap-2 items-end">
+                                    <div className="col-span-4">
+                                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Output Name</label>
+                                        <Input
+                                            placeholder="Output name"
+                                            value={output.name || ""}
+                                            onChange={(e) => updateOutput(index, "name", e.target.value)}
+                                            className="h-7 text-xs mt-1"
+                                        />
                                     </div>
-                                    {output.relays.map((relay, relayIndex) => (
-                                        <div key={relayIndex} className="grid grid-cols-12 gap-1 items-center">
-                                            <div className="col-span-5">
-                                                <Input
-                                                    placeholder="Relay type"
-                                                    value={relay.type || ""}
-                                                    onChange={(e) => updateRelay(index, relayIndex, 'type', e.target.value)}
-                                                    className="h-6 text-xs"
-                                                />
-                                            </div>
-                                            <div className="col-span-6">
-                                                <Input
-                                                    placeholder="Relay ID"
-                                                    value={relay.id || ""}
-                                                    onChange={(e) => updateRelay(index, relayIndex, 'id', e.target.value)}
-                                                    className="h-6 text-xs font-mono"
-                                                />
-                                            </div>
-                                            <div className="col-span-1 flex justify-end">
-                                                <Button
-                                                    onClick={() => removeRelay(index, relayIndex)}
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                                                >
-                                                    <X className="h-2 w-2" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                    <div className="col-span-3">
+                                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Data Type</label>
+                                        <Select
+                                            value={output.data_type || "dict"}
+                                            onValueChange={(value) => updateOutput(index, "data_type", value)}
+                                        >
+                                            <SelectTrigger className="h-7 text-xs mt-1">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {DATA_TYPES.map((type) => (
+                                                    <SelectItem key={type.value} value={type.value}>
+                                                        {type.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="col-span-4">
+                                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Broker ID</label>
+                                        <Input
+                                            placeholder="Broker ID"
+                                            value={output.broker_id || ""}
+                                            onChange={(e) => updateOutput(index, "broker_id", e.target.value)}
+                                            className="h-7 text-xs font-mono mt-1"
+                                        />
+                                    </div>
                                 </div>
-                            )}
 
-                            {/* Add relay button if no relays exist */}
-                            {(!output.relays || output.relays.length === 0) && (
-                                <div className="flex justify-start">
-                                    <Button
-                                        onClick={() => addRelay(index)}
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700"
-                                    >
-                                        <Plus className="h-2 w-2 mr-1" />
-                                        Add Relay
-                                    </Button>
+                                {/* Bookmark field */}
+                                <div className="grid grid-cols-12 gap-4 items-start">
+                                    <div className="col-span-3 pt-2">
+                                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Extraction</label>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            Generate bookmarks in the "Sample Results" tab and use the "Copy Object" feature to get the
+                                            exact bookmark needed for extraction of any part of this results object
+                                        </p>
+                                    </div>
+                                    <div className="col-span-8">
+                                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Bookmark</label>
+                                        <textarea
+                                            placeholder="To extract only a portion of the output object, paste your copied bookmark here"
+                                            value={output.bookmark ? JSON.stringify(output.bookmark, null, 2) : ""}
+                                            onChange={(e) => updateBookmarkJSON(index, e.target.value)}
+                                            className="w-full text-xs font-mono border rounded-md px-2 py-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 resize-none"
+                                            rows={8}
+                                        />
+                                    </div>
                                 </div>
-                            )}
-                        </Card>
+
+                                {/* Relays section */}
+                                <div className="grid grid-cols-12 gap-4 items-start">
+                                    <div className="col-span-3 pt-2">
+                                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Relays</label>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            Enter a Target Broker ID to have this result automatically forwarded to the target
+                                        </p>
+                                    </div>
+                                    <div className="col-span-8 space-y-2">
+                                        {output.relays && output.relays.length > 0 && (
+                                            <>
+                                                {output.relays.map((relay, relayIndex) => (
+                                                    <div key={relayIndex} className="flex gap-2 items-center">
+                                                        <div className="flex-1">
+                                                            <Input
+                                                                placeholder="Enter target broker ID"
+                                                                value={relay.id || ""}
+                                                                onChange={(e) => updateRelay(index, relayIndex, "id", e.target.value)}
+                                                                className="h-7 text-xs font-mono"
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            onClick={() => removeRelay(index, relayIndex)}
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </>
+                                        )}
+                                        <div className="flex justify-start">
+                                            <Button
+                                                onClick={() => addRelay(index)}
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            >
+                                                <Plus className="h-3 w-3 mr-1" />
+                                                Add Relay
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </SectionContainer>
                     ))
                 )}
+            </div>
+
+            {/* Centered Add New Output button at the bottom */}
+            <div className="flex justify-center pt-2">
+                <Button onClick={addOutput} size="default" variant="primary" className="px-6 py-2">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Output Variation
+                </Button>
             </div>
         </div>
     );

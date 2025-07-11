@@ -32,13 +32,8 @@ export type NodeOutput = {
 
 export const OverviewTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
     const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
-    const nodeDefinition = nodeData?.metadata?.nodeDefinition;
-    const outputs = nodeDefinition?.outputs || [];
+    const outputs = nodeData?.outputs || [];
     const dispatch = useAppDispatch();
-
-    const updateOutputs = useCallback((outputs: Output[]) => {
-        dispatch(workflowNodesActions.updateOutputs({ id: nodeId, outputs }));
-    }, [nodeId, dispatch]);
 
     if (!nodeData) {
         return <div className="text-muted-foreground">Node not found</div>;

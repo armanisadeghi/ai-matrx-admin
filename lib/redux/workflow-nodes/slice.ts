@@ -45,6 +45,34 @@ const initialState: WorkflowNodeState = {
     dataFetched: false,
 };
 
+// Helper function to upsert inputs based on arg_name
+const upsertInputs = (existingInputs: InputMapping[], newInputs: InputMapping[]): InputMapping[] => {
+    const result = [...existingInputs];
+    
+    newInputs.forEach(newInput => {
+        const argName = newInput.arg_name;
+        
+        // If arg_name is empty string, null, or undefined, always add as new input
+        if (argName === "" || argName === null || argName === undefined) {
+            result.push(newInput);
+            return;
+        }
+        
+        // Find existing input with the same arg_name
+        const existingIndex = result.findIndex(input => input.arg_name === argName);
+        
+        if (existingIndex !== -1) {
+            // Update existing input with new fields
+            result[existingIndex] = { ...result[existingIndex], ...newInput };
+        } else {
+            // Add new input
+            result.push(newInput);
+        }
+    });
+    
+    return result;
+};
+
 const workflowNodeSlice = createSlice({
     name: "workflowNodes",
     initialState,
@@ -77,10 +105,25 @@ const workflowNodeSlice = createSlice({
                 if (!state.entities[id].inputs) {
                     state.entities[id].inputs = [];
                 }
-                state.entities[id].inputs!.push(input);
+                
+                // Upsert the input (update if exists, add if new)
+                state.entities[id].inputs = upsertInputs(state.entities[id].inputs!, [input]);
                 state.isDirty[id] = true;
             }
         },
+        addInputs: (state, action: PayloadAction<{ id: string; inputs: InputMapping | InputMapping[] }>) => {
+            const { id, inputs } = action.payload;
+            if (state.entities[id]) {
+                if (!state.entities[id].inputs) {
+                    state.entities[id].inputs = [];
+                }
+                
+                const inputsToAdd = Array.isArray(inputs) ? inputs : [inputs];
+                state.entities[id].inputs = upsertInputs(state.entities[id].inputs!, inputsToAdd);
+                state.isDirty[id] = true;
+            }
+        },
+        
         removeInput: (state, action: PayloadAction<{ id: string; index: number }>) => {
             const { id, index } = action.payload;
             if (state.entities[id] && state.entities[id].inputs) {
@@ -468,6 +511,7 @@ export const {
     // Input Management
     updateInputs,
     addInput,
+    addInputs,
     removeInput,
     updateInputItem,
     updateInputValue,

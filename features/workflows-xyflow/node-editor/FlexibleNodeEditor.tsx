@@ -62,7 +62,6 @@ export const NodeEditorOne = ({
             <Tab id="admin" label="Admin" component={AdminTab} />
             <Tab id="metadata" label="Metadata" component={MetadataTab} />
             <Tab id="rawdata" label="Raw Data" component={RawDataTab} />
-            <Tab id="registered-function" label="Registered Function" component={RegisteredFunctionTab} />
         </FlexibleNodeEditor>
     );
 };

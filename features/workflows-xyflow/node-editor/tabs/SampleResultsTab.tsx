@@ -33,9 +33,6 @@ const SampleResultsTab: React.FC<SampleResultsTabProps> = ({ nodeId }) => {
         fetchSampleResults();
     }, []);
 
-    useEffect(() => {
-        console.log(sampleResultsHook.registeredNodeResultsRecords);
-    }, [sampleResultsHook.registeredNodeResultsRecords]);
 
     const filteredRecords = useMemo(() => {
         return Object.values(sampleResultsHook.registeredNodeResultsRecords).filter((record) => record.registeredNodeId === nodeDefinitionId);

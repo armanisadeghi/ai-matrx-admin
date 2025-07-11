@@ -8,7 +8,7 @@ import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toTitleCase } from "@/utils/dataUtils";
 import { RegisteredNodeData } from "@/types";
-import { useNodeCategoryWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
+import { useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { DynamicIcon } from "@/components/common/IconResolver";
 
 
@@ -18,10 +18,16 @@ interface NodeDefinitionTabProps {
 
 const NodeDefinitionTab: React.FC<NodeDefinitionTabProps> = ({ nodeId }) => {
     const nodeData = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
-    const nodeDefinition = nodeData?.metadata?.nodeDefinition as RegisteredNodeData;
     const categoryHook = useNodeCategoryWithFetch();
+    const registeredNodeHook = useRegisteredNodeWithFetch();
+    const registeredNodeRecords = registeredNodeHook.registeredNodeRecordsById;
+    const nodeDefinition = registeredNodeRecords[nodeData.metadata?.nodeDefinitionId];
 
-    const categoryRecord = categoryHook.nodeCategoryRecordsById[nodeDefinition.category];
+
+    const categoryRecords = categoryHook.nodeCategoryRecordsById;
+
+
+    const categoryRecord = categoryRecords[nodeDefinition?.category || "unknown"];
     const categoryName = categoryRecord?.name;
 
     if (!nodeDefinition) {
