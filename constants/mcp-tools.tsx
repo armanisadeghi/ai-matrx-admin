@@ -46,6 +46,13 @@ export const allTools: Tool[] = [
         icon: <LucideIcons.Calculator size={20} />,
     },
     {
+        id: "web_search",
+        name: "Search",
+        description: "Search the web about any topic.",
+        category: "Web",
+        icon: <LucideIcons.Search size={20} />,
+    },
+    {
         id: "core_web_search",
         name: "Web Search",
         description: "Searches the web for recent events, news or any topic.",
