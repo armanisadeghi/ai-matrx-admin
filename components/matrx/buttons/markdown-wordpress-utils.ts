@@ -246,30 +246,44 @@ export function markdownToWordPressHTML(markdown) {
     // Clean up multiple paragraph tags
     html = html.replace(/<\/p>\s*<p class="matrx-paragraph">/g, '</p><p class="matrx-paragraph">');
     
-    // Handle FAQ-specific patterns with proper container structure
-    // Use [\s\S]*? to match any content including HTML tags, but non-greedy
-    html = html.replace(/<h3 class="matrx-h3">([\s\S]*?\?[\s\S]*?)<\/h3>/g, '<div class="matrx-faq-question">$1</div>');
-    
-    // Convert paragraphs that immediately follow FAQ questions to FAQ answers and wrap in container
-    // This needs to handle content with HTML tags inside
-    html = html.replace(/(<div class="matrx-faq-question">[\s\S]*?<\/div>\s*)<p class="matrx-paragraph">([\s\S]*?)<\/p>/g, '<div class="matrx-faq-item">$1<div class="matrx-faq-answer">$2</div></div>');
-    
-    // Handle standalone FAQ answers (in case they don't immediately follow questions)
-    html = html.replace(/<p class="matrx-paragraph">([\s\S]*?)<\/p>(?=\s*<div class="matrx-faq-question">)/g, '<div class="matrx-faq-answer">$1</div>');
-    
-    // Handle intro paragraphs (first paragraph after h1)
+    // Handle intro paragraphs (first paragraph after h1) - MOVED BEFORE FAQ PROCESSING
     html = html.replace(/(<h1 class="matrx-h1">[\s\S]*?<\/h1>\s*)<p class="matrx-paragraph">([\s\S]*?)<\/p>/g, '$1<p class="matrx-intro">$2</p>');
+    
+    // FIXED FAQ HANDLING - More specific and careful approach
+    
+    // Step 1: Find h3 elements that end with a question mark and convert to FAQ questions
+    // But be more careful about what we match
+    html = html.replace(/<h3 class="matrx-h3">([^<]*\?[^<]*)<\/h3>/g, '<div class="matrx-faq-question">$1</div>');
+    
+    // Step 2: Find FAQ questions followed immediately by paragraphs and wrap them properly
+    // This regex is more specific and handles the complete FAQ item structure
+    html = html.replace(
+      /(<div class="matrx-faq-question">[^<]*<\/div>)\s*(<p class="matrx-paragraph">[\s\S]*?<\/p>)/g, 
+      '<div class="matrx-faq-item">$1<div class="matrx-faq-answer">$2</div></div>'
+    );
+    
+    // Step 3: Clean up any remaining standalone FAQ questions by wrapping them
+    html = html.replace(
+      /(<div class="matrx-faq-question">[^<]*<\/div>)(?!\s*<div class="matrx-faq-answer">)/g,
+      '<div class="matrx-faq-item">$1<div class="matrx-faq-answer"></div></div>'
+    );
+    
+    // Step 4: Remove the inner <p> tags from FAQ answers since we already have the wrapper
+    html = html.replace(
+      /(<div class="matrx-faq-answer">)<p class="matrx-paragraph">([\s\S]*?)<\/p>(<\/div>)/g,
+      '$1$2$3'
+    );
     
     // Wrap the entire content in a div for proper HTML structure
     return startWrapper + html + endWrapper;
-  }
-  
-  /**
-   * Formats JSON data for clipboard
-   * @param {any} data - The JSON data to format
-   * @returns {string} - Formatted JSON string
-   */
-  export function formatJsonForClipboard(data) {
+}
+
+/**
+ * Formats JSON data for clipboard
+ * @param {any} data - The JSON data to format
+ * @returns {string} - Formatted JSON string
+ */
+export function formatJsonForClipboard(data) {
     const cleanObject = (obj) => {
       if (typeof obj !== 'object' || obj === null) {
         return obj;
@@ -300,20 +314,20 @@ export function markdownToWordPressHTML(markdown) {
     // Clean the data first, then stringify without extra escapes
     const cleanedData = cleanObject(data);
     return JSON.stringify(cleanedData, null, 2);
-  }
-  
-  /**
-   * Copies content to clipboard with proper formatting
-   * @param {string|object} content - The content to copy
-   * @param {CopyOptions} options - Options for copying
-   * @param {boolean} [options.isMarkdown=false] - Whether the content is markdown
-   * @param {boolean} [options.formatForWordPress=false] - Whether to format for WordPress
-   * @param {boolean} [options.formatJson=true] - Whether to format JSON
-   * @param {Function} [options.onSuccess] - Callback on successful copy
-   * @param {Function} [options.onError] - Callback on copy error
-   * @returns {Promise<boolean>} - Whether the copy was successful
-   */
-  export async function copyToClipboard(content: any, options: CopyOptions = {}) {
+}
+
+/**
+ * Copies content to clipboard with proper formatting
+ * @param {string|object} content - The content to copy
+ * @param {CopyOptions} options - Options for copying
+ * @param {boolean} [options.isMarkdown=false] - Whether the content is markdown
+ * @param {boolean} [options.formatForWordPress=false] - Whether to format for WordPress
+ * @param {boolean} [options.formatJson=true] - Whether to format JSON
+ * @param {Function} [options.onSuccess] - Callback on successful copy
+ * @param {Function} [options.onError] - Callback on copy error
+ * @returns {Promise<boolean>} - Whether the copy was successful
+ */
+export async function copyToClipboard(content: any, options: CopyOptions = {}) {
     const {
       isMarkdown = false,
       formatForWordPress = false,
@@ -379,33 +393,33 @@ export function markdownToWordPressHTML(markdown) {
         return false;
       }
     }
-  }
-  
-  /**
-   * Creates a plain text blob from content
-   * @param {string} content - The content to convert to a blob
-   * @returns {Blob} - A text/plain blob
-   */
-  export function createPlainTextBlob(content) {
+}
+
+/**
+ * Creates a plain text blob from content
+ * @param {string} content - The content to convert to a blob
+ * @returns {Blob} - A text/plain blob
+ */
+export function createPlainTextBlob(content) {
     return new Blob([content], { type: 'text/plain' });
-  }
-  
-  /**
-   * Creates an HTML blob from content
-   * @param {string} html - The HTML content to convert to a blob
-   * @returns {Blob} - A text/html blob
-   */
-  export function createHtmlBlob(html) {
+}
+
+/**
+ * Creates an HTML blob from content
+ * @param {string} html - The HTML content to convert to a blob
+ * @returns {Blob} - A text/html blob
+ */
+export function createHtmlBlob(html) {
     return new Blob([html], { type: 'text/html' });
-  }
-  
-  /**
-   * Strips HTML tags from a string
-   * @param {string} html - The HTML to strip tags from
-   * @returns {string} - Text without HTML tags
-   */
-  export function stripHtmlTags(html) {
+}
+
+/**
+ * Strips HTML tags from a string
+ * @param {string} html - The HTML to strip tags from
+ * @returns {string} - Text without HTML tags
+ */
+export function stripHtmlTags(html) {
     const tempElement = document.createElement('div');
     tempElement.innerHTML = html;
     return tempElement.textContent || tempElement.innerText || '';
-  }
+}

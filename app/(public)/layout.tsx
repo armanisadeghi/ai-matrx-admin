@@ -7,7 +7,7 @@ import PublicTopMenu from "@/components/matrx/ClientTopMenu";
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
     return (
         <PublicProviders>
-            <PublicTopMenu initialTheme='light' />
+            <PublicTopMenu />
             {children}
         </PublicProviders>
     );
