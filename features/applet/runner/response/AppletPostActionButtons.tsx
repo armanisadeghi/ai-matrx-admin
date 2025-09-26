@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { FcGoogle } from "react-icons/fc";
-import { FaMicrosoft } from "react-icons/fa";
+import { FaMicrosoft, FaWordpress } from "react-icons/fa";
 import { FileText } from "lucide-react";
 import ReviseCommentsModal from "./ReviseCommentsModal";
 
@@ -95,6 +95,14 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
         });
     };
 
+    const handleCopyWordPress = async () => {
+        await copyToClipboard(content, {
+            isMarkdown: true,
+            formatForWordPress: true,
+            onSuccess: handleCopySuccess,
+        });
+    };
+
     return (
         <>
             {/* Mobile-first responsive layout */}
@@ -158,10 +166,17 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
                                 </button>
                                 <button
                                     onClick={handleCopyMicrosoftWord}
-                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600 last:rounded-b-lg"
+                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600"
                                 >
                                     <FaMicrosoft className="h-4 w-4 mr-3 text-blue-500" />
                                     Microsoft Word
+                                </button>
+                                <button
+                                    onClick={handleCopyWordPress}
+                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600 last:rounded-b-lg"
+                                >
+                                    <FaWordpress className="h-4 w-4 mr-3 text-blue-600" />
+                                    WordPress
                                 </button>
                             </div>
                         )}

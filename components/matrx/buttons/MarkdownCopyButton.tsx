@@ -4,6 +4,7 @@ import { copyToClipboard } from "./markdown-copy-utils";
 import { Copy, CheckCircle2, FileText, FileType2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
+import { FaWordpress } from "react-icons/fa";
 import { Microsoft } from '@lobehub/icons';
 
 /**
@@ -85,6 +86,18 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
         setShowOptions(false);
     };
 
+    const handleWordPressCopy = async () => {
+        const success = await copyToClipboard(markdownContent, {
+            isMarkdown: true,
+            formatForWordPress: true,
+            onSuccess: () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            },
+        });
+        setShowOptions(false);
+    };
+
     return (
         <div className={`relative ${className}`}>
             {copied ? (
@@ -130,6 +143,13 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
                             >
                                 <FaMicrosoft className="h-4 w-4 mr-2 text-blue-500" />
                                 Microsoft Word
+                            </button>
+                            <button
+                                onClick={handleWordPressCopy}
+                                className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
+                            >
+                                <FaWordpress className="h-4 w-4 mr-2 text-blue-600" />
+                                WordPress
                             </button>
                         </div>
                     )}
@@ -226,6 +246,18 @@ export function InlineCopyButton({
         });
         setShowOptions(false);
     };
+
+    const handleWordPressCopy = async () => {
+        await copyToClipboard(markdownContent, {
+            isMarkdown,
+            formatForWordPress: true,
+            onSuccess: () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            },
+        });
+        setShowOptions(false);
+    };
     
     return (
         <div
@@ -290,6 +322,13 @@ export function InlineCopyButton({
                     >
                         <FaMicrosoft className="h-4 w-4 mr-2" />
                         Microsoft Word
+                    </button>
+                    <button
+                        onClick={handleWordPressCopy}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
+                    >
+                        <FaWordpress className="h-4 w-4 mr-2 text-blue-600" />
+                        WordPress
                     </button>
                 </div>
             )}

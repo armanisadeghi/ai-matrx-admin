@@ -1,15 +1,11 @@
 /**
- * Markdown Copy Utilities
- * A collection of utility functions for copying content with proper formatting
+ * Markdown WordPress Utilities
+ * A collection of utility functions for copying content formatted for WordPress with matrx- classes
  */
-
-// Import WordPress utility function
-import { markdownToWordPressHTML } from './markdown-wordpress-utils';
 
 // Define interface for copyToClipboard options
 interface CopyOptions {
   isMarkdown?: boolean;
-  formatForGoogleDocs?: boolean;
   formatForWordPress?: boolean;
   formatJson?: boolean;
   onSuccess?: () => void;
@@ -17,36 +13,38 @@ interface CopyOptions {
 }
 
 /**
- * Converts markdown text to Google Docs-friendly HTML
+ * Converts markdown text to WordPress-friendly HTML with matrx- classes
  * @param {string} markdown - The markdown content to convert
- * @returns {string} - HTML formatted for Google Docs
+ * @returns {string} - Clean HTML formatted for WordPress with matrx- classes
  */
-export function markdownToGoogleDocsHTML(markdown) {
+export function markdownToWordPressHTML(markdown) {
     if (!markdown) return '';
     
-    // Add a wrapper with explicit color style to ensure black text
-    const startWrapper = '<div style="color: #000000; font-family: Arial, sans-serif;">';
+    // Use simpler wrapper like Google Docs version for better compatibility
+    const startWrapper = '<div>';
     const endWrapper = '</div>';
     
-    // Remove <thinking> tags and all their content when formatting for Google Docs
+    // Remove <thinking> tags and all their content when formatting for WordPress
     let html = markdown.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
     
     // Handle horizontal rules (must be processed first before headings and lists)
-    html = html.replace(/^[\-]{3,}$/gm, '<hr style="border: none; border-top: 1px solid #cccccc; margin: 15px 0;">');
+    html = html.replace(/^[\-]{3,}$/gm, '<hr class="matrx-hr">');
     
     // Handle headings
     html = html
-      .replace(/^# (.+)$/gm, '<h1 style="color: #000000; font-size: 24px; font-weight: bold;">$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2 style="color: #000000; font-size: 20px; font-weight: bold;">$1</h2>')
-      .replace(/^### (.+)$/gm, '<h3 style="color: #000000; font-size: 16px; font-weight: bold;">$1</h3>')
-      .replace(/^#### (.+)$/gm, '<h4 style="color: #000000; font-size: 14px; font-weight: bold;">$1</h4>');
+      .replace(/^# (.+)$/gm, '<h1 class="matrx-h1">$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2 class="matrx-h2">$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3 class="matrx-h3">$1</h3>')
+      .replace(/^#### (.+)$/gm, '<h4 class="matrx-h4">$1</h4>')
+      .replace(/^##### (.+)$/gm, '<h5 class="matrx-h5">$1</h5>')
+      .replace(/^###### (.+)$/gm, '<h6 class="matrx-h6">$1</h6>');
     
     // Handle basic formatting
     html = html
-      .replace(/\*\*(.+?)\*\*/g, '<strong style="color: #000000;">$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em style="color: #000000;">$1</em>')
-      .replace(/\_\_(.+?)\_\_/g, '<strong style="color: #000000;">$1</strong>')
-      .replace(/\_(.+?)\_/g, '<em style="color: #000000;">$1</em>');
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="matrx-strong">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em class="matrx-em">$1</em>')
+      .replace(/\_\_(.+?)\_\_/g, '<strong class="matrx-strong">$1</strong>')
+      .replace(/\_(.+?)\_/g, '<em class="matrx-em">$1</em>');
     
     // Handle nested lists with proper indentation and nesting structure
     const lines = html.split('\n');
@@ -81,11 +79,11 @@ export function markdownToGoogleDocsHTML(markdown) {
         
         // Start new numbered list if needed
         if (listStack.length === 0 || listStack[listStack.length - 1].indent !== indent || listStack[listStack.length - 1].type !== 'ol') {
-          processedHtml += '<ol style="color: #000000; margin-top: 8px; margin-bottom: 8px;">\n';
+          processedHtml += '<ol class="matrx-list matrx-numbered-list">\n';
           listStack.push({type: 'ol', indent: indent, hasContent: false});
         }
         
-        processedHtml += `<li style="color: #000000;">${content}`;
+        processedHtml += `<li class="matrx-list-item">${content}`;
         lastListItem = 'ol';
         continue;
       }
@@ -99,9 +97,9 @@ export function markdownToGoogleDocsHTML(markdown) {
         // If this bullet is more indented than the current level, it's nested
         if (listStack.length > 0 && indent > listStack[listStack.length - 1].indent) {
           // Start nested bullet list
-          processedHtml += '\n<ul style="color: #000000; margin-top: 4px; margin-bottom: 4px;">\n';
+          processedHtml += '\n<ul class="matrx-list matrx-bullet-list matrx-nested-list">\n';
           listStack.push({type: 'ul', indent: indent, hasContent: false});
-          processedHtml += `<li style="color: #000000;">${content}</li>\n`;
+          processedHtml += `<li class="matrx-list-item">${content}</li>\n`;
         } else {
           // Close deeper nested lists
           while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
@@ -120,11 +118,11 @@ export function markdownToGoogleDocsHTML(markdown) {
           
           // Start new bullet list if needed
           if (listStack.length === 0 || listStack[listStack.length - 1].indent !== indent || listStack[listStack.length - 1].type !== 'ul') {
-            processedHtml += '<ul style="color: #000000; margin-top: 8px; margin-bottom: 8px;">\n';
+            processedHtml += '<ul class="matrx-list matrx-bullet-list">\n';
             listStack.push({type: 'ul', indent: indent, hasContent: false});
           }
           
-          processedHtml += `<li style="color: #000000;">${content}</li>\n`;
+          processedHtml += `<li class="matrx-list-item">${content}</li>\n`;
           lastListItem = '';
         }
         continue;
@@ -160,24 +158,33 @@ export function markdownToGoogleDocsHTML(markdown) {
     html = processedHtml;
     
     // Handle links
-    html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color: #1155cc; text-decoration: underline;">$1</a>');
+    html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a class="matrx-link" href="$2">$1</a>');
     
     // Handle blockquotes
-    html = html.replace(/^> (.+)$/gm, '<blockquote style="color: #000000; border-left: 3px solid #ccc; padding-left: 10px; margin-left: 10px;">$1</blockquote>');
+    html = html.replace(/^> (.+)$/gm, '<blockquote class="matrx-blockquote">$1</blockquote>');
     
     // Handle code blocks
-    html = html.replace(/```([^`]+)```/gs, '<pre style="color: #000000; background-color: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace;"><code style="color: #000000;">$1</code></pre>');
+    html = html.replace(/```([^`]+)```/gs, '<pre class="matrx-code-block"><code class="matrx-code">$1</code></pre>');
     
     // Handle inline code
-    html = html.replace(/`([^`]+)`/g, '<code style="color: #000000; background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+    html = html.replace(/`([^`]+)`/g, '<code class="matrx-inline-code">$1</code>');
     
     // Handle paragraphs (for text not already in tags)
-    html = html.replace(/^([^<\n].+)$/gm, '<p style="color: #000000; margin: 8px 0;">$1</p>');
+    html = html.replace(/^([^<\n].+)$/gm, '<p class="matrx-paragraph">$1</p>');
     
     // Clean up multiple paragraph tags
-    html = html.replace(/<\/p>\s*<p style="color: #000000; margin: 8px 0;">/g, '</p><p style="color: #000000; margin: 8px 0;">');
+    html = html.replace(/<\/p>\s*<p class="matrx-paragraph">/g, '</p><p class="matrx-paragraph">');
     
-    // Wrap the entire content to ensure all text has black color
+    // Handle FAQ-specific patterns (common in content)
+    html = html.replace(/<h3 class="matrx-h3">([^<]*\?[^<]*)<\/h3>/g, '<h3 class="matrx-faq-question">$1</h3>');
+    
+    // Convert paragraphs that immediately follow FAQ questions to FAQ answers
+    html = html.replace(/(<h3 class="matrx-faq-question">[^<]*<\/h3>\s*)<p class="matrx-paragraph">([^<]*)<\/p>/g, '$1<p class="matrx-faq-answer">$2</p>');
+    
+    // Handle intro paragraphs (first paragraph after h1)
+    html = html.replace(/(<h1 class="matrx-h1">[^<]*<\/h1>\s*)<p class="matrx-paragraph">([^<]*)<\/p>/g, '$1<p class="matrx-intro">$2</p>');
+    
+    // Wrap the entire content in a div for proper HTML structure
     return startWrapper + html + endWrapper;
   }
   
@@ -224,7 +231,6 @@ export function markdownToGoogleDocsHTML(markdown) {
    * @param {string|object} content - The content to copy
    * @param {CopyOptions} options - Options for copying
    * @param {boolean} [options.isMarkdown=false] - Whether the content is markdown
-   * @param {boolean} [options.formatForGoogleDocs=false] - Whether to format for Google Docs
    * @param {boolean} [options.formatForWordPress=false] - Whether to format for WordPress
    * @param {boolean} [options.formatJson=true] - Whether to format JSON
    * @param {Function} [options.onSuccess] - Callback on successful copy
@@ -234,7 +240,6 @@ export function markdownToGoogleDocsHTML(markdown) {
   export async function copyToClipboard(content: any, options: CopyOptions = {}) {
     const {
       isMarkdown = false,
-      formatForGoogleDocs = false,
       formatForWordPress = false,
       formatJson = true,
       onSuccess = () => {},
@@ -261,22 +266,15 @@ export function markdownToGoogleDocsHTML(markdown) {
         textToCopy = typeof content === 'string' ? content : JSON.stringify(content);
       }
       
-      // Check if we need to handle this as markdown with special formatting
-      if (isMarkdown && (formatForGoogleDocs || formatForWordPress) && typeof textToCopy === 'string') {
-        let htmlContent;
-        
-        if (formatForGoogleDocs) {
-          // Convert markdown to HTML for Google Docs
-          htmlContent = markdownToGoogleDocsHTML(textToCopy);
-        } else if (formatForWordPress) {
-          // Convert markdown to HTML for WordPress
-          htmlContent = markdownToWordPressHTML(textToCopy);
-        }
+      // Check if we need to handle this as markdown with WordPress formatting
+      if (isMarkdown && formatForWordPress && typeof textToCopy === 'string') {
+        // Convert markdown to HTML for WordPress
+        const htmlContent = markdownToWordPressHTML(textToCopy);
         
         // Create clipboard item with both HTML and plain text formats
         const clipboardItem = new ClipboardItem({
           'text/html': new Blob([htmlContent], { type: 'text/html' }),
-          'text/plain': new Blob([textToCopy], { type: 'text/plain' })
+          'text/plain': new Blob([textToCopy], { type: 'text/plain' }) // Fallback to plain markdown
         });
         
         await navigator.clipboard.write([clipboardItem]);
@@ -296,8 +294,8 @@ export function markdownToGoogleDocsHTML(markdown) {
       
       // Fall back to the older writeText method if ClipboardItem is not supported
       try {
-        const fallbackText = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
-        await navigator.clipboard.writeText(fallbackText);
+        const textToCopy = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+        await navigator.clipboard.writeText(textToCopy);
         onSuccess();
         return true;
       } catch (fallbackErr) {
