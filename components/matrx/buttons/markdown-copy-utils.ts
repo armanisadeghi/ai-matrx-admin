@@ -36,6 +36,21 @@ export function markdownToGoogleDocsHTML(markdown) {
     // Handle horizontal rules (must be processed first before headings and lists)
     html = html.replace(/^[\-]{3,}$/gm, '<hr style="border: none; border-top: 1px solid #cccccc; margin: 15px 0;">');
     
+    // Handle links FIRST with improved regex and placeholder system to prevent interference
+    const linkPlaceholders = [];
+    let linkIndex = 0;
+    
+    // Use a more robust regex that handles URLs with underscores and other special characters
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+        const placeholder = `ΩLINKΩ${linkIndex}ΩLINKΩ`;
+        linkPlaceholders.push({
+            placeholder,
+            html: `<a href="${url}" style="color: #1155cc; text-decoration: underline;">${linkText}</a>`
+        });
+        linkIndex++;
+        return placeholder;
+    });
+    
     // Handle headings
     html = html
       .replace(/^# (.+)$/gm, '<h1 style="color: #000000; font-size: 24px; font-weight: bold;">$1</h1>')
@@ -161,9 +176,6 @@ export function markdownToGoogleDocsHTML(markdown) {
     
     html = processedHtml;
     
-    // Handle links
-    html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color: #1155cc; text-decoration: underline;">$1</a>');
-    
     // Handle blockquotes
     html = html.replace(/^> (.+)$/gm, '<blockquote style="color: #000000; border-left: 3px solid #ccc; padding-left: 10px; margin-left: 10px;">$1</blockquote>');
     
@@ -178,6 +190,13 @@ export function markdownToGoogleDocsHTML(markdown) {
     
     // Clean up multiple paragraph tags
     html = html.replace(/<\/p>\s*<p style="color: #000000; margin: 8px 0;">/g, '</p><p style="color: #000000; margin: 8px 0;">');
+    
+    // Restore link placeholders with actual HTML links
+    linkPlaceholders.forEach(({ placeholder, html: linkHtml }) => {
+        if (html.includes(placeholder)) {
+            html = html.replaceAll(placeholder, linkHtml);
+        }
+    });
     
     // Wrap the entire content to ensure all text has black color
     return startWrapper + html + endWrapper;

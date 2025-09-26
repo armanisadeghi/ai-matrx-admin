@@ -81,6 +81,21 @@ export function markdownToWordPressHTML(markdown) {
     // Handle horizontal rules (must be processed first before headings and lists)
     html = html.replace(/^[\-]{3,}$/gm, '<hr class="matrx-hr">');
     
+    // Handle links FIRST with improved regex and placeholder system to prevent interference
+    const linkPlaceholders = [];
+    let linkIndex = 0;
+    
+    // Use a more robust regex that handles URLs with underscores and other special characters
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+        const placeholder = `ΩLINKΩ${linkIndex}ΩLINKΩ`;
+        linkPlaceholders.push({
+            placeholder,
+            html: `<a class="matrx-link" href="${url}">${linkText}</a>`
+        });
+        linkIndex++;
+        return placeholder;
+    });
+    
     // Handle headings
     html = html
       .replace(/^# (.+)$/gm, '<h1 class="matrx-h1">$1</h1>')
@@ -208,9 +223,6 @@ export function markdownToWordPressHTML(markdown) {
     
     html = processedHtml;
     
-    // Handle links
-    html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a class="matrx-link" href="$2">$1</a>');
-    
     // Handle blockquotes
     html = html.replace(/^> (.+)$/gm, '<blockquote class="matrx-blockquote">$1</blockquote>');
     
@@ -273,6 +285,13 @@ export function markdownToWordPressHTML(markdown) {
       /(<div class="matrx-faq-answer">)<p class="matrx-paragraph">([\s\S]*?)<\/p>(<\/div>)/g,
       '$1$2$3'
     );
+    
+    // Restore link placeholders with actual HTML links
+    linkPlaceholders.forEach(({ placeholder, html: linkHtml }) => {
+        if (html.includes(placeholder)) {
+            html = html.replaceAll(placeholder, linkHtml);
+        }
+    });
     
     // Wrap the entire content in a div for proper HTML structure
     return startWrapper + html + endWrapper;
