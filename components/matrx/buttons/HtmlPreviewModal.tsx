@@ -12,6 +12,7 @@ interface HtmlPreviewModalProps {
 
 export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title = "HTML Preview" }: HtmlPreviewModalProps) {
     const [copied, setCopied] = useState(false);
+    const [copiedNoBullets, setCopiedNoBullets] = useState(false);
     const [copiedCSS, setCopiedCSS] = useState(false);
     const [copiedComplete, setCopiedComplete] = useState(false);
     const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete">("preview");
@@ -507,6 +508,10 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     }
 }`;
 
+    const stripBulletStyles = (html: string) => {
+        return html.replace(/class="matrx-list-item"/g, '');
+    };
+
     const handleCopyHtml = async () => {
         try {
             await navigator.clipboard.writeText(htmlContent);
@@ -514,6 +519,17 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             console.error("Failed to copy HTML:", err);
+        }
+    };
+
+    const handleCopyHtmlNoBullets = async () => {
+        try {
+            const noBulletsHtml = stripBulletStyles(htmlContent);
+            await navigator.clipboard.writeText(noBulletsHtml);
+            setCopiedNoBullets(true);
+            setTimeout(() => setCopiedNoBullets(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy HTML without bullet styles:", err);
         }
     };
 
@@ -642,7 +658,7 @@ ${wordPressCSS}
                         {activeTab === "preview" ? (
                             // Preview Tab
                             <div className="h-full flex flex-col">
-                                <div className="mb-3 flex justify-end">
+                                <div className="mb-3 flex justify-end gap-2">
                                     <button
                                         onClick={handleCopyHtml}
                                         className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
@@ -663,6 +679,26 @@ ${wordPressCSS}
                                             </>
                                         )}
                                     </button>
+                                    <button
+                                        onClick={handleCopyHtmlNoBullets}
+                                        className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
+                                            copiedNoBullets
+                                                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                                                : "bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800 text-orange-700 dark:text-orange-300"
+                                        }`}
+                                    >
+                                        {copiedNoBullets ? (
+                                            <>
+                                                <CheckCircle2 size={16} />
+                                                Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy size={16} />
+                                                Copy HTML No Bullet Styles
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
                                 <div className="flex-1 overflow-y-auto overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-md bg-white p-4">
                                     {/* Inject WordPress CSS for accurate preview */}
@@ -673,7 +709,7 @@ ${wordPressCSS}
                         ) : activeTab === "html" ? (
                             // HTML Code Tab
                             <div className="h-full flex flex-col">
-                                <div className="mb-3 flex gap-2">
+                                <div className="mb-3 flex gap-2 flex-wrap">
                                     <button
                                         onClick={handleSelectAll}
                                         className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors"
@@ -697,6 +733,26 @@ ${wordPressCSS}
                                             <>
                                                 <Copy size={16} />
                                                 Copy HTML
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={handleCopyHtmlNoBullets}
+                                        className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
+                                            copiedNoBullets
+                                                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                                                : "bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800 text-orange-700 dark:text-orange-300"
+                                        }`}
+                                    >
+                                        {copiedNoBullets ? (
+                                            <>
+                                                <CheckCircle2 size={16} />
+                                                Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy size={16} />
+                                                Copy HTML No Bullet Styles
                                             </>
                                         )}
                                     </button>
