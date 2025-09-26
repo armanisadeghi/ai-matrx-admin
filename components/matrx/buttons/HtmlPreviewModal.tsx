@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { X, Copy, CheckCircle2, Eye, FileCode, Globe } from "lucide-react";
+import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings } from "lucide-react";
 
 interface HtmlPreviewModalProps {
     isOpen: boolean;
@@ -15,8 +15,13 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     const [copiedNoBullets, setCopiedNoBullets] = useState(false);
     const [copiedCSS, setCopiedCSS] = useState(false);
     const [copiedComplete, setCopiedComplete] = useState(false);
-    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete">("preview");
+    const [copiedCustom, setCopiedCustom] = useState(false);
+    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete" | "custom">("preview");
     const [wordPressCSS, setWordPressCSS] = useState<string>("");
+    
+    // Custom copy options
+    const [includeBulletStyles, setIncludeBulletStyles] = useState(true);
+    const [includeDecorativeLineBreaks, setIncludeDecorativeLineBreaks] = useState(true);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const cssTextareaRef = useRef<HTMLTextAreaElement>(null);
     const completeTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -512,6 +517,24 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
         return html.replace(/class="matrx-list-item"/g, '');
     };
 
+    const stripDecorativeLineBreaks = (html: string) => {
+        return html.replace(/<hr class="matrx-hr"[^>]*>/g, '');
+    };
+
+    const applyCustomOptions = (html: string) => {
+        let processedHtml = html;
+        
+        if (!includeBulletStyles) {
+            processedHtml = stripBulletStyles(processedHtml);
+        }
+        
+        if (!includeDecorativeLineBreaks) {
+            processedHtml = stripDecorativeLineBreaks(processedHtml);
+        }
+        
+        return processedHtml;
+    };
+
     const handleCopyHtml = async () => {
         try {
             await navigator.clipboard.writeText(htmlContent);
@@ -551,6 +574,17 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
             setTimeout(() => setCopiedComplete(false), 2000);
         } catch (err) {
             console.error("Failed to copy complete HTML:", err);
+        }
+    };
+
+    const handleCopyCustom = async () => {
+        try {
+            const customHTML = applyCustomOptions(htmlContent);
+            await navigator.clipboard.writeText(customHTML);
+            setCopiedCustom(true);
+            setTimeout(() => setCopiedCustom(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy custom HTML:", err);
         }
     };
 
@@ -650,6 +684,17 @@ ${wordPressCSS}
                          >
                              <Globe size={16} className="inline mr-1" />
                              Complete HTML
+                         </button>
+                         <button
+                             onClick={() => setActiveTab("custom")}
+                             className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                 activeTab === "custom"
+                                     ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                             }`}
+                         >
+                             <Settings size={16} className="inline mr-1" />
+                             Custom Copy
                          </button>
                     </div>
 
@@ -807,6 +852,85 @@ ${wordPressCSS}
                                      className="flex-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent overflow-y-auto"
                                      placeholder="Loading CSS..."
                                  />
+                             </div>
+                         ) : activeTab === "custom" ? (
+                             // Custom Copy Tab
+                             <div className="h-full flex flex-col justify-center items-center">
+                                 <div className="max-w-md w-full space-y-6">
+                                     <div className="text-center">
+                                         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Custom Copy Options</h3>
+                                         <p className="text-sm text-gray-600 dark:text-gray-400">
+                                             Select which elements to include in your copied HTML
+                                         </p>
+                                     </div>
+                                     
+                                     <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                                         <div className="space-y-4">
+                                             <label className="flex items-center space-x-3 cursor-pointer">
+                                                 <input
+                                                     type="checkbox"
+                                                     checked={includeBulletStyles}
+                                                     onChange={(e) => setIncludeBulletStyles(e.target.checked)}
+                                                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                 />
+                                                 <div className="flex-1">
+                                                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                         Include Bullet Styles
+                                                     </span>
+                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                         Keep custom bullet point styling in lists
+                                                     </p>
+                                                 </div>
+                                             </label>
+                                             
+                                             <label className="flex items-center space-x-3 cursor-pointer">
+                                                 <input
+                                                     type="checkbox"
+                                                     checked={includeDecorativeLineBreaks}
+                                                     onChange={(e) => setIncludeDecorativeLineBreaks(e.target.checked)}
+                                                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                 />
+                                                 <div className="flex-1">
+                                                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                         Include Decorative Line Breaks
+                                                     </span>
+                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                         Keep horizontal rule separators (hr elements)
+                                                     </p>
+                                                 </div>
+                                             </label>
+                                         </div>
+                                     </div>
+                                     
+                                     <div className="text-center">
+                                         <button
+                                             onClick={handleCopyCustom}
+                                             className={`inline-flex items-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
+                                                 copiedCustom
+                                                     ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                                                     : "bg-blue-600 hover:bg-blue-700 text-white"
+                                             }`}
+                                         >
+                                             {copiedCustom ? (
+                                                 <>
+                                                     <CheckCircle2 size={18} />
+                                                     Copied to Clipboard!
+                                                 </>
+                                             ) : (
+                                                 <>
+                                                     <Copy size={18} />
+                                                     Copy Custom HTML
+                                                 </>
+                                             )}
+                                         </button>
+                                         
+                                         {!includeBulletStyles && !includeDecorativeLineBreaks && (
+                                             <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                                                 All styling options are disabled
+                                             </p>
+                                         )}
+                                     </div>
+                                 </div>
                              </div>
                          ) : (
                              // Complete HTML Tab
