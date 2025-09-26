@@ -408,7 +408,7 @@ const QuestionnaireRenderer = ({ data, theme, taskId=null }) => {
 
     const [formState, setFormState] = useState({});
     const [questionData, setQuestionData] = useState({});
-    const [debugMode, setDebugMode] = useState(false);
+    const [debugMode, setDebugMode] = useState(true);
     const themeColors = THEMES[theme];
 
     useEffect(() => {

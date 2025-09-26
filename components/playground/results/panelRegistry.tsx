@@ -202,7 +202,7 @@ const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
                     showCopyButton={true}
                     tabs={[
                         "write",
-                        "rich",
+                        "wysiwyg",
                         "preview",
                         "analysis",
                         "metadata",
