@@ -3,6 +3,7 @@ import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, 
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
+import HtmlPreviewModal from "@/components/matrx/buttons/HtmlPreviewModal";
 import { ClassifiedMetadata } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
 import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
@@ -32,8 +33,22 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     const [isDisliked, setIsDisliked] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [isAppearing, setIsAppearing] = useState(true);    
+    const [isAppearing, setIsAppearing] = useState(true);
+    const [showHtmlModal, setShowHtmlModal] = useState(false);
+    const [htmlContent, setHtmlContent] = useState<string>('');
+    const [htmlTitle, setHtmlTitle] = useState<string>('HTML Preview');    
     const content = message.content;
+    
+    // HTML Preview handlers
+    const handleShowHtmlPreview = (html: string, title: string = 'HTML Preview') => {
+        setHtmlContent(html);
+        setHtmlTitle(title);
+        setShowHtmlModal(true);
+    };
+    
+    const handleCloseHtmlModal = () => {
+        setShowHtmlModal(false);
+    };
     
     const {
         connectionState,
@@ -206,12 +221,24 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             >
                                 <MoreHorizontal size={16} />
                             </button>
-                            {showOptions && <MessageOptionsMenu content={content} onClose={() => setShowOptions(false)} />}
+                            {showOptions && (
+                                <MessageOptionsMenu 
+                                    content={content} 
+                                    onClose={() => setShowOptions(false)}
+                                    onShowHtmlPreview={handleShowHtmlPreview}
+                                />
+                            )}
                         </div>
                     </div>
                 )}
             </div>
             <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={metadata} messageId={message.id} />
+            <HtmlPreviewModal
+                isOpen={showHtmlModal}
+                onClose={handleCloseHtmlModal}
+                htmlContent={htmlContent}
+                title={htmlTitle}
+            />
         </div>
     );
 };
