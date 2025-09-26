@@ -24,8 +24,11 @@ export function markdownToGoogleDocsHTML(markdown) {
     const startWrapper = '<div style="color: #000000; font-family: Arial, sans-serif;">';
     const endWrapper = '</div>';
     
+    // Remove <thinking> tags and all their content when formatting for Google Docs
+    let html = markdown.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+    
     // Handle horizontal rules (must be processed first before headings and lists)
-    let html = markdown.replace(/^[\-]{3,}$/gm, '<hr style="border: none; border-top: 1px solid #cccccc; margin: 15px 0;">');
+    html = html.replace(/^[\-]{3,}$/gm, '<hr style="border: none; border-top: 1px solid #cccccc; margin: 15px 0;">');
     
     // Handle headings
     html = html
@@ -41,81 +44,116 @@ export function markdownToGoogleDocsHTML(markdown) {
       .replace(/\_\_(.+?)\_\_/g, '<strong style="color: #000000;">$1</strong>')
       .replace(/\_(.+?)\_/g, '<em style="color: #000000;">$1</em>');
     
-    // Handle bullet lists - improved with list markers
-    const bulletListRegex = /^[ \t]*[\*\-\+] (.+)$/gm;
-    if (bulletListRegex.test(html)) {
-      html = html.replace(bulletListRegex, '<li style="color: #000000;">$1</li>');
+    // Handle nested lists with proper indentation and nesting structure
+    const lines = html.split('\n');
+    let processedHtml = '';
+    let listStack = []; // Stack to track nested lists: {type: 'ul'|'ol', indent: number, hasContent: boolean}
+    let lastListItem = ''; // Track the last list item for proper nesting
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const originalLine = line;
       
-      // Properly close list tags (this is critical for fixing the indentation issues)
-      // First, find all adjacent list items
-      let inList = false;
-      let processedHtml = '';
-      const lines = html.split('\n');
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (line.includes('<li style="color: #000000;">')) {
-          if (!inList) {
-            // Start a new list
-            processedHtml += '<ul style="color: #000000; margin-top: 8px; margin-bottom: 8px;">\n';
-            inList = true;
+      // Check for numbered list items with indentation detection
+      const numberedMatch = line.match(/^(\s*)(\d+)\.\s+(.+)$/);
+      if (numberedMatch) {
+        const indent = numberedMatch[1].length;
+        const content = numberedMatch[3];
+        
+        // Close nested lists that are at deeper indentation levels
+        while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
+          const closingList = listStack.pop();
+          processedHtml += closingList.type === 'ol' ? '</ol>' : '</ul>';
+          if (lastListItem) {
+            processedHtml += '</li>\n';
+            lastListItem = '';
           }
-          processedHtml += line + '\n';
+        }
+        
+        // Close the current list item if we have one at the same level
+        if (lastListItem && listStack.length > 0 && listStack[listStack.length - 1].indent === indent) {
+          processedHtml += '</li>\n';
+        }
+        
+        // Start new numbered list if needed
+        if (listStack.length === 0 || listStack[listStack.length - 1].indent !== indent || listStack[listStack.length - 1].type !== 'ol') {
+          processedHtml += '<ol style="color: #000000; margin-top: 8px; margin-bottom: 8px;">\n';
+          listStack.push({type: 'ol', indent: indent, hasContent: false});
+        }
+        
+        processedHtml += `<li style="color: #000000;">${content}`;
+        lastListItem = 'ol';
+        continue;
+      }
+      
+      // Check for bullet list items with indentation detection
+      const bulletMatch = line.match(/^(\s*)[\*\-\+]\s+(.+)$/);
+      if (bulletMatch) {
+        const indent = bulletMatch[1].length;
+        const content = bulletMatch[2];
+        
+        // If this bullet is more indented than the current level, it's nested
+        if (listStack.length > 0 && indent > listStack[listStack.length - 1].indent) {
+          // Start nested bullet list
+          processedHtml += '\n<ul style="color: #000000; margin-top: 4px; margin-bottom: 4px;">\n';
+          listStack.push({type: 'ul', indent: indent, hasContent: false});
+          processedHtml += `<li style="color: #000000;">${content}</li>\n`;
         } else {
-          if (inList) {
-            // Close the list before adding non-list content
-            processedHtml += '</ul>\n';
-            inList = false;
+          // Close deeper nested lists
+          while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
+            const closingList = listStack.pop();
+            processedHtml += closingList.type === 'ol' ? '</ol>' : '</ul>';
+            if (lastListItem) {
+              processedHtml += '</li>\n';
+              lastListItem = '';
+            }
           }
-          processedHtml += line + '\n';
+          
+          // Close current list item if at same level
+          if (lastListItem && listStack.length > 0 && listStack[listStack.length - 1].indent === indent) {
+            processedHtml += '</li>\n';
+          }
+          
+          // Start new bullet list if needed
+          if (listStack.length === 0 || listStack[listStack.length - 1].indent !== indent || listStack[listStack.length - 1].type !== 'ul') {
+            processedHtml += '<ul style="color: #000000; margin-top: 8px; margin-bottom: 8px;">\n';
+            listStack.push({type: 'ul', indent: indent, hasContent: false});
+          }
+          
+          processedHtml += `<li style="color: #000000;">${content}</li>\n`;
+          lastListItem = '';
+        }
+        continue;
+      }
+      
+      // Non-list content - close all open lists
+      if (line.trim() !== '') {
+        // Close any open list item first
+        if (lastListItem) {
+          processedHtml += '</li>\n';
+          lastListItem = '';
+        }
+        
+        // Close all open lists
+        while (listStack.length > 0) {
+          const closingList = listStack.pop();
+          processedHtml += closingList.type === 'ol' ? '</ol>\n' : '</ul>\n';
         }
       }
       
-      // Make sure to close any open list at the end
-      if (inList) {
-        processedHtml += '</ul>\n';
-      }
-      
-      html = processedHtml;
+      processedHtml += originalLine + '\n';
     }
     
-    // Handle numbered lists with proper list closing
-    const numberedListRegex = /^[ \t]*\d+\. (.+)$/gm;
-    if (numberedListRegex.test(html)) {
-      html = html.replace(numberedListRegex, '<li style="color: #000000;">$1</li>');
-      
-      // Similar approach to bullet lists for proper closing of tags
-      let inList = false;
-      let processedHtml = '';
-      const lines = html.split('\n');
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        // Only match lines that have a list item but aren't already inside a ul
-        if (line.includes('<li style="color: #000000;">') && !line.includes('<ul')) {
-          if (!inList) {
-            // Start a new list
-            processedHtml += '<ol style="color: #000000; margin-top: 8px; margin-bottom: 8px;">\n';
-            inList = true;
-          }
-          processedHtml += line + '\n';
-        } else {
-          if (inList) {
-            // Close the list before adding non-list content
-            processedHtml += '</ol>\n';
-            inList = false;
-          }
-          processedHtml += line + '\n';
-        }
-      }
-      
-      // Make sure to close any open list at the end
-      if (inList) {
-        processedHtml += '</ol>\n';
-      }
-      
-      html = processedHtml;
+    // Close any remaining open list item and lists
+    if (lastListItem) {
+      processedHtml += '</li>\n';
     }
+    while (listStack.length > 0) {
+      const closingList = listStack.pop();
+      processedHtml += closingList.type === 'ol' ? '</ol>\n' : '</ul>\n';
+    }
+    
+    html = processedHtml;
     
     // Handle links
     html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color: #1155cc; text-decoration: underline;">$1</a>');
