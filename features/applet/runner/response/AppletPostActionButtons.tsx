@@ -2,12 +2,13 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown } from "lucide-react";
+import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown, Code } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { FcGoogle } from "react-icons/fc";
-import { FaMicrosoft, FaWordpress } from "react-icons/fa";
+import { FaMicrosoft } from "react-icons/fa";
 import { FileText } from "lucide-react";
 import ReviseCommentsModal from "./ReviseCommentsModal";
+import HtmlPreviewModal from "@/components/matrx/buttons/HtmlPreviewModal";
 
 interface AppletPostActionButtonsProps {
     appletId: string;
@@ -24,6 +25,9 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
     const [showCopyOptions, setShowCopyOptions] = useState(false);
     const [copied, setCopied] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState("below");
+    const [showHtmlModal, setShowHtmlModal] = useState(false);
+    const [htmlContent, setHtmlContent] = useState("");
+    const [htmlTitle, setHtmlTitle] = useState("");
     const copyButtonRef = useRef<HTMLButtonElement>(null);
     const [routePath, setRoutePath] = useState("/chat/");
     
@@ -95,11 +99,19 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
         });
     };
 
-    const handleCopyWordPress = async () => {
+    const handleHtmlPreview = async () => {
         await copyToClipboard(content, {
             isMarkdown: true,
             formatForWordPress: true,
-            onSuccess: handleCopySuccess,
+            showHtmlPreview: true,
+            onShowHtmlPreview: (html) => {
+                setHtmlContent(html);
+                setHtmlTitle("HTML Preview");
+                setShowHtmlModal(true);
+            },
+            onSuccess: () => {
+                setShowCopyOptions(false);
+            }
         });
     };
 
@@ -172,11 +184,11 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
                                     Microsoft Word
                                 </button>
                                 <button
-                                    onClick={handleCopyWordPress}
+                                    onClick={handleHtmlPreview}
                                     className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600 last:rounded-b-lg"
                                 >
-                                    <FaWordpress className="h-4 w-4 mr-3 text-blue-600" />
-                                    WordPress
+                                    <Code className="h-4 w-4 mr-3 text-green-600" />
+                                    HTML
                                 </button>
                             </div>
                         )}
@@ -226,6 +238,14 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
                 reviseComments={reviseComments}
                 setReviseComments={setReviseComments}
                 onSubmit={handleReviseSubmit}
+            />
+
+            {/* HTML Preview Modal */}
+            <HtmlPreviewModal
+                isOpen={showHtmlModal}
+                onClose={() => setShowHtmlModal(false)}
+                htmlContent={htmlContent}
+                title={htmlTitle}
             />
         </>
     );

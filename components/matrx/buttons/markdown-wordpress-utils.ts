@@ -17,11 +17,62 @@ interface CopyOptions {
  * @param {string} markdown - The markdown content to convert
  * @returns {string} - Clean HTML formatted for WordPress with matrx- classes
  */
+function convertMarkdownTables(html) {
+    // Match markdown table patterns
+    const tableRegex = /^(\|.*\|)\s*\n(\|[-\s:|]*\|)\s*\n((?:\|.*\|\s*\n?)*)/gm;
+    
+    return html.replace(tableRegex, (match, headerRow, separatorRow, bodyRows) => {
+        // Parse header row
+        const headers = headerRow.split('|')
+            .map(cell => cell.trim())
+            .filter(cell => cell !== '');
+        
+        // Parse body rows
+        const rows = bodyRows.trim().split('\n')
+            .filter(row => row.trim())
+            .map(row => 
+                row.split('|')
+                    .map(cell => cell.trim())
+                    .filter(cell => cell !== '')
+            );
+        
+        // Build HTML table
+        let tableHtml = '<table class="matrx-table">\n';
+        
+        // Add header
+        if (headers.length > 0) {
+            tableHtml += '<thead class="matrx-table-head">\n<tr class="matrx-table-row">\n';
+            headers.forEach(header => {
+                tableHtml += `<th class="matrx-table-header">${header}</th>\n`;
+            });
+            tableHtml += '</tr>\n</thead>\n';
+        }
+        
+        // Add body
+        if (rows.length > 0) {
+            tableHtml += '<tbody class="matrx-table-body">\n';
+            rows.forEach(row => {
+                if (row.length > 0) {
+                    tableHtml += '<tr class="matrx-table-row">\n';
+                    row.forEach(cell => {
+                        tableHtml += `<td class="matrx-table-cell">${cell}</td>\n`;
+                    });
+                    tableHtml += '</tr>\n';
+                }
+            });
+            tableHtml += '</tbody>\n';
+        }
+        
+        tableHtml += '</table>\n';
+        return tableHtml;
+    });
+}
+
 export function markdownToWordPressHTML(markdown) {
     if (!markdown) return '';
     
-    // Use simpler wrapper like Google Docs version for better compatibility
-    const startWrapper = '<div>';
+    // Use a specific matrx container for WordPress targeting
+    const startWrapper = '<div class="matrx-content-container">';
     const endWrapper = '</div>';
     
     // Remove <thinking> tags and all their content when formatting for WordPress
@@ -169,20 +220,45 @@ export function markdownToWordPressHTML(markdown) {
     // Handle inline code
     html = html.replace(/`([^`]+)`/g, '<code class="matrx-inline-code">$1</code>');
     
+    // Handle markdown tables
+    html = convertMarkdownTables(html);
+    
+    // Handle existing HTML tables (add classes to any remaining HTML tables)
+    html = html.replace(/<table>/g, '<table class="matrx-table">');
+    html = html.replace(/<thead>/g, '<thead class="matrx-table-head">');
+    html = html.replace(/<tbody>/g, '<tbody class="matrx-table-body">');
+    html = html.replace(/<tr>/g, '<tr class="matrx-table-row">');
+    html = html.replace(/<th>/g, '<th class="matrx-table-header">');
+    html = html.replace(/<td>/g, '<td class="matrx-table-cell">');
+    
+    // Handle images (if any exist)
+    html = html.replace(/<img([^>]*)>/g, '<img class="matrx-image"$1>');
+    
+    // Handle divs (if any exist) - add matrx prefix to existing divs
+    html = html.replace(/<div(?!\s+class="matrx-)([^>]*)>/g, '<div class="matrx-div"$1>');
+    
+    // Handle spans (if any exist)
+    html = html.replace(/<span([^>]*)>/g, '<span class="matrx-span"$1>');
+    
     // Handle paragraphs (for text not already in tags)
     html = html.replace(/^([^<\n].+)$/gm, '<p class="matrx-paragraph">$1</p>');
     
     // Clean up multiple paragraph tags
     html = html.replace(/<\/p>\s*<p class="matrx-paragraph">/g, '</p><p class="matrx-paragraph">');
     
-    // Handle FAQ-specific patterns (common in content)
-    html = html.replace(/<h3 class="matrx-h3">([^<]*\?[^<]*)<\/h3>/g, '<h3 class="matrx-faq-question">$1</h3>');
+    // Handle FAQ-specific patterns with proper container structure
+    // Use [\s\S]*? to match any content including HTML tags, but non-greedy
+    html = html.replace(/<h3 class="matrx-h3">([\s\S]*?\?[\s\S]*?)<\/h3>/g, '<div class="matrx-faq-question">$1</div>');
     
-    // Convert paragraphs that immediately follow FAQ questions to FAQ answers
-    html = html.replace(/(<h3 class="matrx-faq-question">[^<]*<\/h3>\s*)<p class="matrx-paragraph">([^<]*)<\/p>/g, '$1<p class="matrx-faq-answer">$2</p>');
+    // Convert paragraphs that immediately follow FAQ questions to FAQ answers and wrap in container
+    // This needs to handle content with HTML tags inside
+    html = html.replace(/(<div class="matrx-faq-question">[\s\S]*?<\/div>\s*)<p class="matrx-paragraph">([\s\S]*?)<\/p>/g, '<div class="matrx-faq-item">$1<div class="matrx-faq-answer">$2</div></div>');
+    
+    // Handle standalone FAQ answers (in case they don't immediately follow questions)
+    html = html.replace(/<p class="matrx-paragraph">([\s\S]*?)<\/p>(?=\s*<div class="matrx-faq-question">)/g, '<div class="matrx-faq-answer">$1</div>');
     
     // Handle intro paragraphs (first paragraph after h1)
-    html = html.replace(/(<h1 class="matrx-h1">[^<]*<\/h1>\s*)<p class="matrx-paragraph">([^<]*)<\/p>/g, '$1<p class="matrx-intro">$2</p>');
+    html = html.replace(/(<h1 class="matrx-h1">[\s\S]*?<\/h1>\s*)<p class="matrx-paragraph">([\s\S]*?)<\/p>/g, '$1<p class="matrx-intro">$2</p>');
     
     // Wrap the entire content in a div for proper HTML structure
     return startWrapper + html + endWrapper;

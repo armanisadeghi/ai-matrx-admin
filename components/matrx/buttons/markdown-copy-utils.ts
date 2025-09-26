@@ -12,8 +12,10 @@ interface CopyOptions {
   formatForGoogleDocs?: boolean;
   formatForWordPress?: boolean;
   formatJson?: boolean;
+  showHtmlPreview?: boolean;
   onSuccess?: () => void;
   onError?: (err: any) => void;
+  onShowHtmlPreview?: (html: string) => void;
 }
 
 /**
@@ -226,9 +228,11 @@ export function markdownToGoogleDocsHTML(markdown) {
    * @param {boolean} [options.isMarkdown=false] - Whether the content is markdown
    * @param {boolean} [options.formatForGoogleDocs=false] - Whether to format for Google Docs
    * @param {boolean} [options.formatForWordPress=false] - Whether to format for WordPress
+   * @param {boolean} [options.showHtmlPreview=false] - Whether to show HTML preview instead of copying
    * @param {boolean} [options.formatJson=true] - Whether to format JSON
    * @param {Function} [options.onSuccess] - Callback on successful copy
    * @param {Function} [options.onError] - Callback on copy error
+   * @param {Function} [options.onShowHtmlPreview] - Callback to show HTML preview
    * @returns {Promise<boolean>} - Whether the copy was successful
    */
   export async function copyToClipboard(content: any, options: CopyOptions = {}) {
@@ -236,9 +240,11 @@ export function markdownToGoogleDocsHTML(markdown) {
       isMarkdown = false,
       formatForGoogleDocs = false,
       formatForWordPress = false,
+      showHtmlPreview = false,
       formatJson = true,
       onSuccess = () => {},
-      onError = (err) => console.error("Copy failed:", err)
+      onError = (err) => console.error("Copy failed:", err),
+      onShowHtmlPreview = () => {}
     } = options;
     
     try {
@@ -271,6 +277,13 @@ export function markdownToGoogleDocsHTML(markdown) {
         } else if (formatForWordPress) {
           // Convert markdown to HTML for WordPress
           htmlContent = markdownToWordPressHTML(textToCopy);
+        }
+        
+        // If showHtmlPreview is requested, call the callback instead of copying
+        if (showHtmlPreview && onShowHtmlPreview) {
+          onShowHtmlPreview(htmlContent);
+          onSuccess();
+          return true;
         }
         
         // Create clipboard item with both HTML and plain text formats

@@ -1,11 +1,11 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { copyToClipboard } from "./markdown-copy-utils";
-import { Copy, CheckCircle2, FileText, FileType2 } from "lucide-react";
+import { Copy, CheckCircle2, FileText, FileType2, Code } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
-import { FaWordpress } from "react-icons/fa";
 import { Microsoft } from '@lobehub/icons';
+import HtmlPreviewModal from './HtmlPreviewModal';
 
 /**
  * Simple Copy Button Component
@@ -47,6 +47,9 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
     const [copied, setCopied] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState("below");
+    const [showHtmlModal, setShowHtmlModal] = useState(false);
+    const [htmlContent, setHtmlContent] = useState("");
+    const [htmlTitle, setHtmlTitle] = useState("");
     const buttonRef = useRef(null);
     
     useEffect(() => {
@@ -86,14 +89,17 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
         setShowOptions(false);
     };
 
-    const handleWordPressCopy = async () => {
-        const success = await copyToClipboard(markdownContent, {
+    const handleHtmlPreview = async () => {
+        await copyToClipboard(markdownContent, {
             isMarkdown: true,
             formatForWordPress: true,
-            onSuccess: () => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
+            showHtmlPreview: true,
+            onShowHtmlPreview: (html) => {
+                setHtmlContent(html);
+                setHtmlTitle("HTML Preview");
+                setShowHtmlModal(true);
             },
+            onSuccess: () => {}
         });
         setShowOptions(false);
     };
@@ -145,16 +151,24 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
                                 Microsoft Word
                             </button>
                             <button
-                                onClick={handleWordPressCopy}
-                                className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
+                                onClick={handleHtmlPreview}
+                                className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center border-t border-gray-100 dark:border-gray-600"
                             >
-                                <FaWordpress className="h-4 w-4 mr-2 text-blue-600" />
-                                WordPress
+                                <Code className="h-4 w-4 mr-2 text-green-600" />
+                                HTML
                             </button>
                         </div>
                     )}
                 </>
             )}
+            
+            {/* HTML Preview Modal */}
+            <HtmlPreviewModal
+                isOpen={showHtmlModal}
+                onClose={() => setShowHtmlModal(false)}
+                htmlContent={htmlContent}
+                title={htmlTitle}
+            />
         </div>
     );
 }
@@ -174,6 +188,9 @@ export function InlineCopyButton({
     const [showTooltip, setShowTooltip] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState("below");
+    const [showHtmlModal, setShowHtmlModal] = useState(false);
+    const [htmlContent, setHtmlContent] = useState("");
+    const [htmlTitle, setHtmlTitle] = useState("");
     const buttonRef = useRef(null);
     
     // Check viewport constraints when showing options
@@ -247,14 +264,17 @@ export function InlineCopyButton({
         setShowOptions(false);
     };
 
-    const handleWordPressCopy = async () => {
+    const handleHtmlPreview = async () => {
         await copyToClipboard(markdownContent, {
             isMarkdown,
             formatForWordPress: true,
-            onSuccess: () => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
+            showHtmlPreview: true,
+            onShowHtmlPreview: (html) => {
+                setHtmlContent(html);
+                setHtmlTitle("HTML Preview");
+                setShowHtmlModal(true);
             },
+            onSuccess: () => {}
         });
         setShowOptions(false);
     };
@@ -324,14 +344,22 @@ export function InlineCopyButton({
                         Microsoft Word
                     </button>
                     <button
-                        onClick={handleWordPressCopy}
-                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
+                        onClick={handleHtmlPreview}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center border-t border-gray-100 dark:border-gray-600"
                     >
-                        <FaWordpress className="h-4 w-4 mr-2 text-blue-600" />
-                        WordPress
+                        <Code className="h-4 w-4 mr-2 text-green-600" />
+                        HTML
                     </button>
                 </div>
             )}
+            
+            {/* HTML Preview Modal */}
+            <HtmlPreviewModal
+                isOpen={showHtmlModal}
+                onClose={() => setShowHtmlModal(false)}
+                htmlContent={htmlContent}
+                title={htmlTitle}
+            />
         </div>
     );
 }
