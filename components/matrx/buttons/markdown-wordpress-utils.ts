@@ -3,14 +3,8 @@
  * A collection of utility functions for copying content formatted for WordPress with matrx- classes
  */
 
-// Define interface for copyToClipboard options
-interface CopyOptions {
-  isMarkdown?: boolean;
-  formatForWordPress?: boolean;
-  formatJson?: boolean;
-  onSuccess?: () => void;
-  onError?: (err: any) => void;
-}
+// Import the removeThinkingContent function
+import { removeThinkingContent } from './markdown-copy-utils';
 
 /**
  * Converts markdown text to WordPress-friendly HTML with matrx- classes
@@ -68,15 +62,15 @@ function convertMarkdownTables(html) {
     });
 }
 
-export function markdownToWordPressHTML(markdown) {
+export function markdownToWordPressHTML(markdown: string, includeThinking: boolean = false): string {
     if (!markdown) return '';
     
     // Use a specific matrx container for WordPress targeting
     const startWrapper = '<div class="matrx-content-container">';
     const endWrapper = '</div>';
     
-    // Remove <thinking> tags and all their content when formatting for WordPress
-    let html = markdown.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+    // Remove <thinking> tags and all their content unless specifically requested
+    let html = includeThinking ? markdown : removeThinkingContent(markdown);
     
     // Handle horizontal rules (must be processed first before headings and lists)
     html = html.replace(/^[\-]{3,}$/gm, '<hr class="matrx-hr">');
@@ -333,112 +327,4 @@ export function formatJsonForClipboard(data) {
     // Clean the data first, then stringify without extra escapes
     const cleanedData = cleanObject(data);
     return JSON.stringify(cleanedData, null, 2);
-}
-
-/**
- * Copies content to clipboard with proper formatting
- * @param {string|object} content - The content to copy
- * @param {CopyOptions} options - Options for copying
- * @param {boolean} [options.isMarkdown=false] - Whether the content is markdown
- * @param {boolean} [options.formatForWordPress=false] - Whether to format for WordPress
- * @param {boolean} [options.formatJson=true] - Whether to format JSON
- * @param {Function} [options.onSuccess] - Callback on successful copy
- * @param {Function} [options.onError] - Callback on copy error
- * @returns {Promise<boolean>} - Whether the copy was successful
- */
-export async function copyToClipboard(content: any, options: CopyOptions = {}) {
-    const {
-      isMarkdown = false,
-      formatForWordPress = false,
-      formatJson = true,
-      onSuccess = () => {},
-      onError = (err) => console.error("Copy failed:", err)
-    } = options;
-    
-    try {
-      // Process content based on type and formatting option
-      let textToCopy;
-      
-      if (typeof content === 'object' && content !== null && formatJson) {
-        textToCopy = formatJsonForClipboard(content);
-      } else if (typeof content === 'string' && formatJson) {
-        try {
-          // Check if the string is JSON and format it
-          const parsed = JSON.parse(content);
-          textToCopy = formatJsonForClipboard(parsed);
-        } catch {
-          // Not valid JSON, use as is
-          textToCopy = content;
-        }
-      } else {
-        // Use string conversion for non-JSON or when formatting is disabled
-        textToCopy = typeof content === 'string' ? content : JSON.stringify(content);
-      }
-      
-      // Check if we need to handle this as markdown with WordPress formatting
-      if (isMarkdown && formatForWordPress && typeof textToCopy === 'string') {
-        // Convert markdown to HTML for WordPress
-        const htmlContent = markdownToWordPressHTML(textToCopy);
-        
-        // Create clipboard item with both HTML and plain text formats
-        const clipboardItem = new ClipboardItem({
-          'text/html': new Blob([htmlContent], { type: 'text/html' }),
-          'text/plain': new Blob([textToCopy], { type: 'text/plain' }) // Fallback to plain markdown
-        });
-        
-        await navigator.clipboard.write([clipboardItem]);
-      } else {
-        // Use the ClipboardItem API with plain text format to ensure no styling is copied
-        const clipboardItem = new ClipboardItem({
-          'text/plain': new Blob([textToCopy], { type: 'text/plain' })
-        });
-        
-        await navigator.clipboard.write([clipboardItem]);
-      }
-      
-      onSuccess();
-      return true;
-    } catch (err) {
-      console.error("Primary copy method failed:", err);
-      
-      // Fall back to the older writeText method if ClipboardItem is not supported
-      try {
-        const textToCopy = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
-        await navigator.clipboard.writeText(textToCopy);
-        onSuccess();
-        return true;
-      } catch (fallbackErr) {
-        onError(fallbackErr);
-        return false;
-      }
-    }
-}
-
-/**
- * Creates a plain text blob from content
- * @param {string} content - The content to convert to a blob
- * @returns {Blob} - A text/plain blob
- */
-export function createPlainTextBlob(content) {
-    return new Blob([content], { type: 'text/plain' });
-}
-
-/**
- * Creates an HTML blob from content
- * @param {string} html - The HTML content to convert to a blob
- * @returns {Blob} - A text/html blob
- */
-export function createHtmlBlob(html) {
-    return new Blob([html], { type: 'text/html' });
-}
-
-/**
- * Strips HTML tags from a string
- * @param {string} html - The HTML to strip tags from
- * @returns {string} - Text without HTML tags
- */
-export function stripHtmlTags(html) {
-    const tempElement = document.createElement('div');
-    tempElement.innerHTML = html;
-    return tempElement.textContent || tempElement.innerText || '';
 }

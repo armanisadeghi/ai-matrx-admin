@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe } from "lucide-react";
+import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { markdownToWordPressHTML } from "@/components/matrx/buttons/markdown-wordpress-utils";
 
@@ -38,6 +38,15 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       isMarkdown: true,
       formatForGoogleDocs: true,
       onSuccess: () => console.log('Copied for Google Docs'),
+      onError: (error) => console.error('Copy failed:', error)
+    });
+  };
+
+  const handleCopyWithThinking = async () => {
+    await copyToClipboard(content, {
+      isMarkdown: true,
+      includeThinking: true,
+      onSuccess: () => console.log('Copied with thinking content'),
       onError: (error) => console.error('Copy failed:', error)
     });
   };
@@ -145,6 +154,12 @@ ${cssContent}
       icon: <FileText size={16} className="text-green-500" />, 
       label: "Copy for Docs", 
       action: handleCopyGoogleDocs,
+      category: "copy"
+    },
+    { 
+      icon: <Brain size={16} className="text-purple-500" />, 
+      label: "Copy With Thinking", 
+      action: handleCopyWithThinking,
       category: "copy"
     },
     { 

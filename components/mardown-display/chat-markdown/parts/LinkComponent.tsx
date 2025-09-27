@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from "@/lib/utils";
 import { Copy, Check, Bookmark, ExternalLink, FileText } from 'lucide-react';
 
@@ -7,8 +8,14 @@ export const LinkComponent = ({ href, children }) => {
     const [favorites, setFavorites] = useState([]);
     const [copied, setCopied] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [isBrowser, setIsBrowser] = useState(false);
     const linkRef = useRef(null);
     const menuRef = useRef(null);
+    
+    // Set isBrowser to true on mount (for SSR safety)
+    useEffect(() => {
+        setIsBrowser(true);
+    }, []);
     
     // Handle mouse enter on the link
     const handleMouseEnter = (e) => {
@@ -117,80 +124,86 @@ export const LinkComponent = ({ href, children }) => {
         return `${start}...${end}`;
     };
     
-    return (
+    // Create the popup menu component
+    const popupMenu = isHovered && isBrowser && (
         <div 
-            className="relative inline-block"
-            onMouseEnter={handleMouseEnter}
-            ref={linkRef}
+            ref={menuRef}
+            className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg py-1 min-w-[280px] text-gray-700 dark:text-gray-200 text-sm"
+            style={getMenuStyle()}
         >
-            <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                    "text-blue-600 underline font-medium",
-                    "transition-all duration-200",
-                    isHovered && "text-blue-800 bg-blue-50 dark:text-blue-300 dark:bg-blue-900/50 rounded px-1"
-                )}
-            >
-                {children}
-            </a>
-            
-            {isHovered && (
-                <div 
-                    ref={menuRef}
-                    className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg py-1 min-w-[280px] text-gray-700 dark:text-gray-200 text-sm"
-                    style={getMenuStyle()}
-                >
-                    {/* URL Info Section */}
-                    <div className="border-b border-gray-200 dark:border-gray-700 px-3 py-2">
-                        {/* Link Text Name */}
-                        <div className="font-medium mb-1 truncate" title={typeof children === 'string' ? children : 'Link'}>
-                            {typeof children === 'string' ? children : 'Link'}
-                        </div>
-                        {/* URL */}
-                        <div className="text-md text-gray-500 dark:text-gray-400 truncate break-all" title={href}>
-                            {truncateUrl(href)}
-                        </div>
-                    </div>
-                    
-                    <ul>
-                        <li 
-                            className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 transition-colors"
-                            onClick={handleCopyLink}
-                        >
-                            {copied ? (
-                                <Check size={16} className="text-green-500" />
-                            ) : (
-                                <Copy size={16} className="text-gray-500 dark:text-gray-400" />
-                            )}
-                            {copied ? 'Copied!' : 'Copy link'}
-                        </li>
-                        <li 
-                            className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 whitespace-nowrap transition-colors"
-                            onClick={handleAddToFavorites}
-                        >
-                            <Bookmark size={16} className="text-gray-500 dark:text-gray-400" />
-                            <span className="truncate">Add to favorites</span>
-                        </li>
-                        <li 
-                            className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 whitespace-nowrap transition-colors"
-                            onClick={handleOpenInNewTab}
-                        >
-                            <ExternalLink size={16} className="text-gray-500 dark:text-gray-400" />
-                            <span className="truncate">Open in new tab</span>
-                        </li>
-                        <li 
-                            className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 whitespace-nowrap transition-colors"
-                            onClick={handleGetContent}
-                        >
-                            <FileText size={16} className="text-gray-500 dark:text-gray-400" />
-                            <span className="truncate">Get content</span>
-                        </li>
-                    </ul>
+            {/* URL Info Section */}
+            <div className="border-b border-gray-200 dark:border-gray-700 px-3 py-2">
+                {/* Link Text Name */}
+                <div className="font-medium mb-1 truncate" title={typeof children === 'string' ? children : 'Link'}>
+                    {typeof children === 'string' ? children : 'Link'}
                 </div>
-            )}
+                {/* URL */}
+                <div className="text-md text-gray-500 dark:text-gray-400 truncate break-all" title={href}>
+                    {truncateUrl(href)}
+                </div>
+            </div>
+            
+            <ul>
+                <li 
+                    className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 transition-colors"
+                    onClick={handleCopyLink}
+                >
+                    {copied ? (
+                        <Check size={16} className="text-green-500" />
+                    ) : (
+                        <Copy size={16} className="text-gray-500 dark:text-gray-400" />
+                    )}
+                    {copied ? 'Copied!' : 'Copy link'}
+                </li>
+                <li 
+                    className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 whitespace-nowrap transition-colors"
+                    onClick={handleAddToFavorites}
+                >
+                    <Bookmark size={16} className="text-gray-500 dark:text-gray-400" />
+                    <span className="truncate">Add to favorites</span>
+                </li>
+                <li 
+                    className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 whitespace-nowrap transition-colors"
+                    onClick={handleOpenInNewTab}
+                >
+                    <ExternalLink size={16} className="text-gray-500 dark:text-gray-400" />
+                    <span className="truncate">Open in new tab</span>
+                </li>
+                <li 
+                    className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-2 whitespace-nowrap transition-colors"
+                    onClick={handleGetContent}
+                >
+                    <FileText size={16} className="text-gray-500 dark:text-gray-400" />
+                    <span className="truncate">Get content</span>
+                </li>
+            </ul>
         </div>
+    );
+
+    return (
+        <>
+            <span 
+                className="relative inline-block"
+                onMouseEnter={handleMouseEnter}
+                ref={linkRef}
+            >
+                <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                        "text-blue-600 underline font-medium",
+                        "transition-all duration-200",
+                        isHovered && "text-blue-800 bg-blue-50 dark:text-blue-300 dark:bg-blue-900/50 rounded px-1"
+                    )}
+                >
+                    {children}
+                </a>
+            </span>
+            
+            {/* Render popup menu using portal to avoid nesting issues */}
+            {popupMenu && createPortal(popupMenu, document.body)}
+        </>
     );
 };
 

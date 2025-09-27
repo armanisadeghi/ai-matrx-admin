@@ -1,7 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { copyToClipboard } from "./markdown-copy-utils";
-import { Copy, CheckCircle2, FileText, FileType2, Code } from "lucide-react";
+import useOnClickOutside from "@/hooks/useOnClickOutside";
+import { Copy, CheckCircle2, FileText, FileType2, Code, Brain } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
 import { Microsoft } from '@lobehub/icons';
@@ -51,6 +52,9 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
     const [htmlContent, setHtmlContent] = useState("");
     const [htmlTitle, setHtmlTitle] = useState("");
     const buttonRef = useRef(null);
+    
+    // Close dropdown when clicking outside
+    const dropdownRef = useOnClickOutside<HTMLDivElement>(() => setShowOptions(false));
     
     useEffect(() => {
         if (showOptions && buttonRef.current) {
@@ -104,6 +108,19 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
         setShowOptions(false);
     };
 
+    const handleCopyWithThinking = async () => {
+        const success = await copyToClipboard(markdownContent, {
+            isMarkdown: true,
+            formatForGoogleDocs: false,
+            includeThinking: true,
+            onSuccess: () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            },
+        });
+        setShowOptions(false);
+    };
+
     return (
         <div className={`relative ${className}`}>
             {copied ? (
@@ -123,11 +140,12 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
                     </button>
                     {showOptions && (
                         <div 
+                            ref={dropdownRef}
                             className={`absolute ${
                                 dropdownPosition === "above" 
                                     ? "bottom-full mb-1" 
                                     : "top-full mt-1"
-                            } min-w-48 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
+                            } min-w-56 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
                         >
                             <button
                                 onClick={handleRegularCopy}
@@ -156,6 +174,13 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
                             >
                                 <Code className="h-4 w-4 mr-2 text-green-600" />
                                 HTML
+                            </button>
+                            <button
+                                onClick={handleCopyWithThinking}
+                                className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center border-t border-gray-100 dark:border-gray-600"
+                            >
+                                <Brain className="h-4 w-4 mr-2 text-purple-600" />
+                                Copy With Thinking
                             </button>
                         </div>
                     )}
@@ -192,6 +217,9 @@ export function InlineCopyButton({
     const [htmlContent, setHtmlContent] = useState("");
     const [htmlTitle, setHtmlTitle] = useState("");
     const buttonRef = useRef(null);
+    
+    // Close dropdown when clicking outside
+    const inlineDropdownRef = useOnClickOutside<HTMLDivElement>(() => setShowOptions(false));
     
     // Check viewport constraints when showing options
     useEffect(() => {
@@ -278,6 +306,19 @@ export function InlineCopyButton({
         });
         setShowOptions(false);
     };
+
+    const handleCopyWithThinkingInline = async () => {
+        await copyToClipboard(markdownContent, {
+            isMarkdown,
+            formatForGoogleDocs: false,
+            includeThinking: true,
+            onSuccess: () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            },
+        });
+        setShowOptions(false);
+    };
     
     return (
         <div
@@ -316,11 +357,12 @@ export function InlineCopyButton({
             {/* Smart positioning dropdown */}
             {showOptions && isMarkdown && (
                 <div 
+                    ref={inlineDropdownRef}
                     className={`absolute ${
                         dropdownPosition === "above" 
                             ? "bottom-full mb-1" 
                             : "top-full mt-1"
-                    } min-w-48 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
+                    } min-w-56 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
                 >
                     <button
                         onClick={handleRegularCopy}
@@ -349,6 +391,13 @@ export function InlineCopyButton({
                     >
                         <Code className="h-4 w-4 mr-2 text-green-600" />
                         HTML
+                    </button>
+                    <button
+                        onClick={handleCopyWithThinkingInline}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center border-t border-gray-100 dark:border-gray-600"
+                    >
+                        <Brain className="h-4 w-4 mr-2 text-purple-600" />
+                        Copy With Thinking
                     </button>
                 </div>
             )}

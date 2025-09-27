@@ -13,25 +13,37 @@ interface CopyOptions {
   formatForWordPress?: boolean;
   formatJson?: boolean;
   showHtmlPreview?: boolean;
+  includeThinking?: boolean;
   onSuccess?: () => void;
   onError?: (err: any) => void;
   onShowHtmlPreview?: (html: string) => void;
 }
 
 /**
+ * Removes thinking tags and their content from markdown
+ * @param {string} content - The content to process
+ * @returns {string} - Content without thinking tags
+ */
+export function removeThinkingContent(content: string): string {
+  if (!content || typeof content !== 'string') return content || '';
+  return content.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+}
+
+/**
  * Converts markdown text to Google Docs-friendly HTML
  * @param {string} markdown - The markdown content to convert
+ * @param {boolean} includeThinking - Whether to include thinking content
  * @returns {string} - HTML formatted for Google Docs
  */
-export function markdownToGoogleDocsHTML(markdown) {
+export function markdownToGoogleDocsHTML(markdown: string, includeThinking: boolean = false): string {
     if (!markdown) return '';
     
     // Add a wrapper with explicit color style to ensure black text
     const startWrapper = '<div style="color: #000000; font-family: Arial, sans-serif;">';
     const endWrapper = '</div>';
     
-    // Remove <thinking> tags and all their content when formatting for Google Docs
-    let html = markdown.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+    // Remove <thinking> tags and all their content unless specifically requested
+    let html = includeThinking ? markdown : removeThinkingContent(markdown);
     
     // Handle horizontal rules (must be processed first before headings and lists)
     html = html.replace(/^[\-]{3,}$/gm, '<hr style="border: none; border-top: 1px solid #cccccc; margin: 15px 0;">');
@@ -249,6 +261,7 @@ export function markdownToGoogleDocsHTML(markdown) {
    * @param {boolean} [options.formatForWordPress=false] - Whether to format for WordPress
    * @param {boolean} [options.showHtmlPreview=false] - Whether to show HTML preview instead of copying
    * @param {boolean} [options.formatJson=true] - Whether to format JSON
+   * @param {boolean} [options.includeThinking=false] - Whether to include thinking content
    * @param {Function} [options.onSuccess] - Callback on successful copy
    * @param {Function} [options.onError] - Callback on copy error
    * @param {Function} [options.onShowHtmlPreview] - Callback to show HTML preview
@@ -261,6 +274,7 @@ export function markdownToGoogleDocsHTML(markdown) {
       formatForWordPress = false,
       showHtmlPreview = false,
       formatJson = true,
+      includeThinking = false,
       onSuccess = () => {},
       onError = (err) => console.error("Copy failed:", err),
       onShowHtmlPreview = () => {}
@@ -286,16 +300,21 @@ export function markdownToGoogleDocsHTML(markdown) {
         textToCopy = typeof content === 'string' ? content : JSON.stringify(content);
       }
       
+      // Remove thinking content from text unless explicitly requested to include it
+      if (typeof textToCopy === 'string' && !includeThinking) {
+        textToCopy = removeThinkingContent(textToCopy);
+      }
+      
       // Check if we need to handle this as markdown with special formatting
       if (isMarkdown && (formatForGoogleDocs || formatForWordPress) && typeof textToCopy === 'string') {
         let htmlContent;
         
         if (formatForGoogleDocs) {
           // Convert markdown to HTML for Google Docs
-          htmlContent = markdownToGoogleDocsHTML(textToCopy);
+          htmlContent = markdownToGoogleDocsHTML(textToCopy, includeThinking);
         } else if (formatForWordPress) {
           // Convert markdown to HTML for WordPress
-          htmlContent = markdownToWordPressHTML(textToCopy);
+          htmlContent = markdownToWordPressHTML(textToCopy, includeThinking);
         }
         
         // If showHtmlPreview is requested, call the callback instead of copying
