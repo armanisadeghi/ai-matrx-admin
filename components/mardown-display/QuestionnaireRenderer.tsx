@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,8 +11,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Bug } from "lucide-react";
 import { THEMES } from "./themes";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { useQuestionnaireContext } from "./context/QuestionnaireContext";
 import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-
 
 // Helper function to check if an option is an "Other" option
 const isOtherOption = (option) => {
@@ -59,22 +59,104 @@ const getQuestionType = (typeString = "") => {
     return "TEXT";
 };
 
+const processQuestionTitle = (title, questionIndex) => {
+    // Extract existing question number if present
+    const existingNumberMatch = title.match(/^Q(\d+):\s*/i);
+    if (existingNumberMatch) {
+        // Keep the existing number format
+        return title;
+    }
+    
+    // If no number exists, add one based on the index
+    const cleanTitle = title.replace(/^Question:\s*/i, "");
+    return `Q${questionIndex + 1}: ${cleanTitle}`;
+};
+
+const getDefaultValue = (questionType, options = []) => {
+    switch (questionType) {
+        case "SLIDER":
+            return 50; // Default middle value
+        case "TOGGLE":
+            return false;
+        case "CHECKBOX": {
+            // Initialize checkbox with all options as "Not Selected"
+            const checkboxData = {};
+            options.forEach(option => {
+                if (isOtherOption(option)) {
+                    checkboxData["Other"] = "Not Selected";
+                } else {
+                    checkboxData[option.name] = "Not Selected";
+                }
+            });
+            return checkboxData;
+        }
+        case "DROPDOWN": {
+            // Initialize dropdown with all options as "Not Selected"
+            const dropdownData = {};
+            options.forEach(option => {
+                if (isOtherOption(option)) {
+                    dropdownData["Other"] = "Not Selected";
+                } else {
+                    dropdownData[option.name] = "Not Selected";
+                }
+            });
+            return dropdownData;
+        }
+        case "RADIO":
+        case "TEXT":
+        case "INPUT":
+            return "";
+        default:
+            return null;
+    }
+};
+
+
 // Individual question type components with Other handling
-const CheckboxQuestion = ({ options = [], onChange, value = [], theme }) => {
-    const [selectedValues, setSelectedValues] = useState(new Set(value));
+const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
+    // Convert the object-based value back to array format for internal logic
+    const convertToArrayFormat = useCallback((checkboxData) => {
+        if (!checkboxData || typeof checkboxData !== 'object') return [];
+        
+        const selectedItems = [];
+        Object.entries(checkboxData).forEach(([key, status]) => {
+            if (status === "Selected") {
+                if (key === "Other" && checkboxData["Other (Specified)"]) {
+                    selectedItems.push(`Other: ${checkboxData["Other (Specified)"]}`);
+                } else if (key !== "Other (Specified)") {
+                    selectedItems.push(key);
+                }
+            }
+        });
+        return selectedItems;
+    }, []);
+
+    const [selectedValues, setSelectedValues] = useState(() => new Set(convertToArrayFormat(value)));
+    
     // Extract existing "Other" value if present
     const [otherValue, setOtherValue] = useState(() => {
-        const otherValue = Array.isArray(value) ? value.find((v) => v?.startsWith("Other:")) : undefined;
+        if (typeof value === 'object' && value["Other (Specified)"]) {
+            return value["Other (Specified)"];
+        }
+        // Fallback for legacy array format
+        const arrayValue = Array.isArray(value) ? value : convertToArrayFormat(value);
+        const otherValue = arrayValue.find((v) => v?.startsWith("Other:"));
         return otherValue ? otherValue.replace("Other: ", "") : "";
     });
 
     useEffect(() => {
-        setSelectedValues(new Set(value));
-        const otherValue = Array.isArray(value) ? value.find((v) => v?.startsWith("Other:")) : undefined;
-        if (otherValue) {
-            setOtherValue(otherValue.replace("Other: ", ""));
+        const arrayFormat = convertToArrayFormat(value);
+        setSelectedValues(new Set(arrayFormat));
+        
+        if (typeof value === 'object' && value["Other (Specified)"]) {
+            setOtherValue(value["Other (Specified)"]);
+        } else {
+            const otherValue = arrayFormat.find((v) => v?.startsWith("Other:"));
+            if (otherValue) {
+                setOtherValue(otherValue.replace("Other: ", ""));
+            }
         }
-    }, [value]);
+    }, [value, convertToArrayFormat]);
 
     const handleCheckboxChange = (optionName, checked, isOther = false) => {
         const newSelected = new Set(selectedValues);
@@ -97,6 +179,7 @@ const CheckboxQuestion = ({ options = [], onChange, value = [], theme }) => {
         }
 
         setSelectedValues(newSelected);
+        // Pass array format to onChange - the hook will convert it to object format
         onChange(Array.from(newSelected));
     };
 
@@ -133,6 +216,7 @@ const CheckboxQuestion = ({ options = [], onChange, value = [], theme }) => {
                                     );
                                     newSelected.add(`Other: ${newValue}`);
                                     setSelectedValues(newSelected);
+                                    // Pass array format to onChange - the hook will convert it to object format
                                     onChange(Array.from(newSelected));
                                 }}
                                 className={`w-full ${theme.input.background} border-2 ${theme.input.border} ${theme.input.text}`}
@@ -145,14 +229,48 @@ const CheckboxQuestion = ({ options = [], onChange, value = [], theme }) => {
     );
 };
 
-const DropdownQuestion = ({ options = [], onChange, value = "", theme }) => {
-    const [selectedValue, setSelectedValue] = useState(value);
-    const [otherValue, setOtherValue] = useState("");
+const DropdownQuestion = ({ options = [], onChange, value = {}, theme }) => {
+    // Convert the object-based value back to string format for internal UI logic
+    const convertToStringFormat = useCallback((dropdownData) => {
+        if (!dropdownData || typeof dropdownData !== 'object') return "";
+        
+        // Find the selected option
+        for (const [key, status] of Object.entries(dropdownData)) {
+            if (status === "Selected") {
+                if (key === "Other" && dropdownData["Other (Specified)"]) {
+                    return `Other: ${dropdownData["Other (Specified)"]}`;
+                } else if (key !== "Other (Specified)") {
+                    return key;
+                }
+            }
+        }
+        return "";
+    }, []);
 
-    const handleSelectionChange = (value) => {
-        setSelectedValue(value);
-        if (!isOtherOption({ name: value })) {
-            onChange(value);
+    const [selectedValue, setSelectedValue] = useState(() => convertToStringFormat(value));
+    const [otherValue, setOtherValue] = useState(() => {
+        if (typeof value === 'object' && value["Other (Specified)"]) {
+            return value["Other (Specified)"];
+        }
+        const stringValue = convertToStringFormat(value);
+        return stringValue.startsWith("Other: ") ? stringValue.replace("Other: ", "") : "";
+    });
+
+    useEffect(() => {
+        const stringFormat = convertToStringFormat(value);
+        setSelectedValue(stringFormat);
+        
+        if (typeof value === 'object' && value["Other (Specified)"]) {
+            setOtherValue(value["Other (Specified)"]);
+        } else if (stringFormat.startsWith("Other: ")) {
+            setOtherValue(stringFormat.replace("Other: ", ""));
+        }
+    }, [value, convertToStringFormat]);
+
+    const handleSelectionChange = (newValue) => {
+        setSelectedValue(newValue);
+        if (!isOtherOption({ name: newValue })) {
+            onChange(newValue);
         } else {
             onChange(`Other: ${otherValue}`);
         }
@@ -166,7 +284,7 @@ const DropdownQuestion = ({ options = [], onChange, value = "", theme }) => {
                 </SelectTrigger>
                 <SelectContent>
                     {options.map((option, index) => (
-                        <SelectItem key={index} value={option.name} >
+                        <SelectItem key={index} value={option.name}>
                             {isOtherOption(option) ? "Other" : option.name}
                         </SelectItem>
                     ))}
@@ -179,8 +297,9 @@ const DropdownQuestion = ({ options = [], onChange, value = "", theme }) => {
                     placeholder="Please specify"
                     value={otherValue}
                     onChange={(e) => {
-                        setOtherValue(e.target.value);
-                        onChange(`Other: ${e.target.value}`);
+                        const newValue = e.target.value;
+                        setOtherValue(newValue);
+                        onChange(`Other: ${newValue}`);
                     }}
                     className={`w-full ${theme.input.background} border-2 ${theme.input.border} ${theme.input.text}`}
                 />
@@ -403,79 +522,60 @@ const extractSliderRange = (intro) => {
     return { min: 0, max: 100 };
 };
 
-const QuestionnaireRenderer = ({ data, theme, taskId=null }) => {
+const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, questionnaireId = null }) => {
     const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
-
-    const [formState, setFormState] = useState({});
+    
+    // Generate a unique ID for this questionnaire if not provided
+    const uniqueId = questionnaireId || `questionnaire-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const { getFormState, updateFormData, initializeQuestions } = useQuestionnaireContext();
     const [questionData, setQuestionData] = useState({});
-    const [debugMode, setDebugMode] = useState(true);
+    const [debugMode, setDebugMode] = useState(false);
     const themeColors = THEMES[theme];
+    
+    // Get current form state from context
+    const formState = getFormState(uniqueId);
 
     useEffect(() => {
         if (data?.sections) {
-            const initialState = data.sections.reduce((acc, section) => {
+            // Initialize all questions with default values in context
+            initializeQuestions(uniqueId, data.sections);
+            
+            // Initialize question data for reference
+            const questions = data.sections.reduce((acc, section, index) => {
                 if (section.intro?.includes("Type:")) {
-                    const type = extractType(section.intro);
-                    const questionType = getQuestionType(type);
-                    const cleanTitle = cleanQuestionTitle(section.title);
-
-                    switch (questionType) {
-                        case "SLIDER": {
-                            const range = extractSliderRange(section.intro);
-                            acc[cleanTitle] = Math.floor(range.max / 2);
-                            break;
+                    // Use the same numbering logic as in context
+                    let questionIndex = 0;
+                    for (let i = 0; i <= index; i++) {
+                        if (data.sections[i].intro?.includes("Type:")) {
+                            if (i === index) break;
+                            questionIndex++;
                         }
-                        case "TOGGLE":
-                            acc[cleanTitle] = false;
-                            break;
-                        case "CHECKBOX":
-                            acc[cleanTitle] = [];
-                            break;
-                        case "DROPDOWN":
-                        case "RADIO":
-                            acc[cleanTitle] = "";
-                            break;
-                        case "TEXT":
-                        case "INPUT":
-                            acc[cleanTitle] = "";
-                            break;
-                        default:
-                            acc[cleanTitle] = null;
                     }
-                }
-                return acc;
-            }, {});
-
-            setFormState(initialState);
-
-            const questions = data.sections.reduce((acc, section) => {
-                if (section.intro?.includes("Type:")) {
-                    const cleanTitle = cleanQuestionTitle(section.title);
+                    
+                    const numberedTitle = processQuestionTitle(section.title, questionIndex);
                     const options = findOptionsForQuestion(data.sections, section.title);
                     const type = extractType(section.intro);
 
-                    // Initialize with base question data
-                    acc[cleanTitle] = {
+                    acc[numberedTitle] = {
                         type: type,
-                        question: cleanTitle,
+                        question: numberedTitle,
                         options: options,
                         intro: section.intro,
-                        customSettings: {}, // Default empty object for custom settings
+                        customSettings: {},
                     };
 
-                    // Add type-specific custom settings
                     if (type === "Slider") {
-                        acc[cleanTitle].customSettings = {
+                        acc[numberedTitle].customSettings = {
                             range: extractSliderRange(section.intro),
                         };
                     }
-                    // Future type-specific settings can be added here
                 }
                 return acc;
             }, {});
             setQuestionData(questions);
         }
-    }, [data]);
+    }, [data, uniqueId, initializeQuestions]);
 
     if (!data || !data.sections) {
         return (
@@ -487,12 +587,9 @@ const QuestionnaireRenderer = ({ data, theme, taskId=null }) => {
         );
     }
 
-    const handleChange = (questionTitle, value) => {
-        const cleanTitle = cleanQuestionTitle(questionTitle);
-        setFormState((prev) => ({
-            ...prev,
-            [cleanTitle]: value,
-        }));
+    const handleChange = (questionTitle, value, questionType = null, options = []) => {
+        // questionTitle is already numbered, use it directly
+        updateFormData(uniqueId, questionTitle, value, questionType, options);
     };
 
     return (
@@ -504,8 +601,16 @@ const QuestionnaireRenderer = ({ data, theme, taskId=null }) => {
                         return null;
                     }
 
+                    // Calculate question index (only count sections with Type:)
+                    let questionIndex = 0;
+                    for (let i = 0; i < index; i++) {
+                        if (data.sections[i].intro?.includes("Type:")) {
+                            questionIndex++;
+                        }
+                    }
+
                     const options = findOptionsForQuestion(data.sections, section.title);
-                    const cleanTitle = cleanQuestionTitle(section.title);
+                    const numberedTitle = processQuestionTitle(section.title, questionIndex);
                     const type = extractType(section.intro);
 
                     // Prepare custom settings based on question type
@@ -516,12 +621,12 @@ const QuestionnaireRenderer = ({ data, theme, taskId=null }) => {
                             key={index}
                             questionData={{
                                 ...section,
-                                title: cleanTitle,
+                                title: numberedTitle,
                                 customSettings,
                             }}
                             options={options}
-                            onChange={(value) => handleChange(cleanTitle, value)}
-                            value={formState[cleanTitle]}
+                            onChange={(value) => handleChange(numberedTitle, value, getQuestionType(type), options)}
+                            value={formState[numberedTitle]}
                             theme={themeColors}
                         />
                     );

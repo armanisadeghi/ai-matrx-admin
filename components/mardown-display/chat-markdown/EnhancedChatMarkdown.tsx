@@ -14,6 +14,9 @@ import { ContentBlock, splitContentIntoBlocks } from "../markdown-classification
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxBrokerBlock from "../blocks/brokers/MatrxBrokerBlock";
+import QuestionnaireRenderer from "../QuestionnaireRenderer";
+import { separatedMarkdownParser } from "../markdown-classification/processors/custom/parser-separated";
+import { QuestionnaireProvider } from "../context/QuestionnaireContext";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -40,12 +43,14 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     allowFullScreenEditor = true,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [currentContent, setCurrentContent] = useState("");
+    const [currentContent, setCurrentContent] = useState(content);
     
-    // Update internal content when prop changes
+    // Update internal content when prop changes - but prevent infinite loops
     useEffect(() => {
-        setCurrentContent(content);
-    }, [content]);
+        if (content !== currentContent) {
+            setCurrentContent(content);
+        }
+    }, [content, currentContent]);
 
     // Memoize the content splitting to avoid unnecessary re-processing
     const blocks = useMemo(() => {
@@ -54,15 +59,24 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
 
     // Memoize parsed table data to prevent infinite loops from new object references
     const parsedTableData = useMemo(() => {
-        const tableDataMap = new Map<string, any>();
+        const tableDataMap = new Map<number, any>();
         
         blocks.forEach((block, index) => {
             if (block.type === "table") {
                 const tableData = parseMarkdownTable(block.content, isStreamActive);
                 if (tableData.markdown && tableData.markdown.headers.length > 0 && tableData.markdown.rows.length > 0) {
-                    tableDataMap.set(`${index}-${block.content}`, {
-                        ...tableData.markdown,
-                        normalizedData: tableData.data
+                    // Create a stable cache key based on table structure, not full content
+                    const rowCount = tableData.markdown.rows.length;
+                    const headerHash = tableData.markdown.headers.join('|');
+                    const stableKey = `table-${index}-${headerHash}-${rowCount}`;
+                    
+                    // Store both the parsed data and the key for easy lookup
+                    tableDataMap.set(index, {
+                        stableKey,
+                        data: {
+                            ...tableData.markdown,
+                            normalizedData: tableData.data
+                        }
                     });
                 }
             }
@@ -144,17 +158,18 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     />
                 );
             case "table":
-                const tableData = parsedTableData.get(`${index}-${block.content}`);
-                if (!tableData) {
+                const tableInfo = parsedTableData.get(index);
+                if (!tableInfo) {
                     if (!isStreamActive && process.env.NODE_ENV === 'development') {
                         console.warn("Skipping invalid or empty table:", block.content);
                     }
                     return null;
                 }
+                
                 return (
                     <MarkdownTable 
-                        key={index} 
-                        data={tableData} 
+                        key={tableInfo.stableKey} 
+                        data={tableInfo.data} 
                         content={block.content}
                         onContentChange={onContentChange ? (updatedTable) => handleTableChange(updatedTable, block.content) : undefined}
                         isStreamActive={isStreamActive}
@@ -168,6 +183,16 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 return <StructuredPlanBlock key={index} content={block.content} />;
             case "matrxBroker":
                 return <MatrxBrokerBlock key={index} content={block.content} metadata={block.metadata} onUpdate={handleMatrxBrokerChange} />;
+            case "questionnaire":
+                const parsedContent = separatedMarkdownParser(block.content);
+                return (
+                    <QuestionnaireProvider key={index}>
+                        <QuestionnaireRenderer 
+                            data={parsedContent} 
+                            questionnaireId={`questionnaire-${messageId}-${index}`}
+                        />
+                    </QuestionnaireProvider>
+                );
             case "text":
             case "info":
             case "task":
