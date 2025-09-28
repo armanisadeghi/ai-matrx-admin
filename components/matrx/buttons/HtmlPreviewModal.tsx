@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings } from "lucide-react";
+import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings, Upload, ExternalLink, Loader2 } from "lucide-react";
+import { useStaticSite } from "@/utils/useStaticSite";
 
 interface HtmlPreviewModalProps {
     isOpen: boolean;
@@ -16,12 +17,18 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     const [copiedCSS, setCopiedCSS] = useState(false);
     const [copiedComplete, setCopiedComplete] = useState(false);
     const [copiedCustom, setCopiedCustom] = useState(false);
-    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete" | "custom">("preview");
+    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete" | "custom" | "deploy">("preview");
     const [wordPressCSS, setWordPressCSS] = useState<string>("");
     
     // Custom copy options
     const [includeBulletStyles, setIncludeBulletStyles] = useState(true);
     const [includeDecorativeLineBreaks, setIncludeDecorativeLineBreaks] = useState(true);
+    
+    // Static site deployment
+    const { deployPage, testConnection, isDeploying, deployedPages, error, clearError } = useStaticSite();
+    const [deployedPage, setDeployedPage] = useState<any>(null);
+    const [pageTitle, setPageTitle] = useState<string>("");
+    const [pageDescription, setPageDescription] = useState<string>("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const cssTextareaRef = useRef<HTMLTextAreaElement>(null);
     const completeTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -588,6 +595,34 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
         }
     };
 
+    // Deployment handlers
+    const handleDeploy = async () => {
+        if (!pageTitle.trim()) {
+            alert('Please enter a page title before deploying');
+            return;
+        }
+
+        try {
+            clearError();
+            const completeHTML = generateCompleteHTML();
+            const result = await deployPage(completeHTML, pageTitle.trim(), pageDescription.trim());
+            setDeployedPage(result);
+            alert('Page deployed successfully!');
+        } catch (err) {
+            console.error('Deployment failed:', err);
+            alert(`Deployment failed: ${err.message}`);
+        }
+    };
+
+    const handleTestConnection = async () => {
+        try {
+            const result = await testConnection();
+            alert(`Connection successful! ${result.message}`);
+        } catch (err) {
+            alert(`Connection failed: ${err.message}`);
+        }
+    };
+
     const handleSelectAll = () => {
         if (textareaRef.current) {
             textareaRef.current.select();
@@ -695,6 +730,17 @@ ${wordPressCSS}
                          >
                              <Settings size={16} className="inline mr-1" />
                              Custom Copy
+                         </button>
+                         <button
+                             onClick={() => setActiveTab("deploy")}
+                             className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                 activeTab === "deploy"
+                                     ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                             }`}
+                         >
+                             <Upload size={16} className="inline mr-1" />
+                             Deploy
                          </button>
                     </div>
 
@@ -930,6 +976,139 @@ ${wordPressCSS}
                                              </p>
                                          )}
                                      </div>
+                                 </div>
+                             </div>
+                         ) : activeTab === "deploy" ? (
+                             // Deploy Tab
+                             <div className="h-full flex flex-col">
+                                 <div className="max-w-2xl mx-auto w-full space-y-6">
+                                     <div className="text-center">
+                                         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Deploy to Static Site</h3>
+                                         <p className="text-sm text-gray-600 dark:text-gray-400">
+                                             Deploy your HTML page to mymatrx.com and view it in an iframe
+                                         </p>
+                                     </div>
+
+                                     {/* Connection Test */}
+                                     <div className="flex justify-center">
+                                         <button
+                                             onClick={handleTestConnection}
+                                             className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+                                         >
+                                             <Globe size={16} />
+                                             Test Connection
+                                         </button>
+                                     </div>
+
+                                     {/* Deployment Form */}
+                                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-4">
+                                         <div>
+                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                 Page Title *
+                                             </label>
+                                             <input
+                                                 type="text"
+                                                 value={pageTitle}
+                                                 onChange={(e) => setPageTitle(e.target.value)}
+                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                 placeholder="Enter page title"
+                                             />
+                                         </div>
+                                         
+                                         <div>
+                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                 Description (optional)
+                                             </label>
+                                             <input
+                                                 type="text"
+                                                 value={pageDescription}
+                                                 onChange={(e) => setPageDescription(e.target.value)}
+                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                 placeholder="Brief description (optional)"
+                                             />
+                                         </div>
+                                     </div>
+
+                                     {/* Error Display */}
+                                     {error && (
+                                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                                             <div className="flex items-start gap-3">
+                                                 <div className="text-red-600 dark:text-red-400 text-sm">
+                                                     <strong>Error:</strong> {error}
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     )}
+
+                                     {/* Deploy Button */}
+                                     <div className="text-center">
+                                         <button
+                                             onClick={handleDeploy}
+                                             disabled={isDeploying || !pageTitle.trim()}
+                                             className={`inline-flex items-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
+                                                 isDeploying || !pageTitle.trim()
+                                                     ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                                     : "bg-blue-600 hover:bg-blue-700 text-white"
+                                             }`}
+                                         >
+                                             {isDeploying ? (
+                                                 <>
+                                                     <Loader2 size={18} className="animate-spin" />
+                                                     Deploying...
+                                                 </>
+                                             ) : (
+                                                 <>
+                                                     <Upload size={18} />
+                                                     Deploy Page
+                                                 </>
+                                             )}
+                                         </button>
+                                     </div>
+
+                                     {/* Deployed Page Display */}
+                                     {deployedPage && (
+                                         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6 space-y-4">
+                                             <div className="text-center">
+                                                 <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">
+                                                     Page Deployed Successfully! 🎉
+                                                 </h4>
+                                                 <div className="space-y-2 text-sm">
+                                                     <p className="text-green-700 dark:text-green-400">
+                                                         <strong>Title:</strong> {deployedPage.title}
+                                                     </p>
+                                                     <p className="text-green-700 dark:text-green-400">
+                                                         <strong>Page ID:</strong> {deployedPage.id}
+                                                     </p>
+                                                     <div className="flex justify-center gap-3 mt-4">
+                                                         <a
+                                                             href={deployedPage.url}
+                                                             target="_blank"
+                                                             rel="noopener noreferrer"
+                                                             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
+                                                         >
+                                                             <ExternalLink size={16} />
+                                                             View Live Page
+                                                         </a>
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                             
+                                             {/* Preview iframe */}
+                                             <div className="mt-6">
+                                                 <h5 className="font-medium text-green-800 dark:text-green-300 mb-3 text-center">
+                                                     Live Preview:
+                                                 </h5>
+                                                 <div className="border-2 border-green-200 dark:border-green-700 rounded-lg overflow-hidden">
+                                                     <iframe
+                                                         src={deployedPage.url}
+                                                         className="w-full h-96"
+                                                         title={deployedPage.title}
+                                                         sandbox="allow-scripts allow-same-origin"
+                                                     />
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     )}
                                  </div>
                              </div>
                          ) : (
