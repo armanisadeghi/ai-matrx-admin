@@ -28,6 +28,16 @@ export default function StaticSiteDebugger() {
             addResult('Testing basic fetch to https://mymatrx.com...');
             const response = await fetch('https://mymatrx.com', { mode: 'no-cors' });
             addResult(`Basic fetch result: ${response.type} (this is expected for no-cors)`);
+            
+            // Test the root with CORS to see what happens
+            addResult('Testing with CORS mode...');
+            try {
+                const corsResponse = await fetch('https://mymatrx.com', { mode: 'cors' });
+                addResult(`CORS fetch successful: ${corsResponse.status} ${corsResponse.statusText}`);
+                addResult(`CORS headers: ${JSON.stringify([...corsResponse.headers.entries()])}`);
+            } catch (corsError: any) {
+                addResult(`CORS fetch failed: ${corsError.message}`);
+            }
         } catch (error: any) {
             addResult(`Basic fetch failed: ${error.message}`);
         }
@@ -39,12 +49,52 @@ export default function StaticSiteDebugger() {
         setIsLoading(true);
         addResult('=== API Endpoint Test ===');
         
-        try {
-            addResult('Testing /api/test endpoint...');
-            const result = await StaticSiteAPI.testConnection();
-            addResult(`API test successful: ${JSON.stringify(result)}`);
-        } catch (error: any) {
-            addResult(`API test failed: ${error.message}`);
+        // Test multiple endpoint variations
+        const endpoints = [
+            '/api/test',
+            '/api/test.js',
+            '/test',
+            '/api',
+            '/.well-known/health'
+        ];
+        
+        for (const endpoint of endpoints) {
+            const url = `https://mymatrx.com${endpoint}`;
+            addResult(`Testing endpoint: ${url}`);
+            
+            try {
+                // Try with different fetch options
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                addResult(`✅ ${endpoint}: ${response.status} ${response.statusText}`);
+                addResult(`   Headers: ${JSON.stringify([...response.headers.entries()])}`);
+                
+                if (response.ok) {
+                    try {
+                        const data = await response.text();
+                        addResult(`   Response: ${data.substring(0, 200)}${data.length > 200 ? '...' : ''}`);
+                    } catch (parseError) {
+                        addResult(`   Response parsing failed: ${parseError}`);
+                    }
+                }
+            } catch (error: any) {
+                addResult(`❌ ${endpoint}: ${error.message}`);
+                
+                // Try with no-cors mode as fallback
+                try {
+                    const noCorsResponse = await fetch(url, { mode: 'no-cors' });
+                    addResult(`   No-CORS fallback: ${noCorsResponse.type} (${noCorsResponse.status || 'unknown status'})`);
+                } catch (noCorsError: any) {
+                    addResult(`   No-CORS fallback also failed: ${noCorsError.message}`);
+                }
+            }
         }
         
         setIsLoading(false);
@@ -66,6 +116,96 @@ export default function StaticSiteDebugger() {
         setIsLoading(false);
     };
 
+    const testSiteStructure = async () => {
+        setIsLoading(true);
+        addResult('=== Site Structure Test ===');
+        
+        // Test common file locations to understand the site structure
+        const testPaths = [
+            '/',
+            '/index.html',
+            '/api',
+            '/api/',
+            '/pages',
+            '/pages/',
+            '/.vercel.json',
+            '/vercel.json',
+            '/package.json',
+            '/_next',
+            '/favicon.ico'
+        ];
+        
+        for (const path of testPaths) {
+            const url = `https://mymatrx.com${path}`;
+            
+            try {
+                const response = await fetch(url, { 
+                    method: 'HEAD', // Use HEAD to avoid downloading content
+                    mode: 'cors'
+                });
+                
+                addResult(`✅ ${path}: ${response.status} ${response.statusText}`);
+                if (response.headers.get('content-type')) {
+                    addResult(`   Content-Type: ${response.headers.get('content-type')}`);
+                }
+            } catch (error: any) {
+                addResult(`❌ ${path}: ${error.message}`);
+            }
+        }
+        
+        setIsLoading(false);
+    };
+
+    const testWithDifferentMethods = async () => {
+        setIsLoading(true);
+        addResult('=== HTTP Methods Test ===');
+        
+        const methods = ['GET', 'POST', 'OPTIONS'];
+        const testUrl = 'https://mymatrx.com/api/test';
+        
+        for (const method of methods) {
+            addResult(`Testing ${method} ${testUrl}`);
+            
+            try {
+                const options: RequestInit = {
+                    method,
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (method === 'POST') {
+                    options.body = JSON.stringify({ test: true });
+                }
+                
+                const response = await fetch(testUrl, options);
+                addResult(`✅ ${method}: ${response.status} ${response.statusText}`);
+                
+                // Log CORS headers specifically
+                const corsHeaders = [
+                    'access-control-allow-origin',
+                    'access-control-allow-methods', 
+                    'access-control-allow-headers',
+                    'access-control-allow-credentials'
+                ];
+                
+                corsHeaders.forEach(header => {
+                    const value = response.headers.get(header);
+                    if (value) {
+                        addResult(`   ${header}: ${value}`);
+                    }
+                });
+                
+            } catch (error: any) {
+                addResult(`❌ ${method}: ${error.message}`);
+            }
+        }
+        
+        setIsLoading(false);
+    };
+
     const clearResults = () => {
         setResults('');
     };
@@ -77,10 +217,10 @@ export default function StaticSiteDebugger() {
             </h2>
             
             <div className="space-y-4 mb-6">
-                <div className="flex flex-wrap gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <button
                         onClick={testEnvironmentVariables}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
                     >
                         Test Environment Variables
                     </button>
@@ -88,30 +228,46 @@ export default function StaticSiteDebugger() {
                     <button
                         onClick={testBasicFetch}
                         disabled={isLoading}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm"
                     >
                         Test Basic Connectivity
                     </button>
                     
                     <button
+                        onClick={testSiteStructure}
+                        disabled={isLoading}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm"
+                    >
+                        Test Site Structure
+                    </button>
+                    
+                    <button
                         onClick={testAPIEndpoint}
                         disabled={isLoading}
-                        className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                        className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm"
                     >
-                        Test API Endpoint
+                        Test API Endpoints
+                    </button>
+                    
+                    <button
+                        onClick={testWithDifferentMethods}
+                        disabled={isLoading}
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm"
+                    >
+                        Test HTTP Methods
                     </button>
                     
                     <button
                         onClick={testDeployment}
                         disabled={isLoading}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm"
                     >
                         Test Deployment
                     </button>
                     
                     <button
                         onClick={clearResults}
-                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm"
                     >
                         Clear Results
                     </button>
@@ -128,16 +284,32 @@ export default function StaticSiteDebugger() {
             </div>
             
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    Quick Setup Checklist:
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                    Comprehensive Diagnostics Available:
                 </h4>
-                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>✓ Create .env.local file in your project root</li>
-                    <li>✓ Add NEXT_PUBLIC_DEPLOY_API_KEY=your-api-key</li>
-                    <li>✓ Ensure your static site is deployed and accessible</li>
-                    <li>✓ Verify /api/test and /api/deploy-page endpoints exist</li>
-                    <li>✓ Check CORS configuration on your static site</li>
-                </ul>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800 dark:text-blue-200">
+                    <div>
+                        <h5 className="font-medium mb-2">Environment & Setup:</h5>
+                        <ul className="space-y-1">
+                            <li>• Environment variables validation</li>
+                            <li>• Basic site connectivity</li>
+                            <li>• CORS policy testing</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 className="font-medium mb-2">API & Structure:</h5>
+                        <ul className="space-y-1">
+                            <li>• Multiple endpoint variations</li>
+                            <li>• HTTP methods testing</li>
+                            <li>• Site structure analysis</li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-700">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        <strong>Recommendation:</strong> Run tests in this order: Environment Variables → Basic Connectivity → Site Structure → API Endpoints → HTTP Methods
+                    </p>
+                </div>
             </div>
         </div>
     );
