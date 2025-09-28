@@ -5,7 +5,6 @@ import useOnClickOutside from "@/hooks/useOnClickOutside";
 import { Copy, CheckCircle2, FileText, FileType2, Code, Brain } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
-import { Microsoft } from '@lobehub/icons';
 import HtmlPreviewModal from './HtmlPreviewModal';
 
 /**

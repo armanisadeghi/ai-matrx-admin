@@ -74,27 +74,30 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
   };
 
   const handleCopyCompleteHTML = async () => {
-    try {
-      // Generate the HTML content
-      const htmlContent = markdownToWordPressHTML(content);
-      
-      // Fetch the CSS (same logic as in HtmlPreviewModal)
-      let cssContent = '';
-      try {
-        const response = await fetch('/components/matrx/buttons/matrx-wordpress-styles-example.css');
-        if (response.ok) {
-          cssContent = await response.text();
-        } else {
-          // Fallback CSS if file can't be loaded
-          cssContent = getBasicWordPressCSS();
-        }
-      } catch (error) {
-        console.warn('Could not load WordPress CSS file, using basic styles');
-        cssContent = getBasicWordPressCSS();
-      }
+    // Use the centralized copyToClipboard system to ensure thinking content is filtered
+    await copyToClipboard(content, {
+      isMarkdown: true,
+      formatForWordPress: true,
+      showHtmlPreview: true,
+      onShowHtmlPreview: async (filteredHtml) => {
+        try {
+          // Fetch the CSS (same logic as in HtmlPreviewModal)
+          let cssContent = '';
+          try {
+            const response = await fetch('/components/matrx/buttons/matrx-wordpress-styles-example.css');
+            if (response.ok) {
+              cssContent = await response.text();
+            } else {
+              // Fallback CSS if file can't be loaded
+              cssContent = getBasicWordPressCSS();
+            }
+          } catch (error) {
+            console.warn('Could not load WordPress CSS file, using basic styles');
+            cssContent = getBasicWordPressCSS();
+          }
 
-      // Generate complete HTML page
-      const completeHTML = `<!DOCTYPE html>
+          // Generate complete HTML page with FILTERED content
+          const completeHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -105,16 +108,22 @@ ${cssContent}
     </style>
 </head>
 <body>
-    ${htmlContent}
+    ${filteredHtml}
 </body>
 </html>`;
 
-      // Copy to clipboard
-      await navigator.clipboard.writeText(completeHTML);
-      console.log('Complete HTML page copied to clipboard');
-    } catch (error) {
-      console.error('Failed to copy complete HTML:', error);
-    }
+          // Now copy the complete HTML (which contains filtered content)
+          await copyToClipboard(completeHTML, {
+            onSuccess: () => console.log('Complete HTML page copied to clipboard'),
+            onError: (error) => console.error('Failed to copy complete HTML:', error)
+          });
+        } catch (error) {
+          console.error('Failed to generate complete HTML:', error);
+        }
+      },
+      onSuccess: () => {},
+      onError: (error) => console.error('HTML generation failed:', error)
+    });
   };
 
   const getBasicWordPressCSS = () => {

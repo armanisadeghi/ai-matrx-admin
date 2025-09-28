@@ -21,12 +21,16 @@ interface CopyOptions {
 
 /**
  * Removes thinking tags and their content from markdown
+ * Handles both <thinking> and <think> tags
  * @param {string} content - The content to process
  * @returns {string} - Content without thinking tags
  */
 export function removeThinkingContent(content: string): string {
   if (!content || typeof content !== 'string') return content || '';
-  return content.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+  // Remove both <thinking> and <think> tags and their content
+  return content
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '');
 }
 
 /**

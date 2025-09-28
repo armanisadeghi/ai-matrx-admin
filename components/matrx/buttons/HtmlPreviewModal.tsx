@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings, Upload, ExternalLink, Loader2 } from "lucide-react";
-import { useStaticSite } from "@/utils/useStaticSite";
+import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings, Save, ExternalLink, Loader2 } from "lucide-react";
+import { useHTMLPages } from "@/features/html-pages/hooks/useHTMLPages";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { copyToClipboard, removeThinkingContent } from "./markdown-copy-utils";
 
 interface HtmlPreviewModalProps {
     isOpen: boolean;
@@ -17,16 +20,17 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     const [copiedCSS, setCopiedCSS] = useState(false);
     const [copiedComplete, setCopiedComplete] = useState(false);
     const [copiedCustom, setCopiedCustom] = useState(false);
-    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete" | "custom" | "deploy">("preview");
+    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete" | "custom" | "save">("preview");
     const [wordPressCSS, setWordPressCSS] = useState<string>("");
     
     // Custom copy options
     const [includeBulletStyles, setIncludeBulletStyles] = useState(true);
     const [includeDecorativeLineBreaks, setIncludeDecorativeLineBreaks] = useState(true);
     
-    // Static site deployment
-    const { deployPage, testConnection, isDeploying, deployedPages, error, clearError } = useStaticSite();
-    const [deployedPage, setDeployedPage] = useState<any>(null);
+    // HTML Pages system
+    const user = useAppSelector(selectUser);
+    const { createHTMLPage, isCreating, error, clearError } = useHTMLPages(user?.id);
+    const [savedPage, setSavedPage] = useState<any>(null);
     const [pageTitle, setPageTitle] = useState<string>("");
     const [pageDescription, setPageDescription] = useState<string>("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -543,83 +547,101 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     };
 
     const handleCopyHtml = async () => {
-        try {
-            await navigator.clipboard.writeText(htmlContent);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy HTML:", err);
-        }
+        await copyToClipboard(htmlContent, {
+            onSuccess: () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            },
+            onError: (err) => console.error("Failed to copy HTML:", err)
+        });
     };
 
     const handleCopyHtmlNoBullets = async () => {
-        try {
-            const noBulletsHtml = stripBulletStyles(htmlContent);
-            await navigator.clipboard.writeText(noBulletsHtml);
-            setCopiedNoBullets(true);
-            setTimeout(() => setCopiedNoBullets(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy HTML without bullet styles:", err);
-        }
+        const noBulletsHtml = stripBulletStyles(htmlContent);
+        await copyToClipboard(noBulletsHtml, {
+            onSuccess: () => {
+                setCopiedNoBullets(true);
+                setTimeout(() => setCopiedNoBullets(false), 2000);
+            },
+            onError: (err) => console.error("Failed to copy HTML without bullet styles:", err)
+        });
     };
 
     const handleCopyCSS = async () => {
-        try {
-            await navigator.clipboard.writeText(wordPressCSS);
-            setCopiedCSS(true);
-            setTimeout(() => setCopiedCSS(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy CSS:", err);
-        }
+        await copyToClipboard(wordPressCSS, {
+            onSuccess: () => {
+                setCopiedCSS(true);
+                setTimeout(() => setCopiedCSS(false), 2000);
+            },
+            onError: (err) => console.error("Failed to copy CSS:", err)
+        });
     };
 
     const handleCopyComplete = async () => {
-        try {
-            const completeHTML = generateCompleteHTML();
-            await navigator.clipboard.writeText(completeHTML);
-            setCopiedComplete(true);
-            setTimeout(() => setCopiedComplete(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy complete HTML:", err);
-        }
+        const completeHTML = generateCompleteHTML();
+        await copyToClipboard(completeHTML, {
+            onSuccess: () => {
+                setCopiedComplete(true);
+                setTimeout(() => setCopiedComplete(false), 2000);
+            },
+            onError: (err) => console.error("Failed to copy complete HTML:", err)
+        });
     };
 
     const handleCopyCustom = async () => {
-        try {
-            const customHTML = applyCustomOptions(htmlContent);
-            await navigator.clipboard.writeText(customHTML);
-            setCopiedCustom(true);
-            setTimeout(() => setCopiedCustom(false), 2000);
-        } catch (err) {
-            console.error("Failed to copy custom HTML:", err);
-        }
+        const customHTML = applyCustomOptions(htmlContent);
+        await copyToClipboard(customHTML, {
+            onSuccess: () => {
+                setCopiedCustom(true);
+                setTimeout(() => setCopiedCustom(false), 2000);
+            },
+            onError: (err) => console.error("Failed to copy custom HTML:", err)
+        });
     };
 
-    // Deployment handlers
-    const handleDeploy = async () => {
+    // HTML Page save handlers
+    const handleSavePage = async () => {
         if (!pageTitle.trim()) {
-            alert('Please enter a page title before deploying');
+            alert('Please enter a page title before saving');
+            return;
+        }
+
+        if (!user?.id) {
+            alert('You must be logged in to save HTML pages');
             return;
         }
 
         try {
             clearError();
-            const completeHTML = generateCompleteHTML();
-            const result = await deployPage(completeHTML, pageTitle.trim(), pageDescription.trim());
-            setDeployedPage(result);
-            alert('Page deployed successfully!');
+            
+            // Generate complete HTML with thinking content filtered out
+            const filteredContent = removeThinkingContent(htmlContent);
+            const completeHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Content</title>
+    <style>
+${wordPressCSS}
+    </style>
+</head>
+<body>
+    ${filteredContent}
+</body>
+</html>`;
+            
+            const result = await createHTMLPage(completeHTML, pageTitle.trim(), pageDescription.trim());
+            setSavedPage(result);
+            
+            // Clear form after successful save
+            setPageTitle('');
+            setPageDescription('');
+            
+            console.log('Page saved successfully:', result);
         } catch (err) {
-            console.error('Deployment failed:', err);
-            alert(`Deployment failed: ${err.message}`);
-        }
-    };
-
-    const handleTestConnection = async () => {
-        try {
-            const result = await testConnection();
-            alert(`Connection successful! ${result.message}`);
-        } catch (err) {
-            alert(`Connection failed: ${err.message}`);
+            console.error('Save failed:', err);
+            alert(`Save failed: ${err.message}`);
         }
     };
 
@@ -732,15 +754,15 @@ ${wordPressCSS}
                              Custom Copy
                          </button>
                          <button
-                             onClick={() => setActiveTab("deploy")}
+                             onClick={() => setActiveTab("save")}
                              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                                 activeTab === "deploy"
+                                 activeTab === "save"
                                      ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
                                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                              }`}
                          >
-                             <Upload size={16} className="inline mr-1" />
-                             Deploy
+                             <Save size={16} className="inline mr-1" />
+                             Save Page
                          </button>
                     </div>
 
@@ -978,29 +1000,37 @@ ${wordPressCSS}
                                      </div>
                                  </div>
                              </div>
-                         ) : activeTab === "deploy" ? (
-                             // Deploy Tab
+                         ) : activeTab === "save" ? (
+                             // Save Page Tab
                              <div className="h-full flex flex-col">
                                  <div className="max-w-2xl mx-auto w-full space-y-6">
                                      <div className="text-center">
-                                         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Deploy to Static Site</h3>
+                                         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Save HTML Page</h3>
                                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                                             Deploy your HTML page to mymatrx.com and view it in an iframe
+                                             Save your HTML page to the database and get a shareable URL
                                          </p>
                                      </div>
 
-                                     {/* Connection Test */}
-                                     <div className="flex justify-center">
-                                         <button
-                                             onClick={handleTestConnection}
-                                             className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
-                                         >
-                                             <Globe size={16} />
-                                             Test Connection
-                                         </button>
-                                     </div>
+                                     {/* User Info */}
+                                     {user && (
+                                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                                             <div className="flex items-center gap-3">
+                                                 <div className="text-blue-600 dark:text-blue-400 text-sm">
+                                                     <strong>Logged in as:</strong> {user.email}
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     )}
 
-                                     {/* Deployment Form */}
+                                     {!user && (
+                                         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                                             <div className="text-yellow-800 dark:text-yellow-300 text-sm">
+                                                 <strong>Note:</strong> You must be logged in to save HTML pages.
+                                             </div>
+                                         </div>
+                                     )}
+
+                                     {/* Save Form */}
                                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-4">
                                          <div>
                                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1012,6 +1042,7 @@ ${wordPressCSS}
                                                  onChange={(e) => setPageTitle(e.target.value)}
                                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                  placeholder="Enter page title"
+                                                 disabled={!user}
                                              />
                                          </div>
                                          
@@ -1025,6 +1056,7 @@ ${wordPressCSS}
                                                  onChange={(e) => setPageDescription(e.target.value)}
                                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                  placeholder="Brief description (optional)"
+                                                 disabled={!user}
                                              />
                                          </div>
                                      </div>
@@ -1040,48 +1072,51 @@ ${wordPressCSS}
                                          </div>
                                      )}
 
-                                     {/* Deploy Button */}
+                                     {/* Save Button */}
                                      <div className="text-center">
                                          <button
-                                             onClick={handleDeploy}
-                                             disabled={isDeploying || !pageTitle.trim()}
+                                             onClick={handleSavePage}
+                                             disabled={isCreating || !pageTitle.trim() || !user}
                                              className={`inline-flex items-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
-                                                 isDeploying || !pageTitle.trim()
+                                                 isCreating || !pageTitle.trim() || !user
                                                      ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                                                     : "bg-blue-600 hover:bg-blue-700 text-white"
+                                                     : "bg-green-600 hover:bg-green-700 text-white"
                                              }`}
                                          >
-                                             {isDeploying ? (
+                                             {isCreating ? (
                                                  <>
                                                      <Loader2 size={18} className="animate-spin" />
-                                                     Deploying...
+                                                     Saving...
                                                  </>
                                              ) : (
                                                  <>
-                                                     <Upload size={18} />
-                                                     Deploy Page
+                                                     <Save size={18} />
+                                                     Save HTML Page
                                                  </>
                                              )}
                                          </button>
                                      </div>
 
-                                     {/* Deployed Page Display */}
-                                     {deployedPage && (
+                                     {/* Saved Page Display */}
+                                     {savedPage && (
                                          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6 space-y-4">
                                              <div className="text-center">
                                                  <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">
-                                                     Page Deployed Successfully! 🎉
+                                                     Page Saved Successfully! 🎉
                                                  </h4>
                                                  <div className="space-y-2 text-sm">
                                                      <p className="text-green-700 dark:text-green-400">
-                                                         <strong>Title:</strong> {deployedPage.title}
+                                                         <strong>Title:</strong> {savedPage.title}
                                                      </p>
                                                      <p className="text-green-700 dark:text-green-400">
-                                                         <strong>Page ID:</strong> {deployedPage.id}
+                                                         <strong>Page ID:</strong> {savedPage.pageId}
+                                                     </p>
+                                                     <p className="text-green-700 dark:text-green-400">
+                                                         <strong>URL:</strong> {savedPage.url}
                                                      </p>
                                                      <div className="flex justify-center gap-3 mt-4">
                                                          <a
-                                                             href={deployedPage.url}
+                                                             href={savedPage.url}
                                                              target="_blank"
                                                              rel="noopener noreferrer"
                                                              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
@@ -1100,9 +1135,9 @@ ${wordPressCSS}
                                                  </h5>
                                                  <div className="border-2 border-green-200 dark:border-green-700 rounded-lg overflow-hidden">
                                                      <iframe
-                                                         src={deployedPage.url}
+                                                         src={savedPage.url}
                                                          className="w-full h-96"
-                                                         title={deployedPage.title}
+                                                         title={savedPage.title}
                                                          sandbox="allow-scripts allow-same-origin"
                                                      />
                                                  </div>
