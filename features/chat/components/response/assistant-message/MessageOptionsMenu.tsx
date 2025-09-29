@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { markdownToWordPressHTML } from "@/components/matrx/buttons/markdown-wordpress-utils";
+import { getWordPressCSS, loadWordPressCSS } from "@/components/matrx/buttons/css/wordpress-styles";
 
 interface MessageOptionsMenuProps {
   content: string;
@@ -81,20 +82,8 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
       showHtmlPreview: true,
       onShowHtmlPreview: async (filteredHtml) => {
         try {
-          // Fetch the CSS (same logic as in HtmlPreviewModal)
-          let cssContent = '';
-          try {
-            const response = await fetch('/components/matrx/buttons/matrx-wordpress-styles-example.css');
-            if (response.ok) {
-              cssContent = await response.text();
-            } else {
-              // Fallback CSS if file can't be loaded
-              cssContent = getBasicWordPressCSS();
-            }
-          } catch (error) {
-            console.warn('Could not load WordPress CSS file, using basic styles');
-            cssContent = getBasicWordPressCSS();
-          }
+          // Use centralized CSS system
+          const cssContent = await loadWordPressCSS();
 
           // Generate complete HTML page with FILTERED content
           const completeHTML = `<!DOCTYPE html>
@@ -126,30 +115,6 @@ ${cssContent}
     });
   };
 
-  const getBasicWordPressCSS = () => {
-    return `/* Basic WordPress styles fallback */
-.matrx-content-container {
-    width: 100%;
-    padding: 2rem;
-    line-height: 1.6;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-.matrx-h1 { font-size: 2.5rem; font-weight: 700; margin: 0 0 1.5rem 0; color: #1a1a1a; }
-.matrx-h2 { font-size: 1.8rem; font-weight: 600; margin: 3rem 0 1rem 0; color: #2a2a2a; border-bottom: 2px solid #e5e5e5; padding-bottom: 0.75rem; }
-.matrx-h3 { font-size: 1.3rem; font-weight: 600; margin: 2rem 0 1rem 0; color: #3a3a3a; }
-.matrx-paragraph { font-size: 1rem; color: #4a4a4a; margin-bottom: 1.5rem; }
-.matrx-intro { font-size: 1.1rem; color: #4a4a4a; margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-left: 4px solid #d1d5db; border-radius: 0 8px 8px 0; }
-.matrx-list { margin: 1.5rem 0; padding-left: 0; }
-.matrx-bullet-list { list-style: none; }
-.matrx-list-item { margin-bottom: 1rem; padding-left: 1.5rem; position: relative; color: #4a4a4a; }
-.matrx-list-item::before { content: "•"; color: #6b7280; font-weight: bold; position: absolute; left: 0; top: 0; font-size: 1.2rem; }
-.matrx-strong { font-weight: 600; color: #2a2a2a; }
-.matrx-em { font-style: italic; color: #2a2a2a; }
-.matrx-link { color: #374151; text-decoration: underline; }
-.matrx-faq-item { margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #d1d5db; }
-.matrx-faq-question { font-size: 1.2rem; font-weight: 600; margin: 0 0 0.75rem 0; color: #2a2a2a; }
-.matrx-faq-answer { margin: 0; color: #4a4a4a; line-height: 1.6; }`;
-  };
 
   const menuOptions = [
     // Copy Options
