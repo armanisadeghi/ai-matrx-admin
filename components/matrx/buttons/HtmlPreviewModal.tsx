@@ -76,12 +76,16 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
 
     // Generate complete HTML with CSS
     const generateCompleteHTML = () => {
+        // Extract title from HTML content (H1 first, then H2, fallback to generic)
+        const extractedTitle = extractTitleFromHTML(htmlContent);
+        const pageTitle = extractedTitle || "WordPress Content";
+        
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WordPress Content</title>
+    <title>${pageTitle}</title>
     <style>
 ${wordPressCSS}
     </style>
