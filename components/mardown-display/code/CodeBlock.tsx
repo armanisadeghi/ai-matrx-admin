@@ -8,6 +8,9 @@ import { EditButton } from "./CodeBlockHeader";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import StickyButtons from "./StickyButtons";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 
 interface CodeBlockProps {
     code: string;
@@ -41,12 +44,63 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const [showWrapLines, setShowWrapLines] = useState(wrapLines);
     const [isTopInView, setIsTopInView] = useState(false);
     const [isBottomInView, setIsBottomInView] = useState(false);
+    const [isViewingHTML, setIsViewingHTML] = useState(false);
+    const [htmlPageUrl, setHtmlPageUrl] = useState<string>("");
+    const [isCreatingPage, setIsCreatingPage] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
     const topRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const showStickyButtons = isBottomInView && !isTopInView && !isEditing;
     const { mode } = useTheme();
     const isMobile = useIsMobile();
+    const user = useAppSelector(selectUser);
+
+    // Function to detect if code is a complete HTML document
+    const isCompleteHTMLDocument = (htmlCode: string): boolean => {
+        if (!htmlCode || language !== 'html') return false;
+        
+        const trimmedCode = htmlCode.trim();
+        const hasDoctype = /^\s*<!DOCTYPE\s+html/i.test(trimmedCode);
+        const hasHtmlTag = /<html[^>]*>/i.test(trimmedCode) && /<\/html>/i.test(trimmedCode);
+        const hasHead = /<head[^>]*>/i.test(trimmedCode) && /<\/head>/i.test(trimmedCode);
+        const hasBody = /<body[^>]*>/i.test(trimmedCode) && /<\/body>/i.test(trimmedCode);
+        
+        return hasDoctype && hasHtmlTag && hasHead && hasBody;
+    };
+
+    // Function to handle HTML document viewing
+    const handleViewHTML = async () => {
+        if (!user?.id) {
+            alert('You must be logged in to view HTML pages');
+            return;
+        }
+
+        if (isViewingHTML && htmlPageUrl) {
+            // If already viewing, just switch back to code
+            setIsViewingHTML(false);
+            return;
+        }
+
+        setIsCreatingPage(true);
+        try {
+            console.log('Creating HTML page with code:', code.substring(0, 100) + '...');
+            const result = await HTMLPageService.createPage(
+                code,
+                'Code Preview',
+                'Generated from code block',
+                user.id
+            );
+            
+            console.log('HTML page created successfully:', result);
+            setHtmlPageUrl(result.url);
+            setIsViewingHTML(true);
+        } catch (error) {
+            console.error('Failed to create HTML page:', error);
+            alert(`Failed to create HTML page: ${error.message}`);
+        } finally {
+            setIsCreatingPage(false);
+        }
+    };
 
     useEffect(() => {
         setCode(initialCode);
@@ -208,6 +262,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 toggleCollapse={toggleCollapse}
                 isCopied={isCopied}
                 isMobile={isMobile}
+                isCompleteHTML={isCompleteHTMLDocument(code)}
+                handleViewHTML={handleViewHTML}
+                isViewingHTML={isViewingHTML}
+                isCreatingPage={isCreatingPage}
             />
             {showStickyButtons && (
                 <StickyButtons
@@ -225,46 +283,196 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                     <div className={cn("w-full", isFullScreen ? "h-[calc(100vh-15rem)]" : "min-h-[200px]")}>
                         <SmallCodeEditor language={language} initialCode={code} onChange={handleCodeChange} mode={mode} />
                     </div>
-                ) : (
-                    <div className={cn("relative", isFullScreen && "h-full")}>
-                        <div ref={topRef} style={{ height: "1px" }} />
+                ) : isViewingHTML && htmlPageUrl ? (
+                    // HTML Page View with flip animation
+                    <div 
+                        className={cn("relative", isFullScreen && "h-full")}
+                        style={{ perspective: '1000px' }}
+                    >
                         <div
-                            ref={bottomRef}
-                            className={cn(
-                                "transition-all duration-300 ease-in-out",
-                                isCollapsed ? "max-h-[150px]" : "max-h-none",
-                                isFullScreen ? "h-full overflow-auto" : "overflow-hidden"
-                            )}
+                            className="transition-transform duration-700 ease-in-out transform-gpu"
+                            style={{
+                                transformStyle: 'preserve-3d',
+                                transform: 'rotateY(0deg)' // Show HTML normally after flip
+                            }}
                         >
-                            <SyntaxHighlighter
-                                language={language}
-                                style={mode === "dark" ? vscDarkPlus : vs}
-                                showLineNumbers={lineNumbers}
-                                wrapLines={showWrapLines}
-                                wrapLongLines={showWrapLines}
-                                customStyle={{
-                                    paddingTop: "1rem",
-                                    paddingRight: "1rem",
-                                    paddingBottom: "1rem",
-                                    paddingLeft: "1rem",
-                                    fontSize: `${fontSize}px`,
-                                    height: "auto",
-                                    minHeight: "auto",
-                                }}
-                            >
-                                {code}
-                            </SyntaxHighlighter>
-                        </div>
-                        {isCollapsed && (
-                            <div
-                                className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-neutral-900 to-transparent opacity-80 cursor-pointer"
-                                onClick={toggleCollapse}
-                            >
-                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-neutral-400 text-sm">
-                                    Click to expand {code.split("\n").length - 3} more lines
+                            <div>
+                                <div ref={topRef} style={{ height: "1px" }} />
+                                <div
+                                    ref={bottomRef}
+                                    className={cn(
+                                        "border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden",
+                                        isFullScreen ? "h-full" : "h-auto"
+                                    )}
+                                    style={{ 
+                                        minHeight: isFullScreen ? '100%' : '600px',
+                                        height: isFullScreen ? '100%' : 'auto'
+                                    }}
+                                >
+                                    <iframe
+                                        src={htmlPageUrl}
+                                        className="w-full"
+                                        title="HTML Preview"
+                                        sandbox="allow-scripts allow-same-origin allow-forms"
+                                        style={{ 
+                                            border: 'none',
+                                            height: isFullScreen ? '100%' : '600px',
+                                            minHeight: '600px'
+                                        }}
+                                        onLoad={(e) => {
+                                            console.log('Iframe loaded successfully for URL:', htmlPageUrl);
+                                            if (!isFullScreen) {
+                                                // Get the iframe element
+                                                const iframe = e.target as HTMLIFrameElement;
+                                                
+                                                // Set a timeout to allow content to fully load
+                                        setTimeout(() => {
+                                            try {
+                                                // Try to access the iframe document
+                                                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                                                if (iframeDoc) {
+                                                    // Get the full content height including all elements
+                                                    const body = iframeDoc.body;
+                                                    const html = iframeDoc.documentElement;
+                                                    
+                                                    const contentHeight = Math.max(
+                                                        body?.scrollHeight || 0,
+                                                        body?.offsetHeight || 0,
+                                                        body?.clientHeight || 0,
+                                                        html?.scrollHeight || 0,
+                                                        html?.offsetHeight || 0,
+                                                        html?.clientHeight || 0,
+                                                        600 // minimum height
+                                                    );
+                                                    
+                                                    // Add extra padding to ensure no scrolling
+                                                    const finalHeight = contentHeight + 50;
+                                                    
+                                                    console.log('Content measurements:', {
+                                                        bodyScrollHeight: body?.scrollHeight,
+                                                        bodyOffsetHeight: body?.offsetHeight,
+                                                        htmlScrollHeight: html?.scrollHeight,
+                                                        htmlOffsetHeight: html?.offsetHeight,
+                                                        finalHeight
+                                                    });
+                                                    
+                                                    // Set iframe height to match content + padding
+                                                    iframe.style.height = `${finalHeight}px`;
+                                                    iframe.style.minHeight = `${finalHeight}px`;
+                                                    iframe.style.overflow = 'hidden'; // Prevent any scrolling
+                                                    
+                                                    // Also update the container
+                                                    const container = iframe.parentElement;
+                                                    if (container) {
+                                                        container.style.height = `${finalHeight}px`;
+                                                        container.style.minHeight = `${finalHeight}px`;
+                                                    }
+                                                    
+                                                    // Try again after a longer delay in case content is still loading
+                                                    setTimeout(() => {
+                                                        const newContentHeight = Math.max(
+                                                            body?.scrollHeight || 0,
+                                                            html?.scrollHeight || 0,
+                                                            600
+                                                        );
+                                                        const newFinalHeight = newContentHeight + 50;
+                                                        
+                                                        if (newFinalHeight > finalHeight) {
+                                                            console.log('Adjusting height after delay:', newFinalHeight);
+                                                            iframe.style.height = `${newFinalHeight}px`;
+                                                            iframe.style.minHeight = `${newFinalHeight}px`;
+                                                            if (container) {
+                                                                container.style.height = `${newFinalHeight}px`;
+                                                                container.style.minHeight = `${newFinalHeight}px`;
+                                                            }
+                                                        }
+                                                    }, 500);
+                                                }
+                                            } catch (error) {
+                                                // Cross-origin restrictions, try alternative approach
+                                                console.log('Cannot access iframe content, using fallback height');
+                                                
+                                                // Fallback: set a larger height to avoid scrolling
+                                                iframe.style.height = '1200px';
+                                                iframe.style.minHeight = '1200px';
+                                                iframe.style.overflow = 'hidden';
+                                                
+                                                const container = iframe.parentElement;
+                                                if (container) {
+                                                    container.style.height = '1200px';
+                                                    container.style.minHeight = '1200px';
+                                                }
+                                            }
+                                        }, 100); // Small delay to ensure content is loaded
+                                            }
+                                        }}
+                                        onError={(e) => {
+                                            console.error('Iframe failed to load:', e, 'URL:', htmlPageUrl);
+                                        }}
+                                    />
                                 </div>
                             </div>
-                        )}
+                        </div>
+                    </div>
+                ) : (
+                    // Code View with flip animation
+                    <div 
+                        className={cn("relative", isFullScreen && "h-full")}
+                        style={{ perspective: '1000px' }}
+                    >
+                        <div
+                            className="transition-transform duration-700 ease-in-out transform-gpu"
+                            style={{
+                                transformStyle: 'preserve-3d',
+                                transform: 'rotateY(0deg)'
+                            }}
+                        >
+                            <div
+                                style={{ 
+                                    backfaceVisibility: 'hidden',
+                                    WebkitBackfaceVisibility: 'hidden'
+                                }}
+                            >
+                                <div ref={topRef} style={{ height: "1px" }} />
+                                <div
+                                    ref={bottomRef}
+                                    className={cn(
+                                        "transition-all duration-300 ease-in-out",
+                                        isCollapsed ? "max-h-[150px]" : "max-h-none",
+                                        isFullScreen ? "h-full overflow-auto" : "overflow-hidden"
+                                    )}
+                                >
+                                    <SyntaxHighlighter
+                                        language={language}
+                                        style={mode === "dark" ? vscDarkPlus : vs}
+                                        showLineNumbers={lineNumbers}
+                                        wrapLines={showWrapLines}
+                                        wrapLongLines={showWrapLines}
+                                        customStyle={{
+                                            paddingTop: "1rem",
+                                            paddingRight: "1rem",
+                                            paddingBottom: "1rem",
+                                            paddingLeft: "1rem",
+                                            fontSize: `${fontSize}px`,
+                                            height: "auto",
+                                            minHeight: "auto",
+                                        }}
+                                    >
+                                        {code}
+                                    </SyntaxHighlighter>
+                                </div>
+                                {isCollapsed && (
+                                    <div
+                                        className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-neutral-900 to-transparent opacity-80 cursor-pointer"
+                                        onClick={toggleCollapse}
+                                    >
+                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-neutral-400 text-sm">
+                                            Click to expand {code.split("\n").length - 3} more lines
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

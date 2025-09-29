@@ -1,5 +1,5 @@
 import React  from "react";
-import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, WrapText, Hash } from "lucide-react";
+import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, WrapText, Hash, Globe, Loader2 } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
 import LanguageDisplay from "../LanguageDisplay";
 import { BsChevronBarContract, BsChevronBarExpand } from "react-icons/bs";
@@ -21,6 +21,10 @@ interface CodeBlockHeaderProps {
     toggleWrapLines?: (e: React.MouseEvent) => void;
     isCopied: boolean;
     isMobile: boolean;
+    isCompleteHTML?: boolean;
+    handleViewHTML?: () => void;
+    isViewingHTML?: boolean;
+    isCreatingPage?: boolean;
 }
 
 export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
@@ -39,6 +43,10 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
     toggleWrapLines,
     isCopied,
     isMobile,
+    isCompleteHTML = false,
+    handleViewHTML,
+    isViewingHTML = false,
+    isCreatingPage = false,
 }) => {
     // Determine if collapse functionality should be available
     const canCollapse = linesCount > 5;
@@ -73,6 +81,35 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
                         </span>
                     )}
                 </div>
+                {/* View HTML Button */}
+                {isCompleteHTML && handleViewHTML && !isMobile && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewHTML();
+                        }}
+                        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
+                        title={isViewingHTML ? "Show Code" : "View HTML Page"}
+                        disabled={isCreatingPage}
+                    >
+                        {isCreatingPage ? (
+                            <>
+                                <Loader2 size={14} className="animate-spin" />
+                                <span>Creating...</span>
+                            </>
+                        ) : isViewingHTML ? (
+                            <>
+                                <Eye size={14} />
+                                <span>Code</span>
+                            </>
+                        ) : (
+                            <>
+                                <Globe size={14} />
+                                <span>View</span>
+                            </>
+                        )}
+                    </button>
+                )}
             </div>
             <CodeBlockButtons
                 isEditing={isEditing}
