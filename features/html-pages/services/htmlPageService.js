@@ -7,20 +7,34 @@ export class HTMLPageService {
    * @param {string} title - Page title
    * @param {string} description - Optional description
    * @param {string} userId - User ID from your main app
+   * @param {Object} metaFields - Optional meta fields
+   * @param {string} metaFields.metaTitle - SEO meta title
+   * @param {string} metaFields.metaDescription - SEO meta description
+   * @param {string} metaFields.metaKeywords - SEO meta keywords
+   * @param {string} metaFields.ogImage - Open Graph image URL
+   * @param {string} metaFields.canonicalUrl - Canonical URL
    * @returns {Promise<{success: boolean, pageId: string, url: string}>}
    */
-  static async createPage(htmlContent, title, description = '', userId) {
+  static async createPage(htmlContent, title, description = '', userId, metaFields = {}) {
     try {
-      console.log('Creating HTML page:', { title, userId });
+      console.log('Creating HTML page:', { title, userId, metaFields });
+
+      const insertData = {
+        html_content: htmlContent,
+        title: title,
+        description: description,
+        user_id: userId,
+        // Meta fields with defaults
+        meta_title: metaFields.metaTitle || title,
+        meta_description: metaFields.metaDescription || description,
+        meta_keywords: metaFields.metaKeywords || null,
+        og_image: metaFields.ogImage || null,
+        canonical_url: metaFields.canonicalUrl || null
+      };
 
       const { data, error } = await supabaseHtml
         .from('html_pages')
-        .insert({
-          html_content: htmlContent,
-          title: title,
-          description: description,
-          user_id: userId
-        })
+        .insert(insertData)
         .select()
         .single();
 

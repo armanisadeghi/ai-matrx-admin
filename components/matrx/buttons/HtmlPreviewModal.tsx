@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings, Save, ExternalLink, Loader2 } from "lucide-react";
+import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings, Save, ExternalLink, Loader2, Edit, ChevronDown, ChevronRight } from "lucide-react";
 import { useHTMLPages } from "@/features/html-pages/hooks/useHTMLPages";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { copyToClipboard, removeThinkingContent } from "./markdown-copy-utils";
 import { getWordPressCSS, loadWordPressCSS } from "./css/wordpress-styles";
+import SmallCodeEditor from "@/components/mardown-display/code/SmallCodeEditor";
 
 interface HtmlPreviewModalProps {
     isOpen: boolean;
@@ -21,7 +22,9 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     const [copiedCSS, setCopiedCSS] = useState(false);
     const [copiedComplete, setCopiedComplete] = useState(false);
     const [copiedCustom, setCopiedCustom] = useState(false);
-    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete" | "custom" | "save">("preview");
+    const [copiedUrl, setCopiedUrl] = useState(false);
+    const [activeTab, setActiveTab] = useState<"preview" | "html" | "css" | "complete" | "custom" | "save" | "edit">("preview");
+    const [editedCompleteHtml, setEditedCompleteHtml] = useState<string>("");
     const [wordPressCSS, setWordPressCSS] = useState<string>("");
     
     // Custom copy options
@@ -34,9 +37,30 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     const [savedPage, setSavedPage] = useState<any>(null);
     const [pageTitle, setPageTitle] = useState<string>("");
     const [pageDescription, setPageDescription] = useState<string>("");
+    const [metaTitle, setMetaTitle] = useState<string>("");
+    const [metaDescription, setMetaDescription] = useState<string>("");
+    const [metaKeywords, setMetaKeywords] = useState<string>("");
+    const [ogImage, setOgImage] = useState<string>("");
+    const [canonicalUrl, setCanonicalUrl] = useState<string>("");
+    const [showAdvancedMeta, setShowAdvancedMeta] = useState<boolean>(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const cssTextareaRef = useRef<HTMLTextAreaElement>(null);
     const completeTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Initialize edited complete HTML when modal opens
+    useEffect(() => {
+        if (isOpen && htmlContent && wordPressCSS) {
+            const completeHtml = generateCompleteHTML();
+            setEditedCompleteHtml(completeHtml);
+        }
+    }, [isOpen, htmlContent, wordPressCSS]);
+
+    // Reset edited complete HTML when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            setEditedCompleteHtml("");
+        }
+    }, [isOpen]);
 
     // Load WordPress CSS for accurate preview
     useEffect(() => {
@@ -49,6 +73,167 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
             loadCSS();
         }
     }, [isOpen]);
+
+    // Generate complete HTML with CSS
+    const generateCompleteHTML = () => {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Content</title>
+    <style>
+${wordPressCSS}
+    </style>
+</head>
+<body>
+    ${htmlContent}
+</body>
+</html>`;
+    };
+
+    // Get the current HTML content (edited version if available, otherwise original)
+    const getCurrentHtmlContent = () => {
+        return editedCompleteHtml || generateCompleteHTML();
+    };
+
+    // Extract just the body content from complete HTML for preview
+    const extractBodyContent = (completeHtml: string) => {
+        const match = completeHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        return match ? match[1] : htmlContent;
+    };
+
+    // SEO helper functions
+    const getCharacterCountStatus = (text: string, ideal: number, max: number) => {
+        const length = text.length;
+        if (length === 0) return { status: 'empty', color: 'text-gray-400' };
+        if (length <= ideal) return { status: 'good', color: 'text-green-600 dark:text-green-400' };
+        if (length <= max) return { status: 'warning', color: 'text-yellow-600 dark:text-yellow-400' };
+        return { status: 'error', color: 'text-red-600 dark:text-red-400' };
+    };
+
+    const getSEORecommendation = (text: string, field: string) => {
+        const length = text.length;
+        switch (field) {
+            case 'title':
+                if (length === 0) return 'Page title is required';
+                if (length < 30) return 'Consider a longer, more descriptive title';
+                if (length > 60) return 'Title may be truncated in search results';
+                return 'Good title length';
+            case 'description':
+                if (length === 0) return 'Description helps with SEO';
+                if (length < 120) return 'Consider a longer description';
+                if (length > 160) return 'Description may be truncated';
+                return 'Good description length';
+            case 'metaTitle':
+                if (length === 0) return 'Will use page title if empty';
+                if (length < 30) return 'Consider a longer meta title';
+                if (length > 60) return 'Meta title may be truncated';
+                return 'Good meta title length';
+            case 'metaDescription':
+                if (length === 0) return 'Will use page description if empty';
+                if (length < 120) return 'Consider a longer meta description';
+                if (length > 160) return 'Meta description may be truncated';
+                return 'Good meta description length';
+            default:
+                return '';
+        }
+    };
+
+    // Function to extract title from HTML content
+    const extractTitleFromHTML = (htmlContent: string): string => {
+        try {
+            // Create a temporary DOM element to parse the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            
+            // Look for H1 first
+            const h1 = tempDiv.querySelector('h1');
+            if (h1 && h1.textContent?.trim()) {
+                return h1.textContent.trim();
+            }
+            
+            // If no H1, look for H2
+            const h2 = tempDiv.querySelector('h2');
+            if (h2 && h2.textContent?.trim()) {
+                return h2.textContent.trim();
+            }
+            
+            // Return empty string if no heading found
+            return '';
+        } catch (error) {
+            console.error('Error extracting title from HTML:', error);
+            return '';
+        }
+    };
+
+    // Function to extract description from HTML content
+    const extractDescriptionFromHTML = (htmlContent: string): string => {
+        try {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            
+            // Find the first heading (H1 or H2)
+            let firstHeading = tempDiv.querySelector('h1');
+            if (!firstHeading) {
+                firstHeading = tempDiv.querySelector('h2');
+            }
+            
+            if (firstHeading) {
+                // Look for the first <p> element that comes after the heading
+                let nextElement = firstHeading.nextElementSibling;
+                while (nextElement) {
+                    if (nextElement.tagName === 'P' && nextElement.textContent?.trim()) {
+                        // Get the first sentence from the paragraph
+                        const fullText = nextElement.textContent.trim();
+                        const firstSentence = fullText.split(/[.!?]/)[0];
+                        return firstSentence.trim() + (firstSentence.length < fullText.length ? '.' : '');
+                    }
+                    nextElement = nextElement.nextElementSibling;
+                }
+            } else {
+                // If no heading found, just get the first <p> element
+                const firstP = tempDiv.querySelector('p');
+                if (firstP && firstP.textContent?.trim()) {
+                    const fullText = firstP.textContent.trim();
+                    const firstSentence = fullText.split(/[.!?]/)[0];
+                    return firstSentence.trim() + (firstSentence.length < fullText.length ? '.' : '');
+                }
+            }
+            
+            return '';
+        } catch (error) {
+            console.error('Error extracting description from HTML:', error);
+            return '';
+        }
+    };
+
+    // Auto-populate title and description when Save Page tab is activated
+    useEffect(() => {
+        if (activeTab === 'save' && !pageTitle && !pageDescription) {
+            const currentCompleteHtml = getCurrentHtmlContent();
+            const bodyContent = extractBodyContent(currentCompleteHtml);
+            if (bodyContent) {
+                const extractedTitle = extractTitleFromHTML(bodyContent);
+                const extractedDescription = extractDescriptionFromHTML(bodyContent);
+                
+                if (extractedTitle) {
+                    setPageTitle(extractedTitle);
+                    // Auto-populate meta title if empty
+                    if (!metaTitle) {
+                        setMetaTitle(extractedTitle);
+                    }
+                }
+                if (extractedDescription) {
+                    setPageDescription(extractedDescription);
+                    // Auto-populate meta description if empty
+                    if (!metaDescription) {
+                        setMetaDescription(extractedDescription);
+                    }
+                }
+            }
+        }
+    }, [activeTab, pageTitle, pageDescription, editedCompleteHtml, metaTitle, metaDescription]);
 
     if (!isOpen) return null;
 
@@ -77,7 +262,9 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     };
 
     const handleCopyHtml = async () => {
-        await copyToClipboard(htmlContent, {
+        const currentCompleteHtml = getCurrentHtmlContent();
+        const bodyContent = extractBodyContent(currentCompleteHtml);
+        await copyToClipboard(bodyContent, {
             onSuccess: () => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
@@ -87,7 +274,9 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     };
 
     const handleCopyHtmlNoBullets = async () => {
-        const noBulletsHtml = stripBulletStyles(htmlContent);
+        const currentCompleteHtml = getCurrentHtmlContent();
+        const bodyContent = extractBodyContent(currentCompleteHtml);
+        const noBulletsHtml = stripBulletStyles(bodyContent);
         await copyToClipboard(noBulletsHtml, {
             onSuccess: () => {
                 setCopiedNoBullets(true);
@@ -108,7 +297,7 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     };
 
     const handleCopyComplete = async () => {
-        const completeHTML = generateCompleteHTML();
+        const completeHTML = getCurrentHtmlContent();
         await copyToClipboard(completeHTML, {
             onSuccess: () => {
                 setCopiedComplete(true);
@@ -119,13 +308,25 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
     };
 
     const handleCopyCustom = async () => {
-        const customHTML = applyCustomOptions(htmlContent);
+        const currentCompleteHtml = getCurrentHtmlContent();
+        const bodyContent = extractBodyContent(currentCompleteHtml);
+        const customHTML = applyCustomOptions(bodyContent);
         await copyToClipboard(customHTML, {
             onSuccess: () => {
                 setCopiedCustom(true);
                 setTimeout(() => setCopiedCustom(false), 2000);
             },
             onError: (err) => console.error("Failed to copy custom HTML:", err)
+        });
+    };
+
+    const handleCopyUrl = async (url: string) => {
+        await copyToClipboard(url, {
+            onSuccess: () => {
+                setCopiedUrl(true);
+                setTimeout(() => setCopiedUrl(false), 1500);
+            },
+            onError: (err) => console.error("Failed to copy URL:", err)
         });
     };
 
@@ -144,29 +345,37 @@ export default function HtmlPreviewModal({ isOpen, onClose, htmlContent, title =
         try {
             clearError();
             
-            // Generate complete HTML with thinking content filtered out
-            const filteredContent = removeThinkingContent(htmlContent);
-            const completeHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WordPress Content</title>
-    <style>
-${wordPressCSS}
-    </style>
-</head>
-<body>
-    ${filteredContent}
-</body>
-</html>`;
+            // Get current complete HTML and filter thinking content from body
+            const currentCompleteHtml = getCurrentHtmlContent();
+            const bodyContent = extractBodyContent(currentCompleteHtml);
+            const filteredBodyContent = removeThinkingContent(bodyContent);
             
-            const result = await createHTMLPage(completeHTML, pageTitle.trim(), pageDescription.trim());
+            // Reconstruct complete HTML with filtered body content
+            const completeHTML = currentCompleteHtml.replace(
+                /<body[^>]*>[\s\S]*?<\/body>/i,
+                `<body>\n    ${filteredBodyContent}\n</body>`
+            );
+            
+            // Prepare meta fields
+            const metaFields = {
+                metaTitle: metaTitle.trim() || pageTitle.trim(),
+                metaDescription: metaDescription.trim() || pageDescription.trim(),
+                metaKeywords: metaKeywords.trim() || null,
+                ogImage: ogImage.trim() || null,
+                canonicalUrl: canonicalUrl.trim() || null
+            };
+
+            const result = await createHTMLPage(completeHTML, pageTitle.trim(), pageDescription.trim(), metaFields);
             setSavedPage(result);
             
             // Clear form after successful save
             setPageTitle('');
             setPageDescription('');
+            setMetaTitle('');
+            setMetaDescription('');
+            setMetaKeywords('');
+            setOgImage('');
+            setCanonicalUrl('');
             
             console.log('Page saved successfully:', result);
         } catch (err) {
@@ -196,26 +405,10 @@ ${wordPressCSS}
         }
     };
 
-    const generateCompleteHTML = () => {
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WordPress Content</title>
-    <style>
-${wordPressCSS}
-    </style>
-</head>
-<body>
-    ${htmlContent}
-</body>
-</html>`;
-    };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-7xl w-full h-[90vh] flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-[90vw] max-w-[1400px] w-full h-[90vh] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
@@ -284,6 +477,17 @@ ${wordPressCSS}
                              Custom Copy
                          </button>
                          <button
+                             onClick={() => setActiveTab("edit")}
+                             className={`px-4 py-2 text-sm font-medium transition-colors ${
+                                 activeTab === "edit"
+                                     ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                             }`}
+                         >
+                             <Edit size={16} className="inline mr-1" />
+                             Edit HTML
+                         </button>
+                         <button
                              onClick={() => setActiveTab("save")}
                              className={`px-4 py-2 text-sm font-medium transition-colors ${
                                  activeTab === "save"
@@ -346,7 +550,7 @@ ${wordPressCSS}
                                 <div className="flex-1 overflow-y-auto overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-md bg-white p-4">
                                     {/* Inject WordPress CSS for accurate preview */}
                                     <style dangerouslySetInnerHTML={{ __html: wordPressCSS }} />
-                                    <div className="wordpress-preview-container" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                                    <div className="wordpress-preview-container" dangerouslySetInnerHTML={{ __html: extractBodyContent(getCurrentHtmlContent()) }} />
                                 </div>
                             </div>
                         ) : activeTab === "html" ? (
@@ -402,7 +606,7 @@ ${wordPressCSS}
                                 </div>
                                 <textarea
                                     ref={textareaRef}
-                                    value={htmlContent}
+                                    value={extractBodyContent(getCurrentHtmlContent())}
                                     readOnly
                                     className="flex-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent overflow-y-auto"
                                 />
@@ -530,151 +734,558 @@ ${wordPressCSS}
                                      </div>
                                  </div>
                              </div>
+                         ) : activeTab === "edit" ? (
+                             // Edit HTML Tab
+                             <div className="h-full flex flex-col">
+                                 <div className="mb-3 flex justify-between items-center">
+                                     <div>
+                                         <p className="text-sm text-gray-600 dark:text-gray-400">
+                                             Edit the complete HTML document. Changes will be reflected in the preview and saved versions.
+                                         </p>
+                                     </div>
+                                     <div className="flex gap-2">
+                                         <button
+                                             onClick={() => {
+                                                 const completeHtml = getCurrentHtmlContent();
+                                                 navigator.clipboard.writeText(completeHtml);
+                                             }}
+                                             className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors"
+                                         >
+                                             <Copy size={16} />
+                                             Copy
+                                         </button>
+                                     </div>
+                                 </div>
+                                 <div className="flex-1 min-h-0 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                                     <SmallCodeEditor
+                                         language="html"
+                                         initialCode={getCurrentHtmlContent()}
+                                         onChange={(newCode) => {
+                                             if (newCode) {
+                                                 setEditedCompleteHtml(newCode);
+                                             }
+                                         }}
+                                     />
+                                 </div>
+                             </div>
                          ) : activeTab === "save" ? (
                              // Save Page Tab
                              <div className="h-full flex flex-col">
-                                 <div className="max-w-2xl mx-auto w-full space-y-6">
-                                     <div className="text-center">
-                                         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Save HTML Page</h3>
-                                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                                             Save your HTML page to the database and get a shareable URL
-                                         </p>
-                                     </div>
-
-                                     {/* User Info */}
-                                     {user && (
-                                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
-                                             <div className="flex items-center gap-3">
-                                                 <div className="text-blue-600 dark:text-blue-400 text-sm">
-                                                     <strong>Logged in as:</strong> {user.email}
-                                                 </div>
-                                             </div>
-                                         </div>
-                                     )}
-
-                                     {!user && (
-                                         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
-                                             <div className="text-yellow-800 dark:text-yellow-300 text-sm">
-                                                 <strong>Note:</strong> You must be logged in to save HTML pages.
-                                             </div>
-                                         </div>
-                                     )}
-
-                                     {/* Save Form */}
-                                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-4">
-                                         <div>
-                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                 Page Title *
-                                             </label>
-                                             <input
-                                                 type="text"
-                                                 value={pageTitle}
-                                                 onChange={(e) => setPageTitle(e.target.value)}
-                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                 placeholder="Enter page title"
-                                                 disabled={!user}
-                                             />
-                                         </div>
-                                         
-                                         <div>
-                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                 Description (optional)
-                                             </label>
-                                             <input
-                                                 type="text"
-                                                 value={pageDescription}
-                                                 onChange={(e) => setPageDescription(e.target.value)}
-                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                 placeholder="Brief description (optional)"
-                                                 disabled={!user}
-                                             />
-                                         </div>
-                                     </div>
-
-                                     {/* Error Display */}
-                                     {error && (
-                                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-                                             <div className="flex items-start gap-3">
-                                                 <div className="text-red-600 dark:text-red-400 text-sm">
-                                                     <strong>Error:</strong> {error}
-                                                 </div>
-                                             </div>
-                                         </div>
-                                     )}
-
-                                     {/* Save Button */}
-                                     <div className="text-center">
-                                         <button
-                                             onClick={handleSavePage}
-                                             disabled={isCreating || !pageTitle.trim() || !user}
-                                             className={`inline-flex items-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
-                                                 isCreating || !pageTitle.trim() || !user
-                                                     ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                                                     : "bg-green-600 hover:bg-green-700 text-white"
-                                             }`}
-                                         >
-                                             {isCreating ? (
-                                                 <>
-                                                     <Loader2 size={18} className="animate-spin" />
-                                                     Saving...
-                                                 </>
-                                             ) : (
-                                                 <>
-                                                     <Save size={18} />
-                                                     Save HTML Page
-                                                 </>
-                                             )}
-                                         </button>
-                                     </div>
-
-                                     {/* Saved Page Display */}
-                                     {savedPage && (
-                                         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6 space-y-4">
+                                 {savedPage ? (
+                                     // Side-by-side layout when page is saved
+                                     <div className="h-full flex gap-6">
+                                         {/* Left side - Form and details */}
+                                         <div className="w-1/3 flex flex-col space-y-6 overflow-y-auto pr-4">
                                              <div className="text-center">
-                                                 <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">
-                                                     Page Saved Successfully! 🎉
-                                                 </h4>
-                                                 <div className="space-y-2 text-sm">
-                                                     <p className="text-green-700 dark:text-green-400">
-                                                         <strong>Title:</strong> {savedPage.title}
-                                                     </p>
-                                                     <p className="text-green-700 dark:text-green-400">
-                                                         <strong>Page ID:</strong> {savedPage.pageId}
-                                                     </p>
-                                                     <p className="text-green-700 dark:text-green-400">
-                                                         <strong>URL:</strong> {savedPage.url}
-                                                     </p>
-                                                     <div className="flex justify-center gap-3 mt-4">
+                                                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Save Page</h3>
+                                                 <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                     Save to Create Public Page
+                                                 </p>
+                                             </div>
+
+                                             {/* User Info */}
+                                             {user && (
+                                                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                                                     <div className="flex items-center gap-3">
+                                                         <div className="text-blue-600 dark:text-blue-400 text-sm">
+                                                             <strong>Logged in as:</strong> {user.email}
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             )}
+
+                                             {/* Save Form */}
+                                             <div className="space-y-4">
+                                                 {/* Page Title */}
+                                                 <div>
+                                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                         Page Title *
+                                                     </label>
+                                                     <input
+                                                         type="text"
+                                                         value={pageTitle}
+                                                         onChange={(e) => setPageTitle(e.target.value)}
+                                                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                         placeholder="Enter page title"
+                                                         disabled={!user}
+                                                     />
+                                                     <div className="flex justify-between items-center mt-1">
+                                                         <span className={`text-xs ${getCharacterCountStatus(pageTitle, 50, 60).color}`}>
+                                                             {pageTitle.length}/60 characters
+                                                         </span>
+                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                             {getSEORecommendation(pageTitle, 'title')}
+                                                         </span>
+                                                     </div>
+                                                 </div>
+                                                 
+                                                 {/* Page Description */}
+                                                 <div>
+                                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                         Description (optional)
+                                                     </label>
+                                                     <textarea
+                                                         value={pageDescription}
+                                                         onChange={(e) => setPageDescription(e.target.value)}
+                                                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                         placeholder="Brief description (optional)"
+                                                         rows={3}
+                                                         disabled={!user}
+                                                     />
+                                                     <div className="flex justify-between items-center mt-1">
+                                                         <span className={`text-xs ${getCharacterCountStatus(pageDescription, 140, 160).color}`}>
+                                                             {pageDescription.length}/160 characters
+                                                         </span>
+                                                         <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                             {getSEORecommendation(pageDescription, 'description')}
+                                                         </span>
+                                                     </div>
+                                                 </div>
+
+                                                 {/* Advanced Meta Options Toggle */}
+                                                 <div>
+                                                     <button
+                                                         type="button"
+                                                         onClick={() => setShowAdvancedMeta(!showAdvancedMeta)}
+                                                         className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                                                     >
+                                                         {showAdvancedMeta ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                                         Advanced SEO Options
+                                                     </button>
+                                                 </div>
+
+                                                 {/* Advanced Meta Fields */}
+                                                 {showAdvancedMeta && (
+                                                     <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                                         {/* Meta Title */}
+                                                         <div>
+                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                                 SEO Meta Title
+                                                             </label>
+                                                             <input
+                                                                 type="text"
+                                                                 value={metaTitle}
+                                                                 onChange={(e) => setMetaTitle(e.target.value)}
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 placeholder="Will use page title if empty"
+                                                                 disabled={!user}
+                                                             />
+                                                             <div className="flex justify-between items-center mt-1">
+                                                                 <span className={`text-xs ${getCharacterCountStatus(metaTitle, 50, 60).color}`}>
+                                                                     {metaTitle.length}/60 characters
+                                                                 </span>
+                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                     {getSEORecommendation(metaTitle, 'metaTitle')}
+                                                                 </span>
+                                                             </div>
+                                                         </div>
+
+                                                         {/* Meta Description */}
+                                                         <div>
+                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                                 SEO Meta Description
+                                                             </label>
+                                                             <textarea
+                                                                 value={metaDescription}
+                                                                 onChange={(e) => setMetaDescription(e.target.value)}
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                                 placeholder="Will use page description if empty"
+                                                                 rows={3}
+                                                                 disabled={!user}
+                                                             />
+                                                             <div className="flex justify-between items-center mt-1">
+                                                                 <span className={`text-xs ${getCharacterCountStatus(metaDescription, 140, 160).color}`}>
+                                                                     {metaDescription.length}/160 characters
+                                                                 </span>
+                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                     {getSEORecommendation(metaDescription, 'metaDescription')}
+                                                                 </span>
+                                                             </div>
+                                                         </div>
+
+                                                         {/* Meta Keywords */}
+                                                         <div>
+                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                                 Meta Keywords (optional)
+                                                             </label>
+                                                             <input
+                                                                 type="text"
+                                                                 value={metaKeywords}
+                                                                 onChange={(e) => setMetaKeywords(e.target.value)}
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 placeholder="keyword1, keyword2, keyword3"
+                                                                 disabled={!user}
+                                                             />
+                                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                 Comma-separated keywords (less important for modern SEO)
+                                                             </p>
+                                                         </div>
+
+                                                         {/* OG Image */}
+                                                         <div>
+                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                                 Open Graph Image URL (optional)
+                                                             </label>
+                                                             <input
+                                                                 type="url"
+                                                                 value={ogImage}
+                                                                 onChange={(e) => setOgImage(e.target.value)}
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 placeholder="https://example.com/image.jpg"
+                                                                 disabled={!user}
+                                                             />
+                                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                 Image shown when shared on social media (1200x630px recommended)
+                                                             </p>
+                                                         </div>
+
+                                                         {/* Canonical URL */}
+                                                         <div>
+                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                                 Canonical URL (optional)
+                                                             </label>
+                                                             <input
+                                                                 type="url"
+                                                                 value={canonicalUrl}
+                                                                 onChange={(e) => setCanonicalUrl(e.target.value)}
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 placeholder="https://example.com/canonical-page"
+                                                                 disabled={!user}
+                                                             />
+                                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                 Preferred URL for this content (prevents duplicate content issues)
+                                                             </p>
+                                                         </div>
+                                                     </div>
+                                                 )}
+                                             </div>
+
+                                             {/* Error Display */}
+                                             {error && (
+                                                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                                                     <div className="flex items-start gap-3">
+                                                         <div className="text-red-600 dark:text-red-400 text-sm">
+                                                             <strong>Error:</strong> {error}
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             )}
+
+                                             {/* Save Button */}
+                                             <div>
+                                                 <button
+                                                     onClick={handleSavePage}
+                                                     disabled={isCreating || !pageTitle.trim() || !user}
+                                                     className={`w-full inline-flex items-center justify-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
+                                                         isCreating || !pageTitle.trim() || !user
+                                                             ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                                             : "bg-blue-600 hover:bg-blue-700 text-white"
+                                                     }`}
+                                                 >
+                                                     {isCreating ? (
+                                                         <>
+                                                             <Loader2 size={18} className="animate-spin" />
+                                                             Saving...
+                                                         </>
+                                                     ) : (
+                                                         <>
+                                                             <Save size={18} />
+                                                             Save Page
+                                                         </>
+                                                     )}
+                                                 </button>
+                                             </div>
+
+                                             {/* Saved Page Details */}
+                                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 space-y-4">
+                                                 <div className="text-center">
+                                                     <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-3">
+                                                         Page Published Successfully
+                                                     </h4>
+                                                     
+                                                     <div className="flex flex-col gap-3">
                                                          <a
                                                              href={savedPage.url}
                                                              target="_blank"
                                                              rel="noopener noreferrer"
-                                                             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
+                                                             className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
                                                          >
                                                              <ExternalLink size={16} />
                                                              View Live Page
                                                          </a>
+                                                         
+                                                         <button
+                                                             onClick={() => handleCopyUrl(savedPage.url)}
+                                                             className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                                                                 copiedUrl
+                                                                     ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                                                                     : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600"
+                                                             }`}
+                                                         >
+                                                             {copiedUrl ? (
+                                                                 <>
+                                                                     <CheckCircle2 size={16} />
+                                                                     Copied!
+                                                                 </>
+                                                             ) : (
+                                                                 <>
+                                                                     <Copy size={16} />
+                                                                     Copy URL
+                                                                 </>
+                                                             )}
+                                                         </button>
                                                      </div>
                                                  </div>
                                              </div>
-                                             
-                                             {/* Preview iframe */}
-                                             <div className="mt-6">
-                                                 <h5 className="font-medium text-green-800 dark:text-green-300 mb-3 text-center">
-                                                     Live Preview:
-                                                 </h5>
-                                                 <div className="border-2 border-green-200 dark:border-green-700 rounded-lg overflow-hidden">
-                                                     <iframe
-                                                         src={savedPage.url}
-                                                         className="w-full h-96"
-                                                         title={savedPage.title}
-                                                         sandbox="allow-scripts allow-same-origin"
-                                                     />
-                                                 </div>
+                                         </div>
+
+                                         {/* Right side - Full width preview */}
+                                         <div className="flex-1 flex flex-col">
+                                             <h5 className="font-medium text-gray-800 dark:text-gray-300 mb-3 text-center">
+                                                 Live Preview
+                                             </h5>
+                                             <div className="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                                 <iframe
+                                                     src={savedPage.url}
+                                                     className="w-full h-full min-h-[600px]"
+                                                     title={savedPage.title}
+                                                     sandbox="allow-scripts allow-same-origin"
+                                                 />
                                              </div>
                                          </div>
-                                     )}
-                                 </div>
+                                     </div>
+                                 ) : (
+                                     // Centered layout when no page is saved yet
+                                     <div className="max-w-2xl mx-auto w-full space-y-6 px-4">
+                                         <div className="text-center">
+                                             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Save Page</h3>
+                                             <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                 Save to Create Public Page
+                                             </p>
+                                         </div>
+
+                                         {/* User Info */}
+                                         {user && (
+                                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                                                 <div className="flex items-center gap-3">
+                                                     <div className="text-blue-600 dark:text-blue-400 text-sm">
+                                                         <strong>Logged in as:</strong> {user.email}
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                         )}
+
+                                         {!user && (
+                                             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                                                 <div className="text-yellow-800 dark:text-yellow-300 text-sm">
+                                                     <strong>Note:</strong> You must be logged in to save HTML pages.
+                                                 </div>
+                                             </div>
+                                         )}
+
+                                         {/* Save Form */}
+                                         <div className="space-y-4">
+                                             {/* Page Title */}
+                                             <div>
+                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                     Page Title *
+                                                 </label>
+                                                 <input
+                                                     type="text"
+                                                     value={pageTitle}
+                                                     onChange={(e) => setPageTitle(e.target.value)}
+                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                     placeholder="Enter page title"
+                                                     disabled={!user}
+                                                 />
+                                                 <div className="flex justify-between items-center mt-1">
+                                                     <span className={`text-xs ${getCharacterCountStatus(pageTitle, 50, 60).color}`}>
+                                                         {pageTitle.length}/60 characters
+                                                     </span>
+                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                         {getSEORecommendation(pageTitle, 'title')}
+                                                     </span>
+                                                 </div>
+                                             </div>
+                                             
+                                             {/* Page Description */}
+                                             <div>
+                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                     Description (optional)
+                                                 </label>
+                                                 <textarea
+                                                     value={pageDescription}
+                                                     onChange={(e) => setPageDescription(e.target.value)}
+                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                     placeholder="Brief description (optional)"
+                                                     rows={3}
+                                                     disabled={!user}
+                                                 />
+                                                 <div className="flex justify-between items-center mt-1">
+                                                     <span className={`text-xs ${getCharacterCountStatus(pageDescription, 140, 160).color}`}>
+                                                         {pageDescription.length}/160 characters
+                                                     </span>
+                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                         {getSEORecommendation(pageDescription, 'description')}
+                                                     </span>
+                                                 </div>
+                                             </div>
+
+                                             {/* Advanced Meta Options Toggle */}
+                                             <div>
+                                                 <button
+                                                     type="button"
+                                                     onClick={() => setShowAdvancedMeta(!showAdvancedMeta)}
+                                                     className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                                                 >
+                                                     {showAdvancedMeta ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                                     Advanced SEO Options
+                                                 </button>
+                                             </div>
+
+                                             {/* Advanced Meta Fields */}
+                                             {showAdvancedMeta && (
+                                                 <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                                     {/* Meta Title */}
+                                                     <div>
+                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                             SEO Meta Title
+                                                         </label>
+                                                         <input
+                                                             type="text"
+                                                             value={metaTitle}
+                                                             onChange={(e) => setMetaTitle(e.target.value)}
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             placeholder="Will use page title if empty"
+                                                             disabled={!user}
+                                                         />
+                                                         <div className="flex justify-between items-center mt-1">
+                                                             <span className={`text-xs ${getCharacterCountStatus(metaTitle, 50, 60).color}`}>
+                                                                 {metaTitle.length}/60 characters
+                                                             </span>
+                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                 {getSEORecommendation(metaTitle, 'metaTitle')}
+                                                             </span>
+                                                         </div>
+                                                     </div>
+
+                                                     {/* Meta Description */}
+                                                     <div>
+                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                             SEO Meta Description
+                                                         </label>
+                                                         <textarea
+                                                             value={metaDescription}
+                                                             onChange={(e) => setMetaDescription(e.target.value)}
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                             placeholder="Will use page description if empty"
+                                                             rows={3}
+                                                             disabled={!user}
+                                                         />
+                                                         <div className="flex justify-between items-center mt-1">
+                                                             <span className={`text-xs ${getCharacterCountStatus(metaDescription, 140, 160).color}`}>
+                                                                 {metaDescription.length}/160 characters
+                                                             </span>
+                                                             <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                 {getSEORecommendation(metaDescription, 'metaDescription')}
+                                                             </span>
+                                                         </div>
+                                                     </div>
+
+                                                     {/* Meta Keywords */}
+                                                     <div>
+                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                             Meta Keywords (optional)
+                                                         </label>
+                                                         <input
+                                                             type="text"
+                                                             value={metaKeywords}
+                                                             onChange={(e) => setMetaKeywords(e.target.value)}
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             placeholder="keyword1, keyword2, keyword3"
+                                                             disabled={!user}
+                                                         />
+                                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                             Comma-separated keywords (less important for modern SEO)
+                                                         </p>
+                                                     </div>
+
+                                                     {/* OG Image */}
+                                                     <div>
+                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                             Open Graph Image URL (optional)
+                                                         </label>
+                                                         <input
+                                                             type="url"
+                                                             value={ogImage}
+                                                             onChange={(e) => setOgImage(e.target.value)}
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             placeholder="https://example.com/image.jpg"
+                                                             disabled={!user}
+                                                         />
+                                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                             Image shown when shared on social media (1200x630px recommended)
+                                                         </p>
+                                                     </div>
+
+                                                     {/* Canonical URL */}
+                                                     <div>
+                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                             Canonical URL (optional)
+                                                         </label>
+                                                         <input
+                                                             type="url"
+                                                             value={canonicalUrl}
+                                                             onChange={(e) => setCanonicalUrl(e.target.value)}
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             placeholder="https://example.com/canonical-page"
+                                                             disabled={!user}
+                                                         />
+                                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                             Preferred URL for this content (prevents duplicate content issues)
+                                                         </p>
+                                                     </div>
+                                                 </div>
+                                             )}
+                                         </div>
+
+                                         {/* Error Display */}
+                                         {error && (
+                                             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                                                 <div className="flex items-start gap-3">
+                                                     <div className="text-red-600 dark:text-red-400 text-sm">
+                                                         <strong>Error:</strong> {error}
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                         )}
+
+                                         {/* Save Button */}
+                                         <div>
+                                             <button
+                                                 onClick={handleSavePage}
+                                                 disabled={isCreating || !pageTitle.trim() || !user}
+                                                 className={`w-full inline-flex items-center justify-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
+                                                     isCreating || !pageTitle.trim() || !user
+                                                         ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                                         : "bg-blue-600 hover:bg-blue-700 text-white"
+                                                 }`}
+                                             >
+                                                 {isCreating ? (
+                                                     <>
+                                                         <Loader2 size={18} className="animate-spin" />
+                                                         Saving...
+                                                     </>
+                                                 ) : (
+                                                     <>
+                                                         <Save size={18} />
+                                                         Save Page
+                                                     </>
+                                                 )}
+                                             </button>
+                                         </div>
+                                     </div>
+                                 )}
                              </div>
                          ) : (
                              // Complete HTML Tab
@@ -714,7 +1325,7 @@ ${wordPressCSS}
                                  </div>
                                  <textarea
                                      ref={completeTextareaRef}
-                                     value={generateCompleteHTML()}
+                                     value={getCurrentHtmlContent()}
                                      readOnly
                                      className="flex-1 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent overflow-y-auto"
                                      placeholder="Loading complete HTML..."

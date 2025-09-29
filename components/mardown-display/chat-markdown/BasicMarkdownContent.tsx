@@ -159,8 +159,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <blockquote 
-                    className={`${isRtl ? 'pr-4 border-r-4' : 'pl-4 border-l-4'} border-gray-300 italic text-gray-700 ${getDirectionClasses(blockquoteDirection)}`}
-                    dir={blockquoteDirection}
+                className={`${isRtl ? 'pr-4 border-r-4' : 'pl-4 border-l-4'} py-3 border-gray-300 dark:border-gray-600 italic text-amber-600 dark:text-amber-400 ${getDirectionClasses(blockquoteDirection)}`}
+                dir={blockquoteDirection}
                     {...props}
                 >
                     {children}
@@ -239,7 +239,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <h1 
-                    className={`text-xl text-blue-500 font-bold mb-3 font-heading ${getDirectionClasses(headingDirection)}`}
+                    className={`text-2xl text-blue-500 font-bold mb-3 font-heading ${getDirectionClasses(headingDirection)}`}
                     dir={headingDirection}
                     {...props}
                 >
@@ -254,7 +254,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <h2 
-                    className={`text-lg text-blue-500 font-medium mb-2 font-heading ${getDirectionClasses(headingDirection)}`}
+                    className={`text-xl pt-2 text-blue-500 font-medium mb-2 font-heading ${getDirectionClasses(headingDirection)}`}
                     dir={headingDirection}
                     {...props}
                 >
@@ -269,7 +269,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <h3 
-                    className={`text-md text-blue-500 font-medium mb-2 mt-4 font-heading ${getDirectionClasses(headingDirection)}`}
+                    className={`text-xl pt-2 text-blue-500 font-medium mb-2 mt-4 font-heading ${getDirectionClasses(headingDirection)}`}
                     dir={headingDirection}
                     {...props}
                 >
@@ -284,7 +284,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <h4 
-                    className={`text-md text-blue-500 font-medium mb-1 mt-3 font-heading ${getDirectionClasses(headingDirection)}`}
+                    className={`text-md pt-2 text-blue-500 font-medium mb-1 mt-3 font-heading ${getDirectionClasses(headingDirection)}`}
                     dir={headingDirection}
                     {...props}
                 >
@@ -318,6 +318,9 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         },
         img: ({ node, ...props }) => <img className="max-w-full h-auto rounded-md my-4" {...props} alt={props.alt || "Image"} />,
         hr: ({ node, ...props }) => <hr className="my-6 border-t border-gray-300 dark:border-gray-600" {...props} />,
+        br: ({ node, ...props }) => (
+            <span className="block h-2 w-full" {...props}></span>
+        ),
         table: () => null,
         thead: () => null,
         tbody: () => null,

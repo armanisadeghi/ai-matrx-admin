@@ -6,7 +6,7 @@ export function useHTMLPages(userId) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const createHTMLPage = async (htmlContent, title, description = '') => {
+  const createHTMLPage = async (htmlContent, title, description = '', metaFields = {}) => {
     if (!userId) {
       throw new Error('User ID is required to create HTML pages');
     }
@@ -19,7 +19,8 @@ export function useHTMLPages(userId) {
         htmlContent, 
         title, 
         description, 
-        userId
+        userId,
+        metaFields
       );
       
       return result;
