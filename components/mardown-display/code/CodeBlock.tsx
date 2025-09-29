@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import { Globe, Loader2 } from "lucide-react";
 
 interface CodeBlockProps {
     code: string;
@@ -437,7 +438,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                                 <div
                                     ref={bottomRef}
                                     className={cn(
-                                        "transition-all duration-300 ease-in-out",
+                                        "transition-all duration-300 ease-in-out relative",
                                         isCollapsed ? "max-h-[150px]" : "max-h-none",
                                         isFullScreen ? "h-full overflow-auto" : "overflow-hidden"
                                     )}
@@ -460,6 +461,37 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                                     >
                                         {code}
                                     </SyntaxHighlighter>
+                                    
+                                    {/* Floating View Button for HTML Documents */}
+                                    {isCompleteHTMLDocument(code) && !isCollapsed && (
+                                        <button
+                                            onClick={handleViewHTML}
+                                            disabled={isCreatingPage}
+                                            className={cn(
+                                                "absolute bottom-4 right-4 z-20",
+                                                "flex items-center gap-2 px-4 py-2 rounded-full",
+                                                "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600",
+                                                "text-white text-sm font-medium",
+                                                "shadow-lg hover:shadow-xl",
+                                                "transition-all duration-200 ease-in-out",
+                                                "transform hover:scale-105",
+                                                isCreatingPage && "opacity-50 cursor-not-allowed"
+                                            )}
+                                            title="View HTML Page"
+                                        >
+                                            {isCreatingPage ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    <span>Creating...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Globe className="w-4 h-4" />
+                                                    <span>View</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                                 {isCollapsed && (
                                     <div
