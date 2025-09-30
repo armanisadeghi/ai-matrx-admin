@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/styles/themes/utils";
 
 interface QuestionnaireLoadingVisualizationProps {
@@ -9,6 +9,34 @@ interface QuestionnaireLoadingVisualizationProps {
 const QuestionnaireLoadingVisualization: React.FC<QuestionnaireLoadingVisualizationProps> = ({
     className
 }) => {
+    const messages = [
+        "I'm reviewing your request...",
+        "Analyzing what I already know...",
+        "Looking for missing information...",
+        "Coming up with some good questions...",
+        "Identifying additional information gaps...",
+        "Creating answer options to make this easier for you...",
+        "Finalizing a simple & complete questionnaire..."
+    ];
+
+    const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+
+    useEffect(() => {
+        // Don't change the final message
+        if (currentMessageIndex >= messages.length - 1) {
+            return;
+        }
+
+        const interval = setInterval(() => {
+            setCurrentMessageIndex(prev => {
+                const nextIndex = prev + 1;
+                // Stop at the final message
+                return nextIndex >= messages.length - 1 ? messages.length - 1 : nextIndex;
+            });
+        }, 2000);
+
+        return () => clearInterval(interval);
+    }, [currentMessageIndex, messages.length]);
     return (
         <div className={cn(
             "w-full space-y-6 p-6 rounded-lg",
@@ -78,15 +106,15 @@ const QuestionnaireLoadingVisualization: React.FC<QuestionnaireLoadingVisualizat
                 </div>
             </div>
 
-            {/* Loading indicator */}
-            <div className="flex items-center justify-center space-x-2 pt-4">
+            {/* Loading indicator with dynamic message */}
+            <div className="flex items-center justify-center space-x-3 pt-4">
                 <div className="flex space-x-1">
                     <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                    Preparing questionnaire...
+                <span className="text-sm text-blue-600 dark:text-blue-400 font-medium transition-all duration-300">
+                    {messages[currentMessageIndex]}
                 </span>
             </div>
         </div>
