@@ -3974,7 +3974,7 @@ aiSettings: {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: "dd45b76e-f470-4765-b6c4-1a275d7860bf" as const,
+            defaultValue: "548126f2-714a-4562-9001-0c31cbeea375" as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: "",

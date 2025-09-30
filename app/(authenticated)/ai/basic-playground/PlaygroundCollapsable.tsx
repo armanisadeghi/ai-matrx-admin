@@ -19,7 +19,7 @@ import PromptContainerWithConversation from "../next-components/prompt-container
 
 const PlaygroundCollapsable: React.FC = () => {
     const [selectedPreset, setSelectedPreset] = React.useState<Preset | null>(null);
-    const [selectedModel, setSelectedModel] = React.useState<React.Key>("gpt-4o-mini");
+    const [selectedModel, setSelectedModel] = React.useState<React.Key>("gpt-4.1-mini-2025-04-14");
     const [systemMessage, setSystemMessage] = React.useState<string>("");
     const [temperature, setTemperature] = React.useState<number>(0.5);
     const [maxLength, setMaxLength] = React.useState<number>(1024);
@@ -93,7 +93,7 @@ const PlaygroundCollapsable: React.FC = () => {
                         }}
                     >
                         {presets.map((preset) => (
-                            <SelectItem key={preset.id} value={preset.id}>
+                            <SelectItem key={preset.id}>
                                 {preset.name}
                             </SelectItem>
                         ))}

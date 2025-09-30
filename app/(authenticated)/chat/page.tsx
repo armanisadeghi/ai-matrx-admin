@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { ChatMode } from "@/types/chat/chat.types";
 import WelcomeScreen from "@/features/chat/components/views/WelcomeScreen";
 
-const DEFAULT_MODEL_ID = "dd45b76e-f470-4765-b6c4-1a275d7860bf"; // "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
+const DEFAULT_MODEL_ID = "548126f2-714a-4562-9001-0c31cbeea375"; // "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
 const DEFAULT_MODE = "general" as ChatMode;
 
 export const metadata: Metadata = {

@@ -236,14 +236,54 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         }
     }, [data]);
 
-    // Simple Markdown renderer for bold and italic
+    // Enhanced Markdown renderer for bold, italic, and links
     const renderMarkdown = (text: string) => {
-        let html = text
-            .replace(/\*\*([^*]+)\*\*/g, "$1") // Bold with **
-            .replace(/\*([^*]+)\*/g, "$1") // Italic with *
-            .replace(/_([^_]+)_/g, "$1"); // Italic with _
-        html = html.replace(/([^<]+)<\/strong><\/em>/g, "$1");
-        return html;
+        // First handle links to preserve them as JSX elements
+        const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(text)) !== null) {
+            // Add text before the link
+            if (match.index > lastIndex) {
+                const beforeText = text.substring(lastIndex, match.index);
+                const processedBefore = beforeText
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // Bold with **
+                    .replace(/\*([^*]+)\*/g, '<em>$1</em>') // Italic with *
+                    .replace(/_([^_]+)_/g, '<em>$1</em>'); // Italic with _
+                parts.push(processedBefore);
+            }
+
+            // Add the link as a clickable element
+            const linkText = match[1];
+            const linkUrl = match[2];
+            parts.push(
+                `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">${linkText}</a>`
+            );
+            
+            lastIndex = linkRegex.lastIndex;
+        }
+
+        // Add remaining text after the last link
+        if (lastIndex < text.length) {
+            const remainingText = text.substring(lastIndex);
+            const processedRemaining = remainingText
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // Bold with **
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>') // Italic with *
+                .replace(/_([^_]+)_/g, '<em>$1</em>'); // Italic with _
+            parts.push(processedRemaining);
+        }
+
+        // If no links were found, just process formatting
+        if (parts.length === 0) {
+            return text
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // Bold with **
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>') // Italic with *
+                .replace(/_([^_]+)_/g, '<em>$1</em>'); // Italic with _
+        }
+
+        return parts.join('');
     };
 
     const generateMarkdownTable = () => {
@@ -493,7 +533,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                                 onClick={(e) => e.stopPropagation()}
                                             />
                                         ) : (
-                                            renderMarkdown(header)
+                                            <span dangerouslySetInnerHTML={{ __html: renderMarkdown(header) }} />
                                         )}
                                     </th>
                                 ))}
@@ -521,7 +561,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                                     onFocus={(e) => e.target.select()}
                                                 />
                                             ) : (
-                                                renderMarkdown(cell)
+                                                <span dangerouslySetInnerHTML={{ __html: renderMarkdown(cell) }} />
                                             )}
                                         </td>
                                     ))}

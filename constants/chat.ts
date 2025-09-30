@@ -16,10 +16,10 @@ export interface CreateNewConversationParams {
 
 export const BACKGROUND_PATTERN = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E\")";
 export const DEFAULT_ADVANCED_MODEL_ID = "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
-export const DEFAULT_MODEL_ID = "dd45b76e-f470-4765-b6c4-1a275d7860bf";
+export const DEFAULT_MODEL_ID = "548126f2-714a-4562-9001-0c31cbeea375";
 export const DEFAULT_ENDPOINT_ID = "4bedf336-b274-4cdb-8202-59fd282ae6a0";
 
-export const DEFAULT_GPT_MODEL_ID = "dd45b76e-f470-4765-b6c4-1a275d7860bf";
+export const DEFAULT_GPT_MODEL_ID = "548126f2-714a-4562-9001-0c31cbeea375";
 export const DEFAULT_FAST_MODEL_ID = "325408aa-fd5b-4876-9410-2bf34757b9d8";
 export const DEFAULT_MODE = "general" as ChatMode;
 export const NEW_CONVERSATION_ID = "new-conversation";

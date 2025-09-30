@@ -1,2 +1,2 @@
 
-export const defaultAiModel = "gpt-4o-mini";
+export const defaultAiModel = "gpt-4.1-mini-2025-04-14";

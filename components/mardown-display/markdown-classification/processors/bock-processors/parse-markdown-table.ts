@@ -177,14 +177,15 @@ export const parseMarkdownTable = (
             return { markdown: null, data: null };
         }
 
-        // Clean markdown formatting for normalized data only
+        // Clean markdown formatting for normalized data - preserve links in a structured way
         const cleanText = (text: string) => {
             return text
                 .replace(/\*\*([^*]+)\*\*/g, "$1")
                 .replace(/\*([^*]+)\*/g, "$1")
                 .replace(/_([^_]+)_/g, "$1")
                 .replace(/`([^`]+)`/g, "$1")
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
+                // Keep links as "text|url" format for JSON data
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1|$2")
                 .replace(/#{1,6}\s*/g, "")
                 .trim();
         };
@@ -285,14 +286,15 @@ export const parseMarkdownTables = (
                 continue;
             }
 
-            // Clean markdown formatting for normalized data
+            // Clean markdown formatting for normalized data - preserve links in a structured way
             const cleanText = (text: string) => {
                 return text
                     .replace(/\*\*([^*]+)\*\*/g, "$1")
                     .replace(/\*([^*]+)\*/g, "$1")
                     .replace(/_([^_]+)_/g, "$1")
                     .replace(/`([^`]+)`/g, "$1")
-                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
+                    // Keep links as "text|url" format for JSON data
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1|$2")
                     .replace(/#{1,6}\s*/g, "")
                     .trim();
             };

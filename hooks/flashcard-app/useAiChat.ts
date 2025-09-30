@@ -20,7 +20,7 @@ const APP_MESSAGE_TEMPLATES = {
 
 
 const CHAT_DEFAULTS = {
-    defaultAiModel: "gpt-4o-mini",
+    defaultAiModel: "gpt-4.1-mini-2025-04-14",
 
 }
 
