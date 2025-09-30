@@ -1,12 +1,13 @@
 // thinking-parser.ts
 export interface ContentSegment {
     isThinking: boolean;
+    isQuestionnaire: boolean;
     content: string;
 }
 
 export const parseTaggedContent = (content: string): ContentSegment[] => {
-    const openingTags = ['<thinking>', '<think>'];
-    const closingTags = ['</thinking>', '</think>', '<thinking>', '<think>'];
+    const openingTags = ['<thinking>', '<think>', '<questionnaire>'];
+    const closingTags = ['</thinking>', '</think>', '<thinking>', '<think>', '</questionnaire>'];
     const segments: ContentSegment[] = [];
     let currentIndex = 0;
 
@@ -28,6 +29,7 @@ export const parseTaggedContent = (content: string): ContentSegment[] => {
             if (currentIndex < content.length) {
                 segments.push({
                     isThinking: false,
+                    isQuestionnaire: false,
                     content: content.substring(currentIndex)
                 });
             }
@@ -38,6 +40,7 @@ export const parseTaggedContent = (content: string): ContentSegment[] => {
         if (nextOpeningIndex > currentIndex) {
             segments.push({
                 isThinking: false,
+                isQuestionnaire: false,
                 content: content.substring(currentIndex, nextOpeningIndex)
             });
         }
@@ -51,18 +54,22 @@ export const parseTaggedContent = (content: string): ContentSegment[] => {
             }
         }
 
-        // If no closing tag found, treat rest as thinking content
+        // If no closing tag found, treat rest as thinking or questionnaire content
         if (closingIndex === -1) {
+            const isQuestionnaire = openingTagUsed === '<questionnaire>';
             segments.push({
-                isThinking: true,
+                isThinking: !isQuestionnaire,
+                isQuestionnaire: isQuestionnaire,
                 content: content.substring(nextOpeningIndex + openingTagUsed.length)
             });
             break;
         }
 
-        // Add thinking content
+        // Add thinking or questionnaire content
+        const isQuestionnaire = openingTagUsed === '<questionnaire>';
         segments.push({
-            isThinking: true,
+            isThinking: !isQuestionnaire,
+            isQuestionnaire: isQuestionnaire,
             content: content.substring(
                 nextOpeningIndex + openingTagUsed.length,
                 closingIndex

@@ -8,6 +8,7 @@ import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chat
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/markdown-classification/processors/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
+import QuestionnaireLoadingVisualization from "@/components/mardown-display/chat-markdown/QuestionnaireLoadingVisualization";
 import { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
@@ -101,7 +102,9 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
         }
         return parsedContent.contentSegments.map((segment, index) => (
             <React.Fragment key={index}>
-                {segment.isThinking ? (
+                {segment.isQuestionnaire ? (
+                    <QuestionnaireLoadingVisualization />
+                ) : segment.isThinking ? (
                     <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
                 ) : (
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
