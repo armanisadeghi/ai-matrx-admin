@@ -50,10 +50,10 @@ export function useConversationPanel() {
     // Get current date for calculations
     const now = new Date();
 
-    // Debug: Log a sample of conversation IDs to verify they're valid
-    if (conversationsArray.length > 0) {
-        console.log('Sample conversation IDs:', conversationsArray.slice(0, 3).map(c => ({ id: c.id, label: c.label })));
-    }
+    // // Debug: Log a sample of conversation IDs to verify they're valid
+    // if (conversationsArray.length > 0) {
+    //     console.log('Sample conversation IDs:', conversationsArray.slice(0, 3).map(c => ({ id: c.id, label: c.label })));
+    // }
 
     // Filter conversations based on search terms
     const filteredConversations = conversationsArray.filter((convo) => {

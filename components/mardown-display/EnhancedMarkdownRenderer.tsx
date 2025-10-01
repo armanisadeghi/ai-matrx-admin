@@ -11,6 +11,7 @@ import { enhancedMarkdownParser } from "./markdown-classification/processors/cus
 import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
 import JsonDisplay from "./JsonDisplay";
 import QuestionnaireRenderer from "./QuestionnaireRenderer";
+import { QuestionnaireProvider } from "./context/QuestionnaireContext";
 import CandidateProfileBlock from "./blocks/candidate-profiles/CandidateProfileBlock";
 import { User } from "lucide-react";
 import ParseExtractorOptions from "../official/processor-extractor/ParseExtractorOptions";
@@ -149,7 +150,11 @@ const EnhancedContentRenderer = ({
                 }
             case "questionnaire":
                 const parsedContent = separatedMarkdownParser(content);
-                return <QuestionnaireRenderer data={parsedContent} theme={currentTheme} />;
+                return (
+                    <QuestionnaireProvider>
+                        <QuestionnaireRenderer data={parsedContent} theme={currentTheme} />
+                    </QuestionnaireProvider>
+                );
             case "structured":
                 return <JsonDisplay content={content} parseFunction={separatedMarkdownParser} />;
             case "candidateProfile":

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Bug } from "lucide-react";
 import { THEMES } from "./themes";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useQuestionnaireContext } from "./context/QuestionnaireContext";
 import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-
+import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 // Helper function to check if an option is an "Other" option
 const isOtherOption = (option) => {
     if (!option || typeof option !== "object") return false;
@@ -505,6 +505,72 @@ const cleanQuestionTitle = (title) => {
     return title.replace(/^Q\d*:\s*|^Question:\s*/i, "");
 };
 
+// Helper function to extract questionnaire header from data
+const extractQuestionnaireHeader = (data) => {
+    let title = "";
+    let description = "";
+    
+    // First check if intro string has content
+    if (data.intro) {
+        const lines = data.intro.split('\n').filter(line => line.trim());
+        for (const line of lines) {
+            const trimmed = line.trim();
+            // Extract H1 as title
+            if (trimmed.startsWith('# ')) {
+                title = trimmed.replace(/^#\s+/, '');
+            }
+            // Skip "Introduction" heading but collect actual intro text
+            else if (!trimmed.startsWith('##') && !trimmed.match(/^Introduction$/i)) {
+                description += (description ? ' ' : '') + trimmed;
+            }
+        }
+    }
+    
+    // Check if first section is an "Introduction" section or contains the title
+    if (data.sections && data.sections.length > 0) {
+        const firstSection = data.sections[0];
+        const isIntroSection = firstSection.title === "Introduction";
+        
+        // If first section is "Introduction", use its intro as description
+        if (isIntroSection && firstSection.intro) {
+            description = firstSection.intro;
+        }
+        
+        // Look for a section with "Questionnaire" in title (usually the title)
+        if (!title) {
+            for (const section of data.sections.slice(0, 3)) { // Check first 3 sections
+                if (section.title.includes('Questionnaire') || section.title.includes('Planning')) {
+                    title = section.title.replace(/^#+\s*/, '');
+                    break;
+                }
+            }
+        }
+    }
+    
+    return { title, description, hasIntroSection: data.sections?.[0]?.title === "Introduction" };
+};
+
+// Header component for questionnaire title and intro
+const QuestionnaireHeader = ({ title, description, theme }) => {
+    // Only show header if we have description (title is optional)
+    if (!description) return null;
+    
+    return (
+        <Card className={`w-full mb-6 ${theme.card.background} border-2 ${theme.card.border}`}>
+            <CardHeader className="pb-4">
+                {title && (
+                    <CardTitle className="text-3xl font-bold text-center mb-3 text-gray-900 dark:text-gray-100">
+                        {title}
+                    </CardTitle>
+                )}
+                <CardDescription className="text-base text-center text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {description}
+                </CardDescription>
+            </CardHeader>
+        </Card>
+    );
+};
+
 const extractSliderRange = (intro) => {
     if (!intro.includes("Type: Slider")) {
         return null;
@@ -524,17 +590,48 @@ const extractSliderRange = (intro) => {
 
 const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, questionnaireId = null }) => {
     const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
-    
+    const dispatch = useAppDispatch();
+
     // Generate a unique ID for this questionnaire if not provided
     const uniqueId = questionnaireId || `questionnaire-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const { getFormState, updateFormData, initializeQuestions } = useQuestionnaireContext();
+    const chatActions = getChatActionsWithThunks();
     const [questionData, setQuestionData] = useState({});
     const [debugMode, setDebugMode] = useState(false);
     const themeColors = THEMES[theme];
     
     // Get current form state from context
     const formState = getFormState(uniqueId);
+    
+    // Track last dispatch to avoid redundant dispatches
+    const lastDispatchRef = useRef<string>('');
+
+    // Debounced dispatch to Redux to store form responses
+    useEffect(() => {
+        // Skip if form state is empty (no user interaction yet)
+        if (!formState || Object.keys(formState).length === 0) {
+            return;
+        }
+
+        const stateString = JSON.stringify(formState);
+        
+        // Skip if state hasn't actually changed
+        if (stateString === lastDispatchRef.current) {
+            return;
+        }
+
+        // Debounce the dispatch to avoid excessive updates during rapid typing
+        const timeoutId = setTimeout(() => {
+            dispatch(chatActions.updateModUserContext({
+                value: formState,
+            }));
+            lastDispatchRef.current = stateString;
+        }, 500); // 500ms delay - balances responsiveness with performance
+
+        // Cleanup timeout on every formState change
+        return () => clearTimeout(timeoutId);
+    }, [formState, dispatch, chatActions]);
 
     useEffect(() => {
         if (data?.sections) {
@@ -592,12 +689,26 @@ const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, qu
         updateFormData(uniqueId, questionTitle, value, questionType, options);
     };
 
+    // Extract questionnaire header and check if there's an intro section
+    const { title: questionnaireTitle, description: questionnaireDescription, hasIntroSection } = extractQuestionnaireHeader(data);
+
     return (
         <>
             <DebugToggle active={debugMode} onClick={() => setDebugMode((prev) => !prev)} />
             <div className={`flex flex-col w-full max-w-3xl mx-auto gap-1 p-2 pb-24 ${themeColors.container.background}`}>
+                {/* Questionnaire Header with Title and Intro */}
+                <QuestionnaireHeader 
+                    title={questionnaireTitle} 
+                    description={questionnaireDescription} 
+                    theme={themeColors} 
+                />
+                
+                {/* Questions */}
                 {data.sections.map((section, index) => {
-                    if (section.title === "Options:" || !section.intro?.includes("Type:")) {
+                    // Skip the Introduction section (it's displayed in the header)
+                    if (section.title === "Introduction" || 
+                        section.title === "Options:" || 
+                        !section.intro?.includes("Type:")) {
                         return null;
                     }
 

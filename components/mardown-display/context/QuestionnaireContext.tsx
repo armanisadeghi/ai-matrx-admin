@@ -175,7 +175,8 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
         questionType: string = 'TEXT', 
         options: any[] = []
     ) => {
-        const currentState = formStates.current.get(questionnaireId) || {};
+        // Create a shallow copy to avoid mutating the original state object
+        const currentState = { ...(formStates.current.get(questionnaireId) || {}) };
         
         if (questionType === "CHECKBOX") {
             const checkboxData = updateCheckboxData(questionTitle, options, value);
@@ -192,7 +193,8 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
     }, [updateCheckboxData, updateDropdownData, forceUpdate]);
 
     const initializeQuestions = useCallback((questionnaireId: string, sections: any[]) => {
-        const currentState = formStates.current.get(questionnaireId) || {};
+        // Create a shallow copy to avoid mutating the original state object
+        const currentState = { ...(formStates.current.get(questionnaireId) || {}) };
         let hasNewQuestions = false;
         let questionIndex = 0;
 

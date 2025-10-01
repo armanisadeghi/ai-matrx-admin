@@ -38,6 +38,7 @@ import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/Enh
 import EnhancedMarkdownCard from "@/components/mardown-display/EnhancedMarkdownCard";
 import MultiSectionMarkdownCard from "@/components/mardown-display/MultiSectionMarkdownCard";
 import QuestionnaireRenderer from "@/components/mardown-display/QuestionnaireRenderer";
+import { QuestionnaireProvider } from "@/components/mardown-display/context/QuestionnaireContext";
 import JsonDisplay from "@/components/mardown-display/JsonDisplay";
 import CandidateProfileBlock from "@/components/mardown-display/blocks/candidate-profiles/CandidateProfileBlock";
 import ParseExtractorOptions from "@/components/official/processor-extractor/ParseExtractorOptions";
@@ -88,7 +89,11 @@ const EventComponentPanel = createDynamicPanelWrapper(
 );
 
 const QuestionnaireRendererPanel = createDynamicPanelWrapper(
-    ({ content: data, taskId }: { content: any; taskId?: string }) => <QuestionnaireRenderer data={data} theme="professional" taskId={taskId} />,
+    ({ content: data, taskId }: { content: any; taskId?: string }) => (
+        <QuestionnaireProvider>
+            <QuestionnaireRenderer data={data} theme="professional" taskId={taskId} />
+        </QuestionnaireProvider>
+    ),
     "separated"
 );
 

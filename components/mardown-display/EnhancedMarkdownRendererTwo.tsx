@@ -11,6 +11,7 @@ import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
 import JsonDisplay from "./JsonDisplay";
 import MarkdownRenderer from "./MarkdownRenderer";
 import QuestionnaireRenderer from "./QuestionnaireRenderer";
+import { QuestionnaireProvider } from "./context/QuestionnaireContext";
 
 
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
@@ -154,7 +155,11 @@ const EnhancedContentRendererTwo = ({
                 }
             case "questionnaire":
                 const parsedContent = separatedMarkdownParser(content);
-                return <QuestionnaireRenderer data={parsedContent} theme={currentTheme} />;
+                return (
+                    <QuestionnaireProvider>
+                        <QuestionnaireRenderer data={parsedContent} theme={currentTheme} />
+                    </QuestionnaireProvider>
+                );
             case "structured":
                 return <JsonDisplay content={content} parseFunction={separatedMarkdownParser} />;
 

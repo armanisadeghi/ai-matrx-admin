@@ -554,6 +554,9 @@ export const getChatActionsWithThunks = () => {
             (dispatch: AppDispatch, getState: () => RootState) => {
                 const convKeyOrId = params.conversationkeyOrId ?? getState().entities["conversation"].selection.activeRecord;
                 const msgKeyOrId = params.messagekeyOrId ?? getState().entities["message"].selection.activeRecord;
+                console.log("[CHAT ACTIONS THUNK] updating ModUserContext", params.value);
+                console.log("[CHAT ACTIONS THUNK] convKeyOrId", convKeyOrId);
+                console.log("[CHAT ACTIONS THUNK] msgKeyOrId", msgKeyOrId);
                 if (!convKeyOrId || !msgKeyOrId) return;
                 dispatch(
                     conversationActions.updateNestedFieldSmart({
