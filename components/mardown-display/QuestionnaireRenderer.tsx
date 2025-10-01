@@ -148,7 +148,7 @@ const getDefaultValue = (questionType, options = []) => {
 
 
 // Individual question type components with Other handling
-const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
+const CheckboxQuestion = ({ options = [], onChange, value = {}, theme, questionId = "" }) => {
     // Convert the object-based value back to array format for internal logic
     const convertToArrayFormat = useCallback((checkboxData) => {
         if (!checkboxData || typeof checkboxData !== 'object') return [];
@@ -225,11 +225,11 @@ const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
                     <div key={index} className="space-y-2">
                         <div className="flex items-center space-x-2">
                             <Checkbox
-                                id={`checkbox-${index}`}
+                                id={`checkbox-${questionId}-${index}`}
                                 checked={isOther ? isOtherSelected : selectedValues.has(option.name)}
                                 onCheckedChange={(checked) => handleCheckboxChange(option.name, checked, isOther)}
                             />
-                            <Label htmlFor={`checkbox-${index}`} className="text-sm cursor-pointer select-none">
+                            <Label htmlFor={`checkbox-${questionId}-${index}`} className="text-sm cursor-pointer select-none">
                                 {isOther ? "Other" : option.name}
                             </Label>
                         </div>
@@ -261,7 +261,7 @@ const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
     );
 };
 
-const DropdownQuestion = ({ options = [], onChange, value = {}, theme }) => {
+const DropdownQuestion = ({ options = [], onChange, value = {}, theme, questionId = "" }) => {
     // Convert the object-based value to get which option is selected
     const getSelectedOption = useCallback((dropdownData) => {
         if (!dropdownData || typeof dropdownData !== 'object') return "";
@@ -342,7 +342,7 @@ const DropdownQuestion = ({ options = [], onChange, value = {}, theme }) => {
     );
 };
 
-const RadioQuestion = ({ options = [], onChange, value = "", theme }) => {
+const RadioQuestion = ({ options = [], onChange, value = "", theme, questionId = "" }) => {
     const [selectedValue, setSelectedValue] = useState(value);
     const [otherValue, setOtherValue] = useState("");
 
@@ -362,8 +362,8 @@ const RadioQuestion = ({ options = [], onChange, value = "", theme }) => {
                 return (
                     <div key={index} className="space-y-2">
                         <div className="flex items-center space-x-2">
-                            <RadioGroupItem value={option.name} id={`radio-${index}`} />
-                            <Label htmlFor={`radio-${index}`} className="text-sm cursor-pointer select-none">
+                            <RadioGroupItem value={option.name} id={`radio-${questionId}-${index}`} />
+                            <Label htmlFor={`radio-${questionId}-${index}`} className="text-sm cursor-pointer select-none">
                                 {isOther ? "Other" : option.name}
                             </Label>
                         </div>
@@ -386,10 +386,10 @@ const RadioQuestion = ({ options = [], onChange, value = "", theme }) => {
     );
 };
 
-const ToggleQuestion = ({ options = [], onChange, value = false, theme }) => (
+const ToggleQuestion = ({ options = [], onChange, value = false, theme, questionId = "" }) => (
     <div className="flex items-center space-x-2">
-        <Switch id="toggle-switch" checked={value} onCheckedChange={onChange} />
-        <Label htmlFor="toggle-switch" className="cursor-pointer select-none">
+        <Switch id={`toggle-${questionId}`} checked={value} onCheckedChange={onChange} />
+        <Label htmlFor={`toggle-${questionId}`} className="cursor-pointer select-none">
             {options[0]?.name || "Yes/No"}
         </Label>
     </div>
@@ -437,7 +437,7 @@ const InputQuestion = ({ onChange, value = "", theme }) => (
 );
 
 // Question component that determines which type to render
-const QuestionComponent = ({ questionData, options, onChange, value, theme }) => {
+const QuestionComponent = ({ questionData, options, onChange, value, theme, questionId }) => {
     if (!questionData) return null;
 
     const { title, intro } = questionData;
@@ -447,13 +447,13 @@ const QuestionComponent = ({ questionData, options, onChange, value, theme }) =>
     const renderQuestion = () => {
         switch (questionType) {
             case "CHECKBOX":
-                return <CheckboxQuestion options={options} onChange={onChange} value={value} theme={theme} />;
+                return <CheckboxQuestion options={options} onChange={onChange} value={value} theme={theme} questionId={questionId} />;
             case "DROPDOWN":
-                return <DropdownQuestion options={options} onChange={onChange} value={value} theme={theme} />;
+                return <DropdownQuestion options={options} onChange={onChange} value={value} theme={theme} questionId={questionId} />;
             case "RADIO":
-                return <RadioQuestion options={options} onChange={onChange} value={value} theme={theme} />;
+                return <RadioQuestion options={options} onChange={onChange} value={value} theme={theme} questionId={questionId} />;
             case "TOGGLE":
-                return <ToggleQuestion options={options} onChange={onChange} value={value} theme={theme} />;
+                return <ToggleQuestion options={options} onChange={onChange} value={value} theme={theme} questionId={questionId} />;
             case "SLIDER":
                 return <SliderQuestion onChange={onChange} value={value} questionData={questionData} theme={theme} />;
             case "TEXT":
@@ -777,6 +777,7 @@ const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, qu
                             onChange={(value) => handleChange(numberedTitle, value, getQuestionType(type), normalizedOptions)}
                             value={formState[numberedTitle]}
                             theme={themeColors}
+                            questionId={numberedTitle}
                         />
                     );
                 })}
