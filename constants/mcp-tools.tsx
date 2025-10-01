@@ -48,9 +48,16 @@ export const allTools: Tool[] = [
     {
         id: "web_search",
         name: "Search",
-        description: "Search the web about any topic.",
+        description: "Search engine that finds web pages matching your query terms.",
         category: "Web",
         icon: <LucideIcons.Search size={20} />,
+    },
+    {
+        id: "web_read",
+        name: "Read",
+        description: "Use this tool to browse a specific page.",
+        category: "Web",
+        icon: <LucideIcons.BookOpen size={20} />,
     },
     {
         id: "core_web_search",

@@ -34,9 +34,10 @@ const DashboardPage = () => {
     const displayName = useAppSelector(selectActiveUserName);
 
     const recentActivity = [
-        { id: 1, title: "New GPT 4.1 Models Deployed", time: "This week", icon: <Zap size={16} /> },
-        { id: 2, title: "Chat Database Integration Now Available", time: "This week", icon: <Database size={16} /> },
-        { id: 3, title: "Audio Voices Now Available!", time: "2 days ago", icon: <Cpu size={16} /> },
+        { id: 1, title: "New GPT 5 Models Deployed", time: "This week", icon: <Zap size={16} /> },
+        { id: 2, title: "HTML live preview in Chat & Applets", time: "This week", icon: <Database size={16} /> },
+        { id: 3, title: "Questionnaire mode now available in Chat", time: "3 days ago", icon: <Cpu size={16} /> },
+        { id: 4, title: "New Claude 4.5 Sonnet Model Deployed", time: "2 days ago", icon: <Cpu size={16} /> },
     ];
     // Sample data for usage statistics
     const usageStats = [
