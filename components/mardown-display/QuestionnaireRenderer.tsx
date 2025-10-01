@@ -18,7 +18,33 @@ import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chat
 const isOtherOption = (option) => {
     if (!option || typeof option !== "object") return false;
     if (!option.name || typeof option.name !== "string") return false;
-    return option.name.toLowerCase().startsWith("other");
+    const lowerName = option.name.toLowerCase();
+    // Match "Other" exactly or anything starting with "other:"
+    return lowerName === "other" || lowerName.startsWith("other:");
+};
+
+// Helper function to check if question type supports "Other" option
+const supportsOtherOption = (intro = "") => {
+    return intro.toLowerCase().includes("with other");
+};
+
+// Helper function to normalize options - filters out model-provided "Other" and adds standardized one for checkboxes/dropdowns
+const normalizeOptions = (options = [], intro = "", questionType = "") => {
+    if (!options || options.length === 0) return [];
+    
+    // Filter out any "Other" options provided by the model
+    const filteredOptions = options.filter(option => !isOtherOption(option));
+    
+    // Determine question type if not provided
+    const type = questionType || extractType(intro);
+    const normalizedType = getQuestionType(type);
+    
+    // Always add "Other" for CHECKBOX and DROPDOWN types (default behavior)
+    if (normalizedType === "CHECKBOX" || normalizedType === "DROPDOWN") {
+        filteredOptions.push({ name: "Other" });
+    }
+    
+    return filteredOptions;
 };
 
 // Helper function to extract type from intro text
@@ -32,10 +58,19 @@ const findOptionsForQuestion = (sections, questionTitle) => {
     const questionIndex = sections.findIndex((section) => section.title === questionTitle);
     if (questionIndex === -1) return [];
 
+    const currentSection = sections[questionIndex];
+    
+    // First, check if the question section itself has items (new format)
+    if (currentSection.items && currentSection.items.length > 0) {
+        return currentSection.items;
+    }
+    
+    // Fall back to checking for a separate "Options:" section (old format)
     const nextSection = sections[questionIndex + 1];
     if (nextSection?.title === "Options:") {
         return nextSection.items || [];
     }
+    
     return [];
 };
 
@@ -119,13 +154,15 @@ const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
         if (!checkboxData || typeof checkboxData !== 'object') return [];
         
         const selectedItems = [];
-        Object.entries(checkboxData).forEach(([key, status]) => {
-            if (status === "Selected") {
-                if (key === "Other" && checkboxData["Other (Specified)"]) {
-                    selectedItems.push(`Other: ${checkboxData["Other (Specified)"]}`);
-                } else if (key !== "Other (Specified)") {
-                    selectedItems.push(key);
+        Object.entries(checkboxData).forEach(([key, value]) => {
+            if (key === "Other") {
+                // "Other" stores the actual text value (or "Not Selected")
+                if (value !== "Not Selected") {
+                    selectedItems.push(`Other: ${value}`);
                 }
+            } else if (value === "Selected") {
+                // Regular options use "Selected"/"Not Selected"
+                selectedItems.push(key);
             }
         });
         return selectedItems;
@@ -135,26 +172,21 @@ const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
     
     // Extract existing "Other" value if present
     const [otherValue, setOtherValue] = useState(() => {
-        if (typeof value === 'object' && value["Other (Specified)"]) {
-            return value["Other (Specified)"];
+        if (typeof value === 'object' && value["Other"] && value["Other"] !== "Not Selected") {
+            return value["Other"];
         }
-        // Fallback for legacy array format
-        const arrayValue = Array.isArray(value) ? value : convertToArrayFormat(value);
-        const otherValue = arrayValue.find((v) => v?.startsWith("Other:"));
-        return otherValue ? otherValue.replace("Other: ", "") : "";
+        return "";
     });
 
     useEffect(() => {
         const arrayFormat = convertToArrayFormat(value);
         setSelectedValues(new Set(arrayFormat));
         
-        if (typeof value === 'object' && value["Other (Specified)"]) {
-            setOtherValue(value["Other (Specified)"]);
+        // Update otherValue from the new format
+        if (typeof value === 'object' && value["Other"] && value["Other"] !== "Not Selected") {
+            setOtherValue(value["Other"]);
         } else {
-            const otherValue = arrayFormat.find((v) => v?.startsWith("Other:"));
-            if (otherValue) {
-                setOtherValue(otherValue.replace("Other: ", ""));
-            }
+            setOtherValue("");
         }
     }, [value, convertToArrayFormat]);
 
@@ -193,11 +225,11 @@ const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
                     <div key={index} className="space-y-2">
                         <div className="flex items-center space-x-2">
                             <Checkbox
-                                id={`option-${index}`}
+                                id={`checkbox-${index}`}
                                 checked={isOther ? isOtherSelected : selectedValues.has(option.name)}
                                 onCheckedChange={(checked) => handleCheckboxChange(option.name, checked, isOther)}
                             />
-                            <Label htmlFor={`option-${index}`} className="text-sm">
+                            <Label htmlFor={`checkbox-${index}`} className="text-sm cursor-pointer select-none">
                                 {isOther ? "Other" : option.name}
                             </Label>
                         </div>
@@ -230,42 +262,44 @@ const CheckboxQuestion = ({ options = [], onChange, value = {}, theme }) => {
 };
 
 const DropdownQuestion = ({ options = [], onChange, value = {}, theme }) => {
-    // Convert the object-based value back to string format for internal UI logic
-    const convertToStringFormat = useCallback((dropdownData) => {
+    // Convert the object-based value to get which option is selected
+    const getSelectedOption = useCallback((dropdownData) => {
         if (!dropdownData || typeof dropdownData !== 'object') return "";
         
         // Find the selected option
-        for (const [key, status] of Object.entries(dropdownData)) {
-            if (status === "Selected") {
-                if (key === "Other" && dropdownData["Other (Specified)"]) {
-                    return `Other: ${dropdownData["Other (Specified)"]}`;
-                } else if (key !== "Other (Specified)") {
-                    return key;
+        for (const [key, val] of Object.entries(dropdownData)) {
+            if (key === "Other") {
+                // "Other" stores the actual text value (or "Not Selected")
+                if (val !== "Not Selected") {
+                    return "Other"; // Return just "Other" for the Select component
                 }
+            } else if (val === "Selected") {
+                // Regular options use "Selected"/"Not Selected"
+                return key;
             }
         }
         return "";
     }, []);
 
-    const [selectedValue, setSelectedValue] = useState(() => convertToStringFormat(value));
+    const [selectedValue, setSelectedValue] = useState(() => getSelectedOption(value));
     const [otherValue, setOtherValue] = useState(() => {
-        if (typeof value === 'object' && value["Other (Specified)"]) {
-            return value["Other (Specified)"];
+        if (typeof value === 'object' && value["Other"] && value["Other"] !== "Not Selected") {
+            return value["Other"];
         }
-        const stringValue = convertToStringFormat(value);
-        return stringValue.startsWith("Other: ") ? stringValue.replace("Other: ", "") : "";
+        return "";
     });
 
     useEffect(() => {
-        const stringFormat = convertToStringFormat(value);
-        setSelectedValue(stringFormat);
+        const selected = getSelectedOption(value);
+        setSelectedValue(selected);
         
-        if (typeof value === 'object' && value["Other (Specified)"]) {
-            setOtherValue(value["Other (Specified)"]);
-        } else if (stringFormat.startsWith("Other: ")) {
-            setOtherValue(stringFormat.replace("Other: ", ""));
+        // Update otherValue from the new format
+        if (typeof value === 'object' && value["Other"] && value["Other"] !== "Not Selected") {
+            setOtherValue(value["Other"]);
+        } else {
+            setOtherValue("");
         }
-    }, [value, convertToStringFormat]);
+    }, [value, getSelectedOption]);
 
     const handleSelectionChange = (newValue) => {
         setSelectedValue(newValue);
@@ -329,7 +363,7 @@ const RadioQuestion = ({ options = [], onChange, value = "", theme }) => {
                     <div key={index} className="space-y-2">
                         <div className="flex items-center space-x-2">
                             <RadioGroupItem value={option.name} id={`radio-${index}`} />
-                            <Label htmlFor={`radio-${index}`} className="text-sm">
+                            <Label htmlFor={`radio-${index}`} className="text-sm cursor-pointer select-none">
                                 {isOther ? "Other" : option.name}
                             </Label>
                         </div>
@@ -354,8 +388,10 @@ const RadioQuestion = ({ options = [], onChange, value = "", theme }) => {
 
 const ToggleQuestion = ({ options = [], onChange, value = false, theme }) => (
     <div className="flex items-center space-x-2">
-        <Switch checked={value} onCheckedChange={onChange} />
-        <Label>{options[0]?.name || "Yes/No"}</Label>
+        <Switch id="toggle-switch" checked={value} onCheckedChange={onChange} />
+        <Label htmlFor="toggle-switch" className="cursor-pointer select-none">
+            {options[0]?.name || "Yes/No"}
+        </Label>
     </div>
 );
 
@@ -651,13 +687,14 @@ const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, qu
                     }
                     
                     const numberedTitle = processQuestionTitle(section.title, questionIndex);
-                    const options = findOptionsForQuestion(data.sections, section.title);
+                    const rawOptions = findOptionsForQuestion(data.sections, section.title);
+                    const normalizedOptions = normalizeOptions(rawOptions, section.intro);
                     const type = extractType(section.intro);
 
                     acc[numberedTitle] = {
                         type: type,
                         question: numberedTitle,
-                        options: options,
+                        options: normalizedOptions,
                         intro: section.intro,
                         customSettings: {},
                     };
@@ -720,7 +757,8 @@ const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, qu
                         }
                     }
 
-                    const options = findOptionsForQuestion(data.sections, section.title);
+                    const rawOptions = findOptionsForQuestion(data.sections, section.title);
+                    const normalizedOptions = normalizeOptions(rawOptions, section.intro);
                     const numberedTitle = processQuestionTitle(section.title, questionIndex);
                     const type = extractType(section.intro);
 
@@ -735,8 +773,8 @@ const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, qu
                                 title: numberedTitle,
                                 customSettings,
                             }}
-                            options={options}
-                            onChange={(value) => handleChange(numberedTitle, value, getQuestionType(type), options)}
+                            options={normalizedOptions}
+                            onChange={(value) => handleChange(numberedTitle, value, getQuestionType(type), normalizedOptions)}
                             value={formState[numberedTitle]}
                             theme={themeColors}
                         />

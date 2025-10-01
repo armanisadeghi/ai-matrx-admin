@@ -37,7 +37,13 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
     const isOtherOption = useCallback((option: any) => {
         if (!option || typeof option !== "object") return false;
         if (!option.name || typeof option.name !== "string") return false;
-        return option.name.toLowerCase().startsWith("other");
+        const lowerName = option.name.toLowerCase();
+        // Match "Other" exactly or anything starting with "other:"
+        return lowerName === "other" || lowerName.startsWith("other:");
+    }, []);
+
+    const supportsOtherOption = useCallback((intro = "") => {
+        return intro.toLowerCase().includes("with other");
     }, []);
 
     const extractType = useCallback((intro = "") => {
@@ -64,14 +70,41 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
         return "TEXT";
     }, []);
 
+    const normalizeOptions = useCallback((options: any[] = [], intro = "", questionType = "") => {
+        if (!options || options.length === 0) return [];
+        
+        // Filter out any "Other" options provided by the model
+        const filteredOptions = options.filter(option => !isOtherOption(option));
+        
+        // Determine question type if not provided
+        const type = questionType || extractType(intro);
+        const normalizedType = getQuestionType(type);
+        
+        // Always add "Other" for CHECKBOX and DROPDOWN types (default behavior)
+        if (normalizedType === "CHECKBOX" || normalizedType === "DROPDOWN") {
+            filteredOptions.push({ name: "Other" });
+        }
+        
+        return filteredOptions;
+    }, [isOtherOption, extractType, getQuestionType]);
+
     const findOptionsForQuestion = useCallback((sections: any[], questionTitle: string) => {
         const questionIndex = sections.findIndex((section) => section.title === questionTitle);
         if (questionIndex === -1) return [];
 
+        const currentSection = sections[questionIndex];
+        
+        // First, check if the question section itself has items (new format)
+        if (currentSection.items && currentSection.items.length > 0) {
+            return currentSection.items;
+        }
+        
+        // Fall back to checking for a separate "Options:" section (old format)
         const nextSection = sections[questionIndex + 1];
         if (nextSection?.title === "Options:") {
             return nextSection.items || [];
         }
+        
         return [];
     }, []);
 
@@ -116,10 +149,12 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
 
     const updateCheckboxData = useCallback((questionTitle: string, options: any[], selectedValues: any[]) => {
         // Helper function to check if an option is an "Other" option
-        const isOtherOption = (option: any) => {
+        const checkIfOtherOption = (option: any) => {
             if (!option || typeof option !== "object") return false;
             if (!option.name || typeof option.name !== "string") return false;
-            return option.name.toLowerCase().startsWith("other");
+            const lowerName = option.name.toLowerCase();
+            // Match "Other" exactly or anything starting with "other:"
+            return lowerName === "other" || lowerName.startsWith("other:");
         };
 
         // Create comprehensive checkbox data structure
@@ -128,14 +163,16 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
         // Process all regular options
         options.forEach(option => {
             const optionName = option.name;
-            if (isOtherOption(option)) {
-                // Handle "Other" option specially
+            if (checkIfOtherOption(option)) {
+                // Handle "Other" option - store the actual text value directly
                 const otherValue = selectedValues.find(val => 
                     typeof val === "string" && val.startsWith("Other:")
                 );
-                checkboxData["Other"] = otherValue ? "Selected" : "Not Selected";
                 if (otherValue) {
-                    checkboxData["Other (Specified)"] = otherValue.replace("Other: ", "");
+                    // Store the text after "Other: " directly in the "Other" key
+                    checkboxData["Other"] = otherValue.replace("Other: ", "");
+                } else {
+                    checkboxData["Other"] = "Not Selected";
                 }
             } else {
                 checkboxData[optionName] = selectedValues.includes(optionName) ? "Selected" : "Not Selected";
@@ -153,10 +190,9 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
         options.forEach(option => {
             const optionName = option.name;
             if (isOtherOption(option)) {
-                // Handle "Other" option specially
+                // Handle "Other" option - store the actual text value directly
                 if (selectedValue && selectedValue.startsWith("Other:")) {
-                    dropdownData["Other"] = "Selected";
-                    dropdownData["Other (Specified)"] = selectedValue.replace("Other: ", "");
+                    dropdownData["Other"] = selectedValue.replace("Other: ", "");
                 } else {
                     dropdownData["Other"] = "Not Selected";
                 }
@@ -204,7 +240,8 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
                 const type = extractType(section.intro);
                 const questionType = getQuestionType(type);
                 const numberedTitle = processQuestionTitle(section.title, questionIndex);
-                const options = findOptionsForQuestion(sections, section.title);
+                const rawOptions = findOptionsForQuestion(sections, section.title);
+                const options = normalizeOptions(rawOptions, section.intro);
 
                 // Only initialize if question doesn't already exist
                 if (!(numberedTitle in currentState)) {
@@ -263,7 +300,7 @@ export const QuestionnaireProvider: React.FC<QuestionnaireProviderProps> = ({ ch
             formStates.current.set(questionnaireId, currentState);
             forceUpdate();
         }
-    }, [extractType, getQuestionType, processQuestionTitle, findOptionsForQuestion, extractSliderRange, isOtherOption, forceUpdate]);
+    }, [extractType, getQuestionType, processQuestionTitle, findOptionsForQuestion, normalizeOptions, extractSliderRange, isOtherOption, forceUpdate]);
 
     const clearQuestionnaire = useCallback((questionnaireId: string) => {
         formStates.current.delete(questionnaireId);
