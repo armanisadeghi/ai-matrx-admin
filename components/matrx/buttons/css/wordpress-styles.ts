@@ -110,12 +110,24 @@ export const WORDPRESS_CSS = `/*
 .matrx-link {
     color: #374151;
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-decoration-color: #d1d5db;
+    text-underline-offset: 3px;
+    transition: all 0.2s ease;
 }
 
 .matrx-link:hover {
     color: #1f2937;
-    text-decoration: none;
+    text-decoration-color: #9ca3af;
+}
+
+/* Images */
+.matrx-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Lists */
@@ -126,13 +138,6 @@ export const WORDPRESS_CSS = `/*
 
 .matrx-bullet-list {
     list-style: none;
-    margin: 1.5rem 0;
-}
-
-.matrx-numbered-list {
-    list-style: none;
-    counter-reset: item;
-    margin: 1.5rem 0;
 }
 
 .matrx-list-item {
@@ -140,10 +145,9 @@ export const WORDPRESS_CSS = `/*
     padding-left: 1.5rem;
     position: relative;
     color: #4a4a4a;
-    line-height: 1.6;
 }
 
-.matrx-bullet-list .matrx-list-item::before {
+.matrx-list-item::before {
     content: "•";
     color: #6b7280;
     font-weight: bold;
@@ -153,20 +157,82 @@ export const WORDPRESS_CSS = `/*
     font-size: 1.2rem;
 }
 
-.matrx-numbered-list .matrx-list-item {
-    counter-increment: item;
+/* Code */
+.matrx-content-container .matrx-inline-code {
+  background-color: #f5f5f5;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 0.875rem;
+  color: #d73a49;
 }
 
-.matrx-numbered-list .matrx-list-item::before {
-    content: counter(item) ".";
-    color: #6b7280;
-    font-weight: bold;
-    position: absolute;
-    left: 0;
-    top: 0;
+.matrx-content-container .matrx-code-block {
+  background-color: #f8f8f8;
+  border: 1px solid #e1e1e1;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
 }
 
-/* FAQ Styling */
+.matrx-content-container .matrx-code {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Blockquotes */
+.matrx-content-container .matrx-blockquote {
+  border-left: 4px solid #e1e1e1;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #666;
+}
+
+/* Tables */
+.matrx-content-container .matrx-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border: 1px solid #e1e1e1;
+}
+
+.matrx-content-container .matrx-table-header {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+  text-align: left;
+}
+
+.matrx-content-container .matrx-table-cell {
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
+}
+
+.matrx-content-container .matrx-table-row:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+/* Images */
+.matrx-content-container .matrx-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+}
+
+/* Horizontal Rules */
+.matrx-content-container .matrx-hr {
+  border: none;
+  border-top: 1px solid #e1e1e1;
+  margin: 2rem 0;
+}
+
+/* FAQ Styles - Clean Design */
 .matrx-faq-item {
     margin-bottom: 2rem;
     padding: 1.5rem;
@@ -188,47 +254,39 @@ export const WORDPRESS_CSS = `/*
     line-height: 1.6;
 }
 
-/* Horizontal Rules */
-.matrx-hr {
-    border: none;
-    border-top: 2px solid #e5e5e5;
-    margin: 2.5rem auto;
-    width: 60%;
-    opacity: 0.7;
+/* Code Blocks */
+.matrx-inline-code {
+    background-color: #f5f5f5;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 0.875rem;
+    color: #d73a49;
 }
 
-/* Code Blocks */
 .matrx-code-block {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
+    background-color: #f8f8f8;
+    border: 1px solid #e1e1e1;
+    border-radius: 0.375rem;
     padding: 1rem;
     margin: 1.5rem 0;
     overflow-x: auto;
-    font-family: 'Courier New', Consolas, monospace;
-    font-size: 0.9rem;
-    line-height: 1.4;
 }
 
-/* Inline Code */
 .matrx-code {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 3px;
-    padding: 0.2rem 0.4rem;
-    font-family: 'Courier New', Consolas, monospace;
-    font-size: 0.9em;
-    color: #d73a49;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #333;
 }
 
 /* Blockquotes */
 .matrx-blockquote {
-    border-left: 4px solid #d1d5db;
+    border-left: 4px solid #e1e1e1;
+    padding-left: 1rem;
     margin: 1.5rem 0;
-    padding: 1rem 1.5rem;
-    background: #f8f9fa;
     font-style: italic;
-    color: #4a4a4a;
+    color: #666;
 }
 
 /* Tables */
@@ -236,55 +294,190 @@ export const WORDPRESS_CSS = `/*
     width: 100%;
     border-collapse: collapse;
     margin: 1.5rem 0;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e1e1;
+    color: #333333;
 }
 
-.matrx-table th,
-.matrx-table td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid #e9ecef;
+.matrx-table-head {
+    background-color: #f8f9fa;
 }
 
-.matrx-table th {
-    background: #f8f9fa;
+.matrx-table-body {
+    background-color: #ffffff;
+}
+
+.matrx-table-header {
+    background-color: #f8f9fa;
     font-weight: 600;
-    color: #2a2a2a;
+    padding: 0.75rem;
+    border: 1px solid #e1e1e1;
+    text-align: left;
+    color: #333333;
 }
 
-.matrx-table tr:hover {
-    background: #f8f9fa;
+.matrx-table-cell {
+    padding: 0.75rem;
+    border: 1px solid #e1e1e1;
+    color: #333333;
+}
+
+.matrx-table-row {
+    color: #333333;
+}
+
+.matrx-table-row:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Ensure table content doesn't inherit external colors */
+.matrx-table * {
+    color: inherit;
+}
+
+/* Images */
+.matrx-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.375rem;
+    margin: 1rem 0;
+}
+
+/* Horizontal Rules */
+.matrx-hr {
+    border: none;
+    border-top: 1px solid #e1e1e1;
+    margin: 2rem 0;
+}
+
+/* Utility Classes */
+.matrx-div {
+    margin: 0.5rem 0;
+}
+
+.matrx-span {
+    /* Inherit parent styling by default */
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .matrx-content-container {
-        max-width: 100%;
         padding: 1rem;
     }
-    
+
     .matrx-h1 {
         font-size: 2rem;
     }
-    
+
     .matrx-h2 {
         font-size: 1.5rem;
+        margin: 2rem 0 1rem 0 !important;
     }
-    
+
     .matrx-h3 {
         font-size: 1.2rem;
     }
-    
-    .matrx-table {
+
+    .matrx-h4 {
+        font-size: 1.05rem;
+    }
+
+    .matrx-h5 {
+        font-size: 0.95rem;
+    }
+
+    .matrx-h6 {
         font-size: 0.9rem;
     }
-    
-    .matrx-table th,
-    .matrx-table td {
+
+    .matrx-intro {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .matrx-faq-question {
+        font-size: 1.1rem;
+        margin: 1.5rem 0 0.75rem 0;
+    }
+
+    .matrx-paragraph {
+        text-align: left;
+    }
+
+    .matrx-table {
+        font-size: 0.875rem;
+    }
+
+    .matrx-table-header,
+    .matrx-table-cell {
         padding: 0.5rem;
+    }
+
+    .matrx-code-block {
+        padding: 0.75rem;
+        margin: 1rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .matrx-content-container {
+        padding: 0.75rem;
+    }
+
+    .matrx-h1 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .matrx-h2 {
+        font-size: 1.3rem;
+        margin: 1.5rem 0 0.75rem 0 !important;
+    }
+
+    .matrx-h3 {
+        font-size: 1.1rem;
+        margin: 1.5rem 0 0.75rem 0;
+    }
+
+    .matrx-h4 {
+        font-size: 1rem;
+        margin: 1.25rem 0 0.5rem 0;
+    }
+
+    .matrx-h5 {
+        font-size: 0.9rem;
+        margin: 1rem 0 0.5rem 0;
+    }
+
+    .matrx-h6 {
+        font-size: 0.85rem;
+        margin: 1rem 0 0.5rem 0;
+    }
+
+    .matrx-intro {
+        padding: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .matrx-paragraph {
+        margin-bottom: 1.25rem;
+    }
+
+    .matrx-list-item {
+        margin-bottom: 0.75rem;
+    }
+
+    .matrx-table-header,
+    .matrx-table-cell {
+        padding: 0.375rem;
+    }
+
+    .matrx-code-block {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .matrx-inline-code {
+        font-size: 0.8rem;
     }
 }`;
 
