@@ -54,56 +54,58 @@ export function useCartesiaControls() {
         }
     }, [playerState]);
 
-    const speak = useCallback(async (optionalScript?: string) => {
-        const ctx = websocketRef.current;
-        if (!ctx) {
-            console.error("Not connected");
-            return;
-        }
-        
-        // Create a new player if one doesn't exist or if we're starting a new speech
-        if (!playerRef.current || playerState === "idle") {
-            playerRef.current = new WebPlayer({ bufferDuration: 600 });
-        }
-        
-        // If player is paused, resume instead of starting new speech
-        if (playerState === "paused") {
-            await resume();
-            return;
-        }
+    const speak = useCallback(
+        async (optionalScript?: string) => {
+            const ctx = websocketRef.current;
+            if (!ctx) {
+                console.error("Not connected");
+                return;
+            }
 
-        // Use the optionalScript if provided, otherwise use the state script
-        const textToSpeak = optionalScript !== undefined ? optionalScript : script;
-        
-        // Update the script state if optionalScript is provided
-        if (optionalScript !== undefined) {
-            setScript(optionalScript);
-        }
+            // Create a new player if one doesn't exist or if we're starting a new speech
+            if (!playerRef.current || playerState === "idle") {
+                playerRef.current = new WebPlayer({ bufferDuration: 600 });
+            }
 
-        const resp = await ctx.send({
-            modelId: modelId,
-            voice: {
-                mode: "id",
-                id: voiceId,
-                experimentalControls: {
-                    speed: speed,
-                    emotion: emotions.length > 0 ? emotions : [],
+            // If player is paused, resume instead of starting new speech
+            if (playerState === "paused") {
+                await resume();
+                return;
+            }
+
+            // Use the optionalScript if provided, otherwise use the state script
+            const textToSpeak = optionalScript !== undefined ? optionalScript : script;
+
+            // Update the script state if optionalScript is provided
+            if (optionalScript !== undefined) {
+                setScript(optionalScript);
+            }
+
+            const resp = await ctx.send({
+                modelId: modelId,
+                voice: {
+                    mode: "id",
+                    id: voiceId,
+                    experimentalControls: {
+                        speed: speed,
+                        emotion: emotions.length > 0 ? emotions : [],
+                    },
                 },
-            },
-            language: language,
-            transcript: textToSpeak,
-        });
+                language: language,
+                transcript: textToSpeak,
+            });
 
-        setPlayerState("playing");
-        try {
-            await playerRef.current.play(resp.source);
-            setPlayerState("idle");
-        } catch (error) {
-            console.error("Error playing audio:", error);
-            setPlayerState("idle");
-        }
-    }, [voiceId, emotions, language, speed, modelId, playerState, script, resume]);
-
+            setPlayerState("playing");
+            try {
+                await playerRef.current.play(resp.source);
+                setPlayerState("idle");
+            } catch (error) {
+                console.error("Error playing audio:", error);
+                setPlayerState("idle");
+            }
+        },
+        [voiceId, emotions, language, speed, modelId, playerState, script, resume]
+    );
 
     const pause = useCallback(async () => {
         if (playerRef.current && playerState === "playing") {
@@ -116,16 +118,12 @@ export function useCartesiaControls() {
         }
     }, [playerState]);
 
-
     const toggle = useCallback(async () => {
         if (!playerRef.current) return;
-        
+
         try {
             await playerRef.current.toggle();
-            setPlayerState(prevState => 
-                prevState === "playing" ? "paused" : 
-                prevState === "paused" ? "playing" : prevState
-            );
+            setPlayerState((prevState) => (prevState === "playing" ? "paused" : prevState === "paused" ? "playing" : prevState));
         } catch (error) {
             console.error("Error toggling audio:", error);
         }

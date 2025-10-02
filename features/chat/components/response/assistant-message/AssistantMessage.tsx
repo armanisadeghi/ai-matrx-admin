@@ -65,6 +65,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     const isPlaying = playerState === "playing";
     const isPaused = playerState === "paused";
     const isAudioReady = connectionState === "ready";
+
     
     // Add effect to control fade-in animation
     useEffect(() => {
@@ -96,15 +97,19 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     };
     
     const handleSpeakToggle = () => {
+        console.log("handleSpeakToggle calledisAudioReady", isAudioReady);
         if (!audioControls) return;
         
         if (isPlaying) {
+            console.log("isPlaying is true, pausing");
             // If playing, pause it
             pause();
         } else if (isPaused) {
+            console.log("isPaused is true, resuming");
             // If paused, resume it
             resume();
         } else {
+            console.log("isPlaying is false, speaking");
             const cleanContent = parseMarkdownToText(content);
             handleScriptChange(cleanContent);
             speak(cleanContent);
