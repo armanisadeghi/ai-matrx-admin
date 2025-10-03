@@ -30,7 +30,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     language,
     fontSize = 16,
     showLineNumbers = false,
-    wrapLines = false,
+    wrapLines = true,
     className,
     onCodeChange,
     inline = false,
@@ -84,7 +84,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
         setIsCreatingPage(true);
         try {
-            console.log('Creating HTML page with code:', code.substring(0, 100) + '...');
             const result = await HTMLPageService.createPage(
                 code,
                 'Code Preview',
@@ -92,7 +91,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 user.id
             );
             
-            console.log('HTML page created successfully:', result);
             setHtmlPageUrl(result.url);
             setIsViewingHTML(true);
         } catch (error) {

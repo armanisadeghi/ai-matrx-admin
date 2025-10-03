@@ -67,6 +67,33 @@ export function useHTMLPages(userId) {
     }
   };
 
+  const updateHTMLPage = async (pageId, htmlContent, title, description = '', metaFields = {}) => {
+    if (!userId) {
+      throw new Error('User ID is required to update HTML pages');
+    }
+
+    setIsCreating(true);
+    setError(null);
+
+    try {
+      const result = await HTMLPageService.updatePage(
+        pageId,
+        htmlContent,
+        title,
+        description,
+        userId,
+        metaFields
+      );
+      
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const getPage = async (pageId) => {
     setError(null);
 
@@ -81,6 +108,7 @@ export function useHTMLPages(userId) {
 
   return {
     createHTMLPage,
+    updateHTMLPage,
     getUserPages,
     deletePage,
     getPage,

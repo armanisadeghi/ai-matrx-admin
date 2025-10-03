@@ -17,7 +17,6 @@ export class HTMLPageService {
    */
   static async createPage(htmlContent, title, description = '', userId, metaFields = {}) {
     try {
-      console.log('Creating HTML page:', { title, userId, metaFields });
 
       const insertData = {
         html_content: htmlContent,
@@ -44,8 +43,6 @@ export class HTMLPageService {
       }
 
       const pageUrl = `${process.env.NEXT_PUBLIC_HTML_SITE_URL}/p/${data.id}`;
-
-      console.log('HTML page created successfully:', data.id);
 
       return {
         success: true,
@@ -86,6 +83,62 @@ export class HTMLPageService {
 
     } catch (error) {
       console.error('HTMLPageService.getUserPages error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing HTML page
+   * @param {string} pageId - Page ID
+   * @param {string} htmlContent - Updated HTML content
+   * @param {string} title - Updated title
+   * @param {string} description - Updated description
+   * @param {string} userId - User ID (for security)
+   * @param {Object} metaFields - Optional meta fields
+   * @returns {Promise<{success: boolean, pageId: string, url: string}>}
+   */
+  static async updatePage(pageId, htmlContent, title, description = '', userId, metaFields = {}) {
+    try {
+
+      const updateData = {
+        html_content: htmlContent,
+        title: title,
+        description: description,
+        // Meta fields with defaults
+        meta_title: metaFields.metaTitle || title,
+        meta_description: metaFields.metaDescription || description,
+        meta_keywords: metaFields.metaKeywords || null,
+        og_image: metaFields.ogImage || null,
+        canonical_url: metaFields.canonicalUrl || null,
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabaseHtml
+        .from('html_pages')
+        .update(updateData)
+        .eq('id', pageId)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Failed to update HTML page:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      const pageUrl = `${process.env.NEXT_PUBLIC_HTML_SITE_URL}/p/${data.id}`;
+
+      return {
+        success: true,
+        pageId: data.id,
+        url: pageUrl,
+        title: data.title,
+        description: data.description,
+        updatedAt: data.updated_at
+      };
+
+    } catch (error) {
+      console.error('HTMLPageService.updatePage error:', error);
       throw error;
     }
   }

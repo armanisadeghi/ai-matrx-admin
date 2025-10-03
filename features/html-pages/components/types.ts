@@ -20,8 +20,9 @@ export interface HtmlPreviewState {
     editedCompleteHtml: string;
     wordPressCSS: string;
     
-    // HTML regeneration
-    isHtmlDirty: boolean;
+    // Source of truth tracking
+    isMarkdownDirty: boolean;  // True when markdown is edited
+    isHtmlDirty: boolean;      // True when HTML is directly edited
     
     // Custom copy options
     includeBulletStyles: boolean;
@@ -29,8 +30,7 @@ export interface HtmlPreviewState {
     
     // Save page states
     savedPage: any;
-    originalPageUrl: string | null;      // URL from initial content
-    regeneratedPageUrl: string | null;   // URL from regenerated content
+    publishedPageUrl: string | null;  // Single URL for the published page
     pageTitle: string;
     pageDescription: string;
     metaTitle: string;
@@ -67,8 +67,7 @@ export interface HtmlPreviewActions {
     
     // Save page setters
     setSavedPage: (value: any) => void;
-    setOriginalPageUrl: (value: string | null) => void;
-    setRegeneratedPageUrl: (value: string | null) => void;
+    setPublishedPageUrl: (value: string | null) => void;  // Single setter for URL
     setPageTitle: (value: string) => void;
     setPageDescription: (value: string) => void;
     setMetaTitle: (value: string) => void;
@@ -86,7 +85,7 @@ export interface HtmlPreviewActions {
     handleCopyCustom: () => Promise<void>;
     handleCopyUrl: (url: string) => Promise<void>;
     handleSavePage: () => Promise<void>;
-    handleRegenerateHtml: () => void;
+    handleRegenerateHtml: (useMetadata?: boolean) => Promise<void>;
     handleRefreshMarkdown: () => void;
     
     // Utility functions
@@ -111,6 +110,9 @@ export interface HtmlPreviewHookProps {
     htmlContent?: string;
     user: any;
     isOpen?: boolean;
+    publishedPageId?: string | null;  // ID of the published page (persists across edits)
+    onPageIdChange?: (pageId: string) => void;  // Callback when page ID is created
+    resetKey?: number;  // Optional key to trigger complete state reset (e.g., for new tasks)
 }
 
 export interface HtmlPreviewTabProps {

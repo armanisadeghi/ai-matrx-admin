@@ -230,10 +230,10 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                         }`}
                     >
                         <Save size={18} />
-                        {state.savedPage ? "Update Metadata" : "Publish with Metadata"}
+                        {previewUrl ? "Update Page" : "Generate Page"}
                     </button>
                     <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
-                        {state.savedPage ? "Update SEO settings for this page" : "Save with custom metadata (optional)"}
+                        {previewUrl ? "Update page with current content and metadata" : "Create page with metadata"}
                     </p>
                 </div>
 
@@ -264,13 +264,14 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                                         variant="outline"
                                         size="sm"
                                         className="h-8 px-3"
+                                        disabled={!previewUrl}
                                     >
                                         <RotateCcw className="h-4 w-4 mr-2" />
                                         Reset
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>Reset to original content</p>
+                                    <p>{previewUrl ? "Reset to original content" : "Generate a page first"}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -279,18 +280,23 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button
-                                        onClick={actions.handleRegenerateHtml}
-                                        variant={state.isHtmlDirty ? "default" : "outline"}
+                                        onClick={() => actions.handleRegenerateHtml()}
+                                        variant={(previewUrl && (state.isMarkdownDirty || state.isHtmlDirty)) ? "default" : "outline"}
                                         size="sm"
                                         className="h-8 px-3"
-                                        disabled={!state.isHtmlDirty}
+                                        disabled={!previewUrl || (!state.isMarkdownDirty && !state.isHtmlDirty)}
                                     >
                                         <RefreshCw className="h-4 w-4 mr-2" />
                                         Regenerate
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>{state.isHtmlDirty ? "Generate HTML from edited markdown" : "HTML is up to date"}</p>
+                                    <p>
+                                        {!previewUrl ? "Generate a page first" :
+                                         state.isMarkdownDirty ? "Update preview from edited markdown" : 
+                                         state.isHtmlDirty ? "Update preview from edited HTML" : 
+                                         "Content is up to date"}
+                                    </p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>

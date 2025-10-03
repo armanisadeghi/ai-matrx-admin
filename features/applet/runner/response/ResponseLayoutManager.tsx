@@ -15,7 +15,7 @@ import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classi
 import { AppletLayoutOption } from "@/types";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
 import { removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
-import { useHtmlPreviewState } from "@/features/html-pages/components/useHtmlPreviewState";
+import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 
 interface ResponseLayoutManagerProps {
     appletId: string;
@@ -49,12 +49,20 @@ export default function ResponseLayoutManager({
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editedContent, setEditedContent] = useState(textResponse);
-
+    const [publishedPageId, setPublishedPageId] = useState<string | null>(null);
+    const [hookResetKey, setHookResetKey] = useState(0); // Key to force hook reset on new tasks
+    
     // Initialize the HTML preview state hook at parent level to preserve state between opens
+    // Note: hookResetKey is used to force complete state reset when new task completes
     const htmlPreviewState = useHtmlPreviewState({
         isOpen: isEditorOpen,
         markdownContent: editedContent,
         user,
+        publishedPageId,
+        onPageIdChange: (pageId) => {
+            setPublishedPageId(pageId);
+        },
+        resetKey: hookResetKey,  // Pass reset key to trigger internal state reset
     });
 
     useEffect(() => {
@@ -94,8 +102,11 @@ export default function ResponseLayoutManager({
         if (!textResponse) return;
         if (isTaskComplete) {
             setEditedContent(removeThinkingContent(textResponse));
+            // Reset all HTML preview state for new task
+            setPublishedPageId(null);  // Clear page ID so new content creates new page
+            setHookResetKey(prev => prev + 1);  // Force hook state reset
         }
-    }, [isTaskComplete, textResponse]);
+    }, [isTaskComplete, textResponse, taskId]);
 
     const handleSaveEdit = (newContent: string) => {
         setEditedContent(newContent);
@@ -159,6 +170,7 @@ export default function ResponseLayoutManager({
             </div>
             {isEditorOpen && editedContent && (
                 <HtmlPreviewFullScreenEditor
+                    key={hookResetKey}  // Force complete remount on new tasks
                     isOpen={isEditorOpen}
                     onClose={handleCancelEdit}
                     htmlPreviewState={htmlPreviewState}

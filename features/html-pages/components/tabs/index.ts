@@ -4,7 +4,6 @@
  */
 
 // HTML Tabs
-export { HtmlPreviewTab } from "./HtmlPreviewTab";
 export { HtmlCodeTab } from "./HtmlCodeTab";
 export { WordPressCSSTab } from "./WordPressCSSTab";
 export { CompleteHtmlTab } from "./CompleteHtmlTab";
@@ -12,7 +11,6 @@ export { HtmlCodeFilesTab } from "./HtmlCodeFilesTab"; // Multi-file code viewer
 export { CustomCopyTab } from "./CustomCopyTab";
 export { EditHtmlTab } from "./EditHtmlTab";
 export { SavePageTab } from "./SavePageTab";
-export { HtmlControlsTab } from "./HtmlControlsTab";
 
 // Markdown Tabs
 export { MarkdownSplitViewTab } from "./MarkdownSplitViewTab";

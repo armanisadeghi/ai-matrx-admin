@@ -254,7 +254,6 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
             .then((plugin) => {
                 if (plugin) {
                     setColorSyntaxPlugin(() => plugin);
-                    console.log('Color syntax plugin loaded');
                 } else {
                     console.warn('Color syntax plugin not available');
                 }
@@ -270,7 +269,6 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
             try {
                 const rules = createMatrxWidgetRules();
                 setWidgetRules(rules);
-                console.log('MATRX widget rules initialized with Toast UI pattern');
             } catch (error) {
                 console.error('Error initializing widget rules:', error);
                 setWidgetRules([]);
