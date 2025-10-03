@@ -206,31 +206,46 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
     const [isClient, setIsClient] = useState(false);
     const [widgetRules, setWidgetRules] = useState<any[]>([]);
     const [convertedContent, setConvertedContent] = useState<string>("");
+    const [isThemeReady, setIsThemeReady] = useState(false);
+    const hasAppliedInitialTheme = useRef(false);
  
     // Convert incoming content from your format to Toast UI format
     useEffect(() => {
         const converted = convertToToastUIPattern(content);
         setConvertedContent(converted);
     }, [content]);
+    
+    // Reset theme application flag when editor key changes (remounts)
+    useEffect(() => {
+        hasAppliedInitialTheme.current = false;
+        setIsThemeReady(false);
+    }, [mode, isActive, editMode]);
+    
+    // Helper function to apply theme - extracted for reuse
+    const applyTheme = useCallback((editorElement: any) => {
+        try {
+            const editorContainer = editorElement?.querySelector?.(".toastui-editor-defaultUI");
+            if (editorContainer) {
+                if (mode === "dark") {
+                    editorContainer.classList.add("toastui-editor-dark");
+                } else {
+                    editorContainer.classList.remove("toastui-editor-dark");
+                }
+                return true;
+            }
+        } catch (e) {
+            console.error("Error applying theme to editor:", e);
+        }
+        return false;
+    }, [mode]);
  
     // Apply dark mode class to editor when mode changes
     useEffect(() => {
         if (editorRef.current && isClient) {
-            try {
-                const editorEl = editorRef.current.getRootElement();
-                const editorContainer = editorEl?.querySelector(".toastui-editor-defaultUI");
-                if (editorContainer) {
-                    if (mode === "dark") {
-                        editorContainer.classList.add("toastui-editor-dark");
-                    } else {
-                        editorContainer.classList.remove("toastui-editor-dark");
-                    }
-                }
-            } catch (e) {
-                console.error("Error applying dark mode to editor:", e);
-            }
+            const editorEl = editorRef.current.getRootElement();
+            applyTheme(editorEl);
         }
-    }, [mode, isClient]);
+    }, [mode, isClient, applyTheme]);
  
     useEffect(() => {
         setIsClient(true);
@@ -299,6 +314,9 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
     // Sync content when becoming active
     useEffect(() => {
         if (isActive && editorRef.current && isClient && convertedContent) {
+            // Ensure editor is visible when switching back to this tab
+            setIsThemeReady(true);
+            
             queueMicrotask(() => {
                 if (editorRef.current) {
                     try {
@@ -310,23 +328,16 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
                             }
                         }
                         
-                        // Ensure dark mode is applied when becoming active
+                        // Ensure theme is applied when becoming active
                         const editorEl = editorRef.current.getRootElement();
-                        const editorContainer = editorEl?.querySelector(".toastui-editor-defaultUI");
-                        if (editorContainer) {
-                            if (mode === "dark") {
-                                editorContainer.classList.add("toastui-editor-dark");
-                            } else {
-                                editorContainer.classList.remove("toastui-editor-dark");
-                            }
-                        }
+                        applyTheme(editorEl);
                     } catch (e) {
                         console.error("Error setting markdown when becoming active:", e);
                     }
                 }
             });
         }
-    }, [isActive, convertedContent, mode, isClient]);
+    }, [isActive, convertedContent, isClient, applyTheme]);
  
     const handleImageUpload = async (blob: File | Blob, callback: (url: string, altText?: string) => void) => {
         console.warn("Image upload not implemented.");
@@ -354,6 +365,25 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
         return content;
     }, [content, convertedContent]);
  
+    // Ref callback to apply theme immediately on mount
+    // MUST be defined before any conditional returns (Rules of Hooks)
+    const handleEditorRef = useCallback((instance: TuiEditorReactComp | null) => {
+        editorRef.current = instance;
+        
+        // Apply theme immediately when editor mounts
+        if (instance && !hasAppliedInitialTheme.current) {
+            // Apply theme synchronously first, then reveal editor
+            const editorEl = instance.getRootElement();
+            if (applyTheme(editorEl)) {
+                hasAppliedInitialTheme.current = true;
+                // Brief delay to ensure theme CSS has been applied before revealing
+                setTimeout(() => {
+                    setIsThemeReady(true);
+                }, 50);
+            }
+        }
+    }, [applyTheme]);
+
     // Expose methods via ref
     React.useImperativeHandle(ref, () => ({
         getCurrentMarkdown,
@@ -365,11 +395,18 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
     if (!isClient || !convertedContent) {
         return <EditorLoading />;
     }
- 
+
     return (
-        <div className={className}>
+        <div 
+            className={className}
+            style={{
+                backgroundColor: mode === "dark" ? "#1e1e1e" : "#ffffff",
+                transition: "opacity 150ms ease-in-out",
+                opacity: isThemeReady ? 1 : 0
+            }}
+        >
             <TuiEditor
-                ref={editorRef}
+                ref={handleEditorRef}
                 key={`tui-editor-${mode}-${isActive}-${editMode}`}
                 initialValue={convertedContent}
                 initialEditType={editMode}
@@ -386,7 +423,7 @@ const TuiEditorContent = React.forwardRef<TuiEditorContentRef, TuiEditorContentP
             />
         </div>
     );
- });
+});
 
 TuiEditorContent.displayName = "TuiEditorContent";
 
