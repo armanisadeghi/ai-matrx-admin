@@ -156,6 +156,20 @@ export const WORDPRESS_CSS = `/*
     top: 0;
     font-size: 1.2rem;
 }
+    
+/* Numbered Lists */
+.matrx-numbered-list {
+    list-style: decimal;
+    padding-left: 2rem;
+}
+
+.matrx-numbered-list .matrx-list-item {
+    padding-left: 0.5rem;
+}
+
+.matrx-numbered-list .matrx-list-item::before {
+    content: none; /* Remove the bullet */
+}
 
 /* Code */
 .matrx-content-container .matrx-inline-code {

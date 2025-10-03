@@ -59,7 +59,6 @@ export interface HtmlPreviewActions {
     
     // HTML content setters
     setEditedCompleteHtml: (value: string) => void;
-    setWordPressCSS: (value: string) => void;
     setGeneratedHtmlContent: (value: string) => void;
     
     // Custom copy options setters

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { copyToClipboard, removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
-import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
+import { getWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import { markdownToWordPressHTML } from "@/features/html-pages/utils/markdown-wordpress-utils";
 import { useHTMLPages } from "@/features/html-pages/hooks/useHTMLPages";
 import type { HtmlPreviewState, HtmlPreviewActions, HtmlPreviewHookProps } from "./types";
@@ -25,7 +25,8 @@ export function useHtmlPreviewState({ markdownContent, htmlContent, user, isOpen
         return htmlContent || markdownToWordPressHTML(removeThinkingContent(markdownContent));
     });
     const [editedCompleteHtml, setEditedCompleteHtml] = useState<string>("");
-    const [wordPressCSS, setWordPressCSS] = useState<string>("");
+    // Initialize CSS synchronously to avoid race conditions
+    const [wordPressCSS] = useState<string>(() => getWordPressCSS());
     
     // HTML regeneration
     const [isHtmlDirty, setIsHtmlDirty] = useState(false);
@@ -429,18 +430,6 @@ ${wordPressCSS}
         }
     }, [currentMarkdown, initialMarkdown]);
 
-    // Load WordPress CSS
-    useEffect(() => {
-        const loadCSS = async () => {
-            const cssContent = await loadWordPressCSS();
-            setWordPressCSS(cssContent);
-        };
-
-        if (isOpen) {
-            loadCSS();
-        }
-    }, [isOpen]);
-
     // Initialize edited complete HTML when modal opens
     useEffect(() => {
         if (isOpen && generatedHtmlContent && wordPressCSS) {
@@ -495,7 +484,6 @@ ${wordPressCSS}
         setCopiedUrl,
         setCurrentMarkdown,
         setEditedCompleteHtml,
-        setWordPressCSS,
         setGeneratedHtmlContent,
         setIncludeBulletStyles,
         setIncludeDecorativeLineBreaks,

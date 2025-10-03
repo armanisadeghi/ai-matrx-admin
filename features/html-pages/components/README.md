@@ -41,6 +41,22 @@ features/html-pages/components/
 - **TypeScript**: Fully typed for safety and autocomplete
 - **No Breaking Changes**: Original `HtmlPreviewModal.tsx` remains untouched
 
+## Architecture Highlights
+
+### Synchronous Initialization
+The hook initializes CSS synchronously using `getWordPressCSS()` instead of async loading. This ensures:
+- ✅ Initial preview pages include CSS from the start
+- ✅ Complete HTML generated correctly on first render
+- ✅ Monaco editor auto-format works on properly formed HTML
+- ✅ No race conditions between CSS loading and HTML generation
+- ✅ Consistent, predictable behavior
+
+### State Persistence
+The `useHtmlPreviewState` hook is initialized in the parent component (`ResponseLayoutManager`) rather than within the modal, ensuring:
+- State persists across modal open/close cycles
+- User edits are preserved when toggling the editor
+- Preview URLs remain available without regeneration
+
 ## Usage
 
 ### 1. Using the Shared Hook (Markdown-First Approach)
