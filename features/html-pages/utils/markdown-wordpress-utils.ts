@@ -74,6 +74,7 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
     
     // Handle horizontal rules (must be processed first before headings and lists)
     html = html.replace(/^[\-]{3,}$/gm, '<hr class="matrx-hr">');
+    html = html.replace(/^[\*]{3,}$/gm, '<hr class="matrx-hr">');
     
     // Handle links FIRST with improved regex and placeholder system to prevent interference
     const linkPlaceholders = [];
@@ -256,6 +257,20 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
     html = html.replace(/(<h1 class="matrx-h1">[\s\S]*?<\/h1>\s*)<p class="matrx-paragraph">([\s\S]*?)<\/p>/g, '$1<p class="matrx-intro">$2</p>');
     
     // FIXED FAQ HANDLING - More specific and careful approach
+    
+    // Step 0: Convert standalone bold text lines ending with ? into h3 elements
+    // This allows bold questions (e.g., **What is this?**) to be treated as FAQ questions
+    // Matches both standalone strong elements and those wrapped in paragraphs
+    html = html.replace(
+      /^<strong class="matrx-strong">([^<]*\?[^<]*)<\/strong>$/gm,
+      '<h3 class="matrx-h3">$1</h3>'
+    );
+    
+    // Also handle if they're already wrapped in paragraphs (defensive)
+    html = html.replace(
+      /<p class="matrx-paragraph"><strong class="matrx-strong">([^<]*\?[^<]*)<\/strong><\/p>/g,
+      '<h3 class="matrx-h3">$1</h3>'
+    );
     
     // Step 1: Find h3 elements that end with a question mark and convert to FAQ questions
     // But be more careful about what we match
