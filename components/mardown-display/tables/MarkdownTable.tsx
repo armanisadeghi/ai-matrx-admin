@@ -571,6 +571,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     </table>
                 </div>
             )}
+            {!isStreamActive && (
             <div className="flex justify-end gap-2 mt-2">
                 {internalTableData.normalizedData && (
                     <Button
@@ -627,6 +628,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     </Button>
                 )}
             </div>
+            )}
             {showSaveModal && (
                 <SaveTableModal
                     isOpen={showSaveModal}

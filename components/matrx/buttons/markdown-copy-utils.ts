@@ -4,7 +4,7 @@
  */
 
 // Import WordPress utility function
-import { markdownToWordPressHTML } from './markdown-wordpress-utils';
+import { markdownToWordPressHTML } from '@/features/html-pages/utils/markdown-wordpress-utils';
 
 // Define interface for copyToClipboard options
 interface CopyOptions {
@@ -32,6 +32,9 @@ export function removeThinkingContent(content: string): string {
     .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
     .replace(/<think>[\s\S]*?<\/think>/gi, '');
 }
+
+
+
 
 /**
  * Converts markdown text to Google Docs-friendly HTML

@@ -26,6 +26,8 @@ const SLUG_TO_COORDINATOR_MAP = {
     "lsi-variations": "keyword_hierarchy",
 };
 
+const ALLOW_EDITING = true;
+
 interface AppletRunComponentProps {
     appSlug: string;
     appletSlug: string;
@@ -126,6 +128,7 @@ export default function AppletRunComponent({
                     coordinatorId={coordinatorId}
                     isPreview={isPreview}
                     responseLayoutTypeOverride={responseLayoutTypeOverride}
+                    allowEditing={ALLOW_EDITING}
                 />
             )}
         </div>

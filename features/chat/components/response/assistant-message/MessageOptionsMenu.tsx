@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
-import { loadWordPressCSS } from "@/components/matrx/buttons/css/wordpress-styles";
+import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 
 interface MessageOptionsMenuProps {
   content: string;

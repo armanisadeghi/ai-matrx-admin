@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HTMLPageService } from '../services/htmlPageService';
+import { HTMLPageService } from '@/features/html-pages/services/htmlPageService';
 
 export function useHTMLPages(userId) {
   const [isCreating, setIsCreating] = useState(false);

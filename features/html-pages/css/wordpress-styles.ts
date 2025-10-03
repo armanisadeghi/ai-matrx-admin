@@ -495,7 +495,7 @@ export function getWordPressCSS(): string {
  */
 export async function loadWordPressCSS(): Promise<string> {
     try {
-        const response = await fetch('/components/matrx/buttons/matrx-wordpress-styles-example.css');
+        const response = await fetch('/features/html-pages/utils/markdown-wordpress-utils.ts');
         if (response.ok) {
             return await response.text();
         }

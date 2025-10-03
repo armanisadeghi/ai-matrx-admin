@@ -5,8 +5,8 @@ import { X, Copy, CheckCircle2, Eye, FileCode, Globe, Settings, Save, ExternalLi
 import { useHTMLPages } from "@/features/html-pages/hooks/useHTMLPages";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import { copyToClipboard, removeThinkingContent } from "./markdown-copy-utils";
-import { getWordPressCSS, loadWordPressCSS } from "./css/wordpress-styles";
+import { copyToClipboard, removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
+import { getWordPressCSS, loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import SmallCodeEditor from "@/components/mardown-display/code/SmallCodeEditor";
 
 interface HtmlPreviewModalProps {

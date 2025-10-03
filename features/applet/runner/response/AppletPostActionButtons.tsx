@@ -2,13 +2,13 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown, Code } from "lucide-react";
+import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown, Code, WandSparkles } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
 import { FileText } from "lucide-react";
 import ReviseCommentsModal from "./ReviseCommentsModal";
-import HtmlPreviewModal from "@/components/matrx/buttons/HtmlPreviewModal";
+import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
 
 interface AppletPostActionButtonsProps {
     appletId: string;
@@ -16,9 +16,10 @@ interface AppletPostActionButtonsProps {
     className?: string;
     content?: string;
     data?: any;
+    handleEdit?: () => void;
 }
 
-export default function AppletPostActionButtons({ appletId, taskId, className = "", content = "", data = {} }: AppletPostActionButtonsProps) {
+export default function AppletPostActionButtons({ appletId, taskId, className = "", content = "", data = {}, handleEdit = null }: AppletPostActionButtonsProps) {
     const router = useRouter();
     const [showReviseModal, setShowReviseModal] = useState(false);
     const [reviseComments, setReviseComments] = useState("");
@@ -119,14 +120,22 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
         <>
             {/* Mobile-first responsive layout */}
             <div className={`flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 sm:justify-end mt-6 ${className}`}>
-                
+                {handleEdit !== null && (
+                    <button
+                        onClick={handleEdit}
+                        className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 sm:px-4 py-3 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base sm:text-sm order-1 sm:order-5"
+                    >
+                        <Edit3 size={20} className="sm:w-[18px] sm:h-[18px]" />
+                        Edit
+                    </button>
+                )}
                 {/* Mobile: Primary action first and full width */}
                 <button
                     onClick={handleImproveInChat}
                     className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 sm:px-4 py-3 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base sm:text-sm order-1 sm:order-5"
                 >
                     <MessageSquare size={20} className="sm:w-[18px] sm:h-[18px]" />
-                    Improve in Chat
+                    Matrx Chat
                 </button>
 
                 {/* Mobile: Secondary actions in a grid */}
@@ -211,9 +220,8 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
                         onClick={() => setShowReviseModal(true)}
                         className="flex items-center justify-center gap-2 flex-1 sm:flex-none sm:w-auto px-3 sm:px-4 py-3 sm:py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600 text-sm"
                     >
-                        <Edit3 size={18} className="sm:w-[18px] sm:h-[18px]" />
+                        <WandSparkles size={18} className="sm:w-[18px] sm:h-[18px]" />
                         <span className="hidden sm:inline">Revise</span>
-                        <span className="hidden md:inline">with Comments</span>
                     </button>
                 </div>
             </div>

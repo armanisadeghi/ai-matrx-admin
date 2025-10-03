@@ -1,4 +1,4 @@
-import supabaseHtml from '../lib/supabase-html';
+import supabaseHtml from '@/features/html-pages/lib/supabase-html';
 
 export class HTMLPageService {
   /**

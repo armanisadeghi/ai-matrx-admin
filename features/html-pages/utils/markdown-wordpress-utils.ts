@@ -4,7 +4,7 @@
  */
 
 // Import the removeThinkingContent function
-import { removeThinkingContent } from './markdown-copy-utils';
+import { removeThinkingContent } from '@/components/matrx/buttons/markdown-copy-utils';
 
 /**
  * Converts markdown text to WordPress-friendly HTML with matrx- classes

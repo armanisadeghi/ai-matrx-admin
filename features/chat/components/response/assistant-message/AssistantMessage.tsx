@@ -3,7 +3,7 @@ import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, 
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import HtmlPreviewModal from "@/components/matrx/buttons/HtmlPreviewModal";
+import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
 import { ClassifiedMetadata } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
 import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";

@@ -109,7 +109,7 @@ export default function GoogleAuthDemoPage() {
                             <div className="pt-2">
                                 <h3 className="font-semibold mb-1">Access Token:</h3>
                                 <p className="text-xs break-all bg-white dark:bg-gray-800 p-2 rounded-md">
-                                    {token.substring(0, 30)}...
+                                    {token}
                                 </p>
                             </div>
                         )}
