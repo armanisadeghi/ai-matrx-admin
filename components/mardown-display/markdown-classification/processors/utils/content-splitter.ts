@@ -1,7 +1,7 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | string;
+    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | string;
     content: string;
     language?: string;
     src?: string;
@@ -17,8 +17,19 @@ interface QuestionnaireState {
     completeQuestionCount: number;
 }
 
+interface FlashcardState {
+    isComplete: boolean;
+    completeCards: string[];
+    bufferContent: string;
+    totalCards: number;
+    completeCardCount: number;
+}
+
 // Cache for questionnaire content to prevent unnecessary updates
 const questionnaireCache = new Map<string, { content: string; hash: string; metadata: any }>();
+
+// Cache for flashcard content to prevent unnecessary updates during streaming
+const flashcardCache = new Map<string, { content: string; hash: string; metadata: any }>();
 
 // Cache for table content to prevent unnecessary updates during streaming
 const tableCache = new Map<string, { content: string; hash: string; metadata: any }>();
@@ -42,7 +53,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     let inPotentialTable = false;
 
     // List of special tags to handle
-    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool", "questionnaire"];
+    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool", "questionnaire", "flashcards"];
 
     // Helper function to check if a line looks like a table row
     const looksLikeTableRow = (line: string): boolean => {
@@ -242,6 +253,67 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         };
     };
 
+    // Function to analyze flashcard completion state
+    const analyzeFlashcardCompletion = (content: string): FlashcardState => {
+        const lines = content.split('\n');
+        const completeCards: string[] = [];
+        let currentCard: string[] = [];
+        let totalCards = 0;
+        let isComplete = false;
+        let hasFront = false;
+        let hasBack = false;
+        
+        // Check if flashcard block is fully complete (has closing tag)
+        isComplete = content.includes('</flashcards>');
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            // Detect start of new flashcard (Front: or Question:)
+            if (line.match(/^(?:Front|Question):/i)) {
+                // Save previous card if it was complete
+                if (currentCard.length > 0 && hasFront && hasBack) {
+                    completeCards.push(currentCard.join('\n'));
+                }
+                currentCard = [lines[i]];
+                hasFront = true;
+                hasBack = false;
+                totalCards++;
+            }
+            // Detect back of flashcard (Back: or Answer:)
+            else if (line.match(/^(?:Back|Answer):/i)) {
+                currentCard.push(lines[i]);
+                hasBack = true;
+            }
+            // Detect card separator (end of current card)
+            else if (line === '---') {
+                if (currentCard.length > 0 && hasFront && hasBack) {
+                    completeCards.push(currentCard.join('\n'));
+                }
+                currentCard = [];
+                hasFront = false;
+                hasBack = false;
+            }
+            // Accumulate card content
+            else if (currentCard.length > 0 && line.length > 0) {
+                currentCard.push(lines[i]);
+            }
+        }
+        
+        // If flashcard block is complete, include the final card even without separator
+        if (isComplete && currentCard.length > 0 && hasFront && hasBack) {
+            completeCards.push(currentCard.join('\n'));
+        }
+        
+        return {
+            isComplete,
+            completeCards,
+            bufferContent: isComplete ? '' : currentCard.join('\n'),
+            totalCards,
+            completeCardCount: completeCards.length
+        };
+    };
+
     // Function to handle special tags
     const handleSpecialTags = (tag: string, startIndex: number, lines: string[]): { content: string; newIndex: number; metadata?: any } => {
         const content: string[] = [];
@@ -314,6 +386,62 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     completeQuestionCount: questionnaireState.completeQuestionCount,
                     totalQuestions: questionnaireState.totalQuestions,
                     hasPartialContent: !actuallyComplete && questionnaireState.bufferContent.length > 0
+                }
+            };
+        }
+
+        // Special handling for flashcard tags
+        if (tag === "flashcards") {
+            const flashcardState = analyzeFlashcardCompletion(fullContent);
+            
+            // Override isComplete based on whether we found the closing tag
+            const actuallyComplete = foundClosingTag;
+            
+            // Create a unique cache key based on the content hash
+            const contentHash = `${flashcardState.completeCardCount}-${actuallyComplete}`;
+            const cacheKey = `flashcards-${contentHash}`;
+            
+            // Check if we should release new content
+            const cached = flashcardCache.get(cacheKey);
+            let contentToRelease = "";
+            let shouldUpdate = false;
+            
+            if (actuallyComplete) {
+                // If flashcard block is complete, release all content
+                contentToRelease = fullContent;
+                shouldUpdate = true;
+            } else {
+                // Only release complete flashcards
+                contentToRelease = flashcardState.completeCards.join('\n\n---\n\n');
+                
+                // Check if we have new complete flashcards
+                shouldUpdate = !cached || cached.content !== contentToRelease;
+            }
+            
+            // Update cache if content changed
+            if (shouldUpdate) {
+                flashcardCache.set(cacheKey, {
+                    content: contentToRelease,
+                    hash: contentHash,
+                    metadata: {
+                        isComplete: actuallyComplete,
+                        completeCardCount: flashcardState.completeCardCount,
+                        totalCards: flashcardState.totalCards,
+                        hasPartialContent: !actuallyComplete && flashcardState.bufferContent.length > 0
+                    }
+                });
+            }
+            
+            // Return cached content if no update needed
+            const finalCache = flashcardCache.get(cacheKey);
+            return {
+                content: finalCache?.content || contentToRelease,
+                newIndex: i,
+                metadata: finalCache?.metadata || {
+                    isComplete: actuallyComplete,
+                    completeCardCount: flashcardState.completeCardCount,
+                    totalCards: flashcardState.totalCards,
+                    hasPartialContent: !actuallyComplete && flashcardState.bufferContent.length > 0
                 }
             };
         }
@@ -453,6 +581,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             } else if (languageOrType === "questionnaire") {
                 blocks.push({
                     type: "questionnaire",
+                    content: contentString,
+                });
+            } else if (languageOrType === "flashcards") {
+                blocks.push({
+                    type: "flashcards",
                     content: contentString,
                 });
             } else {

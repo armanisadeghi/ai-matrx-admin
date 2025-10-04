@@ -17,6 +17,7 @@ import MatrxBrokerBlock from "../blocks/brokers/MatrxBrokerBlock";
 import QuestionnaireRenderer from "../QuestionnaireRenderer";
 import { separatedMarkdownParser } from "../markdown-classification/processors/custom/parser-separated";
 import { QuestionnaireProvider } from "../context/QuestionnaireContext";
+import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -193,6 +194,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         />
                     </QuestionnaireProvider>
                 );
+            case "flashcards":
+                return <FlashcardsBlock key={index} content={block.content} />;
             case "text":
             case "info":
             case "task":
