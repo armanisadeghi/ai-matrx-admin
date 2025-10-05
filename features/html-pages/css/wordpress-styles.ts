@@ -11,10 +11,10 @@
  */
 
 export const WORDPRESS_CSS = `/* 
-    * MATRX WordPress CSS - Production Ready
-    * Use this CSS in your WordPress theme to style MATRX content
-    * All styles are scoped to .matrx-content-container to avoid conflicts
-    */
+ * MATRX WordPress CSS - Production Ready
+ * Use this CSS in your WordPress theme to style MATRX content
+ * All styles are scoped to .matrx-content-container to avoid conflicts
+ */
 
 /* Content Container */
 .matrx-content-container {
@@ -163,12 +163,32 @@ export const WORDPRESS_CSS = `/*
     padding-left: 2rem;
 }
 
-.matrx-numbered-list .matrx-list-item {
+.matrx-numbered-list > .matrx-list-item {
     padding-left: 0.5rem;
 }
 
-.matrx-numbered-list .matrx-list-item::before {
-    content: none; /* Remove the bullet */
+.matrx-numbered-list > .matrx-list-item::before {
+    content: none;
+    /* Remove the bullet */
+}
+
+/* Nested list indentation */
+.matrx-nested-list {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem !important;
+}
+
+/* Ensure nested lists within list items are properly indented */
+.matrx-list-item > .matrx-list {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+/* For multiple levels of nesting, increase indentation */
+.matrx-nested-list .matrx-nested-list {
+    padding-left: 1.5rem !important;
 }
 
 /* Code */
@@ -377,7 +397,7 @@ export const WORDPRESS_CSS = `/*
     margin: 2rem 0;
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: 0.5rem;
 }
 
 .matrx-flashcard {
@@ -386,7 +406,7 @@ export const WORDPRESS_CSS = `/*
     height: 200px;
     cursor: pointer;
     position: relative;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .matrx-flashcard-input {
@@ -444,8 +464,8 @@ export const WORDPRESS_CSS = `/*
 
 .matrx-flashcard-content {
     text-align: center;
-    font-size: 1.1rem;
-    line-height: 1.6;
+    font-size: 1.3rem;
+    line-height: 1.8;
     max-height: 100%;
     width: 100%;
     overflow: hidden;

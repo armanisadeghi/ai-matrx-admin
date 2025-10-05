@@ -1,12 +1,38 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { copyToClipboard, removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
 import { getWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import { markdownToWordPressHTML } from "@/features/html-pages/utils/markdown-wordpress-utils";
 import { useHTMLPages } from "@/features/html-pages/hooks/useHTMLPages";
+import {
+    generateCompleteHtmlFromSources,
+    extractMetadataFromContent as extractMetadataUtil,
+    createEmptyMetadata,
+    formatMetadataAsJson,
+    parseJsonToMetadata,
+    type HtmlMetadata,
+} from "@/features/html-pages/utils/html-source-files-utils";
+import {
+    extractBodyContent,
+    stripBulletStyles,
+    stripDecorativeLineBreaks,
+    applyCustomOptions,
+    getCharacterCountStatus,
+    getSEORecommendation,
+} from "@/features/html-pages/utils/html-preview-utils";
 import type { HtmlPreviewState, HtmlPreviewActions, HtmlPreviewHookProps } from "../components/types";
 
+/**
+ * HTML Preview State Hook - SOURCE FILES ARCHITECTURE
+ * 
+ * All HTML is derived from three source files:
+ * - contentHtml: Body content only
+ * - wordPressCSS: Styles
+ * - metadata: SEO and meta information
+ * 
+ * complete.html is ALWAYS generated from these sources, never stored.
+ */
 export function useHtmlPreviewState({
     markdownContent,
     htmlContent,
@@ -24,356 +50,142 @@ export function useHtmlPreviewState({
     const [copiedCustom, setCopiedCustom] = useState(false);
     const [copiedUrl, setCopiedUrl] = useState(false);
 
-    // Markdown content - SINGLE SOURCE OF TRUTH
-    const [initialMarkdown] = useState<string>(markdownContent); // Never changes
-    const [currentMarkdown, setCurrentMarkdown] = useState<string>(markdownContent); // Can be edited
+    // Markdown content (initial source)
+    const [initialMarkdown] = useState<string>(markdownContent);
+    const [currentMarkdown, setCurrentMarkdown] = useState<string>(markdownContent);
 
-    // HTML content (generated from markdown)
-    const [generatedHtmlContent, setGeneratedHtmlContent] = useState<string>(() => {
-        return htmlContent || markdownToWordPressHTML(removeThinkingContent(markdownContent));
-    });
-    const [editedCompleteHtml, setEditedCompleteHtmlInternal] = useState<string>("");
-    const [wordPressCSS] = useState<string>(() => getWordPressCSS());
-
-    // Source of truth tracking
-    const [isMarkdownDirty, setIsMarkdownDirty] = useState(false); // Markdown was edited
-    const [isHtmlDirty, setIsHtmlDirty] = useState(false); // HTML was directly edited
-
-    // Published page URL (single URL, no "original" vs "regenerated")
-    const [publishedPageUrl, setPublishedPageUrl] = useState<string | null>(null);
-
-    // Custom setter for HTML that marks HTML as dirty
-    const setEditedCompleteHtml = useCallback((html: string) => {
-        setEditedCompleteHtmlInternal(html);
-        if (html && html.trim()) {
-            setIsHtmlDirty(true);
-            setIsMarkdownDirty(false);
+    // SOURCE FILES - SINGLE SOURCE OF TRUTH
+    const [contentHtml, setContentHtml] = useState<string>(() => {
+        // Initialize from provided htmlContent or generate from markdown
+        if (htmlContent) {
+            return extractBodyContent(htmlContent, "");
         }
-    }, []);
+        return markdownToWordPressHTML(removeThinkingContent(markdownContent));
+    });
+
+    const [wordPressCSS, setWordPressCSSInternal] = useState<string>(() => getWordPressCSS());
+    
+    // Initialize metadata as empty to avoid hydration mismatch
+    // Will be populated in useEffect after component mounts (client-side only)
+    const [metadata, setMetadataInternal] = useState<HtmlMetadata>(() => createEmptyMetadata());
+
+    // Source tracking
+    const [isMarkdownDirty, setIsMarkdownDirty] = useState(false);
+    const [isContentDirty, setIsContentDirty] = useState(false);
+
+    // Published page state
+    const [publishedPageUrl, setPublishedPageUrl] = useState<string | null>(null);
+    const [savedPage, setSavedPage] = useState<any>(null);
 
     // Custom copy options
     const [includeBulletStyles, setIncludeBulletStyles] = useState(true);
     const [includeDecorativeLineBreaks, setIncludeDecorativeLineBreaks] = useState(true);
-
-    // Save page states (for "Save As New" functionality)
-    const [savedPage, setSavedPage] = useState<any>(null);
-    const [pageTitle, setPageTitle] = useState<string>("");
-    const [pageDescription, setPageDescription] = useState<string>("");
-    const [metaTitle, setMetaTitle] = useState<string>("");
-    const [metaDescription, setMetaDescription] = useState<string>("");
-    const [metaKeywords, setMetaKeywords] = useState<string>("");
-    const [ogImage, setOgImage] = useState<string>("");
-    const [canonicalUrl, setCanonicalUrl] = useState<string>("");
     const [showAdvancedMeta, setShowAdvancedMeta] = useState<boolean>(false);
 
     // HTML Pages system
     const { createHTMLPage, updateHTMLPage, isCreating, error, clearError } = useHTMLPages(user?.id);
 
-    // Extract title from HTML content
-    const extractTitleFromHTML = useCallback((htmlContent: string): string => {
+    // =================================================================
+    // SOURCE FILE SETTERS
+    // =================================================================
+
+    /**
+     * Normalize HTML for comparison (remove extra whitespace, normalize formatting)
+     * This prevents formatting changes from marking content as dirty
+     */
+    const normalizeHtml = useCallback((html: string): string => {
+        return html
+            .replace(/\s+/g, ' ')        // Collapse all whitespace to single space
+            .replace(/>\s+</g, '><')     // Remove whitespace between tags
+            .trim();
+    }, []);
+
+    const setContentHtmlWithDirtyFlag = useCallback((html: string) => {
+        // Only mark as dirty if content actually changed (not just formatting)
+        const normalizedNew = normalizeHtml(html);
+        const normalizedCurrent = normalizeHtml(contentHtml);
+        
+        setContentHtml(html);
+        
+        if (normalizedNew !== normalizedCurrent) {
+            setIsContentDirty(true);
+            setIsMarkdownDirty(false); // Content edits override markdown
+        }
+    }, [contentHtml, normalizeHtml]);
+
+    const setWordPressCSS = useCallback((css: string) => {
+        setWordPressCSSInternal(css);
+    }, []);
+
+    const setMetadata = useCallback((meta: HtmlMetadata) => {
+        setMetadataInternal(meta);
+    }, []);
+
+    const setMetadataFromJson = useCallback((json: string) => {
         try {
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = htmlContent;
-
-            const h1 = tempDiv.querySelector("h1");
-            if (h1 && h1.textContent?.trim()) {
-                return h1.textContent.trim();
-            }
-
-            const h2 = tempDiv.querySelector("h2");
-            if (h2 && h2.textContent?.trim()) {
-                return h2.textContent.trim();
-            }
-
-            return "";
+            const parsed = parseJsonToMetadata(json);
+            setMetadataInternal(parsed);
         } catch (error) {
-            console.error("Error extracting title from HTML:", error);
-            return "";
+            console.error("Failed to parse metadata JSON:", error);
         }
     }, []);
 
-    // Extract description from HTML content
-    const extractDescriptionFromHTML = useCallback((htmlContent: string): string => {
-        try {
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = htmlContent;
-
-            let firstHeading = tempDiv.querySelector("h1");
-            if (!firstHeading) {
-                firstHeading = tempDiv.querySelector("h2");
-            }
-
-            if (firstHeading) {
-                let nextElement = firstHeading.nextElementSibling;
-                while (nextElement) {
-                    if (nextElement.tagName === "P" && nextElement.textContent?.trim()) {
-                        const fullText = nextElement.textContent.trim();
-                        const firstSentence = fullText.split(/[.!?]/)[0];
-                        return firstSentence.trim() + (firstSentence.length < fullText.length ? "." : "");
-                    }
-                    nextElement = nextElement.nextElementSibling;
-                }
-            } else {
-                const firstP = tempDiv.querySelector("p");
-                if (firstP && firstP.textContent?.trim()) {
-                    const fullText = firstP.textContent.trim();
-                    const firstSentence = fullText.split(/[.!?]/)[0];
-                    return firstSentence.trim() + (firstSentence.length < fullText.length ? "." : "");
-                }
-            }
-
-            return "";
-        } catch (error) {
-            console.error("Error extracting description from HTML:", error);
-            return "";
-        }
+    const setMetadataField = useCallback(<K extends keyof HtmlMetadata>(field: K, value: HtmlMetadata[K]) => {
+        setMetadataInternal(prev => ({
+            ...prev,
+            [field]: value,
+        }));
     }, []);
 
-    // Extract body content from complete HTML
-    const extractBodyContent = useCallback(
-        (completeHtml: string) => {
-            const match = completeHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-            return match ? match[1] : generatedHtmlContent;
-        },
-        [generatedHtmlContent]
-    );
+    // =================================================================
+    // CORE UTILITY FUNCTIONS
+    // =================================================================
 
-    // Unified page generation/update - Uses metadata from Publish tab
-    const handleRegenerateHtml = useCallback(
-        async (useMetadata: boolean = false) => {
-            if (!user?.id) {
-                alert("You must be logged in to generate pages");
-                return;
-            }
-
-            try {
-                // Determine HTML content based on what was edited
-                let bodyHtml: string;
-                let completeHtmlToPublish: string;
-
-                if (isMarkdownDirty || !editedCompleteHtml) {
-                    // Use current markdown as source
-                    const cleanedMarkdown = removeThinkingContent(currentMarkdown);
-                    const newHtml = markdownToWordPressHTML(cleanedMarkdown);
-                    setGeneratedHtmlContent(newHtml);
-                    bodyHtml = newHtml;
-                } else if (isHtmlDirty && editedCompleteHtml) {
-                    // Use edited HTML as source
-                    bodyHtml = extractBodyContent(editedCompleteHtml);
-                    completeHtmlToPublish = editedCompleteHtml;
-                } else {
-                    // Use current generated HTML
-                    bodyHtml = generatedHtmlContent;
-                }
-
-                // Clear dirty flags
-                setIsMarkdownDirty(false);
-                setIsHtmlDirty(false);
-
-                // Use metadata if provided (from Publish tab), otherwise extract from HTML
-                const extractedTitle = extractTitleFromHTML(bodyHtml);
-                const title = useMetadata && pageTitle.trim() ? pageTitle : extractedTitle || "Generated Content";
-                const description = useMetadata && pageDescription.trim() ? pageDescription : "";
-
-                // Prepare metadata fields
-                const metaFields = useMetadata
-                    ? {
-                          metaTitle: metaTitle.trim() || title,
-                          metaDescription: metaDescription.trim() || description,
-                          metaKeywords: metaKeywords.trim() || null,
-                          ogImage: ogImage.trim() || null,
-                          canonicalUrl: canonicalUrl.trim() || null,
-                      }
-                    : {};
-
-                // Build complete HTML
-                const completeHtml =
-                    completeHtmlToPublish ||
-                    `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
-    <style>
-${wordPressCSS}
-    </style>
-</head>
-<body>
-    ${bodyHtml}
-</body>
-</html>`;
-
-                let result;
-                if (publishedPageId) {
-                    // Update existing page
-                    result = await updateHTMLPage(publishedPageId, completeHtml, title, description, metaFields);
-                } else {
-                    // Create new page
-                    result = await createHTMLPage(completeHtml, title, description, metaFields);
-                    onPageIdChange?.(result.pageId);
-                }
-
-                setPublishedPageUrl(result.url);
-
-                // Show success for metadata updates
-                if (useMetadata) {
-                    setSavedPage(result);
-                }
-            } catch (err: any) {
-                console.error("Generate/update failed:", err);
-                alert(`Failed to ${publishedPageId ? "update" : "create"} page: ${err.message}`);
-            }
-        },
-        [
-            currentMarkdown,
-            isMarkdownDirty,
-            isHtmlDirty,
-            editedCompleteHtml,
-            generatedHtmlContent,
-            user,
+    /**
+     * Generate complete HTML from current source files
+     */
+    const generateCompleteHtmlFromSourcesCallback = useCallback(() => {
+        return generateCompleteHtmlFromSources({
+            contentHtml,
             wordPressCSS,
-            extractTitleFromHTML,
-            extractBodyContent,
-            createHTMLPage,
-            updateHTMLPage,
-            publishedPageId,
-            onPageIdChange,
-            pageTitle,
-            pageDescription,
-            metaTitle,
-            metaDescription,
-            metaKeywords,
-            ogImage,
-            canonicalUrl,
-        ]
-    );
+            metadata,
+        });
+    }, [contentHtml, wordPressCSS, metadata]);
 
-    // Reset: Revert to initial markdown and regenerate HTML locally
-    const handleRefreshMarkdown = useCallback(() => {
-        setCurrentMarkdown(initialMarkdown);
-        const cleanedMarkdown = removeThinkingContent(initialMarkdown);
-        const newHtml = markdownToWordPressHTML(cleanedMarkdown);
-        setGeneratedHtmlContent(newHtml);
-        setIsMarkdownDirty(false);
-        setIsHtmlDirty(false);
-        setEditedCompleteHtmlInternal("");
-        // Note: Does NOT update database - user must click Regenerate to publish
-    }, [initialMarkdown]);
+    /**
+     * Extract metadata FROM content.html
+     */
+    const extractMetadataFromContentCallback = useCallback(() => {
+        const extracted = extractMetadataUtil(contentHtml);
+        setMetadataInternal(prev => ({
+            ...prev,
+            ...extracted,
+        }));
+    }, [contentHtml]);
 
-    // Generate complete HTML with CSS
-    const generateCompleteHTML = useCallback(() => {
-        const extractedTitle = extractTitleFromHTML(generatedHtmlContent);
-        const pageTitle = extractedTitle || "WordPress Content";
-
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${pageTitle}</title>
-    <style>
-${wordPressCSS}
-    </style>
-</head>
-<body>
-    ${generatedHtmlContent}
-</body>
-</html>`;
-    }, [generatedHtmlContent, wordPressCSS, extractTitleFromHTML]);
-
-    // Get current HTML content
-    const getCurrentHtmlContent = useCallback(() => {
-        return editedCompleteHtml || generateCompleteHTML();
-    }, [editedCompleteHtml, generateCompleteHTML]);
-
-    // Strip bullet styles
-    const stripBulletStyles = useCallback((html: string) => {
-        return html.replace(/class="matrx-list-item"/g, "");
-    }, []);
-
-    // Strip decorative line breaks
-    const stripDecorativeLineBreaks = useCallback((html: string) => {
-        return html.replace(/<hr class="matrx-hr"[^>]*>/g, "");
-    }, []);
-
-    // Apply custom options
-    const applyCustomOptions = useCallback(
-        (html: string) => {
-            let processedHtml = html;
-
-            if (!includeBulletStyles) {
-                processedHtml = stripBulletStyles(processedHtml);
-            }
-
-            if (!includeDecorativeLineBreaks) {
-                processedHtml = stripDecorativeLineBreaks(processedHtml);
-            }
-
-            return processedHtml;
-        },
-        [includeBulletStyles, includeDecorativeLineBreaks, stripBulletStyles, stripDecorativeLineBreaks]
-    );
-
-    // Get current preview URL
+    /**
+     * Get current preview URL
+     */
     const getCurrentPreviewUrl = useCallback((): string | null => {
         return publishedPageUrl;
     }, [publishedPageUrl]);
 
-    // SEO helper functions
-    const getCharacterCountStatus = useCallback((text: string, ideal: number, max: number) => {
-        const length = text.length;
-        if (length === 0) return { status: "empty", color: "text-gray-400" };
-        if (length <= ideal) return { status: "good", color: "text-green-600 dark:text-green-400" };
-        if (length <= max) return { status: "warning", color: "text-yellow-600 dark:text-yellow-400" };
-        return { status: "error", color: "text-red-600 dark:text-red-400" };
-    }, []);
+    // =================================================================
+    // COPY HANDLERS (using source files)
+    // =================================================================
 
-    const getSEORecommendation = useCallback((text: string, field: string) => {
-        const length = text.length;
-        switch (field) {
-            case "title":
-                if (length === 0) return "Page title is required";
-                if (length < 30) return "Consider a longer, more descriptive title";
-                if (length > 60) return "Title may be truncated in search results";
-                return "Good title length";
-            case "description":
-                if (length === 0) return "Description helps with SEO";
-                if (length < 120) return "Consider a longer description";
-                if (length > 160) return "Description may be truncated";
-                return "Good description length";
-            case "metaTitle":
-                if (length === 0) return "Will use page title if empty";
-                if (length < 30) return "Consider a longer meta title";
-                if (length > 60) return "Meta title may be truncated";
-                return "Good meta title length";
-            case "metaDescription":
-                if (length === 0) return "Will use page description if empty";
-                if (length < 120) return "Consider a longer meta description";
-                if (length > 160) return "Meta description may be truncated";
-                return "Good meta description length";
-            default:
-                return "";
-        }
-    }, []);
-
-    // Copy handlers
     const handleCopyHtml = useCallback(async () => {
-        const currentCompleteHtml = getCurrentHtmlContent();
-        const bodyContent = extractBodyContent(currentCompleteHtml);
-        await copyToClipboard(bodyContent, {
+        await copyToClipboard(contentHtml, {
             onSuccess: () => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
             },
             onError: (err) => console.error("Failed to copy HTML:", err),
         });
-    }, [getCurrentHtmlContent, extractBodyContent]);
+    }, [contentHtml]);
 
     const handleCopyHtmlNoBullets = useCallback(async () => {
-        const currentCompleteHtml = getCurrentHtmlContent();
-        const bodyContent = extractBodyContent(currentCompleteHtml);
-        const noBulletsHtml = stripBulletStyles(bodyContent);
+        const noBulletsHtml = stripBulletStyles(contentHtml);
         await copyToClipboard(noBulletsHtml, {
             onSuccess: () => {
                 setCopiedNoBullets(true);
@@ -381,7 +193,7 @@ ${wordPressCSS}
             },
             onError: (err) => console.error("Failed to copy HTML without bullet styles:", err),
         });
-    }, [getCurrentHtmlContent, extractBodyContent, stripBulletStyles]);
+    }, [contentHtml]);
 
     const handleCopyCSS = useCallback(async () => {
         await copyToClipboard(wordPressCSS, {
@@ -394,7 +206,7 @@ ${wordPressCSS}
     }, [wordPressCSS]);
 
     const handleCopyComplete = useCallback(async () => {
-        const completeHTML = getCurrentHtmlContent();
+        const completeHTML = generateCompleteHtmlFromSourcesCallback();
         await copyToClipboard(completeHTML, {
             onSuccess: () => {
                 setCopiedComplete(true);
@@ -402,12 +214,13 @@ ${wordPressCSS}
             },
             onError: (err) => console.error("Failed to copy complete HTML:", err),
         });
-    }, [getCurrentHtmlContent]);
+    }, [generateCompleteHtmlFromSourcesCallback]);
 
     const handleCopyCustom = useCallback(async () => {
-        const currentCompleteHtml = getCurrentHtmlContent();
-        const bodyContent = extractBodyContent(currentCompleteHtml);
-        const customHTML = applyCustomOptions(bodyContent);
+        const customHTML = applyCustomOptions(contentHtml, {
+            includeBulletStyles,
+            includeDecorativeLineBreaks,
+        });
         await copyToClipboard(customHTML, {
             onSuccess: () => {
                 setCopiedCustom(true);
@@ -415,7 +228,7 @@ ${wordPressCSS}
             },
             onError: (err) => console.error("Failed to copy custom HTML:", err),
         });
-    }, [getCurrentHtmlContent, extractBodyContent, applyCustomOptions]);
+    }, [contentHtml, includeBulletStyles, includeDecorativeLineBreaks]);
 
     const handleCopyUrl = useCallback(async (url: string) => {
         await copyToClipboard(url, {
@@ -427,9 +240,106 @@ ${wordPressCSS}
         });
     }, []);
 
-    // Publish/Update page with metadata - Uses unified function
+    // =================================================================
+    // REGENERATE & PUBLISH (using source files)
+    // =================================================================
+
+    /**
+     * Regenerate HTML from markdown if dirty, then publish
+     */
+    const handleRegenerateHtml = useCallback(async (useMetadata: boolean = false) => {
+        if (!user?.id) {
+            alert("You must be logged in to generate pages");
+            return;
+        }
+
+        try {
+            clearError();
+
+            // Determine which content and metadata to use
+            let finalContentHtml = contentHtml;
+            let finalMetadata = metadata;
+
+            // Step 1: If markdown is dirty, regenerate content.html from markdown
+            if (isMarkdownDirty) {
+                const newContentHtml = markdownToWordPressHTML(removeThinkingContent(currentMarkdown));
+                finalContentHtml = newContentHtml; // Use the new content
+                setContentHtml(newContentHtml);
+                
+                // ALWAYS extract and update metadata (even if empty)
+                const extracted = extractMetadataUtil(newContentHtml);
+                finalMetadata = {
+                    ...metadata,
+                    title: extracted.title || metadata.title,
+                    description: extracted.description || metadata.description,
+                    metaTitle: extracted.metaTitle || extracted.title || metadata.metaTitle,
+                    metaDescription: extracted.metaDescription || extracted.description || metadata.metaDescription,
+                };
+                setMetadataInternal(finalMetadata);
+            }
+
+            // Clear dirty flags
+            setIsMarkdownDirty(false);
+            setIsContentDirty(false);
+
+            // Step 2: Generate complete HTML from CURRENT source files (use final values, not closure values)
+            const completeHtml = generateCompleteHtmlFromSources({
+                contentHtml: finalContentHtml,
+                wordPressCSS,
+                metadata: finalMetadata,
+            });
+
+            // Step 3: Prepare metadata for API
+            const title = finalMetadata.title || "Generated Content";
+            const description = finalMetadata.description || "";
+            const metaFields = useMetadata ? {
+                metaTitle: finalMetadata.metaTitle || title,
+                metaDescription: finalMetadata.metaDescription || description,
+                metaKeywords: finalMetadata.metaKeywords || null,
+                ogImage: finalMetadata.ogImage || null,
+                canonicalUrl: finalMetadata.canonicalUrl || null,
+            } : {};
+
+            // Step 4: API call - Create or update page
+            let result;
+            if (publishedPageId) {
+                console.log("📝 Updating existing page with ID:", publishedPageId);
+                result = await updateHTMLPage(publishedPageId, completeHtml, title, description, metaFields);
+            } else {
+                console.log("✨ Creating NEW page (no existing ID)");
+                result = await createHTMLPage(completeHtml, title, description, metaFields);
+                console.log("📌 New page created with ID:", result.pageId);
+                onPageIdChange?.(result.pageId);
+            }
+
+            // Step 5: Update state with results
+            setPublishedPageUrl(result.url);
+            if (useMetadata) {
+                setSavedPage(result);
+            }
+        } catch (err: any) {
+            console.error("Generate/update failed:", err);
+            alert(`Failed to ${publishedPageId ? "update" : "create"} page: ${err.message}`);
+        }
+    }, [
+        user,
+        isMarkdownDirty,
+        currentMarkdown,
+        contentHtml,
+        wordPressCSS,
+        metadata,
+        publishedPageId,
+        clearError,
+        createHTMLPage,
+        updateHTMLPage,
+        onPageIdChange,
+    ]);
+
+    /**
+     * Publish page with metadata (wrapper for handleRegenerateHtml)
+     */
     const handleSavePage = useCallback(async () => {
-        if (!pageTitle.trim()) {
+        if (!metadata.title.trim()) {
             alert("Please enter a page title before publishing");
             return;
         }
@@ -439,152 +349,220 @@ ${wordPressCSS}
             return;
         }
 
-        try {
-            clearError();
-            // Call unified function with metadata enabled
             await handleRegenerateHtml(true);
-        } catch (err: any) {
-            console.error("Publish failed:", err);
-            alert(`Publish failed: ${err.message}`);
-        }
-    }, [pageTitle, user, clearError, handleRegenerateHtml]);
+    }, [metadata.title, user, handleRegenerateHtml]);
 
-    // Sync markdown content when editor opens
+    /**
+     * Update source files from current markdown
+     * This regenerates content.html, extracts metadata, etc. from the CURRENT markdown
+     */
+    const handleUpdateFromMarkdown = useCallback(() => {
+        // Regenerate content.html from current markdown
+        const newContentHtml = markdownToWordPressHTML(removeThinkingContent(currentMarkdown));
+        setContentHtml(newContentHtml);
+        
+        // ALWAYS extract and update metadata (even if empty)
+        const extracted = extractMetadataUtil(newContentHtml);
+        setMetadataInternal(prev => ({
+            ...prev,
+            title: extracted.title || prev.title,
+            description: extracted.description || prev.description,
+            metaTitle: extracted.metaTitle || extracted.title || prev.metaTitle,
+            metaDescription: extracted.metaDescription || extracted.description || prev.metaDescription,
+        }));
+        
+        // Clear dirty flags (content is now up-to-date with markdown)
+        setIsMarkdownDirty(false);
+        setIsContentDirty(false);
+    }, [currentMarkdown]);
+
+    /**
+     * Reset to original markdown (this is the "Reset" button)
+     * Reverts everything back to initial state
+     */
+    const handleRefreshMarkdown = useCallback(() => {
+        // Reset markdown to original
+        setCurrentMarkdown(initialMarkdown);
+        
+        // Regenerate content.html from original markdown
+        const newContentHtml = markdownToWordPressHTML(removeThinkingContent(initialMarkdown));
+        setContentHtml(newContentHtml);
+        
+        // ALWAYS extract and update metadata (even if empty)
+        const extracted = extractMetadataUtil(newContentHtml);
+        setMetadataInternal(prev => ({
+            ...prev,
+            title: extracted.title || prev.title,
+            description: extracted.description || prev.description,
+            metaTitle: extracted.metaTitle || extracted.title || prev.metaTitle,
+            metaDescription: extracted.metaDescription || extracted.description || prev.metaDescription,
+        }));
+        
+        // Clear dirty flags
+        setIsMarkdownDirty(false);
+        setIsContentDirty(false);
+    }, [initialMarkdown]);
+
+    // =================================================================
+    // EFFECTS
+    // =================================================================
+
+    // Extract initial metadata from content (client-side only, after mount)
+    // This prevents hydration mismatch since extractMetadataUtil uses DOM APIs
+    useEffect(() => {
+        // Only run once on mount
+        const extracted = extractMetadataUtil(contentHtml);
+        if (extracted.title || extracted.description) {
+            setMetadataInternal({
+                ...createEmptyMetadata(),
+                title: extracted.title || '',
+                description: extracted.description || '',
+                metaTitle: extracted.metaTitle || extracted.title || '',
+                metaDescription: extracted.metaDescription || extracted.description || '',
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once on mount
+
+    // Sync markdown when modal opens
     useEffect(() => {
         if (isOpen && markdownContent) {
             setCurrentMarkdown(markdownContent);
-            // Also regenerate HTML from the markdown
-            const cleanedMarkdown = removeThinkingContent(markdownContent);
-            const newHtml = markdownToWordPressHTML(cleanedMarkdown);
-            setGeneratedHtmlContent(newHtml);
         }
     }, [isOpen, markdownContent]);
 
-    // Track when markdown is edited (becomes source of truth)
+    // Track markdown edits
     useEffect(() => {
         if (currentMarkdown !== initialMarkdown) {
             setIsMarkdownDirty(true);
-            // When markdown is edited, HTML edits are no longer relevant
-            setIsHtmlDirty(false);
+            setIsContentDirty(false);
         }
     }, [currentMarkdown, initialMarkdown]);
 
-    // Initialize edited complete HTML when modal opens
-    useEffect(() => {
-        if (isOpen && generatedHtmlContent && wordPressCSS) {
-            const completeHtml = generateCompleteHTML();
-            setEditedCompleteHtml(completeHtml);
-        }
-    }, [isOpen, generatedHtmlContent, wordPressCSS, generateCompleteHTML]);
-
-    // Reset edited complete HTML when modal closes
-    useEffect(() => {
-        if (!isOpen) {
-            setEditedCompleteHtmlInternal("");
-        }
-    }, [isOpen]);
-
-    // Reset all state when resetKey changes (for new tasks)
+    // Reset state when resetKey changes
     useEffect(() => {
         if (resetKey !== undefined && resetKey > 0) {
-            // Clear all URLs and page state
+            console.log("🔄 Hook reset triggered - resetKey:", resetKey);
             setPublishedPageUrl(null);
             setSavedPage(null);
-            // Clear dirty flags
             setIsMarkdownDirty(false);
-            setIsHtmlDirty(false);
-            // Clear edited content
-            setEditedCompleteHtmlInternal("");
-            // Reset metadata fields
-            setPageTitle("");
-            setPageDescription("");
-            setMetaTitle("");
-            setMetaDescription("");
-            setMetaKeywords("");
-            setOgImage("");
-            setCanonicalUrl("");
+            setIsContentDirty(false);
+            setMetadataInternal(createEmptyMetadata());
             setShowAdvancedMeta(false);
-            // Note: publishedPageId is managed by parent and reset there
-            // Note: currentMarkdown will sync from parent's markdownContent
+            console.log("✅ Hook state cleared - ready for new content");
         }
     }, [resetKey]);
 
+    // =================================================================
+    // RETURN STATE & ACTIONS
+    // =================================================================
+
     return {
-        // State
+        // Copy states
         copied,
         copiedNoBullets,
         copiedCSS,
         copiedComplete,
         copiedCustom,
         copiedUrl,
+
+        // Markdown
         initialMarkdown,
         currentMarkdown,
-        generatedHtmlContent,
-        editedCompleteHtml,
+
+        // SOURCE FILES
+        contentHtml,
         wordPressCSS,
+        metadata,
+
+        // Dirty flags
         isMarkdownDirty,
-        isHtmlDirty,
+        isContentDirty,
+
+        // Custom copy options
         includeBulletStyles,
         includeDecorativeLineBreaks,
+
+        // Page state
         savedPage,
-        publishedPageUrl, // Single URL for the published page
-        pageTitle,
-        pageDescription,
-        metaTitle,
-        metaDescription,
-        metaKeywords,
-        ogImage,
-        canonicalUrl,
+        publishedPageUrl,
         showAdvancedMeta,
+
+        // System state
         isCreating,
         error,
 
-        // Setters
+        // Copy state setters
         setCopied,
         setCopiedNoBullets,
         setCopiedCSS,
         setCopiedComplete,
         setCopiedCustom,
         setCopiedUrl,
+
+        // Markdown setters
         setCurrentMarkdown,
-        setEditedCompleteHtml,
-        setGeneratedHtmlContent,
+
+        // SOURCE FILE SETTERS
+        setContentHtml: setContentHtmlWithDirtyFlag,
+        setWordPressCSS,
+        setMetadata,
+        setMetadataFromJson,
+        setMetadataField,
+
+        // Custom copy options setters
         setIncludeBulletStyles,
         setIncludeDecorativeLineBreaks,
+
+        // Page state setters
         setSavedPage,
-        setPublishedPageUrl, // Single setter for URL
-        setPageTitle,
-        setPageDescription,
-        setMetaTitle,
-        setMetaDescription,
-        setMetaKeywords,
-        setOgImage,
-        setCanonicalUrl,
+        setPublishedPageUrl,
         setShowAdvancedMeta,
 
-        // Actions
+        // Copy handlers
         handleCopyHtml,
         handleCopyHtmlNoBullets,
         handleCopyCSS,
         handleCopyComplete,
         handleCopyCustom,
         handleCopyUrl,
-        handleSavePage,
-        handleRegenerateHtml, // Creates OR updates based on publishedPageId
-        handleRefreshMarkdown, // Resets to initial markdown (local only)
 
-        // Utilities
-        generateCompleteHTML,
-        getCurrentHtmlContent,
+        // Publish/regenerate handlers
+        handleSavePage,
+        handleRegenerateHtml,
+        handleRefreshMarkdown,
+        handleUpdateFromMarkdown,
+
+        // Metadata extraction
+        extractMetadataFromContent: extractMetadataFromContentCallback,
+
+        // Utility functions
+        generateCompleteHtmlFromSources: generateCompleteHtmlFromSourcesCallback,
         getCurrentPreviewUrl,
-        extractBodyContent,
+        extractBodyContent: (html) => extractBodyContent(html, contentHtml),
         stripBulletStyles,
         stripDecorativeLineBreaks,
-        applyCustomOptions,
-        extractTitleFromHTML,
-        extractDescriptionFromHTML,
+        applyCustomOptions: (html: string) => applyCustomOptions(html, { includeBulletStyles, includeDecorativeLineBreaks }),
+        extractTitleFromHTML: (html) => {
+            // Simple extraction for backward compatibility (SSR-safe)
+            if (typeof document === 'undefined') return "";
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = html;
+            const h1 = tempDiv.querySelector("h1");
+            return h1?.textContent?.trim() || "";
+        },
+        extractDescriptionFromHTML: (html) => {
+            // Simple extraction for backward compatibility (SSR-safe)
+            if (typeof document === 'undefined') return "";
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = html;
+            const p = tempDiv.querySelector("p");
+            return p?.textContent?.trim() || "";
+        },
         getCharacterCountStatus,
         getSEORecommendation,
+
+        // Error handling
         clearError,
     };
 }

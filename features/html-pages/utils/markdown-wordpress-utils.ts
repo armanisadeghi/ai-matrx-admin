@@ -143,7 +143,22 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
     html = html.replace(/^[\-]{3,}$/gm, '<hr class="matrx-hr">');
     html = html.replace(/^[\*]{3,}$/gm, '<hr class="matrx-hr">');
     
-    // Handle links FIRST with improved regex and placeholder system to prevent interference
+    // Handle images FIRST (before links, since images use ![text](url) syntax)
+    const imagePlaceholders = [];
+    let imageIndex = 0;
+    
+    // Match markdown image syntax: ![alt text](url)
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, altText, url) => {
+        const placeholder = `ΩIMAGEΩ${imageIndex}ΩIMAGEΩ`;
+        imagePlaceholders.push({
+            placeholder,
+            html: `<img class="matrx-image" src="${url}" alt="${altText}" />`
+        });
+        imageIndex++;
+        return placeholder;
+    });
+    
+    // Handle links SECOND with improved regex and placeholder system to prevent interference
     const linkPlaceholders = [];
     let linkIndex = 0;
     
@@ -190,29 +205,43 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
         const indent = numberedMatch[1].length;
         const content = numberedMatch[3];
         
-        // Close nested lists that are at deeper indentation levels
-        while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
-          const closingList = listStack.pop();
-          processedHtml += closingList.type === 'ol' ? '</ol>' : '</ul>';
-          if (lastListItem) {
-            processedHtml += '</li>\n';
-            lastListItem = '';
-          }
-        }
-        
-        // Close the current list item if we have one at the same level
-        if (lastListItem && listStack.length > 0 && listStack[listStack.length - 1].indent === indent) {
-          processedHtml += '</li>\n';
-        }
-        
-        // Start new numbered list if needed
-        if (listStack.length === 0 || listStack[listStack.length - 1].indent !== indent || listStack[listStack.length - 1].type !== 'ol') {
-          processedHtml += '<ol class="matrx-list matrx-numbered-list">\n';
+        // If this is a nested list (more indented than current level)
+        if (listStack.length > 0 && indent > listStack[listStack.length - 1].indent) {
+          // Keep parent list item open and start nested numbered list
+          processedHtml += '\n<ol class="matrx-list matrx-numbered-list matrx-nested-list">\n';
           listStack.push({type: 'ol', indent: indent, hasContent: false});
+          processedHtml += `<li class="matrx-list-item">${content}`;
+          lastListItem = 'ol';
+        } else {
+          // Close nested lists that are at deeper indentation levels
+          while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
+            // Close the last list item BEFORE closing the list
+            if (lastListItem) {
+              processedHtml += '</li>\n';
+              lastListItem = '';
+            }
+            const closingList = listStack.pop();
+            processedHtml += closingList.type === 'ol' ? '</ol>\n' : '</ul>\n';
+            // After closing a nested list, close its parent item too (if not at root level)
+            if (listStack.length > 0) {
+              processedHtml += '</li>\n';
+            }
+          }
+          
+          // Close the current list item if we have one at the same level
+          if (lastListItem && listStack.length > 0 && listStack[listStack.length - 1].indent === indent) {
+            processedHtml += '</li>\n';
+          }
+          
+          // Start new numbered list if needed
+          if (listStack.length === 0 || listStack[listStack.length - 1].indent !== indent || listStack[listStack.length - 1].type !== 'ol') {
+            processedHtml += '<ol class="matrx-list matrx-numbered-list">\n';
+            listStack.push({type: 'ol', indent: indent, hasContent: false});
+          }
+          
+          processedHtml += `<li class="matrx-list-item">${content}`;
+          lastListItem = 'ol';
         }
-        
-        processedHtml += `<li class="matrx-list-item">${content}`;
-        lastListItem = 'ol';
         continue;
       }
       
@@ -224,18 +253,24 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
         
         // If this bullet is more indented than the current level, it's nested
         if (listStack.length > 0 && indent > listStack[listStack.length - 1].indent) {
-          // Start nested bullet list
+          // Keep parent list item open and start nested bullet list
           processedHtml += '\n<ul class="matrx-list matrx-bullet-list matrx-nested-list">\n';
           listStack.push({type: 'ul', indent: indent, hasContent: false});
-          processedHtml += `<li class="matrx-list-item">${content}</li>\n`;
+          processedHtml += `<li class="matrx-list-item">${content}`;
+          lastListItem = 'ul';
         } else {
           // Close deeper nested lists
           while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
-            const closingList = listStack.pop();
-            processedHtml += closingList.type === 'ol' ? '</ol>' : '</ul>';
+            // Close the last list item BEFORE closing the list
             if (lastListItem) {
               processedHtml += '</li>\n';
               lastListItem = '';
+            }
+            const closingList = listStack.pop();
+            processedHtml += closingList.type === 'ol' ? '</ol>\n' : '</ul>\n';
+            // After closing a nested list, close its parent item too (if not at root level)
+            if (listStack.length > 0) {
+              processedHtml += '</li>\n';
             }
           }
           
@@ -250,24 +285,27 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
             listStack.push({type: 'ul', indent: indent, hasContent: false});
           }
           
-          processedHtml += `<li class="matrx-list-item">${content}</li>\n`;
-          lastListItem = '';
+          processedHtml += `<li class="matrx-list-item">${content}`;
+          lastListItem = 'ul';
         }
         continue;
       }
       
       // Non-list content - close all open lists
       if (line.trim() !== '') {
-        // Close any open list item first
-        if (lastListItem) {
-          processedHtml += '</li>\n';
-          lastListItem = '';
-        }
-        
-        // Close all open lists
+        // Close all open lists (close items before lists)
         while (listStack.length > 0) {
+          // Close the last list item if any
+          if (lastListItem) {
+            processedHtml += '</li>\n';
+            lastListItem = '';
+          }
           const closingList = listStack.pop();
           processedHtml += closingList.type === 'ol' ? '</ol>\n' : '</ul>\n';
+          // If there are more lists in the stack, close their parent item too
+          if (listStack.length > 0) {
+            processedHtml += '</li>\n';
+          }
         }
       }
       
@@ -275,12 +313,18 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
     }
     
     // Close any remaining open list item and lists
-    if (lastListItem) {
-      processedHtml += '</li>\n';
-    }
     while (listStack.length > 0) {
+      // Close the last list item if any
+      if (lastListItem) {
+        processedHtml += '</li>\n';
+        lastListItem = '';
+      }
       const closingList = listStack.pop();
       processedHtml += closingList.type === 'ol' ? '</ol>\n' : '</ul>\n';
+      // If there are more lists in the stack, close their parent item too
+      if (listStack.length > 0) {
+        processedHtml += '</li>\n';
+      }
     }
     
     html = processedHtml;
@@ -361,6 +405,16 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
       /(<div class="matrx-faq-answer">)<p class="matrx-paragraph">([\s\S]*?)<\/p>(<\/div>)/g,
       '$1$2$3'
     );
+    
+    // Restore image placeholders with actual HTML images
+    imagePlaceholders.forEach(({ placeholder, html: imageHtml }) => {
+        if (html.includes(placeholder)) {
+            html = html.replaceAll(placeholder, imageHtml);
+        }
+    });
+    
+    // Remove paragraph tags that only contain images (images should be block-level)
+    html = html.replace(/<p class="matrx-paragraph">\s*(<img[^>]*>)\s*<\/p>/g, '$1');
     
     // Restore link placeholders with actual HTML links
     linkPlaceholders.forEach(({ placeholder, html: linkHtml }) => {

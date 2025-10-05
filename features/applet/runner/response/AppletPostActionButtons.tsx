@@ -3,12 +3,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown, Code, WandSparkles } from "lucide-react";
-import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
+import { copyToClipboard, removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
 import { FileText } from "lucide-react";
 import ReviseCommentsModal from "./ReviseCommentsModal";
 import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
+import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
+import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 
 interface AppletPostActionButtonsProps {
     appletId: string;
@@ -16,11 +20,12 @@ interface AppletPostActionButtonsProps {
     className?: string;
     content?: string;
     data?: any;
-    handleEdit?: () => void;
+    handleEdit?: (() => void) | null;
 }
 
 export default function AppletPostActionButtons({ appletId, taskId, className = "", content = "", data = {}, handleEdit = null }: AppletPostActionButtonsProps) {
     const router = useRouter();
+    const user = useAppSelector(selectUser);
     const [showReviseModal, setShowReviseModal] = useState(false);
     const [reviseComments, setReviseComments] = useState("");
     const [showCopyOptions, setShowCopyOptions] = useState(false);
@@ -32,9 +37,24 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
     const copyButtonRef = useRef<HTMLButtonElement>(null);
     const [routePath, setRoutePath] = useState("/chat/");
     
+    // HTML Editor state
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [editedContent, setEditedContent] = useState(content);
+    const [publishedPageId, setPublishedPageId] = useState<string | null>(null);
+    
+    // Initialize HTML preview hook (only when this component renders, after task is complete)
+    const htmlPreviewState = useHtmlPreviewState({
+        isOpen: isEditorOpen,
+        markdownContent: removeThinkingContent(content),
+        user,
+        publishedPageId,
+        onPageIdChange: (pageId) => {
+            setPublishedPageId(pageId);
+        },
+    });
 
     useEffect(() => {
-        if (data[0].conversation_id) {
+        if (data[0]?.conversation_id) {
             setRoutePath(`/chat/${data[0].conversation_id}`);
         }
     }, [data]);
@@ -116,13 +136,28 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
         });
     };
 
+    const handleOpenEditor = () => {
+        setEditedContent(removeThinkingContent(content));
+        setIsEditorOpen(true);
+    };
+
+    const handleSaveEdit = (newContent: string) => {
+        setEditedContent(newContent);
+        setIsEditorOpen(false);
+        // TODO: Could dispatch this back to parent if needed for display
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditorOpen(false);
+    };
+
     return (
         <>
             {/* Mobile-first responsive layout */}
             <div className={`flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 sm:justify-end mt-6 ${className}`}>
                 {handleEdit !== null && (
                     <button
-                        onClick={handleEdit}
+                        onClick={handleOpenEditor}
                         className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 sm:px-4 py-3 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base sm:text-sm order-1 sm:order-5"
                     >
                         <Edit3 size={20} className="sm:w-[18px] sm:h-[18px]" />
@@ -255,6 +290,19 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
                 htmlContent={htmlContent}
                 title={htmlTitle}
             />
+
+            {/* HTML Editor - Full Screen */}
+            {isEditorOpen && (
+                <HtmlPreviewFullScreenEditor
+                    isOpen={isEditorOpen}
+                    onClose={handleCancelEdit}
+                    htmlPreviewState={htmlPreviewState}
+                    title="Edit Response"
+                    description="Edit the response markdown and preview/publish as HTML"
+                    onSave={handleSaveEdit}
+                    showSaveButton={true}
+                />
+            )}
         </>
     );
 }

@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseTextByListenerId, selectResponseEndedByListenerId, selectResponseDataByListenerId } from "@/lib/redux/socket-io";
-import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
@@ -13,9 +12,6 @@ import { brokerActions } from "@/lib/redux/brokerSlice";
 import { hasCoordinator } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
 import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classification/DirectMarkdownRenderer";
 import { AppletLayoutOption } from "@/types";
-import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
-import { removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
-import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 
 interface ResponseLayoutManagerProps {
     appletId: string;
@@ -40,30 +36,11 @@ export default function ResponseLayoutManager({
     allowEditing = false,
 }: ResponseLayoutManagerProps) {
     const dispatch = useAppDispatch();
-    const user = useAppSelector(selectUser);
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
     const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
     const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
     const hasCustomView = useMemo(() => hasCoordinator(coordinatorId), [coordinatorId]);
-
-    const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [editedContent, setEditedContent] = useState(textResponse);
-    const [publishedPageId, setPublishedPageId] = useState<string | null>(null);
-    const [hookResetKey, setHookResetKey] = useState(0); // Key to force hook reset on new tasks
-    
-    // Initialize the HTML preview state hook at parent level to preserve state between opens
-    // Note: hookResetKey is used to force complete state reset when new task completes
-    const htmlPreviewState = useHtmlPreviewState({
-        isOpen: isEditorOpen,
-        markdownContent: editedContent,
-        user,
-        publishedPageId,
-        onPageIdChange: (pageId) => {
-            setPublishedPageId(pageId);
-        },
-        resetKey: hookResetKey,  // Pass reset key to trigger internal state reset
-    });
 
     useEffect(() => {
         if (coordinatorId) {
@@ -97,29 +74,6 @@ export default function ResponseLayoutManager({
             );
         }
     }, [isTaskComplete, textResponse, dispatch, appletId]);
-
-    useEffect(() => {
-        if (!textResponse) return;
-        if (isTaskComplete) {
-            setEditedContent(removeThinkingContent(textResponse));
-            // Reset all HTML preview state for new task
-            setPublishedPageId(null);  // Clear page ID so new content creates new page
-            setHookResetKey(prev => prev + 1);  // Force hook state reset
-        }
-    }, [isTaskComplete, textResponse, taskId]);
-
-    const handleSaveEdit = (newContent: string) => {
-        setEditedContent(newContent);
-        setIsEditorOpen(false);
-    };
-
-    const handleCancelEdit = () => {
-        setIsEditorOpen(false);
-    };
-
-    const handleOpenEditor = () => {
-        setIsEditorOpen(true);
-    };
 
     return (
         <div className="w-full overflow-y-auto px-2 h-full space-y-2 scrollbar-none pb-12">
@@ -163,23 +117,17 @@ export default function ResponseLayoutManager({
                     </div>
                     {isTaskComplete && (
                         <div className="w-full max-w-4xl mx-auto px-4">
-                            <AppletPostActionButtons appletId={appletId} taskId={taskId} content={textResponse} data={dataResponse} handleEdit={allowEditing ? handleOpenEditor : null} />
+                            <AppletPostActionButtons 
+                                appletId={appletId} 
+                                taskId={taskId} 
+                                content={textResponse} 
+                                data={dataResponse} 
+                                handleEdit={allowEditing ? (() => {}) : null} 
+                            />
                         </div>
                     )}
                 </FullscreenWrapper>
             </div>
-            {isEditorOpen && editedContent && (
-                <HtmlPreviewFullScreenEditor
-                    key={hookResetKey}  // Force complete remount on new tasks
-                    isOpen={isEditorOpen}
-                    onClose={handleCancelEdit}
-                    htmlPreviewState={htmlPreviewState}
-                    title="Edit Response"
-                    description="Edit the response markdown and preview/publish as HTML"
-                    onSave={handleSaveEdit}
-                    showSaveButton={true}
-                />
-            )}
         </div>
     );
 }

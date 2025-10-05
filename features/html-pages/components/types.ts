@@ -1,6 +1,11 @@
 /**
  * Types for HTML Preview components
+ * 
+ * SOURCE FILES ARCHITECTURE:
+ * All state is organized around source files that combine to create complete.html
  */
+
+import type { HtmlMetadata } from "@/features/html-pages/utils/html-source-files-utils";
 
 export interface HtmlPreviewState {
     // Copy states
@@ -11,18 +16,19 @@ export interface HtmlPreviewState {
     copiedCustom: boolean;
     copiedUrl: boolean;
     
-    // Markdown content (source of truth)
+    // Markdown content (initial source, can be edited)
     initialMarkdown: string;
     currentMarkdown: string;
     
-    // HTML content (generated from markdown)
-    generatedHtmlContent: string;
-    editedCompleteHtml: string;
-    wordPressCSS: string;
+    // SOURCE FILES - SINGLE SOURCE OF TRUTH
+    contentHtml: string;        // Body content only (editable)
+    wordPressCSS: string;       // CSS rules (editable)
+    metadata: HtmlMetadata;     // SEO and meta information (editable)
+    scripts?: string;           // LD+JSON and other scripts (future, editable)
     
     // Source of truth tracking
-    isMarkdownDirty: boolean;  // True when markdown is edited
-    isHtmlDirty: boolean;      // True when HTML is directly edited
+    isMarkdownDirty: boolean;   // True when markdown is edited
+    isContentDirty: boolean;    // True when content.html is directly edited
     
     // Custom copy options
     includeBulletStyles: boolean;
@@ -31,13 +37,6 @@ export interface HtmlPreviewState {
     // Save page states
     savedPage: any;
     publishedPageUrl: string | null;  // Single URL for the published page
-    pageTitle: string;
-    pageDescription: string;
-    metaTitle: string;
-    metaDescription: string;
-    metaKeywords: string;
-    ogImage: string;
-    canonicalUrl: string;
     showAdvancedMeta: boolean;
     
     // HTML Pages system
@@ -57,9 +56,12 @@ export interface HtmlPreviewActions {
     // Markdown content setters
     setCurrentMarkdown: (value: string) => void;
     
-    // HTML content setters
-    setEditedCompleteHtml: (value: string) => void;
-    setGeneratedHtmlContent: (value: string) => void;
+    // SOURCE FILES setters
+    setContentHtml: (value: string) => void;
+    setWordPressCSS: (value: string) => void;
+    setMetadata: (value: HtmlMetadata) => void;
+    setMetadataFromJson: (json: string) => void;
+    setMetadataField: <K extends keyof HtmlMetadata>(field: K, value: HtmlMetadata[K]) => void;
     
     // Custom copy options setters
     setIncludeBulletStyles: (value: boolean) => void;
@@ -67,14 +69,7 @@ export interface HtmlPreviewActions {
     
     // Save page setters
     setSavedPage: (value: any) => void;
-    setPublishedPageUrl: (value: string | null) => void;  // Single setter for URL
-    setPageTitle: (value: string) => void;
-    setPageDescription: (value: string) => void;
-    setMetaTitle: (value: string) => void;
-    setMetaDescription: (value: string) => void;
-    setMetaKeywords: (value: string) => void;
-    setOgImage: (value: string) => void;
-    setCanonicalUrl: (value: string) => void;
+    setPublishedPageUrl: (value: string | null) => void;
     setShowAdvancedMeta: (value: boolean) => void;
     
     // Actions
@@ -87,10 +82,11 @@ export interface HtmlPreviewActions {
     handleSavePage: () => Promise<void>;
     handleRegenerateHtml: (useMetadata?: boolean) => Promise<void>;
     handleRefreshMarkdown: () => void;
+    handleUpdateFromMarkdown: () => void;  // NEW: Regenerate source files from markdown
+    extractMetadataFromContent: () => void;  // NEW: Extract metadata from content.html
     
     // Utility functions
-    generateCompleteHTML: () => string;
-    getCurrentHtmlContent: () => string;
+    generateCompleteHtmlFromSources: () => string;  // NEW: Generate from source files
     getCurrentPreviewUrl: () => string | null;
     extractBodyContent: (completeHtml: string) => string;
     stripBulletStyles: (html: string) => string;
@@ -128,4 +124,3 @@ export interface MarkdownTabProps {
     analysisData?: any;
     messageId?: string;
 }
-

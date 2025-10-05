@@ -3,9 +3,9 @@
 import React, { useState, useRef } from "react";
 import TuiEditorContent from "@/components/mardown-display/chat-markdown/tui/TuiEditorContent";
 import type { TuiEditorContentRef } from "@/components/mardown-display/chat-markdown/tui/TuiEditorContent";
-import { HtmlCodeFilesTab } from "@/features/html-pages/components/tabs/HtmlCodeFilesTabTest";
-import { SavePageTab } from "@/features/html-pages/components/tabs/SavePageTabTest";
-import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewStateTest";
+import { HtmlCodeFilesTab } from "@/features/html-pages/components/tabs/HtmlCodeFilesTab";
+import { SavePageTab } from "@/features/html-pages/components/tabs/SavePageTab";
+import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";

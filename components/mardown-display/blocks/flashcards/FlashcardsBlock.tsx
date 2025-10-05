@@ -186,7 +186,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
         <ChatCollapsibleWrapper
             icon={<BookOpen className="h-4 w-4 text-primary" />}
             title={
-                <div className="flex items-center justify-between w-full pr-8">
+                <div className="flex items-center justify-between w-full">
                     <span>
                         Flashcards
                         {!isComplete && (
