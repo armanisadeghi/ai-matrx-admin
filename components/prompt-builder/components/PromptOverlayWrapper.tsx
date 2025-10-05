@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import PromptEditor from "./PromptEditor";
-import { PromptMessage } from "./usePrompts";
+import { PromptMessage } from "../hooks/usePrompts";
 
 interface PromptOverlayWrapperProps {
     isOpen: boolean;
@@ -39,7 +39,7 @@ const PromptOverlayWrapper = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-none w-[75vw] h-[95vh] p-0 flex flex-col">
+            <DialogContent className="max-w-none w-full h-full p-0 flex flex-col">
                 <VisuallyHidden>
                     <DialogTitle>Prompt Editor</DialogTitle>
                 </VisuallyHidden>

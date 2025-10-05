@@ -1,9 +1,9 @@
 "use client";
 
-import { PromptMessage } from "./usePrompts";
+import { PromptMessage } from "../hooks/usePrompts";
 import { useState, useEffect, useCallback } from "react";
 import { Settings, Plus, Save, ChevronUp, ChevronDown, Trash2, Variable } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ButtonMine";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -154,7 +154,7 @@ const PromptEditor = ({
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Prompt name..."
-                        className="text-sm font-medium flex-1 max-w-xs border-none shadow-none focus-visible:ring-0"
+                        className="text-xs font-medium flex-1 h-6 max-w-md py-0 px-1 border-none shadow-none focus-visible:ring-0"
                     />
                     {isDirty && <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">• Unsaved changes</span>}
                 </div>
@@ -162,7 +162,7 @@ const PromptEditor = ({
                     <Button
                         onClick={addMessage}
                         variant="ghost"
-                        size="sm"
+                        size="xs"
                         title="Add message"
                     >
                         <Plus className="w-4 h-4 mr-1" />
@@ -171,7 +171,7 @@ const PromptEditor = ({
                     <Button
                         onClick={handleSave}
                         disabled={!canSave}
-                        size="sm"
+                        size="xs"
                         className="flex items-center gap-1"
                     >
                         <Save className="w-3 h-3" />
@@ -180,7 +180,7 @@ const PromptEditor = ({
                     <Button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         variant="ghost"
-                        size="sm"
+                        size="xs"
                         title="Configure variables"
                     >
                         <Variable className="w-4 h-4 mr-1" />
@@ -210,7 +210,7 @@ const PromptEditor = ({
                                                     toggleRole(index);
                                                 }}
                                                 variant="ghost"
-                                                size="sm"
+                                                size="xs"
                                                 className="h-7 px-2 text-xs"
                                                 title="Toggle role"
                                             >
@@ -223,7 +223,7 @@ const PromptEditor = ({
                                                 }}
                                                 disabled={index === 0}
                                                 variant="ghost"
-                                                size="sm"
+                                                size="xs"
                                                 className="h-7 w-7 p-0"
                                                 title="Move up"
                                             >
@@ -236,7 +236,7 @@ const PromptEditor = ({
                                                 }}
                                                 disabled={index === messages.length - 1}
                                                 variant="ghost"
-                                                size="sm"
+                                                size="xs"
                                                 className="h-7 w-7 p-0"
                                                 title="Move down"
                                             >
@@ -249,7 +249,7 @@ const PromptEditor = ({
                                                         removeMessage(index);
                                                     }}
                                                     variant="ghost"
-                                                    size="sm"
+                                                    size="xs"
                                                     className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                                                     title="Remove message"
                                                 >
@@ -273,7 +273,7 @@ const PromptEditor = ({
                                             <Button
                                                 onClick={() => toggleRole(index)}
                                                 variant="outline"
-                                                size="sm"
+                                                size="xs"
                                                 className="h-7 px-2 text-xs"
                                                 title="Click to change role"
                                             >

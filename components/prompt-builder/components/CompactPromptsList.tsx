@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Edit2, MessageSquare, Eye, Trash2, Copy } from "lucide-react";
-import { PromptsData } from "./usePrompts";
+import { PromptsData } from "../hooks/usePrompts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
