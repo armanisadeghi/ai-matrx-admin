@@ -31,6 +31,14 @@ const nextConfig = {
     },
     reactStrictMode: false,
     headers: getHeaders,
+    async rewrites() {
+        return [
+            {
+                source: '/u/:slug*',
+                destination: '/apps/custom/:slug*',
+            },
+        ];
+    },
     images: {
         remotePatterns: [
             {

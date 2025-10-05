@@ -4,6 +4,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { getAppData } from '@/utils/server/appDataCache';
 import CustomAppHomePageClient from './CustomAppHomePageClient';
+import AppNotFoundPage from './AppNotFoundPage';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   try {
@@ -50,6 +51,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function CustomAppHomePage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
+  
+  // Check if app exists
+  const data = await getAppData(slug);
+  
+  if (!data || !data.app_config) {
+    return <AppNotFoundPage />;
+  }
   
   return <CustomAppHomePageClient slug={slug} />;
 }
