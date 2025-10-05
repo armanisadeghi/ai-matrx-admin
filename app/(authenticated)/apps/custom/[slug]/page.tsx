@@ -14,24 +14,28 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     if (!data || !data.app_config) {
       return {
-        title: 'App Not Found',
+        title: 'App Not Found - AI Matrx',
         description: 'The requested application could not be found',
       };
     }
 
     const app = data.app_config;
+    const baseDescription = app.description || 'Interactive application platform';
+    
+    // Append creator name to description if available
+    const description = app.creator ? `${baseDescription} | Created by ${app.creator}` : baseDescription;
     
     return {
-      title: app.name || 'Custom App',
-      description: app.description || 'Interactive application platform',
+      title: `${app.name || 'Custom App'} - AI Matrx`,
+      description,
       openGraph: {
         title: app.name || 'Custom App',
-        description: app.description || 'Interactive application platform',
+        description,
       },
       twitter: {
         card: 'summary_large_image',
         title: app.name || 'Custom App',
-        description: app.description || 'Interactive application platform',
+        description,
       },
     };
   } catch (error) {

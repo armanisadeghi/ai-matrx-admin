@@ -28,13 +28,17 @@ export async function generateMetadata({
     
     if (!applet) {
       return {
-        title: app?.name ? `${app.name} | Applet Not Found` : 'Applet Not Found',
+        title: app?.name ? `Applet Not Found | ${app.name} - AI Matrx` : 'Applet Not Found - AI Matrx',
         description: 'The requested applet could not be found',
       };
     }
     
-    const title = `${app?.name || 'App'} | ${applet.name || 'Applet'}`;
-    const description = applet.description || app?.description || 'Interactive applet';
+    const title = `${applet.name || 'Applet'} | ${app?.name || 'App'} - AI Matrx`;
+    const baseDescription = applet.description || app?.description || 'Interactive applet';
+    
+    // Append creator name to description if available (prefer applet creator, fall back to app creator)
+    const creator = applet.creator || app?.creator;
+    const description = creator ? `${baseDescription} | Created by ${creator}` : baseDescription;
     
     return {
       title,
