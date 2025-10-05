@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useMonacoTheme } from "@/components/code-editor/useMonacoTheme";
 import { Wand2, Copy, RotateCcw, CheckCircle2, WrapText, Type, Maximize2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import CodeEditorLoading from "./CodeEditorLoading";
 import type { editor } from "monaco-editor";
 
 interface CodeEditorProps {
@@ -24,6 +25,8 @@ interface CodeEditorProps {
     autoFormat?: boolean;
     defaultWordWrap?: "on" | "off";
     height?: string;
+    readOnly?: boolean;
+    formatTrigger?: number; // Increment this to trigger formatting externally
 }
 
 const SmallCodeEditor = ({ 
@@ -40,7 +43,9 @@ const SmallCodeEditor = ({
     showMinimapToggle = true,
     autoFormat = false,
     defaultWordWrap = "off",
-    height: customHeight
+    height: customHeight,
+    readOnly = false,
+    formatTrigger = 0
 }: CodeEditorProps) => {
     const [ref, { width, height }] = useMeasure();
     const isDark = useMonacoTheme();
@@ -96,6 +101,33 @@ const SmallCodeEditor = ({
 
         formatAfterChange();
     }, [path, autoFormat]); // Trigger when path (file) changes
+
+    // External format trigger
+    useEffect(() => {
+        if (!formatTrigger || formatTrigger === 0 || !editorRef.current) return;
+
+        const formatFromExternal = async () => {
+            const editor = editorRef.current;
+            if (!editor) return;
+
+            const model = editor.getModel();
+            if (!model) return;
+
+            // Wait for content to settle
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            try {
+                const formatAction = editor.getAction('editor.action.formatDocument');
+                if (formatAction) {
+                    await formatAction.run();
+                }
+            } catch (error) {
+                console.warn('External format trigger failed:', error);
+            }
+        };
+
+        formatFromExternal();
+    }, [formatTrigger]); // Trigger when formatTrigger changes
 
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: any) => {
         editorRef.current = editor;
@@ -327,16 +359,19 @@ const SmallCodeEditor = ({
                     theme={isDark ? "customDark" : "customLight"}
                     onChange={onChange}
                     onMount={handleEditorDidMount}
+                    loading={<CodeEditorLoading />}
                     options={{
                         minimap: { enabled: minimapEnabled },
                         fontSize: 14,
                         lineNumbers: "on",
-                        scrollBeyondLastLine: false,
+                        scrollBeyondLastLine: true,
                         automaticLayout: true,
                         formatOnPaste: true,
                         formatOnType: false,
                         wordWrap: wordWrap,
                         wrappingIndent: "indent",
+                        padding: { top: 16, bottom: 16 },
+                        readOnly: readOnly,
                     }}
                 />
             </div>

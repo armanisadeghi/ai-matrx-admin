@@ -1,48 +1,43 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Save, ExternalLink, Copy, CheckCircle2, RotateCcw, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { HtmlPreviewTabProps } from "../types";
+import { PreviewPlaceholder } from "../PreviewPlaceholder";
+import type { HtmlPreviewTabProps } from "../testTypes";
 
 export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
     const previewUrl = actions.getCurrentPreviewUrl();
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [refreshSuccess, setRefreshSuccess] = useState(false);
+    const [iframeKey, setIframeKey] = useState(0); // Force iframe refresh
 
-    // Auto-populate title and description on mount
+    // Refresh iframe when saved page changes (indicates a successful update)
     useEffect(() => {
-        if (!state.pageTitle) {
-            const currentCompleteHtml = actions.getCurrentHtmlContent();
-            const bodyContent = actions.extractBodyContent(currentCompleteHtml);
-            if (bodyContent) {
-                const extractedTitle = actions.extractTitleFromHTML(bodyContent);
-                const extractedDescription = actions.extractDescriptionFromHTML(bodyContent);
-                
-                if (extractedTitle) {
-                    actions.setPageTitle(extractedTitle);
-                    actions.setMetaTitle(extractedTitle);
-                }
-                if (extractedDescription) {
-                    actions.setPageDescription(extractedDescription);
-                    actions.setMetaDescription(extractedDescription);
-                }
-            }
+        if (state.savedPage) {
+            setIframeKey(prev => prev + 1);
         }
-    }, [state.pageTitle, actions]);
+    }, [state.savedPage]);
+
+    // Manual refresh handler - extracts metadata FROM current content.html (read-only, safe)
+    const handleRefreshMetadata = () => {
+        setIsRefreshing(true);
+        setRefreshSuccess(false);
+        
+        // Small delay to show the loading state
+        setTimeout(() => {
+            actions.extractMetadataFromContent();
+            setIsRefreshing(false);
+            setRefreshSuccess(true);
+            setTimeout(() => setRefreshSuccess(false), 2000);
+        }, 150);
+    };
 
     return (
-        <div className="h-full flex gap-6 p-4">
+        <div className="h-full flex gap-2 p-4">
             {/* Left side - Metadata Form */}
             <div className="w-1/3 flex flex-col space-y-4 overflow-y-auto pr-4 pl-2">
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                        Publish Page
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Your page is already live. Update the metadata below to customize SEO settings.
-                    </p>
-                </div>
-
                 {/* Current URL Display */}
                 {previewUrl && (
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
@@ -97,6 +92,50 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                     </div>
                 )}
 
+                {/* Metadata Actions Bar */}
+                <div className="flex items-center gap-2 py-2 border-b border-gray-200 dark:border-gray-700">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={handleRefreshMetadata}
+                                    disabled={isRefreshing}
+                                    className={`p-2 rounded-lg transition-all ${
+                                        refreshSuccess
+                                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                            : isRefreshing
+                                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 cursor-wait"
+                                            : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                                    }`}
+                                    title="Refresh metadata from current HTML"
+                                >
+                                    {refreshSuccess ? (
+                                        <CheckCircle2 className="h-4 w-4" />
+                                    ) : (
+                                        <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                                    )}
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {refreshSuccess
+                                        ? "Metadata updated!"
+                                        : isRefreshing
+                                        ? "Extracting metadata..."
+                                        : "Extract title & description from current HTML"}
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <span className={`text-xs transition-colors ${
+                        refreshSuccess
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-gray-500 dark:text-gray-400"
+                    }`}>
+                        {refreshSuccess ? "Metadata refreshed!" : "Quick Actions"}
+                    </span>
+                </div>
+
                 {/* Basic Metadata */}
                 <div className="space-y-4">
                     {/* Page Title */}
@@ -106,21 +145,21 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                         </label>
                         <input
                             type="text"
-                            value={state.pageTitle}
+                            value={state.metadata.title}
                             onChange={(e) => {
-                                actions.setPageTitle(e.target.value);
-                                actions.setMetaTitle(e.target.value);
+                                actions.setMetadataField('title', e.target.value);
+                                actions.setMetadataField('metaTitle', e.target.value);
                             }}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="Enter page title"
                             disabled={!user}
                         />
                         <div className="flex justify-between items-center mt-1">
-                            <span className={`text-xs ${actions.getCharacterCountStatus(state.pageTitle, 50, 60).color}`}>
-                                {state.pageTitle.length}/60 characters
+                            <span className={`text-xs ${actions.getCharacterCountStatus(state.metadata.title, 50, 60).color}`}>
+                                {state.metadata.title.length}/60 characters
                             </span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {actions.getSEORecommendation(state.pageTitle, 'title')}
+                                {actions.getSEORecommendation(state.metadata.title, 'title')}
                             </span>
                         </div>
                     </div>
@@ -131,10 +170,10 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             Description
                         </label>
                         <textarea
-                            value={state.pageDescription}
+                            value={state.metadata.description}
                             onChange={(e) => {
-                                actions.setPageDescription(e.target.value);
-                                actions.setMetaDescription(e.target.value);
+                                actions.setMetadataField('description', e.target.value);
+                                actions.setMetadataField('metaDescription', e.target.value);
                             }}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                             placeholder="Brief description for SEO"
@@ -142,11 +181,11 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             disabled={!user}
                         />
                         <div className="flex justify-between items-center mt-1">
-                            <span className={`text-xs ${actions.getCharacterCountStatus(state.pageDescription, 140, 160).color}`}>
-                                {state.pageDescription.length}/160 characters
+                            <span className={`text-xs ${actions.getCharacterCountStatus(state.metadata.description, 140, 160).color}`}>
+                                {state.metadata.description.length}/160 characters
                             </span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {actions.getSEORecommendation(state.pageDescription, 'description')}
+                                {actions.getSEORecommendation(state.metadata.description, 'description')}
                             </span>
                         </div>
                     </div>
@@ -161,8 +200,8 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                         </label>
                         <input
                             type="text"
-                            value={state.metaKeywords}
-                            onChange={(e) => actions.setMetaKeywords(e.target.value)}
+                            value={state.metadata.metaKeywords}
+                            onChange={(e) => actions.setMetadataField('metaKeywords', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="keyword1, keyword2, keyword3"
                             disabled={!user}
@@ -179,8 +218,8 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                         </label>
                         <input
                             type="url"
-                            value={state.ogImage}
-                            onChange={(e) => actions.setOgImage(e.target.value)}
+                            value={state.metadata.ogImage}
+                            onChange={(e) => actions.setMetadataField('ogImage', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="https://example.com/image.jpg"
                             disabled={!user}
@@ -197,8 +236,8 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                         </label>
                         <input
                             type="url"
-                            value={state.canonicalUrl}
-                            onChange={(e) => actions.setCanonicalUrl(e.target.value)}
+                            value={state.metadata.canonicalUrl}
+                            onChange={(e) => actions.setMetadataField('canonicalUrl', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="https://example.com/canonical-page"
                             disabled={!user}
@@ -222,9 +261,9 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                 <div className="pt-2">
                     <button
                         onClick={actions.handleSavePage}
-                        disabled={state.isCreating || !state.pageTitle.trim() || !user}
+                        disabled={state.isCreating || !state.metadata.title.trim() || !user}
                         className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                            state.isCreating || !state.pageTitle.trim() || !user
+                            state.isCreating || !state.metadata.title.trim() || !user
                                 ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                                 : "bg-blue-600 hover:bg-blue-700 text-white"
                         }`}
@@ -260,7 +299,10 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button
-                                        onClick={actions.handleRefreshMarkdown}
+                                        onClick={() => {
+                                            actions.handleRefreshMarkdown();
+                                            setTimeout(() => setIframeKey(prev => prev + 1), 500);
+                                        }}
                                         variant="outline"
                                         size="sm"
                                         className="h-8 px-3"
@@ -280,11 +322,14 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button
-                                        onClick={() => actions.handleRegenerateHtml()}
-                                        variant={(previewUrl && (state.isMarkdownDirty || state.isHtmlDirty)) ? "default" : "outline"}
+                                        onClick={async () => {
+                                            await actions.handleRegenerateHtml();
+                                            setTimeout(() => setIframeKey(prev => prev + 1), 500);
+                                        }}
+                                        variant={(previewUrl && (state.isMarkdownDirty || state.isContentDirty)) ? "default" : "outline"}
                                         size="sm"
                                         className="h-8 px-3"
-                                        disabled={!previewUrl || (!state.isMarkdownDirty && !state.isHtmlDirty)}
+                                        disabled={!previewUrl || (!state.isMarkdownDirty && !state.isContentDirty)}
                                     >
                                         <RefreshCw className="h-4 w-4 mr-2" />
                                         Regenerate
@@ -294,7 +339,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                                     <p>
                                         {!previewUrl ? "Generate a page first" :
                                          state.isMarkdownDirty ? "Update preview from edited markdown" : 
-                                         state.isHtmlDirty ? "Update preview from edited HTML" : 
+                                         state.isContentDirty ? "Update preview from edited content.html" : 
                                          "Content is up to date"}
                                     </p>
                                 </TooltipContent>
@@ -306,15 +351,14 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                 <div className="flex-1 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-950">
                     {previewUrl ? (
                         <iframe
-                            src={previewUrl}
+                            key={iframeKey}
+                            src={`${previewUrl}?t=${iframeKey}`}
                             className="w-full h-full"
                             title="Page Preview"
                             sandbox="allow-same-origin"
                         />
                     ) : (
-                        <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                            <p>Preview will appear here once generated</p>
-                        </div>
+                        <PreviewPlaceholder isLoading={state.isCreating} />
                     )}
                 </div>
             </div>

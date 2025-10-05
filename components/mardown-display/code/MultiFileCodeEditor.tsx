@@ -1,8 +1,10 @@
 "use client";
 import { useState, useCallback } from "react";
 import SmallCodeEditor from "./SmallCodeEditor";
-import { File, FileCode, FileType, Folder } from "lucide-react";
+import { File, FileCode, FileType, Folder, PanelLeftClose, PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { Button } from "@/components/ui/button";
 
 export interface CodeFile {
     name: string;
@@ -10,6 +12,7 @@ export interface CodeFile {
     language: string;
     content: string;
     icon?: React.ReactNode;
+    readOnly?: boolean;
 }
 
 interface MultiFileCodeEditorProps {
@@ -30,10 +33,11 @@ export default function MultiFileCodeEditor({
     runCode,
     autoFormatOnOpen = false,
     defaultWordWrap = "off",
-    showSidebar = true,
+    showSidebar: initialShowSidebar = true,
     height = "600px"
 }: MultiFileCodeEditorProps) {
     const [activeFile, setActiveFile] = useState<string>(files[0]?.path || "");
+    const [sidebarVisible, setSidebarVisible] = useState(initialShowSidebar);
 
     const currentFile = files.find(f => f.path === activeFile);
 
@@ -48,27 +52,28 @@ export default function MultiFileCodeEditor({
         }
     }, [activeFile, onChange]);
 
-    const getFileIcon = (file: CodeFile) => {
+    const getFileIcon = (file: CodeFile, compact = false) => {
         if (file.icon) return file.icon;
         
+        const size = compact ? "h-3.5 w-3.5" : "h-4 w-4";
         const ext = file.name.split('.').pop()?.toLowerCase();
         switch (ext) {
             case 'html':
             case 'htm':
-                return <FileCode className="h-4 w-4 text-orange-500 dark:text-orange-400" />;
+                return <FileCode className={`${size} text-orange-500 dark:text-orange-400`} />;
             case 'css':
             case 'scss':
             case 'sass':
-                return <FileType className="h-4 w-4 text-blue-500 dark:text-blue-400" />;
+                return <FileType className={`${size} text-blue-500 dark:text-blue-400`} />;
             case 'js':
             case 'jsx':
             case 'ts':
             case 'tsx':
-                return <FileCode className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />;
+                return <FileCode className={`${size} text-yellow-500 dark:text-yellow-400`} />;
             case 'json':
-                return <File className="h-4 w-4 text-green-500 dark:text-green-400" />;
+                return <File className={`${size} text-green-500 dark:text-green-400`} />;
             default:
-                return <File className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
+                return <File className={`${size} text-gray-500 dark:text-gray-400`} />;
         }
     };
 
@@ -76,70 +81,135 @@ export default function MultiFileCodeEditor({
 
     return (
         <div className="flex h-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden" style={{ height }}>
-            {/* File Sidebar */}
-            {showSidebar && (
-                <div className="w-48 bg-gray-50 dark:bg-gray-900 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
-                    <div className="p-2 border-b border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            <Folder className="h-4 w-4" />
-                            Files
+            {sidebarVisible ? (
+                <ResizablePanelGroup direction="horizontal">
+                    {/* File Sidebar */}
+                    <ResizablePanel defaultSize={15} minSize={10} maxSize={30}>
+                        <div className="h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
+                            {/* VS Code-style compact header */}
+                            <div className="px-2 py-1 border-b border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+                                <div className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                                    <Folder className="h-3.5 w-3.5" />
+                                    Explorer
+                                </div>
+                            </div>
+                            {/* VS Code-style compact file list */}
+                            <div className="py-0.5">
+                                {files.map((file) => (
+                                    <button
+                                        key={file.path}
+                                        onClick={() => handleFileSelect(file.path)}
+                                        className={cn(
+                                            "w-full flex items-center gap-1.5 px-2 py-0.5 text-xs transition-colors",
+                                            "hover:bg-gray-200 dark:hover:bg-gray-800",
+                                            activeFile === file.path
+                                                ? "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                                : "text-gray-700 dark:text-gray-300"
+                                        )}
+                                    >
+                                        {getFileIcon(file, true)}
+                                        <span className="truncate">{file.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </ResizablePanel>
+
+                    <ResizableHandle withHandle />
+
+                    {/* Editor Area */}
+                    <ResizablePanel defaultSize={85}>
+                        <div className="h-full flex flex-col">
+                            {/* Active File Tab with Toggle Button */}
+                            <div className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setSidebarVisible(false)}
+                                        className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                        title="Hide sidebar"
+                                    >
+                                        <PanelLeftClose className="h-3.5 w-3.5" />
+                                    </Button>
+                                    {getFileIcon(currentFile)}
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {currentFile.name}
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        {currentFile.language}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Monaco Editor - uses path prop for multi-model support */}
+                            <div className="flex-1">
+                                <SmallCodeEditor
+                                    path={activeFile}
+                                    language={currentFile.language}
+                                    initialCode={currentFile.content}
+                                    onChange={handleContentChange}
+                                    runCode={runCode}
+                                    autoFormat={autoFormatOnOpen}
+                                    defaultWordWrap={defaultWordWrap}
+                                    showFormatButton={true}
+                                    showCopyButton={true}
+                                    showResetButton={true}
+                                    showWordWrapToggle={true}
+                                    showMinimapToggle={false}
+                                    height="100%"
+                                    readOnly={currentFile.readOnly}
+                                />
+                            </div>
+                        </div>
+                    </ResizablePanel>
+                </ResizablePanelGroup>
+            ) : (
+                /* Editor without Sidebar */
+                <div className="flex-1 flex flex-col">
+                    {/* Active File Tab with Show Button */}
+                    <div className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSidebarVisible(true)}
+                                className="h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                title="Show sidebar"
+                            >
+                                <PanelLeft className="h-3.5 w-3.5" />
+                            </Button>
+                            {getFileIcon(currentFile)}
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {currentFile.name}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {currentFile.language}
+                            </span>
                         </div>
                     </div>
-                    <div className="p-1">
-                        {files.map((file) => (
-                            <button
-                                key={file.path}
-                                onClick={() => handleFileSelect(file.path)}
-                                className={cn(
-                                    "w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors",
-                                    "hover:bg-gray-200 dark:hover:bg-gray-800",
-                                    activeFile === file.path
-                                        ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 font-medium"
-                                        : "text-gray-700 dark:text-gray-300"
-                                )}
-                            >
-                                {getFileIcon(file)}
-                                <span className="truncate">{file.name}</span>
-                            </button>
-                        ))}
+
+                    {/* Monaco Editor - uses path prop for multi-model support */}
+                    <div className="flex-1">
+                        <SmallCodeEditor
+                            path={activeFile}
+                            language={currentFile.language}
+                            initialCode={currentFile.content}
+                            onChange={handleContentChange}
+                            runCode={runCode}
+                            autoFormat={autoFormatOnOpen}
+                            defaultWordWrap={defaultWordWrap}
+                            showFormatButton={true}
+                            showCopyButton={true}
+                            showResetButton={true}
+                            showWordWrapToggle={true}
+                            showMinimapToggle={false}
+                            height="100%"
+                            readOnly={currentFile.readOnly}
+                        />
                     </div>
                 </div>
             )}
-
-            {/* Editor Area */}
-            <div className="flex-1 flex flex-col">
-                {/* Active File Tab */}
-                <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700">
-                    <div className="flex items-center gap-2">
-                        {getFileIcon(currentFile)}
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {currentFile.name}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {currentFile.language}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Monaco Editor - uses path prop for multi-model support */}
-                <div className="flex-1">
-                    <SmallCodeEditor
-                        path={activeFile}
-                        language={currentFile.language}
-                        initialCode={currentFile.content}
-                        onChange={handleContentChange}
-                        runCode={runCode}
-                        autoFormat={autoFormatOnOpen}
-                        defaultWordWrap={defaultWordWrap}
-                        showFormatButton={true}
-                        showCopyButton={true}
-                        showResetButton={true}
-                        showWordWrapToggle={true}
-                        showMinimapToggle={false}
-                        height="100%"
-                    />
-                </div>
-            </div>
         </div>
     );
 }
