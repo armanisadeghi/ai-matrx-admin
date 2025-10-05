@@ -12,6 +12,7 @@ const GlassAppletCard: React.FC<AppletCardProps> = ({ applet, primaryColor, acce
         <GlassContainer
             backgroundImage={applet.imageUrl}
             backgroundColor={primaryBgColor}
+            backgroundImageFit="contain"
             enableHover={true}
             height="100%"
             borderRadius="2xl"

@@ -1,5 +1,6 @@
 import Default from './Default';
 import Glass from './Glass';
+import Enhanced from './Enhanced';
 import Modern from './Modern';
 import Simple from './Simple';
 import Compact from './Compact';
@@ -8,6 +9,7 @@ import Compact from './Compact';
 const variants = {
   default: Default,
   glass: Glass,
+  enhanced: Enhanced,
   modern: Modern,
   simple: Simple,
   compact: Compact,

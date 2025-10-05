@@ -13,6 +13,9 @@ export interface GlassContainerProps {
   /** Optional background color (used if no image provided) */
   backgroundColor?: string;
   
+  /** Background image object-fit property (default: 'cover') */
+  backgroundImageFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  
   /** Enable hover effects */
   enableHover?: boolean;
   
@@ -63,6 +66,7 @@ const GlassContainer: React.FC<GlassContainerProps> = ({
   children,
   backgroundImage,
   backgroundColor = 'bg-gray-900',
+  backgroundImageFit = 'cover',
   enableHover = false,
   height = 'auto',
   width = 'auto',
@@ -130,7 +134,7 @@ const GlassContainer: React.FC<GlassContainerProps> = ({
   `;
   
   const glassClasses = `
-    relative backdrop-blur-${blurIntensity} bg-gray-100/${glassOpacity} border border-gray-100/${borderOpacity} h-full
+    relative backdrop-blur-${blurIntensity} bg-gray-100/${glassOpacity} border border-gray-100/${borderOpacity} h-full ${getBorderRadiusClass()}
     ${enableHover ? `transition-all duration-500 ease-out 
       group-hover:backdrop-blur-${typeof blurIntensity === 'number' ? `[${blurIntensity * 1.5}px]` : 'lg'} 
       group-hover:bg-gray-100/${glassOpacity + 5} 
@@ -150,7 +154,7 @@ const GlassContainer: React.FC<GlassContainerProps> = ({
             src={backgroundImage} 
             alt="Background" 
             fill 
-            className="object-cover transition-all duration-500"
+            className={`object-${backgroundImageFit} transition-all duration-500`}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
@@ -175,7 +179,7 @@ const GlassContainer: React.FC<GlassContainerProps> = ({
 
       {/* Shimmer effect */}
       {enableHover && enableShimmer && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute inset-0 overflow-hidden pointer-events-none ${getBorderRadiusClass()}`}>
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000 ease-in-out"></div>
         </div>
       )}
