@@ -29,9 +29,14 @@ export function SearchAnalytics({ token, property }: SearchAnalyticsProps) {
     
     const { fetchAnalytics, loading, error } = useSearchConsoleAPI(token);
 
+    // Don't auto-load on mount or property change
+    // User must click "Refresh" or change date range explicitly
     useEffect(() => {
-        loadAllData();
-    }, [property, dateRange]);
+        // Only load when date range changes (user action)
+        if (summary !== null) {
+            loadAllData();
+        }
+    }, [dateRange]);
 
     const loadAllData = async () => {
         // Fetch summary (no dimensions)
@@ -90,42 +95,33 @@ export function SearchAnalytics({ token, property }: SearchAnalyticsProps) {
 
     return (
         <div className="space-y-4">
-            {/* Header with Date Range */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                                Analyzing
-                            </h3>
-                            <p className="text-gray-900 dark:text-gray-100 font-medium">
-                                {property.siteUrl}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <DateRangeSelector
-                                startDate={dateRange.startDate}
-                                endDate={dateRange.endDate}
-                                onChange={setDateRange}
-                            />
-                            <Button
-                                onClick={loadAllData}
-                                disabled={loading}
-                                size="sm"
-                                variant="outline"
-                                className="gap-2"
-                            >
-                                {loading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <RefreshCw className="w-4 h-4" />
-                                )}
-                                Refresh
-                            </Button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Compact Header - Date Range and Load Data Button */}
+            <div className="flex items-center justify-end gap-3">
+                <DateRangeSelector
+                    startDate={dateRange.startDate}
+                    endDate={dateRange.endDate}
+                    onChange={setDateRange}
+                />
+                <Button
+                    onClick={loadAllData}
+                    disabled={loading}
+                    size="sm"
+                    variant={summary === null ? "default" : "outline"}
+                    className={summary === null ? "gap-2 bg-green-600 hover:bg-green-700 text-white" : "gap-2"}
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Loading...
+                        </>
+                    ) : (
+                        <>
+                            <RefreshCw className="w-4 h-4" />
+                            {summary === null ? "Load Data" : "Refresh"}
+                        </>
+                    )}
+                </Button>
+            </div>
 
             {/* Performance Metrics */}
             {summary && <PerformanceMetrics summary={summary} loading={loading} />}

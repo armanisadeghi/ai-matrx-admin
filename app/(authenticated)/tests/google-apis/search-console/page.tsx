@@ -6,7 +6,7 @@ import { PropertySelector } from "./components/PropertySelector";
 import { SearchAnalytics } from "./components/SearchAnalytics";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertCircle, Search, LogIn } from "lucide-react";
+import { Loader2, AlertCircle, Search, LogIn, Globe } from "lucide-react";
 import type { SiteProperty } from "./types";
 
 const REQUIRED_SCOPES = ['https://www.googleapis.com/auth/webmasters.readonly'];
@@ -97,14 +97,32 @@ export default function SearchConsolePage() {
                     </div>
                 )}
 
-                {/* Authenticated - Show Property Selector and Analytics */}
+                {/* Authenticated - Show Analytics with Inline Property Selector */}
                 {isAuthenticated && hasRequiredScope() && token && (
                     <>
-                        <PropertySelector
-                            token={token}
-                            selectedProperty={selectedProperty}
-                            onSelectProperty={setSelectedProperty}
-                        />
+                        {/* Compact Property Selector */}
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Property:
+                            </span>
+                            <PropertySelector
+                                token={token}
+                                selectedProperty={selectedProperty}
+                                onSelectProperty={setSelectedProperty}
+                            />
+                        </div>
+
+                        {!selectedProperty && (
+                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 text-center">
+                                <Globe className="w-12 h-12 mx-auto mb-3 text-blue-500 dark:text-blue-400" />
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                                    Select a Property
+                                </h3>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                    Choose a property from the dropdown above to view its search analytics data
+                                </p>
+                            </div>
+                        )}
 
                         {selectedProperty && (
                             <SearchAnalytics

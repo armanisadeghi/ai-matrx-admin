@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Globe, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Loader2, Globe, Check, ChevronsUpDown } from "lucide-react";
 import { useSearchConsoleAPI } from "../hooks/useSearchConsole";
 import type { SiteProperty } from "../types";
 
@@ -14,8 +16,14 @@ interface PropertySelectorProps {
     onSelectProperty: (property: SiteProperty) => void;
 }
 
+interface GroupedProperty {
+    domain: string;
+    properties: SiteProperty[];
+}
+
 export function PropertySelector({ token, selectedProperty, onSelectProperty }: PropertySelectorProps) {
     const [properties, setProperties] = useState<SiteProperty[]>([]);
+    const [open, setOpen] = useState(false);
     const { fetchProperties, loading, error } = useSearchConsoleAPI(token);
 
     useEffect(() => {
@@ -25,93 +33,173 @@ export function PropertySelector({ token, selectedProperty, onSelectProperty }: 
     const loadProperties = async () => {
         const props = await fetchProperties();
         setProperties(props);
-        
-        // Auto-select first property if none selected
-        if (props.length > 0 && !selectedProperty) {
-            onSelectProperty(props[0]);
-        }
+        // Don't auto-select - let user choose
     };
+
+    // Group properties by domain
+    const groupedProperties = useMemo(() => {
+        const groups = new Map<string, SiteProperty[]>();
+
+        properties.forEach((prop) => {
+            const domain = extractDomain(prop.siteUrl);
+            if (!groups.has(domain)) {
+                groups.set(domain, []);
+            }
+            groups.get(domain)!.push(prop);
+        });
+
+        // Sort properties within each group: domain property first, then alphabetically
+        groups.forEach((props, domain) => {
+            props.sort((a, b) => {
+                if (a.siteUrl.startsWith('sc-domain:')) return -1;
+                if (b.siteUrl.startsWith('sc-domain:')) return 1;
+                return a.siteUrl.localeCompare(b.siteUrl);
+            });
+        });
+
+        // Convert to array and sort by domain name
+        return Array.from(groups.entries())
+            .map(([domain, properties]) => ({ domain, properties }))
+            .sort((a, b) => a.domain.localeCompare(b.domain));
+    }, [properties]);
 
     if (loading && properties.length === 0) {
         return (
-            <div className="flex items-center justify-center py-8">
-                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                    <Loader2 className="h-5 w-5 animate-spin text-green-600 dark:text-green-400" />
-                    <span>Loading your properties...</span>
-                </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading properties...</span>
             </div>
         );
     }
 
     if (error) {
         return (
-            <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-                <CardContent className="pt-6">
-                    <p className="text-red-800 dark:text-red-200">{error}</p>
-                </CardContent>
-            </Card>
+            <div className="text-sm text-red-600 dark:text-red-400">
+                {error}
+            </div>
         );
     }
 
     if (properties.length === 0) {
         return (
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <CardContent className="pt-6 text-center">
-                    <Globe className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
-                    <p className="text-gray-600 dark:text-gray-400">
-                        No properties found. Add a site to Google Search Console first.
-                    </p>
-                </CardContent>
-            </Card>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+                No properties found
+            </div>
         );
     }
 
+    const selectedPropertyName = selectedProperty ? formatPropertyName(selectedProperty.siteUrl) : "Select property...";
+    const isLongName = selectedPropertyName.length > 40;
+
     return (
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Select Property
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {properties.map((property) => {
-                        const isSelected = selectedProperty?.siteUrl === property.siteUrl;
-                        return (
-                            <button
-                                key={property.siteUrl}
-                                onClick={() => onSelectProperty(property)}
-                                className={`text-left p-4 rounded-lg border-2 transition-all ${
-                                    isSelected
-                                        ? "border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20"
-                                        : "border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 bg-gray-50 dark:bg-gray-800/50"
-                                }`}
-                            >
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                {property.siteUrl}
-                                            </span>
-                                        </div>
-                                        <Badge
-                                            variant="outline"
-                                            className="text-xs"
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="justify-between text-left font-normal w-full max-w-md"
+                >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span className="truncate">
+                                        {selectedPropertyName}
+                                    </span>
+                                </TooltipTrigger>
+                                {isLongName && selectedProperty && (
+                                    <TooltipContent 
+                                        side="bottom" 
+                                        align="start"
+                                        className="max-w-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs p-2"
+                                    >
+                                        {selectedPropertyName}
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[500px] p-0" align="start">
+                <Command>
+                    <CommandInput placeholder="Search properties..." />
+                    <CommandList>
+                        <CommandEmpty>No properties found.</CommandEmpty>
+                        {groupedProperties.map((group) => (
+                            <CommandGroup key={group.domain} heading={group.domain}>
+                                {group.properties.map((property) => {
+                                    const isSelected = selectedProperty?.siteUrl === property.siteUrl;
+                                    return (
+                                        <CommandItem
+                                            key={property.siteUrl}
+                                            value={property.siteUrl}
+                                            onSelect={() => {
+                                                onSelectProperty(property);
+                                                setOpen(false);
+                                            }}
+                                            className="cursor-pointer"
                                         >
-                                            {property.permissionLevel}
-                                        </Badge>
-                                    </div>
-                                    {isSelected && (
-                                        <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                                    )}
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
-            </CardContent>
-        </Card>
+                                            <Check
+                                                className={`mr-2 h-4 w-4 flex-shrink-0 ${
+                                                    isSelected ? "opacity-100" : "opacity-0"
+                                                }`}
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <TooltipProvider>
+                                                    <Tooltip delayDuration={300}>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm truncate">
+                                                                    {formatPropertyName(property.siteUrl)}
+                                                                </span>
+                                                                <Badge variant="outline" className="text-xs flex-shrink-0">
+                                                                    {property.siteUrl.startsWith('sc-domain:') ? 'Domain' : 'URL Prefix'}
+                                                                </Badge>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent 
+                                                            side="right"
+                                                            className="max-w-md bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs p-2"
+                                                        >
+                                                            {formatPropertyName(property.siteUrl)}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
+                                        </CommandItem>
+                                    );
+                                })}
+                            </CommandGroup>
+                        ))}
+                    </CommandList>
+                </Command>
+            </PopoverContent>
+        </Popover>
     );
+}
+
+function extractDomain(siteUrl: string): string {
+    // Extract domain from various formats
+    if (siteUrl.startsWith('sc-domain:')) {
+        return siteUrl.replace('sc-domain:', '');
+    }
+    
+    try {
+        const url = new URL(siteUrl);
+        return url.hostname;
+    } catch {
+        return siteUrl;
+    }
+}
+
+function formatPropertyName(siteUrl: string): string {
+    if (siteUrl.startsWith('sc-domain:')) {
+        return siteUrl.replace('sc-domain:', '') + ' (Domain Property)';
+    }
+    return siteUrl;
 }
 
