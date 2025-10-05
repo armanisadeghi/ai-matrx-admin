@@ -131,6 +131,7 @@ export type AutomationTableName =
     | 'message'
     | 'messageBroker'
     | 'messageTemplate'
+    | 'microserviceProject'
     | 'nodeCategory'
     | 'organizationInvitations'
     | 'organizationMembers'
@@ -174,6 +175,7 @@ export type AutomationTableName =
     | 'scrapeQuickFailureLog'
     | 'scrapeTask'
     | 'scrapeTaskResponse'
+    | 'siteMetadata'
     | 'subcategory'
     | 'systemFunction'
     | 'tableData'
@@ -635,6 +637,15 @@ export type MessageTemplateData = Expand<EntityDataMixed<"messageTemplate">>;
 export type MessageTemplateState = EntityStateType<"messageTemplate">;
 export type MessageTemplateRecordMap = Record<"messageTemplateRecordId", MessageTemplateData>;
 
+export type MicroserviceProjectType = AutomationEntity<"microserviceProject">;
+export type MicroserviceProjectDataRequired = Expand<EntityData<"microserviceProject">>;
+export type MicroserviceProjectDataOptional = Expand<EntityDataOptional<"microserviceProject">>;
+export type MicroserviceProjectRecordWithKey = Expand<EntityDataWithKey<"microserviceProject">>;
+export type MicroserviceProjectProcessed = Expand<ProcessedEntityData<"microserviceProject">>;
+export type MicroserviceProjectData = Expand<EntityDataMixed<"microserviceProject">>;
+export type MicroserviceProjectState = EntityStateType<"microserviceProject">;
+export type MicroserviceProjectRecordMap = Record<"microserviceProjectRecordId", MicroserviceProjectData>;
+
 export type NodeCategoryType = AutomationEntity<"nodeCategory">;
 export type NodeCategoryDataRequired = Expand<EntityData<"nodeCategory">>;
 export type NodeCategoryDataOptional = Expand<EntityDataOptional<"nodeCategory">>;
@@ -1021,6 +1032,15 @@ export type ScrapeTaskResponseProcessed = Expand<ProcessedEntityData<"scrapeTask
 export type ScrapeTaskResponseData = Expand<EntityDataMixed<"scrapeTaskResponse">>;
 export type ScrapeTaskResponseState = EntityStateType<"scrapeTaskResponse">;
 export type ScrapeTaskResponseRecordMap = Record<"scrapeTaskResponseRecordId", ScrapeTaskResponseData>;
+
+export type SiteMetadataType = AutomationEntity<"siteMetadata">;
+export type SiteMetadataDataRequired = Expand<EntityData<"siteMetadata">>;
+export type SiteMetadataDataOptional = Expand<EntityDataOptional<"siteMetadata">>;
+export type SiteMetadataRecordWithKey = Expand<EntityDataWithKey<"siteMetadata">>;
+export type SiteMetadataProcessed = Expand<ProcessedEntityData<"siteMetadata">>;
+export type SiteMetadataData = Expand<EntityDataMixed<"siteMetadata">>;
+export type SiteMetadataState = EntityStateType<"siteMetadata">;
+export type SiteMetadataRecordMap = Record<"siteMetadataRecordId", SiteMetadataData>;
 
 export type SubcategoryType = AutomationEntity<"subcategory">;
 export type SubcategoryDataRequired = Expand<EntityData<"subcategory">>;

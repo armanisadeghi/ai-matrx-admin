@@ -46,6 +46,7 @@ import {
     MessageBrokerData,
     MessageData,
     MessageTemplateData,
+    MicroserviceProjectData,
     NodeCategoryData,
     OrganizationInvitationsData,
     OrganizationMembersData,
@@ -89,6 +90,7 @@ import {
     ScrapeQuickFailureLogData,
     ScrapeTaskData,
     ScrapeTaskResponseData,
+    SiteMetadataData,
     SubcategoryData,
     SystemFunctionData,
     TableDataData,
@@ -4399,6 +4401,99 @@ export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn
 
 
 
+type UseMicroserviceProjectWithFetchReturn = {
+    microserviceProjectSelectors: EntitySelectors<"microserviceProject">;
+    microserviceProjectActions: EntityActions<"microserviceProject">;
+    microserviceProjectRecords: Record<MatrxRecordId, MicroserviceProjectData>;
+    microserviceProjectRecordsById: Record<string, MicroserviceProjectData>;
+    microserviceProjectUnsavedRecords: Record<MatrxRecordId, Partial<MicroserviceProjectData>>;
+    microserviceProjectSelectedRecordIds: MatrxRecordId[];
+    microserviceProjectIsLoading: boolean;
+    microserviceProjectIsError: boolean;
+    microserviceProjectQuickRefRecords: QuickReferenceRecord[];
+    addMicroserviceProjectMatrxId: (recordId: MatrxRecordId) => void;
+    addMicroserviceProjectMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeMicroserviceProjectMatrxId: (recordId: MatrxRecordId) => void;
+    removeMicroserviceProjectMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addMicroserviceProjectPkValue: (pkValue: string) => void;
+    addMicroserviceProjectPkValues: (pkValues: Record<string, unknown>) => void;
+    removeMicroserviceProjectPkValue: (pkValue: string) => void;
+    removeMicroserviceProjectPkValues: (pkValues: Record<string, unknown>) => void;
+    isMicroserviceProjectMissingRecords: boolean;
+    setMicroserviceProjectShouldFetch: (shouldFetch: boolean) => void;
+    setMicroserviceProjectFetchMode: (fetchMode: FetchMode) => void;
+    fetchMicroserviceProjectQuickRefs: () => void;
+    fetchMicroserviceProjectOne: (recordId: MatrxRecordId) => void;
+    fetchMicroserviceProjectOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchMicroserviceProjectAll: () => void;
+    fetchMicroserviceProjectPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useMicroserviceProjectWithFetch = (): UseMicroserviceProjectWithFetchReturn => {
+    const {
+        selectors: microserviceProjectSelectors,
+        actions: microserviceProjectActions,
+        allRecords: microserviceProjectRecords,
+        recordsById: microserviceProjectRecordsById,
+        unsavedRecords: microserviceProjectUnsavedRecords,
+        selectedRecordIds: microserviceProjectSelectedRecordIds,
+        isLoading: microserviceProjectIsLoading,
+        isError: microserviceProjectIsError,
+        quickRefRecords: microserviceProjectQuickRefRecords,
+        addMatrxId: addMicroserviceProjectMatrxId,
+        addMatrxIds: addMicroserviceProjectMatrxIds,
+        removeMatrxId: removeMicroserviceProjectMatrxId,
+        removeMatrxIds: removeMicroserviceProjectMatrxIds,
+        addPkValue: addMicroserviceProjectPkValue,
+        addPkValues: addMicroserviceProjectPkValues,
+        removePkValue: removeMicroserviceProjectPkValue,
+        removePkValues: removeMicroserviceProjectPkValues,
+        isMissingRecords: isMicroserviceProjectMissingRecords,
+        setShouldFetch: setMicroserviceProjectShouldFetch,
+        setFetchMode: setMicroserviceProjectFetchMode,
+        fetchQuickRefs: fetchMicroserviceProjectQuickRefs,
+        fetchOne: fetchMicroserviceProjectOne,
+        fetchOneWithFkIfk: fetchMicroserviceProjectOneWithFkIfk,
+        fetchAll: fetchMicroserviceProjectAll,
+        fetchPaginated: fetchMicroserviceProjectPaginated,
+
+    } = useEntityWithFetch("microserviceProject");
+
+    return {
+        microserviceProjectSelectors,
+        microserviceProjectActions,
+        microserviceProjectRecords,
+        microserviceProjectRecordsById,
+        microserviceProjectUnsavedRecords,
+        microserviceProjectSelectedRecordIds,
+        microserviceProjectIsLoading,
+        microserviceProjectIsError,
+        microserviceProjectQuickRefRecords,
+        addMicroserviceProjectMatrxId,
+        addMicroserviceProjectMatrxIds,
+        removeMicroserviceProjectMatrxId,
+        removeMicroserviceProjectMatrxIds,
+        addMicroserviceProjectPkValue,
+        addMicroserviceProjectPkValues,
+        removeMicroserviceProjectPkValue,
+        removeMicroserviceProjectPkValues,
+        isMicroserviceProjectMissingRecords,
+        setMicroserviceProjectShouldFetch,
+        setMicroserviceProjectFetchMode,
+        fetchMicroserviceProjectQuickRefs,
+        fetchMicroserviceProjectOne,
+        fetchMicroserviceProjectOneWithFkIfk,
+        fetchMicroserviceProjectAll,
+        fetchMicroserviceProjectPaginated,
+    };
+};
+
+
+
 type UseNodeCategoryWithFetchReturn = {
     nodeCategorySelectors: EntitySelectors<"nodeCategory">;
     nodeCategoryActions: EntityActions<"nodeCategory">;
@@ -8393,6 +8488,99 @@ export const useScrapeTaskResponseWithFetch = (): UseScrapeTaskResponseWithFetch
         fetchScrapeTaskResponseOneWithFkIfk,
         fetchScrapeTaskResponseAll,
         fetchScrapeTaskResponsePaginated,
+    };
+};
+
+
+
+type UseSiteMetadataWithFetchReturn = {
+    siteMetadataSelectors: EntitySelectors<"siteMetadata">;
+    siteMetadataActions: EntityActions<"siteMetadata">;
+    siteMetadataRecords: Record<MatrxRecordId, SiteMetadataData>;
+    siteMetadataRecordsById: Record<string, SiteMetadataData>;
+    siteMetadataUnsavedRecords: Record<MatrxRecordId, Partial<SiteMetadataData>>;
+    siteMetadataSelectedRecordIds: MatrxRecordId[];
+    siteMetadataIsLoading: boolean;
+    siteMetadataIsError: boolean;
+    siteMetadataQuickRefRecords: QuickReferenceRecord[];
+    addSiteMetadataMatrxId: (recordId: MatrxRecordId) => void;
+    addSiteMetadataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeSiteMetadataMatrxId: (recordId: MatrxRecordId) => void;
+    removeSiteMetadataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addSiteMetadataPkValue: (pkValue: string) => void;
+    addSiteMetadataPkValues: (pkValues: Record<string, unknown>) => void;
+    removeSiteMetadataPkValue: (pkValue: string) => void;
+    removeSiteMetadataPkValues: (pkValues: Record<string, unknown>) => void;
+    isSiteMetadataMissingRecords: boolean;
+    setSiteMetadataShouldFetch: (shouldFetch: boolean) => void;
+    setSiteMetadataFetchMode: (fetchMode: FetchMode) => void;
+    fetchSiteMetadataQuickRefs: () => void;
+    fetchSiteMetadataOne: (recordId: MatrxRecordId) => void;
+    fetchSiteMetadataOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchSiteMetadataAll: () => void;
+    fetchSiteMetadataPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useSiteMetadataWithFetch = (): UseSiteMetadataWithFetchReturn => {
+    const {
+        selectors: siteMetadataSelectors,
+        actions: siteMetadataActions,
+        allRecords: siteMetadataRecords,
+        recordsById: siteMetadataRecordsById,
+        unsavedRecords: siteMetadataUnsavedRecords,
+        selectedRecordIds: siteMetadataSelectedRecordIds,
+        isLoading: siteMetadataIsLoading,
+        isError: siteMetadataIsError,
+        quickRefRecords: siteMetadataQuickRefRecords,
+        addMatrxId: addSiteMetadataMatrxId,
+        addMatrxIds: addSiteMetadataMatrxIds,
+        removeMatrxId: removeSiteMetadataMatrxId,
+        removeMatrxIds: removeSiteMetadataMatrxIds,
+        addPkValue: addSiteMetadataPkValue,
+        addPkValues: addSiteMetadataPkValues,
+        removePkValue: removeSiteMetadataPkValue,
+        removePkValues: removeSiteMetadataPkValues,
+        isMissingRecords: isSiteMetadataMissingRecords,
+        setShouldFetch: setSiteMetadataShouldFetch,
+        setFetchMode: setSiteMetadataFetchMode,
+        fetchQuickRefs: fetchSiteMetadataQuickRefs,
+        fetchOne: fetchSiteMetadataOne,
+        fetchOneWithFkIfk: fetchSiteMetadataOneWithFkIfk,
+        fetchAll: fetchSiteMetadataAll,
+        fetchPaginated: fetchSiteMetadataPaginated,
+
+    } = useEntityWithFetch("siteMetadata");
+
+    return {
+        siteMetadataSelectors,
+        siteMetadataActions,
+        siteMetadataRecords,
+        siteMetadataRecordsById,
+        siteMetadataUnsavedRecords,
+        siteMetadataSelectedRecordIds,
+        siteMetadataIsLoading,
+        siteMetadataIsError,
+        siteMetadataQuickRefRecords,
+        addSiteMetadataMatrxId,
+        addSiteMetadataMatrxIds,
+        removeSiteMetadataMatrxId,
+        removeSiteMetadataMatrxIds,
+        addSiteMetadataPkValue,
+        addSiteMetadataPkValues,
+        removeSiteMetadataPkValue,
+        removeSiteMetadataPkValues,
+        isSiteMetadataMissingRecords,
+        setSiteMetadataShouldFetch,
+        setSiteMetadataFetchMode,
+        fetchSiteMetadataQuickRefs,
+        fetchSiteMetadataOne,
+        fetchSiteMetadataOneWithFkIfk,
+        fetchSiteMetadataAll,
+        fetchSiteMetadataPaginated,
     };
 };
 

@@ -36,6 +36,7 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
     const [htmlTitle, setHtmlTitle] = useState("");
     const copyButtonRef = useRef<HTMLButtonElement>(null);
     const [routePath, setRoutePath] = useState("/chat/");
+    const [conversationId, setConversationId] = useState<string | null>(null);
     
     // HTML Editor state
     const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -54,9 +55,25 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
     });
 
     useEffect(() => {
-        if (data[0]?.conversation_id) {
-            setRoutePath(`/chat/${data[0].conversation_id}`);
+        // Find the last conversation_id in the data array (iterate from end to beginning)
+        let newConversationId: string | null = null;
+        
+        if (Array.isArray(data)) {
+            // Iterate backwards to find the most recent conversation_id
+            for (let i = data.length - 1; i >= 0; i--) {
+                if (data[i]?.conversation_id) {
+                    newConversationId = data[i].conversation_id;
+                    break;
+                }
+            }
         }
+        
+        // Only update if we found a conversation_id in the new data
+        if (newConversationId) {
+            setConversationId(newConversationId);
+            setRoutePath(`/chat/${newConversationId}`);
+        }
+        // If no conversation_id found in new data, keep the existing one
     }, [data]);
 
 
@@ -167,7 +184,8 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
                 {/* Mobile: Primary action first and full width */}
                 <button
                     onClick={handleImproveInChat}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 sm:px-4 py-3 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base sm:text-sm order-1 sm:order-5"
+                    disabled={!conversationId}
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 sm:px-4 py-3 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base sm:text-sm order-1 sm:order-5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-indigo-500 dark:disabled:hover:bg-indigo-500"
                 >
                     <MessageSquare size={20} className="sm:w-[18px] sm:h-[18px]" />
                     Matrx Chat

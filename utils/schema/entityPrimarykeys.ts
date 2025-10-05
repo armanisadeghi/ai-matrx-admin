@@ -184,6 +184,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  microserviceProject: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   nodeCategory: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -353,6 +357,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   scrapeTaskResponse: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  siteMetadata: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },

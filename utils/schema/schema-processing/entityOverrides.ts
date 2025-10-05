@@ -786,6 +786,23 @@ const messageTemplateEntityOverrides: EntityOverrides<'messageTemplate'> = {
 
 
 
+const microserviceProjectEntityOverrides: EntityOverrides<'microserviceProject'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const nodeCategoryEntityOverrides: EntityOverrides<'nodeCategory'> = {
     schemaType: null,
     entityName: null,
@@ -1517,6 +1534,23 @@ const scrapeTaskResponseEntityOverrides: EntityOverrides<'scrapeTaskResponse'> =
 
 
 
+const siteMetadataEntityOverrides: EntityOverrides<'siteMetadata'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const subcategoryEntityOverrides: EntityOverrides<'subcategory'> = {
     schemaType: null,
     entityName: null,
@@ -1988,6 +2022,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     message: messageEntityOverrides,
     messageBroker: messageBrokerEntityOverrides,
     messageTemplate: messageTemplateEntityOverrides,
+    microserviceProject: microserviceProjectEntityOverrides,
     nodeCategory: nodeCategoryEntityOverrides,
     organizationInvitations: organizationInvitationsEntityOverrides,
     organizationMembers: organizationMembersEntityOverrides,
@@ -2031,6 +2066,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     scrapeQuickFailureLog: scrapeQuickFailureLogEntityOverrides,
     scrapeTask: scrapeTaskEntityOverrides,
     scrapeTaskResponse: scrapeTaskResponseEntityOverrides,
+    siteMetadata: siteMetadataEntityOverrides,
     subcategory: subcategoryEntityOverrides,
     systemFunction: systemFunctionEntityOverrides,
     tableData: tableDataEntityOverrides,

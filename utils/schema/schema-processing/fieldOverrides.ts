@@ -315,6 +315,8 @@ const messageTemplateFieldOverrides: AllFieldOverrides = {
 };
 
 
+const microserviceProjectFieldOverrides: AllFieldOverrides = {};
+
 const nodeCategoryFieldOverrides: AllFieldOverrides = {};
 
 const organizationInvitationsFieldOverrides: AllFieldOverrides = {};
@@ -430,6 +432,8 @@ const scrapeTaskFieldOverrides: AllFieldOverrides = {};
 
 const scrapeTaskResponseFieldOverrides: AllFieldOverrides = {};
 
+const siteMetadataFieldOverrides: AllFieldOverrides = {};
+
 const subcategoryFieldOverrides: AllFieldOverrides = {};
 
 const systemFunctionFieldOverrides: AllFieldOverrides = {};
@@ -528,6 +532,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     message: messageFieldOverrides,
     messageBroker: messageBrokerFieldOverrides,
     messageTemplate: messageTemplateFieldOverrides,
+    microserviceProject: microserviceProjectFieldOverrides,
     nodeCategory: nodeCategoryFieldOverrides,
     organizationInvitations: organizationInvitationsFieldOverrides,
     organizationMembers: organizationMembersFieldOverrides,
@@ -571,6 +576,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     scrapeQuickFailureLog: scrapeQuickFailureLogFieldOverrides,
     scrapeTask: scrapeTaskFieldOverrides,
     scrapeTaskResponse: scrapeTaskResponseFieldOverrides,
+    siteMetadata: siteMetadataFieldOverrides,
     subcategory: subcategoryFieldOverrides,
     systemFunction: systemFunctionFieldOverrides,
     tableData: tableDataFieldOverrides,

@@ -585,6 +585,23 @@ export type MessageTemplate = {
     content?: string;
 }
 
+export type MicroserviceProject = {
+    id: string;
+    projectName: string;
+    projectDescription: string;
+    repoName: string;
+    repoId: number;
+    repoOrgName: string;
+    repoUrl: string;
+    isSystem: boolean;
+    userId?: string;
+    authenticatedRead: boolean;
+    publicRead: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    projectCode: string;
+}
+
 export type NodeCategory = {
     id: string;
     createdAt: Date;
@@ -679,6 +696,7 @@ export type Prompts = {
     isPublic?: boolean;
     userId?: string;
     publicRead?: boolean;
+    settings?: Record<string, unknown>;
 }
 
 export type Recipe = {
@@ -1097,6 +1115,33 @@ export type ScrapeTaskResponse = {
     authenticatedRead?: boolean;
 }
 
+export type SiteMetadata = {
+    id: string;
+    siteKey: string;
+    siteName: string;
+    siteUrl?: string;
+    organizationType?: string;
+    logoUrl?: string;
+    logoWidth?: number;
+    logoHeight?: number;
+    defaultShareImageUrl?: string;
+    defaultShareImageWidth?: number;
+    defaultShareImageHeight?: number;
+    twitterHandle?: string;
+    facebookPageUrl?: string;
+    contactEmail?: string;
+    copyrightHolder?: string;
+    defaultAuthorName?: string;
+    defaultAuthorType?: string;
+    defaultLanguage?: string;
+    googleAnalyticsId?: string;
+    googleTagManagerId?: string;
+    gscPropertyUrl?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isActive?: boolean;
+}
+
 export type Subcategory = {
     id: string;
     categoryId: string;
@@ -1354,15 +1399,17 @@ export type WorkflowData = {
 export type WorkflowEdge = {
     id: string;
     createdAt: Date;
-    workflowId: string;
-    sourceNodeId: string;
-    targetNodeId: string;
-    sourceHandle?: string;
-    targetHandle?: string;
+    workflowId?: string;
+    sourceNodeId?: string;
+    targetNodeId?: string;
+    sourceHandleId?: string;
+    targetHandleId?: string;
     edgeType?: string;
     animated?: boolean;
     style?: Record<string, unknown>;
     metadata?: Record<string, unknown>;
+    label?: string;
+    connectionType?: string;
 }
 
 export type WorkflowNode = {

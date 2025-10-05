@@ -243,6 +243,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["role", "type", "createdAt", "content"]
 },
+  microserviceProject: {
+  nativeFields: ["id", "projectName", "projectDescription", "repoName", "repoId", "repoOrgName", "repoUrl", "isSystem", "userId", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "projectCode"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["projectName", "projectDescription", "repoName", "repoId", "repoOrgName", "repoUrl", "isSystem", "userId", "authenticatedRead", "publicRead", "createdAt", "updatedAt", "projectCode"]
+},
   nodeCategory: {
   nativeFields: ["id", "createdAt", "updatedAt", "name", "label", "icon", "color", "description"],
   primaryKeyFields: ["id"],
@@ -284,9 +289,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["name", "description", "createdAt", "updatedAt", "createdBy"]
 },
   prompts: {
-  nativeFields: ["id", "createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead"],
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings"]
 },
   recipe: {
   nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId", "metadata"],
@@ -458,6 +463,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["scrapeTaskId", "failureReason", "statusCode", "contentPath", "contentSize", "contentType", "responseHeaders", "responseUrl", "errorLog", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
+  siteMetadata: {
+  nativeFields: ["id", "siteKey", "siteName", "siteUrl", "organizationType", "logoUrl", "logoWidth", "logoHeight", "defaultShareImageUrl", "defaultShareImageWidth", "defaultShareImageHeight", "twitterHandle", "facebookPageUrl", "contactEmail", "copyrightHolder", "defaultAuthorName", "defaultAuthorType", "defaultLanguage", "googleAnalyticsId", "googleTagManagerId", "gscPropertyUrl", "createdAt", "updatedAt", "isActive"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["siteKey", "siteName", "siteUrl", "organizationType", "logoUrl", "logoWidth", "logoHeight", "defaultShareImageUrl", "defaultShareImageWidth", "defaultShareImageHeight", "twitterHandle", "facebookPageUrl", "contactEmail", "copyrightHolder", "defaultAuthorName", "defaultAuthorType", "defaultLanguage", "googleAnalyticsId", "googleTagManagerId", "gscPropertyUrl", "createdAt", "updatedAt", "isActive"]
+},
   subcategory: {
   nativeFields: ["id", "categoryId", "name", "description", "slug", "icon", "features", "createdAt"],
   primaryKeyFields: ["id"],
@@ -559,9 +569,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["name", "description", "workflowType", "inputs", "outputs", "dependencies", "sources", "destinations", "actions", "category", "tags", "isActive", "isDeleted", "autoExecute", "metadata", "viewport", "userId", "version", "isPublic", "authenticatedRead", "publicRead", "createdAt", "updatedAt"]
 },
   workflowEdge: {
-  nativeFields: ["id", "createdAt", "workflowId", "sourceNodeId", "targetNodeId", "sourceHandle", "targetHandle", "edgeType", "animated", "style", "metadata"],
+  nativeFields: ["id", "createdAt", "workflowId", "sourceNodeId", "targetNodeId", "sourceHandleId", "targetHandleId", "edgeType", "animated", "style", "metadata", "label", "connectionType"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "workflowId", "sourceNodeId", "targetNodeId", "sourceHandle", "targetHandle", "edgeType", "animated", "style", "metadata"]
+  nativeFieldsNoPk: ["createdAt", "workflowId", "sourceNodeId", "targetNodeId", "sourceHandleId", "targetHandleId", "edgeType", "animated", "style", "metadata", "label", "connectionType"]
 },
   workflowNode: {
   nativeFields: ["id", "createdAt", "updatedAt", "userId", "workflowId", "functionId", "functionType", "stepName", "nodeType", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "status", "isPublic", "authenticatedRead", "publicRead", "metadata", "uiNodeData"],
