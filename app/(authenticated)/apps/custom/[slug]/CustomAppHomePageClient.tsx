@@ -24,7 +24,7 @@ export default function CustomAppHomePageClient({ slug }: CustomAppHomePageClien
     <HomeApplet 
       navigateToApplet={navigateToApplet}
       appDisplayVariant="modern"
-      appletCardVariant="default"
+      appletCardVariant="enhanced"
       mainLayoutVariant="sidebar"
     />
   );
