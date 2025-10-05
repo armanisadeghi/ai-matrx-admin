@@ -1,34 +1,75 @@
 // app/(authenticated)/apps/custom/[slug]/[appletSlug]/page.tsx
-"use client";
 
 import React from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import AppletRunComponent from "@/features/applet/runner/AppletRunComponent";
-import { AppletLayoutOption } from "@/types";
+import { Metadata } from "next";
+import { getAppData } from "@/utils/server/appDataCache";
+import AppletPageClient from "./AppletPageClient";
 
-export default function AppletPage() {
-    const params = useParams();
-    const searchParams = useSearchParams();
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ slug: string; appletSlug: string }> 
+}): Promise<Metadata> {
+  try {
+    const resolvedParams = await params;
+    const { slug, appletSlug } = resolvedParams;
     
-    const slug = params.slug as string;
-    const appletSlug = params.appletSlug as string;
+    const data = await getAppData(slug);
+
+    if (!data) {
+      return {
+        title: 'Applet Not Found',
+        description: 'The requested applet could not be found',
+      };
+    }
+
+    const applet = data.applets.find((a) => a.slug === appletSlug);
+    const app = data.app_config;
     
-    // Get parameters from search params with cryptic names
-    const layoutTypeOverride = searchParams.get("lt") as AppletLayoutOption | undefined;
-    const isPreview = searchParams.get("xp") === "1";
-    const allowSubmit = searchParams.get("zs") !== "0"; // Default to true unless explicitly set to 0
-    const responseLayoutTypeOverride = searchParams.get("rl") as AppletLayoutOption | undefined;
-    const coordinatorId = searchParams.get("c") as string | undefined;
+    if (!applet) {
+      return {
+        title: app?.name ? `${app.name} | Applet Not Found` : 'Applet Not Found',
+        description: 'The requested applet could not be found',
+      };
+    }
+    
+    const title = `${app?.name || 'App'} | ${applet.name || 'Applet'}`;
+    const description = applet.description || app?.description || 'Interactive applet';
+    
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+      },
+    };
+  } catch (error) {
+    console.error('Error generating applet metadata:', error);
+    return {
+      title: 'Applet',
+      description: 'Interactive applet',
+    };
+  }
+}
+
+export default async function AppletPage({ 
+  params 
+}: { 
+  params: Promise<{ slug: string; appletSlug: string }> 
+}) {
+    const resolvedParams = await params;
+    const { slug, appletSlug } = resolvedParams;
 
     return (
-        <AppletRunComponent 
-            appSlug={slug} 
-            appletSlug={appletSlug} 
-            layoutTypeOverride={layoutTypeOverride} 
-            isPreview={isPreview} 
-            allowSubmit={allowSubmit} 
-            responseLayoutTypeOverride={responseLayoutTypeOverride || "flat-accordion"}
-            coordinatorOverride={coordinatorId}
+        <AppletPageClient 
+            slug={slug}
+            appletSlug={appletSlug}
         />
     );
 }
