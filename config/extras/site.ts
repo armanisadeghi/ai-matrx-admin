@@ -1,7 +1,7 @@
 export const siteConfig = {
-  name: "App Matrx",
-  // url: "https://appmatrx.com",
-  ogImage: "https://appmatrx.com/am-logo.jpg", // TODO - Add image here
+  name: "AI Matrx",
+  url: "https://www.aimatrx.com",
+  ogImage: "https://www.aimatrx.com/matrx/logo-option-4.jpeg",
   description:
     "A revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code.",
   links: {

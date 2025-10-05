@@ -4,12 +4,12 @@ import { siteConfig } from "@/config/extras/site"
 
 export const metadata: Metadata = {
     title: {
-        default: "App Matrx",
-        template: `%s - App Matrx`,
+        default: "AI Matrx",
+        template: `%s - AI Matrx`,
     },
-    description: "App Matrx is a revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code. Unleash the power of AI with our intuitive drag-and-drop interface and pre-built components, streamlining your workflows and automating complex tasks. Experience the future of business automation with App Matrx.",
+    description: "AI Matrx is a revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code. Unleash the power of AI with our intuitive drag-and-drop interface and pre-built components, streamlining your workflows and automating complex tasks. Experience the future of business automation with AI Matrx.",
     keywords: [
-        "App Matrx",
+        "AI Matrx",
         "AI",
         "Artificial Intelligence",
         "No-Code",
@@ -34,30 +34,30 @@ export const metadata: Metadata = {
     ],
     authors: [
         {
-            name: "Armani Sadeghi",
-            url: "https://appmatrix.com",
+            name: "Arman Sadeghi",
+            url: "https://www.aimatrx.com",
         },
     ],
-    creator: "Armani Sadeghi",
+    creator: "Arman Sadeghi",
     openGraph: {
         type: "website",
         locale: "en_US",
-        title: "App Matrx",
-        description: "App Matrx is a revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code. Unleash the power of AI with our intuitive drag-and-drop interface and pre-built components, streamlining your workflows and automating complex tasks. Experience the future of business automation with App Matrx.",
-        siteName: "App Matrx",
+        title: "AI Matrx",
+        description: "AI Matrx is a revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code. Unleash the power of AI with our intuitive drag-and-drop interface and pre-built components, streamlining your workflows and automating complex tasks. Experience the future of business automation with AI Matrx.",
+        siteName: "AI Matrx",
         images: [
             {
                 url: siteConfig.ogImage,
                 width: 1200,
                 height: 630,
-                alt: "App Matrx",
+                alt: "AI Matrx",
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: "App Matrx",
-        description: "A large-scale application built with Next.js and Shadcn UI",
+        title: "AI Matrx",
+        description: "A revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code.",
         images: [siteConfig.ogImage],
         creator: "@your_twitter_handle",
     },
@@ -65,9 +65,11 @@ export const metadata: Metadata = {
         icon: [
             {url: "/favicon.ico", sizes: "any"},
             {url: "/favicon.svg", type: "image/svg+xml"},
+            {url: "/matrx/favicon-16x16.png", sizes: "16x16", type: "image/png"},
+            {url: "/matrx/favicon-32x32.png", sizes: "32x32", type: "image/png"},
         ],
-        apple: "/apple-touch-icon.png",
+        apple: "/matrx/apple-touch-icon.png",
         shortcut: "/favicon.ico",
     },
-    manifest: "/site.webmanifest",
+    manifest: "/manifest.webmanifest",
 }

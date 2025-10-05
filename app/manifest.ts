@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'AI Matrx',
-    short_name: 'Matrx',
+    short_name: 'AI Matrx',
     description: 'No-code AI platform that orchestrates, automates, and elevates business processes.',
     start_url: '/',
     display: 'standalone',
