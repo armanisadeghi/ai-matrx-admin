@@ -18,6 +18,7 @@ interface MultiFileCodeEditorProps {
     onFileSelect?: (path: string) => void;
     runCode?: () => void;
     autoFormatOnOpen?: boolean;
+    defaultWordWrap?: "on" | "off";
     showSidebar?: boolean;
     height?: string;
 }
@@ -28,6 +29,7 @@ export default function MultiFileCodeEditor({
     onFileSelect,
     runCode,
     autoFormatOnOpen = false,
+    defaultWordWrap = "off",
     showSidebar = true,
     height = "600px"
 }: MultiFileCodeEditorProps) {
@@ -128,6 +130,7 @@ export default function MultiFileCodeEditor({
                         onChange={handleContentChange}
                         runCode={runCode}
                         autoFormat={autoFormatOnOpen}
+                        defaultWordWrap={defaultWordWrap}
                         showFormatButton={true}
                         showCopyButton={true}
                         showResetButton={true}

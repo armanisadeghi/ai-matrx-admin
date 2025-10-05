@@ -22,15 +22,28 @@ interface CopyOptions {
 /**
  * Removes thinking tags and their content from markdown
  * Handles both <thinking> and <think> tags
+ * Removes surrounding newlines to avoid leaving blank lines
  * @param {string} content - The content to process
  * @returns {string} - Content without thinking tags
  */
 export function removeThinkingContent(content: string): string {
   if (!content || typeof content !== 'string') return content || '';
-  // Remove both <thinking> and <think> tags and their content
-  return content
-    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
-    .replace(/<think>[\s\S]*?<\/think>/gi, '');
+  
+  let result = content;
+  
+  // Remove thinking tags with surrounding newlines
+  // Pattern matches: optional newlines before, tag+content, optional newlines after
+  result = result
+    .replace(/\n*<thinking>[\s\S]*?<\/thinking>\n*/gi, '\n')
+    .replace(/\n*<think>[\s\S]*?<\/think>\n*/gi, '\n');
+  
+  // Clean up any excessive newlines (3+ becomes 2, preserving intentional paragraph breaks)
+  result = result.replace(/\n{3,}/g, '\n\n');
+  
+  // Trim any leading/trailing whitespace that might have been left
+  result = result.trim();
+  
+  return result;
 }
 
 

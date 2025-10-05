@@ -72,6 +72,73 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
     // Remove <thinking> tags and all their content unless specifically requested
     let html = includeThinking ? markdown : removeThinkingContent(markdown);
     
+    // Convert flashcard blocks FIRST and protect them with placeholders
+    // This ensures flashcard HTML structure isn't affected by markdown transformations
+    const flashcardPlaceholders: Array<{placeholder: string, html: string}> = [];
+    let flashcardIndex = 0;
+    
+    // Match <flashcards>...</flashcards> blocks and replace with placeholders
+    const flashcardBlockRegex = /<flashcards>([\s\S]*?)<\/flashcards>/gi;
+    let globalCardIndex = 0;
+    
+    html = html.replace(flashcardBlockRegex, (match, content) => {
+        // Split by --- to get individual cards
+        const cards = content.split(/\n*---\n*/g)
+            .map(card => card.trim())
+            .filter(card => card.length > 0);
+        
+        if (cards.length === 0) return '';
+        
+        let flashcardsHtml = '<div class="matrx-flashcards-container">\n';
+        
+        cards.forEach((card) => {
+            // Extract Front and Back content
+            const frontMatch = card.match(/Front:\s*(.+?)(?=\n|$)/i);
+            const backMatch = card.match(/Back:\s*([\s\S]+?)$/i);
+            
+            if (!frontMatch || !backMatch) return; // Skip invalid cards
+            
+            const frontContent = frontMatch[1].trim();
+            const backContent = backMatch[1].trim();
+            
+            // Use global counter for unique IDs across all blocks
+            globalCardIndex++;
+            const cardId = `card${globalCardIndex}`;
+            
+            flashcardsHtml += `    <div class="matrx-flashcard">
+        <input type="checkbox" class="matrx-flashcard-input" id="${cardId}">
+        <label for="${cardId}" class="matrx-flashcard-label"></label>
+        <div class="matrx-flashcard-inner">
+            <div class="matrx-flashcard-front">
+                <div class="matrx-flashcard-content">
+                    <strong>${frontContent}</strong>
+                </div>
+                <span class="matrx-flashcard-indicator">CLICK TO FLIP</span>
+            </div>
+            <div class="matrx-flashcard-back">
+                <div class="matrx-flashcard-content">
+                    ${backContent}
+                </div>
+                <span class="matrx-flashcard-indicator">CLICK TO FLIP</span>
+            </div>
+        </div>
+    </div>
+
+`;
+        });
+        
+        flashcardsHtml += '</div>\n';
+        
+        // Store the flashcard HTML and return a placeholder
+        const placeholder = `ΩFLASHCARDΩ${flashcardIndex}ΩFLASHCARDΩ`;
+        flashcardPlaceholders.push({
+            placeholder,
+            html: flashcardsHtml
+        });
+        flashcardIndex++;
+        return placeholder;
+    });
+    
     // Handle horizontal rules (must be processed first before headings and lists)
     html = html.replace(/^[\-]{3,}$/gm, '<hr class="matrx-hr">');
     html = html.replace(/^[\*]{3,}$/gm, '<hr class="matrx-hr">');
@@ -299,6 +366,13 @@ export function markdownToWordPressHTML(markdown: string, includeThinking: boole
     linkPlaceholders.forEach(({ placeholder, html: linkHtml }) => {
         if (html.includes(placeholder)) {
             html = html.replaceAll(placeholder, linkHtml);
+        }
+    });
+    
+    // Restore flashcard placeholders with actual HTML flashcards
+    flashcardPlaceholders.forEach(({ placeholder, html: flashcardHtml }) => {
+        if (html.includes(placeholder)) {
+            html = html.replaceAll(placeholder, flashcardHtml);
         }
     });
     

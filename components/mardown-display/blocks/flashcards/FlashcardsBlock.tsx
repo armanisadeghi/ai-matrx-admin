@@ -1,6 +1,6 @@
 "use client";
-import React, { useMemo, useState } from "react";
-import { BookOpen, Grid2x2, LayoutList } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import { BookOpen, Grid2x2, LayoutList, Maximize2, X } from "lucide-react";
 import ChatCollapsibleWrapper from "@/components/mardown-display/blocks/ChatCollapsibleWrapper";
 import FlashcardItem from "./FlashcardItem";
 import { parseFlashcards } from "./flashcard-parser";
@@ -57,6 +57,7 @@ const LayoutToggle: React.FC<LayoutToggleProps> = ({ layoutMode, onLayoutChange 
 
 const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
     const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     // Parse flashcards from content
     const { flashcards, isComplete, partialCard } = useMemo(() => {
@@ -67,6 +68,120 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
     const totalCount = flashcards.length + (partialCard && !isComplete ? 1 : 0);
     const completeCount = flashcards.length;
 
+    // Handle ESC key to exit fullscreen
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isFullscreen) {
+                setIsFullscreen(false);
+            }
+        };
+
+        if (isFullscreen) {
+            document.addEventListener('keydown', handleEscape);
+            // Prevent body scroll when fullscreen
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isFullscreen]);
+
+    const renderFlashcards = () => (
+        <div className={cn(
+            "gap-4",
+            isFullscreen ? "p-2 sm:p-4" : "p-4",
+            layoutMode === "grid" ? "grid grid-cols-1 md:grid-cols-2" : "flex flex-col"
+        )}>
+            {flashcards.map((card, index) => (
+                <FlashcardItem
+                    key={`flashcard-${index}`}
+                    front={card.front}
+                    back={card.back}
+                    index={index}
+                    layoutMode={layoutMode}
+                />
+            ))}
+            
+            {/* Show placeholder for partial card if streaming */}
+            {!isComplete && partialCard && (
+                <div 
+                    className={cn(
+                        "relative w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-center animate-pulse",
+                        layoutMode === "list" && "max-w-full"
+                    )}
+                    aria-label="Loading flashcard"
+                >
+                    <div className="text-center text-gray-500 dark:text-gray-400">
+                        <BookOpen className="h-8 w-8 mx-auto mb-2 animate-pulse" />
+                        <div className="text-sm">Loading flashcard...</div>
+                        {partialCard.front && (
+                            <div className="text-xs mt-1 px-4">
+                                {partialCard.front.substring(0, 30)}...
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // Fullscreen overlay
+    if (isFullscreen) {
+        return (
+            <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="h-full flex flex-col">
+                    {/* Fullscreen header */}
+                    <div className="flex items-center justify-between p-3 border-b border-border bg-background/50">
+                        <div className="flex items-center gap-2">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                            <span className="font-medium">
+                                Flashcards
+                                {isComplete && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                        ({completeCount} {completeCount === 1 ? 'card' : 'cards'})
+                                    </span>
+                                )}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => setIsFullscreen(false)}
+                                title="Exit fullscreen (ESC)"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Fullscreen content */}
+                    <div className="flex-1 overflow-y-auto">
+                        {renderFlashcards()}
+                        {flashcards.length === 0 && !partialCard && (
+                            <div className="text-center text-gray-500 dark:text-gray-400 p-8">
+                                No flashcards available yet...
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Fullscreen footer */}
+                    {flashcards.length > 0 && (
+                        <div className="flex justify-center items-center gap-2 p-3 border-t border-border bg-background/50">
+                            <span className="text-xs text-muted-foreground">Layout:</span>
+                            <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // Normal embedded view
     return (
         <ChatCollapsibleWrapper
             icon={<BookOpen className="h-4 w-4 text-primary" />}
@@ -85,46 +200,26 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                             </span>
                         )}
                     </span>
-                    <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
+                    <div className="flex items-center gap-1">
+                        <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsFullscreen(true);
+                            }}
+                            title="Fullscreen mode"
+                        >
+                            <Maximize2 className="h-3.5 w-3.5" />
+                        </Button>
+                    </div>
                 </div>
             }
             initialOpen={true}
         >
-            <div className={cn(
-                "gap-4 p-4",
-                layoutMode === "grid" ? "grid grid-cols-1 md:grid-cols-2" : "flex flex-col"
-            )}>
-                {flashcards.map((card, index) => (
-                    <FlashcardItem
-                        key={`flashcard-${index}`}
-                        front={card.front}
-                        back={card.back}
-                        index={index}
-                        layoutMode={layoutMode}
-                    />
-                ))}
-                
-                {/* Show placeholder for partial card if streaming */}
-                {!isComplete && partialCard && (
-                    <div 
-                        className={cn(
-                            "relative w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-center animate-pulse",
-                            layoutMode === "list" && "max-w-full"
-                        )}
-                        aria-label="Loading flashcard"
-                    >
-                        <div className="text-center text-gray-500 dark:text-gray-400">
-                            <BookOpen className="h-8 w-8 mx-auto mb-2 animate-pulse" />
-                            <div className="text-sm">Loading flashcard...</div>
-                            {partialCard.front && (
-                                <div className="text-xs mt-1 px-4">
-                                    {partialCard.front.substring(0, 30)}...
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
+            {renderFlashcards()}
 
             {flashcards.length === 0 && !partialCard && (
                 <div className="text-center text-gray-500 dark:text-gray-400 p-8">
@@ -132,11 +227,23 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                 </div>
             )}
 
-            {/* Bottom layout toggle */}
+            {/* Bottom controls */}
             {flashcards.length > 0 && (
-                <div className="flex justify-center items-center gap-2 pb-4 pt-2">
-                    <span className="text-xs text-muted-foreground">Layout:</span>
-                    <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
+                <div className="flex justify-center items-center gap-3 pb-4 pt-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Layout:</span>
+                        <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
+                    </div>
+                    <div className="h-4 w-px bg-border" />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => setIsFullscreen(true)}
+                    >
+                        <Maximize2 className="h-3 w-3 mr-1" />
+                        Fullscreen
+                    </Button>
                 </div>
             )}
         </ChatCollapsibleWrapper>

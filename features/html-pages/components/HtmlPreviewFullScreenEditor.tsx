@@ -81,7 +81,7 @@ export default function HtmlPreviewFullScreenEditor({
     const tabDefinitions: TabDefinition[] = [
         // Rich Text Editor (WYSIWYG)
         {
-            id: "wysiwyg",
+            id: "markdown",
             label: "Rich Text Editor",
             content: (
                 <TuiEditorContent
@@ -92,8 +92,8 @@ export default function HtmlPreviewFullScreenEditor({
                             htmlPreviewState.setCurrentMarkdown(newContent);
                         }
                     }}
-                    isActive={activeTab === "wysiwyg"}
-                    editMode="wysiwyg"
+                    isActive={activeTab === "markdown"}
+                    editMode="markdown"
                 />
             ),
             className: "overflow-hidden p-0 bg-background"
@@ -113,7 +113,7 @@ export default function HtmlPreviewFullScreenEditor({
         },
         {
             id: "preview",
-            label: "Markdown Preview",
+            label: "Matrx Preview",
             content: (
                 <MarkdownPreviewTab
                     state={htmlPreviewState}

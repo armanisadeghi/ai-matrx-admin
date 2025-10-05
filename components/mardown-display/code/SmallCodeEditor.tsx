@@ -22,6 +22,7 @@ interface CodeEditorProps {
     showWordWrapToggle?: boolean;
     showMinimapToggle?: boolean;
     autoFormat?: boolean;
+    defaultWordWrap?: "on" | "off";
     height?: string;
 }
 
@@ -38,13 +39,14 @@ const SmallCodeEditor = ({
     showWordWrapToggle = true,
     showMinimapToggle = true,
     autoFormat = false,
+    defaultWordWrap = "off",
     height: customHeight
 }: CodeEditorProps) => {
     const [ref, { width, height }] = useMeasure();
     const isDark = useMonacoTheme();
     const [output, setOutput] = useState<string>("");
     const [copied, setCopied] = useState(false);
-    const [wordWrap, setWordWrap] = useState<"off" | "on">("off");
+    const [wordWrap, setWordWrap] = useState<"off" | "on">(defaultWordWrap);
     const [minimapEnabled, setMinimapEnabled] = useState(false);
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -67,6 +69,33 @@ const SmallCodeEditor = ({
             }
         }
     }, [initialCode]);
+
+    // Auto-format when switching files (path changes) or when content changes
+    useEffect(() => {
+        if (!autoFormat || !editorRef.current) return;
+
+        const formatAfterChange = async () => {
+            const editor = editorRef.current;
+            if (!editor) return;
+
+            const model = editor.getModel();
+            if (!model) return;
+
+            // Wait a bit for content to settle and language services to be ready
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            try {
+                const formatAction = editor.getAction('editor.action.formatDocument');
+                if (formatAction) {
+                    await formatAction.run();
+                }
+            } catch (error) {
+                console.warn('Auto-format on file switch failed:', error);
+            }
+        };
+
+        formatAfterChange();
+    }, [path, autoFormat]); // Trigger when path (file) changes
 
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: any) => {
         editorRef.current = editor;

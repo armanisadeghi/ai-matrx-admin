@@ -1,4 +1,4 @@
-/* 
+ /* 
  * MATRX WordPress CSS - Production Ready
  * Use this CSS in your WordPress theme to style MATRX content
  * All styles are scoped to .matrx-content-container to avoid conflicts
@@ -10,7 +10,7 @@
     margin: 0 auto;
     padding: 2rem;
     line-height: 1.6;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 /* Typography */
@@ -161,77 +161,77 @@
 
 /* Code */
 .matrx-content-container .matrx-inline-code {
-  background-color: #f5f5f5;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: 0.875rem;
-  color: #d73a49;
+    background-color: #f5f5f5;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 0.875rem;
+    color: #d73a49;
 }
 
 .matrx-content-container .matrx-code-block {
-  background-color: #f8f8f8;
-  border: 1px solid #e1e1e1;
-  border-radius: 0.375rem;
-  padding: 1rem;
-  margin: 1.5rem 0;
-  overflow-x: auto;
+    background-color: #f8f8f8;
+    border: 1px solid #e1e1e1;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
 }
 
 .matrx-content-container .matrx-code {
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: #333;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #333;
 }
 
 /* Blockquotes */
 .matrx-content-container .matrx-blockquote {
-  border-left: 4px solid #e1e1e1;
-  padding-left: 1rem;
-  margin: 1.5rem 0;
-  font-style: italic;
-  color: #666;
+    border-left: 4px solid #e1e1e1;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #666;
 }
 
 /* Tables */
 .matrx-content-container .matrx-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1.5rem 0;
-  border: 1px solid #e1e1e1;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    border: 1px solid #e1e1e1;
 }
 
 .matrx-content-container .matrx-table-header {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  padding: 0.75rem;
-  border: 1px solid #e1e1e1;
-  text-align: left;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    padding: 0.75rem;
+    border: 1px solid #e1e1e1;
+    text-align: left;
 }
 
 .matrx-content-container .matrx-table-cell {
-  padding: 0.75rem;
-  border: 1px solid #e1e1e1;
+    padding: 0.75rem;
+    border: 1px solid #e1e1e1;
 }
 
 .matrx-content-container .matrx-table-row:nth-child(even) {
-  background-color: #f8f9fa;
+    background-color: #f8f9fa;
 }
 
 /* Images */
 .matrx-content-container .matrx-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.375rem;
-  margin: 1rem 0;
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.375rem;
+    margin: 1rem 0;
 }
 
 /* Horizontal Rules */
 .matrx-content-container .matrx-hr {
-  border: none;
-  border-top: 1px solid #e1e1e1;
-  margin: 2rem 0;
+    border: none;
+    border-top: 1px solid #e1e1e1;
+    margin: 2rem 0;
 }
 
 /* FAQ Styles - Clean Design */
@@ -358,6 +358,137 @@
 
 .matrx-span {
     /* Inherit parent styling by default */
+}
+
+/* Flashcard Styles */
+.matrx-flashcards-container {
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.matrx-flashcard {
+    perspective: 1000px;
+    perspective-origin: center center;
+    height: 200px;
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 2.5rem;
+}
+
+.matrx-flashcard-input {
+    display: none;
+}
+
+.matrx-flashcard-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+}
+
+.matrx-flashcard-input:checked ~ .matrx-flashcard-inner {
+    transform: rotateY(180deg);
+}
+
+.matrx-flashcard-front,
+.matrx-flashcard-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    box-sizing: border-box;
+}
+
+.matrx-flashcard-front {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.matrx-flashcard-back {
+    background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%);
+    color: white;
+    transform: rotateY(180deg);
+}
+
+.matrx-flashcard:hover .matrx-flashcard-front,
+.matrx-flashcard:hover .matrx-flashcard-back {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.matrx-flashcard-content {
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.matrx-flashcard-label {
+    cursor: pointer;
+    user-select: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.matrx-flashcard-indicator {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 0.75rem;
+    opacity: 0.8;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .matrx-flashcard {
+        height: 180px;
+    }
+
+    .matrx-flashcard-content {
+        font-size: 1rem;
+    }
+
+    .matrx-flashcard-front,
+    .matrx-flashcard-back {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .matrx-flashcard {
+        height: 160px;
+    }
+
+    .matrx-flashcard-content {
+        font-size: 0.95rem;
+    }
+
+    .matrx-flashcard-front,
+    .matrx-flashcard-back {
+        padding: 1rem;
+    }
 }
 
 /* Responsive Design */
