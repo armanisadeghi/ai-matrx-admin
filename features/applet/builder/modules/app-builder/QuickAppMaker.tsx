@@ -38,10 +38,11 @@ import {
 import { convertToKebabCase } from "@/utils/text/stringUtils";
 import { AppSlugChecker } from "@/features/applet/builder/modules/smart-parts/apps/AppSlugChecker";
 import { v4 as uuidv4 } from "uuid";
+import { CustomAppConfig } from "@/types/customAppTypes";
 
 interface QuickAppMakerProps {
     currentAppId?: string;
-    onAppSaved: (appId: string) => void;
+    onAppSaved: (appId: string, app?: CustomAppConfig) => void;
     onCancel: () => void;
 }
 
@@ -169,8 +170,8 @@ export const QuickAppMaker: React.FC<QuickAppMakerProps> = ({ currentAppId, onAp
                 description: isLocal ? "Your app has been created successfully." : "Your changes have been saved.",
             });
 
-            // Call the parent's callback with the app ID
-            onAppSaved(savedApp.id);
+            // Call the parent's callback with the app ID and full app object
+            onAppSaved(savedApp.id, savedApp);
         } catch (error) {
             console.error("Error saving app:", error);
             toast({

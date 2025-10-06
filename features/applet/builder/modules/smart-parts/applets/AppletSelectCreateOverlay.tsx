@@ -72,16 +72,24 @@ const AppletSelectCreateOverlay: React.FC<AppletSelectCreateOverlayProps> & {
         setView("quickapplet");
     };
 
-    const handleQuickAppletSaved = (applet?: CustomAppletConfig) => {
-        if (currentAppletId) {
-            dispatch(saveAppletThunk(currentAppletId));
+    const handleQuickAppletSaved = async (applet?: CustomAppletConfig) => {
+        try {
+            if (currentAppletId) {
+                // Save the applet and get the result
+                const savedApplet = await dispatch(saveAppletThunk(currentAppletId)).unwrap();
+                // Pass the saved applet to the parent callback
+                onAppletSaved(savedApplet);
+            } else if (applet) {
+                // If applet is provided directly, use that
+                onAppletSaved(applet);
+            }
+            setOpen(false);
+            setView("list");
+            setCurrentAppletId(undefined);
+        } catch (error) {
+            console.error("Error saving applet:", error);
+            // Don't close the dialog if save fails, so user can try again
         }
-        if (applet) {
-            onAppletSaved(applet);
-        }
-        setOpen(false);
-        setView("list");
-        setCurrentAppletId(undefined);
     };
 
     const handleQuickAppletCancel = () => {

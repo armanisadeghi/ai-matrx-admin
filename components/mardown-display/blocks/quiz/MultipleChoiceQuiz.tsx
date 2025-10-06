@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2 } from 'lucide-react';
 
 export type Question = {
   id: number;
@@ -17,6 +17,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const selectedAnswer = answers[currentQuestionIndex];
@@ -66,7 +67,8 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
   };
 
   const getOptionStyle = (optionIndex) => {
-    const baseStyle = "p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-left";
+    const paddingClass = isFullScreen ? "p-3 md:p-4" : "p-4";
+    const baseStyle = `${paddingClass} rounded-xl border-2 cursor-pointer transition-all duration-200 text-left`;
     
     if (!isAnswered) {
       return `${baseStyle} bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30`;
@@ -157,26 +159,48 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
 
   // Quiz Screen
   return (
-    <div className="w-full py-6">
-      <div className="max-w-4xl mx-auto">
+    <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-y-auto md:relative md:bg-transparent' : 'py-6'}`}>
+      <div className={`max-w-4xl mx-auto ${isFullScreen ? 'h-full flex flex-col p-4 md:p-0 md:h-auto md:block' : ''}`}>
+        {/* Fullscreen Toggle Button - Only visible on mobile */}
+        <button
+          onClick={() => setIsFullScreen(!isFullScreen)}
+          className="md:hidden mb-4 ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-medium shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all"
+        >
+          {isFullScreen ? (
+            <>
+              <Minimize2 className="h-4 w-4" />
+              <span>Exit Fullscreen</span>
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-4 w-4" />
+              <span>Fullscreen</span>
+            </>
+          )}
+        </button>
+
         {/* Question Card */}
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border-2 border-blue-200 dark:border-gray-700 rounded-2xl p-6 mb-6 shadow-lg">
+        <div className={`bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border-2 border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg ${
+          isFullScreen ? 'p-4 mb-3 md:p-6 md:mb-6' : 'p-6 mb-6'
+        }`}>
           <div className="text-gray-800 dark:text-gray-100">
             <div className="flex justify-between items-center mb-3">
-              <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+              <div className={`font-medium text-blue-600 dark:text-blue-400 ${isFullScreen ? 'text-xs md:text-sm' : 'text-sm'}`}>
                 Question {currentQuestionIndex + 1} of {questions.length}
               </div>
-              <div className="text-sm font-medium text-green-600 dark:text-green-400">
+              <div className={`font-medium text-green-600 dark:text-green-400 ${isFullScreen ? 'text-xs md:text-sm' : 'text-sm'}`}>
                 Answered: {answeredCount}/{questions.length}
               </div>
             </div>
             {/* Fixed height for question to prevent shifts, accommodates ~3 lines */}
-            <h2 className="text-lg font-bold mb-2 min-h-[72px] line-clamp-3">{currentQuestion.question}</h2>
+            <h2 className={`font-bold mb-2 line-clamp-3 ${isFullScreen ? 'text-base min-h-[60px] md:text-lg md:min-h-[72px]' : 'text-lg min-h-[72px]'}`}>
+              {currentQuestion.question}
+            </h2>
             {/* Fixed height container for status message */}
-            <div className="h-6 mt-2">
+            <div className={`mt-2 ${isFullScreen ? 'h-5 md:h-6' : 'h-6'}`}>
               {isAnswered && (
-                <div className="text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4" />
+                <div className={`text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 ${isFullScreen ? 'text-xs md:text-sm' : 'text-sm'}`}>
+                  <CheckCircle2 className={`${isFullScreen ? 'h-3 w-3 md:h-4 md:w-4' : 'h-4 w-4'}`} />
                   <span>Already answered</span>
                 </div>
               )}
@@ -185,7 +209,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
         </div>
 
         {/* Options Grid - 2 columns on md+ screens, 1 column on mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${isFullScreen ? 'gap-2 mb-3 md:gap-4 md:mb-6' : 'gap-4 mb-6'}`}>
           {currentQuestion.options.map((option, index) => (
             <div
               key={index}
@@ -193,14 +217,14 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
               className={getOptionStyle(index)}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-base font-medium text-gray-800 dark:text-gray-200 flex-1">
+                <span className={`font-medium text-gray-800 dark:text-gray-200 flex-1 ${isFullScreen ? 'text-sm md:text-base' : 'text-base'}`}>
                   {option}
                 </span>
                 {isAnswered && index === currentQuestion.correctAnswer && (
-                  <Check className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                  <Check className={`text-green-600 dark:text-green-400 flex-shrink-0 ${isFullScreen ? 'h-5 w-5 md:h-6 md:w-6' : 'h-6 w-6'}`} />
                 )}
                 {isAnswered && selectedAnswer === index && !isCorrect && (
-                  <X className="h-6 w-6 text-red-600 dark:text-red-400 flex-shrink-0" />
+                  <X className={`text-red-600 dark:text-red-400 flex-shrink-0 ${isFullScreen ? 'h-5 w-5 md:h-6 md:w-6' : 'h-6 w-6'}`} />
                 )}
               </div>
             </div>
@@ -208,32 +232,34 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
         </div>
 
         {/* Explanation - fixed height to prevent layout shift, revealed on answer */}
-        <div className={`mb-4 rounded-xl border-2 transition-all duration-300 min-h-[100px] ${
+        <div className={`rounded-xl border-2 transition-all duration-300 ${
+          isFullScreen ? 'mb-3 min-h-[80px] md:mb-4 md:min-h-[100px]' : 'mb-4 min-h-[100px]'
+        } ${
           !isAnswered 
             ? 'opacity-0 border-transparent pointer-events-none' 
             : isCorrect
-              ? 'opacity-100 bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600 p-4'
-              : 'opacity-100 bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-600 p-4'
+              ? `opacity-100 bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600 ${isFullScreen ? 'p-3 md:p-4' : 'p-4'}`
+              : `opacity-100 bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-600 ${isFullScreen ? 'p-3 md:p-4' : 'p-4'}`
         }`}>
           {isAnswered && (
             <>
-              <div className={`font-semibold mb-1.5 text-base flex items-center gap-2 ${
+              <div className={`font-semibold mb-1.5 flex items-center gap-2 ${isFullScreen ? 'text-sm md:text-base' : 'text-base'} ${
                 isCorrect ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'
               }`}>
                 {isCorrect ? (
                   <>
-                    <CheckCircle2 className="h-5 w-5" />
+                    <CheckCircle2 className={`${isFullScreen ? 'h-4 w-4 md:h-5 md:w-5' : 'h-5 w-5'}`} />
                     <span>Correct!</span>
                   </>
                 ) : (
                   <>
-                    <XCircle className="h-5 w-5" />
+                    <XCircle className={`${isFullScreen ? 'h-4 w-4 md:h-5 md:w-5' : 'h-5 w-5'}`} />
                     <span>Incorrect</span>
                   </>
                 )}
               </div>
               <p 
-                className={`text-sm line-clamp-3 hover:line-clamp-none transition-all cursor-help ${
+                className={`line-clamp-3 hover:line-clamp-none transition-all cursor-help ${isFullScreen ? 'text-xs md:text-sm' : 'text-sm'} ${
                   isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
                 }`}
                 title={currentQuestion.explanation}
@@ -245,11 +271,13 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between items-center">
+        <div className={`flex justify-between items-center ${isFullScreen ? 'mt-auto pt-4' : ''}`}>
           <button
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+            className={`rounded-lg font-semibold transition-all duration-200 ${
+              isFullScreen ? 'px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm' : 'px-4 py-2 text-sm'
+            } ${
               currentQuestionIndex === 0
                 ? 'bg-gray-400 dark:bg-gray-700 cursor-not-allowed text-gray-200 dark:text-gray-500'
                 : 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transform hover:scale-105'
@@ -261,14 +289,18 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
           {currentQuestionIndex === questions.length - 1 ? (
             <button
               onClick={handleNext}
-              className="px-4 py-2 rounded-lg font-semibold text-sm bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              className={`rounded-lg font-semibold bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 ${
+                isFullScreen ? 'px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm' : 'px-4 py-2 text-sm'
+              }`}
             >
               View Results →
             </button>
           ) : (
             <button
               onClick={handleNext}
-              className="px-4 py-2 rounded-lg font-semibold text-sm bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              className={`rounded-lg font-semibold bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 ${
+                isFullScreen ? 'px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm' : 'px-4 py-2 text-sm'
+              }`}
             >
               Next →
             </button>
