@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown, Code, WandSparkles } from "lucide-react";
+import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown, Code, WandSparkles, Brain } from "lucide-react";
 import { copyToClipboard, removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
@@ -153,6 +153,15 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
         });
     };
 
+    const handleCopyWithThinking = async () => {
+        await copyToClipboard(content, {
+            isMarkdown: true,
+            formatForGoogleDocs: false,
+            includeThinking: true,
+            onSuccess: handleCopySuccess,
+        });
+    };
+
     const handleOpenEditor = () => {
         setEditedContent(removeThinkingContent(content));
         setIsEditorOpen(true);
@@ -247,10 +256,17 @@ export default function AppletPostActionButtons({ appletId, taskId, className = 
                                 </button>
                                 <button
                                     onClick={handleHtmlPreview}
-                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600 last:rounded-b-lg"
+                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600"
                                 >
                                     <Code className="h-4 w-4 mr-3 text-green-600" />
                                     HTML
+                                </button>
+                                <button
+                                    onClick={handleCopyWithThinking}
+                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600 last:rounded-b-lg"
+                                >
+                                    <Brain className="h-4 w-4 mr-3 text-purple-600" />
+                                    With Thinking
                                 </button>
                             </div>
                         )}

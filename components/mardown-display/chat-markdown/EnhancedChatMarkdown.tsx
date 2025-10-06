@@ -34,6 +34,7 @@ interface ChatMarkdownDisplayProps {
     analysisData?: any;
     messageId?: string;
     allowFullScreenEditor?: boolean;
+    hideCopyButton?: boolean;
 }
 
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
@@ -47,6 +48,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     analysisData,
     messageId,
     allowFullScreenEditor = true,
+    hideCopyButton = false,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [currentContent, setCurrentContent] = useState(content);
@@ -346,7 +348,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
-            <InlineCopyButton markdownContent={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true} />
+            {!hideCopyButton && <InlineCopyButton markdownContent={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true} />}
 
             {allowFullScreenEditor && (
                 <FullScreenMarkdownEditor

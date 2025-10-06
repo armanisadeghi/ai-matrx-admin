@@ -116,6 +116,7 @@ export default function ResponseLayoutManager({
                                 role="assistant"
                                 className="bg-slate-50 dark:bg-slate-900"
                                 isStreamActive={!isTaskComplete}
+                                hideCopyButton={true}
                             />
                         )}
 
