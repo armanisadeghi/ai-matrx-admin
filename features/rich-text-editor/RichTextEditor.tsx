@@ -13,6 +13,7 @@ import MetadataDialog from './components/MetadataDialog';
 import _ from 'lodash';
 import { ChipHandlers } from './utils/enhancedChipUtils';
 import { handleEditorPaste } from './utils/setEditorUtils';
+import { EditorContextMenu } from './components/EditorContextMenu';
 
 export interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
@@ -182,23 +183,30 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, 
         blurListenersRef.current.forEach((listener) => listener());
     }, [updateContentAndMetadata, onBlur]);
 
+    const handleContentInserted = useCallback(() => {
+        if (isProcessing || !initializedRef.current) return;
+        updateContentAndMetadata();
+    }, [updateContentAndMetadata, isProcessing]);
+
     return (
         <div className='relative group w-full h-full flex flex-col'>
             <div className='flex-1 overflow-hidden'>
-                <div
-                    ref={editorRef}
-                    data-editor-id={componentId}
-                    className={`w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300 
-                        dark:scrollbar-thumb-neutral-600 scrollbar-track-transparent px-4 py-2
-                        focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}
-                    contentEditable
-                    onInput={handleInput}
-                    onBlur={handleBlurInternal}
-                    onPaste={handlePaste}
-                    onMouseUp={handleMouseUp}
-                    onDragOver={onDragOver || handleDragOverInternal}
-                    onDrop={onDrop || handleDropInternal}
-                />
+                <EditorContextMenu editorId={componentId} onContentInserted={handleContentInserted}>
+                    <div
+                        ref={editorRef}
+                        data-editor-id={componentId}
+                        className={`w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300 
+                            dark:scrollbar-thumb-neutral-600 scrollbar-track-transparent px-4 py-2
+                            focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}
+                        contentEditable
+                        onInput={handleInput}
+                        onBlur={handleBlurInternal}
+                        onPaste={handlePaste}
+                        onMouseUp={handleMouseUp}
+                        onDragOver={onDragOver || handleDragOverInternal}
+                        onDrop={onDrop || handleDropInternal}
+                    />
+                </EditorContextMenu>
             </div>
 
             <EditorChipButton
