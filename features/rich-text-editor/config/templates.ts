@@ -84,7 +84,7 @@ export const multipleChoiceQuizTemplate = `Return ONLY valid JSON in this exact 
 
 \`\`\`json
 {
-  "questions": [
+  "multiple_choice": [
     {
       "id": 1,
       "question": "question text here",
