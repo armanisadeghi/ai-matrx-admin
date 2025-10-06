@@ -159,6 +159,7 @@ export function ResultPanel({
                         <div className="max-w-[750px] w-full min-h-full">
                             <EnhancedChatMarkdown
                                 content={streamingText}
+                                taskId={taskId}
                                 type="message"
                                 role="assistant"
                                 className="bg-transparent dark:bg-transparent p-4"

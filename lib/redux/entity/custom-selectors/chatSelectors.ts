@@ -421,7 +421,7 @@ export const createChatSelectors = () => {
 
     const activeMessageMetadata = createSelector([activeMessage], (message) => message?.metadata);
     const activeMessageStatus = createSelector([activeMessageMetadata], (metadata) => metadata?.status);
-    const shouldShowLoader = createSelector([activeMessageStatus], (status) => status == "submitted" || status == "processing" || status == "firstChunkReceived");
+    const shouldShowLoader = createSelector([activeMessageStatus], (status) => status == "submitted" || status == "processing");
 
     const activeMessageSettings = createSelector(
         [activeMessageMetadata],

@@ -1,7 +1,14 @@
 import React from "react";
 import { RootState, useAppSelector } from "@/lib/redux";
 import {selectListenerIdsByTaskId, SocketErrorObject} from "@/lib/redux/socket-io";
-
+import {
+    selectResponseTextByListenerId,
+    selectResponseEndedByListenerId,
+    selectResponseDataByListenerId,
+    selectResponseInfoByListenerId,
+    selectResponseErrorsByListenerId,
+} from "@/lib/redux/socket-io";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 export const DebugInfo: React.FC<{
     activeMessageStatus: string;
@@ -16,6 +23,8 @@ export const DebugInfo: React.FC<{
 }> = ({ activeMessageStatus, shouldShowLoader, isStreaming, isStreamEnded, isStreamError, streamError, streamKey, taskId, settings }) => {
 
     const allListenerIds = useAppSelector((state: RootState) => selectListenerIdsByTaskId(state, taskId));
+    const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
+    const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
 
 
     return (
@@ -31,17 +40,38 @@ export const DebugInfo: React.FC<{
                 </div>
                 <div>Is Stream Ended: {isStreamEnded ? "true" : "false"}</div>
                 <div>Is Stream Error: {isStreamError ? "true" : "false"}</div>
-                <div>Stream Error: {JSON.stringify(streamError, null, 2)}</div>
+                <div>Stream Error:</div>
+                {streamError ? (
+                    <div className="pl-2">
+                        <pre className="text-xs whitespace-pre-wrap break-words">{JSON.stringify(streamError, null, 2)}</pre>
+                    </div>
+                ) : (
+                    <div> - None</div>
+                )}
                 <div>Stream Key: {streamKey}</div>
                 <div>Task Id:</div>
                 <div> - {taskId}</div>
                 <div>Settings:</div>
-                <div> - {JSON.stringify(settings, null, 2)}</div>
+                {settings ? (
+                    <div className="pl-2">
+                        <pre className="text-xs whitespace-pre-wrap break-words">{JSON.stringify(settings, null, 2)}</pre>
+                    </div>
+                ) : (
+                    <div> - None</div>
+                )}
                 <div>All Listener Ids:</div>
                 {allListenerIds && allListenerIds.length > 0 ? (
                     allListenerIds.map((id, index) => (
                         <div key={index}> - {id}</div>
                     ))
+                ) : (
+                    <div> - None</div>
+                )}
+                <div>Info Response:</div>
+                {infoResponse && infoResponse.length > 0 ? (
+                    <div className="pl-2">
+                        <pre className="text-xs whitespace-pre-wrap break-words">{JSON.stringify(infoResponse, null, 2)}</pre>
+                    </div>
                 ) : (
                     <div> - None</div>
                 )}

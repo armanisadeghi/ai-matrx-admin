@@ -144,15 +144,15 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
                         dispatch(setTaskListenerIds({ taskId, listenerIds: eventNames }));
                         eventNames.forEach((eventName: string) => {
                             dispatch(addResponse({ listenerId: eventName, taskId }));
-                            let isFirstResponse = true;
+                            let isFirstTextChunk = true;
                             const listener = (response: any) => {
-                                // Set isStreaming to true on the first response of any kind
-                                if (isFirstResponse) {
-                                    dispatch(setTaskStreaming({ taskId, isStreaming: true }));
-                                    isFirstResponse = false;
-                                }
                                 // ===== PERFORMANCE IMPROVEMENT: Use appendTextChunk instead of updateTextResponse =====
                                 if (typeof response === "string") {
+                                    // Set isStreaming to true on the first TEXT chunk only
+                                    if (isFirstTextChunk) {
+                                        dispatch(setTaskStreaming({ taskId, isStreaming: true }));
+                                        isFirstTextChunk = false;
+                                    }
                                     dispatch(appendTextChunk({ listenerId: eventName, text: response }));
                                 } else {
                                     if (response?.data !== undefined) {
@@ -374,17 +374,16 @@ export const submitTaskNew = createAsyncThunk<string[], { taskId: string }, { st
                     eventNames.forEach((eventName: string) => {
                         dispatch(addResponse({ listenerId: eventName, taskId }));
 
-                        let isFirstResponse = true;
+                        let isFirstTextChunk = true;
 
                         const listener = (response: any) => {
-                            // Set isStreaming to true on the first response of any kind
-                            if (isFirstResponse) {
-                                dispatch(setTaskStreaming({ taskId, isStreaming: true }));
-                                isFirstResponse = false;
-                            }
-
                             // ===== PERFORMANCE IMPROVEMENT: Use appendTextChunk instead of updateTextResponse =====
                             if (typeof response === "string") {
+                                // Set isStreaming to true on the first TEXT chunk only
+                                if (isFirstTextChunk) {
+                                    dispatch(setTaskStreaming({ taskId, isStreaming: true }));
+                                    isFirstTextChunk = false;
+                                }
                                 dispatch(appendTextChunk({ listenerId: eventName, text: response }));
                             } else {
                                 if (response?.data !== undefined) {

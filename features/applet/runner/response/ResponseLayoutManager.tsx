@@ -3,7 +3,13 @@
 import React, { useMemo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectResponseTextByListenerId, selectResponseEndedByListenerId, selectResponseDataByListenerId } from "@/lib/redux/socket-io";
+import {
+    selectResponseTextByListenerId,
+    selectResponseEndedByListenerId,
+    selectResponseDataByListenerId,
+    selectResponseInfoByListenerId,
+    selectResponseErrorsByListenerId,
+} from "@/lib/redux/socket-io";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
@@ -24,7 +30,6 @@ interface ResponseLayoutManagerProps {
     allowEditing?: boolean;
 }
 
-
 export default function ResponseLayoutManager({
     appletId,
     appSlug,
@@ -39,8 +44,18 @@ export default function ResponseLayoutManager({
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
     const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
+    const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
+    const errorsResponse = useAppSelector(selectResponseErrorsByListenerId(firstListenerId));
     const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
     const hasCustomView = useMemo(() => hasCoordinator(coordinatorId), [coordinatorId]);
+
+    useEffect(() => {
+        console.log("===> [RESPONSE LAYOUT MANAGER] Errors response:", JSON.stringify(errorsResponse, null, 2));
+    }, [errorsResponse]);
+
+    useEffect(() => {
+        console.log("===> [RESPONSE LAYOUT MANAGER] Info response:", JSON.stringify(infoResponse, null, 2));
+    }, [infoResponse]);
 
     useEffect(() => {
         if (coordinatorId) {
@@ -96,6 +111,7 @@ export default function ResponseLayoutManager({
                         {!hasCustomView && (
                             <EnhancedChatMarkdown
                                 content={textResponse}
+                                taskId={taskId}
                                 type="message"
                                 role="assistant"
                                 className="bg-slate-50 dark:bg-slate-900"
@@ -117,12 +133,12 @@ export default function ResponseLayoutManager({
                     </div>
                     {isTaskComplete && (
                         <div className="w-full max-w-4xl mx-auto px-4">
-                            <AppletPostActionButtons 
-                                appletId={appletId} 
-                                taskId={taskId} 
-                                content={textResponse} 
-                                data={dataResponse} 
-                                handleEdit={allowEditing ? (() => {}) : null} 
+                            <AppletPostActionButtons
+                                appletId={appletId}
+                                taskId={taskId}
+                                content={textResponse}
+                                data={dataResponse}
+                                handleEdit={allowEditing ? () => {} : null}
                             />
                         </div>
                     )}

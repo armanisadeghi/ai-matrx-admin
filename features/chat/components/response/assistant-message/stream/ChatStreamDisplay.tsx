@@ -106,6 +106,8 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
                     <QuestionnaireLoadingVisualization />
                 ) : segment.isThinking ? (
                     <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
+                ) : segment.isReasoning ? (
+                    <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
                 ) : (
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                         {segment.content}

@@ -10,18 +10,29 @@ import { RootState } from "@/lib/redux/store";
 import { DebugInfo } from "./DebugInfo";
 import ErrorCard from "./assistant-message/stream/ErrorCard";
 import { selectTaskStreamingById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectPrimaryResponseEndedByTaskId, selectPrimaryResponseErrorsByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import {
+    selectPrimaryResponseEndedByTaskId,
+    selectPrimaryResponseErrorsByTaskId,
+} from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import {
+    selectResponseTextByListenerId,
+    selectResponseEndedByListenerId,
+    selectResponseDataByListenerId,
+    selectResponseInfoByListenerId,
+    selectResponseErrorsByListenerId,
+} from "@/lib/redux/socket-io";
+
 const INFO = true;
 const DEBUG = true;
 const VERBOSE = false;
-
 
 const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }) => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
 
     const chatSelectors = createChatSelectors();
-    const taskId = useAppSelector(chatSelectors.taskId)
+    const taskId = useAppSelector(chatSelectors.taskId);
     const messagesToDisplay = useAppSelector(chatSelectors.messageRelationFilteredRecords);
     const messageCount = messagesToDisplay.length;
 
@@ -31,21 +42,28 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const containerRef = useRef<HTMLDivElement>(null);
     const audioControls = useCartesiaControls();
 
-
     const isStreaming = useAppSelector((state: RootState) => selectTaskStreamingById(state, taskId));
     const isStreamEnded = useAppSelector(selectPrimaryResponseEndedByTaskId(taskId));
     const streamError = useAppSelector(selectPrimaryResponseErrorsByTaskId(taskId));
-    
-    
-    
-    
+
+    const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
+    const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
+    const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
+    const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
+    const errorsResponse = useAppSelector(selectResponseErrorsByListenerId(firstListenerId));
+    const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
+
     const activeMessageStatus = useAppSelector((state: RootState) => chatSelectors.activeMessageStatus(state));
     const shouldShowLoader = useAppSelector((state: RootState) => chatSelectors.shouldShowLoader(state));
     const isDebugMode = useAppSelector((state: RootState) => chatSelectors.isDebugMode(state));
 
     const isStreamError = streamError !== null;
-    const hasUserVisibleMessage = streamError && Array.isArray(streamError) && streamError.length > 0 && 
-        streamError[0]?.user_visible_message !== null && streamError[0]?.user_visible_message?.length > 5;
+    const hasUserVisibleMessage =
+        streamError &&
+        Array.isArray(streamError) &&
+        streamError.length > 0 &&
+        streamError[0]?.user_visible_message !== null &&
+        streamError[0]?.user_visible_message?.length > 5;
 
     const handleScrollToBottom = () => {
         for (let i = 0; i < 3; i++) {
@@ -139,10 +157,17 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
         console.log("===> [RESPONSE COLUMN] Retrying");
     };
 
-
     const handleClose = () => {
         console.log("===> [RESPONSE COLUMN] Closing");
     };
+
+    useEffect(() => {
+        console.log("===> [RESPONSE LAYOUT MANAGER] Errors response:", JSON.stringify(errorsResponse, null, 2));
+    }, [errorsResponse]);
+
+    useEffect(() => {
+        console.log("===> [RESPONSE LAYOUT MANAGER] Info response:", JSON.stringify(infoResponse, null, 2));
+    }, [infoResponse]);
 
     return (
         <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
@@ -175,7 +200,9 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                     handleVisibility={handleAutoScrollToBottom}
                     scrollToBottom={handleScrollToBottom}
                 />
-                {hasUserVisibleMessage && <ErrorCard message={streamError[0].user_visible_message} onRetry={handleRetry} onClose={handleClose}  />}
+                {hasUserVisibleMessage && (
+                    <ErrorCard message={streamError[0].user_visible_message} onRetry={handleRetry} onClose={handleClose} />
+                )}
 
                 <div ref={bottomRef} style={{ height: "1px" }} />
             </div>

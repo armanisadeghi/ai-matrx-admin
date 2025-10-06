@@ -1,7 +1,7 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | string;
+    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | string;
     content: string;
     language?: string;
     src?: string;
@@ -694,6 +694,37 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     }
                     break;
                 }
+            }
+            continue;
+        }
+
+        // Detect reasoning blocks (<reasoning>)
+        if (processedTrimmedLine === "<reasoning>") {
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+            const reasoningContent: string[] = [];
+            i++;
+            let foundClosingTag = false;
+
+            while (i < lines.length) {
+                const currentTrimmedLine = removeMatrxPattern(lines[i]).trim();
+                if (currentTrimmedLine === "</reasoning>") {
+                    foundClosingTag = true;
+                    break;
+                }
+                reasoningContent.push(lines[i]);
+                i++;
+            }
+
+            blocks.push({
+                type: "reasoning",
+                content: reasoningContent.join("\n"),
+            });
+
+            if (foundClosingTag) {
+                i++; // Skip the closing tag
             }
             continue;
         }

@@ -2,12 +2,13 @@
 export interface ContentSegment {
     isThinking: boolean;
     isQuestionnaire: boolean;
+    isReasoning: boolean;
     content: string;
 }
 
 export const parseTaggedContent = (content: string): ContentSegment[] => {
-    const openingTags = ['<thinking>', '<think>', '<questionnaire>'];
-    const closingTags = ['</thinking>', '</think>', '<thinking>', '<think>', '</questionnaire>'];
+    const openingTags = ['<thinking>', '<think>', '<questionnaire>', '<reasoning>'];
+    const closingTags = ['</thinking>', '</think>', '<thinking>', '<think>', '</questionnaire>', '</reasoning>'];
     const segments: ContentSegment[] = [];
     let currentIndex = 0;
 
@@ -30,6 +31,7 @@ export const parseTaggedContent = (content: string): ContentSegment[] => {
                 segments.push({
                     isThinking: false,
                     isQuestionnaire: false,
+                    isReasoning: false,
                     content: content.substring(currentIndex)
                 });
             }
@@ -41,6 +43,7 @@ export const parseTaggedContent = (content: string): ContentSegment[] => {
             segments.push({
                 isThinking: false,
                 isQuestionnaire: false,
+                isReasoning: false,
                 content: content.substring(currentIndex, nextOpeningIndex)
             });
         }
@@ -54,22 +57,26 @@ export const parseTaggedContent = (content: string): ContentSegment[] => {
             }
         }
 
-        // If no closing tag found, treat rest as thinking or questionnaire content
+        // If no closing tag found, treat rest as thinking, questionnaire, or reasoning content
         if (closingIndex === -1) {
             const isQuestionnaire = openingTagUsed === '<questionnaire>';
+            const isReasoning = openingTagUsed === '<reasoning>';
             segments.push({
-                isThinking: !isQuestionnaire,
+                isThinking: !isQuestionnaire && !isReasoning,
                 isQuestionnaire: isQuestionnaire,
+                isReasoning: isReasoning,
                 content: content.substring(nextOpeningIndex + openingTagUsed.length)
             });
             break;
         }
 
-        // Add thinking or questionnaire content
+        // Add thinking, questionnaire, or reasoning content
         const isQuestionnaire = openingTagUsed === '<questionnaire>';
+        const isReasoning = openingTagUsed === '<reasoning>';
         segments.push({
-            isThinking: !isQuestionnaire,
+            isThinking: !isQuestionnaire && !isReasoning,
             isQuestionnaire: isQuestionnaire,
+            isReasoning: isReasoning,
             content: content.substring(
                 nextOpeningIndex + openingTagUsed.length,
                 closingIndex
