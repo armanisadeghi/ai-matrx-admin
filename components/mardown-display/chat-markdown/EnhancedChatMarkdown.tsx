@@ -20,6 +20,8 @@ import { QuestionnaireProvider } from "../context/QuestionnaireContext";
 import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
 import { Loader2 } from "lucide-react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import MultipleChoiceQuiz, { Question } from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
+import QuizLoadingVisualization from "./QuizLoadingVisualization";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -226,6 +228,46 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     );
                 case "flashcards":
                     return <FlashcardsBlock key={index} content={block.content} />;
+                case "quiz":
+                    // Check if quiz is complete
+                    const isQuizComplete = block.metadata?.isComplete;
+                    
+                    if (!isQuizComplete) {
+                        // Show loading state while quiz is streaming
+                        return <QuizLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete quiz JSON
+                    try {
+                        const quizData = JSON.parse(block.content);
+                        if (quizData.multiple_choice && Array.isArray(quizData.multiple_choice)) {
+                            return <MultipleChoiceQuiz key={index} questions={quizData.multiple_choice} />;
+                        }
+                        // If parsing failed or no multiple_choice, fall back to code block
+                        return (
+                            <CodeBlock
+                                key={index}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
+                                isStreamActive={isStreamActive}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse quiz JSON:", error);
+                        // Fall back to showing as code block if parsing fails
+                        return (
+                            <CodeBlock
+                                key={index}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
+                                isStreamActive={isStreamActive}
+                            />
+                        );
+                    }
                 case "text":
                 case "info":
                 case "task":

@@ -1,7 +1,7 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | string;
+    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | string;
     content: string;
     language?: string;
     src?: string;
@@ -452,6 +452,35 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         };
     };
 
+    // Function to detect if JSON content is a quiz
+    const isQuizJson = (jsonContent: string): { isQuiz: boolean; isComplete: boolean } => {
+        const trimmed = jsonContent.trim();
+        
+        // Fast check: Must start with exact pattern for quiz
+        // This prevents false positives and doesn't delay normal JSON display
+        if (!trimmed.startsWith('{\n  "multiple_choice"') && !trimmed.startsWith('{"multiple_choice"')) {
+            return { isQuiz: false, isComplete: false };
+        }
+        
+        // Check if JSON is complete (has closing brace)
+        const isComplete = trimmed.endsWith("}");
+        
+        // If complete, verify it's valid JSON with multiple_choice array
+        if (isComplete) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                const hasMultipleChoice = parsed && Array.isArray(parsed.multiple_choice);
+                return { isQuiz: hasMultipleChoice, isComplete: true };
+            } catch (error) {
+                // Parse failed, not a valid quiz
+                return { isQuiz: false, isComplete: false };
+            }
+        }
+        
+        // Not complete but has the correct structure start - it's streaming
+        return { isQuiz: true, isComplete: false };
+    };
+
     // Function to remove MATRX_PATTERN matches from a string
     const removeMatrxPattern = (text: string): string => {
         return text.replace(MATRX_PATTERN, "").trim() === "" ? "" : text.replace(MATRX_PATTERN, "");
@@ -588,6 +617,26 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     type: "flashcards",
                     content: contentString,
                 });
+            } else if (languageOrType === "json") {
+                // Check if this JSON is a quiz
+                const quizCheck = isQuizJson(contentString);
+                if (quizCheck.isQuiz) {
+                    blocks.push({
+                        type: "quiz",
+                        content: contentString,
+                        language: "json",
+                        metadata: {
+                            isComplete: quizCheck.isComplete
+                        }
+                    });
+                } else {
+                    // Regular JSON code block
+                    blocks.push({
+                        type: "code",
+                        content: contentString,
+                        language: languageOrType,
+                    });
+                }
             } else {
                 blocks.push({
                     type: "code",
