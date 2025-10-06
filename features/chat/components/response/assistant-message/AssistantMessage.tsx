@@ -158,6 +158,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                     analysisData={metadata}
                     messageId={message.id}
                     onContentChange={handleMarkdownContentChange}
+                    hideCopyButton={true}
                 />
                 {!isStreamActive && !isOverlay && (
                     <div className="flex items-center space-x-0">
