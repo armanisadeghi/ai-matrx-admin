@@ -22,6 +22,8 @@ import { Loader2 } from "lucide-react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import MultipleChoiceQuiz, { Question } from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
 import QuizLoadingVisualization from "./QuizLoadingVisualization";
+import Slideshow from "@/components/mardown-display/blocks/presentations/Slideshow";
+import PresentationLoadingVisualization from "./PresentationLoadingVisualization";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -258,6 +260,60 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         );
                     } catch (error) {
                         console.error("Failed to parse quiz JSON:", error);
+                        // Fall back to showing as code block if parsing fails
+                        return (
+                            <CodeBlock
+                                key={index}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
+                                isStreamActive={isStreamActive}
+                            />
+                        );
+                    }
+                case "presentation":
+                    // Check if presentation is complete
+                    const isPresentationComplete = block.metadata?.isComplete;
+                    
+                    if (!isPresentationComplete) {
+                        // Show loading state while presentation is streaming
+                        return <PresentationLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete presentation JSON
+                    try {
+                        const presentationData = JSON.parse(block.content);
+                        if (presentationData.presentation && 
+                            presentationData.presentation.slides && 
+                            Array.isArray(presentationData.presentation.slides)) {
+                            return (
+                                <Slideshow 
+                                    key={index} 
+                                    slides={presentationData.presentation.slides}
+                                    theme={presentationData.presentation.theme || {
+                                        primaryColor: "#2563eb",
+                                        secondaryColor: "#1e40af",
+                                        accentColor: "#60a5fa",
+                                        backgroundColor: "#ffffff",
+                                        textColor: "#1f2937"
+                                    }}
+                                />
+                            );
+                        }
+                        // If parsing failed or no presentation, fall back to code block
+                        return (
+                            <CodeBlock
+                                key={index}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
+                                isStreamActive={isStreamActive}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse presentation JSON:", error);
                         // Fall back to showing as code block if parsing fails
                         return (
                             <CodeBlock

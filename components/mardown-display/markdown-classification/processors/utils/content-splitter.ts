@@ -1,7 +1,7 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | string;
+    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | string;
     content: string;
     language?: string;
     src?: string;
@@ -481,6 +481,37 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         return { isQuiz: true, isComplete: false };
     };
 
+    // Function to detect if JSON content is a presentation
+    const isPresentationJson = (jsonContent: string): { isPresentation: boolean; isComplete: boolean } => {
+        const trimmed = jsonContent.trim();
+        
+        // Fast check: Must start with exact pattern for presentation
+        // This prevents false positives and doesn't delay normal JSON display
+        if (!trimmed.startsWith('{\n  "presentation"') && !trimmed.startsWith('{"presentation"')) {
+            return { isPresentation: false, isComplete: false };
+        }
+        
+        // Check if JSON is complete (has closing brace)
+        const isComplete = trimmed.endsWith("}");
+        
+        // If complete, verify it's valid JSON with presentation object
+        if (isComplete) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                const hasPresentation = parsed && parsed.presentation && 
+                                       parsed.presentation.slides && 
+                                       Array.isArray(parsed.presentation.slides);
+                return { isPresentation: hasPresentation, isComplete: true };
+            } catch (error) {
+                // Parse failed, not a valid presentation
+                return { isPresentation: false, isComplete: false };
+            }
+        }
+        
+        // Not complete but has the correct structure start - it's streaming
+        return { isPresentation: true, isComplete: false };
+    };
+
     // Function to remove MATRX_PATTERN matches from a string
     const removeMatrxPattern = (text: string): string => {
         return text.replace(MATRX_PATTERN, "").trim() === "" ? "" : text.replace(MATRX_PATTERN, "");
@@ -630,12 +661,25 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                         }
                     });
                 } else {
-                    // Regular JSON code block
-                    blocks.push({
-                        type: "code",
-                        content: contentString,
-                        language: languageOrType,
-                    });
+                    // Check if this JSON is a presentation
+                    const presentationCheck = isPresentationJson(contentString);
+                    if (presentationCheck.isPresentation) {
+                        blocks.push({
+                            type: "presentation",
+                            content: contentString,
+                            language: "json",
+                            metadata: {
+                                isComplete: presentationCheck.isComplete
+                            }
+                        });
+                    } else {
+                        // Regular JSON code block
+                        blocks.push({
+                            type: "code",
+                            content: contentString,
+                            language: languageOrType,
+                        });
+                    }
                 }
             } else {
                 blocks.push({
