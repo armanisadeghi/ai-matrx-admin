@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
+import PresentationExportMenu from './PresentationExportMenu';
 
 
 // Helper to parse markdown bold syntax
@@ -24,6 +26,7 @@ const Slideshow = (presentationData: PresentationData) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState('next');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const slideContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -68,7 +71,7 @@ const Slideshow = (presentationData: PresentationData) => {
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700'}`}>
         <div className={`bg-white dark:bg-gray-900 ${isFullScreen ? 'h-full w-full max-w-7xl max-h-[95vh] rounded-2xl overflow-hidden' : 'w-full'} flex flex-col`}>
           
-          {/* Header with Fullscreen Toggle */}
+          {/* Header with Controls */}
           <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
@@ -93,26 +96,40 @@ const Slideshow = (presentationData: PresentationData) => {
               </div>
             </div>
             
-            <button
-              onClick={() => setIsFullScreen(!isFullScreen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
-            >
-              {isFullScreen ? (
-                <>
-                  <Minimize2 className="h-3.5 w-3.5" />
-                  <span>Exit</span>
-                </>
-              ) : (
-                <>
-                  <Maximize2 className="h-3.5 w-3.5" />
-                  <span>Fullscreen</span>
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Export Menu */}
+              <PresentationExportMenu
+                presentationData={presentationData}
+                presentationTitle={slides[0]?.title || 'presentation'}
+                slideContainerRef={slideContainerRef}
+                slides={slides}
+              />
+              
+              {/* Fullscreen Toggle */}
+              <button
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
+              >
+                {isFullScreen ? (
+                  <>
+                    <Minimize2 className="h-3.5 w-3.5" />
+                    <span>Exit</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="h-3.5 w-3.5" />
+                    <span>Fullscreen</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Main Slide Area */}
-          <div className={`flex-1 flex items-center justify-center relative overflow-hidden bg-white dark:bg-gray-900 ${isFullScreen ? 'p-8' : 'p-6'}`}>
+          <div 
+            ref={slideContainerRef}
+            className={`flex-1 flex items-center justify-center relative overflow-hidden bg-white dark:bg-gray-900 ${isFullScreen ? 'p-8 min-h-[600px]' : 'p-6 min-h-[550px]'}`}
+          >
             <div 
               key={currentSlide}
               className={`w-full animate-fadeIn ${isFullScreen ? 'max-w-5xl' : 'max-w-3xl'}`}
@@ -132,10 +149,10 @@ const Slideshow = (presentationData: PresentationData) => {
                     className={`font-bold leading-tight mb-4 text-gray-900 dark:text-gray-100 ${isFullScreen ? 'text-5xl' : 'text-3xl'}`}
                     style={{ color: theme.primaryColor }}
                   >
-                    {slide.title}
+                    {parseMarkdown(slide.title)}
                   </h1>
                   <p className={`leading-relaxed opacity-80 max-w-2xl mx-auto text-gray-700 dark:text-gray-300 ${isFullScreen ? 'text-xl' : 'text-base'}`}>
-                    {slide.subtitle}
+                    {parseMarkdown(slide.subtitle)}
                   </p>
                 </div>
               ) : (
@@ -146,10 +163,10 @@ const Slideshow = (presentationData: PresentationData) => {
                       className={`font-bold mb-3 text-gray-900 dark:text-gray-100 ${isFullScreen ? 'text-4xl' : 'text-2xl'}`}
                       style={{ color: theme.primaryColor }}
                     >
-                      {slide.title}
+                      {parseMarkdown(slide.title)}
                     </h2>
                     <p className={`opacity-75 leading-relaxed text-gray-700 dark:text-gray-300 ${isFullScreen ? 'text-lg' : 'text-sm'}`}>
-                      {slide.description}
+                      {parseMarkdown(slide.description)}
                     </p>
                   </div>
                   
@@ -164,7 +181,7 @@ const Slideshow = (presentationData: PresentationData) => {
                         }}
                       >
                         <div 
-                          className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
+                          className={`w-2 h-2 rounded-full flex-shrink-0 ${isFullScreen ? 'mt-3' : 'mt-2.5'}`}
                           style={{ backgroundColor: theme.primaryColor }}
                         />
                         <p className={`leading-relaxed text-gray-800 dark:text-gray-200 ${isFullScreen ? 'text-base' : 'text-sm'}`}>

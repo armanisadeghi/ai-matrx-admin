@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Presentation, Sparkles, Layers } from "lucide-react";
+import { Presentation, Layers, FileText } from "lucide-react";
 
 const PresentationLoadingVisualization: React.FC = () => {
     return (
@@ -44,7 +44,7 @@ const PresentationLoadingVisualization: React.FC = () => {
                                 <div className="absolute -top-1 -left-1 w-48 h-32 bg-blue-300 dark:bg-blue-800/50 rounded-lg shadow-lg transform rotate-[-1.5deg] opacity-60 animate-slide-stack-2"></div>
                                 <div className="relative w-48 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 rounded-lg shadow-2xl flex items-center justify-center animate-pulse-slow">
                                     <Layers className="h-16 w-16 text-white/90 animate-bounce-slow" />
-                                    <Sparkles className="h-6 w-6 text-yellow-300 dark:text-yellow-400 absolute top-2 right-2 animate-sparkle" />
+                                    <FileText className="h-5 w-5 text-blue-100 dark:text-blue-200 absolute top-3 right-3 animate-fade-pulse" />
                                 </div>
                             </div>
                         </div>
@@ -88,7 +88,7 @@ const PresentationLoadingVisualization: React.FC = () => {
                                 <div className="flex-1">
                                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Analyzing content</p>
                                     <div className="mt-1 h-1 bg-blue-200 dark:bg-blue-900 rounded-full overflow-hidden">
-                                        <div className="h-full bg-blue-500 dark:bg-blue-600 rounded-full animate-progress-1" style={{ width: '85%' }}></div>
+                                        <div className="h-full bg-blue-500 dark:bg-blue-600 rounded-full animate-progress-infinite-1" style={{ width: '50%' }}></div>
                                     </div>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@ const PresentationLoadingVisualization: React.FC = () => {
                                 <div className="flex-1">
                                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Designing layout</p>
                                     <div className="mt-1 h-1 bg-indigo-200 dark:bg-indigo-900 rounded-full overflow-hidden">
-                                        <div className="h-full bg-indigo-500 dark:bg-indigo-600 rounded-full animate-progress-2" style={{ width: '60%' }}></div>
+                                        <div className="h-full bg-indigo-500 dark:bg-indigo-600 rounded-full animate-progress-infinite-2" style={{ width: '50%' }}></div>
                                     </div>
                                 </div>
                             </div>
@@ -116,7 +116,7 @@ const PresentationLoadingVisualization: React.FC = () => {
                                 <div className="flex-1">
                                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Applying theme</p>
                                     <div className="mt-1 h-1 bg-blue-200 dark:bg-blue-900 rounded-full overflow-hidden">
-                                        <div className="h-full bg-blue-600 dark:bg-blue-700 rounded-full animate-progress-3" style={{ width: '40%' }}></div>
+                                        <div className="h-full bg-blue-600 dark:bg-blue-700 rounded-full animate-progress-infinite-3" style={{ width: '50%' }}></div>
                                     </div>
                                 </div>
                             </div>
@@ -165,9 +165,9 @@ const PresentationLoadingVisualization: React.FC = () => {
                     0%, 100% { transform: translateY(0); }
                     50% { transform: translateY(-10px); }
                 }
-                @keyframes sparkle {
-                    0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
-                    50% { opacity: 0.5; transform: scale(1.3) rotate(180deg); }
+                @keyframes fade-pulse {
+                    0%, 100% { opacity: 0.4; }
+                    50% { opacity: 0.8; }
                 }
                 @keyframes slide-in-1 {
                     from { opacity: 0; transform: translateX(-20px); }
@@ -181,66 +181,66 @@ const PresentationLoadingVisualization: React.FC = () => {
                     from { opacity: 0; transform: translateX(-20px); }
                     to { opacity: 1; transform: translateX(0); }
                 }
-                @keyframes progress-1 {
-                    0% { width: 0%; }
-                    100% { width: 85%; }
+                @keyframes progress-infinite-1 {
+                    0%, 100% { transform: translateX(-20%); opacity: 0.8; }
+                    50% { transform: translateX(70%); opacity: 1; }
                 }
-                @keyframes progress-2 {
-                    0% { width: 0%; }
-                    100% { width: 60%; }
+                @keyframes progress-infinite-2 {
+                    0%, 100% { transform: translateX(-10%); opacity: 0.8; }
+                    50% { transform: translateX(80%); opacity: 1; }
                 }
-                @keyframes progress-3 {
-                    0% { width: 0%; }
-                    100% { width: 40%; }
+                @keyframes progress-infinite-3 {
+                    0%, 100% { transform: translateX(0%); opacity: 0.8; }
+                    50% { transform: translateX(90%); opacity: 1; }
                 }
                 
                 .animate-shimmer-fast {
-                    animation: shimmer-fast 1.5s infinite linear;
+                    animation: shimmer-fast 3s infinite linear;
                 }
                 .animate-gradient-shift {
-                    animation: gradient-shift 8s ease-in-out infinite;
+                    animation: gradient-shift 12s ease-in-out infinite;
                 }
                 .animate-float {
-                    animation: float 6s ease-in-out infinite;
+                    animation: float 10s ease-in-out infinite;
                 }
                 .animate-float-delayed {
-                    animation: float-delayed 7s ease-in-out infinite;
+                    animation: float-delayed 11s ease-in-out infinite;
                 }
                 .animate-float-slow {
-                    animation: float-slow 10s ease-in-out infinite;
+                    animation: float-slow 15s ease-in-out infinite;
                 }
                 .animate-slide-stack-1 {
-                    animation: slide-stack-1 2s ease-in-out infinite;
+                    animation: slide-stack-1 4s ease-in-out infinite;
                 }
                 .animate-slide-stack-2 {
-                    animation: slide-stack-2 2s ease-in-out infinite 0.1s;
+                    animation: slide-stack-2 4s ease-in-out infinite 0.2s;
                 }
                 .animate-pulse-slow {
-                    animation: pulse-slow 3s ease-in-out infinite;
+                    animation: pulse-slow 5s ease-in-out infinite;
                 }
                 .animate-bounce-slow {
-                    animation: bounce-slow 2s ease-in-out infinite;
+                    animation: bounce-slow 4s ease-in-out infinite;
                 }
-                .animate-sparkle {
-                    animation: sparkle 2s ease-in-out infinite;
+                .animate-fade-pulse {
+                    animation: fade-pulse 3s ease-in-out infinite;
                 }
                 .animate-slide-in-1 {
-                    animation: slide-in-1 0.5s ease-out 0.2s both;
+                    animation: slide-in-1 0.8s ease-out 0.3s both;
                 }
                 .animate-slide-in-2 {
-                    animation: slide-in-2 0.5s ease-out 0.4s both;
+                    animation: slide-in-2 0.8s ease-out 0.5s both;
                 }
                 .animate-slide-in-3 {
-                    animation: slide-in-3 0.5s ease-out 0.6s both;
+                    animation: slide-in-3 0.8s ease-out 0.7s both;
                 }
-                .animate-progress-1 {
-                    animation: progress-1 2s ease-out 0.5s both;
+                .animate-progress-infinite-1 {
+                    animation: progress-infinite-1 4s ease-in-out infinite;
                 }
-                .animate-progress-2 {
-                    animation: progress-2 2s ease-out 0.7s both;
+                .animate-progress-infinite-2 {
+                    animation: progress-infinite-2 4.5s ease-in-out infinite;
                 }
-                .animate-progress-3 {
-                    animation: progress-3 2s ease-out 0.9s both;
+                .animate-progress-infinite-3 {
+                    animation: progress-infinite-3 5s ease-in-out infinite;
                 }
             `}</style>
         </div>

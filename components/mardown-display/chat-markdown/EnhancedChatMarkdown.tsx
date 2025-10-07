@@ -21,9 +21,9 @@ import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/Flas
 import { Loader2 } from "lucide-react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import MultipleChoiceQuiz, { Question } from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
-import QuizLoadingVisualization from "./QuizLoadingVisualization";
+import QuizLoadingVisualization from "../blocks/quiz/QuizLoadingVisualization";
 import Slideshow from "@/components/mardown-display/blocks/presentations/Slideshow";
-import PresentationLoadingVisualization from "./PresentationLoadingVisualization";
+import PresentationLoadingVisualization from "../blocks/presentations/PresentationLoadingVisualization";
 
 interface ChatMarkdownDisplayProps {
     content: string;

@@ -74,6 +74,34 @@ const nextConfig = {
             );
         }
 
+        // Handle pptxgenjs for client-side only
+        if (!isServer) {
+            const webpack = require('webpack');
+            
+            // Ignore pptxgenjs Node.js dependencies
+            config.resolve.fallback = {
+                ...config.resolve.fallback,
+                fs: false,
+                path: false,
+                crypto: false,
+                stream: false,
+                buffer: false,
+                'node:fs': false,
+                'node:path': false,
+                'node:stream': false,
+            };
+            
+            // Replace node: protocol imports with empty module
+            config.plugins.push(
+                new webpack.NormalModuleReplacementPlugin(
+                    /^node:/,
+                    (resource) => {
+                        resource.request = resource.request.replace(/^node:/, '');
+                    }
+                )
+            );
+        }
+
         // Disable webpack caching to ensure fresh builds
         config.cache = false;
 
