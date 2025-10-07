@@ -86,7 +86,7 @@ export const setThemeConfig = (config: Partial<ThemeConfig>) => {
 const twMerge = extendTailwindMerge({
     extend: {
         classGroups: {
-            'font-size': [{ text: ['xs', 'sm', 'base', 'lg', 'xl'] }],
+            'font-size': [{ text: ['xs', 'sm', 'base', 'lg', 'xl', '2xs'] }],
             'gap': [{ gap: ['1', '2', '3'] }],
             'px': [{ px: ['2', '3', '4'] }],
             'py': [{ py: ['1', '2', '3'] }],

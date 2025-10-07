@@ -70,7 +70,7 @@ const interactionConfig = {
 const twMerge = extendTailwindMerge({
     extend: {
         classGroups: {
-            'font-size': [{text: ['xs', 'sm', 'base', 'lg', 'xl']}],
+            'font-size': [{text: ['xs', 'sm', 'base', 'lg', 'xl', '2xs']}],
             'gap': [{gap: ['1', '2', '3']}], // Replace 'spacing' with 'gap'
             'px': [{px: ['2', '3', '4']}],   // Split padding into px and py
             'py': [{py: ['1', '2', '3']}],

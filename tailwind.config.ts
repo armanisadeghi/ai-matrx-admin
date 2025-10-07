@@ -52,6 +52,7 @@ const config: Config = {
                 sm: 'calc(var(--radius) - 4px)'
             },
             fontSize: {
+                '2xs': ['0.6rem', {lineHeight: '0.9rem'}],
                 xs: ['0.8rem', {lineHeight: '1.1rem'}],
                 sm: ['0.95rem', {lineHeight: '1.3rem'}],
                 base: ['1.05rem', {lineHeight: '1.6rem'}],
