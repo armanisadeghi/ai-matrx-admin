@@ -66,7 +66,7 @@ const FullscreenWrapper: React.FC<FullscreenWrapperProps> = ({
       {!isFullscreen && (
         <button
           onClick={enterFullscreen}
-          className={`absolute z-10 p-1.5 rounded-md bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition-colors ${
+          className={`absolute z-10 p-1.5 rounded-md bg-transparent hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition-colors ${
             positionClasses[buttonPosition]
           }`}
           title={expandButtonTitle}

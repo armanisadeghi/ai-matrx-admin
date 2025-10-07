@@ -831,7 +831,7 @@ export const getExportCapabilities = () => {
         googleSlides: {
             available: false,
             status: 'needs_setup',
-            description: 'Needs OAuth Setup'
+            description: 'Export as Google Slides'
         }
     };
 };

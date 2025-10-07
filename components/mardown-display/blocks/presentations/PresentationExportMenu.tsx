@@ -265,7 +265,7 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
                     />
                     
                     {/* Dropdown Menu */}
-                    <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-96 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                         {exportStatus && (
                             <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800">
                                 <p className="text-xs text-blue-700 dark:text-blue-300">{exportStatus}</p>
@@ -284,11 +284,6 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
                                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         Export as PDF
                                     </p>
-                                    {capabilities.pdf.available && (
-                                        <span className="px-1.5 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">
-                                            Ready
-                                        </span>
-                                    )}
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                     {capabilities.pdf.description}
@@ -308,11 +303,6 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
                                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         Save as Webpage
                                     </p>
-                                    {capabilities.html.available && (
-                                        <span className="px-1.5 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">
-                                            Ready
-                                        </span>
-                                    )}
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                     {capabilities.html.description}
@@ -332,11 +322,6 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
                                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         Export to PowerPoint
                                     </p>
-                                    {capabilities.powerpoint.available && (
-                                        <span className="px-1.5 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">
-                                            Ready
-                                        </span>
-                                    )}
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                     {capabilities.powerpoint.description}

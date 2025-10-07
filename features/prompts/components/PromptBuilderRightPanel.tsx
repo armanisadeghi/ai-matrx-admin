@@ -66,7 +66,7 @@ export function PromptBuilderRightPanel({
             </div>
 
             {/* Test Input Area */}
-            <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-gray-900 dark:bg-gray-900 space-y-3">
+            <div className="p-4 bg-gray-900 dark:bg-gray-900 space-y-3">
                 {/* Clear conversation button */}
                 {conversationMessages.length > 0 && (
                     <Button
