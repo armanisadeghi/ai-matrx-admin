@@ -3,9 +3,20 @@ import { MessageSquare, Trash2, Paperclip, RefreshCw, ArrowUp, Maximize2 } from 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import { PromptErrorMessage } from "./PromptErrorMessage";
+import { PromptStats } from "./PromptStats";
 
 interface PromptBuilderRightPanelProps {
-    conversationMessages: Array<{ role: string; content: string }>;
+    conversationMessages: Array<{ 
+        role: string; 
+        content: string;
+        metadata?: {
+            timeToFirstToken?: number;
+            totalTime?: number;
+            tokens?: number;
+        }
+    }>;
     onClearConversation: () => void;
     variables: string[];
     testVariables: Record<string, string>;
@@ -18,6 +29,13 @@ interface PromptBuilderRightPanelProps {
     isTestingPrompt: boolean;
     autoClear: boolean;
     onAutoClearChange: (value: boolean) => void;
+    messages: Array<{ role: string; content: string }>;
+    isStreamingMessage?: boolean;
+    lastMessageStats?: {
+        timeToFirstToken?: number;
+        totalTime?: number;
+        tokens?: number;
+    } | null;
 }
 
 export function PromptBuilderRightPanel({
@@ -34,7 +52,16 @@ export function PromptBuilderRightPanel({
     isTestingPrompt,
     autoClear,
     onAutoClearChange,
+    messages,
+    isStreamingMessage = false,
+    lastMessageStats = null,
 }: PromptBuilderRightPanelProps) {
+    // Check if the last prompt message is a user message
+    const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    const isLastMessageUser = lastPromptMessage?.role === "user";
+    
+    // Determine if the send button should be disabled
+    const isSendDisabled = isTestingPrompt || (!isLastMessageUser && !chatInput.trim());
     return (
         <div className="w-1/2 flex flex-col bg-gray-50 dark:bg-gray-900">
             {/* Conversation Preview */}
@@ -46,38 +73,67 @@ export function PromptBuilderRightPanel({
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {conversationMessages.map((msg, idx) => (
-                            <div
-                                key={idx}
-                                className={`p-4 rounded-lg ${
-                                    msg.role === "user"
-                                        ? "bg-blue-100 dark:bg-blue-900/30 ml-12"
-                                        : "bg-gray-200 dark:bg-gray-800 mr-12"
-                                }`}
-                            >
-                                <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
-                                    {msg.role.charAt(0).toUpperCase() + msg.role.slice(1)}
+                        {conversationMessages.map((msg, idx) => {
+                            // Check if this is the last message and it's currently being streamed
+                            const isLastMessage = idx === conversationMessages.length - 1;
+                            const isStreaming = isLastMessage && msg.role === "assistant" && isStreamingMessage;
+                            
+                            return (
+                                <div key={idx}>
+                                    {msg.role === "user" ? (
+                                        <div className="bg-blue-100 dark:bg-blue-900/30 ml-12 p-4 rounded-lg">
+                                            <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
+                                                User
+                                            </div>
+                                            <div className="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{msg.content}</div>
+                                        </div>
+                                    ) : (
+                                        <div className="mr-12">
+                                            <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
+                                                Assistant
+                                            </div>
+                                            {msg.content.startsWith("Error:") ? (
+                                                <PromptErrorMessage message={msg.content.replace("Error: ", "")} />
+                                            ) : (
+                                                <EnhancedChatMarkdown
+                                                    content={msg.content}
+                                                    type="message"
+                                                    role="assistant"
+                                                    isStreamActive={isStreaming}
+                                                    hideCopyButton={true}
+                                                    allowFullScreenEditor={false}
+                                                    className="bg-gray-50 dark:bg-gray-900"
+                                                />
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-xs text-gray-900 dark:text-gray-100">{msg.content}</div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
 
             {/* Test Input Area */}
             <div className="p-4 bg-gray-900 dark:bg-gray-900 space-y-3">
-                {/* Clear conversation button */}
+                {/* Clear conversation button and stats */}
                 {conversationMessages.length > 0 && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onClearConversation}
-                        className="text-gray-400 dark:text-gray-400 hover:text-gray-300"
-                    >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Clear conversation
-                    </Button>
+                    <div className="flex items-center justify-center gap-4">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onClearConversation}
+                            className="text-gray-400 dark:text-gray-400 hover:text-gray-300"
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Clear conversation
+                        </Button>
+                        <PromptStats 
+                            timeToFirstToken={lastMessageStats?.timeToFirstToken}
+                            totalTime={lastMessageStats?.totalTime}
+                            tokens={lastMessageStats?.tokens}
+                        />
+                    </div>
                 )}
 
                 {/* Unified Chat Container with Variables and Input */}
@@ -161,7 +217,7 @@ export function PromptBuilderRightPanel({
                         />
                         <Button
                             onClick={onSendMessage}
-                            disabled={isTestingPrompt || !chatInput.trim()}
+                            disabled={isSendDisabled}
                             className="h-8 w-8 p-0 flex-shrink-0 rounded-full bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600"
                         >
                             <ArrowUp className="w-4 h-4" />

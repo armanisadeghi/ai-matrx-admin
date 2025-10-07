@@ -63,9 +63,22 @@ export function PromptBuilder() {
         what: "Hotels",
     });
     const [chatInput, setChatInput] = useState("");
-    const [conversationMessages, setConversationMessages] = useState<Array<{ role: string; content: string }>>([]);
-    const [autoClear, setAutoClear] = useState(false);
+    const [conversationMessages, setConversationMessages] = useState<Array<{ 
+        role: string; 
+        content: string;
+        metadata?: {
+            timeToFirstToken?: number;
+            totalTime?: number;
+            tokens?: number;
+        }
+    }>>([]);
+    const [autoClear, setAutoClear] = useState(true);
     const [isTestingPrompt, setIsTestingPrompt] = useState(false);
+    const [lastMessageStats, setLastMessageStats] = useState<{
+        timeToFirstToken?: number;
+        totalTime?: number;
+        tokens?: number;
+    } | null>(null);
 
     // UI state
     const [isDirty, setIsDirty] = useState(false);
@@ -237,23 +250,73 @@ export function PromptBuilder() {
         }
     };
 
+    // Helper function to replace variables in content
+    const replaceVariables = (content: string): string => {
+        let result = content;
+        Object.entries(testVariables).forEach(([key, value]) => {
+            const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+            result = result.replace(regex, value);
+        });
+        return result;
+    };
+
     // Test chat handler
     const handleSendTestMessage = async () => {
-        if (!chatInput.trim() || isTestingPrompt) return;
+        if (isTestingPrompt) return;
 
-        const userMessage = chatInput;
+        // Check if the last message in the prompt is a user message
+        const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+        const isLastMessageUser = lastPromptMessage?.role === "user";
+
+        // If last message is not a user message, we need chat input
+        if (!isLastMessageUser && !chatInput.trim()) return;
+
+        // Prepare the messages based on whether last prompt message is a user message
+        let finalMessages: PromptMessage[];
+        let displayUserMessage: string;
+
+        if (isLastMessageUser) {
+            // Combine the last user message with chatInput (if any)
+            const lastMessageContent = lastPromptMessage.content;
+            const additionalInput = chatInput.trim();
+            
+            // Create the combined message with a line break if there's additional input
+            const combinedContent = additionalInput 
+                ? `${lastMessageContent}\n${additionalInput}`
+                : lastMessageContent;
+            
+            displayUserMessage = combinedContent;
+            
+            // Replace the last message with the combined version
+            const messagesWithoutLast = messages.slice(0, -1);
+            finalMessages = [...messagesWithoutLast, { role: "user", content: combinedContent }];
+        } else {
+            // Normal behavior: add chatInput as a new user message
+            displayUserMessage = chatInput;
+            finalMessages = [...messages, { role: "user", content: chatInput }];
+        }
+
         if (autoClear) {
             setChatInput("");
         }
 
-        // Add user message
-        setConversationMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+        // Replace variables in the display message before showing it
+        const displayMessageWithReplacedVariables = replaceVariables(displayUserMessage);
+
+        // Add user message to conversation (display the combined/final message with variables replaced)
+        setConversationMessages((prev) => [...prev, { role: "user", content: displayMessageWithReplacedVariables }]);
 
         setIsTestingPrompt(true);
+        setLastMessageStats(null); // Clear previous stats
+        
+        // Track timing
+        const startTime = performance.now();
+        let timeToFirstToken: number | undefined;
+        let tokenCount = 0;
 
         try {
-            // Prepare messages with developer message and prompt messages
-            const allMessages = [{ role: "system", content: developerMessage }, ...messages, { role: "user", content: userMessage }];
+            // Prepare messages with developer message and final messages
+            const allMessages = [{ role: "system", content: developerMessage }, ...finalMessages];
 
             // Call API
             const response = await fetch("/api/prompts/test", {
@@ -289,7 +352,23 @@ export function PromptBuilder() {
                         try {
                             const data = JSON.parse(line.slice(6));
                             if (data.content) {
+                                // Track time to first token
+                                if (timeToFirstToken === undefined && data.content) {
+                                    timeToFirstToken = Math.round(performance.now() - startTime);
+                                }
+                                
                                 assistantMessage += data.content;
+                                // Rough token estimation: ~4 chars = 1 token
+                                tokenCount = Math.round(assistantMessage.length / 4);
+                                
+                                // Update stats in real-time
+                                const currentTime = Math.round(performance.now() - startTime);
+                                setLastMessageStats({
+                                    timeToFirstToken,
+                                    totalTime: currentTime,
+                                    tokens: tokenCount
+                                });
+                                
                                 setConversationMessages((prev) => {
                                     const updated = [...prev];
                                     updated[updated.length - 1] = {
@@ -305,6 +384,26 @@ export function PromptBuilder() {
                     }
                 }
             }
+            
+            // Calculate total time and save stats
+            const totalTime = Math.round(performance.now() - startTime);
+            const stats = {
+                timeToFirstToken,
+                totalTime,
+                tokens: tokenCount
+            };
+            
+            setLastMessageStats(stats);
+            
+            // Update the last message with metadata
+            setConversationMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                    ...updated[updated.length - 1],
+                    metadata: stats
+                };
+                return updated;
+            });
         } catch (error) {
             console.error("Error testing prompt:", error);
             setConversationMessages((prev) => [...prev, { role: "assistant", content: "Error: Failed to get response from AI" }]);
@@ -314,7 +413,7 @@ export function PromptBuilder() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+        <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
             {/* Header */}
             <PromptBuilderHeader
                 promptName={promptName}
@@ -383,7 +482,10 @@ export function PromptBuilder() {
                 {/* Right Panel - Preview & Testing */}
                 <PromptBuilderRightPanel
                     conversationMessages={conversationMessages}
-                    onClearConversation={() => setConversationMessages([])}
+                    onClearConversation={() => {
+                        setConversationMessages([]);
+                        setLastMessageStats(null);
+                    }}
                     variables={variables}
                     testVariables={testVariables}
                     onTestVariableChange={(variable, value) =>
@@ -397,6 +499,9 @@ export function PromptBuilder() {
                     isTestingPrompt={isTestingPrompt}
                     autoClear={autoClear}
                     onAutoClearChange={setAutoClear}
+                    messages={messages}
+                    isStreamingMessage={isTestingPrompt}
+                    lastMessageStats={lastMessageStats}
                 />
             </div>
 
