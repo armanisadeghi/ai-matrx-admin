@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import { PromptsGrid } from "./components/PromptsGrid";
+import { PromptsGrid } from "../../../../features/prompts/components/PromptsGrid";
 
 export default async function PromptsPage() {
     const supabase = await createClient();
