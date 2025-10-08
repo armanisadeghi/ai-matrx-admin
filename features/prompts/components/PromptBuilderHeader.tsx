@@ -1,6 +1,7 @@
 import React from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2 } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface PromptBuilderHeaderProps {
     promptName: string;
@@ -9,6 +10,7 @@ interface PromptBuilderHeaderProps {
     isSaving: boolean;
     onSave: () => void;
     onOpenFullScreenEditor?: () => void;
+    onOpenSettings?: () => void;
 }
 
 export function PromptBuilderHeader({
@@ -18,11 +20,21 @@ export function PromptBuilderHeader({
     isSaving,
     onSave,
     onOpenFullScreenEditor,
+    onOpenSettings,
 }: PromptBuilderHeaderProps) {
     return (
         <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-1">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                    <Link href="/ai/prompts">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 p-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                        </Button>
+                    </Link>
                     <input
                         type="text"
                         value={promptName}
@@ -39,6 +51,17 @@ export function PromptBuilderHeader({
                     )}
                 </div>
                 <div className="flex items-center gap-2">
+                    {onOpenSettings && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-gray-600 dark:text-gray-400"
+                            onClick={onOpenSettings}
+                        >
+                            <Settings className="w-4 h-4 mr-2" />
+                            Settings
+                        </Button>
+                    )}
                     {onOpenFullScreenEditor && (
                         <Button 
                             variant="ghost" 

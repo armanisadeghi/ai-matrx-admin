@@ -4,6 +4,7 @@ import { useState } from "react";
 import { TemplateCard } from "./TemplateCard";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/lib/toast-service";
 
 interface Template {
     id: string;
@@ -40,7 +41,7 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
             router.push(`/ai/prompts/edit/${prompt.id}`);
         } catch (error) {
             console.error("Error using template:", error);
-            alert("Failed to create prompt from template");
+            toast.error("Failed to create prompt from template. Please try again.");
         }
     };
 

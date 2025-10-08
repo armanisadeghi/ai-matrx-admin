@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, Play, Copy, Trash2 } from "lucide-react";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface PromptCardProps {
@@ -10,9 +10,11 @@ interface PromptCardProps {
     name: string;
     onDelete?: (id: string) => void;
     onDuplicate?: (id: string) => void;
+    isDeleting?: boolean;
+    isDuplicating?: boolean;
 }
 
-export function PromptCard({ id, name, onDelete, onDuplicate }: PromptCardProps) {
+export function PromptCard({ id, name, onDelete, onDuplicate, isDeleting, isDuplicating }: PromptCardProps) {
     const router = useRouter();
 
     const handleView = () => {
@@ -79,19 +81,29 @@ export function PromptCard({ id, name, onDelete, onDuplicate }: PromptCardProps)
                         size="icon"
                         variant="ghost"
                         onClick={handleDuplicate}
-                        className="hover:bg-orange-100 dark:hover:bg-orange-900 hover:text-orange-600 dark:hover:text-orange-400"
-                        title="Duplicate"
+                        disabled={isDuplicating}
+                        className="hover:bg-orange-100 dark:hover:bg-orange-900 hover:text-orange-600 dark:hover:text-orange-400 disabled:opacity-50"
+                        title={isDuplicating ? "Duplicating..." : "Duplicate"}
                     >
-                        <Copy className="h-4 w-4" />
+                        {isDuplicating ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Copy className="h-4 w-4" />
+                        )}
                     </Button>
                     <Button
                         size="icon"
                         variant="ghost"
                         onClick={handleDelete}
-                        className="hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600 dark:hover:text-red-400"
-                        title="Delete"
+                        disabled={isDeleting}
+                        className="hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50"
+                        title={isDeleting ? "Deleting..." : "Delete"}
                     >
-                        <Trash2 className="h-4 w-4" />
+                        {isDeleting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Trash2 className="h-4 w-4" />
+                        )}
                     </Button>
                 </div>
             </div>

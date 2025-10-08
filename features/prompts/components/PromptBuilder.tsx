@@ -14,6 +14,7 @@ import ModelSettingsDialog from "@/app/(authenticated)/ai/prompts/test-controls/
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { FullScreenEditor } from "./FullScreenEditor";
+import { PromptSettingsModal } from "./PromptSettingsModal";
 
 type MessageRole = "system" | "user" | "assistant";
 
@@ -115,6 +116,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     
     // Core state - model state holds the model ID (UUID)
     const [promptName, setPromptName] = useState(initialData?.name || "");
+    const [promptDescription, setPromptDescription] = useState(""); // TODO: Add to initialData when schema supports it
     const [model, setModel] = useState(initialModelId);
     const [modelConfig, setModelConfig] = useState<ModelConfig>(getInitialModelConfig());
     
@@ -163,6 +165,9 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     type MessageItem = { type: 'system'; index: -1 } | { type: 'message'; index: number };
     const [isFullScreenEditorOpen, setIsFullScreenEditorOpen] = useState(false);
     const [fullScreenEditorInitialSelection, setFullScreenEditorInitialSelection] = useState<MessageItem | null>(null);
+
+    // Settings modal state
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
     const [chatInput, setChatInput] = useState("");
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
@@ -438,7 +443,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             }
 
             setIsDirty(false);
-            router.push("/ai/prompts");
+            // router.push("/ai/prompts");
         } catch (error) {
             console.error("Error saving prompt:", error);
         } finally {
@@ -620,6 +625,26 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         }
     };
 
+    // Handle settings modal updates
+    const handleSettingsUpdate = (id: string, data: { name: string; description?: string; variableDefaults: PromptVariable[] }) => {
+        // Update the database using the existing updatePrompt method
+        updatePrompt(id, data);
+    };
+
+    const handleLocalStateUpdate = (updates: { name?: string; description?: string; variableDefaults?: PromptVariable[] }) => {
+        // Update local state to reflect changes immediately
+        if (updates.name !== undefined) {
+            setPromptName(updates.name);
+        }
+        if (updates.description !== undefined) {
+            setPromptDescription(updates.description);
+        }
+        if (updates.variableDefaults !== undefined) {
+            setVariableDefaults(updates.variableDefaults);
+        }
+        setIsDirty(true);
+    };
+
     return (
         <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
             {/* Header */}
@@ -633,6 +658,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                 isSaving={isSaving}
                 onSave={handleSave}
                 onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
+                onOpenSettings={() => setIsSettingsModalOpen(true)}
             />
 
             {/* Main Content */}
@@ -779,6 +805,18 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                 }}
                 initialSelection={fullScreenEditorInitialSelection}
                 onAddMessage={addMessage}
+            />
+
+            {/* Settings Modal */}
+            <PromptSettingsModal
+                isOpen={isSettingsModalOpen}
+                onClose={() => setIsSettingsModalOpen(false)}
+                promptId={initialData?.id}
+                promptName={promptName}
+                promptDescription={promptDescription}
+                variableDefaults={variableDefaults}
+                onUpdate={handleSettingsUpdate}
+                onLocalStateUpdate={handleLocalStateUpdate}
             />
         </div>
     );
