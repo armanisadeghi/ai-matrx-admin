@@ -49,7 +49,7 @@ export default function PromptManager() {
                 updatePrompt(currentPrompt.id, {
                     name: promptData.name,
                     messages: promptData.messages,
-                    variableDefaults: promptData.variableDefaults,
+                    variableDefaults: promptData.variableDefaults as any,
                 });
                 console.log("Prompt updated successfully");
             } else {
@@ -57,7 +57,7 @@ export default function PromptManager() {
                 const result = await createPrompt({
                     name: promptData.name,
                     messages: promptData.messages,
-                    variableDefaults: promptData.variableDefaults,
+                    variableDefaults: promptData.variableDefaults as any,
                 });
                 console.log("Prompt created successfully:", result);
             }

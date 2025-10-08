@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { usePromptsWithFetch, PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { PromptBuilderHeader } from "./PromptBuilderHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
@@ -58,6 +58,7 @@ interface PromptBuilderProps {
 
 export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const router = useRouter();
+    const pathname = usePathname();
     const dispatch = useAppDispatch();
     const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
@@ -67,7 +68,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         return <div className="p-8 text-center text-red-600">Error: No models available</div>;
     }
     
-    // Initialize from existing data or defaults
+    // Determine if we're in edit mode based on whether we have an existing prompt ID
     const isEditMode = !!initialData?.id;
     
     // Get initial model ID from settings.model_id (single source of truth)
@@ -435,15 +436,20 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             };
 
             if (isEditMode && initialData?.id) {
-                // Update existing prompt
+                // Update existing prompt - no routing needed, stay on current edit page
                 updatePrompt(initialData.id, promptData as any);
+                setIsDirty(false);
             } else {
-                // Create new prompt
-                await createPrompt(promptData as any);
+                // Create new prompt and immediately route to its edit page
+                // This prevents duplicate creation if user clicks save again before routing
+                const result = await createPrompt(promptData as any);
+                setIsDirty(false);
+                
+                // Route to the newly created prompt's edit page
+                if (result?.id) {
+                    router.push(`/ai/prompts/edit/${result.id}`);
+                }
             }
-
-            setIsDirty(false);
-            // router.push("/ai/prompts");
         } catch (error) {
             console.error("Error saving prompt:", error);
         } finally {
