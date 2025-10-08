@@ -13,6 +13,7 @@ import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
 import ModelSettingsDialog from "@/app/(authenticated)/ai/prompts/test-controls/ModelSettingsDialog";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { FullScreenEditor } from "./FullScreenEditor";
 
 type MessageRole = "system" | "user" | "assistant";
 
@@ -144,6 +145,11 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const availableTools = ["web_search", "web_page_read", "get_news", "get_weather", "run_python_code", "make_html_page"];
     const [isAddingTool, setIsAddingTool] = useState(false);
 
+    // Full-screen editor state
+    type MessageItem = { type: 'system'; index: -1 } | { type: 'message'; index: number };
+    const [isFullScreenEditorOpen, setIsFullScreenEditorOpen] = useState(false);
+    const [fullScreenEditorInitialSelection, setFullScreenEditorInitialSelection] = useState<MessageItem | null>(null);
+
     // Testing state - initialize from variableDefaults or defaults
     const getInitialTestVariables = () => {
         if (initialData?.variableDefaults) return initialData.variableDefaults;
@@ -186,12 +192,14 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     // UI state
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isEditingSystemMessage, setIsEditingSystemMessage] = useState(false);
     const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [variablePopoverOpen, setVariablePopoverOpen] = useState<number | null>(null);
+    const [systemMessageVariablePopoverOpen, setSystemMessageVariablePopoverOpen] = useState(false);
     const [cursorPositions, setCursorPositions] = useState<Record<number, number>>({});
     
-    // Refs for textarea elements
+    // Refs for textarea elements (including system message at index -1)
     const textareaRefs = useRef<Record<number, HTMLTextAreaElement | null>>({});
 
     // Update test variables when variables change
@@ -298,6 +306,19 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         }
     }, [modelSupportsTools, modelConfig.tools]);
 
+    // Keyboard shortcut for full-screen editor (Ctrl/Cmd + Shift + E)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
+                e.preventDefault();
+                setIsFullScreenEditorOpen(true);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     // Message handlers
     const addMessage = () => {
         // Determine next role - alternate between user and assistant
@@ -310,6 +331,13 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const updateMessage = (index: number, content: string) => {
         const updated = [...messages];
         updated[index] = { ...updated[index], content };
+        setMessages(updated);
+        setIsDirty(true);
+    };
+
+    const clearMessage = (index: number) => {
+        const updated = [...messages];
+        updated[index] = { ...updated[index], content: "" };
         setMessages(updated);
         setIsDirty(true);
     };
@@ -339,6 +367,36 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         // Update cursor position to after the inserted variable
         const newCursorPos = cursorPos + variable.length + 4; // +4 for the {{ and }}
         setCursorPositions({ ...cursorPositions, [messageIndex]: newCursorPos });
+
+        // Focus the textarea and set cursor position
+        if (textarea) {
+            setTimeout(() => {
+                textarea.focus();
+                textarea.setSelectionRange(newCursorPos, newCursorPos);
+                // Auto-resize
+                textarea.style.height = "auto";
+                textarea.style.height = textarea.scrollHeight + "px";
+            }, 0);
+        }
+    };
+
+    const insertVariableIntoSystemMessage = (variable: string) => {
+        const textarea = textareaRefs.current[-1]; // System message uses index -1
+        
+        // Use the stored cursor position (captured when the "+ Variable" button was clicked)
+        const currentContent = developerMessage;
+        const cursorPos = cursorPositions[-1] ?? currentContent.length;
+        
+        const beforeCursor = currentContent.substring(0, cursorPos);
+        const afterCursor = currentContent.substring(cursorPos);
+        const newContent = beforeCursor + `{{${variable}}}` + afterCursor;
+
+        setDeveloperMessage(newContent);
+        setIsDirty(true);
+
+        // Update cursor position to after the inserted variable
+        const newCursorPos = cursorPos + variable.length + 4; // +4 for the {{ and }}
+        setCursorPositions({ ...cursorPositions, [-1]: newCursorPos });
 
         // Focus the textarea and set cursor position
         if (textarea) {
@@ -607,6 +665,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                 isDirty={isDirty}
                 isSaving={isSaving}
                 onSave={handleSave}
+                onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
             />
 
             {/* Main Content */}
@@ -649,6 +708,11 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                         // Auto-resize will be handled in the component
                     }}
                     onDeveloperMessageClear={() => setDeveloperMessage("")}
+                    systemMessageVariablePopoverOpen={systemMessageVariablePopoverOpen}
+                    onSystemMessageVariablePopoverOpenChange={setSystemMessageVariablePopoverOpen}
+                    onInsertVariableIntoSystemMessage={insertVariableIntoSystemMessage}
+                    isEditingSystemMessage={isEditingSystemMessage}
+                    onIsEditingSystemMessageChange={setIsEditingSystemMessage}
                     messages={messages}
                     editingMessageIndex={editingMessageIndex}
                     onEditingMessageIndexChange={setEditingMessageIndex}
@@ -663,12 +727,21 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                     onMessageContentChange={(index, content) => {
                         updateMessage(index, content);
                     }}
+                    onClearMessage={clearMessage}
                     onDeleteMessage={deleteMessage}
                     onInsertVariable={insertVariableIntoMessage}
                     onAddMessage={addMessage}
                     textareaRefs={textareaRefs}
                     cursorPositions={cursorPositions}
                     onCursorPositionChange={setCursorPositions}
+                    onOpenFullScreenEditor={(messageIndex) => {
+                        if (messageIndex === -1) {
+                            setFullScreenEditorInitialSelection({ type: 'system', index: -1 });
+                        } else {
+                            setFullScreenEditorInitialSelection({ type: 'message', index: messageIndex });
+                        }
+                        setIsFullScreenEditorOpen(true);
+                    }}
                 />
 
                 {/* Right Panel - Preview & Testing */}
@@ -713,6 +786,32 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                 models={models}
                 settings={modelConfig}
                 onSettingsChange={setModelConfig}
+            />
+
+            {/* Full Screen Editor */}
+            <FullScreenEditor
+                isOpen={isFullScreenEditorOpen}
+                onClose={() => {
+                    setIsFullScreenEditorOpen(false);
+                    setFullScreenEditorInitialSelection(null);
+                }}
+                developerMessage={developerMessage}
+                onDeveloperMessageChange={(value) => {
+                    setDeveloperMessage(value);
+                    setIsDirty(true);
+                }}
+                messages={messages}
+                onMessageContentChange={(index, content) => {
+                    updateMessage(index, content);
+                }}
+                onMessageRoleChange={(index, role) => {
+                    const updated = [...messages];
+                    updated[index] = { ...updated[index], role };
+                    setMessages(updated);
+                    setIsDirty(true);
+                }}
+                initialSelection={fullScreenEditorInitialSelection}
+                onAddMessage={addMessage}
             />
         </div>
     );

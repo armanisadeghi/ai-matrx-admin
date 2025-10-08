@@ -1,5 +1,5 @@
 import React from "react";
-import { GitCompare, Sparkles, BarChart, Save } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PromptBuilderHeaderProps {
@@ -8,6 +8,7 @@ interface PromptBuilderHeaderProps {
     isDirty: boolean;
     isSaving: boolean;
     onSave: () => void;
+    onOpenFullScreenEditor?: () => void;
 }
 
 export function PromptBuilderHeader({
@@ -16,6 +17,7 @@ export function PromptBuilderHeader({
     isDirty,
     isSaving,
     onSave,
+    onOpenFullScreenEditor,
 }: PromptBuilderHeaderProps) {
     return (
         <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-1">
@@ -37,6 +39,17 @@ export function PromptBuilderHeader({
                     )}
                 </div>
                 <div className="flex items-center gap-2">
+                    {onOpenFullScreenEditor && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-gray-600 dark:text-gray-400"
+                            onClick={onOpenFullScreenEditor}
+                        >
+                            <Maximize2 className="w-4 h-4 mr-2" />
+                            Full Editor
+                        </Button>
+                    )}
                     <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400">
                         <GitCompare className="w-4 h-4 mr-2" />
                         Compare

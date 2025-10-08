@@ -1,5 +1,5 @@
 import React, { RefObject, useRef } from "react";
-import { Plus, X, Edit2 } from "lucide-react";
+import { Plus, X, Edit2, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,6 +17,7 @@ interface PromptMessagesProps {
     onVariablePopoverOpenChange: (index: number | null) => void;
     onMessageRoleChange: (index: number, role: string) => void;
     onMessageContentChange: (index: number, content: string) => void;
+    onClearMessage: (index: number) => void;
     onDeleteMessage: (index: number) => void;
     onInsertVariable: (messageIndex: number, variable: string) => void;
     onAddMessage: () => void;
@@ -24,6 +25,7 @@ interface PromptMessagesProps {
     cursorPositions: Record<number, number>;
     onCursorPositionChange: (positions: Record<number, number>) => void;
     variables: string[];
+    onOpenFullScreenEditor?: (messageIndex: number) => void;
 }
 
 export function PromptMessages({
@@ -34,6 +36,7 @@ export function PromptMessages({
     onVariablePopoverOpenChange,
     onMessageRoleChange,
     onMessageContentChange,
+    onClearMessage,
     onDeleteMessage,
     onInsertVariable,
     onAddMessage,
@@ -41,6 +44,7 @@ export function PromptMessages({
     cursorPositions,
     onCursorPositionChange,
     variables,
+    onOpenFullScreenEditor,
 }: PromptMessagesProps) {
     // Track if context menu is open to prevent blur from closing edit mode
     const contextMenuOpenRef = useRef(false);
@@ -136,6 +140,17 @@ export function PromptMessages({
                                                 </div>
                                             </PopoverContent>
                                         </Popover>
+                                        {onOpenFullScreenEditor && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 w-7 p-0 text-gray-400 hover:text-blue-400"
+                                                onClick={() => onOpenFullScreenEditor(index)}
+                                                title="Open in full screen editor"
+                                            >
+                                                <Maximize2 className="w-3.5 h-3.5" />
+                                            </Button>
+                                        )}
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -143,6 +158,14 @@ export function PromptMessages({
                                             onClick={() => onEditingMessageIndexChange(isEditing ? null : index)}
                                         >
                                             <Edit2 className="w-3.5 h-3.5" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                            onClick={() => onClearMessage(index)}
+                                        >
+                                            Clear
                                         </Button>
                                         <Button
                                             variant="ghost"
@@ -229,7 +252,7 @@ export function PromptMessages({
                                             }}
                                         >
                                             {message.content ? (
-                                                <HighlightedText text={message.content} />
+                                                <HighlightedText text={message.content} validVariables={variables} />
                                             ) : (
                                                 <span className="text-gray-500 dark:text-gray-500 italic">
                                                     {message.role === "assistant" ? "Enter assistant message..." : "Enter message..."}

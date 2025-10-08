@@ -58,6 +58,11 @@ interface PromptBuilderLeftPanelProps {
     developerMessage: string;
     onDeveloperMessageChange: (value: string) => void;
     onDeveloperMessageClear: () => void;
+    systemMessageVariablePopoverOpen: boolean;
+    onSystemMessageVariablePopoverOpenChange: (open: boolean) => void;
+    onInsertVariableIntoSystemMessage: (variable: string) => void;
+    isEditingSystemMessage: boolean;
+    onIsEditingSystemMessageChange: (isEditing: boolean) => void;
 
     // Messages
     messages: PromptMessage[];
@@ -67,12 +72,14 @@ interface PromptBuilderLeftPanelProps {
     onVariablePopoverOpenChange: (index: number | null) => void;
     onMessageRoleChange: (index: number, role: string) => void;
     onMessageContentChange: (index: number, content: string) => void;
+    onClearMessage: (index: number) => void;
     onDeleteMessage: (index: number) => void;
     onInsertVariable: (messageIndex: number, variable: string) => void;
     onAddMessage: () => void;
     textareaRefs: RefObject<Record<number, HTMLTextAreaElement | null>>;
     cursorPositions: Record<number, number>;
     onCursorPositionChange: (positions: Record<number, number>) => void;
+    onOpenFullScreenEditor?: (messageIndex: number) => void;
 }
 
 export function PromptBuilderLeftPanel({
@@ -98,6 +105,11 @@ export function PromptBuilderLeftPanel({
     developerMessage,
     onDeveloperMessageChange,
     onDeveloperMessageClear,
+    systemMessageVariablePopoverOpen,
+    onSystemMessageVariablePopoverOpenChange,
+    onInsertVariableIntoSystemMessage,
+    isEditingSystemMessage,
+    onIsEditingSystemMessageChange,
     messages,
     editingMessageIndex,
     onEditingMessageIndexChange,
@@ -105,12 +117,14 @@ export function PromptBuilderLeftPanel({
     onVariablePopoverOpenChange,
     onMessageRoleChange,
     onMessageContentChange,
+    onClearMessage,
     onDeleteMessage,
     onInsertVariable,
     onAddMessage,
     textareaRefs,
     cursorPositions,
     onCursorPositionChange,
+    onOpenFullScreenEditor,
 }: PromptBuilderLeftPanelProps) {
     return (
         <div className="w-1/2 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col">
@@ -148,6 +162,16 @@ export function PromptBuilderLeftPanel({
                     developerMessage={developerMessage}
                     onDeveloperMessageChange={onDeveloperMessageChange}
                     onDeveloperMessageClear={onDeveloperMessageClear}
+                    variables={variables}
+                    variablePopoverOpen={systemMessageVariablePopoverOpen}
+                    onVariablePopoverOpenChange={onSystemMessageVariablePopoverOpenChange}
+                    onInsertVariable={onInsertVariableIntoSystemMessage}
+                    textareaRefs={textareaRefs}
+                    cursorPositions={cursorPositions}
+                    onCursorPositionChange={onCursorPositionChange}
+                    isEditing={isEditingSystemMessage}
+                    onIsEditingChange={onIsEditingSystemMessageChange}
+                    onOpenFullScreenEditor={onOpenFullScreenEditor ? () => onOpenFullScreenEditor(-1) : undefined}
                 />
                 {/* Prompt Messages */}
                 <PromptMessages
@@ -158,6 +182,7 @@ export function PromptBuilderLeftPanel({
                     onVariablePopoverOpenChange={onVariablePopoverOpenChange}
                     onMessageRoleChange={onMessageRoleChange}
                     onMessageContentChange={onMessageContentChange}
+                    onClearMessage={onClearMessage}
                     onDeleteMessage={onDeleteMessage}
                     onInsertVariable={onInsertVariable}
                     onAddMessage={onAddMessage}
@@ -165,6 +190,7 @@ export function PromptBuilderLeftPanel({
                     cursorPositions={cursorPositions}
                     onCursorPositionChange={onCursorPositionChange}
                     variables={variables}
+                    onOpenFullScreenEditor={onOpenFullScreenEditor}
                 />{" "}
             </div>
 
