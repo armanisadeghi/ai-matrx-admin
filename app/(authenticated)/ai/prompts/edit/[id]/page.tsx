@@ -55,10 +55,10 @@ export default async function EditPromptPage({
         fetchAIModels()
     ]);
 
-    const { data: prompt, error } = promptResult;
+    const { data, error } = promptResult;
 
     // Handle not found or access denied
-    if (error || !prompt) {
+    if (error || !data) {
         return (
             <div className="h-full w-full flex items-center justify-center p-8">
                 <Card className="max-w-md w-full p-8 bg-white dark:bg-gray-900 border-red-200 dark:border-red-800">
@@ -85,15 +85,12 @@ export default async function EditPromptPage({
         );
     }
 
-    // Transform prompt data to match PromptBuilder's expected format
     const initialData = {
-        id: prompt.id,
-        name: prompt.name || "Untitled Prompt",
-        messages: prompt.messages as any[] || [],
-        model: prompt.model as string,
-        modelConfig: prompt.modelConfig as any || {},
-        variables: prompt.variables as string[] || [],
-        variableDefaults: prompt.variableDefaults as Record<string, string> || {},
+        id: data.id,
+        name: data.name,
+        messages: data.messages,
+        variableDefaults: data.variable_defaults,
+        settings: data.settings,
     };
 
     return <PromptBuilder models={aiModels} initialData={initialData} />;

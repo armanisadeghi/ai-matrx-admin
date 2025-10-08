@@ -3,19 +3,20 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { PromptVariable } from "../PromptBuilder";
 
 interface VariablesManagerProps {
-    variables: string[];
+    variableDefaults: PromptVariable[];
     newVariableName: string;
     onNewVariableNameChange: (value: string) => void;
     isAddingVariable: boolean;
     onIsAddingVariableChange: (value: boolean) => void;
     onAddVariable: () => void;
-    onRemoveVariable: (variable: string) => void;
+    onRemoveVariable: (variableName: string) => void;
 }
 
 export function VariablesManager({
-    variables,
+    variableDefaults,
     newVariableName,
     onNewVariableNameChange,
     isAddingVariable,
@@ -26,15 +27,15 @@ export function VariablesManager({
     return (
         <div className="flex items-center gap-2 flex-wrap">
             <Label className="text-xs text-gray-600 dark:text-gray-400">Variables</Label>
-            {variables.map((variable) => (
+            {variableDefaults.map((variable) => (
                 <span
-                    key={variable}
+                    key={variable.name}
                     className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700"
                 >
-                    {variable}
+                    {variable.name}
                     <X
                         className="w-3 h-3 cursor-pointer hover:text-red-500 dark:hover:text-red-400"
-                        onClick={() => onRemoveVariable(variable)}
+                        onClick={() => onRemoveVariable(variable.name)}
                     />
                 </span>
             ))}

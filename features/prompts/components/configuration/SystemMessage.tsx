@@ -5,12 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { HighlightedText } from "../HighlightedText";
+import { PromptVariable } from "../PromptBuilder";
 
 interface SystemMessageProps {
     developerMessage: string;
     onDeveloperMessageChange: (value: string) => void;
     onDeveloperMessageClear: () => void;
-    variables?: string[];
+    variableDefaults?: PromptVariable[];
     variablePopoverOpen?: boolean;
     onVariablePopoverOpenChange?: (open: boolean) => void;
     onInsertVariable?: (variable: string) => void;
@@ -26,7 +27,7 @@ export function SystemMessage({
     developerMessage,
     onDeveloperMessageChange,
     onDeveloperMessageClear,
-    variables = [],
+    variableDefaults = [],
     variablePopoverOpen = false,
     onVariablePopoverOpenChange,
     onInsertVariable,
@@ -44,7 +45,10 @@ export function SystemMessage({
     const contextMenuOpenRef = useRef(false);
     
     // Check if variable insertion is enabled
-    const hasVariableSupport = variables.length > 0 && onInsertVariable && onVariablePopoverOpenChange && textareaRefs && onCursorPositionChange;
+    const hasVariableSupport = variableDefaults.length > 0 && onInsertVariable && onVariablePopoverOpenChange && textareaRefs && onCursorPositionChange;
+    
+    // Derive variable names from variableDefaults
+    const variableNames = variableDefaults.map(v => v.name);
     
     return (
         <div className="space-y-3">
@@ -89,12 +93,12 @@ export function SystemMessage({
                                 </PopoverTrigger>
                                 <PopoverContent className="w-56 p-2" align="start">
                                     <div className="space-y-1">
-                                        {variables.length === 0 ? (
+                                        {variableNames.length === 0 ? (
                                             <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-2 italic">
                                                 No variables defined
                                             </div>
                                         ) : (
-                                            variables.map((variable) => (
+                                            variableNames.map((variable) => (
                                                 <Button
                                                     key={variable}
                                                     variant="ghost"
@@ -232,7 +236,7 @@ export function SystemMessage({
                             }}
                         >
                             {developerMessage ? (
-                                <HighlightedText text={developerMessage} validVariables={variables} />
+                                <HighlightedText text={developerMessage} validVariables={variableNames} />
                             ) : (
                                 <span className="text-gray-500 dark:text-gray-500 italic">
                                     You're a very helpful assistant

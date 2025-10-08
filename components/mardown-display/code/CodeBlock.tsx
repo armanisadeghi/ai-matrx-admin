@@ -36,7 +36,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     inline = false,
     isStreamActive = false,
 }) => {
-    const [code, setCode] = useState("");
+    const [editedCode, setEditedCode] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -55,6 +55,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const { mode } = useTheme();
     const isMobile = useIsMobile();
     const user = useAppSelector(selectUser);
+    
+    // Use edited code if available (when user is editing), otherwise use deferred prop value
+    const code = editedCode ?? initialCode;
 
     // Function to detect if code is a complete HTML document
     const isCompleteHTMLDocument = (htmlCode: string): boolean => {
@@ -101,9 +104,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         }
     };
 
-    useEffect(() => {
-        setCode(initialCode);
-    }, [initialCode]);
 
     useEffect(() => {
         const observerOptions = {
@@ -227,7 +227,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
     const handleCodeChange = (newCode: string | undefined) => {
         if (newCode) {
-            setCode(newCode);
+            setEditedCode(newCode);
             onCodeChange?.(newCode);
         }
     };
@@ -346,15 +346,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                                                     
                                                     // Add extra padding to ensure no scrolling
                                                     const finalHeight = contentHeight + 50;
-                                                    
-                                                    console.log('Content measurements:', {
-                                                        bodyScrollHeight: body?.scrollHeight,
-                                                        bodyOffsetHeight: body?.offsetHeight,
-                                                        htmlScrollHeight: html?.scrollHeight,
-                                                        htmlOffsetHeight: html?.offsetHeight,
-                                                        finalHeight
-                                                    });
-                                                    
+                                                                                                        
                                                     // Set iframe height to match content + padding
                                                     iframe.style.height = `${finalHeight}px`;
                                                     iframe.style.minHeight = `${finalHeight}px`;
@@ -377,7 +369,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                                                         const newFinalHeight = newContentHeight + 50;
                                                         
                                                         if (newFinalHeight > finalHeight) {
-                                                            console.log('Adjusting height after delay:', newFinalHeight);
                                                             iframe.style.height = `${newFinalHeight}px`;
                                                             iframe.style.minHeight = `${newFinalHeight}px`;
                                                             if (container) {
@@ -388,8 +379,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                                                     }, 500);
                                                 }
                                             } catch (error) {
-                                                // Cross-origin restrictions, try alternative approach
-                                                console.log('Cannot access iframe content, using fallback height');
                                                 
                                                 // Fallback: set a larger height to avoid scrolling
                                                 iframe.style.height = '1200px';

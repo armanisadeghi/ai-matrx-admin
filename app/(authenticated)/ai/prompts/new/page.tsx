@@ -8,5 +8,19 @@ export default async function NewPromptPage() {
     // Fetch AI models
     const aiModels = await fetchAIModels();
 
-    return <PromptBuilder models={aiModels} />;
+    // Provide sensible defaults for a new prompt
+    const newPromptDefaults = {
+        name: "New prompt",
+        messages: [
+            { role: "system", content: "You're a very helpful assistant" },
+            { role: "user", content: "Do you know about {{city}}?\n\nI'm looking for {{what}} there.\n\nCan you help me?" }
+        ],
+        variableDefaults: [
+            { name: "city", defaultValue: "New York" },
+            { name: "what", defaultValue: "Hotels" }
+        ],
+        // settings will be initialized from user preferences or first available model
+    };
+
+    return <PromptBuilder models={aiModels} initialData={newPromptDefaults} />;
 }

@@ -38,16 +38,20 @@ interface ModelConfig {
     reasoning_summary?: string;
 }
 
+// Variable definition structure - single source of truth
+export interface PromptVariable {
+    name: string;
+    defaultValue: string;
+}
+
 interface PromptBuilderProps {
     models: any[];
     initialData?: {
         id?: string;
         name?: string;
         messages?: PromptMessage[];
-        model?: string;
-        modelConfig?: ModelConfig;
-        variables?: string[];
-        variableDefaults?: Record<string, string>;
+        variableDefaults?: PromptVariable[]; // Array of { name, defaultValue }
+        settings?: Record<string, any>; // Single source of truth: { model_id: string, temperature: number, ... }
     };
 }
 
@@ -56,8 +60,8 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const dispatch = useAppDispatch();
     const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
+
     
-    // Ensure we have models
     if (!models || models.length === 0) {
         return <div className="p-8 text-center text-red-600">Error: No models available</div>;
     }
@@ -65,22 +69,30 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     // Initialize from existing data or defaults
     const isEditMode = !!initialData?.id;
     
-    // Get initial model ID
+    // Get initial model ID from settings.model_id (single source of truth)
     const getInitialModelId = () => {
-        if (initialData?.model) return initialData.model;
+        if (initialData?.settings && typeof initialData.settings === 'object' && 'model_id' in initialData.settings) {
+            return initialData.settings.model_id as string;
+        }
+        // Default for new prompts
         return modelPreferences?.defaultModel || models[0]?.id;
     };
     
     const initialModelId = getInitialModelId();
     const initialModel = models.find(m => m.id === initialModelId) || models[0];
     
-    // Get initial modelConfig (merge defaults with existing)
+    // Get initial modelConfig from settings (single source of truth)
+    // Extract all settings except model_id - those are the config options
     const getInitialModelConfig = () => {
         const defaults = getModelDefaults(initialModel);
-        if (initialData?.modelConfig) {
-            // Merge: existing config takes precedence, but add any new defaults
-            return { ...defaults, ...initialData.modelConfig };
+        
+        if (initialData?.settings && typeof initialData.settings === 'object') {
+            const { model_id, ...config } = initialData.settings as Record<string, any>;
+            // Merge: saved settings take precedence, but add any new defaults that don't exist
+            return { ...defaults, ...config };
         }
+        
+        // Default for new prompts
         return defaults;
     };
     
@@ -90,7 +102,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             // Filter out system messages - they go in developerMessage
             return initialData.messages.filter(m => m.role !== "system");
         }
-        return [{ role: "user", content: "Do you know about {{city}}?\n\nI'm looking for {{what}} there.\n\nCan you help me?" }];
+        return []; // Empty if no initial data provided
     };
     
     const getInitialDeveloperMessage = () => {
@@ -98,11 +110,11 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             const systemMessage = initialData.messages.find(m => m.role === "system");
             if (systemMessage) return systemMessage.content;
         }
-        return "You're a very helpful assistant";
+        return ""; // Empty if no initial data provided
     };
     
     // Core state - model state holds the model ID (UUID)
-    const [promptName, setPromptName] = useState(initialData?.name || "New prompt");
+    const [promptName, setPromptName] = useState(initialData?.name || "");
     const [model, setModel] = useState(initialModelId);
     const [modelConfig, setModelConfig] = useState<ModelConfig>(getInitialModelConfig());
     
@@ -130,13 +142,15 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         }));
     }, [normalizedControls, modelConfig, model, dispatch]);
 
-    // Variables state - initialize from initialData or defaults
-    const getInitialVariables = () => {
-        if (initialData?.variables) return initialData.variables;
-        return ["city", "what"];
+    // Variables state - single source of truth
+    const getInitialVariableDefaults = () => {
+        if (initialData?.variableDefaults && Array.isArray(initialData.variableDefaults)) {
+            return initialData.variableDefaults;
+        }
+        return []; // Empty if no initial data provided
     };
     
-    const [variables, setVariables] = useState<string[]>(getInitialVariables());
+    const [variableDefaults, setVariableDefaults] = useState<PromptVariable[]>(getInitialVariableDefaults());
     const [newVariableName, setNewVariableName] = useState("");
     const [isAddingVariable, setIsAddingVariable] = useState(false);
     const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
@@ -150,13 +164,6 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const [isFullScreenEditorOpen, setIsFullScreenEditorOpen] = useState(false);
     const [fullScreenEditorInitialSelection, setFullScreenEditorInitialSelection] = useState<MessageItem | null>(null);
 
-    // Testing state - initialize from variableDefaults or defaults
-    const getInitialTestVariables = () => {
-        if (initialData?.variableDefaults) return initialData.variableDefaults;
-        return { city: "New York", what: "Hotels" };
-    };
-    
-    const [testVariables, setTestVariables] = useState<Record<string, string>>(getInitialTestVariables());
     const [chatInput, setChatInput] = useState("");
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
         role: string; 
@@ -179,7 +186,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     } | null>(null);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
     const [messageStartTime, setMessageStartTime] = useState<number | null>(null);
-    const [timeToFirstToken, setTimeToFirstToken] = useState<number | undefined>(undefined);
+    const timeToFirstTokenRef = useRef<number | undefined>(undefined);
 
     // Get streaming response from socket
     const streamingText = useAppSelector((state) => 
@@ -201,19 +208,6 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     
     // Refs for textarea elements (including system message at index -1)
     const textareaRefs = useRef<Record<number, HTMLTextAreaElement | null>>({});
-
-    // Update test variables when variables change
-    useEffect(() => {
-        setTestVariables((prev) => {
-            const newVars = { ...prev };
-            variables.forEach((v) => {
-                if (!(v in newVars)) {
-                    newVars[v] = "";
-                }
-            });
-            return newVars;
-        });
-    }, [variables]);
 
     // Load preferences from localStorage on mount
     useEffect(() => {
@@ -248,27 +242,29 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         if (!sanitized) return;
 
         // Don't add duplicates
-        if (variables.includes(sanitized)) {
+        if (variableDefaults.some(v => v.name === sanitized)) {
             setNewVariableName("");
             setIsAddingVariable(false);
             return;
         }
 
-        setVariables((prev) => [...prev, sanitized]);
+        setVariableDefaults((prev) => [...prev, { name: sanitized, defaultValue: "" }]);
         setNewVariableName("");
         setIsAddingVariable(false);
         setIsDirty(true);
     };
 
     // Handler to remove a variable
-    const handleRemoveVariable = (variable: string) => {
-        setVariables((prev) => prev.filter((v) => v !== variable));
-        setTestVariables((prev) => {
-            const newVars = { ...prev };
-            delete newVars[variable];
-            return newVars;
-        });
+    const handleRemoveVariable = (variableName: string) => {
+        setVariableDefaults((prev) => prev.filter((v) => v.name !== variableName));
         setIsDirty(true);
+    };
+
+    // Handler to update a variable's default value
+    const handleUpdateVariableValue = (variableName: string, value: string) => {
+        setVariableDefaults((prev) => 
+            prev.map(v => v.name === variableName ? { ...v, defaultValue: value } : v)
+        );
     };
 
     // Handler to add a tool - updates modelConfig directly
@@ -415,26 +411,30 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         try {
             const allMessages: PromptMessage[] = [{ role: "system", content: developerMessage }, ...messages];
 
-            const variableDefaults: Record<string, string> = {};
-            variables.forEach((v) => {
-                variableDefaults[v] = testVariables[v] || "";
-            });
+            // Create a flat settings object that includes model_id and all model config
+            const settings = {
+                model_id: model, // The model UUID
+                ...modelConfig,  // All the config options (temperature, max_tokens, tools, etc.)
+            };
 
+            // What gets saved to the database:
+            // - name: string
+            // - messages: array of message objects
+            // - variableDefaults: array of { name, defaultValue } objects
+            // - settings: flat JSONB with model_id and all config
             const promptData = {
                 name: promptName,
                 messages: allMessages,
-                variableDefaults,
-                model,
-                modelConfig, // Use modelConfig directly - it's already clean
-                variables,
+                variableDefaults, // Already in the correct format: array of { name, defaultValue }
+                settings,
             };
 
             if (isEditMode && initialData?.id) {
                 // Update existing prompt
-                updatePrompt(initialData.id, promptData as Parameters<typeof updatePrompt>[1]);
+                updatePrompt(initialData.id, promptData as any);
             } else {
                 // Create new prompt
-                await createPrompt(promptData as Parameters<typeof createPrompt>[0]);
+                await createPrompt(promptData as any);
             }
 
             setIsDirty(false);
@@ -449,50 +449,18 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     // Helper function to replace variables in content
     const replaceVariables = (content: string): string => {
         let result = content;
-        Object.entries(testVariables).forEach(([key, value]) => {
-            const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-            result = result.replace(regex, value);
+        variableDefaults.forEach(({ name, defaultValue }) => {
+            const regex = new RegExp(`\\{\\{${name}\\}\\}`, 'g');
+            result = result.replace(regex, defaultValue);
         });
         return result;
     };
 
-    // Update conversation messages with streaming text and track timing
-    useEffect(() => {
-        if (currentTaskId && streamingText && isTestingPrompt && messageStartTime) {
-            // Track time to first token (only once)
-            if (timeToFirstToken === undefined && streamingText.length > 0) {
-                const ttft = Math.round(performance.now() - messageStartTime);
-                setTimeToFirstToken(ttft);
-            }
+    // NOTE: We intentionally do NOT update state during streaming to avoid re-rendering
+    // on every chunk. The right panel will use selectors to get the streaming text directly.
+    // We only update state when the stream completes (see next useEffect).
 
-            // Calculate current stats
-            const currentTime = Math.round(performance.now() - messageStartTime);
-            const tokenCount = Math.round(streamingText.length / 4); // Rough token estimation: ~4 chars = 1 token
-
-            setLastMessageStats({
-                timeToFirstToken: timeToFirstToken,
-                totalTime: currentTime,
-                tokens: tokenCount
-            });
-
-            setConversationMessages((prev) => {
-                // Check if last message is assistant
-                const lastMsg = prev[prev.length - 1];
-                if (lastMsg && lastMsg.role === "assistant") {
-                    // Update the last assistant message with streaming text
-                    const updated = [...prev];
-                    updated[updated.length - 1] = {
-                        ...lastMsg,
-                        content: streamingText,
-                    };
-                    return updated;
-                }
-                return prev;
-            });
-        }
-    }, [streamingText, currentTaskId, isTestingPrompt, messageStartTime, timeToFirstToken]);
-
-    // Handle response completion
+    // Handle response completion - this is the ONLY place we update conversation state
     useEffect(() => {
         if (currentTaskId && isResponseEnded && isTestingPrompt && messageStartTime) {
             // Calculate final stats
@@ -500,24 +468,22 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             const tokenCount = Math.round(streamingText.length / 4);
             
             const finalStats = {
-                timeToFirstToken: timeToFirstToken,
+                timeToFirstToken: timeToFirstTokenRef.current,
                 totalTime: totalTime,
                 tokens: tokenCount
             };
             
             setLastMessageStats(finalStats);
             
-            // Update the last message with metadata
-            setConversationMessages((prev) => {
-                const updated = [...prev];
-                if (updated.length > 0 && updated[updated.length - 1].role === "assistant") {
-                    updated[updated.length - 1] = {
-                        ...updated[updated.length - 1],
-                        metadata: finalStats
-                    };
+            // Add the completed assistant message with content and metadata
+            setConversationMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    content: streamingText,
+                    metadata: finalStats
                 }
-                return updated;
-            });
+            ]);
 
             // Add the assistant's response to the API conversation history
             setApiConversationHistory((prev) => [
@@ -525,13 +491,13 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                 { role: "assistant", content: streamingText }
             ]);
 
-            // IMPORTANT: Reset the taskId so the next submission works properly
+            // IMPORTANT: Reset state so the next submission works properly
             setCurrentTaskId(null);
             setIsTestingPrompt(false);
             setMessageStartTime(null);
-            setTimeToFirstToken(undefined);
+            timeToFirstTokenRef.current = undefined;
         }
-    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText, timeToFirstToken]);
+    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText]);
 
     // Test chat handler
     const handleSendTestMessage = async () => {
@@ -586,7 +552,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
         setIsTestingPrompt(true);
         setLastMessageStats(null); // Clear previous stats
         setMessageStartTime(performance.now()); // Start timing
-        setTimeToFirstToken(undefined); // Reset time to first token
+        timeToFirstTokenRef.current = undefined; // Reset time to first token
 
         try {
             let messagesToSend: PromptMessage[];
@@ -627,8 +593,9 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                 ...modelConfig,
             };
 
-            // Add an empty assistant message placeholder
-            setConversationMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+            // NOTE: We do NOT add an empty assistant placeholder here.
+            // The right panel will display the streaming text using the taskId.
+            // We only add the final message when streaming completes.
 
             // Submit the task using socket
             const result = await dispatch(createAndSubmitTask({
@@ -649,7 +616,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             setIsTestingPrompt(false);
             setCurrentTaskId(null);
             setMessageStartTime(null);
-            setTimeToFirstToken(undefined);
+            timeToFirstTokenRef.current = undefined;
         }
     };
 
@@ -687,7 +654,7 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                     }}
                     modelConfig={modelConfig}
                     onSettingsClick={() => setIsSettingsOpen(true)}
-                    variables={variables}
+                    variableDefaults={variableDefaults}
                     newVariableName={newVariableName}
                     onNewVariableNameChange={setNewVariableName}
                     isAddingVariable={isAddingVariable}
@@ -752,11 +719,8 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                         setApiConversationHistory([]);
                         setLastMessageStats(null);
                     }}
-                    variables={variables}
-                    testVariables={testVariables}
-                    onTestVariableChange={(variable, value) =>
-                        setTestVariables({ ...testVariables, [variable]: value })
-                    }
+                    variableDefaults={variableDefaults}
+                    onVariableValueChange={handleUpdateVariableValue}
                     expandedVariable={expandedVariable}
                     onExpandedVariableChange={setExpandedVariable}
                     chatInput={chatInput}
@@ -769,6 +733,9 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                     onSubmitOnEnterChange={setSubmitOnEnter}
                     messages={messages}
                     isStreamingMessage={isTestingPrompt}
+                    currentTaskId={currentTaskId}
+                    messageStartTime={messageStartTime}
+                    timeToFirstTokenRef={timeToFirstTokenRef}
                     lastMessageStats={lastMessageStats}
                     attachmentCapabilities={{
                         supportsImageUrls: supportsImageUrls,

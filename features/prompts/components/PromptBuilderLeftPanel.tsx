@@ -1,5 +1,6 @@
 import React, { RefObject } from "react";
 import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
+import { PromptVariable } from "./PromptBuilder";
 import { ModelConfiguration } from "./configuration/ModelConfiguration";
 import { VariablesManager } from "./configuration/VariablesManager";
 import { ToolsManager } from "./configuration/ToolsManager";
@@ -36,14 +37,14 @@ interface PromptBuilderLeftPanelProps {
     modelConfig: ModelConfig;
     onSettingsClick: () => void;
 
-    // Variables
-    variables: string[];
+    // Variables - single source of truth
+    variableDefaults: PromptVariable[];
     newVariableName: string;
     onNewVariableNameChange: (value: string) => void;
     isAddingVariable: boolean;
     onIsAddingVariableChange: (value: boolean) => void;
     onAddVariable: () => void;
-    onRemoveVariable: (variable: string) => void;
+    onRemoveVariable: (variableName: string) => void;
 
     // Tools
     selectedTools: string[];
@@ -88,7 +89,7 @@ export function PromptBuilderLeftPanel({
     onModelChange,
     modelConfig,
     onSettingsClick,
-    variables,
+    variableDefaults,
     newVariableName,
     onNewVariableNameChange,
     isAddingVariable,
@@ -139,7 +140,7 @@ export function PromptBuilderLeftPanel({
                 />
                 {/* Variables */}
                 <VariablesManager
-                    variables={variables}
+                    variableDefaults={variableDefaults}
                     newVariableName={newVariableName}
                     onNewVariableNameChange={onNewVariableNameChange}
                     isAddingVariable={isAddingVariable}
@@ -162,7 +163,7 @@ export function PromptBuilderLeftPanel({
                     developerMessage={developerMessage}
                     onDeveloperMessageChange={onDeveloperMessageChange}
                     onDeveloperMessageClear={onDeveloperMessageClear}
-                    variables={variables}
+                    variableDefaults={variableDefaults}
                     variablePopoverOpen={systemMessageVariablePopoverOpen}
                     onVariablePopoverOpenChange={onSystemMessageVariablePopoverOpenChange}
                     onInsertVariable={onInsertVariableIntoSystemMessage}
@@ -189,7 +190,7 @@ export function PromptBuilderLeftPanel({
                     textareaRefs={textareaRefs}
                     cursorPositions={cursorPositions}
                     onCursorPositionChange={onCursorPositionChange}
-                    variables={variables}
+                    variableDefaults={variableDefaults}
                     onOpenFullScreenEditor={onOpenFullScreenEditor}
                 />{" "}
             </div>

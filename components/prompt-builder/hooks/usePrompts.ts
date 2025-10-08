@@ -13,6 +13,10 @@ export type PromptMessage = {
     metadata?: Record<string, unknown>;
 }
 
+export type PromptVariable = {
+    name: string;
+    defaultValue: string;
+}
 
 export type PromptsData = {
     id: string;
@@ -25,7 +29,7 @@ export type PromptsData = {
     authenticatedRead?: boolean;
     publicRead?: boolean;
     messages?: PromptMessage[];
-    variableDefaults?: Record<string, unknown>;
+    variableDefaults?: PromptVariable[]; // Array of { name, defaultValue }
 }
 
 
@@ -34,7 +38,7 @@ export type SimplePromptsData = {
     name?: string;
     tools?: string[];
     messages?: PromptMessage[];
-    variableDefaults?: Record<string, string>;
+    variableDefaults?: PromptVariable[];
 }
 
 type UsePromptsWithFetchReturn = {
