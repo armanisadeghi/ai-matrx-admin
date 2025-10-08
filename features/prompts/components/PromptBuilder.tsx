@@ -39,12 +39,21 @@ interface ModelConfig {
 
 interface PromptBuilderProps {
     models: any[];
+    initialData?: {
+        id?: string;
+        name?: string;
+        messages?: PromptMessage[];
+        model?: string;
+        modelConfig?: ModelConfig;
+        variables?: string[];
+        variableDefaults?: Record<string, string>;
+    };
 }
 
-export function PromptBuilder({ models }: PromptBuilderProps) {
+export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const { createPrompt } = usePromptsWithFetch();
+    const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
     
     // Ensure we have models
@@ -52,14 +61,52 @@ export function PromptBuilder({ models }: PromptBuilderProps) {
         return <div className="p-8 text-center text-red-600">Error: No models available</div>;
     }
     
-    // Get default model from preferences or first available model - ALWAYS use ID (UUID)
-    const defaultModelId = modelPreferences?.defaultModel || models[0]?.id;
-    const defaultModel = models.find(m => m.id === defaultModelId) || models[0];
+    // Initialize from existing data or defaults
+    const isEditMode = !!initialData?.id;
+    
+    // Get initial model ID
+    const getInitialModelId = () => {
+        if (initialData?.model) return initialData.model;
+        return modelPreferences?.defaultModel || models[0]?.id;
+    };
+    
+    const initialModelId = getInitialModelId();
+    const initialModel = models.find(m => m.id === initialModelId) || models[0];
+    
+    // Get initial modelConfig (merge defaults with existing)
+    const getInitialModelConfig = () => {
+        const defaults = getModelDefaults(initialModel);
+        if (initialData?.modelConfig) {
+            // Merge: existing config takes precedence, but add any new defaults
+            return { ...defaults, ...initialData.modelConfig };
+        }
+        return defaults;
+    };
+    
+    // Extract system message and user/assistant messages from initialData
+    const getInitialMessages = () => {
+        if (initialData?.messages && initialData.messages.length > 0) {
+            // Filter out system messages - they go in developerMessage
+            return initialData.messages.filter(m => m.role !== "system");
+        }
+        return [{ role: "user", content: "Do you know about {{city}}?\n\nI'm looking for {{what}} there.\n\nCan you help me?" }];
+    };
+    
+    const getInitialDeveloperMessage = () => {
+        if (initialData?.messages && initialData.messages.length > 0) {
+            const systemMessage = initialData.messages.find(m => m.role === "system");
+            if (systemMessage) return systemMessage.content;
+        }
+        return "You're a very helpful assistant";
+    };
     
     // Core state - model state holds the model ID (UUID)
-    const [promptName, setPromptName] = useState("New prompt");
-    const [model, setModel] = useState(defaultModelId || models[0]?.id);
-    const [modelConfig, setModelConfig] = useState<ModelConfig>(getModelDefaults(defaultModel));
+    const [promptName, setPromptName] = useState(initialData?.name || "New prompt");
+    const [model, setModel] = useState(initialModelId);
+    const [modelConfig, setModelConfig] = useState<ModelConfig>(getInitialModelConfig());
+    
+    const [developerMessage, setDeveloperMessage] = useState(getInitialDeveloperMessage());
+    const [messages, setMessages] = useState<PromptMessage[]>(getInitialMessages());
     
     // Get model controls to check capabilities
     const { normalizedControls } = useModelControls(models, model);
@@ -81,14 +128,14 @@ export function PromptBuilder({ models }: PromptBuilderProps) {
             'Unmapped Controls': normalizedControls?.unmappedControls,
         }));
     }, [normalizedControls, modelConfig, model, dispatch]);
-    
-    const [developerMessage, setDeveloperMessage] = useState("You're a very helpful assistant");
-    const [messages, setMessages] = useState<PromptMessage[]>([
-        { role: "user", content: "Do you know about {{city}}?\n\nI'm looking for {{what}} there.\n\nCan you help me?" },
-    ]);
 
-    // Variables state
-    const [variables, setVariables] = useState<string[]>(["city", "what"]);
+    // Variables state - initialize from initialData or defaults
+    const getInitialVariables = () => {
+        if (initialData?.variables) return initialData.variables;
+        return ["city", "what"];
+    };
+    
+    const [variables, setVariables] = useState<string[]>(getInitialVariables());
     const [newVariableName, setNewVariableName] = useState("");
     const [isAddingVariable, setIsAddingVariable] = useState(false);
     const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
@@ -97,11 +144,13 @@ export function PromptBuilder({ models }: PromptBuilderProps) {
     const availableTools = ["web_search", "web_page_read", "get_news", "get_weather", "run_python_code", "make_html_page"];
     const [isAddingTool, setIsAddingTool] = useState(false);
 
-    // Testing state
-    const [testVariables, setTestVariables] = useState<Record<string, string>>({
-        city: "New York",
-        what: "Hotels",
-    });
+    // Testing state - initialize from variableDefaults or defaults
+    const getInitialTestVariables = () => {
+        if (initialData?.variableDefaults) return initialData.variableDefaults;
+        return { city: "New York", what: "Hotels" };
+    };
+    
+    const [testVariables, setTestVariables] = useState<Record<string, string>>(getInitialTestVariables());
     const [chatInput, setChatInput] = useState("");
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
         role: string; 
@@ -313,14 +362,22 @@ export function PromptBuilder({ models }: PromptBuilderProps) {
                 variableDefaults[v] = testVariables[v] || "";
             });
 
-            // modelConfig is already the exact config to save - no transformation needed
-            await createPrompt({
+            const promptData = {
                 name: promptName,
                 messages: allMessages,
                 variableDefaults,
                 model,
                 modelConfig, // Use modelConfig directly - it's already clean
-            } as Parameters<typeof createPrompt>[0]);
+                variables,
+            };
+
+            if (isEditMode && initialData?.id) {
+                // Update existing prompt
+                updatePrompt(initialData.id, promptData as Parameters<typeof updatePrompt>[1]);
+            } else {
+                // Create new prompt
+                await createPrompt(promptData as Parameters<typeof createPrompt>[0]);
+            }
 
             setIsDirty(false);
             router.push("/ai/prompts");

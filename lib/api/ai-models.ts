@@ -1,29 +1,43 @@
+import { createClient } from "@/utils/supabase/server";
+import { cache } from 'react';
+
 /**
- * Fetches AI models from the cached API endpoint (Server-side)
- * Data is cached for 12 hours on the server
+ * Internal function to fetch AI models from Supabase
+ * Uses React cache() which works reliably in both development and production
  */
-export async function fetchAIModels() {
+async function _fetchAIModelsFromDB() {
+    const supabase = await createClient();
+
+    // Fetch all non-deprecated AI models
+    const { data: models, error } = await supabase
+        .from("ai_model")
+        .select("*")
+        .eq("is_deprecated", false)
+        .order("common_name", { ascending: true });
+
+    if (error) {
+        console.error("Error fetching AI models from database:", error);
+        throw error;
+    }
+
+    return models || [];
+}
+
+/**
+ * Fetches AI models directly from Supabase (Server-side)
+ * Uses React cache() for request deduplication
+ * This avoids HTTP requests to ourselves in serverless environments
+ * Works reliably in both development and production
+ */
+export const fetchAIModels = cache(async () => {
     try {
-        // Construct the full URL for server-side fetching
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-        const response = await fetch(`${baseUrl}/api/ai-models`, {
-            next: { 
-                revalidate: 43200, // 12 hours in seconds
-                tags: ['ai-models'] // Tag for cache invalidation
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch AI models: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data.models || [];
+        return await _fetchAIModelsFromDB();
     } catch (error) {
         console.error("Error fetching AI models:", error);
+        // Return empty array as fallback to prevent page crashes
         return [];
     }
-}
+});
 
 /**
  * Fetches AI models from the cached API endpoint (Client-side)

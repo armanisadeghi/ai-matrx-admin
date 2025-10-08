@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchAIModels } from "@/lib/api/ai-models";
+import { PromptBuilder } from "@/features/prompts/components/PromptBuilder";
+
+// Cache AI models data for 12 hours
+export const revalidate = 43200;
 
 export async function generateMetadata({
     params,
@@ -81,44 +85,16 @@ export default async function EditPromptPage({
         );
     }
 
-    return (
-        <div className="h-full w-full p-8">
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        Edit Prompt
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {prompt.name || "Untitled Prompt"}
-                    </p>
-                </div>
-                <div className="p-6 space-y-6">
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                            Prompt Data
-                        </h2>
-                        <div className="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 overflow-hidden">
-                            <pre className="p-4 overflow-auto text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
-                                {JSON.stringify(prompt, null, 2)}
-                            </pre>
-                        </div>
-                    </div>
+    // Transform prompt data to match PromptBuilder's expected format
+    const initialData = {
+        id: prompt.id,
+        name: prompt.name || "Untitled Prompt",
+        messages: prompt.messages as any[] || [],
+        model: prompt.model as string,
+        modelConfig: prompt.modelConfig as any || {},
+        variables: prompt.variables as string[] || [],
+        variableDefaults: prompt.variableDefaults as Record<string, string> || {},
+    };
 
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                            Available AI Models
-                            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-                                (Cached for 12 hours)
-                            </span>
-                        </h2>
-                        <div className="rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 overflow-hidden">
-                            <pre className="p-4 overflow-auto text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
-                                {JSON.stringify(aiModels, null, 2)}
-                            </pre>
-                        </div>
-                    </div>
-                </div>
-            </Card>
-        </div>
-    );
+    return <PromptBuilder models={aiModels} initialData={initialData} />;
 }
