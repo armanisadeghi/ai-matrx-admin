@@ -13,6 +13,7 @@ import PhotoEditingPreferences from './PhotoEditingPreferences';
 import ImageGenerationPreferences from './ImageGenerationPreferences';
 import TextGenerationPreferences from './TextGenerationPreferences';
 import CodingPreferences from './CodingPreferences';
+import AiModelsPreferences from './AiModelsPreferences';
 
 const PreferencesPage = () => {
     const [activeTab, setActiveTab] = useState('display');
@@ -27,13 +28,14 @@ const PreferencesPage = () => {
         imageGeneration: <ImageGenerationPreferences />,
         textGeneration: <TextGenerationPreferences />,
         coding: <CodingPreferences />,
+        aiModels: <AiModelsPreferences />,
     };
 
     return (
         <Card className="w-full max-w-4xl mx-auto mt-8">
             <CardContent className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-9">
+                    <TabsList className="grid w-full grid-cols-10">
                         <TabsTrigger value="display">Display</TabsTrigger>
                         <TabsTrigger value="voice">Voice</TabsTrigger>
                         <TabsTrigger value="assistant">Assistant</TabsTrigger>
@@ -43,6 +45,7 @@ const PreferencesPage = () => {
                         <TabsTrigger value="imageGeneration">Image Gen</TabsTrigger>
                         <TabsTrigger value="textGeneration">Text Gen</TabsTrigger>
                         <TabsTrigger value="coding">Coding</TabsTrigger>
+                        <TabsTrigger value="aiModels">AI Models</TabsTrigger>
                     </TabsList>
                     <AnimatePresence mode="wait">
                         <motion.div

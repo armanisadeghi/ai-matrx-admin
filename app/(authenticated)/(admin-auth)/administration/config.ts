@@ -4,58 +4,34 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Server Cache',
+        path: 'server-cache',
         relative: true,
-        description: ''
+        description: 'Manage server-side caches'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'TypeScript Errors',
+        path: 'typescript-errors',
         relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
+        description: 'View TypeScript compilation errors'
     },
     {
         title: 'SQL Functions',
         path: 'database/sql-functions',
         relative: true,
-        description: ''
+        description: 'Manage SQL functions'
     },
     {
         title: 'SQL Queries',
         path: 'database/sql-queries',
         relative: true,
-        description: ''
+        description: 'Execute SQL queries'
     },
     {
         title: 'Database',
         path: 'database',
         relative: true,
-        description: ''
+        description: 'Database management'
     },
 
 ];

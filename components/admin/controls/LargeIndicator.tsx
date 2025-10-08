@@ -3,7 +3,9 @@ import React from "react";
 import { ChevronRight, X, Server, Wifi, WifiOff, Shield, ShieldOff, AlertCircle } from "lucide-react";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
+import PageDebugDisplay from "@/components/admin/debug/PageDebugDisplay";
 import { useAppSelector } from "@/lib/redux";
+import { selectIsDebugMode, selectDebugData } from "@/lib/redux/slices/adminDebugSlice";
 import {
     selectPrimaryConnection,
     selectIsAdmin,
@@ -31,6 +33,8 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSiz
     const primaryConnection = useAppSelector(selectPrimaryConnection);
     const isAdmin = useAppSelector(selectIsAdmin);
     const allConnectionsHealth = useAppSelector(selectAllConnectionsHealth);
+    const isDebugMode = useAppSelector(selectIsDebugMode);
+    const debugData = useAppSelector(selectDebugData);
 
     // Derived values
     const isConnected = primaryConnection?.connectionStatus === "connected";
@@ -148,7 +152,17 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({ user, onSizeDown, onSiz
                         User Management
                     </button>
                 </div>
-                <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="message" />
+                
+                {/* Debug Section */}
+                {isDebugMode && (
+                    <div className="mt-4">
+                        {debugData && Object.keys(debugData).length > 0 ? (
+                            <PageDebugDisplay debugData={debugData} />
+                        ) : (
+                            <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="message" />
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

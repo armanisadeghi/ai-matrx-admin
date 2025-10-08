@@ -1,7 +1,15 @@
-// File: lib/redux/slices/index.tsx
-
-export { default as layoutSlice } from './layoutSlice';
-export { default as userSlice } from './userSlice';
-export { default as userPreferencesSlice } from './userPreferencesSlice';
-export { default as formSlice } from './formSlice';
-export { default as testRoutesSlice } from './testRoutesSlice';
+// Central export file for Redux slices
+export {
+    toggleDebugMode,
+    setDebugMode,
+    setDebugData,
+    updateDebugData,
+    setDebugKey,
+    removeDebugKey,
+    clearDebugData,
+    selectIsDebugMode,
+    selectDebugData,
+    selectDebugKey,
+} from './adminDebugSlice';
+export { default as adminDebugReducer } from './adminDebugSlice';
+export { default as userPreferencesReducer } from './userPreferencesSlice';

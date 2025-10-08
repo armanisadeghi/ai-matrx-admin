@@ -3,43 +3,85 @@
 import React, { useState, useEffect, useRef } from "react";
 import { usePromptsWithFetch, PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { useRouter } from "next/navigation";
-import ModelSettingsDialog from "@/components/prompt-builder/components/ModelSettingsDialog";
 import { PromptBuilderHeader } from "./PromptBuilderHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
+import { useModelControls, getModelDefaults } from "../hooks/useModelControls";
+import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
+import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
+import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
+import ModelSettingsDialog from "@/app/(authenticated)/ai/prompts/test-controls/ModelSettingsDialog";
+import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
+import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 type MessageRole = "system" | "user" | "assistant";
 
+// Model configuration using snake_case for Python backend compatibility
 interface ModelConfig {
-    textFormat: string;
-    toolChoice: string;
-    temperature: number;
-    maxTokens: number;
-    topP: number;
-    storeLogs: boolean;
-    reasoningEffort?: string;
+    output_format?: string;
+    tool_choice?: string;
+    temperature?: number;
+    max_tokens?: number;
+    top_p?: number;
+    top_k?: number;
+    store?: boolean;
+    stream?: boolean;
+    parallel_tool_calls?: boolean;
+    tools?: string[]; // Array of selected tool names
+    image_urls?: boolean;
+    file_urls?: boolean;
+    internal_web_search?: boolean;
+    youtube_videos?: boolean;
+    reasoning_effort?: string;
     verbosity?: string;
-    summary?: string;
+    reasoning_summary?: string;
 }
 
-export function PromptBuilder() {
-    const router = useRouter();
-    const { createPrompt } = usePromptsWithFetch();
+interface PromptBuilderProps {
+    models: any[];
+}
 
-    // Core state
+export function PromptBuilder({ models }: PromptBuilderProps) {
+    const router = useRouter();
+    const dispatch = useAppDispatch();
+    const { createPrompt } = usePromptsWithFetch();
+    const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
+    
+    // Ensure we have models
+    if (!models || models.length === 0) {
+        return <div className="p-8 text-center text-red-600">Error: No models available</div>;
+    }
+    
+    // Get default model from preferences or first available model - ALWAYS use ID (UUID)
+    const defaultModelId = modelPreferences?.defaultModel || models[0]?.id;
+    const defaultModel = models.find(m => m.id === defaultModelId) || models[0];
+    
+    // Core state - model state holds the model ID (UUID)
     const [promptName, setPromptName] = useState("New prompt");
-    const [model, setModel] = useState("gpt-4o");
-    const [modelConfig, setModelConfig] = useState<ModelConfig>({
-        textFormat: "text",
-        toolChoice: "auto",
-        temperature: 1.0,
-        maxTokens: 2048,
-        topP: 1.0,
-        storeLogs: true,
-        reasoningEffort: "medium",
-        verbosity: "medium",
-        summary: "auto",
-    });
+    const [model, setModel] = useState(defaultModelId || models[0]?.id);
+    const [modelConfig, setModelConfig] = useState<ModelConfig>(getModelDefaults(defaultModel));
+    
+    // Get model controls to check capabilities
+    const { normalizedControls } = useModelControls(models, model);
+    
+    // Check if the current model supports tools
+    const modelSupportsTools = normalizedControls?.tools?.default ?? false;
+    
+    // Check attachment capabilities
+    const supportsImageUrls = normalizedControls?.image_urls?.default ?? false;
+    const supportsFileUrls = normalizedControls?.file_urls?.default ?? false;
+    const supportsYoutubeVideos = normalizedControls?.youtube_videos?.default ?? false;
+
+    // Update debug data when model controls or config changes
+    useEffect(() => {
+        dispatch(updateDebugData({
+            'Model Controls': normalizedControls,
+            'Current Settings': modelConfig,
+            'Selected Model ID': model,
+            'Unmapped Controls': normalizedControls?.unmappedControls,
+        }));
+    }, [normalizedControls, modelConfig, model, dispatch]);
+    
     const [developerMessage, setDeveloperMessage] = useState("You're a very helpful assistant");
     const [messages, setMessages] = useState<PromptMessage[]>([
         { role: "user", content: "Do you know about {{city}}?\n\nI'm looking for {{what}} there.\n\nCan you help me?" },
@@ -51,11 +93,9 @@ export function PromptBuilder() {
     const [isAddingVariable, setIsAddingVariable] = useState(false);
     const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
-    // Tools state
-    const [selectedTools, setSelectedTools] = useState<string[]>([]);
-    const [isAddingTool, setIsAddingTool] = useState(false);
-
+    // Tools state - available tools list
     const availableTools = ["web_search", "web_page_read", "get_news", "get_weather", "run_python_code", "make_html_page"];
+    const [isAddingTool, setIsAddingTool] = useState(false);
 
     // Testing state
     const [testVariables, setTestVariables] = useState<Record<string, string>>({
@@ -72,18 +112,31 @@ export function PromptBuilder() {
             tokens?: number;
         }
     }>>([]);
+    // Track the actual API conversation history (separate from template and display)
+    const [apiConversationHistory, setApiConversationHistory] = useState<PromptMessage[]>([]);
     const [autoClear, setAutoClear] = useState(true);
+    const [submitOnEnter, setSubmitOnEnter] = useState(false);
     const [isTestingPrompt, setIsTestingPrompt] = useState(false);
     const [lastMessageStats, setLastMessageStats] = useState<{
         timeToFirstToken?: number;
         totalTime?: number;
         tokens?: number;
     } | null>(null);
+    const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+    const [messageStartTime, setMessageStartTime] = useState<number | null>(null);
+    const [timeToFirstToken, setTimeToFirstToken] = useState<number | undefined>(undefined);
+
+    // Get streaming response from socket
+    const streamingText = useAppSelector((state) => 
+        currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ""
+    );
+    const isResponseEnded = useAppSelector((state) =>
+        currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
+    );
 
     // UI state
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [showModelConfig, setShowModelConfig] = useState(false);
     const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [variablePopoverOpen, setVariablePopoverOpen] = useState<number | null>(null);
@@ -104,6 +157,29 @@ export function PromptBuilder() {
             return newVars;
         });
     }, [variables]);
+
+    // Load preferences from localStorage on mount
+    useEffect(() => {
+        const savedAutoClear = localStorage.getItem('promptBuilder_autoClear');
+        const savedSubmitOnEnter = localStorage.getItem('promptBuilder_submitOnEnter');
+        
+        if (savedAutoClear !== null) {
+            setAutoClear(savedAutoClear === 'true');
+        }
+        if (savedSubmitOnEnter !== null) {
+            setSubmitOnEnter(savedSubmitOnEnter === 'true');
+        }
+    }, []);
+
+    // Save autoClear preference to localStorage
+    useEffect(() => {
+        localStorage.setItem('promptBuilder_autoClear', String(autoClear));
+    }, [autoClear]);
+
+    // Save submitOnEnter preference to localStorage
+    useEffect(() => {
+        localStorage.setItem('promptBuilder_submitOnEnter', String(submitOnEnter));
+    }, [submitOnEnter]);
 
     // Handler to add a new variable
     const handleAddVariable = () => {
@@ -138,20 +214,40 @@ export function PromptBuilder() {
         setIsDirty(true);
     };
 
-    // Handler to add a tool
+    // Handler to add a tool - updates modelConfig directly
     const handleAddTool = (tool: string) => {
-        if (!selectedTools.includes(tool)) {
-            setSelectedTools((prev) => [...prev, tool]);
+        const currentTools = modelConfig.tools || [];
+        if (!currentTools.includes(tool)) {
+            setModelConfig((prev) => ({
+                ...prev,
+                tools: [...currentTools, tool]
+            }));
             setIsDirty(true);
         }
         setIsAddingTool(false);
     };
 
-    // Handler to remove a tool
+    // Handler to remove a tool - updates modelConfig directly
     const handleRemoveTool = (tool: string) => {
-        setSelectedTools((prev) => prev.filter((t) => t !== tool));
+        const currentTools = modelConfig.tools || [];
+        setModelConfig((prev) => ({
+            ...prev,
+            tools: currentTools.filter((t) => t !== tool)
+        }));
         setIsDirty(true);
     };
+
+    // Clear tools when switching to a model that doesn't support them
+    useEffect(() => {
+        const currentTools = modelConfig.tools || [];
+        if (!modelSupportsTools && currentTools.length > 0) {
+            setModelConfig((prev) => ({
+                ...prev,
+                tools: []
+            }));
+            setIsDirty(true);
+        }
+    }, [modelSupportsTools, modelConfig.tools]);
 
     // Message handlers
     const addMessage = () => {
@@ -176,20 +272,12 @@ export function PromptBuilder() {
 
     const insertVariableIntoMessage = (messageIndex: number, variable: string) => {
         const textarea = textareaRefs.current[messageIndex];
-        if (!textarea) {
-            // Fallback: just append to the end
-            const updated = [...messages];
-            updated[messageIndex] = {
-                ...updated[messageIndex],
-                content: updated[messageIndex].content + `{{${variable}}}`,
-            };
-            setMessages(updated);
-            setIsDirty(true);
-            return;
-        }
-
-        const cursorPos = cursorPositions[messageIndex] ?? textarea.value.length;
+        
+        // Use the stored cursor position (captured when the "+ Variable" button was clicked)
+        // This is important because the popover interaction may affect the textarea's selectionStart
         const currentContent = messages[messageIndex].content;
+        const cursorPos = cursorPositions[messageIndex] ?? currentContent.length;
+        
         const beforeCursor = currentContent.substring(0, cursorPos);
         const afterCursor = currentContent.substring(cursorPos);
         const newContent = beforeCursor + `{{${variable}}}` + afterCursor;
@@ -204,27 +292,17 @@ export function PromptBuilder() {
         setCursorPositions({ ...cursorPositions, [messageIndex]: newCursorPos });
 
         // Focus the textarea and set cursor position
-        setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(newCursorPos, newCursorPos);
-            // Auto-resize
-            textarea.style.height = "auto";
-            textarea.style.height = textarea.scrollHeight + "px";
-        }, 0);
+        if (textarea) {
+            setTimeout(() => {
+                textarea.focus();
+                textarea.setSelectionRange(newCursorPos, newCursorPos);
+                // Auto-resize
+                textarea.style.height = "auto";
+                textarea.style.height = textarea.scrollHeight + "px";
+            }, 0);
+        }
     };
 
-    const moveMessage = (index: number, direction: "up" | "down") => {
-        if (direction === "up" && index === 0) return;
-        if (direction === "down" && index === messages.length - 1) return;
-
-        const updated = [...messages];
-        const targetIndex = direction === "up" ? index - 1 : index + 1;
-        [updated[index], updated[targetIndex]] = [updated[targetIndex], updated[index]];
-        setMessages(updated);
-        setIsDirty(true);
-    };
-
-    // Save handler
     const handleSave = async () => {
         setIsSaving(true);
         try {
@@ -235,11 +313,14 @@ export function PromptBuilder() {
                 variableDefaults[v] = testVariables[v] || "";
             });
 
+            // modelConfig is already the exact config to save - no transformation needed
             await createPrompt({
                 name: promptName,
                 messages: allMessages,
                 variableDefaults,
-            });
+                model,
+                modelConfig, // Use modelConfig directly - it's already clean
+            } as Parameters<typeof createPrompt>[0]);
 
             setIsDirty(false);
             router.push("/ai/prompts");
@@ -260,40 +341,121 @@ export function PromptBuilder() {
         return result;
     };
 
+    // Update conversation messages with streaming text and track timing
+    useEffect(() => {
+        if (currentTaskId && streamingText && isTestingPrompt && messageStartTime) {
+            // Track time to first token (only once)
+            if (timeToFirstToken === undefined && streamingText.length > 0) {
+                const ttft = Math.round(performance.now() - messageStartTime);
+                setTimeToFirstToken(ttft);
+            }
+
+            // Calculate current stats
+            const currentTime = Math.round(performance.now() - messageStartTime);
+            const tokenCount = Math.round(streamingText.length / 4); // Rough token estimation: ~4 chars = 1 token
+
+            setLastMessageStats({
+                timeToFirstToken: timeToFirstToken,
+                totalTime: currentTime,
+                tokens: tokenCount
+            });
+
+            setConversationMessages((prev) => {
+                // Check if last message is assistant
+                const lastMsg = prev[prev.length - 1];
+                if (lastMsg && lastMsg.role === "assistant") {
+                    // Update the last assistant message with streaming text
+                    const updated = [...prev];
+                    updated[updated.length - 1] = {
+                        ...lastMsg,
+                        content: streamingText,
+                    };
+                    return updated;
+                }
+                return prev;
+            });
+        }
+    }, [streamingText, currentTaskId, isTestingPrompt, messageStartTime, timeToFirstToken]);
+
+    // Handle response completion
+    useEffect(() => {
+        if (currentTaskId && isResponseEnded && isTestingPrompt && messageStartTime) {
+            // Calculate final stats
+            const totalTime = Math.round(performance.now() - messageStartTime);
+            const tokenCount = Math.round(streamingText.length / 4);
+            
+            const finalStats = {
+                timeToFirstToken: timeToFirstToken,
+                totalTime: totalTime,
+                tokens: tokenCount
+            };
+            
+            setLastMessageStats(finalStats);
+            
+            // Update the last message with metadata
+            setConversationMessages((prev) => {
+                const updated = [...prev];
+                if (updated.length > 0 && updated[updated.length - 1].role === "assistant") {
+                    updated[updated.length - 1] = {
+                        ...updated[updated.length - 1],
+                        metadata: finalStats
+                    };
+                }
+                return updated;
+            });
+
+            // Add the assistant's response to the API conversation history
+            setApiConversationHistory((prev) => [
+                ...prev,
+                { role: "assistant", content: streamingText }
+            ]);
+
+            // IMPORTANT: Reset the taskId so the next submission works properly
+            setCurrentTaskId(null);
+            setIsTestingPrompt(false);
+            setMessageStartTime(null);
+            setTimeToFirstToken(undefined);
+        }
+    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText, timeToFirstToken]);
+
     // Test chat handler
     const handleSendTestMessage = async () => {
         if (isTestingPrompt) return;
 
-        // Check if the last message in the prompt is a user message
-        const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-        const isLastMessageUser = lastPromptMessage?.role === "user";
+        // Determine if this is the first message in the conversation
+        const isFirstMessage = apiConversationHistory.length === 0;
 
-        // If last message is not a user message, we need chat input
-        if (!isLastMessageUser && !chatInput.trim()) return;
-
-        // Prepare the messages based on whether last prompt message is a user message
-        let finalMessages: PromptMessage[];
+        let userMessageContent: string;
         let displayUserMessage: string;
 
-        if (isLastMessageUser) {
-            // Combine the last user message with chatInput (if any)
-            const lastMessageContent = lastPromptMessage.content;
-            const additionalInput = chatInput.trim();
-            
-            // Create the combined message with a line break if there's additional input
-            const combinedContent = additionalInput 
-                ? `${lastMessageContent}\n${additionalInput}`
-                : lastMessageContent;
-            
-            displayUserMessage = combinedContent;
-            
-            // Replace the last message with the combined version
-            const messagesWithoutLast = messages.slice(0, -1);
-            finalMessages = [...messagesWithoutLast, { role: "user", content: combinedContent }];
+        if (isFirstMessage) {
+            // First message: Use the template prompt
+            const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+            const isLastMessageUser = lastPromptMessage?.role === "user";
+
+            // If last message is not a user message, we need chat input
+            if (!isLastMessageUser && !chatInput.trim()) return;
+
+            if (isLastMessageUser) {
+                // Combine the last user message with chatInput (if any)
+                const lastMessageContent = lastPromptMessage.content;
+                const additionalInput = chatInput.trim();
+                
+                userMessageContent = additionalInput 
+                    ? `${lastMessageContent}\n${additionalInput}`
+                    : lastMessageContent;
+            } else {
+                // Normal behavior: add chatInput as a new user message
+                userMessageContent = chatInput;
+            }
+
+            displayUserMessage = userMessageContent;
         } else {
-            // Normal behavior: add chatInput as a new user message
+            // Subsequent messages: Just use the chat input
+            if (!chatInput.trim()) return;
+            
+            userMessageContent = chatInput;
             displayUserMessage = chatInput;
-            finalMessages = [...messages, { role: "user", content: chatInput }];
         }
 
         if (autoClear) {
@@ -303,112 +465,76 @@ export function PromptBuilder() {
         // Replace variables in the display message before showing it
         const displayMessageWithReplacedVariables = replaceVariables(displayUserMessage);
 
-        // Add user message to conversation (display the combined/final message with variables replaced)
+        // Add user message to conversation display
         setConversationMessages((prev) => [...prev, { role: "user", content: displayMessageWithReplacedVariables }]);
 
         setIsTestingPrompt(true);
         setLastMessageStats(null); // Clear previous stats
-        
-        // Track timing
-        const startTime = performance.now();
-        let timeToFirstToken: number | undefined;
-        let tokenCount = 0;
+        setMessageStartTime(performance.now()); // Start timing
+        setTimeToFirstToken(undefined); // Reset time to first token
 
         try {
-            // Prepare messages with developer message and final messages
-            const allMessages = [{ role: "system", content: developerMessage }, ...finalMessages];
+            let messagesToSend: PromptMessage[];
 
-            // Call API
-            const response = await fetch("/api/prompts/test", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    messages: allMessages,
-                    model,
-                    variables: testVariables,
-                }),
-            });
+            if (isFirstMessage) {
+                // First message: Use template messages, replacing the last user message if needed
+                const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+                const isLastMessageUser = lastPromptMessage?.role === "user";
 
-            if (!response.ok) {
-                throw new Error("Failed to get AI response");
+                if (isLastMessageUser) {
+                    // Replace the last template message with our combined content
+                    const messagesWithoutLast = messages.slice(0, -1);
+                    messagesToSend = [...messagesWithoutLast, { role: "user", content: userMessageContent }];
+                } else {
+                    // Append the new user message
+                    messagesToSend = [...messages, { role: "user", content: userMessageContent }];
+                }
+            } else {
+                // Subsequent messages: Use conversation history + new user message
+                messagesToSend = [...apiConversationHistory, { role: "user", content: userMessageContent }];
             }
 
-            // Handle streaming response
-            const reader = response.body?.getReader();
-            if (!reader) throw new Error("No reader available");
+            // Add system message and replace variables
+            const allMessages = [{ role: "system", content: developerMessage }, ...messagesToSend];
+            const messagesWithVariablesReplaced = allMessages.map(msg => ({
+                ...msg,
+                content: replaceVariables(msg.content)
+            }));
 
-            let assistantMessage = "";
+            // Add the new user message to the API conversation history
+            setApiConversationHistory((prev) => [...prev, { role: "user", content: userMessageContent }]);
+
+            // Build chat_config for direct_chat task
+            const chatConfig: Record<string, any> = {
+                model_id: model,
+                messages: messagesWithVariablesReplaced,
+                stream: true,
+                ...modelConfig,
+            };
+
+            // Add an empty assistant message placeholder
             setConversationMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const text = new TextDecoder().decode(value);
-                const lines = text.split("\n");
-
-                for (const line of lines) {
-                    if (line.startsWith("data: ")) {
-                        try {
-                            const data = JSON.parse(line.slice(6));
-                            if (data.content) {
-                                // Track time to first token
-                                if (timeToFirstToken === undefined && data.content) {
-                                    timeToFirstToken = Math.round(performance.now() - startTime);
-                                }
-                                
-                                assistantMessage += data.content;
-                                // Rough token estimation: ~4 chars = 1 token
-                                tokenCount = Math.round(assistantMessage.length / 4);
-                                
-                                // Update stats in real-time
-                                const currentTime = Math.round(performance.now() - startTime);
-                                setLastMessageStats({
-                                    timeToFirstToken,
-                                    totalTime: currentTime,
-                                    tokens: tokenCount
-                                });
-                                
-                                setConversationMessages((prev) => {
-                                    const updated = [...prev];
-                                    updated[updated.length - 1] = {
-                                        role: "assistant",
-                                        content: assistantMessage,
-                                    };
-                                    return updated;
-                                });
-                            }
-                        } catch (e) {
-                            // Ignore parse errors
-                        }
-                    }
+            // Submit the task using socket
+            const result = await dispatch(createAndSubmitTask({
+                service: "chat_service",
+                taskName: "direct_chat",
+                taskData: {
+                    chat_config: chatConfig
                 }
-            }
+            })).unwrap();
+
+            // Store the taskId for streaming
+            setCurrentTaskId(result.taskId);
             
-            // Calculate total time and save stats
-            const totalTime = Math.round(performance.now() - startTime);
-            const stats = {
-                timeToFirstToken,
-                totalTime,
-                tokens: tokenCount
-            };
-            
-            setLastMessageStats(stats);
-            
-            // Update the last message with metadata
-            setConversationMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = {
-                    ...updated[updated.length - 1],
-                    metadata: stats
-                };
-                return updated;
-            });
         } catch (error) {
             console.error("Error testing prompt:", error);
             setConversationMessages((prev) => [...prev, { role: "assistant", content: "Error: Failed to get response from AI" }]);
-        } finally {
+            // Reset state on error
             setIsTestingPrompt(false);
+            setCurrentTaskId(null);
+            setMessageStartTime(null);
+            setTimeToFirstToken(undefined);
         }
     };
 
@@ -430,9 +556,17 @@ export function PromptBuilder() {
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Panel - Configuration */}
                 <PromptBuilderLeftPanel
+                    models={models}
                     model={model}
                     onModelChange={(value) => {
+                        // value is always the model ID (UUID)
+                        const newModel = models.find(m => m.id === value);
+                        console.log('Model changed to:', value, newModel?.common_name);
                         setModel(value);
+                        // Update config to match the new model's defaults
+                        if (newModel) {
+                            setModelConfig(getModelDefaults(newModel));
+                        }
                         setIsDirty(true);
                     }}
                     modelConfig={modelConfig}
@@ -444,12 +578,13 @@ export function PromptBuilder() {
                     onIsAddingVariableChange={setIsAddingVariable}
                     onAddVariable={handleAddVariable}
                     onRemoveVariable={handleRemoveVariable}
-                    selectedTools={selectedTools}
+                    selectedTools={modelConfig.tools || []}
                     availableTools={availableTools}
                     isAddingTool={isAddingTool}
                     onIsAddingToolChange={setIsAddingTool}
                     onAddTool={handleAddTool}
                     onRemoveTool={handleRemoveTool}
+                    modelSupportsTools={modelSupportsTools}
                     developerMessage={developerMessage}
                     onDeveloperMessageChange={(value) => {
                         setDeveloperMessage(value);
@@ -484,6 +619,7 @@ export function PromptBuilder() {
                     conversationMessages={conversationMessages}
                     onClearConversation={() => {
                         setConversationMessages([]);
+                        setApiConversationHistory([]);
                         setLastMessageStats(null);
                     }}
                     variables={variables}
@@ -499,9 +635,16 @@ export function PromptBuilder() {
                     isTestingPrompt={isTestingPrompt}
                     autoClear={autoClear}
                     onAutoClearChange={setAutoClear}
+                    submitOnEnter={submitOnEnter}
+                    onSubmitOnEnterChange={setSubmitOnEnter}
                     messages={messages}
                     isStreamingMessage={isTestingPrompt}
                     lastMessageStats={lastMessageStats}
+                    attachmentCapabilities={{
+                        supportsImageUrls: supportsImageUrls,
+                        supportsFileUrls: supportsFileUrls,
+                        supportsYoutubeVideos: supportsYoutubeVideos,
+                    }}
                 />
             </div>
 
@@ -509,7 +652,8 @@ export function PromptBuilder() {
             <ModelSettingsDialog
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
-                model={model}
+                modelId={model}
+                models={models}
                 settings={modelConfig}
                 onSettingsChange={setModelConfig}
             />

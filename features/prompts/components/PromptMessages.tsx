@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import { Plus, X, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ interface PromptMessagesProps {
     onDeleteMessage: (index: number) => void;
     onInsertVariable: (messageIndex: number, variable: string) => void;
     onAddMessage: () => void;
-    textareaRefs: React.MutableRefObject<Record<number, HTMLTextAreaElement | null>>;
+    textareaRefs: RefObject<Record<number, HTMLTextAreaElement | null>>;
     cursorPositions: Record<number, number>;
     onCursorPositionChange: (positions: Record<number, number>) => void;
     variables: string[];
@@ -79,7 +79,20 @@ export function PromptMessages({
                                                     variant="ghost"
                                                     size="sm"
                                                     className="h-7 px-2 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-300 dark:hover:text-gray-300"
+                                                    onMouseDown={(e) => {
+                                                        // Prevent textarea from losing focus
+                                                        e.preventDefault();
+                                                    }}
                                                     onClick={() => {
+                                                        // Capture cursor position before opening popover
+                                                        const textarea = textareaRefs.current[index];
+                                                        if (textarea) {
+                                                            onCursorPositionChange({
+                                                                ...cursorPositions,
+                                                                [index]: textarea.selectionStart,
+                                                            });
+                                                        }
+                                                        
                                                         // Ensure message is in edit mode
                                                         if (!isEditing) {
                                                             onEditingMessageIndexChange(index);
@@ -103,6 +116,10 @@ export function PromptMessages({
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 className="w-full justify-start h-8 px-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                onMouseDown={(e) => {
+                                                                    // Prevent textarea from losing focus
+                                                                    e.preventDefault();
+                                                                }}
                                                                 onClick={() => {
                                                                     onInsertVariable(index, variable);
                                                                     onVariablePopoverOpenChange(null);
@@ -170,17 +187,21 @@ export function PromptMessages({
                                                 });
                                             }}
                                             placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden"
+                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden leading-normal"
                                             autoFocus
                                             onBlur={() => onEditingMessageIndexChange(null)}
                                             style={{
                                                 minHeight: "80px",
+                                                lineHeight: "1.5",
                                             }}
                                         />
                                     ) : (
                                         <div
-                                            className="text-xs text-gray-900 dark:text-gray-200 whitespace-pre-wrap cursor-text min-h-[80px]"
+                                            className="text-xs pb-2 text-gray-900 dark:text-gray-200 whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
                                             onClick={() => onEditingMessageIndexChange(index)}
+                                            style={{
+                                                lineHeight: "1.5",
+                                            }}
                                         >
                                             {message.content ? (
                                                 <HighlightedText text={message.content} />

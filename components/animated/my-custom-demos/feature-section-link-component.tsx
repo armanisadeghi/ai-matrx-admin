@@ -31,7 +31,7 @@ const FeatureSectionLinkComponent = ({
         description={description}
         icon={icon}
         index={index}
-        link={link}
+        // Don't pass link prop to avoid nested <a> tags
       />
       
       {/* Route indicator */}

@@ -10,6 +10,7 @@ interface ToolsManagerProps {
     onIsAddingToolChange: (value: boolean) => void;
     onAddTool: (tool: string) => void;
     onRemoveTool: (tool: string) => void;
+    modelSupportsTools: boolean;
 }
 
 export function ToolsManager({
@@ -19,27 +20,42 @@ export function ToolsManager({
     onIsAddingToolChange,
     onAddTool,
     onRemoveTool,
+    modelSupportsTools,
 }: ToolsManagerProps) {
     return (
         <div className="flex items-center gap-2 flex-wrap">
-            <Label className="text-xs text-gray-600 dark:text-gray-400">Tools</Label>
+            <Label className={`text-xs ${modelSupportsTools ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'}`}>
+                Tools
+                {!modelSupportsTools && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+            </Label>
             {selectedTools.map((tool) => (
                 <span
                     key={tool}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md text-xs font-medium border border-green-200 dark:border-green-800"
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
+                        modelSupportsTools
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 border-gray-200 dark:border-gray-700'
+                    }`}
                 >
                     {tool}
-                    <X
-                        className="w-3 h-3 cursor-pointer hover:text-red-500 dark:hover:text-red-400"
-                        onClick={() => onRemoveTool(tool)}
-                    />
+                    {modelSupportsTools && (
+                        <X
+                            className="w-3 h-3 cursor-pointer hover:text-red-500 dark:hover:text-red-400"
+                            onClick={() => onRemoveTool(tool)}
+                        />
+                    )}
                 </span>
             ))}
-            <Popover open={isAddingTool} onOpenChange={onIsAddingToolChange}>
+            <Popover open={isAddingTool} onOpenChange={modelSupportsTools ? onIsAddingToolChange : undefined}>
                 <PopoverTrigger asChild>
                     <button
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-                        onClick={() => onIsAddingToolChange(true)}
+                        disabled={!modelSupportsTools}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-md transition-colors ${
+                            modelSupportsTools
+                                ? 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer'
+                                : 'text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50'
+                        }`}
+                        onClick={() => modelSupportsTools && onIsAddingToolChange(true)}
                     >
                         <Plus className="w-3.5 h-3.5" />
                         Add

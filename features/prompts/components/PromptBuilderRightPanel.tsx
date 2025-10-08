@@ -1,5 +1,5 @@
-import React from "react";
-import { MessageSquare, Trash2, Paperclip, RefreshCw, ArrowUp, Maximize2 } from "lucide-react";
+import React, { useState } from "react";
+import { MessageSquare, Trash2, Paperclip, RefreshCw, ArrowUp, Maximize2, CornerDownLeft, Image, FileText, Youtube, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -29,6 +29,8 @@ interface PromptBuilderRightPanelProps {
     isTestingPrompt: boolean;
     autoClear: boolean;
     onAutoClearChange: (value: boolean) => void;
+    submitOnEnter: boolean;
+    onSubmitOnEnterChange: (value: boolean) => void;
     messages: Array<{ role: string; content: string }>;
     isStreamingMessage?: boolean;
     lastMessageStats?: {
@@ -36,6 +38,11 @@ interface PromptBuilderRightPanelProps {
         totalTime?: number;
         tokens?: number;
     } | null;
+    attachmentCapabilities?: {
+        supportsImageUrls: boolean;
+        supportsFileUrls: boolean;
+        supportsYoutubeVideos: boolean;
+    };
 }
 
 export function PromptBuilderRightPanel({
@@ -52,16 +59,30 @@ export function PromptBuilderRightPanel({
     isTestingPrompt,
     autoClear,
     onAutoClearChange,
+    submitOnEnter,
+    onSubmitOnEnterChange,
     messages,
     isStreamingMessage = false,
     lastMessageStats = null,
+    attachmentCapabilities = { supportsImageUrls: false, supportsFileUrls: false, supportsYoutubeVideos: false },
 }: PromptBuilderRightPanelProps) {
+    const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
     // Check if the last prompt message is a user message
     const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const isLastMessageUser = lastPromptMessage?.role === "user";
     
     // Determine if the send button should be disabled
     const isSendDisabled = isTestingPrompt || (!isLastMessageUser && !chatInput.trim());
+
+    // Handle keyboard events in the textarea
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (submitOnEnter && e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if (!isSendDisabled) {
+                onSendMessage();
+            }
+        }
+    };
     return (
         <div className="w-1/2 flex flex-col bg-gray-50 dark:bg-gray-900">
             {/* Conversation Preview */}
@@ -208,6 +229,7 @@ export function PromptBuilderRightPanel({
                         <textarea
                             value={chatInput}
                             onChange={(e) => onChatInputChange(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             placeholder="Add a message to the bottom of your prompt..."
                             className="flex-1 bg-transparent border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none min-h-[70px] max-h-[200px] overflow-y-auto"
                             style={{
@@ -226,23 +248,124 @@ export function PromptBuilderRightPanel({
 
                     {/* Bottom Controls */}
                     <div className="flex items-center justify-between px-3 py-1">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-gray-300">
-                            <Paperclip className="w-4 h-4" />
-                        </Button>
+                        <Popover open={isAttachmentMenuOpen} onOpenChange={setIsAttachmentMenuOpen}>
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-gray-300">
+                                    <Paperclip className="w-4 h-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-56 p-2" align="start" side="top">
+                                <div className="space-y-1">
+                                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 px-2 py-1">
+                                        Add Attachment
+                                    </div>
+                                    
+                                    {/* Image URLs */}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full justify-start h-8 text-xs"
+                                        disabled={!attachmentCapabilities.supportsImageUrls}
+                                        onClick={() => {
+                                            // TODO: Implement image URL attachment
+                                            console.log("Image URL attachment clicked");
+                                            setIsAttachmentMenuOpen(false);
+                                        }}
+                                    >
+                                        <Image className="w-4 h-4 mr-2" />
+                                        Image URLs
+                                        {!attachmentCapabilities.supportsImageUrls && (
+                                            <span className="ml-auto text-xs text-gray-400">(N/A)</span>
+                                        )}
+                                    </Button>
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onAutoClearChange(!autoClear)}
-                            className={`h-8 px-3 text-xs ${
-                                autoClear
-                                    ? "text-gray-200 dark:text-gray-200"
-                                    : "text-gray-400 dark:text-gray-400 hover:text-gray-300"
-                            }`}
-                        >
-                            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                            Auto-clear
-                        </Button>
+                                    {/* File URLs */}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full justify-start h-8 text-xs"
+                                        disabled={!attachmentCapabilities.supportsFileUrls}
+                                        onClick={() => {
+                                            // TODO: Implement file URL attachment
+                                            console.log("File URL attachment clicked");
+                                            setIsAttachmentMenuOpen(false);
+                                        }}
+                                    >
+                                        <FileText className="w-4 h-4 mr-2" />
+                                        File URLs
+                                        {!attachmentCapabilities.supportsFileUrls && (
+                                            <span className="ml-auto text-xs text-gray-400">(N/A)</span>
+                                        )}
+                                    </Button>
+
+                                    {/* YouTube Videos */}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full justify-start h-8 text-xs"
+                                        disabled={!attachmentCapabilities.supportsYoutubeVideos}
+                                        onClick={() => {
+                                            // TODO: Implement YouTube video attachment
+                                            console.log("YouTube video attachment clicked");
+                                            setIsAttachmentMenuOpen(false);
+                                        }}
+                                    >
+                                        <Youtube className="w-4 h-4 mr-2" />
+                                        YouTube Videos
+                                        {!attachmentCapabilities.supportsYoutubeVideos && (
+                                            <span className="ml-auto text-xs text-gray-400">(N/A)</span>
+                                        )}
+                                    </Button>
+
+                                    {/* Audio Upload - Coming Soon */}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full justify-start h-8 text-xs"
+                                        disabled={true}
+                                        onClick={() => {
+                                            // TODO: Implement audio upload
+                                            console.log("Audio upload clicked");
+                                            setIsAttachmentMenuOpen(false);
+                                        }}
+                                    >
+                                        <Mic className="w-4 h-4 mr-2" />
+                                        Audio Upload
+                                        <span className="ml-auto text-xs text-gray-400">(soon)</span>
+                                    </Button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onSubmitOnEnterChange(!submitOnEnter)}
+                                className={`h-8 px-3 text-xs ${
+                                    submitOnEnter
+                                        ? "text-gray-200 dark:text-gray-200"
+                                        : "text-gray-400 dark:text-gray-400 hover:text-gray-300"
+                                }`}
+                            >
+                                <CornerDownLeft className="w-3.5 h-3.5 mr-1.5" />
+                                Submit on Enter
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onAutoClearChange(!autoClear)}
+                                className={`h-8 px-3 text-xs ${
+                                    autoClear
+                                        ? "text-gray-200 dark:text-gray-200"
+                                        : "text-gray-400 dark:text-gray-400 hover:text-gray-300"
+                                }`}
+                            >
+                                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                                Auto-clear
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

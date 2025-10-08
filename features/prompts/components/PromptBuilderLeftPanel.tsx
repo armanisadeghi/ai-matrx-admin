@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { ModelConfiguration } from "./configuration/ModelConfiguration";
 import { VariablesManager } from "./configuration/VariablesManager";
@@ -9,19 +9,28 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui";
 
 interface ModelConfig {
-    textFormat: string;
-    toolChoice: string;
-    temperature: number;
-    maxTokens: number;
-    topP: number;
-    storeLogs: boolean;
-    reasoningEffort?: string;
+    output_format?: string;
+    tool_choice?: string;
+    temperature?: number;
+    max_tokens?: number;
+    top_p?: number;
+    top_k?: number;
+    store?: boolean;
+    stream?: boolean;
+    parallel_tool_calls?: boolean;
+    tools?: string[]; // Array of selected tool names
+    image_urls?: boolean;
+    file_urls?: boolean;
+    internal_web_search?: boolean;
+    youtube_videos?: boolean;
+    reasoning_effort?: string;
     verbosity?: string;
-    summary?: string;
+    reasoning_summary?: string;
 }
 
 interface PromptBuilderLeftPanelProps {
     // Model
+    models: any[];
     model: string;
     onModelChange: (value: string) => void;
     modelConfig: ModelConfig;
@@ -43,6 +52,7 @@ interface PromptBuilderLeftPanelProps {
     onIsAddingToolChange: (value: boolean) => void;
     onAddTool: (tool: string) => void;
     onRemoveTool: (tool: string) => void;
+    modelSupportsTools: boolean;
 
     // System Message
     developerMessage: string;
@@ -60,12 +70,13 @@ interface PromptBuilderLeftPanelProps {
     onDeleteMessage: (index: number) => void;
     onInsertVariable: (messageIndex: number, variable: string) => void;
     onAddMessage: () => void;
-    textareaRefs: React.MutableRefObject<Record<number, HTMLTextAreaElement | null>>;
+    textareaRefs: RefObject<Record<number, HTMLTextAreaElement | null>>;
     cursorPositions: Record<number, number>;
     onCursorPositionChange: (positions: Record<number, number>) => void;
 }
 
 export function PromptBuilderLeftPanel({
+    models,
     model,
     onModelChange,
     modelConfig,
@@ -83,6 +94,7 @@ export function PromptBuilderLeftPanel({
     onIsAddingToolChange,
     onAddTool,
     onRemoveTool,
+    modelSupportsTools,
     developerMessage,
     onDeveloperMessageChange,
     onDeveloperMessageClear,
@@ -105,6 +117,7 @@ export function PromptBuilderLeftPanel({
             <div className="flex-1 overflow-y-auto pl-2 pr-1 space-y-3" style={{ scrollbarGutter: "stable" }}>
                 {/* Model Configuration */}
                 <ModelConfiguration
+                    models={models}
                     model={model}
                     onModelChange={onModelChange}
                     modelConfig={modelConfig}
@@ -128,6 +141,7 @@ export function PromptBuilderLeftPanel({
                     onIsAddingToolChange={onIsAddingToolChange}
                     onAddTool={onAddTool}
                     onRemoveTool={onRemoveTool}
+                    modelSupportsTools={modelSupportsTools}
                 />
                 {/* System Message */}
                 <SystemMessage

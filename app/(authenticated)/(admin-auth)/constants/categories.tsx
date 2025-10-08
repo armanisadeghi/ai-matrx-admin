@@ -32,6 +32,7 @@ import {
     IconRefresh,
     IconRestore,
     IconRobot,
+    IconServer,
     IconSettings,
     IconShield,
     IconShieldLock,
@@ -144,6 +145,18 @@ export const adminCategories = [
                 description: "View, filter, and analyze TypeScript compilation errors across the project",
                 icon: <IconCode />,
                 link: "/administration/typescript-errors",
+            },
+        ],
+    },
+    {
+        name: "Server & Cache Management",
+        icon: <IconServer className="w-6 h-6" />,
+        features: [
+            {
+                title: "Server Cache Manager",
+                description: "Refresh and manage server-side caches including AI models and other cached data",
+                icon: <IconRefresh />,
+                link: "/administration/server-cache",
             },
         ],
     },

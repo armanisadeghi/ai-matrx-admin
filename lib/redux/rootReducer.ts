@@ -12,6 +12,7 @@ import aiChatReducer from "./slices/aiChatSlice";
 import userPreferencesReducer from "./slices/userPreferencesSlice";
 import testRoutesReducer from "./slices/testRoutesSlice";
 import flashcardChatReducer from "./slices/flashcardChatSlice";
+import adminDebugReducer from "./slices/adminDebugSlice";
 import { themeReducer } from "@/styles/themes";
 import { InitialReduxState } from "@/types/reduxTypes";
 import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
@@ -103,6 +104,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         testRoutes: testRoutesReducer,
         flashcardChat: flashcardChatReducer,
         aiChat: aiChatReducer,
+        adminDebug: adminDebugReducer,
         globalCache: globalCacheSlice.reducer,
         ui: uiReducer,
         notes: notesReducer,

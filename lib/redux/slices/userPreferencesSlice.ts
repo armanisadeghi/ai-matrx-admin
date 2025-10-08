@@ -113,6 +113,13 @@ export interface PlaygroundPreferences {
     preferredEndpoint: MatrxRecordId;
 }
 
+export interface AiModelsPreferences {
+    defaultModel: string;
+    activeModels: string[];
+    inactiveModels: string[];
+    newModels: string[];
+}
+
 // Combine all module preferences into one interface
 export interface UserPreferences {
     display: DisplayPreferences;
@@ -126,6 +133,7 @@ export interface UserPreferences {
     coding: CodingPreferences;
     flashcard: FlashcardPreferences;
     playground: PlaygroundPreferences;
+    aiModels: AiModelsPreferences;
 }
 
 // Add state interface for async operations
@@ -242,6 +250,12 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
             preferredModel: '',
             preferredEndpoint: '',
         },
+        aiModels: {
+            defaultModel: '548126f2-714a-4562-9001-0c31cbeea375', // GPT-4.1 Mini
+            activeModels: [],
+            inactiveModels: [],
+            newModels: [],
+        },
     };
 
     // Merge with defaults to ensure all properties exist
@@ -257,6 +271,7 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
         coding: { ...defaultPreferences.coding, ...preferences.coding },
         flashcard: { ...defaultPreferences.flashcard, ...preferences.flashcard },
         playground: { ...defaultPreferences.playground, ...preferences.playground },
+        aiModels: { ...defaultPreferences.aiModels, ...preferences.aiModels },
     };
 
     return {
