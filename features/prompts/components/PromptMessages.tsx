@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React, { RefObject, useRef } from "react";
 import { Plus, X, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { HighlightedText } from "./HighlightedText";
+import { PromptEditorContextMenu } from "./PromptEditorContextMenu";
 
 interface PromptMessagesProps {
     // Messages
@@ -41,6 +42,9 @@ export function PromptMessages({
     onCursorPositionChange,
     variables,
 }: PromptMessagesProps) {
+    // Track if context menu is open to prevent blur from closing edit mode
+    const contextMenuOpenRef = useRef(false);
+    
     return (
         <>
             {/* Prompt Messages */}
@@ -154,47 +158,68 @@ export function PromptMessages({
                                 {/* Content */}
                                 <div className="p-4">
                                     {isEditing ? (
-                                        <textarea
-                                            ref={(el) => {
-                                                textareaRefs.current[index] = el;
+                                        <PromptEditorContextMenu
+                                            getTextarea={() => textareaRefs.current[index]}
+                                            onContentInserted={() => {
+                                                // Reset context menu flag after insertion
+                                                contextMenuOpenRef.current = false;
                                             }}
-                                            value={message.content}
-                                            onChange={(e) => {
-                                                onMessageContentChange(index, e.target.value);
-                                                // Auto-resize textarea
-                                                e.target.style.height = "auto";
-                                                e.target.style.height = e.target.scrollHeight + "px";
-                                            }}
-                                            onSelect={(e) => {
-                                                // Track cursor position
-                                                const target = e.target as HTMLTextAreaElement;
-                                                onCursorPositionChange({
-                                                    ...cursorPositions,
-                                                    [index]: target.selectionStart,
-                                                });
-                                            }}
-                                            onFocus={(e) => {
-                                                // Set initial height on focus
-                                                e.target.style.height = "auto";
-                                                e.target.style.height = e.target.scrollHeight + "px";
-                                                // Move cursor to end
-                                                const length = e.target.value.length;
-                                                e.target.setSelectionRange(length, length);
-                                                // Track cursor position
-                                                onCursorPositionChange({
-                                                    ...cursorPositions,
-                                                    [index]: length,
-                                                });
-                                            }}
-                                            placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden leading-normal"
-                                            autoFocus
-                                            onBlur={() => onEditingMessageIndexChange(null)}
-                                            style={{
-                                                minHeight: "80px",
-                                                lineHeight: "1.5",
-                                            }}
-                                        />
+                                        >
+                                            <textarea
+                                                ref={(el) => {
+                                                    textareaRefs.current[index] = el;
+                                                }}
+                                                value={message.content}
+                                                onChange={(e) => {
+                                                    onMessageContentChange(index, e.target.value);
+                                                    // Auto-resize textarea
+                                                    e.target.style.height = "auto";
+                                                    e.target.style.height = e.target.scrollHeight + "px";
+                                                }}
+                                                onSelect={(e) => {
+                                                    // Track cursor position
+                                                    const target = e.target as HTMLTextAreaElement;
+                                                    onCursorPositionChange({
+                                                        ...cursorPositions,
+                                                        [index]: target.selectionStart,
+                                                    });
+                                                }}
+                                                onContextMenu={() => {
+                                                    // Mark that context menu is being opened
+                                                    contextMenuOpenRef.current = true;
+                                                }}
+                                                onFocus={(e) => {
+                                                    // Set initial height on focus
+                                                    e.target.style.height = "auto";
+                                                    e.target.style.height = e.target.scrollHeight + "px";
+                                                    // Move cursor to end
+                                                    const length = e.target.value.length;
+                                                    e.target.setSelectionRange(length, length);
+                                                    // Track cursor position
+                                                    onCursorPositionChange({
+                                                        ...cursorPositions,
+                                                        [index]: length,
+                                                    });
+                                                }}
+                                                placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
+                                                className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden leading-normal"
+                                                autoFocus
+                                                onBlur={() => {
+                                                    // Don't close edit mode if context menu is open
+                                                    if (!contextMenuOpenRef.current) {
+                                                        onEditingMessageIndexChange(null);
+                                                    }
+                                                    // Reset the flag after a short delay (in case menu was opened)
+                                                    setTimeout(() => {
+                                                        contextMenuOpenRef.current = false;
+                                                    }, 100);
+                                                }}
+                                                style={{
+                                                    minHeight: "80px",
+                                                    lineHeight: "1.5",
+                                                }}
+                                            />
+                                        </PromptEditorContextMenu>
                                     ) : (
                                         <div
                                             className="text-xs pb-2 text-gray-900 dark:text-gray-200 whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"

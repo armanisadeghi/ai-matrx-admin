@@ -4,7 +4,7 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { fetchAIModels } from "@/lib/api/ai-models";
+import { fetchAIModels } from "@/lib/api/ai-models-server";
 
 export async function generateMetadata({
     params,

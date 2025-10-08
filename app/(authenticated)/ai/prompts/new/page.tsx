@@ -1,5 +1,5 @@
 import { PromptBuilder } from "@/features/prompts/components/PromptBuilder";
-import { fetchAIModels } from "@/lib/api/ai-models";
+import { fetchAIModels } from "@/lib/api/ai-models-server";
 
 // Cache this page for 12 hours
 export const revalidate = 43200;

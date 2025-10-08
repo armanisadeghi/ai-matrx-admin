@@ -1,4 +1,4 @@
-import { fetchAIModels } from "@/lib/api/ai-models";
+import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { Card } from "@/components/ui/card";
 import { TestControlsWrapper } from "./TestControlsWrapper";
 
