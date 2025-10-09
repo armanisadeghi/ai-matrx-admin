@@ -82,10 +82,7 @@ export function PromptBuilderRightPanel({
     const streamingText = useAppSelector((state) => 
         currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ""
     );
-    const isResponseEnded = useAppSelector((state) =>
-        currentTaskId ? selectResponseEndedByListenerId(currentTaskId)(state) : false
-    );
-        
+       
     // Calculate live stats during streaming (only in this component, not in parent)
     const liveStats = useMemo(() => {
         if (!currentTaskId || !messageStartTime || !streamingText) return null;

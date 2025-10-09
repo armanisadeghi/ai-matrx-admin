@@ -231,8 +231,6 @@ export const createAndSubmitTask = createAsyncThunk<
     const state = getState();
     const resolvedConnectionId = connectionId || selectPrimaryConnection(state)?.connectionId;
 
-    console.log("=================== createAndSubmitTask ===================");
-
     if (!resolvedConnectionId) {
         throw new Error("No primary connection available and no connectionId provided");
     }

@@ -104,7 +104,6 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const processedContent = preprocessContent(content);
     
     const handleEdit = () => {
-        console.log("Edit clicked with content:", content);
         onEditRequest?.();
     };
 

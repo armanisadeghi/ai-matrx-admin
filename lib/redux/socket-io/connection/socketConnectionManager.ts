@@ -111,7 +111,7 @@ export class SocketConnectionManager {
 
         const { io } = await import("socket.io-client");
         return new Promise((resolve) => {
-            console.log(`[SOCKET] Attempting connection ${connectionId} to ${url}${namespace}`);
+            // console.log(`[SOCKET] Attempting connection ${connectionId} to ${url}${namespace}`);
             const socket = io(`${url}${namespace}`, {
                 transports: ["websocket", "polling"],
                 withCredentials: true,
