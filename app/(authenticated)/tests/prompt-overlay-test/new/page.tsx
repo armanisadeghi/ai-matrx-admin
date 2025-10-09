@@ -270,7 +270,7 @@ export default function NewPromptPage() {
             await createPrompt({
                 name: promptName,
                 messages: allMessages,
-                variableDefaults,
+                variableDefaults: variableDefaults as any,
             });
 
             setIsDirty(false);
@@ -913,11 +913,7 @@ export default function NewPromptPage() {
                                     value={chatInput}
                                     onChange={(e) => setChatInput(e.target.value)}
                                     placeholder="Add a message to the bottom of your prompt..."
-                                    className="flex-1 bg-transparent border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none min-h-[70px] max-h-[200px] overflow-y-auto"
-                                    style={{
-                                        scrollbarWidth: "thin",
-                                        scrollbarColor: "#4B5563 transparent",
-                                    }}
+                                    className="flex-1 bg-transparent border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none min-h-[70px] max-h-[200px] overflow-y-auto scrollbar-thin"
                                 />
                                 <Button
                                     onClick={handleSendTestMessage}

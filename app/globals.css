@@ -97,6 +97,12 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --sidebar-border: 220 13% 91%;
         --sidebar-ring: 217.2 91.2% 59.8%;
 
+        /* Scrollbar colors for light mode */
+        --scrollbar-track: 240 5% 96%;
+        --scrollbar-thumb: 240 5% 65%;
+        --scrollbar-thumb-hover: 240 8% 45%;
+        --scrollbar-thumb-active: 210 80% 45%;
+
         --typography-fontFamily-sans: var(--font-inter), var(--font-opensans), var(--font-roboto), var(--font-montserrat), ui-sans-serif,
             system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
             "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -187,6 +193,12 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --sidebar-accent-foreground: 240 4.8% 95.9%;
         --sidebar-border: 215 10% 22%; /* Slate-tinted, slightly different from sidebar-accent */
         --sidebar-ring: 217.2 91.2% 59.8%;
+
+        /* Scrollbar colors for dark mode */
+        --scrollbar-track: 222 47% 11%;
+        --scrollbar-thumb: 240 5% 35%;
+        --scrollbar-thumb-hover: 221 83% 53%;
+        --scrollbar-thumb-active: 275 60% 50%;
     }
 }
 
@@ -274,28 +286,29 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         @apply absolute -inset-4 shadow-xl rounded-xl border;
     }
 
-    /* ATTEMPT AT GLOBAL THIN SCROLLBAR */
+    /* GLOBAL THIN SCROLLBAR WITH PROPER LIGHT/DARK MODE SUPPORT */
     * {
         scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track)); /* Firefox scrollbar colors */
     }
     *::-webkit-scrollbar {
         width: 4px; /* Thin scrollbar width globally */
     }
     *::-webkit-scrollbar-track {
-        background: var(--background); /* Global scrollbar track background */
+        background: hsl(var(--scrollbar-track)); /* Global scrollbar track background */
     }
     *::-webkit-scrollbar-thumb {
-        background-color: var(--primary); /* Global scrollbar thumb color */
+        background-color: hsl(var(--scrollbar-thumb)); /* Global scrollbar thumb color */
         border-radius: 10px; /* Round the edges of the scrollbar thumb */
-        border: 1px solid var(--background); /* Add some padding inside the scrollbar thumb */
+        border: 1px solid hsl(var(--scrollbar-track)); /* Add some padding inside the scrollbar thumb */
     }
     *::-webkit-scrollbar-thumb:hover {
-        background-color: var(--primary-foreground); /* Darken the scrollbar thumb on hover globally */
+        background-color: hsl(var(--scrollbar-thumb-hover)); /* Hover state for scrollbar thumb */
     }
     *::-webkit-scrollbar-thumb:active {
-        background-color: var(--secondary); /* Change color when the thumb is active globally */
+        background-color: hsl(var(--scrollbar-thumb-active)); /* Active state for scrollbar thumb */
     }
-    /* ATTEMPT AT GLOBAL THIN SCROLLBAR */
+    /* GLOBAL THIN SCROLLBAR WITH PROPER LIGHT/DARK MODE SUPPORT */
 
     .hide-scrollbar {
         scrollbar-width: none; /* Firefox */
@@ -315,10 +328,11 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     /* Custom Scrollbar Styles */
     .scrollbar-thin {
         scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track)); /* Firefox scrollbar colors */
     }
 
     .scrollbar-thumb-primary {
-        scrollbar-color: var(--primary) var(--background); /* Primary color for scrollbar thumb */
+        scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track)); /* Use consistent scrollbar colors */
     }
 
     /* WebKit-based browsers (Chrome, Safari, etc.) */
@@ -327,23 +341,23 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     }
 
     .scrollbar-thin::-webkit-scrollbar-track {
-        background: var(--background); /* Scrollbar track background */
+        background: hsl(var(--scrollbar-track)); /* Scrollbar track background */
     }
 
     .scrollbar-thin::-webkit-scrollbar-thumb {
-        background-color: var(--primary); /* Scrollbar thumb color */
+        background-color: hsl(var(--scrollbar-thumb)); /* Scrollbar thumb color */
         border-radius: 10px; /* Round the edges of the scrollbar thumb */
-        border: 1px solid var(--background); /* Thin border inside the scrollbar thumb */
+        border: 1px solid hsl(var(--scrollbar-track)); /* Thin border inside the scrollbar thumb */
     }
 
     /* Additional optional hover effect for scrollbar thumb */
     .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-        background-color: var(--primary-foreground); /* Darken the scrollbar thumb on hover */
+        background-color: hsl(var(--scrollbar-thumb-hover)); /* Hover state for scrollbar thumb */
     }
 
     /* Optional active effect for the scrollbar thumb */
     .scrollbar-thin::-webkit-scrollbar-thumb:active {
-        background-color: var(--secondary); /* Different color when the thumb is active */
+        background-color: hsl(var(--scrollbar-thumb-active)); /* Active state for scrollbar thumb */
     }
 
     .scrollbar-none {
@@ -473,7 +487,7 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: #4b5563 transparent;
+    scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track));
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -481,12 +495,16 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: hsl(var(--scrollbar-track));
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
+    background-color: hsl(var(--scrollbar-thumb));
     border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--scrollbar-thumb-hover));
 }
 
 :root {
