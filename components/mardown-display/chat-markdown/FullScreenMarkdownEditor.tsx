@@ -57,13 +57,9 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     }, [isOpen, initialContent]);
 
     const handleTabChange = (newTab: string) => {
-        // Get current content from TuiEditor if leaving markdown or wysiwyg tab
-        if ((activeTab === "markdown" || activeTab === "wysiwyg") && tuiEditorRef.current?.getCurrentMarkdown) {
-            const markdown = tuiEditorRef.current.getCurrentMarkdown();
-            if (markdown !== editedContent) {
-                setEditedContent(markdown);
-            }
-        }
+        // Don't try to sync content during tab changes - the onChange handler should have already
+        // kept the editedContent state in sync with the TUI editor content.
+        // The previous approach was causing the state to be overwritten with stale content.
         setActiveTab(newTab);
     };
 
@@ -74,12 +70,10 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     };
 
     const handleSave = () => {
-        let finalMarkdown = editedContent;
-        if ((activeTab === "markdown" || activeTab === "wysiwyg") && tuiEditorRef.current?.getCurrentMarkdown) {
-            finalMarkdown = tuiEditorRef.current.getCurrentMarkdown();
-        }
+        // Since the onChange handlers keep editedContent in sync with all editors,
+        // we can simply use editedContent for all tabs
         if (onSave) {
-            onSave(finalMarkdown);
+            onSave(editedContent);
         }
     };
 

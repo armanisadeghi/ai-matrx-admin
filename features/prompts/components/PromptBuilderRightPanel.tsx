@@ -49,6 +49,7 @@ interface PromptBuilderRightPanelProps {
         supportsFileUrls: boolean;
         supportsYoutubeVideos: boolean;
     };
+    onMessageContentChange?: (messageIndex: number, newContent: string) => void;
 }
 
 export function PromptBuilderRightPanel({
@@ -73,6 +74,7 @@ export function PromptBuilderRightPanel({
     timeToFirstTokenRef,
     lastMessageStats = null,
     attachmentCapabilities = { supportsImageUrls: false, supportsFileUrls: false, supportsYoutubeVideos: false },
+    onMessageContentChange,
 }: PromptBuilderRightPanelProps) {
     const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
     
@@ -167,8 +169,9 @@ export function PromptBuilderRightPanel({
                                                     role="assistant"
                                                     isStreamActive={isStreaming}
                                                     hideCopyButton={true}
-                                                    allowFullScreenEditor={false}
+                                                    allowFullScreenEditor={true}
                                                     className="bg-gray-50 dark:bg-gray-900"
+                                                    onContentChange={onMessageContentChange ? (newContent) => onMessageContentChange(idx, newContent) : undefined}
                                                 />
                                             )}
                                         </div>

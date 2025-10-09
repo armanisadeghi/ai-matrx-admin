@@ -833,6 +833,18 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
                         supportsFileUrls: supportsFileUrls,
                         supportsYoutubeVideos: supportsYoutubeVideos,
                     }}
+                    onMessageContentChange={(messageIndex, newContent) => {
+                        setConversationMessages(prevMessages => {
+                            const updatedMessages = [...prevMessages];
+                            if (messageIndex >= 0 && messageIndex < updatedMessages.length) {
+                                updatedMessages[messageIndex] = {
+                                    ...updatedMessages[messageIndex],
+                                    content: newContent
+                                };
+                            }
+                            return updatedMessages;
+                        });
+                    }}
                 />
             </div>
 
