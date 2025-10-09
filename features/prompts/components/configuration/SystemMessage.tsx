@@ -190,6 +190,33 @@ export function SystemMessage({
                                         });
                                     });
                                 }}
+                                onKeyDown={(e) => {
+                                    // Capture scroll position before any key action, especially for delete key
+                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                                    
+                                    // Store scroll position for restoration after key processing
+                                    (e.target as any)._savedScrollTop = scrollTop;
+                                    (e.target as any)._savedScrollLeft = scrollLeft;
+                                }}
+                                onKeyUp={(e) => {
+                                    // Restore scroll position after key processing, especially important for delete key
+                                    const savedScrollTop = (e.target as any)._savedScrollTop;
+                                    const savedScrollLeft = (e.target as any)._savedScrollLeft;
+                                    
+                                    if (savedScrollTop !== undefined && savedScrollLeft !== undefined) {
+                                        // Use multiple requestAnimationFrame calls for delete key and other keys
+                                        requestAnimationFrame(() => {
+                                            window.scrollTo(savedScrollLeft, savedScrollTop);
+                                            requestAnimationFrame(() => {
+                                                window.scrollTo(savedScrollLeft, savedScrollTop);
+                                                requestAnimationFrame(() => {
+                                                    window.scrollTo(savedScrollLeft, savedScrollTop);
+                                                });
+                                            });
+                                        });
+                                    }
+                                }}
                                 onSelect={(e) => {
                                     // Track cursor position
                                     if (onCursorPositionChange) {
