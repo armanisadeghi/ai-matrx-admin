@@ -477,7 +477,7 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -486,7 +486,7 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #4b5563;
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
 :root {
