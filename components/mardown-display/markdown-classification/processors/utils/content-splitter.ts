@@ -1,7 +1,7 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | string;
+    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | "cooking_recipe" | string;
     content: string;
     language?: string;
     src?: string;
@@ -31,6 +31,9 @@ const questionnaireCache = new Map<string, { content: string; hash: string; meta
 // Cache for flashcard content to prevent unnecessary updates during streaming
 const flashcardCache = new Map<string, { content: string; hash: string; metadata: any }>();
 
+// Cache for cooking recipe content to prevent unnecessary updates during streaming
+const recipeCache = new Map<string, { content: string; hash: string; metadata: any }>();
+
 // Cache for table content to prevent unnecessary updates during streaming
 const tableCache = new Map<string, { content: string; hash: string; metadata: any }>();
 
@@ -40,6 +43,14 @@ interface TableState {
     bufferRow: string;
     totalRows: number;
     completeRowCount: number;
+}
+
+interface RecipeState {
+    isComplete: boolean;
+    hasTitle: boolean;
+    hasIngredients: boolean;
+    hasInstructions: boolean;
+    contentLength: number;
 }
 
 export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
@@ -53,7 +64,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     let inPotentialTable = false;
 
     // List of special tags to handle
-    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool", "questionnaire", "flashcards"];
+    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool", "questionnaire", "flashcards", "cooking_recipe"];
 
     // Helper function to check if a line looks like a table row
     const looksLikeTableRow = (line: string): boolean => {
@@ -314,6 +325,23 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         };
     };
 
+    // Function to analyze recipe completion state
+    const analyzeRecipeCompletion = (content: string): RecipeState => {
+        const hasTitle = /^###\s+.+$/m.test(content);
+        const hasIngredients = /####\s*Ingredients?:/i.test(content);
+        const hasInstructions = /####\s*Instructions?:/i.test(content);
+        const isComplete = content.includes('</cooking_recipe>');
+        const contentLength = content.length;
+
+        return {
+            isComplete,
+            hasTitle,
+            hasIngredients,
+            hasInstructions,
+            contentLength
+        };
+    };
+
     // Function to handle special tags
     const handleSpecialTags = (tag: string, startIndex: number, lines: string[]): { content: string; newIndex: number; metadata?: any } => {
         const content: string[] = [];
@@ -442,6 +470,68 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     completeCardCount: flashcardState.completeCardCount,
                     totalCards: flashcardState.totalCards,
                     hasPartialContent: !actuallyComplete && flashcardState.bufferContent.length > 0
+                }
+            };
+        }
+
+        // Special handling for cooking_recipe tags
+        if (tag === "cooking_recipe") {
+            const recipeState = analyzeRecipeCompletion(fullContent);
+            
+            // Override isComplete based on whether we found the closing tag
+            const actuallyComplete = foundClosingTag;
+            
+            // Create a unique cache key based on the content state
+            const contentHash = `${recipeState.contentLength}-${actuallyComplete}-${recipeState.hasTitle}-${recipeState.hasIngredients}-${recipeState.hasInstructions}`;
+            const cacheKey = `cooking_recipe-${contentHash}`;
+            
+            // Check if we should release new content
+            const cached = recipeCache.get(cacheKey);
+            let contentToRelease = "";
+            let shouldUpdate = false;
+            
+            if (actuallyComplete) {
+                // If recipe block is complete, release all content
+                contentToRelease = fullContent;
+                shouldUpdate = true;
+            } else {
+                // For streaming recipes, show content if we have meaningful structure
+                if (recipeState.hasTitle && (recipeState.hasIngredients || recipeState.hasInstructions)) {
+                    contentToRelease = fullContent;
+                } else {
+                    contentToRelease = ""; // Don't show incomplete structure
+                }
+                
+                // Check if content changed
+                shouldUpdate = !cached || cached.content !== contentToRelease;
+            }
+            
+            // Update cache if content changed
+            if (shouldUpdate) {
+                recipeCache.set(cacheKey, {
+                    content: contentToRelease,
+                    hash: contentHash,
+                    metadata: {
+                        isComplete: actuallyComplete,
+                        hasTitle: recipeState.hasTitle,
+                        hasIngredients: recipeState.hasIngredients,
+                        hasInstructions: recipeState.hasInstructions,
+                        hasPartialContent: !actuallyComplete && recipeState.contentLength > 0
+                    }
+                });
+            }
+            
+            // Return cached content if no update needed
+            const finalCache = recipeCache.get(cacheKey);
+            return {
+                content: finalCache?.content || contentToRelease,
+                newIndex: i,
+                metadata: finalCache?.metadata || {
+                    isComplete: actuallyComplete,
+                    hasTitle: recipeState.hasTitle,
+                    hasIngredients: recipeState.hasIngredients,
+                    hasInstructions: recipeState.hasInstructions,
+                    hasPartialContent: !actuallyComplete && recipeState.contentLength > 0
                 }
             };
         }
@@ -646,6 +736,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             } else if (languageOrType === "flashcards") {
                 blocks.push({
                     type: "flashcards",
+                    content: contentString,
+                });
+            } else if (languageOrType === "cooking_recipe") {
+                blocks.push({
+                    type: "cooking_recipe",
                     content: contentString,
                 });
             } else if (languageOrType === "json") {

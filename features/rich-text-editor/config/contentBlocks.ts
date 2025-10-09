@@ -1,7 +1,7 @@
 // Content block templates for the rich text editor
-import { FileText, Code, List, CheckSquare, Table, Calendar, AlertCircle, Info, Lightbulb, Quote, MessageSquare, Brain, Zap, Layers, ClipboardList } from 'lucide-react';
+import { FileText, Code, List, CheckSquare, Table, Calendar, AlertCircle, Info, Lightbulb, Quote, MessageSquare, Brain, Zap, Layers, ClipboardList, BookOpen } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { deepThinkingTemplate, simpleThinkingTemplate, flashcardsTemplate, multipleChoiceQuizTemplate } from './templates';
+import { deepThinkingTemplate, simpleThinkingTemplate, flashcardsTemplate, multipleChoiceQuizTemplate, deepResearchReportTemplate } from './templates';
 
 export interface ContentBlock {
     id: string;
@@ -210,6 +210,14 @@ export const contentBlocks: ContentBlock[] = [
         icon: ClipboardList,
         category: 'ai-prompts',
         template: multipleChoiceQuizTemplate,
+    },
+    {
+        id: 'deep-research-report',
+        label: 'Deep Research Report',
+        description: 'Comprehensive research analysis template',
+        icon: BookOpen,
+        category: 'ai-prompts',
+        template: deepResearchReportTemplate,
     },
 ];
 

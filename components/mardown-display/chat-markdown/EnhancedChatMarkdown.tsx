@@ -24,6 +24,9 @@ import MultipleChoiceQuiz, { Question } from "@/components/mardown-display/block
 import QuizLoadingVisualization from "../blocks/quiz/QuizLoadingVisualization";
 import Slideshow from "@/components/mardown-display/blocks/presentations/Slideshow";
 import PresentationLoadingVisualization from "../blocks/presentations/PresentationLoadingVisualization";
+import RecipeViewer from "../blocks/cooking-recipes/cookingRecipeDisplay";
+import RecipeLoadingVisualization from "../blocks/cooking-recipes/RecipeLoadingVisualization";
+import { parseRecipeMarkdown } from "../blocks/cooking-recipes/parseRecipeMarkdown";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -323,6 +326,46 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                                 fontSize={16}
                                 className="my-3"
                                 isStreamActive={isStreamActive}
+                            />
+                        );
+                    }
+                case "cooking_recipe":
+                    // Check if recipe is complete
+                    const isRecipeComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isRecipeComplete) {
+                        // Show loading state while recipe is streaming
+                        return <RecipeLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete recipe markdown
+                    try {
+                        const recipeData = parseRecipeMarkdown(block.content);
+                        if (recipeData) {
+                            return <RecipeViewer key={index} recipe={recipeData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse recipe markdown:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
                             />
                         );
                     }

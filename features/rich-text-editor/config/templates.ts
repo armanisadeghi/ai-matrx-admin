@@ -110,3 +110,71 @@ Rules:
 - Return ONLY the JSON, no other text
 
 Randomize the position of the correct answer so it's always in a different position.`;
+
+
+export const deepResearchReportTemplate = `[RESEARCH_ANALYSIS_TEMPLATE]
+
+# \\[REPORT_TITLE\\]
+*e.g., "Research Analysis: \\[TOPIC\\] (\\[TIME_FRAME\\])"*
+
+## Overview
+
+This research analysis focuses on \\[TOPIC\\], with a forward-looking perspective towards \\[TIME_FRAME\\] and beyond. The information is drawn from \\[SOURCE_TYPES\\] (e.g., official research publications, academic institutions, technology reviews), emphasizing key insights and future implications.
+
+---
+
+## I. Introduction: \\[INTRO_SECTION_TITLE\\]
+*e.g., "The Transformative Landscape of \\[TOPIC\\] by \\[TIME_FRAME\\]"*
+
+\\[INTRO_PARAGRAPH\\]
+<!-- Briefly introduce the topic, its significance, current state, and anticipated impact. Include forward-looking statements and context for the analysis. -->
+
+---
+
+## II. Key Research and Discoveries for \\[TOPIC\\] (\\[TIME_FRAME\\] Focus)
+
+<!-- Repeat the following block for each thematic subsection (A, B, C, etc.) -->
+### **\\[SUBSECTION_TITLE\\]**
+*e.g., "Enhanced Diagnostic Accuracy and Clinical Decision Support"*
+
+<!-- Repeat the following block for each research/discovery item (1, 2, 3, etc.) -->
+1. **\\[RESEARCH_ITEM_TITLE\\]**
+    * **Source(s):** \\[SOURCE_NAME_1\\]; \\[SOURCE_NAME_2\\]; ...
+    * **URL(s):** \\[URL_1\\]; \\[URL_2\\]; ...
+    * **Details:** \\[RESEARCH_DETAILS\\]
+        <!-- Summarize the main findings, results, or contributions of the research. -->
+    * **Future Looking:** \\[FUTURE_IMPLICATIONS\\]
+        <!-- Describe anticipated developments, predictions, or next steps related to this research. -->
+
+---
+
+## III. Future Trends, Challenges, and Ethical Considerations (\\[TIME_FRAME\\] and Beyond)
+
+<!-- Repeat the following block for each thematic subsection (A, B, C, etc.) -->
+### **\\[SUBSECTION_TITLE\\]**
+*e.g., "Addressing Limitations and Improving Reliability"*
+
+<!-- Repeat the following block for each challenge/trend/consideration item (1, 2, 3, etc.) -->
+1. **\\[ITEM_TITLE\\]**
+    * **Source(s):** \\[SOURCE_NAME_1\\]; \\[SOURCE_NAME_2\\]; ...
+    * **URL(s):** \\[URL_1\\]; \\[URL_2\\]; ...
+    * **Details:** \\[ITEM_DETAILS\\]
+        <!-- Summarize the main points, challenges, or considerations. -->
+    * **Future Looking:** \\[FUTURE_IMPLICATIONS\\]
+        <!-- Describe anticipated solutions, ongoing research, or future directions. -->
+
+---
+
+## IV. Conclusion
+
+\\[CONCLUSION_PARAGRAPH\\]
+<!-- Summarize the key findings, highlight major trends, and outline future directions. Address ongoing challenges and the importance of interdisciplinary collaboration, ethical considerations, and continuous development. -->
+
+---
+
+### Template Notes:
+- Replace all \`\\[FIELD_NAME\\]\` placeholders with topic-specific content.
+- Add, remove, or rename sections/subsections as appropriate for the research topic.
+- For each research/discovery/challenge item, include as many sources/URLs as needed.
+- Use bullet points or sub-bullets within details/future-looking sections if summarizing multiple findings or implications.
+- Maintain consistent formatting and hierarchy for clarity and ease of use.`;
