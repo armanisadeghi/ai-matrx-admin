@@ -1,4 +1,59 @@
 import React, { RefObject, useRef } from "react";
+
+// Utility function to find all scrollable parent containers and preserve their scroll positions
+const preserveAllScrollPositions = (element: HTMLElement, callback: () => void) => {
+    const scrollableParents: Array<{ element: Element | Window, scrollTop: number, scrollLeft: number }> = [];
+    
+    // Save window scroll position
+    scrollableParents.push({
+        element: window,
+        scrollTop: window.pageYOffset || document.documentElement.scrollTop,
+        scrollLeft: window.pageXOffset || document.documentElement.scrollLeft
+    });
+    
+    // Find all scrollable parent elements
+    let parent = element.parentElement;
+    while (parent) {
+        const computedStyle = window.getComputedStyle(parent);
+        const overflowY = computedStyle.overflowY;
+        const overflowX = computedStyle.overflowX;
+        
+        if (overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') {
+            scrollableParents.push({
+                element: parent,
+                scrollTop: parent.scrollTop,
+                scrollLeft: parent.scrollLeft
+            });
+        }
+        parent = parent.parentElement;
+    }
+    
+    // Execute the callback (textarea resize)
+    callback();
+    
+    // Restore all scroll positions using requestAnimationFrame
+    const restoreScrollPositions = () => {
+        scrollableParents.forEach(({ element, scrollTop, scrollLeft }) => {
+            if (element === window) {
+                window.scrollTo(scrollLeft, scrollTop);
+            } else {
+                (element as HTMLElement).scrollTop = scrollTop;
+                (element as HTMLElement).scrollLeft = scrollLeft;
+            }
+        });
+    };
+    
+    // Use multiple requestAnimationFrame calls to ensure restoration happens after all browser adjustments
+    requestAnimationFrame(() => {
+        restoreScrollPositions();
+        requestAnimationFrame(() => {
+            restoreScrollPositions();
+            requestAnimationFrame(() => {
+                restoreScrollPositions();
+            });
+        });
+    });
+};
 import { Plus, X, Edit2, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -198,20 +253,10 @@ export function PromptMessages({
                                                 value={message.content}
                                                 onChange={(e) => {
                                                     onMessageContentChange(index, e.target.value);
-                                                    // Prevent any scrolling during auto-resize
-                                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                                                    
-                                                    e.target.style.height = "auto";
-                                                    e.target.style.height = e.target.scrollHeight + "px";
-                                                    
-                                                    // Use requestAnimationFrame to ensure scroll restoration happens after browser's automatic scroll
-                                                    requestAnimationFrame(() => {
-                                                        window.scrollTo(scrollLeft, scrollTop);
-                                                        // Double-check with another frame in case browser is still adjusting
-                                                        requestAnimationFrame(() => {
-                                                            window.scrollTo(scrollLeft, scrollTop);
-                                                        });
+                                                    // Prevent scrolling in all parent containers during auto-resize
+                                                    preserveAllScrollPositions(e.target, () => {
+                                                        e.target.style.height = "auto";
+                                                        e.target.style.height = e.target.scrollHeight + "px";
                                                     });
                                                 }}
                                                 onKeyDown={(e) => {
@@ -229,15 +274,9 @@ export function PromptMessages({
                                                     const savedScrollLeft = (e.target as any)._savedScrollLeft;
                                                     
                                                     if (savedScrollTop !== undefined && savedScrollLeft !== undefined) {
-                                                        // Use multiple requestAnimationFrame calls for delete key and other keys
-                                                        requestAnimationFrame(() => {
-                                                            window.scrollTo(savedScrollLeft, savedScrollTop);
-                                                            requestAnimationFrame(() => {
-                                                                window.scrollTo(savedScrollLeft, savedScrollTop);
-                                                                requestAnimationFrame(() => {
-                                                                    window.scrollTo(savedScrollLeft, savedScrollTop);
-                                                                });
-                                                            });
+                                                        // Use comprehensive scroll restoration for all parent containers
+                                                        preserveAllScrollPositions(e.target as HTMLElement, () => {
+                                                            // No resize needed here, just ensuring scroll positions are maintained
                                                         });
                                                     }
                                                 }}
@@ -254,27 +293,15 @@ export function PromptMessages({
                                                     contextMenuOpenRef.current = true;
                                                 }}
                                                 onFocus={(e) => {
-                                                    // Prevent any scrolling during focus and initial resize
-                                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                                                    
-                                                    e.target.style.height = "auto";
-                                                    e.target.style.height = e.target.scrollHeight + "px";
+                                                    // Prevent scrolling in all parent containers during focus and initial resize
+                                                    preserveAllScrollPositions(e.target, () => {
+                                                        e.target.style.height = "auto";
+                                                        e.target.style.height = e.target.scrollHeight + "px";
+                                                    });
                                                     
                                                     // Move cursor to end
                                                     const length = e.target.value.length;
                                                     e.target.setSelectionRange(length, length);
-                                                    
-                                                    // Use multiple requestAnimationFrame calls to ensure scroll position is maintained
-                                                    requestAnimationFrame(() => {
-                                                        window.scrollTo(scrollLeft, scrollTop);
-                                                        requestAnimationFrame(() => {
-                                                            window.scrollTo(scrollLeft, scrollTop);
-                                                            requestAnimationFrame(() => {
-                                                                window.scrollTo(scrollLeft, scrollTop);
-                                                            });
-                                                        });
-                                                    });
                                                     
                                                     // Track cursor position
                                                     onCursorPositionChange({

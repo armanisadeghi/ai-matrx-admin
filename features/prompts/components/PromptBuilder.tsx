@@ -1,6 +1,61 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+
+// Utility function to find all scrollable parent containers and preserve their scroll positions
+const preserveAllScrollPositions = (element: HTMLElement, callback: () => void) => {
+    const scrollableParents: Array<{ element: Element | Window, scrollTop: number, scrollLeft: number }> = [];
+    
+    // Save window scroll position
+    scrollableParents.push({
+        element: window,
+        scrollTop: window.pageYOffset || document.documentElement.scrollTop,
+        scrollLeft: window.pageXOffset || document.documentElement.scrollLeft
+    });
+    
+    // Find all scrollable parent elements
+    let parent = element.parentElement;
+    while (parent) {
+        const computedStyle = window.getComputedStyle(parent);
+        const overflowY = computedStyle.overflowY;
+        const overflowX = computedStyle.overflowX;
+        
+        if (overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') {
+            scrollableParents.push({
+                element: parent,
+                scrollTop: parent.scrollTop,
+                scrollLeft: parent.scrollLeft
+            });
+        }
+        parent = parent.parentElement;
+    }
+    
+    // Execute the callback (textarea resize)
+    callback();
+    
+    // Restore all scroll positions using requestAnimationFrame
+    const restoreScrollPositions = () => {
+        scrollableParents.forEach(({ element, scrollTop, scrollLeft }) => {
+            if (element === window) {
+                window.scrollTo(scrollLeft, scrollTop);
+            } else {
+                (element as HTMLElement).scrollTop = scrollTop;
+                (element as HTMLElement).scrollLeft = scrollLeft;
+            }
+        });
+    };
+    
+    // Use multiple requestAnimationFrame calls to ensure restoration happens after all browser adjustments
+    requestAnimationFrame(() => {
+        restoreScrollPositions();
+        requestAnimationFrame(() => {
+            restoreScrollPositions();
+            requestAnimationFrame(() => {
+                restoreScrollPositions();
+            });
+        });
+    });
+};
 import { usePromptsWithFetch, PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { useRouter, usePathname } from "next/navigation";
 import { PromptBuilderHeader } from "./PromptBuilderHeader";
@@ -375,20 +430,10 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             setTimeout(() => {
                 textarea.focus();
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
-                // Prevent any scrolling during auto-resize
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                
-                textarea.style.height = "auto";
-                textarea.style.height = textarea.scrollHeight + "px";
-                
-                // Use requestAnimationFrame to ensure scroll restoration happens after browser's automatic scroll
-                requestAnimationFrame(() => {
-                    window.scrollTo(scrollLeft, scrollTop);
-                    // Double-check with another frame in case browser is still adjusting
-                    requestAnimationFrame(() => {
-                        window.scrollTo(scrollLeft, scrollTop);
-                    });
+                // Prevent scrolling in all parent containers during auto-resize
+                preserveAllScrollPositions(textarea, () => {
+                    textarea.style.height = "auto";
+                    textarea.style.height = textarea.scrollHeight + "px";
                 });
             }, 0);
         }
@@ -417,20 +462,10 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             setTimeout(() => {
                 textarea.focus();
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
-                // Prevent any scrolling during auto-resize
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                
-                textarea.style.height = "auto";
-                textarea.style.height = textarea.scrollHeight + "px";
-                
-                // Use requestAnimationFrame to ensure scroll restoration happens after browser's automatic scroll
-                requestAnimationFrame(() => {
-                    window.scrollTo(scrollLeft, scrollTop);
-                    // Double-check with another frame in case browser is still adjusting
-                    requestAnimationFrame(() => {
-                        window.scrollTo(scrollLeft, scrollTop);
-                    });
+                // Prevent scrolling in all parent containers during auto-resize
+                preserveAllScrollPositions(textarea, () => {
+                    textarea.style.height = "auto";
+                    textarea.style.height = textarea.scrollHeight + "px";
                 });
             }, 0);
         }
