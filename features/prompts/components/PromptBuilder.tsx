@@ -375,9 +375,21 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             setTimeout(() => {
                 textarea.focus();
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
-                // Auto-resize
+                // Prevent any scrolling during auto-resize
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                
                 textarea.style.height = "auto";
                 textarea.style.height = textarea.scrollHeight + "px";
+                
+                // Use requestAnimationFrame to ensure scroll restoration happens after browser's automatic scroll
+                requestAnimationFrame(() => {
+                    window.scrollTo(scrollLeft, scrollTop);
+                    // Double-check with another frame in case browser is still adjusting
+                    requestAnimationFrame(() => {
+                        window.scrollTo(scrollLeft, scrollTop);
+                    });
+                });
             }, 0);
         }
     };
@@ -405,9 +417,21 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
             setTimeout(() => {
                 textarea.focus();
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
-                // Auto-resize
+                // Prevent any scrolling during auto-resize
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                
                 textarea.style.height = "auto";
                 textarea.style.height = textarea.scrollHeight + "px";
+                
+                // Use requestAnimationFrame to ensure scroll restoration happens after browser's automatic scroll
+                requestAnimationFrame(() => {
+                    window.scrollTo(scrollLeft, scrollTop);
+                    // Double-check with another frame in case browser is still adjusting
+                    requestAnimationFrame(() => {
+                        window.scrollTo(scrollLeft, scrollTop);
+                    });
+                });
             }, 0);
         }
     };

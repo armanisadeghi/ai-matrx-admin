@@ -198,9 +198,21 @@ export function PromptMessages({
                                                 value={message.content}
                                                 onChange={(e) => {
                                                     onMessageContentChange(index, e.target.value);
-                                                    // Auto-resize textarea
+                                                    // Prevent any scrolling during auto-resize
+                                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                                                    
                                                     e.target.style.height = "auto";
                                                     e.target.style.height = e.target.scrollHeight + "px";
+                                                    
+                                                    // Use requestAnimationFrame to ensure scroll restoration happens after browser's automatic scroll
+                                                    requestAnimationFrame(() => {
+                                                        window.scrollTo(scrollLeft, scrollTop);
+                                                        // Double-check with another frame in case browser is still adjusting
+                                                        requestAnimationFrame(() => {
+                                                            window.scrollTo(scrollLeft, scrollTop);
+                                                        });
+                                                    });
                                                 }}
                                                 onSelect={(e) => {
                                                     // Track cursor position
@@ -215,12 +227,28 @@ export function PromptMessages({
                                                     contextMenuOpenRef.current = true;
                                                 }}
                                                 onFocus={(e) => {
-                                                    // Set initial height on focus
+                                                    // Prevent any scrolling during focus and initial resize
+                                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                                                    
                                                     e.target.style.height = "auto";
                                                     e.target.style.height = e.target.scrollHeight + "px";
+                                                    
                                                     // Move cursor to end
                                                     const length = e.target.value.length;
                                                     e.target.setSelectionRange(length, length);
+                                                    
+                                                    // Use multiple requestAnimationFrame calls to ensure scroll position is maintained
+                                                    requestAnimationFrame(() => {
+                                                        window.scrollTo(scrollLeft, scrollTop);
+                                                        requestAnimationFrame(() => {
+                                                            window.scrollTo(scrollLeft, scrollTop);
+                                                            requestAnimationFrame(() => {
+                                                                window.scrollTo(scrollLeft, scrollTop);
+                                                            });
+                                                        });
+                                                    });
+                                                    
                                                     // Track cursor position
                                                     onCursorPositionChange({
                                                         ...cursorPositions,
