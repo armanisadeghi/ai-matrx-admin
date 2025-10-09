@@ -416,7 +416,7 @@ export function PromptMessages({
                                         </PromptEditorContextMenu>
                                     ) : (
                                         <div
-                                            className="text-xs pb-2 text-gray-900 dark:text-gray-200 whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
+                                            className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
                                             onClick={() => onEditingMessageIndexChange(index)}
                                             style={{
                                                 lineHeight: "1.5",

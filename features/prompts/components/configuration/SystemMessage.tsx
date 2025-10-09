@@ -396,7 +396,7 @@ export function SystemMessage({
                         </PromptEditorContextMenu>
                     ) : (
                         <div
-                            className="text-xs pb-2 text-gray-900 dark:text-gray-200 whitespace-pre-wrap cursor-text leading-normal"
+                            className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text leading-normal"
                             onClick={() => onIsEditingChange && onIsEditingChange(true)}
                             style={{
                                 minHeight: "240px",
