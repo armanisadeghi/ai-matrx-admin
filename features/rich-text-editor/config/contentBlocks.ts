@@ -1,7 +1,23 @@
 // Content block templates for the rich text editor
-import { FileText, Code, List, CheckSquare, Table, Calendar, AlertCircle, Info, Lightbulb, Quote, MessageSquare, Brain, Zap, Layers, ClipboardList, BookOpen } from 'lucide-react';
+import { 
+    FileText, Code, List, CheckSquare, Table, Calendar, AlertCircle, Info, Lightbulb, Quote, MessageSquare, Brain, Zap, Layers, ClipboardList, BookOpen,
+    Clock, BarChart3, HelpCircle, FolderOpen, GitBranch, Search, Network 
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { deepThinkingTemplate, simpleThinkingTemplate, flashcardsTemplate, multipleChoiceQuizTemplate, deepResearchReportTemplate } from './templates';
+import { 
+    deepThinkingTemplate, 
+    simpleThinkingTemplate, 
+    flashcardsTemplate, 
+    multipleChoiceQuizTemplate, 
+    deepResearchReportTemplate,
+    timelineTemplate,
+    progressTrackerTemplate,
+    troubleshootingTemplate,
+    resourcesTemplate,
+    comparisonTableTemplate,
+    decisionTreeTemplate,
+    diagramTemplate
+} from './templates';
 
 export interface ContentBlock {
     id: string;
@@ -218,6 +234,70 @@ export const contentBlocks: ContentBlock[] = [
         icon: BookOpen,
         category: 'ai-prompts',
         template: deepResearchReportTemplate,
+    },
+    {
+        id: 'timeline',
+        label: 'Timeline',
+        description: 'Interactive project timeline with milestones',
+        icon: Clock,
+        category: 'ai-prompts',
+        template: timelineTemplate,
+    },
+    {
+        id: 'resource-collection',
+        label: 'Resource Collection',
+        description: 'Organized learning resources and materials',
+        icon: FolderOpen,
+        category: 'ai-prompts',
+        template: resourcesTemplate,
+    },
+    {
+        id: 'progress-tracker',
+        label: 'Progress Tracker',
+        description: 'Track learning or project progress',
+        icon: BarChart3,
+        category: 'ai-prompts',
+        template: progressTrackerTemplate,
+    },
+    {
+        id: 'troubleshooting-guide',
+        label: 'Troubleshooting Guide',
+        description: 'Problem diagnosis and solution guide',
+        icon: HelpCircle,
+        category: 'ai-prompts',
+        template: troubleshootingTemplate,
+    },
+    {
+        id: 'resource-collection',
+        label: 'Resource Collection',
+        description: 'Organized collection of learning resources',
+        icon: FolderOpen,
+        category: 'ai-prompts',
+        template: resourcesTemplate,
+    },
+    {
+        id: 'comparison-table',
+        label: 'Comparison Table',
+        description: 'Interactive comparison matrix in JSON format',
+        icon: Table,
+        category: 'ai-prompts',
+        template: comparisonTableTemplate,
+    },
+    {
+        id: 'decision-tree',
+        label: 'Decision Tree',
+        description: 'Interactive decision tree in JSON format',
+        icon: GitBranch,
+        category: 'ai-prompts',
+        template: decisionTreeTemplate,
+    },
+    {
+        id: 'interactive-diagram',
+        label: 'Interactive Diagram',
+        description: 'Flowchart, mindmap, or org chart in JSON format',
+        icon: Network,
+        category: 'ai-prompts',
+        template: diagramTemplate,
     },
 ];
 

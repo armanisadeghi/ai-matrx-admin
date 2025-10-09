@@ -1,7 +1,7 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | "cooking_recipe" | string;
+    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | "cooking_recipe" | "timeline" | "progress_tracker" | "comparison_table" | "troubleshooting" | "resources" | "decision_tree" | "research" | "diagram" | string;
     content: string;
     language?: string;
     src?: string;
@@ -64,7 +64,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     let inPotentialTable = false;
 
     // List of special tags to handle
-    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool", "questionnaire", "flashcards", "cooking_recipe"];
+    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool", "questionnaire", "flashcards", "cooking_recipe", "timeline", "progress_tracker", "troubleshooting", "resources", "research"];
 
     // Helper function to check if a line looks like a table row
     const looksLikeTableRow = (line: string): boolean => {
@@ -602,6 +602,100 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         return { isPresentation: true, isComplete: false };
     };
 
+    // Function to detect if JSON content is a decision tree
+    const isDecisionTreeJson = (jsonContent: string): { isDecisionTree: boolean; isComplete: boolean } => {
+        const trimmed = jsonContent.trim();
+        
+        // Fast check: Must start with exact pattern for decision tree
+        // This prevents false positives and doesn't delay normal JSON display
+        if (!trimmed.startsWith('{\n  "decision_tree"') && !trimmed.startsWith('{"decision_tree"')) {
+            return { isDecisionTree: false, isComplete: false };
+        }
+        
+        // Check if JSON is complete (has closing brace)
+        const isComplete = trimmed.endsWith("}");
+        
+        // If complete, verify it's valid JSON with decision_tree object
+        if (isComplete) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                const hasDecisionTree = parsed && parsed.decision_tree && 
+                                       parsed.decision_tree.title && 
+                                       parsed.decision_tree.root;
+                return { isDecisionTree: hasDecisionTree, isComplete: true };
+            } catch (error) {
+                // Parse failed, not a valid decision tree
+                return { isDecisionTree: false, isComplete: false };
+            }
+        }
+        
+        // Not complete but has the correct structure start - it's streaming
+        return { isDecisionTree: true, isComplete: false };
+    };
+
+    // Function to detect if JSON content is a comparison table
+    const isComparisonTableJson = (jsonContent: string): { isComparisonTable: boolean; isComplete: boolean } => {
+        const trimmed = jsonContent.trim();
+        
+        // Fast check: Must start with exact pattern for comparison table
+        // This prevents false positives and doesn't delay normal JSON display
+        if (!trimmed.startsWith('{\n  "comparison"') && !trimmed.startsWith('{"comparison"')) {
+            return { isComparisonTable: false, isComplete: false };
+        }
+        
+        // Check if JSON is complete (has closing brace)
+        const isComplete = trimmed.endsWith("}");
+        
+        // If complete, verify it's valid JSON with comparison object
+        if (isComplete) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                const hasComparison = parsed && parsed.comparison && 
+                                     parsed.comparison.title && 
+                                     Array.isArray(parsed.comparison.items) &&
+                                     Array.isArray(parsed.comparison.criteria);
+                return { isComparisonTable: hasComparison, isComplete: true };
+            } catch (error) {
+                // Parse failed, not a valid comparison table
+                return { isComparisonTable: false, isComplete: false };
+            }
+        }
+        
+        // Not complete but has the correct structure start - it's streaming
+        return { isComparisonTable: true, isComplete: false };
+    };
+
+    // Function to detect if JSON content is a diagram
+    const isDiagramJson = (jsonContent: string): { isDiagram: boolean; isComplete: boolean } => {
+        const trimmed = jsonContent.trim();
+        
+        // Fast check: Must start with exact pattern for diagram
+        // This prevents false positives and doesn't delay normal JSON display
+        if (!trimmed.startsWith('{\n  "diagram"') && !trimmed.startsWith('{"diagram"')) {
+            return { isDiagram: false, isComplete: false };
+        }
+        
+        // Check if JSON is complete (has closing brace)
+        const isComplete = trimmed.endsWith("}");
+        
+        // If complete, verify it's valid JSON with diagram object
+        if (isComplete) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                const hasDiagram = parsed && parsed.diagram && 
+                                 parsed.diagram.title && 
+                                 Array.isArray(parsed.diagram.nodes);
+                return { isDiagram: hasDiagram, isComplete: true };
+            } catch (error) {
+                // Parse failed, not a valid diagram
+                return { isDiagram: false, isComplete: false };
+            }
+        }
+        
+        // Not complete but has the correct structure start - it's streaming
+        return { isDiagram: true, isComplete: false };
+    };
+
     // Function to remove MATRX_PATTERN matches from a string
     const removeMatrxPattern = (text: string): string => {
         return text.replace(MATRX_PATTERN, "").trim() === "" ? "" : text.replace(MATRX_PATTERN, "");
@@ -768,12 +862,51 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                             }
                         });
                     } else {
-                        // Regular JSON code block
-                        blocks.push({
-                            type: "code",
-                            content: contentString,
-                            language: languageOrType,
-                        });
+                        // Check if this JSON is a decision tree
+                        const decisionTreeCheck = isDecisionTreeJson(contentString);
+                        if (decisionTreeCheck.isDecisionTree) {
+                            blocks.push({
+                                type: "decision_tree",
+                                content: contentString,
+                                language: "json",
+                                metadata: {
+                                    isComplete: decisionTreeCheck.isComplete
+                                }
+                            });
+                        } else {
+                            // Check if this JSON is a comparison table
+                            const comparisonTableCheck = isComparisonTableJson(contentString);
+                            if (comparisonTableCheck.isComparisonTable) {
+                                blocks.push({
+                                    type: "comparison_table",
+                                    content: contentString,
+                                    language: "json",
+                                    metadata: {
+                                        isComplete: comparisonTableCheck.isComplete
+                                    }
+                                });
+                            } else {
+                                // Check if this JSON is a diagram
+                                const diagramCheck = isDiagramJson(contentString);
+                                if (diagramCheck.isDiagram) {
+                                    blocks.push({
+                                        type: "diagram",
+                                        content: contentString,
+                                        language: "json",
+                                        metadata: {
+                                            isComplete: diagramCheck.isComplete
+                                        }
+                                    });
+                                } else {
+                                    // Regular JSON code block
+                                    blocks.push({
+                                        type: "code",
+                                        content: contentString,
+                                        language: languageOrType,
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
             } else {

@@ -27,6 +27,30 @@ import PresentationLoadingVisualization from "../blocks/presentations/Presentati
 import RecipeViewer from "../blocks/cooking-recipes/cookingRecipeDisplay";
 import RecipeLoadingVisualization from "../blocks/cooking-recipes/RecipeLoadingVisualization";
 import { parseRecipeMarkdown } from "../blocks/cooking-recipes/parseRecipeMarkdown";
+import TimelineBlock from "../blocks/timeline/TimelineBlock";
+import TimelineLoadingVisualization from "../blocks/timeline/TimelineLoadingVisualization";
+import { parseTimelineMarkdown } from "../blocks/timeline/parseTimelineMarkdown";
+import ResearchBlock from "../blocks/research/ResearchBlock";
+import ResearchLoadingVisualization from "../blocks/research/ResearchLoadingVisualization";
+import { parseResearchMarkdown } from "../blocks/research/parseResearchMarkdown";
+import ResourceCollectionBlock from "../blocks/resources/ResourceCollectionBlock";
+import ResourcesLoadingVisualization from "../blocks/resources/ResourcesLoadingVisualization";
+import { parseResourcesMarkdown } from "../blocks/resources/parseResourcesMarkdown";
+import ProgressTrackerBlock from "../blocks/progress/ProgressTrackerBlock";
+import ProgressLoadingVisualization from "../blocks/progress/ProgressLoadingVisualization";
+import { parseProgressMarkdown } from "../blocks/progress/parseProgressMarkdown";
+import ComparisonTableBlock from "../blocks/comparison/ComparisonTableBlock";
+import ComparisonLoadingVisualization from "../blocks/comparison/ComparisonLoadingVisualization";
+import { parseComparisonJSON } from "../blocks/comparison/parseComparisonJSON";
+import TroubleshootingBlock from "../blocks/troubleshooting/TroubleshootingBlock";
+import TroubleshootingLoadingVisualization from "../blocks/troubleshooting/TroubleshootingLoadingVisualization";
+import { parseTroubleshootingMarkdown } from "../blocks/troubleshooting/parseTroubleshootingMarkdown";
+import DecisionTreeBlock from "../blocks/decision-tree/DecisionTreeBlock";
+import DecisionTreeLoadingVisualization from "../blocks/decision-tree/DecisionTreeLoadingVisualization";
+import { parseDecisionTreeJSON } from "../blocks/decision-tree/parseDecisionTreeJSON";
+import InteractiveDiagramBlock from "../blocks/diagram/InteractiveDiagramBlock";
+import DiagramLoadingVisualization from "../blocks/diagram/DiagramLoadingVisualization";
+import { parseDiagramJSON } from "../blocks/diagram/parseDiagramJSON";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -369,6 +393,333 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                             />
                         );
                     }
+                case "timeline":
+                    // Check if timeline is complete
+                    const isTimelineComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isTimelineComplete) {
+                        // Show loading state while timeline is streaming
+                        return <TimelineLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete timeline markdown
+                    try {
+                        const timelineData = parseTimelineMarkdown(block.content);
+                        if (timelineData) {
+                            return <TimelineBlock key={index} timeline={timelineData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse timeline markdown:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+                case "research":
+                    // Check if research is complete
+                    const isResearchComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isResearchComplete) {
+                        // Show loading state while research is streaming
+                        return <ResearchLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete research markdown
+                    try {
+                        const researchData = parseResearchMarkdown(block.content);
+                        if (researchData) {
+                            return <ResearchBlock key={index} research={researchData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse research markdown:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+
+                case "resources":
+                    // Check if resources are complete
+                    const isResourcesComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isResourcesComplete) {
+                        // Show loading state while resources are streaming
+                        return <ResourcesLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete resources markdown
+                    try {
+                        const resourcesData = parseResourcesMarkdown(block.content);
+                        if (resourcesData) {
+                            return <ResourceCollectionBlock key={index} collection={resourcesData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse resources markdown:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+
+                case "progress_tracker":
+                    // Check if progress tracker is complete
+                    const isProgressComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isProgressComplete) {
+                        // Show loading state while progress tracker is streaming
+                        return <ProgressLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete progress markdown
+                    try {
+                        const progressData = parseProgressMarkdown(block.content);
+                        if (progressData) {
+                            return <ProgressTrackerBlock key={index} tracker={progressData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse progress tracker markdown:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+
+                case "comparison_table":
+                    // Check if comparison table is complete
+                    const isComparisonComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isComparisonComplete) {
+                        // Show loading state while comparison is streaming
+                        return <ComparisonLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete comparison JSON
+                    try {
+                        const comparisonData = parseComparisonJSON(block.content);
+                        if (comparisonData) {
+                            return <ComparisonTableBlock key={index} comparison={comparisonData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse comparison table JSON:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+
+                case "troubleshooting":
+                    // Check if troubleshooting guide is complete
+                    const isTroubleshootingComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isTroubleshootingComplete) {
+                        // Show loading state while troubleshooting is streaming
+                        return <TroubleshootingLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete troubleshooting markdown
+                    try {
+                        const troubleshootingData = parseTroubleshootingMarkdown(block.content);
+                        if (troubleshootingData) {
+                            return <TroubleshootingBlock key={index} troubleshooting={troubleshootingData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse troubleshooting markdown:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+
+                case "decision_tree":
+                    // Check if decision tree is complete
+                    const isDecisionTreeComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isDecisionTreeComplete) {
+                        // Show loading state while decision tree is streaming
+                        return <DecisionTreeLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete decision tree JSON
+                    try {
+                        const decisionTreeData = parseDecisionTreeJSON(block.content);
+                        if (decisionTreeData) {
+                            return <DecisionTreeBlock key={index} decisionTree={decisionTreeData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse decision tree JSON:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+
+                case "diagram":
+                    // Check if diagram is complete
+                    const isDiagramComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isDiagramComplete) {
+                        // Show loading state while diagram is streaming
+                        return <DiagramLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete diagram JSON
+                    try {
+                        const diagramData = parseDiagramJSON(block.content);
+                        if (diagramData) {
+                            return <InteractiveDiagramBlock key={index} diagram={diagramData} />;
+                        }
+                        // If parsing failed, fall back to basic markdown
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse diagram JSON:", error);
+                        // Fall back to showing as basic markdown if parsing fails
+                        return (
+                            <BasicMarkdownContent
+                                key={index}
+                                content={block.content}
+                                isStreamActive={isStreamActive}
+                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                                messageId={messageId}
+                                showCopyButton={false}
+                            />
+                        );
+                    }
+
                 case "text":
                 case "info":
                 case "task":
