@@ -624,7 +624,7 @@ const extractSliderRange = (intro) => {
     return { min: 0, max: 100 };
 };
 
-const QuestionnaireRenderer = ({ data, theme = "professional", taskId = null, questionnaireId = null }) => {
+const QuestionnaireRenderer = ({ data, theme = "default", taskId = null, questionnaireId = null }) => {
     const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
     const dispatch = useAppDispatch();
 

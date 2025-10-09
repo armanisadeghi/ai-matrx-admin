@@ -1,4 +1,80 @@
-import React, { RefObject, useRef } from "react";
+import React, { RefObject, useRef, useEffect } from "react";
+
+// Global scroll blocking system
+let isScrollBlocked = false;
+let blockedScrollPositions: { element: Element | Window, scrollTop: number, scrollLeft: number }[] = [];
+
+const blockAllScrolling = () => {
+    if (isScrollBlocked) return;
+    
+    isScrollBlocked = true;
+    blockedScrollPositions = [];
+    
+    // Save current scroll positions
+    blockedScrollPositions.push({
+        element: window,
+        scrollTop: window.pageYOffset || document.documentElement.scrollTop,
+        scrollLeft: window.pageXOffset || document.documentElement.scrollLeft
+    });
+    
+    // Find and save all scrollable containers
+    document.querySelectorAll('*').forEach((element) => {
+        const computedStyle = window.getComputedStyle(element);
+        const overflowY = computedStyle.overflowY;
+        const overflowX = computedStyle.overflowX;
+        
+        if ((overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') && 
+            (element.scrollTop > 0 || element.scrollLeft > 0)) {
+            blockedScrollPositions.push({
+                element,
+                scrollTop: element.scrollTop,
+                scrollLeft: element.scrollLeft
+            });
+        }
+    });
+    
+    // Add scroll event listeners to prevent scrolling
+    const preventScroll = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        // Restore blocked positions
+        blockedScrollPositions.forEach(({ element, scrollTop, scrollLeft }) => {
+            if (element === window) {
+                window.scrollTo(scrollLeft, scrollTop);
+            } else {
+                (element as HTMLElement).scrollTop = scrollTop;
+                (element as HTMLElement).scrollLeft = scrollLeft;
+            }
+        });
+        
+        return false;
+    };
+    
+    // Block all scroll events on all elements
+    window.addEventListener('scroll', preventScroll, { passive: false, capture: true });
+    document.addEventListener('scroll', preventScroll, { passive: false, capture: true });
+    
+    // Store the event listener for cleanup
+    (window as any)._preventScrollListener = preventScroll;
+};
+
+const unblockAllScrolling = () => {
+    if (!isScrollBlocked) return;
+    
+    isScrollBlocked = false;
+    
+    // Remove scroll event listeners
+    const preventScroll = (window as any)._preventScrollListener;
+    if (preventScroll) {
+        window.removeEventListener('scroll', preventScroll, { capture: true });
+        document.removeEventListener('scroll', preventScroll, { capture: true });
+        delete (window as any)._preventScrollListener;
+    }
+    
+    blockedScrollPositions = [];
+};
 
 // Utility function to find all scrollable parent containers and preserve their scroll positions
 const preserveAllScrollPositions = (element: HTMLElement, callback: () => void) => {
@@ -229,11 +305,14 @@ export function SystemMessage({
                                 value={developerMessage}
                                 onChange={(e) => {
                                     onDeveloperMessageChange(e.target.value);
-                                    // Prevent scrolling in all parent containers during auto-resize
-                                    preserveAllScrollPositions(e.target, () => {
-                                        e.target.style.height = "auto";
-                                        e.target.style.height = e.target.scrollHeight + "px";
-                                    });
+                                    // Block ALL scrolling during textarea resize
+                                    blockAllScrolling();
+                                    e.target.style.height = "auto";
+                                    e.target.style.height = e.target.scrollHeight + "px";
+                                    // Keep scroll blocked for a moment to prevent any delayed scrolling
+                                    setTimeout(() => {
+                                        unblockAllScrolling();
+                                    }, 100);
                                 }}
                                 onKeyDown={(e) => {
                                     // Capture scroll position before any key action, especially for delete key
@@ -271,11 +350,10 @@ export function SystemMessage({
                                     contextMenuOpenRef.current = true;
                                 }}
                                 onFocus={(e) => {
-                                    // Prevent scrolling in all parent containers during focus and initial resize
-                                    preserveAllScrollPositions(e.target, () => {
-                                        e.target.style.height = "auto";
-                                        e.target.style.height = e.target.scrollHeight + "px";
-                                    });
+                                    // Block ALL scrolling during focus and initial resize
+                                    blockAllScrolling();
+                                    e.target.style.height = "auto";
+                                    e.target.style.height = e.target.scrollHeight + "px";
                                     
                                     // Move cursor to end
                                     const length = e.target.value.length;
@@ -288,8 +366,16 @@ export function SystemMessage({
                                             [systemMessageIndex]: length,
                                         });
                                     }
+                                    
+                                    // Keep scroll blocked for a moment to prevent focus-related scrolling
+                                    setTimeout(() => {
+                                        unblockAllScrolling();
+                                    }, 200);
                                 }}
                                 onBlur={() => {
+                                    // Ensure scroll blocking is disabled when leaving textarea
+                                    unblockAllScrolling();
+                                    
                                     // Don't close edit mode if context menu is open
                                     if (!contextMenuOpenRef.current && onIsEditingChange) {
                                         onIsEditingChange(false);
