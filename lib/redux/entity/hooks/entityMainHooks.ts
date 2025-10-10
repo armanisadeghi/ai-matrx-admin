@@ -21,10 +21,12 @@ import {
     BrokerValueData,
     BucketStructuresData,
     BucketTreeStructuresData,
+    CategoryConfigsData,
     CategoryData,
     CompiledRecipeData,
     ComponentGroupsData,
     ContainerFieldsData,
+    ContentBlocksData,
     ConversationData,
     CustomAppConfigsData,
     CustomAppletConfigsData,
@@ -55,16 +57,15 @@ import {
     ProcessorData,
     ProjectMembersData,
     ProjectsData,
+    PromptTemplatesData,
     PromptsData,
     RecipeBrokerData,
     RecipeData,
     RecipeDisplayData,
-    RecipeFunctionData,
     RecipeMessageData,
     RecipeMessageReorderQueueData,
     RecipeModelData,
     RecipeProcessorData,
-    RecipeToolData,
     RegisteredFunctionData,
     RegisteredNodeData,
     RegisteredNodeResultsData,
@@ -91,6 +92,7 @@ import {
     ScrapeTaskData,
     ScrapeTaskResponseData,
     SiteMetadataData,
+    SubcategoryConfigsData,
     SubcategoryData,
     SystemFunctionData,
     TableDataData,
@@ -99,7 +101,7 @@ import {
     TaskAttachmentsData,
     TaskCommentsData,
     TasksData,
-    ToolData,
+    ToolsData,
     TransformerData,
     UserListItemsData,
     UserListsData,
@@ -2169,6 +2171,99 @@ export const useCategoryWithFetch = (): UseCategoryWithFetchReturn => {
 
 
 
+type UseCategoryConfigsWithFetchReturn = {
+    categoryConfigsSelectors: EntitySelectors<"categoryConfigs">;
+    categoryConfigsActions: EntityActions<"categoryConfigs">;
+    categoryConfigsRecords: Record<MatrxRecordId, CategoryConfigsData>;
+    categoryConfigsRecordsById: Record<string, CategoryConfigsData>;
+    categoryConfigsUnsavedRecords: Record<MatrxRecordId, Partial<CategoryConfigsData>>;
+    categoryConfigsSelectedRecordIds: MatrxRecordId[];
+    categoryConfigsIsLoading: boolean;
+    categoryConfigsIsError: boolean;
+    categoryConfigsQuickRefRecords: QuickReferenceRecord[];
+    addCategoryConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    addCategoryConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCategoryConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    removeCategoryConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCategoryConfigsPkValue: (pkValue: string) => void;
+    addCategoryConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCategoryConfigsPkValue: (pkValue: string) => void;
+    removeCategoryConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    isCategoryConfigsMissingRecords: boolean;
+    setCategoryConfigsShouldFetch: (shouldFetch: boolean) => void;
+    setCategoryConfigsFetchMode: (fetchMode: FetchMode) => void;
+    fetchCategoryConfigsQuickRefs: () => void;
+    fetchCategoryConfigsOne: (recordId: MatrxRecordId) => void;
+    fetchCategoryConfigsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCategoryConfigsAll: () => void;
+    fetchCategoryConfigsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useCategoryConfigsWithFetch = (): UseCategoryConfigsWithFetchReturn => {
+    const {
+        selectors: categoryConfigsSelectors,
+        actions: categoryConfigsActions,
+        allRecords: categoryConfigsRecords,
+        recordsById: categoryConfigsRecordsById,
+        unsavedRecords: categoryConfigsUnsavedRecords,
+        selectedRecordIds: categoryConfigsSelectedRecordIds,
+        isLoading: categoryConfigsIsLoading,
+        isError: categoryConfigsIsError,
+        quickRefRecords: categoryConfigsQuickRefRecords,
+        addMatrxId: addCategoryConfigsMatrxId,
+        addMatrxIds: addCategoryConfigsMatrxIds,
+        removeMatrxId: removeCategoryConfigsMatrxId,
+        removeMatrxIds: removeCategoryConfigsMatrxIds,
+        addPkValue: addCategoryConfigsPkValue,
+        addPkValues: addCategoryConfigsPkValues,
+        removePkValue: removeCategoryConfigsPkValue,
+        removePkValues: removeCategoryConfigsPkValues,
+        isMissingRecords: isCategoryConfigsMissingRecords,
+        setShouldFetch: setCategoryConfigsShouldFetch,
+        setFetchMode: setCategoryConfigsFetchMode,
+        fetchQuickRefs: fetchCategoryConfigsQuickRefs,
+        fetchOne: fetchCategoryConfigsOne,
+        fetchOneWithFkIfk: fetchCategoryConfigsOneWithFkIfk,
+        fetchAll: fetchCategoryConfigsAll,
+        fetchPaginated: fetchCategoryConfigsPaginated,
+
+    } = useEntityWithFetch("categoryConfigs");
+
+    return {
+        categoryConfigsSelectors,
+        categoryConfigsActions,
+        categoryConfigsRecords,
+        categoryConfigsRecordsById,
+        categoryConfigsUnsavedRecords,
+        categoryConfigsSelectedRecordIds,
+        categoryConfigsIsLoading,
+        categoryConfigsIsError,
+        categoryConfigsQuickRefRecords,
+        addCategoryConfigsMatrxId,
+        addCategoryConfigsMatrxIds,
+        removeCategoryConfigsMatrxId,
+        removeCategoryConfigsMatrxIds,
+        addCategoryConfigsPkValue,
+        addCategoryConfigsPkValues,
+        removeCategoryConfigsPkValue,
+        removeCategoryConfigsPkValues,
+        isCategoryConfigsMissingRecords,
+        setCategoryConfigsShouldFetch,
+        setCategoryConfigsFetchMode,
+        fetchCategoryConfigsQuickRefs,
+        fetchCategoryConfigsOne,
+        fetchCategoryConfigsOneWithFkIfk,
+        fetchCategoryConfigsAll,
+        fetchCategoryConfigsPaginated,
+    };
+};
+
+
+
 type UseCompiledRecipeWithFetchReturn = {
     compiledRecipeSelectors: EntitySelectors<"compiledRecipe">;
     compiledRecipeActions: EntityActions<"compiledRecipe">;
@@ -2443,6 +2538,99 @@ export const useContainerFieldsWithFetch = (): UseContainerFieldsWithFetchReturn
         fetchContainerFieldsOneWithFkIfk,
         fetchContainerFieldsAll,
         fetchContainerFieldsPaginated,
+    };
+};
+
+
+
+type UseContentBlocksWithFetchReturn = {
+    contentBlocksSelectors: EntitySelectors<"contentBlocks">;
+    contentBlocksActions: EntityActions<"contentBlocks">;
+    contentBlocksRecords: Record<MatrxRecordId, ContentBlocksData>;
+    contentBlocksRecordsById: Record<string, ContentBlocksData>;
+    contentBlocksUnsavedRecords: Record<MatrxRecordId, Partial<ContentBlocksData>>;
+    contentBlocksSelectedRecordIds: MatrxRecordId[];
+    contentBlocksIsLoading: boolean;
+    contentBlocksIsError: boolean;
+    contentBlocksQuickRefRecords: QuickReferenceRecord[];
+    addContentBlocksMatrxId: (recordId: MatrxRecordId) => void;
+    addContentBlocksMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeContentBlocksMatrxId: (recordId: MatrxRecordId) => void;
+    removeContentBlocksMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addContentBlocksPkValue: (pkValue: string) => void;
+    addContentBlocksPkValues: (pkValues: Record<string, unknown>) => void;
+    removeContentBlocksPkValue: (pkValue: string) => void;
+    removeContentBlocksPkValues: (pkValues: Record<string, unknown>) => void;
+    isContentBlocksMissingRecords: boolean;
+    setContentBlocksShouldFetch: (shouldFetch: boolean) => void;
+    setContentBlocksFetchMode: (fetchMode: FetchMode) => void;
+    fetchContentBlocksQuickRefs: () => void;
+    fetchContentBlocksOne: (recordId: MatrxRecordId) => void;
+    fetchContentBlocksOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchContentBlocksAll: () => void;
+    fetchContentBlocksPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useContentBlocksWithFetch = (): UseContentBlocksWithFetchReturn => {
+    const {
+        selectors: contentBlocksSelectors,
+        actions: contentBlocksActions,
+        allRecords: contentBlocksRecords,
+        recordsById: contentBlocksRecordsById,
+        unsavedRecords: contentBlocksUnsavedRecords,
+        selectedRecordIds: contentBlocksSelectedRecordIds,
+        isLoading: contentBlocksIsLoading,
+        isError: contentBlocksIsError,
+        quickRefRecords: contentBlocksQuickRefRecords,
+        addMatrxId: addContentBlocksMatrxId,
+        addMatrxIds: addContentBlocksMatrxIds,
+        removeMatrxId: removeContentBlocksMatrxId,
+        removeMatrxIds: removeContentBlocksMatrxIds,
+        addPkValue: addContentBlocksPkValue,
+        addPkValues: addContentBlocksPkValues,
+        removePkValue: removeContentBlocksPkValue,
+        removePkValues: removeContentBlocksPkValues,
+        isMissingRecords: isContentBlocksMissingRecords,
+        setShouldFetch: setContentBlocksShouldFetch,
+        setFetchMode: setContentBlocksFetchMode,
+        fetchQuickRefs: fetchContentBlocksQuickRefs,
+        fetchOne: fetchContentBlocksOne,
+        fetchOneWithFkIfk: fetchContentBlocksOneWithFkIfk,
+        fetchAll: fetchContentBlocksAll,
+        fetchPaginated: fetchContentBlocksPaginated,
+
+    } = useEntityWithFetch("contentBlocks");
+
+    return {
+        contentBlocksSelectors,
+        contentBlocksActions,
+        contentBlocksRecords,
+        contentBlocksRecordsById,
+        contentBlocksUnsavedRecords,
+        contentBlocksSelectedRecordIds,
+        contentBlocksIsLoading,
+        contentBlocksIsError,
+        contentBlocksQuickRefRecords,
+        addContentBlocksMatrxId,
+        addContentBlocksMatrxIds,
+        removeContentBlocksMatrxId,
+        removeContentBlocksMatrxIds,
+        addContentBlocksPkValue,
+        addContentBlocksPkValues,
+        removeContentBlocksPkValue,
+        removeContentBlocksPkValues,
+        isContentBlocksMissingRecords,
+        setContentBlocksShouldFetch,
+        setContentBlocksFetchMode,
+        fetchContentBlocksQuickRefs,
+        fetchContentBlocksOne,
+        fetchContentBlocksOneWithFkIfk,
+        fetchContentBlocksAll,
+        fetchContentBlocksPaginated,
     };
 };
 
@@ -5238,6 +5426,99 @@ export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
 
 
 
+type UsePromptTemplatesWithFetchReturn = {
+    promptTemplatesSelectors: EntitySelectors<"promptTemplates">;
+    promptTemplatesActions: EntityActions<"promptTemplates">;
+    promptTemplatesRecords: Record<MatrxRecordId, PromptTemplatesData>;
+    promptTemplatesRecordsById: Record<string, PromptTemplatesData>;
+    promptTemplatesUnsavedRecords: Record<MatrxRecordId, Partial<PromptTemplatesData>>;
+    promptTemplatesSelectedRecordIds: MatrxRecordId[];
+    promptTemplatesIsLoading: boolean;
+    promptTemplatesIsError: boolean;
+    promptTemplatesQuickRefRecords: QuickReferenceRecord[];
+    addPromptTemplatesMatrxId: (recordId: MatrxRecordId) => void;
+    addPromptTemplatesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removePromptTemplatesMatrxId: (recordId: MatrxRecordId) => void;
+    removePromptTemplatesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addPromptTemplatesPkValue: (pkValue: string) => void;
+    addPromptTemplatesPkValues: (pkValues: Record<string, unknown>) => void;
+    removePromptTemplatesPkValue: (pkValue: string) => void;
+    removePromptTemplatesPkValues: (pkValues: Record<string, unknown>) => void;
+    isPromptTemplatesMissingRecords: boolean;
+    setPromptTemplatesShouldFetch: (shouldFetch: boolean) => void;
+    setPromptTemplatesFetchMode: (fetchMode: FetchMode) => void;
+    fetchPromptTemplatesQuickRefs: () => void;
+    fetchPromptTemplatesOne: (recordId: MatrxRecordId) => void;
+    fetchPromptTemplatesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchPromptTemplatesAll: () => void;
+    fetchPromptTemplatesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const usePromptTemplatesWithFetch = (): UsePromptTemplatesWithFetchReturn => {
+    const {
+        selectors: promptTemplatesSelectors,
+        actions: promptTemplatesActions,
+        allRecords: promptTemplatesRecords,
+        recordsById: promptTemplatesRecordsById,
+        unsavedRecords: promptTemplatesUnsavedRecords,
+        selectedRecordIds: promptTemplatesSelectedRecordIds,
+        isLoading: promptTemplatesIsLoading,
+        isError: promptTemplatesIsError,
+        quickRefRecords: promptTemplatesQuickRefRecords,
+        addMatrxId: addPromptTemplatesMatrxId,
+        addMatrxIds: addPromptTemplatesMatrxIds,
+        removeMatrxId: removePromptTemplatesMatrxId,
+        removeMatrxIds: removePromptTemplatesMatrxIds,
+        addPkValue: addPromptTemplatesPkValue,
+        addPkValues: addPromptTemplatesPkValues,
+        removePkValue: removePromptTemplatesPkValue,
+        removePkValues: removePromptTemplatesPkValues,
+        isMissingRecords: isPromptTemplatesMissingRecords,
+        setShouldFetch: setPromptTemplatesShouldFetch,
+        setFetchMode: setPromptTemplatesFetchMode,
+        fetchQuickRefs: fetchPromptTemplatesQuickRefs,
+        fetchOne: fetchPromptTemplatesOne,
+        fetchOneWithFkIfk: fetchPromptTemplatesOneWithFkIfk,
+        fetchAll: fetchPromptTemplatesAll,
+        fetchPaginated: fetchPromptTemplatesPaginated,
+
+    } = useEntityWithFetch("promptTemplates");
+
+    return {
+        promptTemplatesSelectors,
+        promptTemplatesActions,
+        promptTemplatesRecords,
+        promptTemplatesRecordsById,
+        promptTemplatesUnsavedRecords,
+        promptTemplatesSelectedRecordIds,
+        promptTemplatesIsLoading,
+        promptTemplatesIsError,
+        promptTemplatesQuickRefRecords,
+        addPromptTemplatesMatrxId,
+        addPromptTemplatesMatrxIds,
+        removePromptTemplatesMatrxId,
+        removePromptTemplatesMatrxIds,
+        addPromptTemplatesPkValue,
+        addPromptTemplatesPkValues,
+        removePromptTemplatesPkValue,
+        removePromptTemplatesPkValues,
+        isPromptTemplatesMissingRecords,
+        setPromptTemplatesShouldFetch,
+        setPromptTemplatesFetchMode,
+        fetchPromptTemplatesQuickRefs,
+        fetchPromptTemplatesOne,
+        fetchPromptTemplatesOneWithFkIfk,
+        fetchPromptTemplatesAll,
+        fetchPromptTemplatesPaginated,
+    };
+};
+
+
+
 type UsePromptsWithFetchReturn = {
     promptsSelectors: EntitySelectors<"prompts">;
     promptsActions: EntityActions<"prompts">;
@@ -5610,99 +5891,6 @@ export const useRecipeDisplayWithFetch = (): UseRecipeDisplayWithFetchReturn => 
 
 
 
-type UseRecipeFunctionWithFetchReturn = {
-    recipeFunctionSelectors: EntitySelectors<"recipeFunction">;
-    recipeFunctionActions: EntityActions<"recipeFunction">;
-    recipeFunctionRecords: Record<MatrxRecordId, RecipeFunctionData>;
-    recipeFunctionRecordsById: Record<string, RecipeFunctionData>;
-    recipeFunctionUnsavedRecords: Record<MatrxRecordId, Partial<RecipeFunctionData>>;
-    recipeFunctionSelectedRecordIds: MatrxRecordId[];
-    recipeFunctionIsLoading: boolean;
-    recipeFunctionIsError: boolean;
-    recipeFunctionQuickRefRecords: QuickReferenceRecord[];
-    addRecipeFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    addRecipeFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeRecipeFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    removeRecipeFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addRecipeFunctionPkValue: (pkValue: string) => void;
-    addRecipeFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    removeRecipeFunctionPkValue: (pkValue: string) => void;
-    removeRecipeFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    isRecipeFunctionMissingRecords: boolean;
-    setRecipeFunctionShouldFetch: (shouldFetch: boolean) => void;
-    setRecipeFunctionFetchMode: (fetchMode: FetchMode) => void;
-    fetchRecipeFunctionQuickRefs: () => void;
-    fetchRecipeFunctionOne: (recordId: MatrxRecordId) => void;
-    fetchRecipeFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchRecipeFunctionAll: () => void;
-    fetchRecipeFunctionPaginated: (page: number, pageSize: number, options?: {
-        maxCount?: number;
-        filters?: FilterPayload;
-        sort?: SortPayload;
-    }) => void
-};
-
-export const useRecipeFunctionWithFetch = (): UseRecipeFunctionWithFetchReturn => {
-    const {
-        selectors: recipeFunctionSelectors,
-        actions: recipeFunctionActions,
-        allRecords: recipeFunctionRecords,
-        recordsById: recipeFunctionRecordsById,
-        unsavedRecords: recipeFunctionUnsavedRecords,
-        selectedRecordIds: recipeFunctionSelectedRecordIds,
-        isLoading: recipeFunctionIsLoading,
-        isError: recipeFunctionIsError,
-        quickRefRecords: recipeFunctionQuickRefRecords,
-        addMatrxId: addRecipeFunctionMatrxId,
-        addMatrxIds: addRecipeFunctionMatrxIds,
-        removeMatrxId: removeRecipeFunctionMatrxId,
-        removeMatrxIds: removeRecipeFunctionMatrxIds,
-        addPkValue: addRecipeFunctionPkValue,
-        addPkValues: addRecipeFunctionPkValues,
-        removePkValue: removeRecipeFunctionPkValue,
-        removePkValues: removeRecipeFunctionPkValues,
-        isMissingRecords: isRecipeFunctionMissingRecords,
-        setShouldFetch: setRecipeFunctionShouldFetch,
-        setFetchMode: setRecipeFunctionFetchMode,
-        fetchQuickRefs: fetchRecipeFunctionQuickRefs,
-        fetchOne: fetchRecipeFunctionOne,
-        fetchOneWithFkIfk: fetchRecipeFunctionOneWithFkIfk,
-        fetchAll: fetchRecipeFunctionAll,
-        fetchPaginated: fetchRecipeFunctionPaginated,
-
-    } = useEntityWithFetch("recipeFunction");
-
-    return {
-        recipeFunctionSelectors,
-        recipeFunctionActions,
-        recipeFunctionRecords,
-        recipeFunctionRecordsById,
-        recipeFunctionUnsavedRecords,
-        recipeFunctionSelectedRecordIds,
-        recipeFunctionIsLoading,
-        recipeFunctionIsError,
-        recipeFunctionQuickRefRecords,
-        addRecipeFunctionMatrxId,
-        addRecipeFunctionMatrxIds,
-        removeRecipeFunctionMatrxId,
-        removeRecipeFunctionMatrxIds,
-        addRecipeFunctionPkValue,
-        addRecipeFunctionPkValues,
-        removeRecipeFunctionPkValue,
-        removeRecipeFunctionPkValues,
-        isRecipeFunctionMissingRecords,
-        setRecipeFunctionShouldFetch,
-        setRecipeFunctionFetchMode,
-        fetchRecipeFunctionQuickRefs,
-        fetchRecipeFunctionOne,
-        fetchRecipeFunctionOneWithFkIfk,
-        fetchRecipeFunctionAll,
-        fetchRecipeFunctionPaginated,
-    };
-};
-
-
-
 type UseRecipeMessageWithFetchReturn = {
     recipeMessageSelectors: EntitySelectors<"recipeMessage">;
     recipeMessageActions: EntityActions<"recipeMessage">;
@@ -6070,99 +6258,6 @@ export const useRecipeProcessorWithFetch = (): UseRecipeProcessorWithFetchReturn
         fetchRecipeProcessorOneWithFkIfk,
         fetchRecipeProcessorAll,
         fetchRecipeProcessorPaginated,
-    };
-};
-
-
-
-type UseRecipeToolWithFetchReturn = {
-    recipeToolSelectors: EntitySelectors<"recipeTool">;
-    recipeToolActions: EntityActions<"recipeTool">;
-    recipeToolRecords: Record<MatrxRecordId, RecipeToolData>;
-    recipeToolRecordsById: Record<string, RecipeToolData>;
-    recipeToolUnsavedRecords: Record<MatrxRecordId, Partial<RecipeToolData>>;
-    recipeToolSelectedRecordIds: MatrxRecordId[];
-    recipeToolIsLoading: boolean;
-    recipeToolIsError: boolean;
-    recipeToolQuickRefRecords: QuickReferenceRecord[];
-    addRecipeToolMatrxId: (recordId: MatrxRecordId) => void;
-    addRecipeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeRecipeToolMatrxId: (recordId: MatrxRecordId) => void;
-    removeRecipeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addRecipeToolPkValue: (pkValue: string) => void;
-    addRecipeToolPkValues: (pkValues: Record<string, unknown>) => void;
-    removeRecipeToolPkValue: (pkValue: string) => void;
-    removeRecipeToolPkValues: (pkValues: Record<string, unknown>) => void;
-    isRecipeToolMissingRecords: boolean;
-    setRecipeToolShouldFetch: (shouldFetch: boolean) => void;
-    setRecipeToolFetchMode: (fetchMode: FetchMode) => void;
-    fetchRecipeToolQuickRefs: () => void;
-    fetchRecipeToolOne: (recordId: MatrxRecordId) => void;
-    fetchRecipeToolOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchRecipeToolAll: () => void;
-    fetchRecipeToolPaginated: (page: number, pageSize: number, options?: {
-        maxCount?: number;
-        filters?: FilterPayload;
-        sort?: SortPayload;
-    }) => void
-};
-
-export const useRecipeToolWithFetch = (): UseRecipeToolWithFetchReturn => {
-    const {
-        selectors: recipeToolSelectors,
-        actions: recipeToolActions,
-        allRecords: recipeToolRecords,
-        recordsById: recipeToolRecordsById,
-        unsavedRecords: recipeToolUnsavedRecords,
-        selectedRecordIds: recipeToolSelectedRecordIds,
-        isLoading: recipeToolIsLoading,
-        isError: recipeToolIsError,
-        quickRefRecords: recipeToolQuickRefRecords,
-        addMatrxId: addRecipeToolMatrxId,
-        addMatrxIds: addRecipeToolMatrxIds,
-        removeMatrxId: removeRecipeToolMatrxId,
-        removeMatrxIds: removeRecipeToolMatrxIds,
-        addPkValue: addRecipeToolPkValue,
-        addPkValues: addRecipeToolPkValues,
-        removePkValue: removeRecipeToolPkValue,
-        removePkValues: removeRecipeToolPkValues,
-        isMissingRecords: isRecipeToolMissingRecords,
-        setShouldFetch: setRecipeToolShouldFetch,
-        setFetchMode: setRecipeToolFetchMode,
-        fetchQuickRefs: fetchRecipeToolQuickRefs,
-        fetchOne: fetchRecipeToolOne,
-        fetchOneWithFkIfk: fetchRecipeToolOneWithFkIfk,
-        fetchAll: fetchRecipeToolAll,
-        fetchPaginated: fetchRecipeToolPaginated,
-
-    } = useEntityWithFetch("recipeTool");
-
-    return {
-        recipeToolSelectors,
-        recipeToolActions,
-        recipeToolRecords,
-        recipeToolRecordsById,
-        recipeToolUnsavedRecords,
-        recipeToolSelectedRecordIds,
-        recipeToolIsLoading,
-        recipeToolIsError,
-        recipeToolQuickRefRecords,
-        addRecipeToolMatrxId,
-        addRecipeToolMatrxIds,
-        removeRecipeToolMatrxId,
-        removeRecipeToolMatrxIds,
-        addRecipeToolPkValue,
-        addRecipeToolPkValues,
-        removeRecipeToolPkValue,
-        removeRecipeToolPkValues,
-        isRecipeToolMissingRecords,
-        setRecipeToolShouldFetch,
-        setRecipeToolFetchMode,
-        fetchRecipeToolQuickRefs,
-        fetchRecipeToolOne,
-        fetchRecipeToolOneWithFkIfk,
-        fetchRecipeToolAll,
-        fetchRecipeToolPaginated,
     };
 };
 
@@ -8679,6 +8774,99 @@ export const useSubcategoryWithFetch = (): UseSubcategoryWithFetchReturn => {
 
 
 
+type UseSubcategoryConfigsWithFetchReturn = {
+    subcategoryConfigsSelectors: EntitySelectors<"subcategoryConfigs">;
+    subcategoryConfigsActions: EntityActions<"subcategoryConfigs">;
+    subcategoryConfigsRecords: Record<MatrxRecordId, SubcategoryConfigsData>;
+    subcategoryConfigsRecordsById: Record<string, SubcategoryConfigsData>;
+    subcategoryConfigsUnsavedRecords: Record<MatrxRecordId, Partial<SubcategoryConfigsData>>;
+    subcategoryConfigsSelectedRecordIds: MatrxRecordId[];
+    subcategoryConfigsIsLoading: boolean;
+    subcategoryConfigsIsError: boolean;
+    subcategoryConfigsQuickRefRecords: QuickReferenceRecord[];
+    addSubcategoryConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    addSubcategoryConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeSubcategoryConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    removeSubcategoryConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addSubcategoryConfigsPkValue: (pkValue: string) => void;
+    addSubcategoryConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeSubcategoryConfigsPkValue: (pkValue: string) => void;
+    removeSubcategoryConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    isSubcategoryConfigsMissingRecords: boolean;
+    setSubcategoryConfigsShouldFetch: (shouldFetch: boolean) => void;
+    setSubcategoryConfigsFetchMode: (fetchMode: FetchMode) => void;
+    fetchSubcategoryConfigsQuickRefs: () => void;
+    fetchSubcategoryConfigsOne: (recordId: MatrxRecordId) => void;
+    fetchSubcategoryConfigsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchSubcategoryConfigsAll: () => void;
+    fetchSubcategoryConfigsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useSubcategoryConfigsWithFetch = (): UseSubcategoryConfigsWithFetchReturn => {
+    const {
+        selectors: subcategoryConfigsSelectors,
+        actions: subcategoryConfigsActions,
+        allRecords: subcategoryConfigsRecords,
+        recordsById: subcategoryConfigsRecordsById,
+        unsavedRecords: subcategoryConfigsUnsavedRecords,
+        selectedRecordIds: subcategoryConfigsSelectedRecordIds,
+        isLoading: subcategoryConfigsIsLoading,
+        isError: subcategoryConfigsIsError,
+        quickRefRecords: subcategoryConfigsQuickRefRecords,
+        addMatrxId: addSubcategoryConfigsMatrxId,
+        addMatrxIds: addSubcategoryConfigsMatrxIds,
+        removeMatrxId: removeSubcategoryConfigsMatrxId,
+        removeMatrxIds: removeSubcategoryConfigsMatrxIds,
+        addPkValue: addSubcategoryConfigsPkValue,
+        addPkValues: addSubcategoryConfigsPkValues,
+        removePkValue: removeSubcategoryConfigsPkValue,
+        removePkValues: removeSubcategoryConfigsPkValues,
+        isMissingRecords: isSubcategoryConfigsMissingRecords,
+        setShouldFetch: setSubcategoryConfigsShouldFetch,
+        setFetchMode: setSubcategoryConfigsFetchMode,
+        fetchQuickRefs: fetchSubcategoryConfigsQuickRefs,
+        fetchOne: fetchSubcategoryConfigsOne,
+        fetchOneWithFkIfk: fetchSubcategoryConfigsOneWithFkIfk,
+        fetchAll: fetchSubcategoryConfigsAll,
+        fetchPaginated: fetchSubcategoryConfigsPaginated,
+
+    } = useEntityWithFetch("subcategoryConfigs");
+
+    return {
+        subcategoryConfigsSelectors,
+        subcategoryConfigsActions,
+        subcategoryConfigsRecords,
+        subcategoryConfigsRecordsById,
+        subcategoryConfigsUnsavedRecords,
+        subcategoryConfigsSelectedRecordIds,
+        subcategoryConfigsIsLoading,
+        subcategoryConfigsIsError,
+        subcategoryConfigsQuickRefRecords,
+        addSubcategoryConfigsMatrxId,
+        addSubcategoryConfigsMatrxIds,
+        removeSubcategoryConfigsMatrxId,
+        removeSubcategoryConfigsMatrxIds,
+        addSubcategoryConfigsPkValue,
+        addSubcategoryConfigsPkValues,
+        removeSubcategoryConfigsPkValue,
+        removeSubcategoryConfigsPkValues,
+        isSubcategoryConfigsMissingRecords,
+        setSubcategoryConfigsShouldFetch,
+        setSubcategoryConfigsFetchMode,
+        fetchSubcategoryConfigsQuickRefs,
+        fetchSubcategoryConfigsOne,
+        fetchSubcategoryConfigsOneWithFkIfk,
+        fetchSubcategoryConfigsAll,
+        fetchSubcategoryConfigsPaginated,
+    };
+};
+
+
+
 type UseSystemFunctionWithFetchReturn = {
     systemFunctionSelectors: EntitySelectors<"systemFunction">;
     systemFunctionActions: EntityActions<"systemFunction">;
@@ -9330,94 +9518,94 @@ export const useTasksWithFetch = (): UseTasksWithFetchReturn => {
 
 
 
-type UseToolWithFetchReturn = {
-    toolSelectors: EntitySelectors<"tool">;
-    toolActions: EntityActions<"tool">;
-    toolRecords: Record<MatrxRecordId, ToolData>;
-    toolRecordsById: Record<string, ToolData>;
-    toolUnsavedRecords: Record<MatrxRecordId, Partial<ToolData>>;
-    toolSelectedRecordIds: MatrxRecordId[];
-    toolIsLoading: boolean;
-    toolIsError: boolean;
-    toolQuickRefRecords: QuickReferenceRecord[];
-    addToolMatrxId: (recordId: MatrxRecordId) => void;
-    addToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeToolMatrxId: (recordId: MatrxRecordId) => void;
-    removeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addToolPkValue: (pkValue: string) => void;
-    addToolPkValues: (pkValues: Record<string, unknown>) => void;
-    removeToolPkValue: (pkValue: string) => void;
-    removeToolPkValues: (pkValues: Record<string, unknown>) => void;
-    isToolMissingRecords: boolean;
-    setToolShouldFetch: (shouldFetch: boolean) => void;
-    setToolFetchMode: (fetchMode: FetchMode) => void;
-    fetchToolQuickRefs: () => void;
-    fetchToolOne: (recordId: MatrxRecordId) => void;
-    fetchToolOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchToolAll: () => void;
-    fetchToolPaginated: (page: number, pageSize: number, options?: {
+type UseToolsWithFetchReturn = {
+    toolsSelectors: EntitySelectors<"tools">;
+    toolsActions: EntityActions<"tools">;
+    toolsRecords: Record<MatrxRecordId, ToolsData>;
+    toolsRecordsById: Record<string, ToolsData>;
+    toolsUnsavedRecords: Record<MatrxRecordId, Partial<ToolsData>>;
+    toolsSelectedRecordIds: MatrxRecordId[];
+    toolsIsLoading: boolean;
+    toolsIsError: boolean;
+    toolsQuickRefRecords: QuickReferenceRecord[];
+    addToolsMatrxId: (recordId: MatrxRecordId) => void;
+    addToolsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeToolsMatrxId: (recordId: MatrxRecordId) => void;
+    removeToolsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addToolsPkValue: (pkValue: string) => void;
+    addToolsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeToolsPkValue: (pkValue: string) => void;
+    removeToolsPkValues: (pkValues: Record<string, unknown>) => void;
+    isToolsMissingRecords: boolean;
+    setToolsShouldFetch: (shouldFetch: boolean) => void;
+    setToolsFetchMode: (fetchMode: FetchMode) => void;
+    fetchToolsQuickRefs: () => void;
+    fetchToolsOne: (recordId: MatrxRecordId) => void;
+    fetchToolsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchToolsAll: () => void;
+    fetchToolsPaginated: (page: number, pageSize: number, options?: {
         maxCount?: number;
         filters?: FilterPayload;
         sort?: SortPayload;
     }) => void
 };
 
-export const useToolWithFetch = (): UseToolWithFetchReturn => {
+export const useToolsWithFetch = (): UseToolsWithFetchReturn => {
     const {
-        selectors: toolSelectors,
-        actions: toolActions,
-        allRecords: toolRecords,
-        recordsById: toolRecordsById,
-        unsavedRecords: toolUnsavedRecords,
-        selectedRecordIds: toolSelectedRecordIds,
-        isLoading: toolIsLoading,
-        isError: toolIsError,
-        quickRefRecords: toolQuickRefRecords,
-        addMatrxId: addToolMatrxId,
-        addMatrxIds: addToolMatrxIds,
-        removeMatrxId: removeToolMatrxId,
-        removeMatrxIds: removeToolMatrxIds,
-        addPkValue: addToolPkValue,
-        addPkValues: addToolPkValues,
-        removePkValue: removeToolPkValue,
-        removePkValues: removeToolPkValues,
-        isMissingRecords: isToolMissingRecords,
-        setShouldFetch: setToolShouldFetch,
-        setFetchMode: setToolFetchMode,
-        fetchQuickRefs: fetchToolQuickRefs,
-        fetchOne: fetchToolOne,
-        fetchOneWithFkIfk: fetchToolOneWithFkIfk,
-        fetchAll: fetchToolAll,
-        fetchPaginated: fetchToolPaginated,
+        selectors: toolsSelectors,
+        actions: toolsActions,
+        allRecords: toolsRecords,
+        recordsById: toolsRecordsById,
+        unsavedRecords: toolsUnsavedRecords,
+        selectedRecordIds: toolsSelectedRecordIds,
+        isLoading: toolsIsLoading,
+        isError: toolsIsError,
+        quickRefRecords: toolsQuickRefRecords,
+        addMatrxId: addToolsMatrxId,
+        addMatrxIds: addToolsMatrxIds,
+        removeMatrxId: removeToolsMatrxId,
+        removeMatrxIds: removeToolsMatrxIds,
+        addPkValue: addToolsPkValue,
+        addPkValues: addToolsPkValues,
+        removePkValue: removeToolsPkValue,
+        removePkValues: removeToolsPkValues,
+        isMissingRecords: isToolsMissingRecords,
+        setShouldFetch: setToolsShouldFetch,
+        setFetchMode: setToolsFetchMode,
+        fetchQuickRefs: fetchToolsQuickRefs,
+        fetchOne: fetchToolsOne,
+        fetchOneWithFkIfk: fetchToolsOneWithFkIfk,
+        fetchAll: fetchToolsAll,
+        fetchPaginated: fetchToolsPaginated,
 
-    } = useEntityWithFetch("tool");
+    } = useEntityWithFetch("tools");
 
     return {
-        toolSelectors,
-        toolActions,
-        toolRecords,
-        toolRecordsById,
-        toolUnsavedRecords,
-        toolSelectedRecordIds,
-        toolIsLoading,
-        toolIsError,
-        toolQuickRefRecords,
-        addToolMatrxId,
-        addToolMatrxIds,
-        removeToolMatrxId,
-        removeToolMatrxIds,
-        addToolPkValue,
-        addToolPkValues,
-        removeToolPkValue,
-        removeToolPkValues,
-        isToolMissingRecords,
-        setToolShouldFetch,
-        setToolFetchMode,
-        fetchToolQuickRefs,
-        fetchToolOne,
-        fetchToolOneWithFkIfk,
-        fetchToolAll,
-        fetchToolPaginated,
+        toolsSelectors,
+        toolsActions,
+        toolsRecords,
+        toolsRecordsById,
+        toolsUnsavedRecords,
+        toolsSelectedRecordIds,
+        toolsIsLoading,
+        toolsIsError,
+        toolsQuickRefRecords,
+        addToolsMatrxId,
+        addToolsMatrxIds,
+        removeToolsMatrxId,
+        removeToolsMatrxIds,
+        addToolsPkValue,
+        addToolsPkValues,
+        removeToolsPkValue,
+        removeToolsPkValues,
+        isToolsMissingRecords,
+        setToolsShouldFetch,
+        setToolsFetchMode,
+        fetchToolsQuickRefs,
+        fetchToolsOne,
+        fetchToolsOneWithFkIfk,
+        fetchToolsAll,
+        fetchToolsPaginated,
     };
 };
 

@@ -34,9 +34,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["name", "provider", "description", "additionalCost", "costDetails", "params"]
 },
   aiModel: {
-  nativeFields: ["id", "name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider"],
+  nativeFields: ["id", "name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider", "isDeprecated", "isPrimary", "isPremium"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider"]
+  nativeFieldsNoPk: ["name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider", "isDeprecated", "isPrimary", "isPremium"]
 },
   aiModelEndpoint: {
   nativeFields: ["id", "aiModelId", "aiEndpointId", "available", "endpointPriority", "configuration", "notes", "createdAt"],
@@ -123,6 +123,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "description", "slug", "icon", "createdAt"]
 },
+  categoryConfigs: {
+  nativeFields: ["id", "categoryId", "label", "iconName", "color", "sortOrder", "isActive", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["categoryId", "label", "iconName", "color", "sortOrder", "isActive", "createdAt", "updatedAt"]
+},
   compiledRecipe: {
   nativeFields: ["id", "recipeId", "version", "compiledRecipe", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead"],
   primaryKeyFields: ["id"],
@@ -137,6 +142,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "createdAt", "updatedAt", "fieldId", "containerId", "order"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "updatedAt", "fieldId", "containerId", "order"]
+},
+  contentBlocks: {
+  nativeFields: ["id", "blockId", "label", "description", "iconName", "category", "subcategory", "template", "sortOrder", "isActive", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["blockId", "label", "description", "iconName", "category", "subcategory", "template", "sortOrder", "isActive", "createdAt", "updatedAt"]
 },
   conversation: {
   nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords", "group"],
@@ -288,10 +298,15 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "description", "createdAt", "updatedAt", "createdBy"]
 },
-  prompts: {
-  nativeFields: ["id", "createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings"],
+  promptTemplates: {
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "description", "category", "messages", "variableDefaults", "tools", "settings", "isFeatured", "useCount", "createdByUserId"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "description", "category", "messages", "variableDefaults", "tools", "settings", "isFeatured", "useCount", "createdByUserId"]
+},
+  prompts: {
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings", "description"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings", "description"]
 },
   recipe: {
   nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId", "metadata"],
@@ -307,11 +322,6 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "recipe", "display", "priority", "displaySettings"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["recipe", "display", "priority", "displaySettings"]
-},
-  recipeFunction: {
-  nativeFields: ["id", "recipe", "function", "role", "params"],
-  primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["recipe", "function", "role", "params"]
 },
   recipeMessage: {
   nativeFields: ["id", "messageId", "recipeId", "order"],
@@ -332,11 +342,6 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "recipe", "processor", "params"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["recipe", "processor", "params"]
-},
-  recipeTool: {
-  nativeFields: ["id", "recipe", "tool", "params"],
-  primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["recipe", "tool", "params"]
 },
   registeredFunction: {
   nativeFields: ["id", "funcName", "modulePath", "className", "description", "returnBroker", "name", "tags", "category", "icon", "nodeDescription"],
@@ -473,6 +478,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["categoryId", "name", "description", "slug", "icon", "features", "createdAt"]
 },
+  subcategoryConfigs: {
+  nativeFields: ["id", "categoryId", "subcategoryId", "label", "iconName", "sortOrder", "isActive", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["categoryId", "subcategoryId", "label", "iconName", "sortOrder", "isActive", "createdAt", "updatedAt"]
+},
   systemFunction: {
   nativeFields: ["id", "name", "description", "sample", "inputParams", "outputOptions", "rfId"],
   primaryKeyFields: ["id"],
@@ -508,10 +518,10 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "userId", "authenticatedRead"]
 },
-  tool: {
-  nativeFields: ["id", "name", "source", "description", "parameters", "requiredArgs", "systemFunction", "additionalParams"],
+  tools: {
+  nativeFields: ["id", "name", "description", "parameters", "outputSchema", "annotations", "functionPath", "category", "tags", "icon", "isActive", "version", "createdAt", "updatedAt"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "source", "description", "parameters", "requiredArgs", "systemFunction", "additionalParams"]
+  nativeFieldsNoPk: ["name", "description", "parameters", "outputSchema", "annotations", "functionPath", "category", "tags", "icon", "isActive", "version", "createdAt", "updatedAt"]
 },
   transformer: {
   nativeFields: ["id", "name", "inputParams", "outputParams"],

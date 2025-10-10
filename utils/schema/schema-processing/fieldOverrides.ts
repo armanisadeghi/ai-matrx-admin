@@ -230,11 +230,15 @@ const bucketTreeStructuresFieldOverrides: AllFieldOverrides = {};
 
 const categoryFieldOverrides: AllFieldOverrides = {};
 
+const categoryConfigsFieldOverrides: AllFieldOverrides = {};
+
 const compiledRecipeFieldOverrides: AllFieldOverrides = {};
 
 const componentGroupsFieldOverrides: AllFieldOverrides = {};
 
 const containerFieldsFieldOverrides: AllFieldOverrides = {};
+
+const contentBlocksFieldOverrides: AllFieldOverrides = {};
 
 const conversationFieldOverrides: AllFieldOverrides = {};
 
@@ -333,6 +337,8 @@ const projectMembersFieldOverrides: AllFieldOverrides = {};
 
 const projectsFieldOverrides: AllFieldOverrides = {};
 
+const promptTemplatesFieldOverrides: AllFieldOverrides = {};
+
 const promptsFieldOverrides: AllFieldOverrides = {};
 
 const recipeFieldOverrides: AllFieldOverrides = {
@@ -370,8 +376,6 @@ const recipeBrokerFieldOverrides: AllFieldOverrides = {};
 
 const recipeDisplayFieldOverrides: AllFieldOverrides = {};
 
-const recipeFunctionFieldOverrides: AllFieldOverrides = {};
-
 const recipeMessageFieldOverrides: AllFieldOverrides = {};
 
 const recipeMessageReorderQueueFieldOverrides: AllFieldOverrides = {};
@@ -379,8 +383,6 @@ const recipeMessageReorderQueueFieldOverrides: AllFieldOverrides = {};
 const recipeModelFieldOverrides: AllFieldOverrides = {};
 
 const recipeProcessorFieldOverrides: AllFieldOverrides = {};
-
-const recipeToolFieldOverrides: AllFieldOverrides = {};
 
 const registeredFunctionFieldOverrides: AllFieldOverrides = {};
 
@@ -436,6 +438,8 @@ const siteMetadataFieldOverrides: AllFieldOverrides = {};
 
 const subcategoryFieldOverrides: AllFieldOverrides = {};
 
+const subcategoryConfigsFieldOverrides: AllFieldOverrides = {};
+
 const systemFunctionFieldOverrides: AllFieldOverrides = {};
 
 const tableDataFieldOverrides: AllFieldOverrides = {};
@@ -450,7 +454,7 @@ const taskCommentsFieldOverrides: AllFieldOverrides = {};
 
 const tasksFieldOverrides: AllFieldOverrides = {};
 
-const toolFieldOverrides: AllFieldOverrides = {};
+const toolsFieldOverrides: AllFieldOverrides = {};
 
 const transformerFieldOverrides: AllFieldOverrides = {};
 
@@ -508,9 +512,11 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     bucketStructures: bucketStructuresFieldOverrides,
     bucketTreeStructures: bucketTreeStructuresFieldOverrides,
     category: categoryFieldOverrides,
+    categoryConfigs: categoryConfigsFieldOverrides,
     compiledRecipe: compiledRecipeFieldOverrides,
     componentGroups: componentGroupsFieldOverrides,
     containerFields: containerFieldsFieldOverrides,
+    contentBlocks: contentBlocksFieldOverrides,
     conversation: conversationFieldOverrides,
     customAppConfigs: customAppConfigsFieldOverrides,
     customAppletConfigs: customAppletConfigsFieldOverrides,
@@ -541,16 +547,15 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     processor: processorFieldOverrides,
     projectMembers: projectMembersFieldOverrides,
     projects: projectsFieldOverrides,
+    promptTemplates: promptTemplatesFieldOverrides,
     prompts: promptsFieldOverrides,
     recipe: recipeFieldOverrides,
     recipeBroker: recipeBrokerFieldOverrides,
     recipeDisplay: recipeDisplayFieldOverrides,
-    recipeFunction: recipeFunctionFieldOverrides,
     recipeMessage: recipeMessageFieldOverrides,
     recipeMessageReorderQueue: recipeMessageReorderQueueFieldOverrides,
     recipeModel: recipeModelFieldOverrides,
     recipeProcessor: recipeProcessorFieldOverrides,
-    recipeTool: recipeToolFieldOverrides,
     registeredFunction: registeredFunctionFieldOverrides,
     registeredNode: registeredNodeFieldOverrides,
     registeredNodeResults: registeredNodeResultsFieldOverrides,
@@ -578,6 +583,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     scrapeTaskResponse: scrapeTaskResponseFieldOverrides,
     siteMetadata: siteMetadataFieldOverrides,
     subcategory: subcategoryFieldOverrides,
+    subcategoryConfigs: subcategoryConfigsFieldOverrides,
     systemFunction: systemFunctionFieldOverrides,
     tableData: tableDataFieldOverrides,
     tableFields: tableFieldsFieldOverrides,
@@ -585,7 +591,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     taskAttachments: taskAttachmentsFieldOverrides,
     taskComments: taskCommentsFieldOverrides,
     tasks: tasksFieldOverrides,
-    tool: toolFieldOverrides,
+    tools: toolsFieldOverrides,
     transformer: transformerFieldOverrides,
     userListItems: userListItemsFieldOverrides,
     userLists: userListsFieldOverrides,

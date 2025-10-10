@@ -378,6 +378,23 @@ const categoryEntityOverrides: EntityOverrides<'category'> = {
 
 
 
+const categoryConfigsEntityOverrides: EntityOverrides<'categoryConfigs'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const compiledRecipeEntityOverrides: EntityOverrides<'compiledRecipe'> = {
     schemaType: null,
     entityName: null,
@@ -413,6 +430,23 @@ const componentGroupsEntityOverrides: EntityOverrides<'componentGroups'> = {
 
 
 const containerFieldsEntityOverrides: EntityOverrides<'containerFields'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const contentBlocksEntityOverrides: EntityOverrides<'contentBlocks'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -939,6 +973,23 @@ const projectsEntityOverrides: EntityOverrides<'projects'> = {
 
 
 
+const promptTemplatesEntityOverrides: EntityOverrides<'promptTemplates'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const promptsEntityOverrides: EntityOverrides<'prompts'> = {
     schemaType: null,
     entityName: null,
@@ -1007,23 +1058,6 @@ const recipeDisplayEntityOverrides: EntityOverrides<'recipeDisplay'> = {
 
 
 
-const recipeFunctionEntityOverrides: EntityOverrides<'recipeFunction'> = {
-    schemaType: null,
-    entityName: null,
-    uniqueTableId: null,
-    uniqueEntityId: null,
-    primaryKey: null,
-    primaryKeyMetadata: null,
-    displayFieldMetadata: null,
-    defaultFetchStrategy: null,
-    componentProps: null,
-    entityNameFormats: null,
-    relationships: null,
-    entityFields: null
-};
-
-
-
 const recipeMessageEntityOverrides: EntityOverrides<'recipeMessage'> = {
     schemaType: null,
     entityName: null,
@@ -1076,23 +1110,6 @@ const recipeModelEntityOverrides: EntityOverrides<'recipeModel'> = {
 
 
 const recipeProcessorEntityOverrides: EntityOverrides<'recipeProcessor'> = {
-    schemaType: null,
-    entityName: null,
-    uniqueTableId: null,
-    uniqueEntityId: null,
-    primaryKey: null,
-    primaryKeyMetadata: null,
-    displayFieldMetadata: null,
-    defaultFetchStrategy: null,
-    componentProps: null,
-    entityNameFormats: null,
-    relationships: null,
-    entityFields: null
-};
-
-
-
-const recipeToolEntityOverrides: EntityOverrides<'recipeTool'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1568,6 +1585,23 @@ const subcategoryEntityOverrides: EntityOverrides<'subcategory'> = {
 
 
 
+const subcategoryConfigsEntityOverrides: EntityOverrides<'subcategoryConfigs'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const systemFunctionEntityOverrides: EntityOverrides<'systemFunction'> = {
     schemaType: null,
     entityName: null,
@@ -1687,7 +1721,7 @@ const tasksEntityOverrides: EntityOverrides<'tasks'> = {
 
 
 
-const toolEntityOverrides: EntityOverrides<'tool'> = {
+const toolsEntityOverrides: EntityOverrides<'tools'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1998,9 +2032,11 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     bucketStructures: bucketStructuresEntityOverrides,
     bucketTreeStructures: bucketTreeStructuresEntityOverrides,
     category: categoryEntityOverrides,
+    categoryConfigs: categoryConfigsEntityOverrides,
     compiledRecipe: compiledRecipeEntityOverrides,
     componentGroups: componentGroupsEntityOverrides,
     containerFields: containerFieldsEntityOverrides,
+    contentBlocks: contentBlocksEntityOverrides,
     conversation: conversationEntityOverrides,
     customAppConfigs: customAppConfigsEntityOverrides,
     customAppletConfigs: customAppletConfigsEntityOverrides,
@@ -2031,16 +2067,15 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     processor: processorEntityOverrides,
     projectMembers: projectMembersEntityOverrides,
     projects: projectsEntityOverrides,
+    promptTemplates: promptTemplatesEntityOverrides,
     prompts: promptsEntityOverrides,
     recipe: recipeEntityOverrides,
     recipeBroker: recipeBrokerEntityOverrides,
     recipeDisplay: recipeDisplayEntityOverrides,
-    recipeFunction: recipeFunctionEntityOverrides,
     recipeMessage: recipeMessageEntityOverrides,
     recipeMessageReorderQueue: recipeMessageReorderQueueEntityOverrides,
     recipeModel: recipeModelEntityOverrides,
     recipeProcessor: recipeProcessorEntityOverrides,
-    recipeTool: recipeToolEntityOverrides,
     registeredFunction: registeredFunctionEntityOverrides,
     registeredNode: registeredNodeEntityOverrides,
     registeredNodeResults: registeredNodeResultsEntityOverrides,
@@ -2068,6 +2103,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     scrapeTaskResponse: scrapeTaskResponseEntityOverrides,
     siteMetadata: siteMetadataEntityOverrides,
     subcategory: subcategoryEntityOverrides,
+    subcategoryConfigs: subcategoryConfigsEntityOverrides,
     systemFunction: systemFunctionEntityOverrides,
     tableData: tableDataEntityOverrides,
     tableFields: tableFieldsEntityOverrides,
@@ -2075,7 +2111,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     taskAttachments: taskAttachmentsEntityOverrides,
     taskComments: taskCommentsEntityOverrides,
     tasks: tasksEntityOverrides,
-    tool: toolEntityOverrides,
+    tools: toolsEntityOverrides,
     transformer: transformerEntityOverrides,
     userListItems: userListItemsEntityOverrides,
     userLists: userListsEntityOverrides,

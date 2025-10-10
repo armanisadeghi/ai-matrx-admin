@@ -107,9 +107,11 @@ export type AutomationTableName =
     | 'bucketStructures'
     | 'bucketTreeStructures'
     | 'category'
+    | 'categoryConfigs'
     | 'compiledRecipe'
     | 'componentGroups'
     | 'containerFields'
+    | 'contentBlocks'
     | 'conversation'
     | 'customAppConfigs'
     | 'customAppletConfigs'
@@ -140,16 +142,15 @@ export type AutomationTableName =
     | 'processor'
     | 'projectMembers'
     | 'projects'
+    | 'promptTemplates'
     | 'prompts'
     | 'recipe'
     | 'recipeBroker'
     | 'recipeDisplay'
-    | 'recipeFunction'
     | 'recipeMessage'
     | 'recipeMessageReorderQueue'
     | 'recipeModel'
     | 'recipeProcessor'
-    | 'recipeTool'
     | 'registeredFunction'
     | 'registeredNode'
     | 'registeredNodeResults'
@@ -177,6 +178,7 @@ export type AutomationTableName =
     | 'scrapeTaskResponse'
     | 'siteMetadata'
     | 'subcategory'
+    | 'subcategoryConfigs'
     | 'systemFunction'
     | 'tableData'
     | 'tableFields'
@@ -184,7 +186,7 @@ export type AutomationTableName =
     | 'taskAttachments'
     | 'taskComments'
     | 'tasks'
-    | 'tool'
+    | 'tools'
     | 'transformer'
     | 'userListItems'
     | 'userLists'
@@ -421,6 +423,15 @@ export type CategoryData = Expand<EntityDataMixed<"category">>;
 export type CategoryState = EntityStateType<"category">;
 export type CategoryRecordMap = Record<"categoryRecordId", CategoryData>;
 
+export type CategoryConfigsType = AutomationEntity<"categoryConfigs">;
+export type CategoryConfigsDataRequired = Expand<EntityData<"categoryConfigs">>;
+export type CategoryConfigsDataOptional = Expand<EntityDataOptional<"categoryConfigs">>;
+export type CategoryConfigsRecordWithKey = Expand<EntityDataWithKey<"categoryConfigs">>;
+export type CategoryConfigsProcessed = Expand<ProcessedEntityData<"categoryConfigs">>;
+export type CategoryConfigsData = Expand<EntityDataMixed<"categoryConfigs">>;
+export type CategoryConfigsState = EntityStateType<"categoryConfigs">;
+export type CategoryConfigsRecordMap = Record<"categoryConfigsRecordId", CategoryConfigsData>;
+
 export type CompiledRecipeType = AutomationEntity<"compiledRecipe">;
 export type CompiledRecipeDataRequired = Expand<EntityData<"compiledRecipe">>;
 export type CompiledRecipeDataOptional = Expand<EntityDataOptional<"compiledRecipe">>;
@@ -447,6 +458,15 @@ export type ContainerFieldsProcessed = Expand<ProcessedEntityData<"containerFiel
 export type ContainerFieldsData = Expand<EntityDataMixed<"containerFields">>;
 export type ContainerFieldsState = EntityStateType<"containerFields">;
 export type ContainerFieldsRecordMap = Record<"containerFieldsRecordId", ContainerFieldsData>;
+
+export type ContentBlocksType = AutomationEntity<"contentBlocks">;
+export type ContentBlocksDataRequired = Expand<EntityData<"contentBlocks">>;
+export type ContentBlocksDataOptional = Expand<EntityDataOptional<"contentBlocks">>;
+export type ContentBlocksRecordWithKey = Expand<EntityDataWithKey<"contentBlocks">>;
+export type ContentBlocksProcessed = Expand<ProcessedEntityData<"contentBlocks">>;
+export type ContentBlocksData = Expand<EntityDataMixed<"contentBlocks">>;
+export type ContentBlocksState = EntityStateType<"contentBlocks">;
+export type ContentBlocksRecordMap = Record<"contentBlocksRecordId", ContentBlocksData>;
 
 export type ConversationType = AutomationEntity<"conversation">;
 export type ConversationDataRequired = Expand<EntityData<"conversation">>;
@@ -718,6 +738,15 @@ export type ProjectsData = Expand<EntityDataMixed<"projects">>;
 export type ProjectsState = EntityStateType<"projects">;
 export type ProjectsRecordMap = Record<"projectsRecordId", ProjectsData>;
 
+export type PromptTemplatesType = AutomationEntity<"promptTemplates">;
+export type PromptTemplatesDataRequired = Expand<EntityData<"promptTemplates">>;
+export type PromptTemplatesDataOptional = Expand<EntityDataOptional<"promptTemplates">>;
+export type PromptTemplatesRecordWithKey = Expand<EntityDataWithKey<"promptTemplates">>;
+export type PromptTemplatesProcessed = Expand<ProcessedEntityData<"promptTemplates">>;
+export type PromptTemplatesData = Expand<EntityDataMixed<"promptTemplates">>;
+export type PromptTemplatesState = EntityStateType<"promptTemplates">;
+export type PromptTemplatesRecordMap = Record<"promptTemplatesRecordId", PromptTemplatesData>;
+
 export type PromptsType = AutomationEntity<"prompts">;
 export type PromptsDataRequired = Expand<EntityData<"prompts">>;
 export type PromptsDataOptional = Expand<EntityDataOptional<"prompts">>;
@@ -754,15 +783,6 @@ export type RecipeDisplayData = Expand<EntityDataMixed<"recipeDisplay">>;
 export type RecipeDisplayState = EntityStateType<"recipeDisplay">;
 export type RecipeDisplayRecordMap = Record<"recipeDisplayRecordId", RecipeDisplayData>;
 
-export type RecipeFunctionType = AutomationEntity<"recipeFunction">;
-export type RecipeFunctionDataRequired = Expand<EntityData<"recipeFunction">>;
-export type RecipeFunctionDataOptional = Expand<EntityDataOptional<"recipeFunction">>;
-export type RecipeFunctionRecordWithKey = Expand<EntityDataWithKey<"recipeFunction">>;
-export type RecipeFunctionProcessed = Expand<ProcessedEntityData<"recipeFunction">>;
-export type RecipeFunctionData = Expand<EntityDataMixed<"recipeFunction">>;
-export type RecipeFunctionState = EntityStateType<"recipeFunction">;
-export type RecipeFunctionRecordMap = Record<"recipeFunctionRecordId", RecipeFunctionData>;
-
 export type RecipeMessageType = AutomationEntity<"recipeMessage">;
 export type RecipeMessageDataRequired = Expand<EntityData<"recipeMessage">>;
 export type RecipeMessageDataOptional = Expand<EntityDataOptional<"recipeMessage">>;
@@ -798,15 +818,6 @@ export type RecipeProcessorProcessed = Expand<ProcessedEntityData<"recipeProcess
 export type RecipeProcessorData = Expand<EntityDataMixed<"recipeProcessor">>;
 export type RecipeProcessorState = EntityStateType<"recipeProcessor">;
 export type RecipeProcessorRecordMap = Record<"recipeProcessorRecordId", RecipeProcessorData>;
-
-export type RecipeToolType = AutomationEntity<"recipeTool">;
-export type RecipeToolDataRequired = Expand<EntityData<"recipeTool">>;
-export type RecipeToolDataOptional = Expand<EntityDataOptional<"recipeTool">>;
-export type RecipeToolRecordWithKey = Expand<EntityDataWithKey<"recipeTool">>;
-export type RecipeToolProcessed = Expand<ProcessedEntityData<"recipeTool">>;
-export type RecipeToolData = Expand<EntityDataMixed<"recipeTool">>;
-export type RecipeToolState = EntityStateType<"recipeTool">;
-export type RecipeToolRecordMap = Record<"recipeToolRecordId", RecipeToolData>;
 
 export type RegisteredFunctionType = AutomationEntity<"registeredFunction">;
 export type RegisteredFunctionDataRequired = Expand<EntityData<"registeredFunction">>;
@@ -1051,6 +1062,15 @@ export type SubcategoryData = Expand<EntityDataMixed<"subcategory">>;
 export type SubcategoryState = EntityStateType<"subcategory">;
 export type SubcategoryRecordMap = Record<"subcategoryRecordId", SubcategoryData>;
 
+export type SubcategoryConfigsType = AutomationEntity<"subcategoryConfigs">;
+export type SubcategoryConfigsDataRequired = Expand<EntityData<"subcategoryConfigs">>;
+export type SubcategoryConfigsDataOptional = Expand<EntityDataOptional<"subcategoryConfigs">>;
+export type SubcategoryConfigsRecordWithKey = Expand<EntityDataWithKey<"subcategoryConfigs">>;
+export type SubcategoryConfigsProcessed = Expand<ProcessedEntityData<"subcategoryConfigs">>;
+export type SubcategoryConfigsData = Expand<EntityDataMixed<"subcategoryConfigs">>;
+export type SubcategoryConfigsState = EntityStateType<"subcategoryConfigs">;
+export type SubcategoryConfigsRecordMap = Record<"subcategoryConfigsRecordId", SubcategoryConfigsData>;
+
 export type SystemFunctionType = AutomationEntity<"systemFunction">;
 export type SystemFunctionDataRequired = Expand<EntityData<"systemFunction">>;
 export type SystemFunctionDataOptional = Expand<EntityDataOptional<"systemFunction">>;
@@ -1114,14 +1134,14 @@ export type TasksData = Expand<EntityDataMixed<"tasks">>;
 export type TasksState = EntityStateType<"tasks">;
 export type TasksRecordMap = Record<"tasksRecordId", TasksData>;
 
-export type ToolType = AutomationEntity<"tool">;
-export type ToolDataRequired = Expand<EntityData<"tool">>;
-export type ToolDataOptional = Expand<EntityDataOptional<"tool">>;
-export type ToolRecordWithKey = Expand<EntityDataWithKey<"tool">>;
-export type ToolProcessed = Expand<ProcessedEntityData<"tool">>;
-export type ToolData = Expand<EntityDataMixed<"tool">>;
-export type ToolState = EntityStateType<"tool">;
-export type ToolRecordMap = Record<"toolRecordId", ToolData>;
+export type ToolsType = AutomationEntity<"tools">;
+export type ToolsDataRequired = Expand<EntityData<"tools">>;
+export type ToolsDataOptional = Expand<EntityDataOptional<"tools">>;
+export type ToolsRecordWithKey = Expand<EntityDataWithKey<"tools">>;
+export type ToolsProcessed = Expand<ProcessedEntityData<"tools">>;
+export type ToolsData = Expand<EntityDataMixed<"tools">>;
+export type ToolsState = EntityStateType<"tools">;
+export type ToolsRecordMap = Record<"toolsRecordId", ToolsData>;
 
 export type TransformerType = AutomationEntity<"transformer">;
 export type TransformerDataRequired = Expand<EntityData<"transformer">>;

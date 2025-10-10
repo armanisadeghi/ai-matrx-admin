@@ -17,9 +17,10 @@ export default function EntityManagementPage() {
 
 
   return (
-    <div className="flex-1 p-0 gap-0 bg-background">
-
-      <NewEntitySplitLayout {...layoutProps} className="h-full" />
+    <div className="flex-1 p-0 gap-0 bg-background h-full max-h-full overflow-hidden">
+      <div className="h-full max-h-[calc(100vh-120px)] overflow-hidden">
+        <NewEntitySplitLayout {...layoutProps} className="h-full max-h-full" />
+      </div>
     </div>
   );
 }

@@ -43,6 +43,9 @@ export type AiModel = {
     capabilities?: Record<string, unknown>;
     controls?: Record<string, unknown>;
     modelProvider?: string;
+    isDeprecated?: boolean;
+    isPrimary?: boolean;
+    isPremium?: boolean;
 }
 
 export type AiModelEndpoint = {
@@ -246,6 +249,18 @@ export type Category = {
     createdAt: Date;
 }
 
+export type CategoryConfigs = {
+    id: string;
+    categoryId: string;
+    label: string;
+    iconName: string;
+    color: string;
+    sortOrder?: number;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export type CompiledRecipe = {
     id: string;
     recipeId?: string;
@@ -281,6 +296,21 @@ export type ContainerFields = {
     fieldId: string;
     containerId: string;
     order: number;
+}
+
+export type ContentBlocks = {
+    id: string;
+    blockId: string;
+    label: string;
+    description?: string;
+    iconName: string;
+    category: string;
+    subcategory?: string;
+    template: string;
+    sortOrder?: number;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export type Conversation = {
@@ -684,6 +714,22 @@ export type Projects = {
     createdBy?: string;
 }
 
+export type PromptTemplates = {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    name: string;
+    description?: string;
+    category?: string;
+    messages?: Record<string, unknown>;
+    variableDefaults?: Record<string, unknown>;
+    tools?: Record<string, unknown>;
+    settings?: Record<string, unknown>;
+    isFeatured?: boolean;
+    useCount?: number;
+    createdByUserId?: string;
+}
+
 export type Prompts = {
     id: string;
     createdAt: Date;
@@ -697,6 +743,7 @@ export type Prompts = {
     userId?: string;
     publicRead?: boolean;
     settings?: Record<string, unknown>;
+    description?: string;
 }
 
 export type Recipe = {
@@ -729,14 +776,6 @@ export type RecipeDisplay = {
     displaySettings?: Record<string, unknown>;
 }
 
-export type RecipeFunction = {
-    id: string;
-    recipe: string;
-    function: string;
-    role: "comparison" | "decision" | "other" | "post_processing" | "pre-Processing" | "rating" | "save_data" | "validation" | undefined;
-    params?: Record<string, unknown>;
-}
-
 export type RecipeMessage = {
     id: string;
     messageId: string;
@@ -761,13 +800,6 @@ export type RecipeProcessor = {
     id: string;
     recipe: string;
     processor: string;
-    params?: Record<string, unknown>;
-}
-
-export type RecipeTool = {
-    id: string;
-    recipe: string;
-    tool: string;
     params?: Record<string, unknown>;
 }
 
@@ -1153,6 +1185,18 @@ export type Subcategory = {
     createdAt: Date;
 }
 
+export type SubcategoryConfigs = {
+    id: string;
+    categoryId: string;
+    subcategoryId: string;
+    label: string;
+    iconName: string;
+    sortOrder?: number;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export type SystemFunction = {
     id: string;
     name: string;
@@ -1232,15 +1276,21 @@ export type Tasks = {
     authenticatedRead?: boolean;
 }
 
-export type Tool = {
+export type Tools = {
     id: string;
     name: string;
-    source: Record<string, unknown>;
-    description?: string;
-    parameters?: Record<string, unknown>;
-    requiredArgs?: Record<string, unknown>;
-    systemFunction?: string;
-    additionalParams?: Record<string, unknown>;
+    description: string;
+    parameters: Record<string, unknown>;
+    outputSchema?: Record<string, unknown>;
+    annotations?: Record<string, unknown>;
+    functionPath: string;
+    category?: string;
+    tags?: string[];
+    icon?: string;
+    isActive?: boolean;
+    version?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export type Transformer = {

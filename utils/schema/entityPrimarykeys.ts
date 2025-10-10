@@ -88,6 +88,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  categoryConfigs: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   compiledRecipe: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -97,6 +101,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   containerFields: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  contentBlocks: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -220,6 +228,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  promptTemplates: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   prompts: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -236,10 +248,6 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
-  recipeFunction: {
-    frontendFields: ['id'],
-    databaseColumns: ['id'],
-  },
   recipeMessage: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -253,10 +261,6 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   recipeProcessor: {
-    frontendFields: ['id'],
-    databaseColumns: ['id'],
-  },
-  recipeTool: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -368,6 +372,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  subcategoryConfigs: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   systemFunction: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -396,7 +404,7 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
-  tool: {
+  tools: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
