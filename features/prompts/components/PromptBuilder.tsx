@@ -70,6 +70,7 @@ import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThun
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { FullScreenEditor } from "./FullScreenEditor";
 import { PromptSettingsModal } from "./PromptSettingsModal";
+import { sanitizeVariableName } from "../utils/variable-utils";
 
 type MessageRole = "system" | "user" | "assistant";
 
@@ -109,9 +110,12 @@ interface PromptBuilderProps {
         variableDefaults?: PromptVariable[]; // Array of { name, defaultValue }
         settings?: Record<string, any>; // Single source of truth: { model_id: string, temperature: number, ... }
     };
+    availableTools?: any[]; // Array of database tool objects
 }
 
-export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
+
+
+export function PromptBuilder({ models, initialData, availableTools }: PromptBuilderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const dispatch = useAppDispatch();
@@ -214,7 +218,6 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
     // Tools state - available tools list
-    const availableTools = ["web_search", "web_page_read", "get_news", "get_weather", "run_python_code", "make_html_page"];
     const [isAddingTool, setIsAddingTool] = useState(false);
 
     // Full-screen editor state
@@ -297,8 +300,8 @@ export function PromptBuilder({ models, initialData }: PromptBuilderProps) {
     const handleAddVariable = () => {
         if (!newVariableName.trim()) return;
 
-        // Sanitize: lowercase, alphanumeric + underscores only
-        const sanitized = newVariableName.toLowerCase().replace(/[^a-z0-9_]/g, "");
+        // Sanitize the variable name
+        const sanitized = sanitizeVariableName(newVariableName);
 
         if (!sanitized) return;
 

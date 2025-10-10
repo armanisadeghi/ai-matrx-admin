@@ -2,7 +2,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
-import { allTools, Tool } from "@/constants/mcp-tools";
+import { Tool } from "@/types/mcp-tools";
+import { useTools } from "@/hooks/useTools";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 
@@ -26,6 +27,10 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
     const [showCategories, setShowCategories] = useState(true);
     const dispatch = useAppDispatch();
 
+    // Use database tools instead of hardcoded list
+    const { tools: allTools, isLoading, error, searchTools, categories } = useTools({
+        autoFetch: true
+    });
     
     const {
         chatActions,
@@ -34,8 +39,6 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
     } = useChatBasics();
 
     const availableTools = useAppSelector(chatSelectors.availableTools);
-
-    const categories = useMemo(() => extractCategories(allTools), []);
 
     useEffect(() => {
         setSelectedTools(availableTools || []);
@@ -46,18 +49,23 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
         onToolSelectionChange?.(selectedTools);
     }, [selectedTools]);
 
+    // Handle search with debouncing
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (searchQuery.trim()) {
+                searchTools(searchQuery);
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery, searchTools]);
+
     const filteredTools = useMemo(() => {
         return allTools.filter((tool) => {
-            const matchesSearch =
-                searchQuery === "" ||
-                tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                tool.description.toLowerCase().includes(searchQuery.toLowerCase());
-
             const matchesCategory = activeCategory === null || tool.category === activeCategory;
-
-            return matchesSearch && matchesCategory;
+            return matchesCategory;
         });
-    }, [searchQuery, activeCategory]);
+    }, [allTools, activeCategory]);
 
     const toolsByCategory = useMemo(() => {
         const grouped: Record<string, Tool[]> = {};
@@ -229,7 +237,24 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
 
                 {/* Tools List */}
                 <div className="flex-1 overflow-y-auto">
-                    {filteredTools.length === 0 ? (
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center h-full py-8 px-4 text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Loading tools...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="flex flex-col items-center justify-center h-full py-8 px-4 text-center">
+                            <X size={36} className="text-red-400 mb-3" />
+                            <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">Error Loading Tools</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{error}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    ) : filteredTools.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full py-8 px-4 text-center">
                             <Search size={36} className="text-gray-300 dark:text-gray-600 mb-3" />
                             <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">No tools found</h3>
@@ -277,7 +302,7 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
                                                             {tool.icon}
                                                         </span>
                                                         <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                                                            {tool.name}
+                                                            {tool.displayName}
                                                         </h4>
                                                     </div>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">

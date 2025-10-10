@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { PromptBuilder } from "@/features/prompts/components/PromptBuilder";
+import { serverToolsService } from "@/utils/supabase/server-tools-service";
 
 // Cache AI models data for 12 hours
 export const revalidate = 43200;
@@ -50,9 +51,10 @@ export default async function EditPromptPage({
     const supabase = await createClient();
 
     // Fetch prompt by ID (RLS handles access control) and AI models in parallel
-    const [promptResult, aiModels] = await Promise.all([
+    const [promptResult, aiModels, availableTools] = await Promise.all([
         supabase.from("prompts").select("*").eq("id", id).single(),
-        fetchAIModels()
+        fetchAIModels(),
+        serverToolsService.fetchTools()
     ]);
 
     const { data, error } = promptResult;
@@ -93,5 +95,5 @@ export default async function EditPromptPage({
         settings: data.settings,
     };
 
-    return <PromptBuilder models={aiModels} initialData={initialData} />;
+    return <PromptBuilder models={aiModels} initialData={initialData} availableTools={availableTools} />;
 }

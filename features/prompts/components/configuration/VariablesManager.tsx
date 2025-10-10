@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptVariable } from "../PromptBuilder";
+import { sanitizeVariableName, shouldShowSanitizationPreview } from "../../utils/variable-utils";
 
 interface VariablesManagerProps {
     variableDefaults: PromptVariable[];
@@ -24,6 +25,10 @@ export function VariablesManager({
     onAddVariable,
     onRemoveVariable,
 }: VariablesManagerProps) {
+    // Get the sanitized preview of the current input
+    const sanitizedPreview = newVariableName.trim() ? sanitizeVariableName(newVariableName) : "";
+    const showPreview = shouldShowSanitizationPreview(newVariableName);
+    
     return (
         <div className="flex items-center gap-2 flex-wrap">
             <Label className="text-xs text-gray-600 dark:text-gray-400">Variables</Label>
@@ -54,7 +59,7 @@ export function VariablesManager({
                         <Label className="text-xs text-gray-600 dark:text-gray-400">Variable name</Label>
                         <input
                             type="text"
-                            placeholder="e.g. city"
+                            placeholder="e.g. city name"
                             value={newVariableName}
                             onChange={(e) => onNewVariableNameChange(e.target.value)}
                             onKeyDown={(e) => {
@@ -69,10 +74,16 @@ export function VariablesManager({
                             autoFocus
                             className="w-full px-2 py-1.5 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
+                        {showPreview && (
+                            <div className="px-2 py-1.5 text-xs bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                                <span className="text-blue-600 dark:text-blue-400">Will be saved as: </span>
+                                <span className="font-mono text-blue-800 dark:text-blue-300">{sanitizedPreview}</span>
+                            </div>
+                        )}
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Only lowercase letters, numbers, and underscores
+                            Spaces and dashes will become underscores. Only lowercase letters, numbers, and underscores are allowed.
                         </p>
-                        <Button size="sm" onClick={onAddVariable} className="w-full">
+                        <Button size="sm" onClick={onAddVariable} className="w-full" disabled={!sanitizedPreview}>
                             Add
                         </Button>
                     </div>

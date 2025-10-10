@@ -48,7 +48,7 @@ interface PromptBuilderLeftPanelProps {
 
     // Tools
     selectedTools: string[];
-    availableTools: string[];
+    availableTools: any[]; // Array of database tool objects
     isAddingTool: boolean;
     onIsAddingToolChange: (value: boolean) => void;
     onAddTool: (tool: string) => void;

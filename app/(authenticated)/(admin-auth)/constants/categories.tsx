@@ -209,6 +209,18 @@ export const adminCategories = [
             },
         ],
     },
+    {
+        name: "MCP Tools Management",
+        icon: <IconTestPipe className="w-6 h-6" />,
+        features: [
+            {
+                title: "MCP Tools Manager",
+                description: "Manage MCP tools",
+                icon: <IconTestPipe />,
+                link: "/administration/mcp-tools",
+            },
+        ],
+    },
     // {
     //     name: "*** DevOps & Deployment",
     //     icon: <IconGitBranch className="w-6 h-6" />,

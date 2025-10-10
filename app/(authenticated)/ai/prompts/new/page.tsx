@@ -1,12 +1,16 @@
 import { PromptBuilder } from "@/features/prompts/components/PromptBuilder";
 import { fetchAIModels } from "@/lib/api/ai-models-server";
+import { serverToolsService } from "@/utils/supabase/server-tools-service";
 
 // Cache this page for 12 hours
 export const revalidate = 43200;
 
 export default async function NewPromptPage() {
-    // Fetch AI models
-    const aiModels = await fetchAIModels();
+    // Fetch AI models and tools in parallel
+    const [aiModels, availableTools] = await Promise.all([
+        fetchAIModels(),
+        serverToolsService.fetchTools()
+    ]);
 
     // Provide sensible defaults for a new prompt
     const newPromptDefaults = {
@@ -22,5 +26,5 @@ export default async function NewPromptPage() {
         // settings will be initialized from user preferences or first available model
     };
 
-    return <PromptBuilder models={aiModels} initialData={newPromptDefaults} />;
+    return <PromptBuilder models={aiModels} initialData={newPromptDefaults} availableTools={availableTools} />;
 }

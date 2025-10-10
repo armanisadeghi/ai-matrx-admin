@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -18,32 +18,27 @@ import ReactFlow, {
   Handle,
   Position,
   useReactFlow,
+  getRectOfNodes,
+  getTransformForBounds,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { 
-  Network, Maximize2, Minimize2, Download, Layers, Settings, Info, 
+  Network, Maximize2, Minimize2, Download, Layers, Settings, 
   CheckCircle2, XCircle, GitBranch, Users, Database, Server, Globe, 
-  Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle
+  Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle, Camera
 } from 'lucide-react';
 import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout, getOrgChartLayout } from './layout-utils';
-
-// Utility function to format diagram type names nicely
-const formatDiagramType = (type: string): string => {
-  const typeMap: Record<string, string> = {
-    'flowchart': 'Flow Chart',
-    'mindmap': 'Mind Map', 
-    'orgchart': 'Organizational Chart',
-    'network': 'Network Diagram',
-    'system': 'System Architecture',
-    'process': 'Process Flow'
-  };
-  
-  return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
-};
+import { getOrgChartRoleIcon, formatDiagramType } from './ui-utils';
 
 // Custom Node Components
 const CustomNode = ({ data, selected }: any) => {
   const getNodeIcon = () => {
+    // For organizational charts, use role-based icons
+    if (data.diagramType === 'orgchart') {
+      return getOrgChartRoleIcon(data.label, data.description, data.details);
+    }
+    
+    // For other diagram types, use the original logic
     switch (data.nodeType) {
       case 'process': return <Settings className="h-4 w-4" />;
       case 'decision': return <GitBranch className="h-4 w-4" />;
@@ -185,8 +180,111 @@ const DiagramFlow: React.FC<{
   setShowMiniMap: (show: boolean) => void;
   backgroundVariant: BackgroundVariant;
   setBackgroundVariant: (variant: BackgroundVariant) => void;
-}> = ({ diagram, showMiniMap, setShowMiniMap, backgroundVariant, setBackgroundVariant }) => {
-  const { fitView } = useReactFlow();
+  onExportImage: () => void;
+}> = ({ diagram, showMiniMap, setShowMiniMap, backgroundVariant, setBackgroundVariant, onExportImage }) => {
+  const { fitView, getNodes } = useReactFlow();
+  const hasAutoLayoutApplied = useRef(false);
+
+  // Enhanced image export function that properly handles viewport and theme
+  const exportImage = useCallback(() => {
+    const nodes = getNodes();
+    const nodesBounds = getRectOfNodes(nodes);
+    const imageWidth = 1024;
+    const imageHeight = 768;
+    
+    // Calculate transform to fit all nodes in the export
+    const transform = getTransformForBounds(nodesBounds, imageWidth, imageHeight, 0.1, 2);
+    
+    // Get the React Flow container
+    const reactFlowInstance = document.querySelector('.react-flow');
+    if (!reactFlowInstance) {
+      onExportImage(); // Fallback to original method
+      return;
+    }
+
+    // Detect current theme (dark mode)
+    const isDarkMode = document.documentElement.classList.contains('dark') || 
+                      document.body.classList.contains('dark') ||
+                      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Get computed background color from React Flow instance
+    const computedStyle = window.getComputedStyle(reactFlowInstance);
+    const currentBgColor = computedStyle.backgroundColor || (isDarkMode ? '#111827' : '#ffffff');
+
+    // Create a temporary container for export that matches current theme
+    const exportContainer = document.createElement('div');
+    exportContainer.style.position = 'absolute';
+    exportContainer.style.top = '-9999px';
+    exportContainer.style.left = '-9999px';
+    exportContainer.style.width = `${imageWidth}px`;
+    exportContainer.style.height = `${imageHeight}px`;
+    exportContainer.style.background = currentBgColor;
+    
+    // Apply dark mode class if needed to ensure proper styling
+    if (isDarkMode) {
+      exportContainer.classList.add('dark');
+    }
+    
+    document.body.appendChild(exportContainer);
+
+    // Clone the entire React Flow instance to preserve all styling
+    const clonedReactFlow = reactFlowInstance.cloneNode(true) as HTMLElement;
+    
+    // Ensure the cloned element maintains theme classes
+    if (isDarkMode && !clonedReactFlow.classList.contains('dark')) {
+      clonedReactFlow.classList.add('dark');
+    }
+    
+    // Set dimensions and apply transform
+    clonedReactFlow.style.width = `${imageWidth}px`;
+    clonedReactFlow.style.height = `${imageHeight}px`;
+    clonedReactFlow.style.position = 'relative';
+    clonedReactFlow.style.overflow = 'hidden';
+    
+    // Find and transform the viewport within the cloned element
+    const clonedViewport = clonedReactFlow.querySelector('.react-flow__viewport') as HTMLElement;
+    if (clonedViewport) {
+      const [x, y, zoom] = transform;
+      clonedViewport.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+    }
+    
+    exportContainer.appendChild(clonedReactFlow);
+
+    // Use html2canvas on the export container
+    import('html2canvas').then((html2canvas) => {
+      html2canvas.default(exportContainer, {
+        backgroundColor: currentBgColor,
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        width: imageWidth,
+        height: imageHeight,
+        ignoreElements: (element) => {
+          // Ignore controls, minimap, and panels for cleaner export
+          return element.classList.contains('react-flow__controls') ||
+                 element.classList.contains('react-flow__minimap') ||
+                 element.classList.contains('react-flow__panel');
+        }
+      }).then((canvas) => {
+        // Create download link
+        const link = document.createElement('a');
+        const themeSuffix = isDarkMode ? '_dark' : '_light';
+        link.download = `${diagram.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_diagram${themeSuffix}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(exportContainer);
+      }).catch((error) => {
+        console.error('Failed to export image:', error);
+        document.body.removeChild(exportContainer);
+        alert('Image export failed. Please try the JSON export instead.');
+      });
+    }).catch(() => {
+      document.body.removeChild(exportContainer);
+      alert('Image export not available. Please use the JSON export instead.');
+    });
+  }, [getNodes, diagram.title, onExportImage]);
 
   // Convert diagram data to ReactFlow format
   const initialNodes: Node[] = useMemo(() => {
@@ -286,6 +384,8 @@ const DiagramFlow: React.FC<{
     }));
     setNodes(layoutNodes);
     setTimeout(() => fitView({ duration: 800 }), 100);
+    // When user manually resets layout, mark as applied to prevent auto-layout interference
+    hasAutoLayoutApplied.current = true;
   };
 
   const applyAutoLayout = useCallback(() => {
@@ -308,16 +408,25 @@ const DiagramFlow: React.FC<{
     
     setNodes(layoutedNodes);
     setTimeout(() => fitView({ duration: 800 }), 100);
+    // When user manually applies layout, mark as applied to prevent auto-layout interference
+    hasAutoLayoutApplied.current = true;
   }, [nodes, edges, diagram.type, diagram.nodes.length, setNodes, setEdges, fitView]);
 
   const applyRadialLayout = useCallback(() => {
     const { nodes: layoutedNodes } = getRadialLayout(nodes, edges);
     setNodes(layoutedNodes);
     setTimeout(() => fitView({ duration: 800 }), 100);
+    // When user manually applies layout, mark as applied to prevent auto-layout interference
+    hasAutoLayoutApplied.current = true;
   }, [nodes, edges, setNodes, fitView]);
 
-  // Auto-apply layout after initial render for better organization
+  // Auto-apply layout after initial render for better organization - but only once
   useEffect(() => {
+    // Only apply auto-layout if it hasn't been applied yet
+    if (hasAutoLayoutApplied.current) {
+      return;
+    }
+
     const timer = setTimeout(() => {
       // For org charts, always apply auto-layout for better hierarchy
       // For other diagrams, only auto-layout if nodes don't have custom positions
@@ -326,11 +435,12 @@ const DiagramFlow: React.FC<{
       
       if (shouldAutoLayout && nodes.length > 1) {
         applyAutoLayout();
+        hasAutoLayoutApplied.current = true; // Mark as applied
       }
     }, diagram.type === 'orgchart' ? 500 : 1000); // Faster for org charts
 
     return () => clearTimeout(timer);
-  }, [diagram.nodes, nodes.length, diagram.type, applyAutoLayout]);
+  }, [diagram.nodes, nodes.length, diagram.type]); // Removed applyAutoLayout from dependencies
 
   return (
     <ReactFlow
@@ -341,7 +451,7 @@ const DiagramFlow: React.FC<{
       onConnect={onConnect}
       nodeTypes={nodeTypes}
       fitView
-      attributionPosition="bottom-left"
+      proOptions={{ hideAttribution: true }}
       className="bg-gray-50 dark:bg-gray-900"
     >
       <Background 
@@ -411,7 +521,7 @@ const DiagramFlow: React.FC<{
               <Square className="h-4 w-4 text-gray-600 dark:text-gray-400" />
             </button>
           </div>
-          <div className="flex justify-center">
+          <div className="flex gap-2 justify-center">
             <button
               onClick={() => setShowMiniMap(!showMiniMap)}
               className={`p-2 rounded-lg transition-colors ${
@@ -422,6 +532,13 @@ const DiagramFlow: React.FC<{
               title="Toggle Mini Map"
             >
               <Layers className="h-4 w-4" />
+            </button>
+            <button
+              onClick={exportImage}
+              className="p-2 hover:bg-green-100 dark:hover:bg-green-900/30 bg-green-50 dark:bg-green-950/20 rounded-lg transition-colors border border-green-200 dark:border-green-800"
+              title="Export as Image"
+            >
+              <Camera className="h-4 w-4 text-green-600 dark:text-green-400" />
             </button>
           </div>
         </div>
@@ -435,7 +552,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
   const [showMiniMap, setShowMiniMap] = useState(false);
   const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
 
-  const exportDiagram = () => {
+  const exportDiagramJSON = () => {
     const exportData = {
       title: diagram.title,
       nodes: diagram.nodes.map(node => ({
@@ -461,6 +578,39 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
     URL.revokeObjectURL(url);
   };
 
+  // Function to handle image export from DiagramFlow
+  const handleExportImage = useCallback(() => {
+    const reactFlowInstance = document.querySelector('.react-flow');
+    if (!reactFlowInstance) return;
+
+    // Get the React Flow viewport element
+    const viewport = reactFlowInstance.querySelector('.react-flow__viewport');
+    if (!viewport) return;
+
+    // Use html2canvas to capture the diagram
+    import('html2canvas').then((html2canvas) => {
+      html2canvas.default(viewport as HTMLElement, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher resolution
+        useCORS: true,
+        allowTaint: true,
+      }).then((canvas) => {
+        // Create download link
+        const link = document.createElement('a');
+        link.download = `${diagram.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_diagram.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch((error) => {
+        console.error('Failed to export image:', error);
+        // Fallback: show message to user
+        alert('Image export failed. Please try the JSON export instead.');
+      });
+    }).catch(() => {
+      // html2canvas not available, show message
+      alert('Image export not available. Please use the JSON export instead.');
+    });
+  }, [diagram.title]);
+
   const getDiagramIcon = () => {
     switch (diagram.type) {
       case 'flowchart': return <GitBranch className="h-4 w-4" />;
@@ -483,23 +633,23 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
         />
       )}
 
-      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
+      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-4'}`}>
         <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Header */}
-          <div className={`${isFullScreen ? 'flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700' : ''}`}>
-            <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-2xl p-6 shadow-lg border-2 border-blue-200 dark:border-blue-800/50">
-              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl shadow-md">
+          <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700' : ''}`}>
+            <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-2xl p-4 shadow-lg border-2 border-blue-200 dark:border-blue-800/50">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-500 dark:bg-blue-600 rounded-lg shadow-md">
                     {getDiagramIcon()}
                   </div>
                   <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                       {diagram.title}
                     </h1>
                     {diagram.description && (
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-2">
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-1">
                         {diagram.description}
                       </p>
                     )}
@@ -531,9 +681,9 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                     </button>
                   )}
                   <button
-                    onClick={exportDiagram}
+                    onClick={exportDiagramJSON}
                     className="flex items-center justify-center gap-2 px-2 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
-                    title="Export Diagram"
+                    title="Export as JSON"
                   >
                     <Download className="h-4 w-4" />
                   </button>
@@ -543,7 +693,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
           </div>
 
           {/* ReactFlow Container */}
-          <div className={`${isFullScreen ? 'flex-1' : 'h-[600px]'} bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden`}>
+          <div className={`${isFullScreen ? 'flex-1' : 'h-[600px] mt-4'} bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden`}>
             <ReactFlowProvider>
               <DiagramFlow 
                 diagram={diagram}
@@ -551,29 +701,61 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                 setShowMiniMap={setShowMiniMap}
                 backgroundVariant={backgroundVariant}
                 setBackgroundVariant={setBackgroundVariant}
+                onExportImage={handleExportImage}
               />
             </ReactFlowProvider>
           </div>
 
-          {/* Legend */}
-          <div className={`${isFullScreen ? 'flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700' : 'mt-6'}`}>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-                {[
-                  { type: 'start', label: 'Start', color: 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300', icon: CheckCircle2 },
-                  { type: 'process', label: 'Process', color: 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300', icon: Settings },
-                  { type: 'decision', label: 'Decision', color: 'bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300', icon: GitBranch },
-                  { type: 'data', label: 'Data', color: 'bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300', icon: Database },
-                  { type: 'end', label: 'End', color: 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300', icon: XCircle },
-                ].map(({ type, label, color, icon: Icon }) => (
-                  <div key={type} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${color} text-xs font-medium`}>
-                    <Icon className="h-3 w-3" />
-                    <span>{label}</span>
+          {/* Dynamic Legend */}
+          {(() => {
+            // For org charts, don't show a legend since they use role-based icons
+            if (diagram.type === 'orgchart') {
+              return null;
+            }
+
+            // Get unique node types actually used in the diagram
+            const usedNodeTypes = new Set(
+              diagram.nodes.map(node => node.nodeType || node.type || 'default')
+            );
+
+            // Define all possible legend items
+            const allLegendItems = [
+              { type: 'start', label: 'Start', color: 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300', icon: CheckCircle2 },
+              { type: 'process', label: 'Process', color: 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300', icon: Settings },
+              { type: 'decision', label: 'Decision', color: 'bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300', icon: GitBranch },
+              { type: 'data', label: 'Data', color: 'bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300', icon: Database },
+              { type: 'end', label: 'End', color: 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300', icon: XCircle },
+              { type: 'user', label: 'User', color: 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300', icon: Users },
+              { type: 'system', label: 'System', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: Server },
+              { type: 'api', label: 'API', color: 'bg-teal-100 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300', icon: Globe },
+              { type: 'compute', label: 'Compute', color: 'bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300', icon: Cpu },
+              { type: 'storage', label: 'Storage', color: 'bg-pink-100 dark:bg-pink-950/30 text-pink-700 dark:text-pink-300', icon: HardDrive },
+              { type: 'default', label: 'Node', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: Square },
+            ];
+
+            // Filter to only show legend items for node types actually used
+            const relevantLegendItems = allLegendItems.filter(item => usedNodeTypes.has(item.type));
+
+            // Don't render legend if no relevant items or only default nodes
+            if (relevantLegendItems.length === 0 || (relevantLegendItems.length === 1 && relevantLegendItems[0].type === 'default')) {
+              return null;
+            }
+
+            return (
+              <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700' : 'mt-4'}`}>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <div className={`grid gap-3 ${relevantLegendItems.length <= 2 ? 'grid-cols-2' : relevantLegendItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-5'}`}>
+                    {relevantLegendItems.map(({ type, label, color, icon: Icon }) => (
+                      <div key={type} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${color} text-xs font-medium`}>
+                        <Icon className="h-3 w-3" />
+                        <span>{label}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </div>
     </>

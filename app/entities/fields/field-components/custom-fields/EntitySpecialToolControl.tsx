@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import MultiSwitchToggle from '@/components/matrx/MultiSwitchToggle';
 import SelectWithIconDisplay from '@/components/matrx/SelectWithIconDisplay';
-import { allTools } from '@/constants/mcp-tools';
+import { useTools } from '@/hooks/useTools';
 
 interface Tool {
     id: string;
@@ -19,7 +19,7 @@ export const TOOL_CONTROL_PRESETS = {
         { label: 'Tool Assist', value: 'toolAssist' },
     ],
     
-    aiTools: allTools
+    // aiTools will be fetched from database via useTools hook
     // Add more preset configurations as needed
 } as const;
 
@@ -40,6 +40,10 @@ interface EntitySpecialToolControlProps {
 const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialToolControlProps>(
     ({ value, onChange, disabled, className, dynamicFieldInfo }, ref) => {
         const componentProps = dynamicFieldInfo?.componentProps || {};
+        
+        // Fetch tools from database
+        const { tools, isLoading, error } = useTools({ autoFetch: true });
+        
         // Get configurations from presets using string names
         const primaryControlOptions = (() => {
             const presetName = componentProps?.primaryControlOptions;
@@ -49,19 +53,13 @@ const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialT
             return TOOL_CONTROL_PRESETS.toolAssistOptions; // Default
         })();
 
-        const toolOptions = (() => {
-            const presetName = componentProps?.toolOptions;
-            if (typeof presetName === 'string' && presetName in TOOL_CONTROL_PRESETS) {
-                // Map tools to the format expected by SelectWithIconDisplay
-                return TOOL_CONTROL_PRESETS[presetName].map(tool => ({
-                    icon: tool.icon,
-                    label: tool.name,
-                    value: tool.id,
-                    id: tool.id,
-                }));
-            }
-            return []; // Default to empty if not found
-        })();
+        // Map database tools to the format expected by SelectWithIconDisplay
+        const toolOptions = tools.map(tool => ({
+            icon: tool.icon,
+            label: tool.displayName,  // Use displayName for the label
+            value: tool.id,           // Use id (which is the tool identifier) for the value
+            id: tool.id,
+        }));
 
         // Initialize or use existing value
         const currentValue = value || {
@@ -101,6 +99,35 @@ const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialT
             currentValue.selectedToolIds && currentValue.selectedToolIds.includes(tool.value)
         );
 
+        // Show loading state
+        if (isLoading) {
+            return (
+                <div ref={ref} className={`space-y-4 ${className}`}>
+                    <div className="w-full space-y-2">
+                        <span className="text-sm">{dynamicFieldInfo.displayName}</span>
+                        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                            <span>Loading tools...</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Show error state
+        if (error) {
+            return (
+                <div ref={ref} className={`space-y-4 ${className}`}>
+                    <div className="w-full space-y-2">
+                        <span className="text-sm">{dynamicFieldInfo.displayName}</span>
+                        <div className="text-sm text-red-600 dark:text-red-400">
+                            Error loading tools: {error}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div ref={ref} className={`space-y-4 ${className}`}>
                 <div className="w-full space-y-2">
@@ -123,7 +150,7 @@ const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialT
                             value={selectedTools}
                             onChange={handleToolsChange}
                             placeholder="Select tools..."
-                            disabled={isToolsDisabled}
+                            disabled={isToolsDisabled || toolOptions.length === 0}
                         />
                     </div>
                 </div>
