@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ContextMenuItem,
     ContextMenuSub,
@@ -9,10 +9,12 @@ import {
 } from '@/components/ui/context-menu';
 import { 
     ContentBlock, 
-    CategoryConfig, 
+    CategoryConfig,
+} from '../config/contentBlocks';
+import { 
     getBlocksBySubcategory, 
     getBlocksWithoutSubcategory 
-} from '../config/contentBlocks';
+} from '@/lib/services/content-blocks-service';
 
 interface DynamicContextMenuSectionProps {
     category: CategoryConfig;
@@ -61,6 +63,10 @@ export const DynamicContextMenuSection: React.FC<DynamicContextMenuSectionProps>
     category, 
     onBlockSelect 
 }) => {
+    const [directBlocks, setDirectBlocks] = useState<ContentBlock[]>([]);
+    const [subcategoryBlocks, setSubcategoryBlocks] = useState<Record<string, ContentBlock[]>>({});
+    const [loading, setLoading] = useState(true);
+
     const CategoryIcon = category.icon;
     const colorClasses = {
         purple: 'text-purple-600 dark:text-purple-400',
@@ -70,14 +76,41 @@ export const DynamicContextMenuSection: React.FC<DynamicContextMenuSectionProps>
     };
     
     const iconColor = colorClasses[category.color as keyof typeof colorClasses];
-    
-    // Get blocks without subcategory (direct items)
-    const directBlocks = getBlocksWithoutSubcategory(category.id as any);
-    
-    // If no subcategories are defined, render all blocks directly
-    if (!category.subcategories || category.subcategories.length === 0) {
-        const allBlocks = getBlocksWithoutSubcategory(category.id as any);
-        
+
+    // Load blocks from database
+    useEffect(() => {
+        const loadBlocks = async () => {
+            try {
+                setLoading(true);
+
+                // Load direct blocks (without subcategory)
+                const directBlocksData = await getBlocksWithoutSubcategory(category.id);
+                setDirectBlocks(directBlocksData);
+
+                // Load subcategory blocks
+                if (category.subcategories && category.subcategories.length > 0) {
+                    const subcategoryBlocksData: Record<string, ContentBlock[]> = {};
+                    
+                    await Promise.all(
+                        category.subcategories.map(async (subcategory) => {
+                            const blocks = await getBlocksBySubcategory(category.id, subcategory.id);
+                            subcategoryBlocksData[subcategory.id] = blocks;
+                        })
+                    );
+                    
+                    setSubcategoryBlocks(subcategoryBlocksData);
+                }
+            } catch (error) {
+                console.error('Error loading content blocks:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadBlocks();
+    }, [category]);
+
+    if (loading) {
         return (
             <ContextMenuSub>
                 <ContextMenuSubTrigger className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800">
@@ -87,14 +120,39 @@ export const DynamicContextMenuSection: React.FC<DynamicContextMenuSectionProps>
                     </div>
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-56 bg-white dark:bg-zinc-900">
-                    {allBlocks.map((block) => (
-                        <MenuItem
-                            key={block.id}
-                            block={block}
-                            color={category.color}
-                            onSelect={onBlockSelect}
-                        />
-                    ))}
+                    <div className="p-2 text-sm text-gray-500 dark:text-gray-400">
+                        Loading...
+                    </div>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
+        );
+    }
+    
+    // If no subcategories are defined, render all direct blocks
+    if (!category.subcategories || category.subcategories.length === 0) {
+        return (
+            <ContextMenuSub>
+                <ContextMenuSubTrigger className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                    <div className="flex items-center gap-2">
+                        <CategoryIcon className={`h-4 w-4 ${iconColor}`} />
+                        <span className="text-sm font-medium">{category.label}</span>
+                    </div>
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent className="w-56 bg-white dark:bg-zinc-900">
+                    {directBlocks.length === 0 ? (
+                        <div className="p-2 text-sm text-gray-500 dark:text-gray-400">
+                            No blocks available
+                        </div>
+                    ) : (
+                        directBlocks.map((block) => (
+                            <MenuItem
+                                key={block.id}
+                                block={block}
+                                color={category.color}
+                                onSelect={onBlockSelect}
+                            />
+                        ))
+                    )}
                 </ContextMenuSubContent>
             </ContextMenuSub>
         );
@@ -127,10 +185,10 @@ export const DynamicContextMenuSection: React.FC<DynamicContextMenuSectionProps>
                 
                 {/* Render subcategories */}
                 {category.subcategories.map((subcategory) => {
-                    const subcategoryBlocks = getBlocksBySubcategory(category.id as any, subcategory.id);
+                    const blocks = subcategoryBlocks[subcategory.id] || [];
                     const SubcategoryIcon = subcategory.icon;
                     
-                    if (subcategoryBlocks.length === 0) return null;
+                    if (blocks.length === 0) return null;
                     
                     return (
                         <ContextMenuSub key={subcategory.id}>
@@ -141,7 +199,7 @@ export const DynamicContextMenuSection: React.FC<DynamicContextMenuSectionProps>
                                 </div>
                             </ContextMenuSubTrigger>
                             <ContextMenuSubContent className="w-56 bg-white dark:bg-zinc-900">
-                                {subcategoryBlocks.map((block) => (
+                                {blocks.map((block) => (
                                     <MenuItem
                                         key={block.id}
                                         block={block}

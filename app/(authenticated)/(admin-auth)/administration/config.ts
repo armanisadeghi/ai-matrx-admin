@@ -4,6 +4,12 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
     {
+        title: 'Content Blocks',
+        path: 'content-blocks',
+        relative: true,
+        description: 'Manage content blocks and context menu items'
+    },
+    {
         title: 'Server Cache',
         path: 'server-cache',
         relative: true,

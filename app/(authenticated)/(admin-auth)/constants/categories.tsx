@@ -149,6 +149,18 @@ export const adminCategories = [
         ],
     },
     {
+        name: "Content & Configuration",
+        icon: <IconPencil className="w-6 h-6" />,
+        features: [
+            {
+                title: "Content Blocks Manager",
+                description: "Manage content blocks, templates, and context menu items used throughout the application",
+                icon: <IconClipboard />,
+                link: "/administration/content-blocks",
+            },
+        ],
+    },
+    {
         name: "Server & Cache Management",
         icon: <IconServer className="w-6 h-6" />,
         features: [
