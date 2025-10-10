@@ -1,5 +1,5 @@
 import dagre from 'dagre';
-import { Node, Edge, Position } from 'reactflow';
+import { Node, Edge, Position, MarkerType } from 'reactflow';
 
 export interface LayoutOptions {
   direction?: 'TB' | 'LR' | 'BT' | 'RL';
@@ -67,6 +67,9 @@ export const getLayoutedElements = (
         x: nodeWithPosition.x - nodeWidth / 2,
         y: nodeWithPosition.y - nodeHeight / 2,
       },
+      data: {
+        ...node.data, // Preserve all existing node data including diagramType
+      },
     };
 
     return newNode;
@@ -129,8 +132,10 @@ export const getLayoutOptionsForDiagramType = (
       return {
         ...baseOptions,
         direction: 'TB',
-        rankSep: 150,
-        nodeSep: 120,
+        rankSep: 200,  // More vertical space for org charts
+        nodeSep: 150,  // More horizontal space between peers
+        nodeWidth: 220,  // Wider nodes for names/titles
+        nodeHeight: 120, // Taller nodes for better text layout
       };
     
     case 'mindmap':
@@ -231,4 +236,94 @@ const findCenterNode = (nodes: Node[], edges: Edge[]): Node | undefined => {
   });
 
   return nodes.find(node => node.id === centerNodeId);
+};
+
+/**
+ * Optimizes layout specifically for org charts by ensuring proper hierarchy
+ */
+export const getOrgChartLayout = (
+  nodes: Node[],
+  edges: Edge[],
+  options: LayoutOptions = {}
+): { nodes: Node[]; edges: Edge[] } => {
+  const {
+    direction = 'TB',
+    nodeWidth = 220,
+    nodeHeight = 120,
+    rankSep = 200,
+    nodeSep = 150,
+  } = options;
+
+  // Create a new directed graph
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+  // Set graph configuration optimized for org charts
+  dagreGraph.setGraph({
+    rankdir: direction,
+    ranksep: rankSep,
+    nodesep: nodeSep,
+    marginx: 40,
+    marginy: 40,
+    align: 'UL', // Align nodes to upper left for better org chart look
+  });
+
+  // Add nodes to the graph
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { 
+      width: nodeWidth, 
+      height: nodeHeight 
+    });
+  });
+
+  // Add edges to the graph (for org charts, edges should flow from manager to subordinate)
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  // Apply the layout
+  dagre.layout(dagreGraph);
+
+  // Update node positions based on the layout
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    
+    const newNode = {
+      ...node,
+      targetPosition: Position.Top,    // Connections come from above
+      sourcePosition: Position.Bottom, // Connections go down to subordinates
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+      data: {
+        ...node.data,
+        diagramType: 'orgchart', // Ensure org chart styling is preserved
+      },
+    };
+
+    return newNode;
+  });
+
+  // Clean up edges for org charts - remove labels and improve styling
+  const cleanedEdges = edges.map(edge => ({
+    ...edge,
+    label: undefined, // Remove "reports to" labels
+    labelStyle: undefined,
+    labelBgStyle: undefined,
+    style: {
+      ...edge.style,
+      stroke: '#6b7280',
+      strokeWidth: 2,
+      strokeDasharray: 'none',
+    },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 16,
+      height: 16,
+      color: '#6b7280',
+    },
+  }));
+
+  return { nodes: layoutedNodes, edges: cleanedEdges };
 };

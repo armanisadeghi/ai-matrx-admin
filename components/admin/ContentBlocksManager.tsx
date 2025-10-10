@@ -628,124 +628,126 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                         </div>
 
                         {/* Inline Edit Form */}
-                        <div className="flex-1 p-6 space-y-6">
-                            {/* Basic Information */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Basic Information</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                        <ScrollArea className="flex-1">
+                            <div className="p-6 space-y-6">
+                                {/* Basic Information */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Basic Information</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="edit-label">Label</Label>
+                                                <Input
+                                                    id="edit-label"
+                                                    value={editData.label || ''}
+                                                    onChange={(e) => handleEditChange('label', e.target.value)}
+                                                    placeholder="Display name"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="edit-block-id">Block ID</Label>
+                                                <Input
+                                                    id="edit-block-id"
+                                                    value={editData.block_id || ''}
+                                                    onChange={(e) => handleEditChange('block_id', e.target.value)}
+                                                    placeholder="unique-block-id"
+                                                    disabled
+                                                    className="bg-gray-50 dark:bg-gray-800"
+                                                />
+                                            </div>
+                                        </div>
                                         <div>
-                                            <Label htmlFor="edit-label">Label</Label>
-                                            <Input
-                                                id="edit-label"
-                                                value={editData.label || ''}
-                                                onChange={(e) => handleEditChange('label', e.target.value)}
-                                                placeholder="Display name"
+                                            <Label htmlFor="edit-description">Description</Label>
+                                            <AutoResizeTextarea
+                                                id="edit-description"
+                                                value={editData.description || ''}
+                                                onChange={(e) => handleEditChange('description', e.target.value)}
+                                                placeholder="Brief description of this block"
+                                                minHeight={40}
+                                                className="text-sm"
                                             />
                                         </div>
-                                        <div>
-                                            <Label htmlFor="edit-block-id">Block ID</Label>
-                                            <Input
-                                                id="edit-block-id"
-                                                value={editData.block_id || ''}
-                                                onChange={(e) => handleEditChange('block_id', e.target.value)}
-                                                placeholder="unique-block-id"
-                                                disabled
-                                                className="bg-gray-50 dark:bg-gray-800"
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <Label htmlFor="edit-category">Category</Label>
+                                                <Select 
+                                                    value={editData.category || ''} 
+                                                    onValueChange={(value) => handleEditChange('category', value)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select category" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {categories.map(category => (
+                                                            <SelectItem key={category.category_id} value={category.category_id}>
+                                                                {category.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="edit-subcategory">Subcategory</Label>
+                                                <Select 
+                                                    value={editData.subcategory || 'none'} 
+                                                    onValueChange={(value) => handleEditChange('subcategory', value === 'none' ? null : value)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select subcategory" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">None</SelectItem>
+                                                        {editData.category && getSubcategoriesForCategory(editData.category).map(subcat => (
+                                                            <SelectItem key={subcat.subcategory_id} value={subcat.subcategory_id}>
+                                                                {subcat.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="edit-sort-order">Sort Order</Label>
+                                                <Input
+                                                    id="edit-sort-order"
+                                                    type="number"
+                                                    value={editData.sort_order || 0}
+                                                    onChange={(e) => handleEditChange('sort_order', parseInt(e.target.value) || 0)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="edit-is-active"
+                                                checked={editData.is_active !== false}
+                                                onCheckedChange={(checked) => handleEditChange('is_active', checked)}
                                             />
+                                            <Label htmlFor="edit-is-active">Active (visible in context menus)</Label>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="edit-description">Description</Label>
-                                        <AutoResizeTextarea
-                                            id="edit-description"
-                                            value={editData.description || ''}
-                                            onChange={(e) => handleEditChange('description', e.target.value)}
-                                            placeholder="Brief description of this block"
-                                            minHeight={40}
-                                            className="text-sm"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <Label htmlFor="edit-category">Category</Label>
-                                            <Select 
-                                                value={editData.category || ''} 
-                                                onValueChange={(value) => handleEditChange('category', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select category" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {categories.map(category => (
-                                                        <SelectItem key={category.category_id} value={category.category_id}>
-                                                            {category.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="edit-subcategory">Subcategory</Label>
-                                            <Select 
-                                                value={editData.subcategory || 'none'} 
-                                                onValueChange={(value) => handleEditChange('subcategory', value === 'none' ? null : value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select subcategory" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="none">None</SelectItem>
-                                                    {editData.category && getSubcategoriesForCategory(editData.category).map(subcat => (
-                                                        <SelectItem key={subcat.subcategory_id} value={subcat.subcategory_id}>
-                                                            {subcat.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="edit-sort-order">Sort Order</Label>
-                                            <Input
-                                                id="edit-sort-order"
-                                                type="number"
-                                                value={editData.sort_order || 0}
-                                                onChange={(e) => handleEditChange('sort_order', parseInt(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="edit-is-active"
-                                            checked={editData.is_active !== false}
-                                            onCheckedChange={(checked) => handleEditChange('is_active', checked)}
-                                        />
-                                        <Label htmlFor="edit-is-active">Active (visible in context menus)</Label>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
 
-                            {/* Template Content */}
-                            <Card className="flex-1 flex flex-col">
-                                <CardHeader>
-                                    <CardTitle>Template Content</CardTitle>
-                                    <CardDescription>
-                                        This is the content that will be inserted when users select this block from context menus.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-1 flex flex-col">
-                                    <AutoResizeTextarea
-                                        value={editData.template || ''}
-                                        onChange={(e) => handleEditChange('template', e.target.value)}
-                                        placeholder="Enter the template content that will be inserted..."
-                                        className="font-mono text-sm"
-                                        minHeight={300}
-                                    />
-                                </CardContent>
-                            </Card>
-                        </div>
+                                {/* Template Content */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Template Content</CardTitle>
+                                        <CardDescription>
+                                            This is the content that will be inserted when users select this block from context menus.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <AutoResizeTextarea
+                                            value={editData.template || ''}
+                                            onChange={(e) => handleEditChange('template', e.target.value)}
+                                            placeholder="Enter the template content that will be inserted..."
+                                            className="font-mono text-sm"
+                                            minHeight={300}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </ScrollArea>
                     </>
                 ) : (
                     <div className="flex-1 flex items-center justify-center">

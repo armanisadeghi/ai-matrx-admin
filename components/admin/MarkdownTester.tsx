@@ -2,22 +2,21 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { 
-  RefreshCw, 
-  AlertTriangle, 
   CheckCircle2, 
   Copy, 
   FileText,
   Eye,
   EyeOff,
   Maximize2,
-  Minimize2
+  Minimize2,
+  RefreshCw,
+  Zap,
+  Hand
 } from 'lucide-react';
 
 interface MarkdownTesterProps {
@@ -29,50 +28,39 @@ const SAMPLE_CONTENT = ``;
 const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   const [inputContent, setInputContent] = useState(SAMPLE_CONTENT);
   const [renderedContent, setRenderedContent] = useState(SAMPLE_CONTENT);
-  const [error, setError] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isAutoMode, setIsAutoMode] = useState(false); // Default to Manual mode
+  const [isUpdating, setIsUpdating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const getTextarea = useCallback(() => textareaRef.current, []);
 
-  const handleUpdate = useCallback(() => {
-    setIsUpdating(true);
-    setError(null);
-
-    try {
-      // Basic validation - check for unclosed code blocks
-      const codeBlockMatches = inputContent.match(/```/g);
-      if (codeBlockMatches && codeBlockMatches.length % 2 !== 0) {
-        throw new Error('Unclosed code block detected - make sure all ``` have matching closing ```');
-      }
-
-      // Check for basic JSON validity in code blocks
-      const jsonBlocks = inputContent.match(/```json\s*([\s\S]*?)\s*```/g);
-      if (jsonBlocks) {
-        jsonBlocks.forEach((block, index) => {
-          const jsonContent = block.replace(/```json\s*/, '').replace(/\s*```$/, '').trim();
-          if (jsonContent) {
-            try {
-              JSON.parse(jsonContent);
-            } catch (jsonError) {
-              throw new Error(`Invalid JSON in code block ${index + 1}: ${jsonError instanceof Error ? jsonError.message : 'Unknown error'}`);
-            }
-          }
-        });
-      }
-
-      // If all validations pass, update the rendered content
+  // Auto-update effect when in auto mode
+  React.useEffect(() => {
+    if (isAutoMode) {
       setRenderedContent(inputContent);
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      console.error('Markdown validation error:', err);
-    } finally {
-      setIsUpdating(false);
     }
+  }, [inputContent, isAutoMode]);
+
+  const handleManualUpdate = useCallback(() => {
+    setIsUpdating(true);
+    // Small delay to show the updating state
+    setTimeout(() => {
+      setRenderedContent(inputContent);
+      setIsUpdating(false);
+    }, 100);
   }, [inputContent]);
+
+  const toggleUpdateMode = useCallback(() => {
+    const newAutoMode = !isAutoMode;
+    setIsAutoMode(newAutoMode);
+    
+    // If switching to auto mode, immediately sync the content
+    if (newAutoMode) {
+      setRenderedContent(inputContent);
+    }
+  }, [isAutoMode, inputContent]);
 
   const handleCopyInput = useCallback(() => {
     navigator.clipboard.writeText(inputContent);
@@ -136,14 +124,37 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
 
           {/* Action Controls */}
           <div className="flex items-center gap-2 flex-wrap mb-4">
+            {/* Update Mode Toggle */}
             <Button
-              onClick={handleUpdate}
-              disabled={isUpdating}
+              variant={isAutoMode ? "default" : "outline"}
+              size="sm"
+              onClick={toggleUpdateMode}
               className="flex items-center gap-2"
             >
-              <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
-              {isUpdating ? 'Updating...' : 'Update Preview'}
+              {isAutoMode ? (
+                <>
+                  <Zap className="h-4 w-4" />
+                  Auto
+                </>
+              ) : (
+                <>
+                  <Hand className="h-4 w-4" />
+                  Manual
+                </>
+              )}
             </Button>
+
+            {/* Manual Update Button - only show in manual mode */}
+            {!isAutoMode && (
+              <Button
+                onClick={handleManualUpdate}
+                disabled={isUpdating}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
+                {isUpdating ? 'Updating...' : 'Update Preview'}
+              </Button>
+            )}
             
             <Button variant="outline" size="sm" onClick={handleCopyInput}>
               <Copy className="h-4 w-4 mr-2" />
@@ -163,16 +174,6 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
               </Badge>
             </div>
           </div>
-
-          {/* Error Display */}
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Parsing Error:</strong> {error}
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
 
         {/* Main Content Area with Independent Scrolling */}
@@ -213,38 +214,26 @@ Right-click for content block templates!"
                 <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                   <h3 className="text-sm font-medium">Rendered Output</h3>
                   <Badge variant="outline" className="text-xs">
-                    {error ? 'Error' : 'Live Preview'}
+                    {isAutoMode ? 'Auto Preview' : 'Manual Preview'}
                   </Badge>
-                  {!error && (
-                    <Badge variant="secondary" className="text-xs">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Valid
-                    </Badge>
-                  )}
+                  <Badge variant="secondary" className="text-xs">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    {isAutoMode ? 'Real-time' : 'On-demand'}
+                  </Badge>
                 </div>
                 
                 <div className="flex-1 border rounded-lg overflow-auto bg-slate-50 dark:bg-slate-900 border-gray-200 dark:border-gray-700 min-h-0">
-                  {!error ? (
-                    <div className="p-4">
-                      <EnhancedChatMarkdown
-                        content={renderedContent}
-                        className="bg-slate-50 dark:bg-slate-900"
-                        type="message"
-                        role="assistant"
-                        isStreamActive={false}
-                        hideCopyButton={true}
-                        allowFullScreenEditor={true}
-                      />
-                    </div>
-                  ) : (
-                    <div className="p-4 flex items-center justify-center h-full text-center text-muted-foreground">
-                      <div>
-                        <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-red-500" />
-                        <p>Preview unavailable due to parsing errors</p>
-                        <p className="text-xs mt-1">Fix the errors above and click "Update Preview"</p>
-                      </div>
-                    </div>
-                  )}
+                  <div className="p-4">
+                    <EnhancedChatMarkdown
+                      content={renderedContent}
+                      className="bg-slate-50 dark:bg-slate-900"
+                      type="message"
+                      role="assistant"
+                      isStreamActive={false}
+                      hideCopyButton={true}
+                      allowFullScreenEditor={true}
+                    />
+                  </div>
                 </div>
               </div>
             </>

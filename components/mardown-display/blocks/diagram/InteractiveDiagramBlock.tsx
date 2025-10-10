@@ -25,7 +25,7 @@ import {
   CheckCircle2, XCircle, GitBranch, Users, Database, Server, Globe, 
   Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle
 } from 'lucide-react';
-import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout } from './layout-utils';
+import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout, getOrgChartLayout } from './layout-utils';
 
 // Custom Node Components
 const CustomNode = ({ data, selected }: any) => {
@@ -61,32 +61,66 @@ const CustomNode = ({ data, selected }: any) => {
     }
   };
 
+  // Check if this is an org chart node for special styling
+  const isOrgChart = data.diagramType === 'orgchart';
+  
   return (
-    <div className={`px-4 py-3 rounded-lg border-2 min-w-[120px] shadow-lg transition-all ${getNodeColor()} ${
+    <div className={`${isOrgChart ? 'px-6 py-4 min-w-[200px]' : 'px-4 py-3 min-w-[120px]'} rounded-lg border-2 shadow-lg transition-all ${getNodeColor()} ${
       selected ? 'shadow-xl scale-105 ring-2 ring-blue-400 dark:ring-blue-500' : 'hover:shadow-md'
     }`}>
+      {/* Input Handle - positioned based on diagram type */}
       <Handle
         type="target"
-        position={Position.Left}
+        position={isOrgChart ? Position.Top : Position.Left}
         id="input"
+        style={isOrgChart ? { 
+          left: '50%', 
+          transform: 'translateX(-50%)',
+          top: '-6px'
+        } : {}}
         className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-800 hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
       />
       
-      <div className="flex items-center gap-2 mb-1">
-        {getNodeIcon()}
-        <div className="font-semibold text-sm">{data.label}</div>
-      </div>
-      {data.description && (
-        <div className="text-xs opacity-80 mt-1">{data.description}</div>
-      )}
-      {data.details && (
-        <div className="text-xs opacity-70 mt-1 italic">{data.details}</div>
+      {isOrgChart ? (
+        // Org chart specific layout - centered and hierarchical
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            {getNodeIcon()}
+            <div className="font-bold text-base">{data.label}</div>
+          </div>
+          {data.description && (
+            <div className="text-sm font-medium opacity-90 mb-1">{data.description}</div>
+          )}
+          {data.details && (
+            <div className="text-xs opacity-70 italic">{data.details}</div>
+          )}
+        </div>
+      ) : (
+        // Regular diagram layout
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            {getNodeIcon()}
+            <div className="font-semibold text-sm">{data.label}</div>
+          </div>
+          {data.description && (
+            <div className="text-xs opacity-80 mt-1">{data.description}</div>
+          )}
+          {data.details && (
+            <div className="text-xs opacity-70 mt-1 italic">{data.details}</div>
+          )}
+        </div>
       )}
       
+      {/* Output Handle - positioned based on diagram type */}
       <Handle
         type="source"
-        position={Position.Right}
+        position={isOrgChart ? Position.Bottom : Position.Right}
         id="output"
+        style={isOrgChart ? { 
+          left: '50%', 
+          transform: 'translateX(-50%)',
+          bottom: '-6px'
+        } : {}}
         className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-800 hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
       />
     </div>
@@ -153,9 +187,10 @@ const DiagramFlow: React.FC<{
         nodeType: node.nodeType || node.type || 'default',
         description: node.description,
         details: node.details,
+        diagramType: diagram.type, // Pass diagram type for styling
       },
     }));
-  }, [diagram.nodes]);
+  }, [diagram.nodes, diagram.type]);
 
   const initialEdges: Edge[] = useMemo(() => {
     const nodeIds = new Set(diagram.nodes.map(node => node.id));
@@ -187,8 +222,8 @@ const DiagramFlow: React.FC<{
         type: 'default',
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
+          width: diagram.type === 'orgchart' ? 16 : 20,
+          height: diagram.type === 'orgchart' ? 16 : 20,
           color: edge.color || '#6b7280',
         },
         style: {
@@ -196,13 +231,14 @@ const DiagramFlow: React.FC<{
           strokeWidth: edge.strokeWidth || 2,
           strokeDasharray: edge.dashed ? '5,5' : 'none',
         },
-        label: edge.label,
-        labelStyle: { 
+        // Remove labels for org charts to keep them clean
+        label: diagram.type === 'orgchart' ? undefined : edge.label,
+        labelStyle: diagram.type === 'orgchart' ? undefined : { 
           fontSize: 12, 
           fontWeight: 500,
           fill: edge.color || '#6b7280',
         },
-        labelBgStyle: { 
+        labelBgStyle: diagram.type === 'orgchart' ? undefined : { 
           fill: '#ffffff', 
           fillOpacity: 0.8,
           rx: 4,
@@ -228,17 +264,36 @@ const DiagramFlow: React.FC<{
         x: (index % 3) * 200 + 100, 
         y: Math.floor(index / 3) * 150 + 100 
       },
+      data: {
+        ...nodes.find(n => n.id === node.id)!.data,
+        diagramType: diagram.type, // Preserve diagram type
+      },
     }));
     setNodes(layoutNodes);
     setTimeout(() => fitView({ duration: 800 }), 100);
   };
 
   const applyAutoLayout = useCallback(() => {
-    const layoutOptions = getLayoutOptionsForDiagramType(diagram.type, diagram.nodes.length);
-    const { nodes: layoutedNodes } = getLayoutedElements(nodes, edges, layoutOptions);
+    let layoutedNodes: Node[];
+    let layoutedEdges: Edge[];
+
+    if (diagram.type === 'orgchart') {
+      // Use specialized org chart layout
+      const layoutOptions = getLayoutOptionsForDiagramType(diagram.type, diagram.nodes.length);
+      const result = getOrgChartLayout(nodes, edges, layoutOptions);
+      layoutedNodes = result.nodes;
+      layoutedEdges = result.edges;
+      setEdges(layoutedEdges);
+    } else {
+      // Use general layout for other diagram types
+      const layoutOptions = getLayoutOptionsForDiagramType(diagram.type, diagram.nodes.length);
+      const result = getLayoutedElements(nodes, edges, layoutOptions);
+      layoutedNodes = result.nodes;
+    }
+    
     setNodes(layoutedNodes);
     setTimeout(() => fitView({ duration: 800 }), 100);
-  }, [nodes, edges, diagram.type, diagram.nodes.length, setNodes, fitView]);
+  }, [nodes, edges, diagram.type, diagram.nodes.length, setNodes, setEdges, fitView]);
 
   const applyRadialLayout = useCallback(() => {
     const { nodes: layoutedNodes } = getRadialLayout(nodes, edges);
@@ -249,15 +304,18 @@ const DiagramFlow: React.FC<{
   // Auto-apply layout after initial render for better organization
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Only auto-layout if nodes don't have custom positions
+      // For org charts, always apply auto-layout for better hierarchy
+      // For other diagrams, only auto-layout if nodes don't have custom positions
       const hasCustomPositions = diagram.nodes.some(node => node.position);
-      if (!hasCustomPositions && nodes.length > 1) {
+      const shouldAutoLayout = diagram.type === 'orgchart' || (!hasCustomPositions && nodes.length > 1);
+      
+      if (shouldAutoLayout && nodes.length > 1) {
         applyAutoLayout();
       }
-    }, 1000); // Wait 1 second after initial render
+    }, diagram.type === 'orgchart' ? 500 : 1000); // Faster for org charts
 
     return () => clearTimeout(timer);
-  }, [diagram.nodes, nodes.length, applyAutoLayout]);
+  }, [diagram.nodes, nodes.length, diagram.type, applyAutoLayout]);
 
   return (
     <ReactFlow
@@ -346,7 +404,7 @@ const DiagramFlow: React.FC<{
 
 const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagram }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [showMiniMap, setShowMiniMap] = useState(true);
+  const [showMiniMap, setShowMiniMap] = useState(false);
   const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
 
   const exportDiagram = () => {
