@@ -21,7 +21,9 @@ import {
     FolderOpen,
     Search,
     Save,
-    X
+    X,
+    ChevronDown,
+    ChevronRight
 } from 'lucide-react';
 import { 
     ContentBlockDB, 
@@ -105,6 +107,9 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [editData, setEditData] = useState<Partial<ContentBlockDB>>({});
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [createFormData, setCreateFormData] = useState<Partial<CreateContentBlockInput>>({});
+    // Collapsible state management
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+    const [expandedSubcategories, setExpandedSubcategories] = useState<Set<string>>(new Set());
 
     // Load data from Supabase
     const loadData = async () => {
@@ -351,6 +356,46 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         return subcategory?.label || subcategoryId;
     };
 
+    // Collapsible helper functions
+    const toggleCategoryExpanded = (categoryId: string) => {
+        setExpandedCategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+                // Also collapse all subcategories in this category
+                setExpandedSubcategories(prevSub => {
+                    const newSubSet = new Set(prevSub);
+                    Object.keys(groupedBlocks[categoryId] || {}).forEach(subcatId => {
+                        if (subcatId !== 'none') {
+                            newSubSet.delete(`${categoryId}-${subcatId}`);
+                        }
+                    });
+                    return newSubSet;
+                });
+            } else {
+                newSet.add(categoryId);
+            }
+            return newSet;
+        });
+    };
+
+    const toggleSubcategoryExpanded = (categoryId: string, subcategoryId: string) => {
+        const key = `${categoryId}-${subcategoryId}`;
+        setExpandedSubcategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(key)) {
+                newSet.delete(key);
+            } else {
+                newSet.add(key);
+            }
+            return newSet;
+        });
+    };
+
+    const isCategoryExpanded = (categoryId: string) => expandedCategories.has(categoryId);
+    const isSubcategoryExpanded = (categoryId: string, subcategoryId: string) => 
+        expandedSubcategories.has(`${categoryId}-${subcategoryId}`);
+
     const selectedBlock = selectedBlockId ? contentBlocks.find(b => b.id === selectedBlockId) : null;
 
     if (loading) {
@@ -408,49 +453,111 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                 <ScrollArea className="flex-1">
                     <div className="p-2">
                         {Object.entries(groupedBlocks).map(([categoryId, subcategories]) => (
-                            <div key={categoryId} className="mb-4">
-                                <div className="flex items-center gap-2 px-2 py-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    <Folder className="w-4 h-4" />
-                                    {getCategoryLabel(categoryId)}
+                            <div key={categoryId} className="mb-2">
+                                {/* Category Header - Collapsible */}
+                                <div 
+                                    className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-colors"
+                                    onClick={() => toggleCategoryExpanded(categoryId)}
+                                >
+                                    {isCategoryExpanded(categoryId) ? (
+                                        <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                                    ) : (
+                                        <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                                    )}
+                                    <Folder className="w-4 h-4 flex-shrink-0" />
+                                    <span className="truncate">{getCategoryLabel(categoryId)}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                                        ({Object.values(subcategories).flat().length})
+                                    </span>
                                 </div>
                                 
-                                {Object.entries(subcategories).map(([subcategoryId, blocks]) => (
-                                    <div key={subcategoryId} className="ml-4 mb-2">
-                                        {subcategoryId !== 'none' && (
-                                            <div className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                <FolderOpen className="w-3 h-3" />
-                                                {getSubcategoryLabel(categoryId, subcategoryId)}
-                                            </div>
-                                        )}
-                                        
-                                        <div className={subcategoryId !== 'none' ? 'ml-4' : ''}>
-                                            {blocks.map(block => (
-                                                <div
-                                                    key={block.id}
-                                                    onClick={() => setSelectedBlockId(block.id)}
-                                                    className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
-                                                        ${selectedBlockId === block.id 
-                                                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
-                                                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
-                                                        }`}
-                                                >
-                                                    <FileText className="w-4 h-4 flex-shrink-0" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-medium truncate">
-                                                            {block.label}
+                                {/* Category Content - Show only if expanded */}
+                                {isCategoryExpanded(categoryId) && (
+                                    <div className="ml-4 mt-1">
+                                        {Object.entries(subcategories).map(([subcategoryId, blocks]) => (
+                                            <div key={subcategoryId} className="mb-2">
+                                                {subcategoryId !== 'none' ? (
+                                                    // Subcategory with collapsible functionality
+                                                    <>
+                                                        <div 
+                                                            className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-colors"
+                                                            onClick={() => toggleSubcategoryExpanded(categoryId, subcategoryId)}
+                                                        >
+                                                            {isSubcategoryExpanded(categoryId, subcategoryId) ? (
+                                                                <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                                                            ) : (
+                                                                <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                                                            )}
+                                                            <FolderOpen className="w-3 h-3 flex-shrink-0" />
+                                                            <span className="truncate">{getSubcategoryLabel(categoryId, subcategoryId)}</span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                                                                ({blocks.length})
+                                                            </span>
                                                         </div>
-                                                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                            {block.block_id}
-                                                        </div>
+                                                        
+                                                        {/* Subcategory Content - Show only if expanded */}
+                                                        {isSubcategoryExpanded(categoryId, subcategoryId) && (
+                                                            <div className="ml-4 mt-1">
+                                                                {blocks.map(block => (
+                                                                    <div
+                                                                        key={block.id}
+                                                                        onClick={() => setSelectedBlockId(block.id)}
+                                                                        className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
+                                                                            ${selectedBlockId === block.id 
+                                                                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
+                                                                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                                                            }`}
+                                                                    >
+                                                                        <FileText className="w-4 h-4 flex-shrink-0" />
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <div className="text-sm font-medium truncate">
+                                                                                {block.label}
+                                                                            </div>
+                                                                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                                                {block.block_id}
+                                                                            </div>
+                                                                        </div>
+                                                                        {!block.is_active && (
+                                                                            <EyeOff className="w-3 h-3 text-gray-400" />
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    // Blocks without subcategory - show directly under category
+                                                    <div className="mt-1">
+                                                        {blocks.map(block => (
+                                                            <div
+                                                                key={block.id}
+                                                                onClick={() => setSelectedBlockId(block.id)}
+                                                                className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
+                                                                    ${selectedBlockId === block.id 
+                                                                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' 
+                                                                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <FileText className="w-4 h-4 flex-shrink-0" />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-sm font-medium truncate">
+                                                                        {block.label}
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                                        {block.block_id}
+                                                                    </div>
+                                                                </div>
+                                                                {!block.is_active && (
+                                                                    <EyeOff className="w-3 h-3 text-gray-400" />
+                                                                )}
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                    {!block.is_active && (
-                                                        <EyeOff className="w-3 h-3 text-gray-400" />
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                )}
                             </div>
                         ))}
                     </div>

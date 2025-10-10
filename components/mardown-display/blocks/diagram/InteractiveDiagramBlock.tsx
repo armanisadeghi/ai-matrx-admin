@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -10,21 +10,22 @@ import ReactFlow, {
   addEdge,
   Connection,
   NodeTypes,
-  EdgeTypes,
   MarkerType,
   BackgroundVariant,
   Panel,
   MiniMap,
   ReactFlowProvider,
+  Handle,
+  Position,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { 
-  Network, Maximize2, Minimize2, Download, Share2, RotateCcw, 
-  ZoomIn, ZoomOut, Move, Square, Circle, Diamond, Triangle,
-  GitBranch, Users, Database, Server, Globe, Cpu, HardDrive,
-  Layers, Settings, Info, AlertCircle, CheckCircle2, XCircle,
-  ArrowRight, ArrowDown, ArrowUp, ArrowLeft, Sparkles
+  Network, Maximize2, Minimize2, Download, Layers, Settings, Info, 
+  CheckCircle2, XCircle, GitBranch, Users, Database, Server, Globe, 
+  Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle
 } from 'lucide-react';
+import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout } from './layout-utils';
 
 // Custom Node Components
 const CustomNode = ({ data, selected }: any) => {
@@ -64,6 +65,13 @@ const CustomNode = ({ data, selected }: any) => {
     <div className={`px-4 py-3 rounded-lg border-2 min-w-[120px] shadow-lg transition-all ${getNodeColor()} ${
       selected ? 'shadow-xl scale-105 ring-2 ring-blue-400 dark:ring-blue-500' : 'hover:shadow-md'
     }`}>
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="input"
+        className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-800 hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
+      />
+      
       <div className="flex items-center gap-2 mb-1">
         {getNodeIcon()}
         <div className="font-semibold text-sm">{data.label}</div>
@@ -74,39 +82,14 @@ const CustomNode = ({ data, selected }: any) => {
       {data.details && (
         <div className="text-xs opacity-70 mt-1 italic">{data.details}</div>
       )}
-    </div>
-  );
-};
-
-// Custom Edge Component
-const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, data }: any) => {
-  const edgePath = `M${sourceX},${sourceY} L${targetX},${targetY}`;
-  
-  return (
-    <g>
-      <path
-        id={id}
-        className="react-flow__edge-path"
-        d={edgePath}
-        stroke={data?.color || '#6b7280'}
-        strokeWidth={data?.strokeWidth || 2}
-        strokeDasharray={data?.dashed ? '5,5' : 'none'}
-        markerEnd="url(#reactflow__arrowclosed)"
+      
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="output"
+        className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-800 hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
       />
-      {data?.label && (
-        <text
-          x={(sourceX + targetX) / 2}
-          y={(sourceY + targetY) / 2}
-          className="react-flow__edge-text"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize="12"
-          fill={data?.color || '#6b7280'}
-        >
-          {data.label}
-        </text>
-      )}
-    </g>
+    </div>
   );
 };
 
@@ -147,15 +130,14 @@ const nodeTypes: NodeTypes = {
   custom: CustomNode,
 };
 
-// Remove custom edge types for now to avoid conflicts
-// const edgeTypes: EdgeTypes = {
-//   custom: CustomEdge,
-// };
-
-const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagram }) => {
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [showMiniMap, setShowMiniMap] = useState(true);
-  const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
+// Inner component that uses ReactFlow hooks
+const DiagramFlow: React.FC<{ 
+  diagram: DiagramData;
+  showMiniMap: boolean;
+  backgroundVariant: BackgroundVariant;
+  setBackgroundVariant: (variant: BackgroundVariant) => void;
+}> = ({ diagram, showMiniMap, backgroundVariant, setBackgroundVariant }) => {
+  const { fitView } = useReactFlow();
 
   // Convert diagram data to ReactFlow format
   const initialNodes: Node[] = useMemo(() => {
@@ -180,7 +162,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
     
     const processedEdges = diagram.edges
       .filter((edge) => {
-        // Validate that source and target nodes exist
         const sourceExists = nodeIds.has(edge.source);
         const targetExists = nodeIds.has(edge.target);
         
@@ -201,7 +182,9 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        type: 'default', // Use default ReactFlow edge type for better compatibility
+        sourceHandle: 'output',
+        targetHandle: 'input',
+        type: 'default',
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,
@@ -227,14 +210,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
         },
       }));
     
-    // Debug logging
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Diagram edges data:', diagram.edges);
-      console.log('Processed edges for ReactFlow:', processedEdges);
-      console.log('Available node IDs:', Array.from(nodeIds));
-      console.log('Filtered out invalid edges:', diagram.edges.length - processedEdges.length);
-    }
-    
     return processedEdges;
   }, [diagram.edges, diagram.nodes]);
 
@@ -246,18 +221,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
     [setEdges]
   );
 
-  const getDiagramIcon = () => {
-    switch (diagram.type) {
-      case 'flowchart': return <GitBranch className="h-6 w-6" />;
-      case 'mindmap': return <Sparkles className="h-6 w-6" />;
-      case 'orgchart': return <Users className="h-6 w-6" />;
-      case 'network': return <Network className="h-6 w-6" />;
-      case 'system': return <Server className="h-6 w-6" />;
-      case 'process': return <Settings className="h-6 w-6" />;
-      default: return <Network className="h-6 w-6" />;
-    }
-  };
-
   const resetLayout = () => {
     const layoutNodes = diagram.nodes.map((node, index) => ({
       ...nodes.find(n => n.id === node.id)!,
@@ -267,19 +230,135 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
       },
     }));
     setNodes(layoutNodes);
+    setTimeout(() => fitView({ duration: 800 }), 100);
   };
 
+  const applyAutoLayout = useCallback(() => {
+    const layoutOptions = getLayoutOptionsForDiagramType(diagram.type, diagram.nodes.length);
+    const { nodes: layoutedNodes } = getLayoutedElements(nodes, edges, layoutOptions);
+    setNodes(layoutedNodes);
+    setTimeout(() => fitView({ duration: 800 }), 100);
+  }, [nodes, edges, diagram.type, diagram.nodes.length, setNodes, fitView]);
+
+  const applyRadialLayout = useCallback(() => {
+    const { nodes: layoutedNodes } = getRadialLayout(nodes, edges);
+    setNodes(layoutedNodes);
+    setTimeout(() => fitView({ duration: 800 }), 100);
+  }, [nodes, edges, setNodes, fitView]);
+
+  // Auto-apply layout after initial render for better organization
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only auto-layout if nodes don't have custom positions
+      const hasCustomPositions = diagram.nodes.some(node => node.position);
+      if (!hasCustomPositions && nodes.length > 1) {
+        applyAutoLayout();
+      }
+    }, 1000); // Wait 1 second after initial render
+
+    return () => clearTimeout(timer);
+  }, [diagram.nodes, nodes.length, applyAutoLayout]);
+
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      nodeTypes={nodeTypes}
+      fitView
+      attributionPosition="bottom-left"
+      className="bg-gray-50 dark:bg-gray-900"
+    >
+      <Background 
+        variant={backgroundVariant} 
+        gap={20} 
+        size={1}
+        className="bg-gray-50 dark:bg-gray-900"
+      />
+      
+      <Controls 
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+        showInteractive={false}
+      />
+      
+      {showMiniMap && (
+        <MiniMap
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+          nodeColor={(node) => {
+            switch (node.data.nodeType) {
+              case 'start': return '#10b981';
+              case 'end': return '#ef4444';
+              case 'decision': return '#f59e0b';
+              case 'process': return '#3b82f6';
+              case 'data': return '#8b5cf6';
+              default: return '#6b7280';
+            }
+          }}
+          maskColor="rgba(0, 0, 0, 0.1)"
+        />
+      )}
+
+      <Panel position="top-right" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3">
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <button
+              onClick={applyAutoLayout}
+              className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 bg-blue-50 dark:bg-blue-950/20 rounded-lg transition-colors border border-blue-200 dark:border-blue-800"
+              title="Auto Layout"
+            >
+              <Shuffle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </button>
+            <button
+              onClick={applyRadialLayout}
+              className="p-2 hover:bg-purple-100 dark:hover:bg-purple-900/30 bg-purple-50 dark:bg-purple-950/20 rounded-lg transition-colors border border-purple-200 dark:border-purple-800"
+              title="Radial Layout"
+            >
+              <Circle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={resetLayout}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Reset Layout"
+            >
+              <RotateCcw className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+            </button>
+            <button
+              onClick={() => setBackgroundVariant(
+                backgroundVariant === BackgroundVariant.Dots 
+                  ? BackgroundVariant.Lines 
+                  : BackgroundVariant.Dots
+              )}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Toggle Background"
+            >
+              <Square className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
+        </div>
+      </Panel>
+    </ReactFlow>
+  );
+};
+
+const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagram }) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [showMiniMap, setShowMiniMap] = useState(true);
+  const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
+
   const exportDiagram = () => {
-    // Create a simple export of the current diagram state
     const exportData = {
       title: diagram.title,
-      nodes: nodes.map(node => ({
+      nodes: diagram.nodes.map(node => ({
         id: node.id,
-        label: node.data.label,
+        label: node.label,
         position: node.position,
-        type: node.data.nodeType,
+        type: node.nodeType || node.type,
       })),
-      edges: edges.map(edge => ({
+      edges: diagram.edges.map(edge => ({
         id: edge.id,
         source: edge.source,
         target: edge.target,
@@ -294,6 +373,18 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
     a.download = `${diagram.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const getDiagramIcon = () => {
+    switch (diagram.type) {
+      case 'flowchart': return <GitBranch className="h-6 w-6" />;
+      case 'mindmap': return <Sparkles className="h-6 w-6" />;
+      case 'orgchart': return <Users className="h-6 w-6" />;
+      case 'network': return <Network className="h-6 w-6" />;
+      case 'system': return <Server className="h-6 w-6" />;
+      case 'process': return <Settings className="h-6 w-6" />;
+      default: return <Network className="h-6 w-6" />;
+    }
   };
 
   return (
@@ -346,7 +437,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                     className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
                   >
                     <Download className="h-4 w-4" />
-                    Export
                   </button>
                   <button
                     onClick={() => setShowMiniMap(!showMiniMap)}
@@ -357,7 +447,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                     }`}
                   >
                     <Layers className="h-4 w-4" />
-                    {showMiniMap ? 'Hide' : 'Show'} Mini Map
                   </button>
                   {!isFullScreen && (
                     <button
@@ -365,7 +454,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                       className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
                     >
                       <Maximize2 className="h-4 w-4" />
-                      <span>Full Screen</span>
                     </button>
                   )}
                   {isFullScreen && (
@@ -385,69 +473,12 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
           {/* ReactFlow Container */}
           <div className={`${isFullScreen ? 'flex-1' : 'h-[600px]'} bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden`}>
             <ReactFlowProvider>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                nodeTypes={nodeTypes}
-                fitView
-                attributionPosition="bottom-left"
-                className="bg-gray-50 dark:bg-gray-900"
-              >
-                <Background 
-                  variant={backgroundVariant} 
-                  gap={20} 
-                  size={1}
-                  className="bg-gray-50 dark:bg-gray-900"
-                />
-                
-                <Controls 
-                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
-                  showInteractive={false}
-                />
-                
-                {showMiniMap && (
-                  <MiniMap
-                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
-                    nodeColor={(node) => {
-                      switch (node.data.nodeType) {
-                        case 'start': return '#10b981';
-                        case 'end': return '#ef4444';
-                        case 'decision': return '#f59e0b';
-                        case 'process': return '#3b82f6';
-                        case 'data': return '#8b5cf6';
-                        default: return '#6b7280';
-                      }
-                    }}
-                    maskColor="rgba(0, 0, 0, 0.1)"
-                  />
-                )}
-
-                <Panel position="top-right" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={resetLayout}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      title="Reset Layout"
-                    >
-                      <RotateCcw className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    </button>
-                    <button
-                      onClick={() => setBackgroundVariant(
-                        backgroundVariant === BackgroundVariant.Dots 
-                          ? BackgroundVariant.Lines 
-                          : BackgroundVariant.Dots
-                      )}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      title="Toggle Background"
-                    >
-                      <Square className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    </button>
-                  </div>
-                </Panel>
-              </ReactFlow>
+              <DiagramFlow 
+                diagram={diagram}
+                showMiniMap={showMiniMap}
+                backgroundVariant={backgroundVariant}
+                setBackgroundVariant={setBackgroundVariant}
+              />
             </ReactFlowProvider>
           </div>
 
@@ -456,9 +487,9 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
             <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                 <Info className="h-4 w-4" />
-                Node Types
+                Node Types & Controls
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
                 {[
                   { type: 'start', label: 'Start', color: 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300', icon: CheckCircle2 },
                   { type: 'process', label: 'Process', color: 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300', icon: Settings },
@@ -471,6 +502,11 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                     <span>{label}</span>
                   </div>
                 ))}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                <p><strong>Auto Layout:</strong> Organizes nodes using hierarchical layout algorithms</p>
+                <p><strong>Radial Layout:</strong> Arranges nodes in a circular pattern around central nodes</p>
+                <p><strong>Tip:</strong> Click Auto Layout after the diagram loads for better organization</p>
               </div>
             </div>
           </div>
