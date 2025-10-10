@@ -27,6 +27,20 @@ import {
 } from 'lucide-react';
 import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout, getOrgChartLayout } from './layout-utils';
 
+// Utility function to format diagram type names nicely
+const formatDiagramType = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    'flowchart': 'Flow Chart',
+    'mindmap': 'Mind Map', 
+    'orgchart': 'Organizational Chart',
+    'network': 'Network Diagram',
+    'system': 'System Architecture',
+    'process': 'Process Flow'
+  };
+  
+  return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
+};
+
 // Custom Node Components
 const CustomNode = ({ data, selected }: any) => {
   const getNodeIcon = () => {
@@ -168,9 +182,10 @@ const nodeTypes: NodeTypes = {
 const DiagramFlow: React.FC<{ 
   diagram: DiagramData;
   showMiniMap: boolean;
+  setShowMiniMap: (show: boolean) => void;
   backgroundVariant: BackgroundVariant;
   setBackgroundVariant: (variant: BackgroundVariant) => void;
-}> = ({ diagram, showMiniMap, backgroundVariant, setBackgroundVariant }) => {
+}> = ({ diagram, showMiniMap, setShowMiniMap, backgroundVariant, setBackgroundVariant }) => {
   const { fitView } = useReactFlow();
 
   // Convert diagram data to ReactFlow format
@@ -358,7 +373,7 @@ const DiagramFlow: React.FC<{
         />
       )}
 
-      <Panel position="top-right" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3">
+      <Panel position="top-right" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1">
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
             <button
@@ -394,6 +409,19 @@ const DiagramFlow: React.FC<{
               title="Toggle Background"
             >
               <Square className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowMiniMap(!showMiniMap)}
+              className={`p-2 rounded-lg transition-colors ${
+                showMiniMap 
+                  ? 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+              }`}
+              title="Toggle Mini Map"
+            >
+              <Layers className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -435,13 +463,13 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
 
   const getDiagramIcon = () => {
     switch (diagram.type) {
-      case 'flowchart': return <GitBranch className="h-6 w-6" />;
-      case 'mindmap': return <Sparkles className="h-6 w-6" />;
-      case 'orgchart': return <Users className="h-6 w-6" />;
-      case 'network': return <Network className="h-6 w-6" />;
-      case 'system': return <Server className="h-6 w-6" />;
-      case 'process': return <Settings className="h-6 w-6" />;
-      default: return <Network className="h-6 w-6" />;
+      case 'flowchart': return <GitBranch className="h-4 w-4" />;
+      case 'mindmap': return <Sparkles className="h-4 w-4" />;
+      case 'orgchart': return <Users className="h-4 w-4" />;
+      case 'network': return <Network className="h-4 w-4" />;
+      case 'system': return <Server className="h-4 w-4" />;
+      case 'process': return <Settings className="h-4 w-4" />;
+      default: return <Network className="h-4 w-4" />;
     }
   };
 
@@ -476,40 +504,19 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                       </p>
                     )}
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium capitalize">
-                        {diagram.type}
-                      </span>
-                      <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm">
-                        {diagram.nodes.length} nodes
-                      </span>
-                      <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm">
-                        {diagram.edges.length} connections
+                      <span className="px-3 py-1 bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                        {formatDiagramType(diagram.type)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={exportDiagram}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
-                  >
-                    <Download className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setShowMiniMap(!showMiniMap)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      showMiniMap 
-                        ? 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700'
-                        : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
-                    }`}
-                  >
-                    <Layers className="h-4 w-4" />
-                  </button>
+                <div className="flex flex-col gap-2">
                   {!isFullScreen && (
                     <button
                       onClick={() => setIsFullScreen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      title="Fullscreen"
                     >
                       <Maximize2 className="h-4 w-4" />
                     </button>
@@ -517,12 +524,19 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                   {isFullScreen && (
                     <button
                       onClick={() => setIsFullScreen(false)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border border-gray-200 dark:border-gray-600"
+                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border border-gray-200 dark:border-gray-600"
+                      title="Exit Fullscreen"
                     >
                       <Minimize2 className="h-4 w-4" />
-                      <span>Exit</span>
                     </button>
                   )}
+                  <button
+                    onClick={exportDiagram}
+                    className="flex items-center justify-center gap-2 px-2 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                    title="Export Diagram"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -534,6 +548,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
               <DiagramFlow 
                 diagram={diagram}
                 showMiniMap={showMiniMap}
+                setShowMiniMap={setShowMiniMap}
                 backgroundVariant={backgroundVariant}
                 setBackgroundVariant={setBackgroundVariant}
               />
@@ -543,10 +558,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
           {/* Legend */}
           <div className={`${isFullScreen ? 'flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700' : 'mt-6'}`}>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                <Info className="h-4 w-4" />
-                Node Types & Controls
-              </h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
                 {[
                   { type: 'start', label: 'Start', color: 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300', icon: CheckCircle2 },
@@ -560,11 +571,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                     <span>{label}</span>
                   </div>
                 ))}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <p><strong>Auto Layout:</strong> Organizes nodes using hierarchical layout algorithms</p>
-                <p><strong>Radial Layout:</strong> Arranges nodes in a circular pattern around central nodes</p>
-                <p><strong>Tip:</strong> Click Auto Layout after the diagram loads for better organization</p>
               </div>
             </div>
           </div>
