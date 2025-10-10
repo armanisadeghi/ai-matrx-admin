@@ -18,9 +18,8 @@ import QuestionnaireRenderer from "../QuestionnaireRenderer";
 import { separatedMarkdownParser } from "../markdown-classification/processors/custom/parser-separated";
 import { QuestionnaireProvider } from "../context/QuestionnaireContext";
 import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
-import { Loader2 } from "lucide-react";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import MultipleChoiceQuiz, { Question } from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
+import MultipleChoiceQuiz from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
 import QuizLoadingVisualization from "../blocks/quiz/QuizLoadingVisualization";
 import Slideshow from "@/components/mardown-display/blocks/presentations/Slideshow";
 import PresentationLoadingVisualization from "../blocks/presentations/PresentationLoadingVisualization";
@@ -573,28 +572,28 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         if (comparisonData) {
                             return <ComparisonTableBlock key={index} comparison={comparisonData} />;
                         }
-                        // If parsing failed, fall back to basic markdown
+                        // If parsing failed, fall back to code block
                         return (
-                            <BasicMarkdownContent
+                            <CodeBlock
                                 key={index}
-                                content={block.content}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
                                 isStreamActive={isStreamActive}
-                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                                messageId={messageId}
-                                showCopyButton={false}
                             />
                         );
                     } catch (error) {
                         console.error("Failed to parse comparison table JSON:", error);
-                        // Fall back to showing as basic markdown if parsing fails
+                        // Fall back to showing as code block if parsing fails
                         return (
-                            <BasicMarkdownContent
+                            <CodeBlock
                                 key={index}
-                                content={block.content}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
                                 isStreamActive={isStreamActive}
-                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                                messageId={messageId}
-                                showCopyButton={false}
                             />
                         );
                     }
@@ -655,28 +654,28 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         if (decisionTreeData) {
                             return <DecisionTreeBlock key={index} decisionTree={decisionTreeData} />;
                         }
-                        // If parsing failed, fall back to basic markdown
+                        // If parsing failed, fall back to code block
                         return (
-                            <BasicMarkdownContent
+                            <CodeBlock
                                 key={index}
-                                content={block.content}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
                                 isStreamActive={isStreamActive}
-                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                                messageId={messageId}
-                                showCopyButton={false}
                             />
                         );
                     } catch (error) {
                         console.error("Failed to parse decision tree JSON:", error);
-                        // Fall back to showing as basic markdown if parsing fails
+                        // Fall back to showing as code block if parsing fails
                         return (
-                            <BasicMarkdownContent
+                            <CodeBlock
                                 key={index}
-                                content={block.content}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
                                 isStreamActive={isStreamActive}
-                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                                messageId={messageId}
-                                showCopyButton={false}
                             />
                         );
                     }
@@ -696,28 +695,28 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         if (diagramData) {
                             return <InteractiveDiagramBlock key={index} diagram={diagramData} />;
                         }
-                        // If parsing failed, fall back to basic markdown
+                        // If parsing failed, fall back to code block
                         return (
-                            <BasicMarkdownContent
+                            <CodeBlock
                                 key={index}
-                                content={block.content}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
                                 isStreamActive={isStreamActive}
-                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                                messageId={messageId}
-                                showCopyButton={false}
                             />
                         );
                     } catch (error) {
                         console.error("Failed to parse diagram JSON:", error);
-                        // Fall back to showing as basic markdown if parsing fails
+                        // Fall back to showing as code block if parsing fails
                         return (
-                            <BasicMarkdownContent
+                            <CodeBlock
                                 key={index}
-                                content={block.content}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
                                 isStreamActive={isStreamActive}
-                                onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                                messageId={messageId}
-                                showCopyButton={false}
                             />
                         );
                     }

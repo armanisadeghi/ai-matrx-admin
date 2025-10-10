@@ -4,7 +4,7 @@ import {
   BarChart3, CheckCircle2, Circle, Target, Trophy, Flame, Calendar,
   Maximize2, Minimize2, Play, Pause, RotateCcw, TrendingUp, Award,
   Zap, Clock, Star, ChevronRight, ChevronDown, Plus, Minus,
-  BookOpen, Code, Lightbulb, Users, Coffee, Heart
+  BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles
 } from 'lucide-react';
 
 interface ProgressItem {
@@ -43,10 +43,36 @@ interface ProgressTrackerBlockProps {
 
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['category-0'])); // First category expanded by default
+  
+  // Initialize completedItems with items that are already marked as completed in the tracker data
+  const [completedItems, setCompletedItems] = useState<Set<string>>(() => {
+    const initialCompleted = new Set<string>();
+    tracker.categories.forEach(category => {
+      category.items.forEach(item => {
+        if (item.completed) {
+          initialCompleted.add(item.id);
+        }
+      });
+    });
+    return initialCompleted;
+  });
+  
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['category-1'])); // First category expanded by default
   const [showCompletedOnly, setShowCompletedOnly] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
+
+  // Update completedItems when tracker data changes (in case the component receives new data)
+  React.useEffect(() => {
+    const newCompleted = new Set<string>();
+    tracker.categories.forEach(category => {
+      category.items.forEach(item => {
+        if (item.completed) {
+          newCompleted.add(item.id);
+        }
+      });
+    });
+    setCompletedItems(newCompleted);
+  }, [tracker]);
 
   // Calculate dynamic progress
   const progressStats = useMemo(() => {
@@ -414,24 +440,22 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                             {category.items.map((item) => {
                               const isCompleted = completedItems.has(item.id);
                               return (
-                                <div
+                                <button
                                   key={item.id}
-                                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                                  onClick={() => toggleItem(item.id)}
+                                  className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
                                     isCompleted
-                                      ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                                      : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                      ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-950/30'
+                                      : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800/50'
                                   }`}
                                 >
-                                  <button
-                                    onClick={() => toggleItem(item.id)}
-                                    className="flex-shrink-0"
-                                  >
+                                  <div className="flex-shrink-0">
                                     {isCompleted ? (
                                       <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                                     ) : (
-                                      <Circle className="h-5 w-5 text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400" />
+                                      <Circle className="h-5 w-5 text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-400" />
                                     )}
-                                  </button>
+                                  </div>
                                   
                                   <div className="flex-1 min-w-0">
                                     <span className={`text-sm font-medium ${
@@ -461,7 +485,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                                       )}
                                     </div>
                                   </div>
-                                </div>
+                                </button>
                               );
                             })}
                           </div>
@@ -485,15 +509,23 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-yellow-900 dark:text-yellow-100 mb-2">
-                        🎉 Congratulations! 🎉
-                      </h3>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <PartyPopper className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                        <h3 className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
+                          Congratulations!
+                        </h3>
+                        <Sparkles className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                      </div>
                       <p className="text-yellow-700 dark:text-yellow-300 text-lg">
                         You've completed all tasks in {tracker.title}!
                       </p>
-                      <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
-                        Amazing work! Time to celebrate your achievement! 🚀
-                      </p>
+                      <div className="flex items-center justify-center gap-2 mt-2">
+                        <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                        <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                          Amazing work! Time to celebrate your achievement!
+                        </p>
+                        <Zap className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                      </div>
                     </div>
                   </div>
                 </div>

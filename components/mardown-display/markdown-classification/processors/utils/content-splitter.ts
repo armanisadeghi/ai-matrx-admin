@@ -778,11 +778,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         // Handle ```markdown opening marker
-        if (processedTrimmedLine === "```markdown") {
-            insideMarkdownBlock = true;
-            i++;
-            continue;
-        }
+        // if (processedTrimmedLine === "```markdown") {
+        //     insideMarkdownBlock = true;
+        //     i++;
+        //     continue;
+        // }
 
         // Handle closing ``` when inside a markdown block
         if (processedTrimmedLine === "```" && insideMarkdownBlock) {

@@ -34,7 +34,7 @@ interface DiagramData {
 /**
  * Parses JSON content into structured diagram data
  * 
- * Expected JSON format:
+ * Expected JSON format (flexible edge format supported):
  * {
  *   "diagram": {
  *     "title": "System Architecture",
@@ -49,9 +49,9 @@ interface DiagramData {
  *     ],
  *     "edges": [
  *       {
- *         "id": "edge1",
- *         "source": "start",
- *         "target": "process1",
+ *         "id": "edge1", // Optional - auto-generated if missing
+ *         "source": "start", // Or use "from"
+ *         "target": "process1", // Or use "to"
  *         "label": "Begin"
  *       }
  *     ]
@@ -103,14 +103,21 @@ export function parseDiagramJSON(content: string): DiagramData {
     
     // Process edges
     const processedEdges: DiagramEdge[] = (diagramData.edges || []).map((edge: any, index: number) => {
-      if (!edge.id || !edge.source || !edge.target) {
-        throw new Error(`Edge ${index} missing required id, source, or target`);
+      // Handle both from/to and source/target formats
+      const source = edge.source || edge.from;
+      const target = edge.target || edge.to;
+      
+      if (!source || !target) {
+        throw new Error(`Edge ${index} missing required source/from or target/to field`);
       }
       
+      // Auto-generate ID if not provided
+      const id = edge.id || `edge_${source}_to_${target}_${index}`;
+      
       return {
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
+        id,
+        source,
+        target,
         label: edge.label,
         type: edge.type || 'default',
         color: edge.color,
@@ -206,7 +213,7 @@ export function validateDiagram(diagram: DiagramData): boolean {
   // Validate edges (if present)
   if (diagram.edges) {
     for (const edge of diagram.edges) {
-      if (!edge.id || !edge.source || !edge.target) {
+      if (!edge.source || !edge.target) {
         return false;
       }
       

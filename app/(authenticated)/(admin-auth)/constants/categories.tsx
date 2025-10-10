@@ -55,6 +55,7 @@ import SchemaVisualizer from "@/app/(authenticated)/admin/components/SchemaVisua
 import { SchemaVisualizerLayout } from "@/app/(authenticated)/admin/components/SchemaVisualizer/SchemaVisualizerLayout";
 import DatabaseAdminDashboard from "@/app/(authenticated)/admin/components/database-admin/DatabaseAdminDashboard";
 import AdminComponentOne from "@/app/(authenticated)/admin/components/AdminComponetOne";
+import MarkdownTester from "@/components/admin/MarkdownTester";
 
 export const adminCategories = [
     {
@@ -157,6 +158,12 @@ export const adminCategories = [
                 description: "Manage content blocks, templates, and context menu items used throughout the application",
                 icon: <IconClipboard />,
                 link: "/administration/content-blocks",
+            },
+            {
+                title: "Markdown Content Tester",
+                description: "Test and debug EnhancedChatMarkdown rendering with live split-screen preview. Perfect for testing diagrams, quizzes, tables, and other content formats.",
+                icon: <IconCode />,
+                component: <MarkdownTester />,
             },
         ],
     },

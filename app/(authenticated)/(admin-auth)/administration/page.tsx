@@ -10,6 +10,13 @@ import {useRouter} from "next/navigation";
 import ErrorBoundary from "@/app/(authenticated)/admin/components/shared/ErrorBoundary";
 import {adminCategories} from "@/app/(authenticated)/(admin-auth)/constants/categories";
 
+
+// IMPORTANT: All routes must be added here to work: app\(authenticated)\(admin-auth)\constants\categories.tsx
+// Add here for proper menu navigation at the top: app\(authenticated)\(admin-auth)\administration\config.ts
+
+
+
+
 // List of verified features
 // This would ideally come from a database or configuration
 const verifiedFeatures = [

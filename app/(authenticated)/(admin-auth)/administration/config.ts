@@ -2,6 +2,10 @@
 
 import {ModulePage} from "@/components/matrx/navigation/types";
 
+
+// IMPORTANT: All must be added here to work: app\(authenticated)\(admin-auth)\constants\categories.tsx
+// This is only for the menu at the top, not the page rendering logic.
+
 export const pages: ModulePage[] = [
     {
         title: 'Content Blocks',

@@ -147,9 +147,10 @@ const nodeTypes: NodeTypes = {
   custom: CustomNode,
 };
 
-const edgeTypes: EdgeTypes = {
-  custom: CustomEdge,
-};
+// Remove custom edge types for now to avoid conflicts
+// const edgeTypes: EdgeTypes = {
+//   custom: CustomEdge,
+// };
 
 const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagram }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -175,36 +176,67 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
   }, [diagram.nodes]);
 
   const initialEdges: Edge[] = useMemo(() => {
-    return diagram.edges.map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      type: edge.type || 'default',
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20,
-        height: 20,
-        color: edge.color || '#6b7280',
-      },
-      style: {
-        stroke: edge.color || '#6b7280',
-        strokeWidth: edge.strokeWidth || 2,
-        strokeDasharray: edge.dashed ? '5,5' : 'none',
-      },
-      label: edge.label,
-      labelStyle: { 
-        fontSize: 12, 
-        fontWeight: 500,
-        fill: edge.color || '#6b7280',
-      },
-      labelBgStyle: { 
-        fill: '#ffffff', 
-        fillOpacity: 0.8,
-        rx: 4,
-        ry: 4,
-      },
-    }));
-  }, [diagram.edges]);
+    const nodeIds = new Set(diagram.nodes.map(node => node.id));
+    
+    const processedEdges = diagram.edges
+      .filter((edge) => {
+        // Validate that source and target nodes exist
+        const sourceExists = nodeIds.has(edge.source);
+        const targetExists = nodeIds.has(edge.target);
+        
+        if (!sourceExists || !targetExists) {
+          console.warn(`Edge ${edge.id} references non-existent nodes:`, {
+            source: edge.source,
+            target: edge.target,
+            sourceExists,
+            targetExists,
+            availableNodes: Array.from(nodeIds)
+          });
+          return false;
+        }
+        
+        return true;
+      })
+      .map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: 'default', // Use default ReactFlow edge type for better compatibility
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: edge.color || '#6b7280',
+        },
+        style: {
+          stroke: edge.color || '#6b7280',
+          strokeWidth: edge.strokeWidth || 2,
+          strokeDasharray: edge.dashed ? '5,5' : 'none',
+        },
+        label: edge.label,
+        labelStyle: { 
+          fontSize: 12, 
+          fontWeight: 500,
+          fill: edge.color || '#6b7280',
+        },
+        labelBgStyle: { 
+          fill: '#ffffff', 
+          fillOpacity: 0.8,
+          rx: 4,
+          ry: 4,
+        },
+      }));
+    
+    // Debug logging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Diagram edges data:', diagram.edges);
+      console.log('Processed edges for ReactFlow:', processedEdges);
+      console.log('Available node IDs:', Array.from(nodeIds));
+      console.log('Filtered out invalid edges:', diagram.edges.length - processedEdges.length);
+    }
+    
+    return processedEdges;
+  }, [diagram.edges, diagram.nodes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -360,7 +392,6 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
                 fitView
                 attributionPosition="bottom-left"
                 className="bg-gray-50 dark:bg-gray-900"

@@ -81,7 +81,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         
         // Ensure proper line breaks after bold text that should start a new line
         // This handles cases like "**Meta Title:**\n[content]" to ensure proper paragraph separation
-        processed = processed.replace(/(\*\*[^*]+\*\*)\n([^\n*])/g, '$1\n\n$2');
+        // BUT exclude cases where bold text is immediately followed by a list item
+        processed = processed.replace(/(\*\*[^*]+\*\*)\n([^\n*\-])/g, '$1\n\n$2');
         
         // Ensure proper line breaks before and after italic text that spans multiple lines
         // This handles cases where italic text should be on its own line
@@ -89,7 +90,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         
         // Handle cases where there are single line breaks between different formatting elements
         // that should be treated as separate paragraphs
-        processed = processed.replace(/(\*\*[^*]+\*\*|\*[^*]+\*)\n([^\n*\s])/g, '$1\n\n$2');
+        // BUT exclude cases where formatting is immediately followed by a list item
+        processed = processed.replace(/(\*\*[^*]+\*\*|\*[^*]+\*)\n([^\n*\s\-])/g, '$1\n\n$2');
         
         // Ensure proper separation between list items and following paragraph content
         // This handles cases where content follows a list without proper spacing
@@ -112,6 +114,20 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const handleMouseLeave = !isStreamActive ? () => setIsHovering(false) : undefined;
     
     const components = {
+        input: ({ node, type, checked, disabled, ...props }: any) => {
+            if (type === 'checkbox') {
+                return (
+                    <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        className="mr-2 h-4 w-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-500 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                        {...props}
+                    />
+                );
+            }
+            return <input type={type} {...props} />;
+        },
         p: ({ node, children, ...props }: any) => {
             // Detect direction for this specific paragraph
             const paragraphText = typeof children === 'string' ? children : 
@@ -207,11 +223,11 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             if (ordered && typeof index === "number") {
                 return (
-                    <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex`} dir={itemDirection} {...props}>
-                        <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1.5rem] ${isRtl ? 'text-left' : 'text-right'}`}>
+                    <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
+                        <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1.5rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
                             {index + 1}.
                         </span>
-                        <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'}`}>
+                        <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
                             {children}
                         </span>
                     </li>
@@ -220,11 +236,11 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             // Unordered list item with custom bullet
             return (
-                <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex`} dir={itemDirection} {...props}>
-                    <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1rem] ${isRtl ? 'text-left' : 'text-right'}`}>
+                <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
+                    <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
                         •
                     </span>
-                    <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'}`}>
+                    <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
                         {children}
                     </span>
                 </li>
@@ -304,7 +320,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                     <code
                         className={cn(
                             "px-1.5 py-0 rounded font-mono text-sm font-medium",
-                            "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700",
+                            "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
                             className
                         )}
                         {...props}
