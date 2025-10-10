@@ -1,7 +1,7 @@
 // Content block templates for the rich text editor
 import { 
     FileText, Code, List, CheckSquare, Table, Calendar, AlertCircle, Info, Lightbulb, Quote, MessageSquare, Brain, Zap, Layers, ClipboardList, BookOpen,
-    Clock, BarChart3, HelpCircle, FolderOpen, GitBranch, Search, Network 
+    Clock, BarChart3, HelpCircle, FolderOpen, GitBranch, Search, Network, Palette, Sparkles 
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { 
@@ -27,6 +27,7 @@ export interface ContentBlock {
     description: string;
     icon: LucideIcon;
     category: 'structure' | 'formatting' | 'special' | 'ai-prompts';
+    subcategory?: string;
     template: string;
 }
 
@@ -203,6 +204,7 @@ export const contentBlocks: ContentBlock[] = [
         description: 'Advanced reasoning and analysis prompt',
         icon: Brain,
         category: 'ai-prompts',
+        subcategory: 'thinking',
         template: deepThinkingTemplate,
     },
     {
@@ -211,6 +213,7 @@ export const contentBlocks: ContentBlock[] = [
         description: 'Basic thinking process prompt',
         icon: Zap,
         category: 'ai-prompts',
+        subcategory: 'thinking',
         template: simpleThinkingTemplate,
     },
     {
@@ -243,22 +246,25 @@ export const contentBlocks: ContentBlock[] = [
         description: 'Interactive project timeline with milestones',
         icon: Clock,
         category: 'ai-prompts',
+        subcategory: 'timeline',
         template: timelineTemplate,
     },
     {
         id: 'simple-timeline',
         label: 'Simple Timeline',
-        description: 'Interactive project timeline with milestones',
+        description: 'Basic timeline format',
         icon: Clock,
         category: 'ai-prompts',
+        subcategory: 'timeline',
         template: simpleTimelineTemplate,
     },
     {
         id: 'complex-timeline',
         label: 'Complex Timeline',
-        description: 'Interactive project timeline with milestones',
+        description: 'Advanced timeline with detailed structure',
         icon: Clock,
         category: 'ai-prompts',
+        subcategory: 'timeline',
         template: complexTimelineTemplate,
     },
     {
@@ -323,7 +329,69 @@ export const getBlocksByCategory = (category: ContentBlock['category']) => {
     return contentBlocks.filter(block => block.category === category);
 };
 
+export const getBlocksBySubcategory = (category: ContentBlock['category'], subcategory: string) => {
+    return contentBlocks.filter(block => block.category === category && block.subcategory === subcategory);
+};
+
+export const getBlocksWithoutSubcategory = (category: ContentBlock['category']) => {
+    return contentBlocks.filter(block => block.category === category && !block.subcategory);
+};
+
+export const getSubcategoriesForCategory = (category: ContentBlock['category']) => {
+    const subcategories = new Set<string>();
+    contentBlocks
+        .filter(block => block.category === category && block.subcategory)
+        .forEach(block => subcategories.add(block.subcategory!));
+    return Array.from(subcategories);
+};
+
 export const getBlockById = (id: string) => {
     return contentBlocks.find(block => block.id === id);
 };
+
+// Category configuration for dynamic menu rendering
+export interface CategoryConfig {
+    id: string;
+    label: string;
+    icon: any;
+    color: string;
+    subcategories?: SubcategoryConfig[];
+}
+
+export interface SubcategoryConfig {
+    id: string;
+    label: string;
+    icon: any;
+}
+
+export const categoryConfigs: CategoryConfig[] = [
+    {
+        id: 'ai-prompts',
+        label: 'AI Prompts',
+        icon: Brain,
+        color: 'purple',
+        subcategories: [
+            { id: 'thinking', label: 'Thinking', icon: Brain },
+            { id: 'timeline', label: 'Timeline', icon: Clock },
+        ]
+    },
+    {
+        id: 'structure',
+        label: 'Structure',
+        icon: FileText,
+        color: 'blue',
+    },
+    {
+        id: 'formatting',
+        label: 'Formatting',
+        icon: Palette,
+        color: 'pink',
+    },
+    {
+        id: 'special',
+        label: 'Special',
+        icon: Sparkles,
+        color: 'amber',
+    },
+];
 
