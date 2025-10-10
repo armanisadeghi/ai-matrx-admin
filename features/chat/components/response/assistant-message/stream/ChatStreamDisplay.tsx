@@ -7,7 +7,8 @@ import { parseMarkdownTable } from "@/components/mardown-display/markdown-classi
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/markdown-classification/processors/utils/thinking-parser";
-import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
+import ThinkingVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ThinkingVisualization";
+import ReasoningVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ReasoningVisualization";
 import QuestionnaireLoadingVisualization from "@/components/mardown-display/chat-markdown/QuestionnaireLoadingVisualization";
 import { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
@@ -44,7 +45,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
     const shouldShowLoader = useAppSelector(chatSelectors.shouldShowLoader);
 
     const handleStreamEnd = () => {
-        console.log("===> [CHAT STREAM DISPLAY] Stream ended");
         dispatch(chatActions.setIsNotStreaming());
         dispatch(chatActions.updateMessageStatus({ status: "completed" }));
         dispatch(chatActions.fetchMessagesForActiveConversation());
@@ -61,7 +61,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
     useEffect(() => {
         if (streamError && streamError.length > 0) {
             dispatch(chatActions.updateMessageStatus({ status: "error" }));
-            console.log("===> [CHAT STREAM DISPLAY] Stream error", streamError);
         }
     }, [streamError]);
 
@@ -107,7 +106,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
                 ) : segment.isThinking ? (
                     <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
                 ) : segment.isReasoning ? (
-                    <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
+                    <ReasoningVisualization reasoningText={segment.content} showReasoning={true} />
                 ) : (
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                         {segment.content}

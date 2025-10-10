@@ -11,6 +11,8 @@ import {
     multipleChoiceQuizTemplate, 
     deepResearchReportTemplate,
     timelineTemplate,
+    simpleTimelineTemplate,
+    complexTimelineTemplate,
     progressTrackerTemplate,
     troubleshootingTemplate,
     resourcesTemplate,
@@ -197,7 +199,7 @@ export const contentBlocks: ContentBlock[] = [
     // AI Prompt Templates
     {
         id: 'deep-thinking',
-        label: 'Deep Thinking Prompt',
+        label: 'Deep Thinking',
         description: 'Advanced reasoning and analysis prompt',
         icon: Brain,
         category: 'ai-prompts',
@@ -205,7 +207,7 @@ export const contentBlocks: ContentBlock[] = [
     },
     {
         id: 'simple-thinking',
-        label: 'Simple Thinking Prompt',
+        label: 'Quick Thinking',
         description: 'Basic thinking process prompt',
         icon: Zap,
         category: 'ai-prompts',
@@ -244,6 +246,22 @@ export const contentBlocks: ContentBlock[] = [
         template: timelineTemplate,
     },
     {
+        id: 'simple-timeline',
+        label: 'Simple Timeline',
+        description: 'Interactive project timeline with milestones',
+        icon: Clock,
+        category: 'ai-prompts',
+        template: simpleTimelineTemplate,
+    },
+    {
+        id: 'complex-timeline',
+        label: 'Complex Timeline',
+        description: 'Interactive project timeline with milestones',
+        icon: Clock,
+        category: 'ai-prompts',
+        template: complexTimelineTemplate,
+    },
+    {
         id: 'resource-collection',
         label: 'Resource Collection',
         description: 'Organized learning resources and materials',
@@ -268,8 +286,8 @@ export const contentBlocks: ContentBlock[] = [
         template: troubleshootingTemplate,
     },
     {
-        id: 'resource-collection',
-        label: 'Resource Collection',
+        id: 'resource-library',
+        label: 'Resource Library',
         description: 'Organized collection of learning resources',
         icon: FolderOpen,
         category: 'ai-prompts',

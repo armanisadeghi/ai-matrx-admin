@@ -4,7 +4,7 @@ import { cn } from "@/styles/themes/utils";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
-import ThinkingVisualization from "./ThinkingVisualization";
+import ThinkingVisualization from "../blocks/thinking-reasoning/ThinkingVisualization";
 import BasicMarkdownContent from "./BasicMarkdownContent";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import ImageBlock from "./ImageBlock";
@@ -51,6 +51,8 @@ import { parseDecisionTreeJSON } from "../blocks/decision-tree/parseDecisionTree
 import InteractiveDiagramBlock from "../blocks/diagram/InteractiveDiagramBlock";
 import DiagramLoadingVisualization from "../blocks/diagram/DiagramLoadingVisualization";
 import { parseDiagramJSON } from "../blocks/diagram/parseDiagramJSON";
+import ReasoningVisualization from "../blocks/thinking-reasoning/ReasoningVisualization";
+
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -204,7 +206,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 case "thinking":
                     return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true} />;
                 case "reasoning":
-                    return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true} />;
+                    return <ReasoningVisualization key={index} reasoningText={block.content} showReasoning={true} />;
                 case "code":
                     return (
                         <CodeBlock

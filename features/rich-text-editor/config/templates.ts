@@ -112,7 +112,7 @@ Rules:
 Randomize the position of the correct answer so it's always in a different position.`;
 
 
-export const timelineTemplate = `<timeline>
+export const simpleTimelineTemplate = `<timeline>
 ### Project Timeline
 
 Brief description of the timeline or project overview.
@@ -132,6 +132,36 @@ Brief description of the timeline or project overview.
 - Final Launch (Sep) [Launch]
 
 </timeline>`;
+
+export const complexTimelineTemplate = `<timeline>
+### {Concise Timeline Title}
+
+{Concise overview that define scope, audience, and outcome.}
+
+**Phase {Number or Name}{: Optional Subtitle}**
+- {Item Title} ({Time Spec}) [{Tag[, Tag2[, Tag3]]}]{ Optional:  — Milestone| — Deliverable| — Decision| — Checkpoint}
+  - {Optional one sub-bullet: concrete action or success criterion.}
+
+**Phase {Number or Name}{: Optional Subtitle}**
+- {Item Title} ({Time Spec}) [{Tag[, Tag2[, Tag3]]}]{ Optional:  — Milestone| — Deliverable| — Decision| — Checkpoint}
+  - {Optional one sub-bullet: concrete action or success criterion.}
+
+**Phase {Number or Name}{: Optional Subtitle}**
+- {Item Title} ({Time Spec}) [{Tag[, Tag2[, Tag3]]}]{ Optional:  — Milestone| — Deliverable| — Decision| — Checkpoint}
+  - {Optional one sub-bullet: concrete action or success criterion.}
+
+</timeline>`;
+
+export const timelineTemplate = `To generate a timeline, you can use a simple or more complex template:
+
+Simple Template:
+${simpleTimelineTemplate}
+
+Complex Template:
+${complexTimelineTemplate}
+
+Choose the template that best fits the user's request.`;
+
 
 export const progressTrackerTemplate = `<progress_tracker>
 ### Learning Progress

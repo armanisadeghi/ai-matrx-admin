@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ArrowDown, ArrowUp, Sparkles } from "lucide-react";
-import { aiProcessText, tagMappings } from "./constants";
+import { aiProcessText, tagMappings } from "../../chat-markdown/constants";
 
 // Helper function to get tag type from a line
 const getTagType = (line) => {

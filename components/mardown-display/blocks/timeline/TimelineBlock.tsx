@@ -3,7 +3,8 @@ import React, { useState, useMemo } from 'react';
 import { 
   Calendar, Clock, CheckCircle2, Circle, 
   Maximize2, Minimize2, MapPin, Flag, 
-  ArrowRight, Play, Pause, RotateCcw
+  ArrowRight, Play, Pause, RotateCcw,
+  ChevronDown, ChevronRight, Expand
 } from 'lucide-react';
 
 interface TimelineEvent {
@@ -34,6 +35,9 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
   const [completedEvents, setCompletedEvents] = useState<Set<string>>(new Set());
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [collapsedPeriods, setCollapsedPeriods] = useState<Set<string>>(
+    new Set(timeline.periods.map(period => period.period))
+  );
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -73,6 +77,22 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
 
   const resetProgress = () => {
     setCompletedEvents(new Set());
+  };
+
+  const togglePeriodCollapse = (periodName: string) => {
+    const newCollapsed = new Set(collapsedPeriods);
+    if (newCollapsed.has(periodName)) {
+      newCollapsed.delete(periodName);
+    } else {
+      newCollapsed.add(periodName);
+    }
+    setCollapsedPeriods(newCollapsed);
+  };
+
+  // Check if all events in a period are completed
+  const isPeriodCompleted = (period: TimelinePeriod) => {
+    if (period.events.length === 0) return false;
+    return period.events.every(event => completedEvents.has(event.id));
   };
 
   const getStatusIcon = (event: TimelineEvent) => {
@@ -145,17 +165,17 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
 
               {/* Header Section */}
               <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-2xl p-6 shadow-lg border-2 border-blue-200 dark:border-blue-800/50">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl shadow-md">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="p-3 bg-blue-500 dark:bg-blue-600 rounded-xl shadow-md flex-shrink-0">
                       <Calendar className="h-8 w-8 text-white" />
                     </div>
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    <div className="flex-1 min-w-0">
+                      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
                         {timeline.title}
                       </h1>
                       {timeline.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
                           {timeline.description}
                         </p>
                       )}
@@ -165,10 +185,10 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
                   {!isFullScreen && (
                     <button
                       onClick={() => setIsFullScreen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      className="p-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all flex-shrink-0"
+                      title="Expand to full screen"
                     >
-                      <Maximize2 className="h-4 w-4" />
-                      <span>Timeline View</span>
+                      <Expand className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -220,20 +240,46 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
 
               {/* Timeline Content */}
               <div className="space-y-8">
-                {filteredPeriods.map((period, periodIndex) => (
-                  <div key={periodIndex} className="relative">
-                    {/* Period Header */}
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500 dark:bg-indigo-600 text-white rounded-full shadow-md">
-                        <Flag className="h-4 w-4" />
-                        <span className="font-semibold text-sm">{period.period}</span>
+                {filteredPeriods.map((period, periodIndex) => {
+                  const isCollapsed = collapsedPeriods.has(period.period);
+                  const isCompleted = isPeriodCompleted(period);
+                  
+                  return (
+                    <div key={periodIndex} className="relative">
+                      {/* Period Header */}
+                      <div className="flex items-center gap-4 mb-6">
+                        <button
+                          onClick={() => togglePeriodCollapse(period.period)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-md transition-all hover:shadow-lg ${
+                            isCompleted 
+                              ? 'bg-green-500 dark:bg-green-600 text-white' 
+                              : 'bg-indigo-500 dark:bg-indigo-600 text-white'
+                          }`}
+                        >
+                          {isCollapsed ? (
+                            <ChevronRight className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                          {isCompleted ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <Flag className="h-4 w-4" />
+                          )}
+                          <span className="font-semibold text-sm">{period.period}</span>
+                          {isCompleted && (
+                            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                              Complete
+                            </span>
+                          )}
+                        </button>
+                        <div className="flex-1 h-px bg-gradient-to-r from-indigo-300 to-transparent dark:from-indigo-700"></div>
                       </div>
-                      <div className="flex-1 h-px bg-gradient-to-r from-indigo-300 to-transparent dark:from-indigo-700"></div>
-                    </div>
 
-                    {/* Events */}
-                    <div className="space-y-4 ml-8">
-                      {period.events.map((event, eventIndex) => (
+                      {/* Events */}
+                      {!isCollapsed && (
+                        <div className="space-y-4 ml-8 transition-all duration-300">
+                          {period.events.map((event, eventIndex) => (
                         <div
                           key={event.id}
                           className={`relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${getStatusColor(event)}`}
@@ -276,12 +322,14 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
                             </p>
                           </div>
 
-                          <ArrowRight className="h-4 w-4 text-gray-400 dark:text-gray-600 flex-shrink-0" />
+                            <ArrowRight className="h-4 w-4 text-gray-400 dark:text-gray-600 flex-shrink-0" />
+                          </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Completion Message */}
