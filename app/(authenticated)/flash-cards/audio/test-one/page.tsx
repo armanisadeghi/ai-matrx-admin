@@ -17,7 +17,7 @@ const Page: React.FC = () => {
             {/* Only render the TextToSpeechPlayer when on client side */}
             {isClient && (
                 <TextToSpeechPlayer
-                    text="Hi. I'm AI Matrix. I'm here to assist you with whatever you need."
+                    text="Hi. I'm AI Matrx. I'm here to assist you with whatever you need."
                     autoPlay={false}
                 />
             )}

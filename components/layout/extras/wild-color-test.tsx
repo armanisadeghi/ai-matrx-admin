@@ -33,7 +33,7 @@ function BaseLayout({children, links}) {
                                 animate={{opacity: open ? 1 : 0, x: open ? 0 : -10}}
                                 transition={{duration: 0.2}}
                             >
-                                AI Matrix
+                                AI Matrx
                             </motion.span>
                         </div>
                         <div className="mt-8 flex flex-col gap-2">

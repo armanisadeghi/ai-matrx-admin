@@ -21,7 +21,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MatrxRecordId } from "@/types";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { ADMIN_USER_IDS } from "@/components/admin/controls/AdminIndicatorWrapper";
+import { adminIds } from "@/components/layout";
+
 
 export type DisplayOption = "brokerEditor" | "textChat" | "richText" | "markdown";
 
@@ -113,7 +114,7 @@ const MessageToolbar = ({
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const user = useSelector((state: RootState) => state.user);
-    const isAdmin = ADMIN_USER_IDS.includes(user.id);
+    const isAdmin = adminIds.includes(user.id);
     const [initialCooldownComplete, setInitialCooldownComplete] = useState(false);
     
     // Set up the initial cooldown timer
