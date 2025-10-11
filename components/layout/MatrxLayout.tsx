@@ -14,7 +14,6 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/lib/redux/store";
 import {ThemeSwitcher} from "@/styles/themes";
 import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip";
-import {ChevronLeft, ChevronRight} from "lucide-react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { getGlobalIsAdmin } from "@/lib/globalState";
 import {
@@ -24,7 +23,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/utils/supabase/client";
-
+import {
+    PanelLeftOpen,
+    PanelLeftClose,
+  } from "lucide-react";
+  
 interface Links {
     label: string;
     href: string;
@@ -145,9 +148,9 @@ function SidebarToggle({ open, onToggle }: { open: boolean; onToggle: () => void
                     )}
                 >
                     {open ? (
-                        <ChevronLeft className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                        <PanelLeftClose className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
                     ) : (
-                        <ChevronRight className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                        <PanelLeftOpen className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
                     )}
                     {open && (
                         <motion.span
@@ -161,7 +164,6 @@ function SidebarToggle({ open, onToggle }: { open: boolean; onToggle: () => void
                             }}
                             className="!m-0 inline-block whitespace-pre !p-0 text-xs text-neutral-700 transition duration-150 dark:text-neutral-200"
                         >
-                            Collapse
                         </motion.span>
                     )}
                 </button>
