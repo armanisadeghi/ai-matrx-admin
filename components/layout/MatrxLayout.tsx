@@ -14,7 +14,7 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/lib/redux/store";
 import {ThemeSwitcher} from "@/styles/themes";
 import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip";
-import {CollapseToggleButton} from "./CollapseToggleButton";
+import {ChevronLeft, ChevronRight} from "lucide-react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { getGlobalIsAdmin } from "@/lib/globalState";
 import {
@@ -132,6 +132,49 @@ export function LayoutWithSidebar(
     );
 }
 
+// Sidebar toggle component
+function SidebarToggle({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <button
+                    onClick={onToggle}
+                    className={cn(
+                        "group/sidebar flex items-center rounded-sm transition-colors duration-200 ease-in-out hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-ew-resize",
+                        open ? "justify-start gap-2 px-2 py-2" : "justify-center px-1 py-1.5"
+                    )}
+                >
+                    {open ? (
+                        <ChevronLeft className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                    ) : (
+                        <ChevronRight className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                    )}
+                    {open && (
+                        <motion.span
+                            initial={{
+                                display: "none",
+                                opacity: 0,
+                            }}
+                            animate={{
+                                display: open ? "inline-block" : "none",
+                                opacity: open ? 1 : 0,
+                            }}
+                            className="!m-0 inline-block whitespace-pre !p-0 text-xs text-neutral-700 transition duration-150 dark:text-neutral-200"
+                        >
+                            Collapse
+                        </motion.span>
+                    )}
+                </button>
+            </TooltipTrigger>
+            {!open && (
+                <TooltipContent side="right">
+                    Expand sidebar
+                </TooltipContent>
+            )}
+        </Tooltip>
+    );
+}
+
 // Logout function component to handle user logout
 function LogoutAction() {
     const router = useRouter();
@@ -183,20 +226,21 @@ export function SidebarLayout(
             )}
         >
             <Sidebar open={open} setOpen={setOpen}>
-                <SidebarBody className="justify-between gap-10">
+                <SidebarBody className={cn("justify-between", open ? "gap-10" : "gap-6")}>
                     <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden scrollbar-hide">
                         <Logo open={open}/>
-                        <div className="mt-8 flex flex-col">
+                        <SidebarToggle open={open} onToggle={() => setOpen(!open)} />
+                        <div className={cn("flex flex-col", open ? "mt-8" : "mt-4")}>
                             {primaryLinks.map((link, idx) => (
                                 <SidebarLink key={idx} link={link}/>
                             ))}
                         </div>
-                        <div className="mt-4">
+                        <div className={cn(open ? "mt-4" : "mt-3")}>
                             <div className="h-px w-full bg-neutral-200 dark:bg-neutral-700"></div>
                             <div className="h-px w-full bg-white dark:bg-neutral-900"></div>
                         </div>
-                        <div className="mt-4 flex flex-col">
-                            {isAdmin && (
+                        <div className={cn("flex flex-col", open ? "mt-4" : "mt-3")}>
+                            {isAdmin && open && (
                                 <div className="text-xs text-neutral-500 dark:text-neutral-400">
                                     Admin
                                 </div>
@@ -233,9 +277,8 @@ function UserProfileDropdown({ userName, userProfilePhoto, open }: {
                 <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
                         <button className={cn(
-                            "group/sidebar flex w-full items-center justify-start gap-2 rounded-sm px-2 py-2",
-                            "hover:bg-neutral-100 dark:hover:bg-neutral-700",
-                            "transition-colors duration-200 ease-in-out"
+                            "group/sidebar flex w-full items-center rounded-sm transition-colors duration-200 ease-in-out hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                            open ? "justify-start gap-2 px-2 py-2" : "justify-center px-1 py-1.5"
                         )}>
                             <Image
                                 src={userProfilePhoto || "/happy-robot-avatar.jpg"}
@@ -248,7 +291,7 @@ function UserProfileDropdown({ userName, userProfilePhoto, open }: {
                                 alt="Avatar"
                             />
                             {open && (
-                                <div className="inline-block text-neutral-700 dark:text-neutral-200 text-sm">
+                                <div className="inline-block text-neutral-700 dark:text-neutral-200 text-xs">
                                     {userName}
                                 </div>
                             )}
@@ -299,7 +342,7 @@ export const SidebarProvider = (
         open?: boolean;
         setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
     }) => {
-    const [openState, setOpenState] = useState(openProp || false);
+    const [openState, setOpenState] = useState(openProp ?? false);
     const pathname = usePathname();
 
     const open = openProp !== undefined ? openProp : openState;
@@ -355,20 +398,18 @@ export const DesktopSidebar = (
     return (
         <motion.div
             className={cn(
-                "group/sidebar-btn relative m-2 hidden h-full w-[235px] flex-shrink-0 rounded-xl bg-white px-4 py-4 dark:bg-neutral-900 md:flex md:flex-col hide-scrollbar",
-                open ? "overflow-y-auto scrollbar-hide" : "overflow-hidden",
-
+                "group/sidebar-btn relative m-2 hidden h-full flex-shrink-0 rounded-xl bg-white dark:bg-neutral-800 md:flex md:flex-col hide-scrollbar",
+                open ? "overflow-y-auto scrollbar-hide px-1 py-4" : "overflow-hidden px-0 py-3",
                 className,
             )}
+            initial={{
+                width: "32px",
+            }}
             animate={{
-                width: open ? "235px" : "70px",
+                width: open ? "196px" : "32px",
             }}
             {...props}
         >
-            <CollapseToggleButton
-                isOpen={open}
-                onToggle={() => setOpen(!open)}
-            />
             {children as React.ReactNode}
         </motion.div>
     );
@@ -438,9 +479,8 @@ export const SidebarLink: React.FC<{
                 <Link
                     href={link.href}
                     className={cn(
-                        "group/sidebar flex items-center justify-start gap-2 rounded-sm px-2 py-2",
-                        "hover:bg-neutral-100 dark:hover:bg-neutral-700",
-                        "transition-colors duration-200 ease-in-out",
+                        "group/sidebar flex items-center rounded-sm transition-colors duration-200 ease-in-out hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                        open ? "justify-start gap-2 px-2 py-2" : "justify-center px-1 py-1.5",
                         isActive && "bg-neutral-100 dark:bg-neutral-700",
                         className
                     )}
@@ -448,7 +488,7 @@ export const SidebarLink: React.FC<{
                 >
                     {link.icon}
                     {open && (
-                        <div className="inline-block text-neutral-700 dark:text-neutral-200 text-sm">
+                        <div className="inline-block text-neutral-700 dark:text-neutral-200 text-xs">
                             {link.label}
                         </div>
                     )}

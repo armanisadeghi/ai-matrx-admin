@@ -44,7 +44,7 @@ const LogoComponentInfinity: React.FC<LogoComponentProps> = ({ open }) => {
                     display: open ? "inline-block" : "none",
                     opacity: open ? 1 : 0,
                 }}
-                className="!m-0 inline-block whitespace-pre !p-0 text-sm font-semibold transition duration-150"
+                className="!m-0 inline-block whitespace-pre !p-0 text-xs font-semibold transition duration-150"
             >
                 AI Matrx
             </motion.span>
@@ -60,20 +60,28 @@ const LogoComponent: React.FC<LogoComponentProps> = ({ open }) => {
         <Link
             href="/dashboard"
             className={cn(
-                "group/sidebar flex items-center justify-start gap-2 rounded-sm px-2 py-2",
-                "hover:bg-neutral-100 dark:hover:bg-neutral-700",
-                "transition-colors duration-200 ease-in-out",
-                "text-blue-600 dark:text-blue-400"
+                "group/sidebar flex items-center rounded-sm transition-colors duration-200 ease-in-out text-blue-600 dark:text-blue-400 hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                open ? "justify-start gap-2 px-2 py-2" : "justify-center px-1 py-1.5"
             )}
         >
-            <Image src="/matrx/apple-touch-icon.png" width={24} height={24} alt="AI Matrx Logo" className="flex-shrink-0" />
+            <Image 
+                src="/matrx/apple-touch-icon.png" 
+                width={open ? 24 : 20} 
+                height={open ? 24 : 20} 
+                alt="AI Matrx Logo" 
+                className="flex-shrink-0" 
+            />
 
             <motion.span
+                initial={{
+                    display: "none",
+                    opacity: 0,
+                }}
                 animate={{
                     display: open ? "inline-block" : "none",
                     opacity: open ? 1 : 0,
                 }}
-                className="!m-0 inline-block whitespace-pre !p-0 text-sm font-semibold transition duration-150"
+                className="!m-0 inline-block whitespace-pre !p-0 text-xs font-semibold transition duration-150"
             >
                 AI Matrx
             </motion.span>

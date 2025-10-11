@@ -44,18 +44,23 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
         <button
             onClick={toggleMode}
             className={cn(
-                "group/sidebar flex w-full items-center justify-start gap-2 rounded-sm px-2 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                "group/sidebar flex w-full items-center rounded-sm hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                open ? "justify-start gap-2 px-2 py-2" : "justify-center px-1 py-1.5",
                 className,
             )}
         >
             {icon}
 
             <motion.span
+                initial={{
+                    display: "none",
+                    opacity: 0,
+                }}
                 animate={{
                     display: open ? "inline-block" : "none",
                     opacity: open ? 1 : 0,
                 }}
-                className="!m-0 inline-block whitespace-pre !p-0 text-sm text-neutral-700 transition duration-150 dark:text-neutral-200"
+                className="!m-0 inline-block whitespace-pre !p-0 text-xs text-neutral-700 transition duration-150 dark:text-neutral-200"
             >
                 {label}
             </motion.span>
@@ -116,7 +121,7 @@ export const ThemeSwitcherMinimal: React.FC<ThemeSwitcherMinimalProps> = ({
     <button
       onClick={toggleMode}
       className={cn(
-        "inline-flex items-center gap-1.5 text-sm",
+        "inline-flex items-center gap-1.5 text-xs",
         className
       )}
     >
