@@ -184,14 +184,6 @@ export const adminNavigationLinks = [
         ),
         category: "Applets",
     },
-
-
-    {
-        label: "Applet Components",
-        href: "/tests/applet-tests/input-components-4", // https://lucide.dev/icons/
-        icon: <LayoutPanelLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-        category: "Applets",
-    },
     {
         label: "Final Form Test",
         href: "/tests/forms/entity-final-test", // https://lucide.dev/icons/
@@ -205,12 +197,12 @@ export const adminNavigationLinks = [
         icon: <TbBrandSocketIo className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         category: "Socket IO",
     },
-    {
-        label: "Broker Components",
-        href: "/brokers/component-editor",
-        icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-        category: "Old",
-    },
+    // {
+    //     label: "Broker Components",
+    //     href: "/brokers/component-editor",
+    //     icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    //     category: "Old",
+    // },
     {
         label: "Model Endpoints",
         href: "/demo/many-to-many-ui/claude",

@@ -88,11 +88,11 @@ export const primaryLinks = [
         icon: <AiFillAudio className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         href: "/demo/voice/voice-manager",
     },
-    {
-        label: "Component Editor",
-        href: "/brokers/component-editor",
-        icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
+    // {
+    //     label: "Component Editor",
+    //     href: "/brokers/component-editor",
+    //     icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
     {
         label: "Math Demo",
         href: "/tests/math",
@@ -278,11 +278,6 @@ export const secondaryLinks = [
         href: "/apps/builder/hub", // https://lucide.dev/icons/
         icon: <SiMagic className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />,
     },
-    {
-        label: "Applet Components",
-        href: "/tests/applet-tests/input-components-4", // https://lucide.dev/icons/
-        icon: <LayoutPanelLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
     // tests/markdown-tests/
     {
         label: "Markdown Tests",
@@ -300,11 +295,11 @@ export const secondaryLinks = [
         href: "/admin/socketio",
         icon: <TbBrandSocketIo className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
-    {
-        label: "Broker Components",
-        href: "/brokers/component-editor",
-        icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
+    // {
+    //     label: "Broker Components",
+    //     href: "/brokers/component-editor",
+    //     icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
     {
         label: "Model Endpoints",
         href: "/demo/many-to-many-ui/claude",
@@ -312,7 +307,7 @@ export const secondaryLinks = [
     },
     {
         label: "Workflows",
-        href: "/demo/workflows",
+        href: "/tests/workflows",
         icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
