@@ -33,7 +33,8 @@ export default async function AuthenticatedLayout(
         primaryLinks: appSidebarLinks,
         secondaryLinks: adminSidebarLinks,
         initialOpen: !isMobile ? false : false,
-        uniqueId: 'matrix-layout-container'
+        uniqueId: 'matrix-layout-container',
+        isAdmin: false,
     };
 
     const {

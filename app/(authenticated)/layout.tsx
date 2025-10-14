@@ -33,13 +33,9 @@ async function fetchTestDirectories() {
     }
 }
 
-const adminIds = [
-    "4cf62e4e-2679-484f-b652-034e697418df",
-    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
-    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
-  ];
+const adminIds = ["4cf62e4e-2679-484f-b652-034e697418df", "8f7f17ba-935b-4967-8105-7c6b554f41f1", "6555aa73-c647-4ecf-8a96-b60e315b6b18"];
 
-  const newLayout = false;
+const newLayout = true;
 
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -74,18 +70,16 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     // Handle user preferences - create defaults for new users
     let userPreferences;
     const { data: preferences, error } = await supabase.from("user_preferences").select("preferences").eq("user_id", userData.id).single();
-    
-    if (error && error.code === 'PGRST116') {
+
+    if (error && error.code === "PGRST116") {
         // No preferences found - create default preferences for new user
         const defaultPreferences = defaultUserPreferences;
 
         // Create the preferences record in the database
-        const { error: insertError } = await supabase
-            .from("user_preferences")
-            .insert({
-                user_id: userData.id,
-                preferences: defaultPreferences
-            });
+        const { error: insertError } = await supabase.from("user_preferences").insert({
+            user_id: userData.id,
+            preferences: defaultPreferences,
+        });
 
         if (insertError) {
             console.error("Error creating default preferences:", insertError);

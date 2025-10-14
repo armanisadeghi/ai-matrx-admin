@@ -250,7 +250,7 @@ const ThinkingVisualization = ({ thinkingText, showThinking = true }) => {
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <span className="text-xs text-indigo-500 dark:text-indigo-400">Show thoughts...</span>
+              <span className="text-xs text-indigo-500 dark:text-indigo-400">Show</span>
               <ArrowDown className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
             </div>
           )}
@@ -266,7 +266,7 @@ const ThinkingVisualization = ({ thinkingText, showThinking = true }) => {
         >
           <div
             ref={contentRef}
-            className="relative font-mono text-sm text-indigo-800 dark:text-indigo-200 whitespace-pre-wrap overflow-y-auto scrollbar-none pr-2 pt-0 mt-0"
+            className="relative font-mono text-xs text-indigo-800 dark:text-indigo-200 whitespace-pre-wrap overflow-y-auto scrollbar-none pr-2 pt-0 mt-0"
             style={{ 
               scrollBehavior: "smooth",
               height: expanded ? "24rem" : "3rem", // Fixed height to ensure scrolling works in both states

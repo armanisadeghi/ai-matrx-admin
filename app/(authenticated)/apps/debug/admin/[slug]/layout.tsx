@@ -1,4 +1,5 @@
-// app/(authenticated)/apps/custom/[slug]/Layout.tsx
+// app/(authenticated)/apps/debug/admin/[slug]/layout.tsx
+
 import React from "react";
 import { fetchAppBySlug } from "@/utils/supabase/fetchAppAndAppletConfig";
 
