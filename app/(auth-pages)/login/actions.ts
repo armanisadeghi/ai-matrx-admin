@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 
-const baseUrl = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "http://aimatrx.com";
+// Dynamic baseUrl that works with Vercel deployments (including preview branches)
+const baseUrl = process.env.NODE_ENV === "development" 
+    ? "http://localhost:3000" 
+    : process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : "https://aimatrx.com"; // fallback for non-Vercel deployments
 
 export async function login(redirectToArg: string, formData: FormData) {
     const supabase = await createClient();
@@ -87,6 +92,7 @@ export async function loginWithGoogle(redirectToArg: string, formData?: FormData
         }
     }
     
+    console.log("Google login - baseUrl:", baseUrl);
     console.log("Google login - redirectTo:", redirectTo);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -117,6 +123,7 @@ export async function loginWithGithub(redirectToArg: string, formData?: FormData
         }
     }
     
+    console.log("Github login - baseUrl:", baseUrl);
     console.log("Github login - redirectTo:", redirectTo);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
