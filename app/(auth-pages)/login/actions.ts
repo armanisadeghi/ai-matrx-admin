@@ -3,13 +3,36 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { headers } from "next/headers";
 
 // Dynamic baseUrl that works with Vercel deployments (including preview branches)
-const baseUrl = process.env.NODE_ENV === "development" 
-    ? "http://localhost:3000" 
-    : process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}` 
-        : "https://aimatrx.com"; // fallback for non-Vercel deployments
+const getBaseUrl = async () => {
+    if (process.env.NODE_ENV === "development") {
+        return "http://localhost:3000";
+    }
+    
+    // Get the current request headers to determine the host
+    const headersList = await headers();
+    const host = headersList.get('host');
+    
+    if (host) {
+        // Use the actual host from the request
+        return `https://${host}`;
+    }
+    
+    // Fallback to environment variables if no host header
+    const vercelUrl = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL;
+    const vercelBranchUrl = process.env.VERCEL_BRANCH_URL || process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL;
+    
+    const deploymentUrl = vercelBranchUrl || vercelUrl;
+    
+    if (deploymentUrl) {
+        return `https://${deploymentUrl}`;
+    }
+    
+    // Final fallback to production domain
+    return "https://aimatrx.com";
+};
 
 export async function login(redirectToArg: string, formData: FormData) {
     const supabase = await createClient();
@@ -82,6 +105,7 @@ export async function signup(redirectToArg: string, formData: FormData) {
 
 export async function loginWithGoogle(redirectToArg: string, formData?: FormData) {
     const supabase = await createClient();
+    const baseUrl = await getBaseUrl();
     
     // Get redirectTo from either the function arg or the form data
     let redirectTo = redirectToArg;
@@ -92,6 +116,15 @@ export async function loginWithGoogle(redirectToArg: string, formData?: FormData
         }
     }
     
+    console.log("Google login - Environment debug:");
+    console.log("  NODE_ENV:", process.env.NODE_ENV);
+    console.log("  VERCEL_URL:", process.env.VERCEL_URL);
+    console.log("  VERCEL_BRANCH_URL:", process.env.VERCEL_BRANCH_URL);
+    console.log("  NEXT_PUBLIC_VERCEL_URL:", process.env.NEXT_PUBLIC_VERCEL_URL);
+    console.log("  NEXT_PUBLIC_VERCEL_BRANCH_URL:", process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL);
+    const headersList = await headers();
+    const host = headersList.get('host');
+    console.log("  Request host:", host);
     console.log("Google login - baseUrl:", baseUrl);
     console.log("Google login - redirectTo:", redirectTo);
 
@@ -113,6 +146,7 @@ export async function loginWithGoogle(redirectToArg: string, formData?: FormData
 
 export async function loginWithGithub(redirectToArg: string, formData?: FormData) {
     const supabase = await createClient();
+    const baseUrl = await getBaseUrl();
     
     // Get redirectTo from either the function arg or the form data
     let redirectTo = redirectToArg;
