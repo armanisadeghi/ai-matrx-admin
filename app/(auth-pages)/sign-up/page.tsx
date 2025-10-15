@@ -83,6 +83,26 @@ export default async function SignUp({ searchParams }: SignUpProps) {
                             type="password"
                             autoComplete="new-password"
                             required
+                            minLength={6}
+                            className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-neutral-700 dark:text-white"
+                            placeholder="••••••••"
+                            data-lpignore="true"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <Label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Confirm Password
+                    </Label>
+                    <div className="mt-1" suppressHydrationWarning={true}>
+                        <Input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                            minLength={6}
                             className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-neutral-700 dark:text-white"
                             placeholder="••••••••"
                             data-lpignore="true"

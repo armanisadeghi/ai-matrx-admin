@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 export async function signUpAction (formData: FormData): Promise<void> {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const confirmPassword = formData.get("confirmPassword")?.toString();
 
   const supabase = await createClient()
   
@@ -20,42 +21,98 @@ export async function signUpAction (formData: FormData): Promise<void> {
   console.log("SignUpAction - RedirectTo:", redirectTo);
   console.log("SignUpAction - Origin:", origin);
 
-  if (!email || !password) {
-    console.error("SignUpAction - Missing email or password");
-    return encodedRedirect("error", "/sign-up", "Email and password are required");
+  if (!email || !password || !confirmPassword) {
+    console.error("SignUpAction - Missing required fields");
+    return encodedRedirect("error", "/sign-up", "Email, password, and password confirmation are required");
   }
 
-  // Simplify the redirectTo URL - just use the base callback URL
-  const callbackUrl = `${origin}/auth/callback`;
-  console.log("SignUpAction - Using callback URL:", callbackUrl);
+  if (password !== confirmPassword) {
+    console.error("SignUpAction - Password mismatch");
+    return encodedRedirect("error", "/sign-up", "Passwords do not match");
+  }
+
+  if (password.length < 6) {
+    console.error("SignUpAction - Password too short");
+    return encodedRedirect("error", "/sign-up", "Password must be at least 6 characters long");
+  }
+
+  // Use the confirm URL for email verification (PKCE flow)
+  const confirmUrl = `${origin}/auth/confirm?redirectTo=${encodeURIComponent(redirectTo)}`;
+  console.log("SignUpAction - Using confirm URL:", confirmUrl);
+
+  // Test Supabase connection first
+  try {
+    console.log("SignUpAction - Testing Supabase connection...");
+    const { data: testData, error: testError } = await supabase.auth.getSession();
+    console.log("SignUpAction - Connection test result:", { testData: !!testData, testError: !!testError });
+  } catch (connError) {
+    console.error("SignUpAction - Connection test failed:", connError);
+    return encodedRedirect("error", "/sign-up", "Unable to connect to authentication service. Please try again later.");
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: callbackUrl,
+      emailRedirectTo: confirmUrl,
     },
   });
 
   console.log("SignUpAction - Response data:", data);
+  console.log("SignUpAction - Error details:", {
+    error: error,
+    code: error?.code,
+    message: error?.message,
+    status: error?.status,
+    isAuthError: error instanceof Error && 'status' in error
+  });
 
   if (error) {
-    console.error("SignUpAction - Error:", error.code, error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
+    console.error("SignUpAction - Full error object:", error);
+    
+    // Handle specific error types
+    if (error.status === 504) {
+      // For email signup, a 504 might mean the user was created but email sending timed out
+      // Check if we have user data despite the timeout
+      if (data.user) {
+        console.log("SignUpAction - User created despite timeout, email may still be sent");
+        return encodedRedirect(
+          "success", 
+          "/sign-up", 
+          "Account created! Please check your email for a verification link. If you don't receive it in a few minutes, try signing up again."
+        );
+      }
+      return encodedRedirect("error", "/sign-up", "Email service is currently slow. Your account may have been created - please check your email or try again in a few minutes.");
+    }
+    
+    if (error.code) {
+      return encodedRedirect("error", "/sign-up", error.message || "Authentication error occurred");
+    }
+    
+    // Fallback for unknown errors
+    return encodedRedirect("error", "/sign-up", "An unexpected error occurred. Please try again.");
   } 
   
-  // Check if the user object exists in the response
-  if (!data.user) {
-    console.error("SignUpAction - No user returned");
-    return encodedRedirect("error", "/sign-up", "Signup failed. Please try again.");
+  // For email signup with confirmation enabled, data.user will exist but data.session will be null
+  // This is expected behavior - the user needs to confirm their email first
+  if (data.user && !data.session) {
+    console.log("SignUpAction - User created, confirmation email sent");
+    return encodedRedirect(
+      "success",
+      "/sign-up",
+      "Thanks for signing up! Please check your email for a verification link."
+    );
   }
   
-  // If we get here, the signup was successful and verification email was sent
-  return encodedRedirect(
-    "success",
-    "/sign-up",
-    "Thanks for signing up! Please check your email for a verification link."
-  );
+  // If we have both user and session, the user is immediately signed in (confirmation disabled)
+  if (data.user && data.session) {
+    console.log("SignUpAction - User created and signed in immediately");
+    return redirect(redirectTo);
+  }
+  
+  // If we get here, something unexpected happened
+  console.error("SignUpAction - Unexpected response:", data);
+  return encodedRedirect("error", "/sign-up", "Signup failed. Please try again.");
 };
 
 
