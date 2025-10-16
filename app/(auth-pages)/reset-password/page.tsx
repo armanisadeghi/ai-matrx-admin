@@ -1,5 +1,4 @@
-// File: app/(auth-pages)/reset-password/hold-hold-page.tsx
-// @ts-nocheck
+// File: app/(auth-pages)/reset-password/page.tsx
 
 import {resetPasswordAction} from "@/actions/auth.actions";
 import {AuthMessageType} from "@/components/form-message";

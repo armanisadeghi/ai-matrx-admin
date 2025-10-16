@@ -229,7 +229,7 @@ export async function forgotPasswordAction (formData: FormData) {
   return encodedRedirect(
       "success",
       "/forgot-password",
-      "Check your email for a link to reset your password.",
+      "Check your email for a password reset link.",
   );
 };
 
