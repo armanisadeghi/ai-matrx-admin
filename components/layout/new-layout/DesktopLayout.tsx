@@ -4,6 +4,7 @@ import { Menu, Search, Bell } from "lucide-react";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/NavigationMenu";
 import { Input } from "@/components/ui/input";
+import { BACKGROUND_PATTERN } from "@/constants/chat";
 
 interface SidebarLink {
     label: string;
@@ -35,10 +36,12 @@ export default function DesktopLayout({
     const allLinks = [...primaryLinks, ...(isAdmin ? secondaryLinks : [])];
 
     return (
-        <div id={uniqueId} className="min-h-screen bg-slate-100 dark:bg-slate-900">
+        <div id={uniqueId} className="min-h-screen bg-zinc-100 dark:bg-zinc-850 text-gray-800 dark:text-gray-100"
+        style={{ backgroundImage: BACKGROUND_PATTERN }}
+        >
             {/* Transparent Header */}
             <header className="fixed top-0 left-0 right-0 z-50 h-12">
-                <div className="flex items-center justify-between h-full px-4">
+                <div className="flex items-center justify-between h-full pl-1 pr-2">
                     {/* Left side - Menu toggle and search */}
                     <div className="flex items-center gap-4">
                         <button
@@ -69,7 +72,9 @@ export default function DesktopLayout({
             </header>
 
             {/* Sidebar */}
-            <aside className={`fixed left-0 top-14 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-64"} bg-slate-100 dark:bg-slate-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-40 overflow-hidden`}>
+            <aside className={`fixed left-0 top-14 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-64"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden`}
+            style={{ backgroundImage: BACKGROUND_PATTERN }}
+            >
                 <nav className="px-1 h-full flex flex-col">
                     {/* Primary Links */}
                     {primaryLinks.length > 0 && (
