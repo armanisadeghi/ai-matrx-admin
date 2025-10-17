@@ -85,15 +85,15 @@ interface ThemeSwitcherIconProps {
       <button
         onClick={toggleMode}
         className={cn(
-          "flex items-center justify-center rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700",
+          "flex items-center justify-center rounded-full p-2 hover:bg-zinc-200 dark:hover:bg-zinc-700",
           className
         )}
         aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {mode === 'dark' ? (
-          <Sun className="h-5 w-5" />
+          <Sun className="h-4 w-4" />
         ) : (
-          <Moon className="h-5 w-5" />
+          <Moon className="h-4 w-4" />
         )}
       </button>
     );

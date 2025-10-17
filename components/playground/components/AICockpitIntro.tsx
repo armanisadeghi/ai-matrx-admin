@@ -27,7 +27,7 @@ const AICockpitIntro = ({ onNewRecipe }) => {
     };
 
     return (
-        <div className='h-[90vh] w-full relative overflow-hidden'>
+        <div className='flex-1 w-full relative overflow-hidden'>
             {/* Beams layer */}
             <BackgroundBeamsWithCollision className='absolute inset-0 !h-full'>
                 {/* Content layer */}

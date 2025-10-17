@@ -714,7 +714,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     };
 
     return (
-        <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
+        <div className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
             {/* Header */}
             <PromptBuilderHeader
                 promptName={promptName}

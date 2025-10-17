@@ -84,7 +84,7 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
         return (
             <div
                 ref={measureRef}
-                className={`flex-1 min-h-screen overflow-hidden ${className}`}
+                className={`flex-1 h-full overflow-hidden ${className}`}
             >
                 <PanelGroup
                     direction='horizontal'

@@ -182,7 +182,7 @@ export default function AiCockpitPage() {
     return (
         <div
             ref={containerRef}
-            className={`flex flex-col border-2 border-red-500 ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : 'h-full'}`}
+            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden`}
         >
             <PlaygroundHeader {...playgroundControls} />
             {activeRecipeId ? (

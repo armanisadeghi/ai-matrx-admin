@@ -40,9 +40,9 @@ export default function DesktopLayout({
         style={{ backgroundImage: BACKGROUND_PATTERN }}
         >
             {/* Transparent Header */}
-            <header className="fixed top-0 left-0 right-0 z-50 h-12">
+            <header className="fixed top-0 left-0 right-0 z-50 h-10">
                 <div className="flex items-center justify-between h-full pl-1 pr-2">
-                    {/* Left side - Menu toggle and search */}
+                    {/* Left side - Menu toggle */}
                     <div className="flex items-center gap-4">
                         <button
                             onClick={toggleSidebar}
@@ -50,29 +50,22 @@ export default function DesktopLayout({
                         >
                             <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300 transition-all duration-200 ease-in-out" />
                         </button>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
-                            <Input
-                                type="text"
-                                placeholder="Search..."
-                                className="pl-10 pr-4 w-64 h-6 text-sm bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500"
-                            />
-                        </div>
+
                     </div>
                     {/* Right side - Actions */}
-                    <div className="flex items-center gap-3">
-                        <button className="p-2 rounded-lg hover:bg-gray-200/80 dark:hover:bg-gray-700/80 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 relative">
-                            <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300 transition-all duration-200 ease-in-out" />
+                    <div className="flex items-center gap-1">
+                        <button className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 relative">
+                            <Bell className="w-4 h-4 text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out" />
                             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
-                        <ThemeSwitcherIcon className="hover:bg-gray-200/80 dark:hover:bg-gray-700/80 backdrop-blur-sm text-gray-700 dark:text-gray-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
+                        <ThemeSwitcherIcon className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <NavigationMenu />
                     </div>
                 </div>
             </header>
 
             {/* Sidebar */}
-            <aside className={`fixed left-0 top-14 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-64"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden`}
+            <aside className={`fixed left-0 top-10 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-64"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden`}
             style={{ backgroundImage: BACKGROUND_PATTERN }}
             >
                 <nav className="px-1 h-full flex flex-col">
@@ -158,7 +151,7 @@ export default function DesktopLayout({
             </aside>
 
             {/* Main Content Area */}
-            <main className={`pt-11 ${isSidebarCollapsed ? "pl-11" : "pl-64"} transition-all duration-300`}>
+            <main className={`pt-10 ${isSidebarCollapsed ? "pl-11" : "pl-64"} transition-all duration-300`}>
                 {children}
             </main>
         </div>

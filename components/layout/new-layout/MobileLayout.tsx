@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Menu, Search, X, Home, ChevronRight } from 'lucide-react';
+import { Menu, X, Home, ChevronRight } from 'lucide-react';
 import { ThemeSwitcherIcon } from '@/styles/themes/ThemeSwitcher';
 import { NavigationMenu } from '@/components/ui/navigation-menu';
 
@@ -27,11 +27,9 @@ export default function MobileLayout({
   isAdmin = false
 }: MobileLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(primaryLinks[0]?.href || '');
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
 
   const handleLinkClick = (href: string) => {
     setActiveLink(href);
@@ -41,7 +39,7 @@ export default function MobileLayout({
   return (
     <div id={uniqueId} className="min-h-screen bg-slate-100 dark:bg-slate-900">
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between h-full px-4">
           {/* Left side - Menu and Logo */}
           <div className="flex items-center gap-3">
@@ -56,28 +54,8 @@ export default function MobileLayout({
 
           {/* Right side - Actions */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={toggleSearch}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <Search className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </button>
             <ThemeSwitcherIcon className="hover:bg-gray-100 dark:hover:bg-gray-800" />
             <NavigationMenu />
-          </div>
-        </div>
-
-        {/* Search Bar (slides down when open) */}
-        <div className={`absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-transform duration-200 ${
-          isSearchOpen ? 'translate-y-0' : '-translate-y-full'
-        }`}>
-          <div className="p-4">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
-              autoFocus
-            />
           </div>
         </div>
       </header>
@@ -165,10 +143,8 @@ export default function MobileLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="pt-14 min-h-screen">
-        <div className="p-4">
-          {children}
-        </div>
+      <main className="pt-12 min-h-screen">
+        {children}
       </main>
     </div>
   );
