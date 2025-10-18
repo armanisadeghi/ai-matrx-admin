@@ -127,3 +127,41 @@ export function ChatHeader({ baseRoute = "/chat" }: ChatHeaderProps) {
     </PageSpecificHeader>
   );
 }
+
+interface AppletHeaderProps {
+  appId?: string;
+  isDemo?: boolean;
+  isDebug?: boolean;
+  activeAppletSlug?: string;
+  isCreator?: boolean;
+  isAdmin?: boolean;
+  isPreview?: boolean;
+}
+
+export function AppletHeader(props: AppletHeaderProps) {
+  const pathname = usePathname();
+  
+  // Only render on custom app pages
+  if (!pathname?.includes('/apps/custom/')) {
+    return null;
+  }
+
+  // Dynamically import the component to avoid SSR issues
+  const [AppletHeaderCompact, setAppletHeaderCompact] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/features/applet/runner/header/AppletHeaderCompact').then((module) => {
+      setAppletHeaderCompact(() => module.AppletHeaderCompact);
+    });
+  }, []);
+
+  if (!AppletHeaderCompact) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <AppletHeaderCompact {...props} />
+    </PageSpecificHeader>
+  );
+}

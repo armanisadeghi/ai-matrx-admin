@@ -86,5 +86,23 @@ export const textureUtilities = {
     '.texture-noise-8': {
         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'turbulence\' baseFrequency=\'1.5\' numOctaves=\'2\' seed=\'20\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.23\'/%3E%3C/svg%3E")',
     },
+    // Subtle square pattern texture from chat background
+    '.texture-subtle-squares': {
+        backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'2\' height=\'2\' viewBox=\'0 0 2 2\'%3E%3Cpath fill=\'%23999\' fill-opacity=\'0.07\' d=\'M1 1h0.5v0.5H1V1z\'%3E%3C/path%3E%3C/svg%3E")',
+    },
+    // Combined background utilities for common patterns
+    '.bg-textured-light': {
+        backgroundColor: 'rgb(244 244 245)', // zinc-100
+        backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'2\' height=\'2\' viewBox=\'0 0 2 2\'%3E%3Cpath fill=\'%23999\' fill-opacity=\'0.07\' d=\'M1 1h0.5v0.5H1V1z\'%3E%3C/path%3E%3C/svg%3E")',
+        color: 'rgb(39 39 42)', // gray-800
+    },
+    '.bg-textured-dark': {
+        backgroundColor: 'rgb(39 39 42)', // zinc-850
+        backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'2\' height=\'2\' viewBox=\'0 0 2 2\'%3E%3Cpath fill=\'%23999\' fill-opacity=\'0.07\' d=\'M1 1h0.5v0.5H1V1z\'%3E%3C/path%3E%3C/svg%3E")',
+        color: 'rgb(229 229 229)', // gray-100
+    },
+    '.bg-textured': {
+        '@apply bg-textured-light dark:bg-textured-dark': {},
+    },
 };
 

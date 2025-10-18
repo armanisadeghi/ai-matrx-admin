@@ -1,16 +1,12 @@
 // File: app/(authenticated)/chat/layout.tsx
 
 import React from "react";
-import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { ChatHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import ResponseColumn from "@/features/chat/components/response/ResponseColumn";
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div
-            className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900 text-gray-800 dark:text-gray-100"
-            style={{ backgroundImage: BACKGROUND_PATTERN }}
-        >
+        <div className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden bg-textured">
             {/* Render chat controls in main header */}
             <ChatHeader baseRoute="/chat" />
             
