@@ -1,84 +1,148 @@
 "use client";
 import { useState, useEffect } from "react";
-import DynamicForm from "@/components/socket/form-builder/DynamicForm";
+import { useRouter } from "next/navigation";
 import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { Globe, Search, Loader2, X, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskStatus } from "@/lib/redux/socket-io";
-import ScraperResultsComponent from "@/features/scraper/ScraperResultsComponent";
 
 export default function Page() {
-    const { socketHook, taskSchema, handleChange, handleSubmit, clearResults } = useScraperSocket();
-    const [controlsExpanded, setControlsExpanded] = useState(true);
-    const { taskId, taskType } = socketHook;
+    const router = useRouter();
+    const { quickScrapeUrl } = useScraperSocket();
+    const [url, setUrl] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     // Get task status from Redux
-    const taskStatus = useAppSelector((state) => (taskId ? selectTaskStatus(state, taskId) : null));
-    const isResponseActive = taskStatus === "submitted" || taskStatus === "completed";
+    const taskStatus = useAppSelector(state => 
+        currentTaskId ? selectTaskStatus(state, currentTaskId) : null
+    );
+    
+    const isTaskRunning = taskStatus === "submitted";
+    const isTaskCompleted = taskStatus === "completed";
 
-    // Auto-collapse controls when response becomes active
+    // Auto-navigate to results page when scraping completes
     useEffect(() => {
-        if (isResponseActive) {
-            setControlsExpanded(false);
+        if (isTaskCompleted && currentTaskId) {
+            // Add a small delay to show the completed state briefly
+            const timer = setTimeout(() => {
+                router.push(`/scraper/${currentTaskId}`);
+            }, 1500);
+            
+            return () => clearTimeout(timer);
         }
-    }, [isResponseActive]);
+    }, [isTaskCompleted, currentTaskId, router]);
+
+    const handleScrape = async () => {
+        // If task is completed, navigate to results
+        if (isTaskCompleted && currentTaskId) {
+            router.push(`/scraper/${currentTaskId}`);
+            return;
+        }
+
+        if (!url.trim()) {
+            setError("Please enter a URL");
+            return;
+        }
+
+        // Basic URL validation
+        try {
+            new URL(url);
+        } catch {
+            setError("Please enter a valid URL");
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const taskId = await quickScrapeUrl(url);
+            setCurrentTaskId(taskId);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to start scraping");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleClear = () => {
+        setCurrentTaskId(null);
+        setUrl("");
+        setError(null);
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && !isLoading) {
+            handleScrape();
+        }
+    };
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
-            {/* Controls Section */}
-            <div
-                className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    controlsExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-                }`}
-            >
-                <div className="p-4">
-                    <DynamicForm taskType={taskType} onChange={handleChange} onSubmit={handleSubmit} minimalSpace={true} />
-                </div>
-            </div>
-
-            {/* Toggle Bar */}
-            <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-                <div className="flex justify-between items-center px-4 py-2">
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => setControlsExpanded(!controlsExpanded)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                        >
-                            {controlsExpanded ? (
-                                <>
-                                    <span className="text-sm font-medium">Hide Form</span>
-                                    <ChevronUp size={16} />
-                                </>
-                            ) : (
-                                <>
-                                    <span className="text-sm font-medium">Show Form</span>
-                                    <ChevronDown size={16} />
-                                </>
-                            )}
-                        </button>
-
-                        {isResponseActive && (
-                            <button
-                                onClick={clearResults}
-                                className="ml-2 flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-800/30 transition-colors"
-                            >
-                                <span className="text-sm font-medium">Clear Results</span>
-                            </button>
-                        )}
+        <div className="min-h-screen bg-textured">
+            {/* Compact Input Row */}
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="flex gap-3 items-center max-w-6xl mx-auto">
+                    <div className="flex-1">
+                        <Input
+                            type="url"
+                            placeholder="Enter URL to scrape..."
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            className="text-base"
+                            disabled={isLoading}
+                        />
                     </div>
-
-                    {isResponseActive && (
-                        <div className="text-sm text-blue-600 dark:text-blue-400">
-                            <span>Results Available</span>
-                        </div>
+                    <Button
+                        onClick={handleScrape}
+                        disabled={isLoading || !url.trim()}
+                        className={`px-6 transition-all duration-300 ${
+                            isTaskCompleted 
+                                ? "bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                                : ""
+                        }`}
+                    >
+                        {isLoading || isTaskRunning ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Scraping...
+                            </>
+                        ) : isTaskCompleted ? (
+                            <>
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                View Results
+                            </>
+                        ) : (
+                            <>
+                                <Search className="w-4 h-4 mr-2" />
+                                Scrape
+                            </>
+                        )}
+                    </Button>
+                    {currentTaskId && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClear}
+                            className="text-gray-600 dark:text-gray-400"
+                        >
+                            Clear
+                        </Button>
                     )}
                 </div>
+                {error && (
+                    <div className="flex items-center gap-2 mt-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md max-w-6xl mx-auto">
+                        <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                    </div>
+                )}
             </div>
 
-            {/* Results Section */}
-            <div className="flex-1">
-                <div className={`p-4 ${!controlsExpanded ? "pt-2" : ""}`}>{taskId && <ScraperResultsComponent taskId={taskId} />}</div>
-            </div>
+            {/* Results will be shown on dedicated results page */}
         </div>
     );
 }

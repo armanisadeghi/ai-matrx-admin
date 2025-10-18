@@ -5,7 +5,7 @@
 import { getTaskSchema } from "@/constants/socket-schema";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { createTask, submitTask, createAndSubmitTask } from "@/lib/redux/socket-io/thunks";
 import { setTaskFields, deleteTask } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 
 export type TaskData = Record<string, any>;
@@ -95,6 +95,40 @@ export const useScraperSocket = () => {
         handleSend();
     }, [setTaskData, handleSend]);
     
+    // Quick scrape method for single URL with predefined settings
+    const quickScrapeUrl = useCallback(async (url: string): Promise<string> => {
+        const scraperData = {
+            anchor_size: 100,
+            get_content_filter_removal_details: true,
+            get_links: true,
+            get_main_image: true,
+            get_organized_data: true,
+            get_overview: true,
+            get_structured_data: true,
+            get_text_data: true,
+            include_anchors: true,
+            include_highlighting_markers: true,
+            include_media: true,
+            include_media_description: true,
+            include_media_links: true,
+            urls: [url],
+            use_cache: false
+        };
+
+        try {
+            const result = await dispatch(createAndSubmitTask({
+                service: "scraper_service_v2",
+                taskName: "quick_scrape",
+                taskData: scraperData
+            })).unwrap();
+            
+            return result.taskId;
+        } catch (error) {
+            console.error("Failed to quick scrape URL:", error);
+            throw error;
+        }
+    }, [dispatch]);
+
     // Create a socketHook object to maintain API compatibility
     const socketHook = useMemo(() => ({
         taskId,
@@ -114,7 +148,8 @@ export const useScraperSocket = () => {
         clearResults: handleClear,
         socketHook,
         taskSchema,
-    }), [handleChange, handleSubmit, handleClear, socketHook, taskSchema]);
+        quickScrapeUrl,
+    }), [handleChange, handleSubmit, handleClear, socketHook, taskSchema, quickScrapeUrl]);
 };
 
 export type ScraperSocketHook = ReturnType<typeof useScraperSocket>;
