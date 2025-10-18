@@ -53,13 +53,13 @@ const PlaygroundHeaderLeft = ({
         panelName="Brokers Panel"
         useInternalState={false}
       />
-      <IconButton
+      {/* <IconButton
         icon={TbVariablePlus}
         onClick={createBroker}
         size={24}
         title="Create New Broker"
         ariaLabel="Create new broker"
-      />
+      /> */}
       {/* <QuickRefCommandIcon
         entityKey={"dataBroker"}
         onRecordChange={handleRecordChange}

@@ -42,15 +42,17 @@ export default function DesktopLayout({
             {/* Transparent Header */}
             <header className="fixed top-0 left-0 right-0 z-50 h-10">
                 <div className="flex items-center justify-between h-full pl-1 pr-2">
-                    {/* Left side - Menu toggle */}
-                    <div className="flex items-center gap-4">
+                    {/* Left side - Menu toggle and page-specific content */}
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
                         <button
                             onClick={toggleSidebar}
-                            className="p-2 rounded-lg hover:bg-gray-200/80 dark:hover:bg-gray-700/80 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
+                            className="p-2 rounded-lg hover:bg-gray-200/80 dark:hover:bg-gray-700/80 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
                         >
                             <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300 transition-all duration-200 ease-in-out" />
                         </button>
 
+                        {/* Page-specific controls will be inserted here */}
+                        <div id="page-specific-header-content" className="flex-1 min-w-0" />
                     </div>
                     {/* Right side - Actions */}
                     <div className="flex items-center gap-1">

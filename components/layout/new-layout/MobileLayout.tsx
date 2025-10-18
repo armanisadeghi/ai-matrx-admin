@@ -41,15 +41,18 @@ export default function MobileLayout({
       {/* Mobile Header */}
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between h-full px-4">
-          {/* Left side - Menu and Logo */}
-          <div className="flex items-center gap-3">
+          {/* Left side - Menu, Logo and page-specific content */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <button
               onClick={toggleSidebar}
-              className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
             >
               <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
-            <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Home className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            
+            {/* Page-specific controls will be inserted here */}
+            <div id="page-specific-header-content" className="flex-1 min-w-0" />
           </div>
 
           {/* Right side - Actions */}

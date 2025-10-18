@@ -58,7 +58,7 @@ const preserveAllScrollPositions = (element: HTMLElement, callback: () => void) 
 };
 import { usePromptsWithFetch, PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { useRouter, usePathname } from "next/navigation";
-import { PromptBuilderHeader } from "./PromptBuilderHeader";
+import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
 import { useModelControls, getModelDefaults } from "../hooks/useModelControls";
@@ -715,8 +715,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
 
     return (
         <div className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden">
-            {/* Header */}
-            <PromptBuilderHeader
+            {/* Render prompt controls in main header */}
+            <PromptHeader
                 promptName={promptName}
                 onPromptNameChange={(value) => {
                     setPromptName(value);

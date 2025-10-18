@@ -3,7 +3,7 @@
 import React, { useRef, useState, useLayoutEffect, useEffect, useCallback } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import PlaygroundHeader from '@/components/playground/header/PlaygroundHeader';
+import { CockpitHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import ModelSettingsPanel from '@/components/playground/settings/ModelSettingsPanel';
 import CockpitPanels from '@/components/playground/CockpitPanels';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
+import PlaygroundHeaderAllInOne from './header/PlaygroundHeaderAllInOne';
 
 
 interface PanelRefs {
@@ -190,9 +191,11 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
     return (
         <div
             ref={containerRef}
-            className={`flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : 'h-full'}`}
+            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden`}
         >
-            <PlaygroundHeader {...playgroundControls} />
+            {/* Render cockpit controls in main header */}
+            <CockpitHeader cockpitControls={playgroundControls} />
+            
             {activeRecipeId ? (
                 <CockpitPanels
                     ref={panelsRef}
