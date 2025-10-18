@@ -1,7 +1,8 @@
 import Groq from "groq-sdk";
 import { headers } from "next/headers";
 
-console.log("Module-level GROQ_API_KEY:", process.env.GROQ_API_KEY);
+// Check API key availability without logging sensitive values
+console.log("Module-level GROQ_API_KEY:", process.env.GROQ_API_KEY ? '✓ Available' : '✗ Missing');
 
 const groq = new Groq({
 	apiKey: process.env.GROQ_API_KEY,

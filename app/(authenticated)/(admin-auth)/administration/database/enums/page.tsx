@@ -3,6 +3,7 @@ import { getDatabaseEnums } from '@/actions/admin/enum-functions';
 import EnumsContainer from './components/EnumsContainer';
 import { DatabaseEnum } from '@/types/enum-types';
 
+
 export const metadata = {
   title: 'Database Enums',
   description: 'Manage database enum types',

@@ -3,6 +3,7 @@ import { getSqlFunctions } from '@/actions/admin/sql-functions';
 import SqlFunctionsContainer from './components/SqlFunctionsContainer';
 import { SqlFunction } from '@/types/sql-functions';
 
+
 export const metadata = {
   title: 'SQL Functions',
   description: 'Manage database SQL functions',

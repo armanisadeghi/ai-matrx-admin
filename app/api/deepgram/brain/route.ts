@@ -1,9 +1,10 @@
 import OpenAI from "openai";
 
 
+// TODO: This route has missing imports and needs to be fixed before enabling edge runtime
 // Optional, but recommended: run on the edge runtime.
 // See https://vercel.com/docs/concepts/functions/edge-functions
-export const runtime = "edge";
+// export const runtime = "edge";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
     });
 
     const stream = OpenAIStream(response);
-
+    
     return new StreamingTextResponse(stream, {
       headers: {
         "X-LLM-Start": `${start}`,

@@ -8,6 +8,10 @@
     "name": "app-shell-test"
   },
   {
+    "path": "/tests/app-tests",
+    "name": "app-tests"
+  },
+  {
     "path": "/tests/applet-tests",
     "name": "applet-tests"
   },
@@ -46,6 +50,10 @@
   {
     "path": "/tests/fetch-test",
     "name": "fetch-test"
+  },
+  {
+    "path": "/tests/field-tests",
+    "name": "field-tests"
   },
   {
     "path": "/tests/flashcard-app-tests",
@@ -92,6 +100,10 @@
     "name": "matrx-table"
   },
   {
+    "path": "/tests/metadata-test",
+    "name": "metadata-test"
+  },
+  {
     "path": "/tests/modals",
     "name": "modals"
   },
@@ -116,6 +128,10 @@
     "name": "photo-video"
   },
   {
+    "path": "/tests/prompt-overlay-test",
+    "name": "prompt-overlay-test"
+  },
+  {
     "path": "/tests/qr-labels",
     "name": "qr-labels"
   },
@@ -126,6 +142,10 @@
   {
     "path": "/tests/recipe-creation",
     "name": "recipe-creation"
+  },
+  {
+    "path": "/tests/registered-results",
+    "name": "registered-results"
   },
   {
     "path": "/tests/relationship-management",
@@ -170,6 +190,10 @@
   {
     "path": "/tests/windows",
     "name": "windows"
+  },
+  {
+    "path": "/tests/workflow-source-config",
+    "name": "workflow-source-config"
   },
   {
     "path": "/tests/workflows",

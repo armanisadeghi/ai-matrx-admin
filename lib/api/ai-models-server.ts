@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 import { cache } from 'react';
 
 /**
@@ -6,7 +6,7 @@ import { cache } from 'react';
  * Uses React cache() which works reliably in both development and production
  */
 async function _fetchAIModelsFromDB() {
-    const supabase = await createClient();
+    const supabase = getScriptSupabaseClient();
 
     // Fetch all non-deprecated AI models
     const { data: models, error } = await supabase

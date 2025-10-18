@@ -2,10 +2,11 @@
 
 import Groq from 'groq-sdk';
 import { headers } from 'next/headers';
-import { unstable_after as after } from "next/server";
+import { after } from "next/server";
 
-console.log('\n\nConfirming Availability of API KEY GROQ_API_KEY:', process.env.GROQ_API_KEY);
-console.log('\n\nConfirming Availability of API KEY CARTESIA_API_KEY:', process.env.CARTESIA_API_KEY);
+// Check API key availability without logging sensitive values
+console.log('\n\nConfirming Availability of API KEY GROQ_API_KEY:', process.env.GROQ_API_KEY ? '✓ Available' : '✗ Missing');
+console.log('\n\nConfirming Availability of API KEY CARTESIA_API_KEY:', process.env.CARTESIA_API_KEY ? '✓ Available' : '✗ Missing');
 const CARTESIA_API_KEY = process.env.CARTESIA_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
