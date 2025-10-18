@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ResponsesState, SocketErrorObject } from '../socket.types';
+import { ResponsesState, SocketErrorObject, ToolCallObject } from '../socket.types';
 
 
 const initialState: ResponsesState = {};
@@ -72,7 +72,7 @@ export const socketResponseSlice = createSlice({
     },
     updateToolUpdateResponse: (
       state,
-      action: PayloadAction<{ listenerId: string; toolUpdate: any }>
+      action: PayloadAction<{ listenerId: string; toolUpdate: ToolCallObject }>
     ) => {
       const { listenerId, toolUpdate } = action.payload;
       if (state[listenerId]) {

@@ -7,6 +7,7 @@ import {
     selectResponseDataByListenerId,
     selectResponseInfoByListenerId,
     selectResponseErrorsByListenerId,
+    selectResponseToolUpdatesByListenerId,
 } from "@/lib/redux/socket-io";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
@@ -25,6 +26,7 @@ export const DebugInfo: React.FC<{
     const allListenerIds = useAppSelector((state: RootState) => selectListenerIdsByTaskId(state, taskId));
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
+    const toolUpdatesResponse = useAppSelector(selectResponseToolUpdatesByListenerId(firstListenerId));
 
 
     return (
@@ -74,6 +76,21 @@ export const DebugInfo: React.FC<{
                     </div>
                 ) : (
                     <div> - None</div>
+                )}
+                <div className="border-t-2 border-yellow-500 dark:border-yellow-400 pt-2 mt-2">
+                    <div className="font-bold text-yellow-600 dark:text-yellow-400">Tool Updates (NEW):</div>
+                </div>
+                {toolUpdatesResponse && toolUpdatesResponse.length > 0 ? (
+                    <div className="pl-2">
+                        <div className="text-sm text-yellow-600 dark:text-yellow-400 mb-1">
+                            Count: {toolUpdatesResponse.length}
+                        </div>
+                        <pre className="text-xs whitespace-pre-wrap break-words bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-300 dark:border-yellow-700">
+                            {JSON.stringify(toolUpdatesResponse, null, 2)}
+                        </pre>
+                    </div>
+                ) : (
+                    <div className="text-gray-500 dark:text-gray-400"> - None (waiting for tool_update events...)</div>
                 )}
             </div>
         </div>
