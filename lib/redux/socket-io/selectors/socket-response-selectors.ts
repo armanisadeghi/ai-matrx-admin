@@ -13,8 +13,10 @@ const EMPTY_RESPONSE_STATE = { text: "", data: EMPTY_ARRAY, info: EMPTY_ARRAY, e
 export const selectAllResponses = createSelector([(state: RootState) => state.socketResponse], (responses) => responses);
 
 // Fixed: Use createSelector for proper memoization and build on selectAllResponses
-export const selectResponseByListenerId = (listenerId: string) =>
-    createSelector([selectAllResponses], (responses) => responses[listenerId] as ResponseState | undefined);
+export const selectResponseByListenerId = (listenerId: string | undefined) =>
+    createSelector([selectAllResponses], (responses) => 
+        listenerId ? responses[listenerId] as ResponseState | undefined : undefined
+    );
 
 // Memoized response selectors - Fix to avoid creating new objects unnecessarily
 export const selectResponsesByTaskId = createSelector(
@@ -39,7 +41,7 @@ export const selectResponsesByTaskId = createSelector(
 
 // ==================== Individual Response Property Selectors ====================
 // Fixed: Use createSelector consistently for all response property selectors
-export const selectResponseTextByListenerId = (listenerId: string) =>
+export const selectResponseTextByListenerId = (listenerId: string | undefined) =>
     createSelector([selectResponseByListenerId(listenerId)], (response) => {
         if (!response) return "";
         // Use textChunks if available (new performance approach), fallback to text
@@ -49,22 +51,38 @@ export const selectResponseTextByListenerId = (listenerId: string) =>
         return response.text || "";
     });
 
-export const selectResponseDataByListenerId = (listenerId: string) =>
-    createSelector([selectResponseByListenerId(listenerId)], (response) => response?.data || EMPTY_ARRAY);
+export const selectResponseDataByListenerId = (listenerId: string | undefined) =>
+    createSelector([selectResponseByListenerId(listenerId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!listenerId || !response) return [];
+        return response.data || [];
+    });
 
-export const selectFirstResponseDataByListenerId = (listenerId: string) =>
+export const selectFirstResponseDataByListenerId = (listenerId: string | undefined) =>
     createSelector([selectResponseDataByListenerId(listenerId)], (data) => (data.length > 0 ? data[0] : null));
 
-export const selectResponseInfoByListenerId = (listenerId: string) =>
-    createSelector([selectResponseByListenerId(listenerId)], (response) => response?.info || EMPTY_ARRAY);
+export const selectResponseInfoByListenerId = (listenerId: string | undefined) =>
+    createSelector([selectResponseByListenerId(listenerId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!listenerId || !response) return [];
+        return response.info || [];
+    });
 
-export const selectResponseErrorsByListenerId = (listenerId: string) =>
-    createSelector([selectResponseByListenerId(listenerId)], (response) => response?.errors || EMPTY_ARRAY);
+export const selectResponseErrorsByListenerId = (listenerId: string | undefined) =>
+    createSelector([selectResponseByListenerId(listenerId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!listenerId || !response) return [];
+        return response.errors || [];
+    });
 
-export const selectResponseEndedByListenerId = (listenerId: string) =>
-    createSelector([selectResponseByListenerId(listenerId)], (response) => response?.ended || false);
+export const selectResponseEndedByListenerId = (listenerId: string | undefined) =>
+    createSelector([selectResponseByListenerId(listenerId)], (response) => {
+        // Handle undefined listenerId during page loading to avoid reselect warning
+        if (!listenerId) return false;
+        return response ? Boolean(response.ended) : false;
+    });
 
-export const selectHasResponseErrorsByListenerId = (listenerId: string) =>
+export const selectHasResponseErrorsByListenerId = (listenerId: string | undefined) =>
     createSelector([selectResponseErrorsByListenerId(listenerId)], (errors) => errors.length > 0);
 
 // ==================== Combined Task-Response Selectors ====================
@@ -177,16 +195,32 @@ export const selectPrimaryResponseTextByTaskId = (taskId: string) =>
     });
 
 export const selectPrimaryResponseDataByTaskId = (taskId: string) =>
-    createSelector([selectPrimaryResponseForTask(taskId)], (response) => response?.data || EMPTY_ARRAY);
+    createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!taskId || !response) return [];
+        return response.data || [];
+    });
 
 export const selectPrimaryResponseInfoByTaskId = (taskId: string) =>
-    createSelector([selectPrimaryResponseForTask(taskId)], (response) => response?.info || EMPTY_ARRAY);
+    createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!taskId || !response) return [];
+        return response.info || [];
+    });
 
 export const selectPrimaryResponseErrorsByTaskId = (taskId: string) =>
-    createSelector([selectPrimaryResponseForTask(taskId)], (response) => response?.errors || EMPTY_ARRAY);
+    createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!taskId || !response) return [];
+        return response.errors || [];
+    });
 
 export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>
-    createSelector([selectPrimaryResponseForTask(taskId)], (response) => response?.ended || false);
+    createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!taskId) return false;
+        return response ? Boolean(response.ended) : false;
+    });
 
 export const selectHasPrimaryResponseErrorsByTaskId = (taskId: string) =>
     createSelector([selectPrimaryResponseErrorsByTaskId(taskId)], (errors) => errors.length > 0);

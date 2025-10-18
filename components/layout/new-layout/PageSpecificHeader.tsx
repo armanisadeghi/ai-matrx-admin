@@ -95,3 +95,35 @@ export function PromptHeader(props: PromptHeaderProps) {
     </PageSpecificHeader>
   );
 }
+
+interface ChatHeaderProps {
+  baseRoute?: string;
+}
+
+export function ChatHeader({ baseRoute = "/chat" }: ChatHeaderProps) {
+  const pathname = usePathname();
+  
+  // Only render on chat pages
+  if (!pathname?.includes('/chat')) {
+    return null;
+  }
+
+  // Dynamically import the component to avoid SSR issues
+  const [ChatHeaderCompact, setChatHeaderCompact] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/features/chat/components/header/ChatHeaderCompact').then((module) => {
+      setChatHeaderCompact(() => module.ChatHeaderCompact);
+    });
+  }, []);
+
+  if (!ChatHeaderCompact) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <ChatHeaderCompact baseRoute={baseRoute} />
+    </PageSpecificHeader>
+  );
+}
