@@ -24,14 +24,14 @@ export async function POST(req: Request) {
       messages: messages,
     });
 
-    const stream = OpenAIStream(response);
-    
-    return new StreamingTextResponse(stream, {
-      headers: {
-        "X-LLM-Start": `${start}`,
-        "X-LLM-Response": `${Date.now()}`,
-      },
-    });
+    // const stream = OpenAIStream(response);
+
+    // return new StreamingTextResponse(stream, {
+    //   headers: {
+    //     "X-LLM-Start": `${start}`,
+    //     "X-LLM-Response": `${Date.now()}`,
+    //   },
+    // });
   } catch (error) {
     console.error("test", error);
   }
