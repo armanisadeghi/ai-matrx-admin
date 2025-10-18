@@ -19,6 +19,7 @@ export const socketResponseSlice = createSlice({
         data: [],
         info: [],
         errors: [],
+        toolUpdates: [], // Initialize empty toolUpdates array
         ended: false,
         taskId,
       };
@@ -69,6 +70,15 @@ export const socketResponseSlice = createSlice({
         state[listenerId].errors.push(error);
       }
     },
+    updateToolUpdateResponse: (
+      state,
+      action: PayloadAction<{ listenerId: string; toolUpdate: any }>
+    ) => {
+      const { listenerId, toolUpdate } = action.payload;
+      if (state[listenerId]) {
+        state[listenerId].toolUpdates.push(toolUpdate);
+      }
+    },
     markResponseEnd: (state, action: PayloadAction<string>) => {
       const listenerId = action.payload;
       if (state[listenerId]) {
@@ -85,6 +95,7 @@ export const {
   updateDataResponse,
   updateInfoResponse,
   updateErrorResponse,
+  updateToolUpdateResponse,
   markResponseEnd,
 } = socketResponseSlice.actions;
 

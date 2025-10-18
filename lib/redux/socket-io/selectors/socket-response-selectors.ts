@@ -7,7 +7,7 @@ import { selectTaskListenerIds, selectTaskById } from "./socket-task-selectors";
 
 // Shared constants to avoid creating new array references
 const EMPTY_ARRAY: any[] = [];
-const EMPTY_RESPONSE_STATE = { text: "", data: EMPTY_ARRAY, info: EMPTY_ARRAY, errors: EMPTY_ARRAY, ended: false };
+const EMPTY_RESPONSE_STATE = { text: "", data: EMPTY_ARRAY, info: EMPTY_ARRAY, errors: EMPTY_ARRAY, toolUpdates: EMPTY_ARRAY, ended: false };
 
 // ==================== Base Response Selectors ====================
 export const selectAllResponses = createSelector([(state: RootState) => state.socketResponse], (responses) => responses);
@@ -75,6 +75,13 @@ export const selectResponseErrorsByListenerId = (listenerId: string | undefined)
         return response.errors || [];
     });
 
+export const selectResponseToolUpdatesByListenerId = (listenerId: string | undefined) =>
+    createSelector([selectResponseByListenerId(listenerId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!listenerId || !response) return [];
+        return response.toolUpdates || [];
+    });
+
 export const selectResponseEndedByListenerId = (listenerId: string | undefined) =>
     createSelector([selectResponseByListenerId(listenerId)], (response) => {
         // Handle undefined listenerId during page loading to avoid reselect warning
@@ -84,6 +91,9 @@ export const selectResponseEndedByListenerId = (listenerId: string | undefined) 
 
 export const selectHasResponseErrorsByListenerId = (listenerId: string | undefined) =>
     createSelector([selectResponseErrorsByListenerId(listenerId)], (errors) => errors.length > 0);
+
+export const selectHasResponseToolUpdatesByListenerId = (listenerId: string | undefined) =>
+    createSelector([selectResponseToolUpdatesByListenerId(listenerId)], (toolUpdates) => toolUpdates.length > 0);
 
 // ==================== Combined Task-Response Selectors ====================
 export const selectTaskResponsesByTaskId = (taskId: string) =>
@@ -121,7 +131,7 @@ export const selectTaskResults = (taskId: string) =>
             if (listenerIds.length === 1) {
                 const response = responses[listenerIds[0]];
                 if (!response) {
-                    return { text: "", data: [], info: [], errors: [], ended: false };
+                    return { text: "", data: [], info: [], errors: [], toolUpdates: [], ended: false };
                 }
                 return {
                     ...response,
@@ -129,6 +139,7 @@ export const selectTaskResults = (taskId: string) =>
                     data: response.data || [],
                     info: response.info || [],
                     errors: response.errors || [],
+                    toolUpdates: response.toolUpdates || [],
                     ended: response.ended || false,
                 };
             }
@@ -142,10 +153,11 @@ export const selectTaskResults = (taskId: string) =>
                         data: [...combined.data, ...response.data],
                         info: [...combined.info, ...response.info],
                         errors: [...combined.errors, ...response.errors],
+                        toolUpdates: [...combined.toolUpdates, ...response.toolUpdates],
                         ended: combined.ended && response.ended,
                     };
                 },
-                { text: "", data: [], info: [], errors: [], ended: true }
+                { text: "", data: [], info: [], errors: [], toolUpdates: [], ended: true }
             );
         }
     );
@@ -215,6 +227,13 @@ export const selectPrimaryResponseErrorsByTaskId = (taskId: string) =>
         return response.errors || [];
     });
 
+export const selectPrimaryResponseToolUpdatesByTaskId = (taskId: string) =>
+    createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
+        // Ensure transformation to avoid reselect identity function warning
+        if (!taskId || !response) return [];
+        return response.toolUpdates || [];
+    });
+
 export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>
     createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
         // Ensure transformation to avoid reselect identity function warning
@@ -224,6 +243,9 @@ export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>
 
 export const selectHasPrimaryResponseErrorsByTaskId = (taskId: string) =>
     createSelector([selectPrimaryResponseErrorsByTaskId(taskId)], (errors) => errors.length > 0);
+
+export const selectHasPrimaryResponseToolUpdatesByTaskId = (taskId: string) =>
+    createSelector([selectPrimaryResponseToolUpdatesByTaskId(taskId)], (toolUpdates) => toolUpdates.length > 0);
 
 export const selectPrimaryCombinedTextByTaskId = (taskId: string) =>
     createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
@@ -247,6 +269,9 @@ export const selectFirstPrimaryResponseInfoByTaskId = (taskId: string) =>
 export const selectFirstPrimaryResponseErrorByTaskId = (taskId: string) =>
     createSelector([selectPrimaryResponseErrorsByTaskId(taskId)], (errors) => (errors.length > 0 ? errors[0] : null));
 
+export const selectFirstPrimaryResponseToolUpdateByTaskId = (taskId: string) =>
+    createSelector([selectPrimaryResponseToolUpdatesByTaskId(taskId)], (toolUpdates) => (toolUpdates.length > 0 ? toolUpdates[0] : null));
+
 // ==================== Selector Factory for Dynamic Usage ====================
 export const createTaskResponseSelectors = (taskId: string) => {
     // Create the base selector once
@@ -266,8 +291,10 @@ export const createTaskResponseSelectors = (taskId: string) => {
         selectData: createSelector([baseSelector], (response) => response?.data || []),
         selectInfo: createSelector([baseSelector], (response) => response?.info || []),
         selectErrors: createSelector([baseSelector], (response) => response?.errors || []),
+        selectToolUpdates: createSelector([baseSelector], (response) => response?.toolUpdates || []),
         selectEnded: createSelector([baseSelector], (response) => response?.ended || false),
         selectHasErrors: createSelector([baseSelector], (response) => (response?.errors?.length || 0) > 0),
+        selectHasToolUpdates: createSelector([baseSelector], (response) => (response?.toolUpdates?.length || 0) > 0),
     };
 };
 

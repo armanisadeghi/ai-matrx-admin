@@ -83,6 +83,7 @@ export interface ResponseState {
     data: any[];
     info: SocketInfoObject[];
     errors: SocketErrorObject[];
+    toolUpdates: any[]; // New: for tool_update events
     ended: boolean;
     taskId: string;
 }

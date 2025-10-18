@@ -7,6 +7,7 @@ import {
     appendTextChunk,
     updateDataResponse,
     updateInfoResponse,
+    updateToolUpdateResponse,
 } from "../slices/socketResponseSlice";
 import {
     completeTask,
@@ -163,6 +164,9 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
                                     }
                                     if (response?.error !== undefined) {
                                         dispatch(updateErrorResponse({ listenerId: eventName, error: response.error }));
+                                    }
+                                    if (response?.tool_update !== undefined) {
+                                        dispatch(updateToolUpdateResponse({ listenerId: eventName, toolUpdate: response.tool_update }));
                                     }
                                     if (response?.broker !== undefined) {
                                         const brokerResponse: SocketBrokerObject | SocketBrokerObject[] = response.broker;
@@ -392,6 +396,9 @@ export const submitTaskNew = createAsyncThunk<string[], { taskId: string }, { st
                                 }
                                 if (response?.error !== undefined) {
                                     dispatch(updateErrorResponse({ listenerId: eventName, error: response.error }));
+                                }
+                                if (response?.tool_update !== undefined) {
+                                    dispatch(updateToolUpdateResponse({ listenerId: eventName, toolUpdate: response.tool_update }));
                                 }
                                 if (response?.broker !== undefined) {
                                     const brokerResponse: SocketBrokerObject | SocketBrokerObject[] = response.broker;
