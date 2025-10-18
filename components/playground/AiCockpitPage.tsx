@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useLayoutEffect, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import ModelSettingsPanel from '@/components/playground/settings/ModelSettingsPanel';
@@ -16,6 +17,7 @@ import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
 import { CockpitHeader } from '@/components/layout/new-layout/PageSpecificHeader';
+import { LoadingSpinner } from '@/components/ui/spinner';
 
 
 interface PanelRefs {
@@ -27,6 +29,7 @@ interface PanelRefs {
 
 
 export default function AiCockpitPage() {
+    const router = useRouter();
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -45,10 +48,10 @@ export default function AiCockpitPage() {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        if (activeRecipeId && messages.length > 1) {
-            setShowPlayground(true);
+        if (activeRecipeId) {
+            router.push(`/ai/cockpit/${activeRecipeId}`);
         }
-    }, [activeRecipeId]);
+    }, [activeRecipeId, router]);
 
     const panelsRef = useRef<PanelRefs>({
         leftPanel: null,
@@ -188,14 +191,14 @@ export default function AiCockpitPage() {
             <CockpitHeader cockpitControls={playgroundControls} />
             
             {activeRecipeId ? (
-                <CockpitPanels
-                    ref={panelsRef}
-                    leftComponent={BrokerSidebar}
-                    rightComponent={ModelSettingsPanel}
-                    onLeftCollapsedChange={setIsLeftCollapsed}
-                    onRightCollapsedChange={setIsRightCollapsed}
-                    cockpitControls={playgroundControls}
-                />
+                <div className="flex-1 flex items-center justify-center bg-textured">
+                    <div className="flex flex-col items-center gap-4">
+                        <LoadingSpinner size="xl" />
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Redirecting to recipe...
+                        </p>
+                    </div>
+                </div>
             ) : (
                 <AICockpitIntro {...playgroundControls} />
             )}

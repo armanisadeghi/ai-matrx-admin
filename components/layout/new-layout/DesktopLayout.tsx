@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import { Menu, Search, Bell } from "lucide-react";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/NavigationMenu";
-import { Input } from "@/components/ui/input";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
+import { NotificationDropdown } from "@/components/ui/notifications";
+import { Notification } from "@/types/notification.types";
+import Link from "next/link";
 
 interface SidebarLink {
     label: string;
@@ -21,6 +23,7 @@ interface DesktopLayoutProps {
     isAdmin?: boolean;
 }
 
+
 export default function DesktopLayout({
     children,
     primaryLinks,
@@ -31,6 +34,7 @@ export default function DesktopLayout({
 }: DesktopLayoutProps) {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(!initialOpen);
     const [activeLink, setActiveLink] = useState(primaryLinks[0]?.href || "");
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     
     const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
     const allLinks = [...primaryLinks, ...(isAdmin ? secondaryLinks : [])];
@@ -55,10 +59,27 @@ export default function DesktopLayout({
                     </div>
                     {/* Right side - Actions */}
                     <div className="flex items-center gap-1">
-                        <button className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 relative">
-                            <Bell className="w-4 h-4 text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out" />
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                        <NotificationDropdown
+                            notifications={notifications}
+                            onMarkAsRead={(id) => {
+                                setNotifications(prev => 
+                                    prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+                                );
+                            }}
+                            onMarkAllAsRead={() => {
+                                setNotifications(prev => 
+                                    prev.map(n => ({ ...n, isRead: true }))
+                                );
+                            }}
+                            onClearAll={() => {
+                                setNotifications([]);
+                            }}
+                            onNotificationClick={(notification) => {
+                                if (notification.link) {
+                                    window.location.href = notification.link;
+                                }
+                            }}
+                        />
                         <ThemeSwitcherIcon className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <NavigationMenu />
                     </div>
@@ -85,11 +106,11 @@ export default function DesktopLayout({
                                                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
                                             }`}
                                         >
-                                            <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center [&>svg]:!text-current">
+                                            <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center [&>svg]:!text-current">
                                                 {link.icon}
                                             </div>
                                             <span 
-                                                className={`absolute left-9 font-medium whitespace-nowrap transition-all duration-300 ease-in-out ${
+                                                className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
                                                     isSidebarCollapsed 
                                                         ? "opacity-0 translate-x-2 pointer-events-none" 
                                                         : "opacity-100 translate-x-0"
@@ -133,7 +154,7 @@ export default function DesktopLayout({
                                                     {link.icon}
                                                 </div>
                                                 <span 
-                                                    className={`absolute left-9 font-medium whitespace-nowrap transition-all duration-300 ease-in-out ${
+                                                    className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
                                                         isSidebarCollapsed 
                                                             ? "opacity-0 translate-x-2 pointer-events-none" 
                                                             : "opacity-100 translate-x-0"

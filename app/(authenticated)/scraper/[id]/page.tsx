@@ -1,9 +1,7 @@
 "use client";
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ScraperResultsComponent from "@/features/scraper/ScraperResultsComponent";
 
 export default function ScraperResultPage() {

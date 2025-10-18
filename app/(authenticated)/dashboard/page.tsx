@@ -156,17 +156,8 @@ const DashboardPage = () => {
         <div className="flex flex-col h-full w-full overflow-hidden">
             {/* Wrapper div that contains both the floating menu and the content */}
             <div 
-                className="flex flex-col w-full h-full bg-zinc-100 dark:bg-zinc-850 text-gray-800 dark:text-gray-100"
-                style={{ backgroundImage: BACKGROUND_PATTERN }}
+                className="flex flex-col w-full h-full bg-textured text-gray-800 dark:text-gray-100"
             >
-                {/* Floating menu - using the same background as the main content */}
-                <div className="sticky top-0 z-50 bg-zinc-100 dark:bg-zinc-850 pt-1">
-                    {/* Original floating menu (commented out) */}
-                    {/* <MatrxFloatingMenu /> */}
-                    
-                    {/* New balanced floating menu with bottom labels */}
-                    <BalancedMatrxFloatingMenu growthFactor={1.5} labelPosition="bottom" />
-                </div>
 
                 {/* Main content with fixed height and scrollable sections */}
                 <div className={`w-full ${isMobile ? 'px-3' : 'px-6'} pt-4 ${isMobile ? 'h-full overflow-y-auto' : 'h-[calc(100vh-64px)] overflow-hidden'}`}>

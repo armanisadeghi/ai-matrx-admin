@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useLayoutEffect, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { CockpitHeader } from '@/components/layout/new-layout/PageSpecificHeader';
@@ -16,7 +17,7 @@ import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
-import PlaygroundHeaderAllInOne from './header/PlaygroundHeaderAllInOne';
+import { LoadingSpinner } from '@/components/ui/spinner';
 
 
 interface PanelRefs {
@@ -28,15 +29,16 @@ interface PanelRefs {
 
 
 export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) {
+    const router = useRouter();
     const dispatch = useDispatch();
     const { actions, selectors, store } = useEntityTools('recipe');
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     useEffect(() => {
         if (recipeId) {
             dispatch(actions.setActiveRecord(recipeId));
         }
     }, [recipeId]);
-
 
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
@@ -53,11 +55,15 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
 
     const [open, setOpen] = useState(false);
 
+    // Handle routing when activeRecipeId differs from current route
     useEffect(() => {
-        if (activeRecipeId && messages.length > 1) {
-            setShowPlayground(true);
+        if (activeRecipeId && activeRecipeId !== recipeId) {
+            setIsRedirecting(true);
+            router.push(`/ai/cockpit/${activeRecipeId}`);
+        } else if (activeRecipeId === recipeId) {
+            setIsRedirecting(false);
         }
-    }, [activeRecipeId]);
+    }, [activeRecipeId, recipeId, router]);
 
     const panelsRef = useRef<PanelRefs>({
         leftPanel: null,
@@ -196,7 +202,16 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
             {/* Render cockpit controls in main header */}
             <CockpitHeader cockpitControls={playgroundControls} />
             
-            {activeRecipeId ? (
+            {isRedirecting || (activeRecipeId && activeRecipeId !== recipeId) ? (
+                <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+                    <div className="flex flex-col items-center gap-4">
+                        <LoadingSpinner size="xl" />
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Redirecting to recipe...
+                        </p>
+                    </div>
+                </div>
+            ) : activeRecipeId === recipeId ? (
                 <CockpitPanels
                     ref={panelsRef}
                     leftComponent={BrokerSidebar}

@@ -28,7 +28,7 @@ interface Position {
 const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
 
   const [size, setSize] = useState<IndicatorSize>("small");
-  const [position, setPosition] = useState<Position>({ x: 20, y: 60 });
+  const [position, setPosition] = useState<Position>({ x: 50, y: 5 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const indicatorRef = useRef<HTMLDivElement>(null);

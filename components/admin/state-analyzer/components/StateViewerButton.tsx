@@ -13,10 +13,10 @@ const StateViewerButton: React.FC = () => {
           e.stopPropagation(); // Prevent event from bubbling up
           setIsOpen(true);
         }}
-        className="p-1 rounded hover:bg-slate-700"
+        className="p-0 rounded hover:bg-slate-700"
         title="View Redux State"
       >
-        <Database size={14} />
+        <Database size={12} />
       </button>
       
       <StateViewerOverlay 

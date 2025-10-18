@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Menu, X, Home, ChevronRight } from 'lucide-react';
 import { ThemeSwitcherIcon } from '@/styles/themes/ThemeSwitcher';
 import { NavigationMenu } from '@/components/ui/navigation-menu';
+import { NotificationDropdown } from '@/components/ui/notifications';
+import { Notification } from '@/types/notification.types';
 
 interface SidebarLink {
   label: string;
@@ -28,6 +30,7 @@ export default function MobileLayout({
 }: MobileLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(primaryLinks[0]?.href || '');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -57,6 +60,28 @@ export default function MobileLayout({
 
           {/* Right side - Actions */}
           <div className="flex items-center gap-2">
+            <NotificationDropdown
+              notifications={notifications}
+              isMobile={true}
+              onMarkAsRead={(id) => {
+                setNotifications(prev => 
+                  prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+                );
+              }}
+              onMarkAllAsRead={() => {
+                setNotifications(prev => 
+                  prev.map(n => ({ ...n, isRead: true }))
+                );
+              }}
+              onClearAll={() => {
+                setNotifications([]);
+              }}
+              onNotificationClick={(notification) => {
+                if (notification.link) {
+                  window.location.href = notification.link;
+                }
+              }}
+            />
             <ThemeSwitcherIcon className="hover:bg-gray-100 dark:hover:bg-gray-800" />
             <NavigationMenu />
           </div>
