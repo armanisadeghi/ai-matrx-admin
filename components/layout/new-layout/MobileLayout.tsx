@@ -37,9 +37,9 @@ export default function MobileLayout({
   };
 
   return (
-    <div id={uniqueId} className="min-h-screen bg-slate-100 dark:bg-slate-900">
+    <div id={uniqueId} className="min-h-screen bg-textured">
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-textured border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between h-full px-4">
           {/* Left side - Menu, Logo and page-specific content */}
           <div className="flex items-center gap-3 flex-1 min-w-0">

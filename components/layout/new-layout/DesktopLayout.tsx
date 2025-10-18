@@ -36,11 +36,10 @@ export default function DesktopLayout({
     const allLinks = [...primaryLinks, ...(isAdmin ? secondaryLinks : [])];
 
     return (
-        <div id={uniqueId} className="min-h-screen bg-zinc-100 dark:bg-zinc-850 text-gray-800 dark:text-gray-100"
-        style={{ backgroundImage: BACKGROUND_PATTERN }}
+        <div id={uniqueId} className="min-h-screen bg-textured text-gray-800 dark:text-gray-100"
         >
-            {/* Transparent Header */}
-            <header className="fixed top-0 left-0 right-0 z-50 h-10">
+            {/* Main Header */}
+            <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured">
                 <div className="flex items-center justify-between h-full pl-1 pr-2">
                     {/* Left side - Menu toggle and page-specific content */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">

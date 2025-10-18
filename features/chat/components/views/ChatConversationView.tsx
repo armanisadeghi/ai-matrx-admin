@@ -15,8 +15,8 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({ existingCon
     const isDisabled = !routeLoadComplete || isSubmitting;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-6 bg-zinc-100 dark:bg-zinc-850 pb-4">
-            <div className="max-w-3xl mx-auto rounded-3xl">
+        <div className="fixed bottom-0 left-0 right-0 z-6 bg-textured pb-2">
+            <div className="max-w-3xl mx-auto rounded-3xl border border-zinc-300 dark:border-zinc-700">
                 {routeLoadComplete ? <PromptInputContainer disabled={isDisabled} onSubmit={submitChatMessage} /> : <InputPlaceholder />}
             </div>
         </div>

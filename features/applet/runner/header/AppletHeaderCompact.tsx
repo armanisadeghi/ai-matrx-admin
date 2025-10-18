@@ -50,7 +50,7 @@ export function AppletHeaderCompact({
         isDemo: isDemoMode,
         isPreview: isPreviewMode
       }) => (
-        <div className="flex items-center gap-2 h-full">
+        <div className="flex items-center gap-2 h-full bg-textured">
           {/* Mobile - Always dropdown */}
           <div className="md:hidden">
             <DropdownMenu>

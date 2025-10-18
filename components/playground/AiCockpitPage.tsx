@@ -182,7 +182,7 @@ export default function AiCockpitPage() {
     return (
         <div
             ref={containerRef}
-            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden`}
+            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-textured overflow-hidden`}
         >
             {/* Render cockpit controls in main header */}
             <CockpitHeader cockpitControls={playgroundControls} />

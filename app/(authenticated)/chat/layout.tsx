@@ -12,7 +12,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
             
             <main className="flex-1 flex flex-col relative overflow-hidden">
                 <div className="relative flex flex-col h-full">
-                    <div className="absolute inset-0 w-full h-full bg-zinc-100 dark:bg-zinc-850" />
+                    <div className="absolute inset-0 w-full h-full bg-textured" />
                     <div className="w-full max-w-[750px] mx-auto overflow-y-auto overflow-x-hidden scrollbar-hide pb-8 pt-0 z-1">
                         <ResponseColumn />
                     </div>

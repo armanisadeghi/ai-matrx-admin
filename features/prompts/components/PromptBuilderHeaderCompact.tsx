@@ -24,7 +24,7 @@ export function PromptBuilderHeaderCompact({
     onOpenSettings,
 }: PromptBuilderHeaderCompactProps) {
     return (
-        <div className="flex items-center gap-2 h-full">
+        <div className="flex items-center gap-2 h-full bg-textured">
             {/* Mobile - Always dropdown */}
             <div className="md:hidden">
                 <DropdownMenu>
