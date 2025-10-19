@@ -10,6 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SidebarLink {
     label: string;
@@ -61,19 +62,30 @@ export default function DesktopLayout({
     };
 
     return (
-        <div id={uniqueId} className="min-h-screen bg-textured text-gray-800 dark:text-gray-100"
-        >
-            {/* Main Header */}
-            <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured">
+        <TooltipProvider delayDuration={300} skipDelayDuration={0}>
+            <div id={uniqueId} className="min-h-screen bg-textured text-gray-800 dark:text-gray-100"
+            >
+                {/* Main Header */}
+                <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured">
                 <div className="flex items-center justify-between h-full pl-1 pr-2">
                     {/* Left side - Menu toggle and page-specific content */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <button
-                            onClick={toggleSidebar}
-                            className="p-2 rounded-lg hover:bg-gray-200/80 dark:hover:bg-gray-700/80 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
-                        >
-                            <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300 transition-all duration-200 ease-in-out" />
-                        </button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={toggleSidebar}
+                                    className="p-2 rounded-lg hover:bg-gray-200/80 dark:hover:bg-gray-700/80 backdrop-blur-sm transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex-shrink-0"
+                                >
+                                    <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300 transition-all duration-200 ease-in-out" />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent 
+                                side="right" 
+                                className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                            >
+                                {isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                            </TooltipContent>
+                        </Tooltip>
 
                         {/* Page-specific controls will be inserted here */}
                         <div id="page-specific-header-content" className="flex-1 min-w-0" />
@@ -118,27 +130,39 @@ export default function DesktopLayout({
                             <ul className="space-y-1">
                                 {primaryLinks.map((link, index) => (
                                     <li key={`primary-${index}`}>
-                                        <a
-                                            href={link.href}
-                                            className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
-                                                isLinkActive(link.href)
-                                                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
-                                                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
-                                            }`}
-                                        >
-                                            <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center [&>svg]:!text-current">
-                                                {link.icon}
-                                            </div>
-                                            <span 
-                                                className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
-                                                    isSidebarCollapsed 
-                                                        ? "opacity-0 translate-x-2 pointer-events-none" 
-                                                        : "opacity-100 translate-x-0"
-                                                }`}
-                                            >
-                                                {link.label}
-                                            </span>
-                                        </a>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <a
+                                                    href={link.href}
+                                                    className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
+                                                        isLinkActive(link.href)
+                                                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
+                                                            : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
+                                                    }`}
+                                                >
+                                                    <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center [&>svg]:!text-current">
+                                                        {link.icon}
+                                                    </div>
+                                                    <span 
+                                                        className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
+                                                            isSidebarCollapsed 
+                                                                ? "opacity-0 translate-x-2 pointer-events-none" 
+                                                                : "opacity-100 translate-x-0"
+                                                        }`}
+                                                    >
+                                                        {link.label}
+                                                    </span>
+                                                </a>
+                                            </TooltipTrigger>
+                                            {isSidebarCollapsed && (
+                                                <TooltipContent 
+                                                    side="right" 
+                                                    className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                                                >
+                                                    {link.label}
+                                                </TooltipContent>
+                                            )}
+                                        </Tooltip>
                                     </li>
                                 ))}
                             </ul>
@@ -161,27 +185,39 @@ export default function DesktopLayout({
                                 <ul className="space-y-1 pr-1">
                                     {secondaryLinks.map((link, index) => (
                                         <li key={`secondary-${index}`}>
-                                            <a
-                                                href={link.href}
-                                                className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
-                                                    isLinkActive(link.href)
-                                                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
-                                                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
-                                                }`}
-                                            >
-                                                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                                                    {link.icon}
-                                                </div>
-                                                <span 
-                                                    className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
-                                                        isSidebarCollapsed 
-                                                            ? "opacity-0 translate-x-2 pointer-events-none" 
-                                                            : "opacity-100 translate-x-0"
-                                                    }`}
-                                                >
-                                                    {link.label}
-                                                </span>
-                                            </a>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <a
+                                                        href={link.href}
+                                                        className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
+                                                            isLinkActive(link.href)
+                                                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
+                                                                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
+                                                        }`}
+                                                    >
+                                                        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                                                            {link.icon}
+                                                        </div>
+                                                        <span 
+                                                            className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
+                                                                isSidebarCollapsed 
+                                                                    ? "opacity-0 translate-x-2 pointer-events-none" 
+                                                                    : "opacity-100 translate-x-0"
+                                                            }`}
+                                                        >
+                                                            {link.label}
+                                                        </span>
+                                                    </a>
+                                                </TooltipTrigger>
+                                                {isSidebarCollapsed && (
+                                                    <TooltipContent 
+                                                        side="right" 
+                                                        className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                                                    >
+                                                        {link.label}
+                                                    </TooltipContent>
+                                                )}
+                                            </Tooltip>
                                         </li>
                                     ))}
                                 </ul>
@@ -196,5 +232,6 @@ export default function DesktopLayout({
                 {children}
             </main>
         </div>
+        </TooltipProvider>
     );
 }

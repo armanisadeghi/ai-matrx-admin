@@ -87,7 +87,8 @@ export const primaryLinks = [
         label: "Applets",
         href: "/applets",
         icon: <LayoutGrid className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },    {
+    },
+    {
         label: "Voices",
         icon: <AiFillAudio className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         href: "/demo/voice/voice-manager",
@@ -104,11 +105,23 @@ export const primaryLinks = [
         icon: <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
-        label: "Entities",
-        href: "/entity-crud", // https://lucide.dev/icons/
-        icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        label: "Workflows",
+        href: "/workflows",
+        icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
-        // {
+    {
+        label: "App Builder",
+        href: "/apps/builder", // https://lucide.dev/icons/
+        icon: (
+            <SiCodemagic className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
+        ),
+    },
+    // {
+    //     label: "Entities",
+    //     href: "/entity-crud", // https://lucide.dev/icons/
+    //     icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
+    // {
     //     label: "Component Editor",
     //     href: "/brokers/component-editor",
     //     icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
@@ -186,7 +199,6 @@ export const primaryLinks = [
     //     ),
     // },
 
-
     // {
     //     label: 'Entity Data Table',
     //     href: '/tests/table-test/simple-entity', // https://lucide.dev/icons/
@@ -233,7 +245,13 @@ export const secondaryLinks = [
         label: "New Admin Dashboard",
         href: "/administration",
         icon: <ShieldEllipsis className="text-rose-500 dark:text-rose-600 h-5 w-5 flex-shrink-0" />,
-    },    {
+    },
+    {
+        label: "Final Form Test",
+        href: "/tests/forms/entity-final-test", // https://lucide.dev/icons/
+        icon: <LandPlot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
         label: "Admin Dashboard",
         href: "/admin",
         icon: <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
@@ -256,43 +274,48 @@ export const secondaryLinks = [
     {
         label: "App Builder Parts",
         href: "/apps/app-builder", // https://lucide.dev/icons/
-        icon: <SiMagic className="text-amber-500 dark:text-amber-600 hover:text-amber-600 dark:hover:text-amber-700 h-5 w-5 flex-shrink-0" />,
+        icon: (
+            <SiMagic className="text-amber-500 dark:text-amber-600 hover:text-amber-600 dark:hover:text-amber-700 h-5 w-5 flex-shrink-0" />
+        ),
     },
     {
         label: "Applet demo",
         href: "/apps/demo", // https://lucide.dev/icons/
-        icon: <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />,
+        icon: (
+            <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
+        ),
     },
     {
         label: "Dynamic Layout Demo",
         href: "/apps/dynamic-layouts/options", // app\(authenticated)\apps\dynamic-layouts
-        icon: <LayoutPanelLeft className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />,
+        icon: (
+            <LayoutPanelLeft className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />
+        ),
     },
     {
         label: "All Layouts",
         href: "/apps/all-layouts", // https://lucide.dev/icons/
-        icon: <LayoutPanelLeft className="text-blue-500 dark:text-blue-600 hover:text-blue-600 dark:hover:text-blue-700 h-5 w-5 flex-shrink-0" />,
+        icon: (
+            <LayoutPanelLeft className="text-blue-500 dark:text-blue-600 hover:text-blue-600 dark:hover:text-blue-700 h-5 w-5 flex-shrink-0" />
+        ),
     },
-    {
-        label: "App Builder",
-        href: "/apps/builder", // https://lucide.dev/icons/
-        icon: <SiCodemagic className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />,
-    },
+    // {
+    //     label: "App Builder",
+    //     href: "/apps/builder", // https://lucide.dev/icons/
+    //     icon: <SiCodemagic className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />,
+    // },
     {
         label: "App Builder Hub",
         href: "/apps/builder/hub", // https://lucide.dev/icons/
-        icon: <SiMagic className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />,
+        icon: (
+            <SiMagic className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />
+        ),
     },
     // tests/markdown-tests/
     {
         label: "Markdown Tests",
         href: "/tests/markdown-tests", // https://lucide.dev/icons/
         icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-        label: "Final Form Test",
-        href: "/tests/forms/entity-final-test", // https://lucide.dev/icons/
-        icon: <LandPlot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
 
     {
@@ -310,11 +333,11 @@ export const secondaryLinks = [
         href: "/demo/many-to-many-ui/claude",
         icon: <TbRelationManyToMany className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
-    {
-        label: "Workflows",
-        href: "/tests/workflows",
-        icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
+    // {
+    //     label: "Workflows",
+    //     href: "/tests/workflows",
+    //     icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
     {
         label: "Tailwind Test",
         href: "/tests/tailwind-test",
@@ -357,10 +380,15 @@ export const secondaryLinks = [
         href: "/tests/matrx-table",
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
+    // {
+    //     label: "Prompt Builder",
+    //     href: "/ai/prompts",
+    //     icon: <ClipboardType className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
     {
-        label: "Prompt Builder",
-        href: "/ai/prompts",
-        icon: <ClipboardType className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        label: "Entities",
+        href: "/entity-crud", // https://lucide.dev/icons/
+        icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     //
     // {
