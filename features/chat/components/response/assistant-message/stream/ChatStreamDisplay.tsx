@@ -10,6 +10,7 @@ import { parseTaggedContent } from "@/components/mardown-display/markdown-classi
 import ThinkingVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ThinkingVisualization";
 import ReasoningVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ReasoningVisualization";
 import QuestionnaireLoadingVisualization from "@/components/mardown-display/chat-markdown/QuestionnaireLoadingVisualization";
+import ToolCallVisualization from "./ToolCallVisualization";
 import { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
@@ -37,6 +38,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
     const streamData = useAppSelector(responseSelectors.selectData);
     const isStreamEnded = useAppSelector(responseSelectors.selectEnded);
     const streamError = useAppSelector(responseSelectors.selectErrors);
+    const streamToolUpdates = useAppSelector(responseSelectors.selectToolUpdates);
 
     const isStreaming = useAppSelector((state: RootState) => selectTaskStreamingById(state, taskId));
     const hasListenerId = useAppSelector((state: RootState) => selectTaskFirstListenerId(state, taskId));
@@ -96,25 +98,57 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ taskId, clas
     }, [content]);
 
     const renderContent = () => {
-        if (!isStreaming) {
+        const hasToolUpdates = streamToolUpdates.length > 0;
+        const hasContent = content.length >= 2;
+        
+        // Only show content if streaming
+        if (!isStreaming && !hasToolUpdates) {
             return null;
         }
-        return parsedContent.contentSegments.map((segment, index) => (
-            <React.Fragment key={index}>
-                {segment.isQuestionnaire ? (
-                    <QuestionnaireLoadingVisualization />
-                ) : segment.isThinking ? (
-                    <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
-                ) : segment.isReasoning ? (
-                    <ReasoningVisualization reasoningText={segment.content} showReasoning={true} />
-                ) : (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                        {segment.content}
-                    </ReactMarkdown>
+        
+        return (
+            <>
+                {/* Show tool updates - collapsed if content has started */}
+                {hasToolUpdates && (
+                    <ToolCallVisualization 
+                        toolUpdates={streamToolUpdates} 
+                        hasContent={hasContent}
+                    />
                 )}
-            </React.Fragment>
-        ));
+                
+                {hasContent && parsedContent.contentSegments.map((segment, index) => (
+                    <React.Fragment key={index}>
+                        {segment.isQuestionnaire ? (
+                            <QuestionnaireLoadingVisualization />
+                        ) : segment.isThinking ? (
+                            <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
+                        ) : segment.isReasoning ? (
+                            <ReasoningVisualization reasoningText={segment.content} showReasoning={true} />
+                        ) : (
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                                {segment.content}
+                            </ReactMarkdown>
+                        )}
+                    </React.Fragment>
+                ))}
+            </>
+        );
     };
+
+    // Show tool updates if they exist, even with no text content yet
+    if (streamToolUpdates.length > 0) {
+        return (
+            <div className="mb-3 w-full text-left">
+                {content.length >= 2 ? (
+                    <div className={containerStyles}>
+                        <div className="text-md leading-relaxed tracking-wide">{renderContent()}</div>
+                    </div>
+                ) : (
+                    renderContent()
+                )}
+            </div>
+        );
+    }
 
     if (content.length < 2) {
         if (!isStreaming && hasListenerId) {

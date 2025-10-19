@@ -51,6 +51,9 @@ import InteractiveDiagramBlock from "../blocks/diagram/InteractiveDiagramBlock";
 import DiagramLoadingVisualization from "../blocks/diagram/DiagramLoadingVisualization";
 import { parseDiagramJSON } from "../blocks/diagram/parseDiagramJSON";
 import ReasoningVisualization from "../blocks/thinking-reasoning/ReasoningVisualization";
+import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
+import { useAppSelector } from "@/lib/redux";
+import { createTaskResponseSelectors } from "@/lib/redux/socket-io";
 
 
 interface ChatMarkdownDisplayProps {
@@ -85,6 +88,16 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
 
     // Check if we should show loading state (taskId exists but no content yet)
     const isWaitingForContent = taskId && !content.trim();
+
+    // Get tool updates if taskId is provided
+    const responseSelectors = useMemo(() => 
+        taskId ? createTaskResponseSelectors(taskId) : null, 
+        [taskId]
+    );
+    
+    const toolUpdates = useAppSelector((state) => 
+        responseSelectors ? responseSelectors.selectToolUpdates(state) : []
+    );
 
     // Update internal content when prop changes - but prevent infinite loops
     useEffect(() => {
@@ -798,6 +811,15 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
 
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
+            {/* Tool Call Visualization - show if we have tool updates */}
+            {toolUpdates.length > 0 && (
+                <ToolCallVisualization 
+                    toolUpdates={toolUpdates} 
+                    hasContent={!!content.trim()}
+                    className="mb-3"
+                />
+            )}
+            
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
             {!hideCopyButton && <InlineCopyButton markdownContent={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true} />}
 
