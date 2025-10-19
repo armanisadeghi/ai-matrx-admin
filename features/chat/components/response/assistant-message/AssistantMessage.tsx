@@ -11,6 +11,7 @@ import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-
 
 interface AssistantMessageProps {
     message: localMessage;
+    taskId: string;
     isStreamActive?: boolean;
     onScrollToBottom?: () => void;
     onContentUpdate?: (newContent: string) => void;
@@ -21,6 +22,7 @@ interface AssistantMessageProps {
 
 const AssistantMessage: React.FC<AssistantMessageProps> = ({ 
     message, 
+    taskId,
     isStreamActive = false, 
     onScrollToBottom, 
     onContentUpdate, 
@@ -151,6 +153,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
             <div className="max-w-full w-full relative">
                 <EnhancedChatMarkdown
                     content={content}
+                    taskId={taskId}
                     type="message"
                     role="assistant"
                     className="bg-transparent dark:bg-transparent"

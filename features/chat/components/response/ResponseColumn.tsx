@@ -177,6 +177,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                 {messagesToDisplay.map((message) => (
                     <MessageItem
                         key={message.id}
+                        taskId={taskId}
                         message={message}
                         onScrollToBottom={handleScrollToBottom}
                         isOverlay={isOverlay}
@@ -196,12 +197,14 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                         settings={settings}
                     />
                 )}
-                <AssistantStream
-                    key={streamKey}
-                    taskId={taskId}
-                    handleVisibility={handleAutoScrollToBottom}
-                    scrollToBottom={handleScrollToBottom}
-                />
+                {shouldShowLoader && (
+                    <AssistantStream
+                        key={streamKey}
+                        taskId={taskId}
+                        handleVisibility={handleAutoScrollToBottom}
+                        scrollToBottom={handleScrollToBottom}
+                    />
+                )}
                 {hasUserVisibleMessage && (
                     <ErrorCard message={streamError[0].user_visible_message} onRetry={handleRetry} onClose={handleClose} />
                 )}
