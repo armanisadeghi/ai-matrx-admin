@@ -232,6 +232,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
         role: string; 
         content: string;
+        taskId?: string; // Store taskId with each message
         metadata?: {
             timeToFirstToken?: number;
             totalTime?: number;
@@ -548,12 +549,13 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             
             setLastMessageStats(finalStats);
             
-            // Add the completed assistant message with content and metadata
+            // Add the completed assistant message with content, metadata, and taskId
             setConversationMessages((prev) => [
                 ...prev,
                 {
                     role: "assistant",
                     content: streamingText,
+                    taskId: currentTaskId, // Preserve taskId so component can access Redux state
                     metadata: finalStats
                 }
             ]);

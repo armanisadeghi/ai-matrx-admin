@@ -792,7 +792,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     );
 
     // Show loading state if we have a taskId but no content yet
-    if (isWaitingForContent) {
+    if (isWaitingForContent && toolUpdates.length === 0) {
         return (
             <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
                 <div className={containerStyles}>
