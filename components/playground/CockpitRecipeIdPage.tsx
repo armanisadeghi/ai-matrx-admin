@@ -197,13 +197,13 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
     return (
         <div
             ref={containerRef}
-            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-gray-50 dark:bg-gray-950 overflow-hidden`}
+            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-textured overflow-hidden`}
         >
             {/* Render cockpit controls in main header */}
             <CockpitHeader cockpitControls={playgroundControls} />
             
             {isRedirecting || (activeRecipeId && activeRecipeId !== recipeId) ? (
-                <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+                <div className="flex-1 flex items-center justify-center bg-textured">
                     <div className="flex flex-col items-center gap-4">
                         <LoadingSpinner size="xl" />
                         <p className="text-sm text-gray-600 dark:text-gray-400">

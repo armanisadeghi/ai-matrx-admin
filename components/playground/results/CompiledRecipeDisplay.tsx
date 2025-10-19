@@ -50,7 +50,7 @@ export function CompiledRecipeDisplay({ cockpitControls }: CompiledRecipeDisplay
 
     return (
         <>
-            <Card className='relative h-full bg-background overflow-hidden'>
+            <Card className='relative h-full bg-textured overflow-hidden'>
                 <div className='absolute inset-0 flex flex-col'>
                     <div className='p-2 flex items-center justify-between'>
                         <div className='text-sm text-muted-foreground'>Compiled Recipe {recipeRecord?.name}</div>
@@ -72,7 +72,7 @@ export function CompiledRecipeDisplay({ cockpitControls }: CompiledRecipeDisplay
                             />
                         </div>
                     </div>
-                    <div className='flex-1 overflow-auto bg-background'>
+                    <div className='flex-1 overflow-auto bg-textured'>
                         <pre className='p-4 text-sm whitespace-pre-wrap break-all'>{formattedContent}</pre>
                     </div>
                 </div>

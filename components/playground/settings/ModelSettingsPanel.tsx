@@ -59,7 +59,7 @@ const ModelSettingsPanel: React.FC<CockpitPanelProps> = ({ playgroundControls })
 
     return (
         <div
-            className='h-full flex flex-col bg-background'
+            className='h-full flex flex-col bg-textured'
             ref={ref}
         >
             <Tabs
