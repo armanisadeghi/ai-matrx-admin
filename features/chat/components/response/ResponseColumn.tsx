@@ -21,7 +21,11 @@ import {
     selectResponseDataByListenerId,
     selectResponseInfoByListenerId,
     selectResponseErrorsByListenerId,
+    selectResponseToolUpdatesByListenerId,
 } from "@/lib/redux/socket-io";
+import { ToolUpdatesOverlay } from "@/features/chat/components/response/tool-updates";
+import { Button } from "@/components/ui/button";
+import { Wrench } from "lucide-react";
 
 const INFO = true;
 const DEBUG = true;
@@ -30,6 +34,7 @@ const VERBOSE = false;
 const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }) => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
+    const [isToolUpdatesOpen, setIsToolUpdatesOpen] = useState<boolean>(false);
 
     const chatSelectors = createChatSelectors();
     const taskId = useAppSelector(chatSelectors.taskId);
@@ -51,6 +56,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
     const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
     const errorsResponse = useAppSelector(selectResponseErrorsByListenerId(firstListenerId));
+    const toolUpdatesResponse = useAppSelector(selectResponseToolUpdatesByListenerId(firstListenerId));
     const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
 
     const activeMessageStatus = useAppSelector((state: RootState) => chatSelectors.activeMessageStatus(state));
@@ -206,6 +212,26 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
 
                 <div ref={bottomRef} style={{ height: "1px" }} />
             </div>
+
+            {/* TEST: Tool Updates Button - Remove when implementing proper trigger */}
+            {toolUpdatesResponse && toolUpdatesResponse.length > 0 && (
+                <Button
+                    onClick={() => setIsToolUpdatesOpen(true)}
+                    className="fixed bottom-32 right-8 z-40 shadow-lg"
+                    size="lg"
+                    variant="default"
+                >
+                    <Wrench className="w-4 h-4 mr-2" />
+                    Tool Updates ({toolUpdatesResponse.length})
+                </Button>
+            )}
+
+            {/* Tool Updates Overlay */}
+            <ToolUpdatesOverlay
+                isOpen={isToolUpdatesOpen}
+                onClose={() => setIsToolUpdatesOpen(false)}
+                toolUpdates={toolUpdatesResponse || []}
+            />
         </div>
     );
 };
