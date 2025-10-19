@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Wrench, Search, Globe, CheckCircle, Loader2, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Wrench, Search, Globe, CheckCircle, Loader2, Sparkles, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import { cn } from "@/lib/utils";
+import { ToolUpdatesOverlay } from "@/features/chat/components/response/tool-updates";
 
 interface ToolCallVisualizationProps {
     toolUpdates: ToolCallObject[];
@@ -15,6 +16,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
     const [visibleUpdates, setVisibleUpdates] = useState<number>(0);
     const [currentPhase, setCurrentPhase] = useState<"starting" | "processing" | "complete">("starting");
     const [isExpanded, setIsExpanded] = useState<boolean>(true);
+    const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
 
     // Determine the phase based on tool updates
     useEffect(() => {
@@ -86,26 +88,49 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                 const content = update.step_data.content as any;
                 const webResults = content?.web?.results || [];
                 
-                // Show first 3-4 website favicons/names
+                // Show first 5-6 websites with real favicons and URLs
                 return (
                     <div
                         key={index}
-                        className="flex items-center gap-2 animate-in fade-in slide-in-from-left duration-500"
+                        className="space-y-2 animate-in fade-in slide-in-from-left duration-500"
                     >
-                        <div className="flex -space-x-2">
-                            {webResults.slice(0, 4).map((result: any, i: number) => (
-                                <div
-                                    key={i}
-                                    className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 border-2 border-white dark:border-slate-800 flex items-center justify-center"
-                                    style={{ animationDelay: `${i * 100}ms` }}
-                                >
-                                    <Globe className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                                </div>
-                            ))}
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+                            Analyzing {webResults.length} sources:
                         </div>
-                        <span className="text-xs text-slate-600 dark:text-slate-400">
-                            Analyzing {webResults.length} sources...
-                        </span>
+                        <div className="flex flex-wrap gap-2">
+                            {webResults.slice(0, 6).map((result: any, i: number) => {
+                                const favicon = result.meta_url?.favicon;
+                                const hostname = result.meta_url?.hostname || new URL(result.url).hostname;
+                                
+                                return (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-bottom"
+                                        style={{ animationDelay: `${i * 100}ms` }}
+                                        title={result.url}
+                                    >
+                                        {favicon ? (
+                                            <img
+                                                src={favicon}
+                                                alt=""
+                                                className="w-4 h-4 rounded"
+                                                onError={(e) => {
+                                                    // Fallback to Globe icon on error
+                                                    (e.target as HTMLImageElement).style.display = "none";
+                                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                                                }}
+                                            />
+                                        ) : (
+                                            <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        )}
+                                        <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 hidden" />
+                                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate max-w-[150px]">
+                                            {hostname}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 );
             }
@@ -188,6 +213,25 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                     {currentPhase !== "complete" && (
                         <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-400 animate-pulse" />
                     )}
+                    <div
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsOverlayOpen(true);
+                        }}
+                        className="p-1 hover:bg-blue-100 dark:hover:bg-slate-700 rounded transition-colors cursor-pointer"
+                        title="View detailed tool information"
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsOverlayOpen(true);
+                            }
+                        }}
+                    >
+                        <Maximize2 className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                    </div>
                     {isExpanded ? (
                         <ChevronUp className="w-4 h-4 text-slate-500" />
                     ) : (
@@ -215,6 +259,13 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                     )}
                 </div>
             )}
+
+            {/* Tool Updates Overlay */}
+            <ToolUpdatesOverlay
+                isOpen={isOverlayOpen}
+                onClose={() => setIsOverlayOpen(false)}
+                toolUpdates={toolUpdates}
+            />
         </div>
     );
 };
