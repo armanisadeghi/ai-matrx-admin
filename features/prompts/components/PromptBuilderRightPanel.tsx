@@ -151,7 +151,7 @@ export function PromptBuilderRightPanel({
                                             <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
                                                 User
                                             </div>
-                                            <div className="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{msg.content}</div>
+                                            <div className="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words overflow-hidden">{msg.content}</div>
                                         </div>
                                     ) : (
                                         <div className="mr-12">
