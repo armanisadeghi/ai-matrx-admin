@@ -5,6 +5,7 @@ import { Wrench, Search, Globe, CheckCircle, Loader2, Sparkles, ChevronDown, Che
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import { cn } from "@/lib/utils";
 import { ToolUpdatesOverlay } from "@/features/chat/components/response/tool-updates";
+import { GiArchiveResearch } from "react-icons/gi";
 
 interface ToolCallVisualizationProps {
     toolUpdates: ToolCallObject[];
@@ -17,6 +18,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
     const [currentPhase, setCurrentPhase] = useState<"starting" | "processing" | "complete">("starting");
     const [isExpanded, setIsExpanded] = useState<boolean>(true);
     const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
+    const [initialOverlayTab, setInitialOverlayTab] = useState<string | undefined>(undefined);
 
     // Determine the phase based on tool updates
     useEffect(() => {
@@ -73,123 +75,138 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
         return null;
     }, [toolUpdates]);
 
-    // Get step_data updates for custom visualization
-    const stepDataUpdates = useMemo(() => {
-        return toolUpdates.filter((u) => u.type === "step_data");
-    }, [toolUpdates]);
-
-    // Custom rendering for brave_default_page
-    const renderBraveSearchSteps = () => {
-        if (!stepDataUpdates.length) return null;
-
+    // Render all updates in chronological order
+    const renderAllUpdates = () => {
         // Track shown hostnames across all updates to avoid duplicates
         const shownHostnames = new Set<string>();
         
-        // Show websites being searched - process each update separately
-        const elements = stepDataUpdates.slice(0, visibleUpdates - 1).map((update, index) => {
-            if (update.step_data?.type === "brave_default_page") {
-                const content = update.step_data.content as any;
-                const webResults = content?.web?.results || [];
-                
-                // Filter out duplicates and get up to 5 unique sites for this batch
-                const uniqueSitesForThisBatch: Array<{
-                    hostname: string;
-                    favicon?: string;
-                    url: string;
-                }> = [];
-                
-                for (const result of webResults) {
-                    if (uniqueSitesForThisBatch.length >= 5) break;
-                    
-                    try {
-                        const hostname = result.meta_url?.hostname || new URL(result.url).hostname;
-                        
-                        // Only add if we haven't shown this hostname yet
-                        if (!shownHostnames.has(hostname)) {
-                            shownHostnames.add(hostname);
-                            uniqueSitesForThisBatch.push({
-                                hostname,
-                                favicon: result.meta_url?.favicon,
-                                url: result.url
-                            });
-                        }
-                    } catch (e) {
-                        // Skip invalid URLs
-                    }
-                }
-                
-                // Only render if we have unique sites to show
-                if (uniqueSitesForThisBatch.length === 0) return null;
-                
-                return (
-                    <div
-                        key={index}
-                        className="space-y-2 animate-in fade-in slide-in-from-left duration-500"
-                    >
-                        <div className="text-xs text-slate-600 dark:text-slate-400 mb-2">
-                            Analyzing {webResults.length} sources:
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {uniqueSitesForThisBatch.map((site, i) => (
-                                <div
-                                    key={site.hostname}
-                                    className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-bottom"
-                                    style={{ animationDelay: `${i * 100}ms` }}
-                                    title={site.url}
-                                >
-                                    {site.favicon ? (
-                                        <img
-                                            src={site.favicon}
-                                            alt=""
-                                            className="w-4 h-4 rounded"
-                                            onError={(e) => {
-                                                // Fallback to Globe icon on error
-                                                (e.target as HTMLImageElement).style.display = "none";
-                                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
-                                            }}
-                                        />
-                                    ) : (
-                                        <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                    )}
-                                    <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 hidden" />
-                                    <span className="text-xs text-slate-700 dark:text-slate-300 truncate max-w-[150px]">
-                                        {site.hostname}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            }
-            return null;
-        }).filter(Boolean);
-
-        if (elements.length === 0) return null;
-
-        return (
-            <div className="space-y-2 mt-3">
-                {elements}
-            </div>
-        );
-    };
-
-    // Render user visible messages from updates
-    const renderMessages = () => {
-        const visibleMessages = toolUpdates.slice(0, visibleUpdates).filter((u) => u.user_visible_message);
+        const visibleToolUpdates = toolUpdates.slice(0, visibleUpdates);
         
-        if (visibleMessages.length === 0) return null;
+        if (visibleToolUpdates.length === 0) return null;
         
         return (
             <>
-                {visibleMessages.map((update, index) => (
-                    <div
-                        key={index}
-                        className="text-xs text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom duration-300"
-                        style={{ animationDelay: `${index * 200}ms` }}
-                    >
-                        {update.user_visible_message}
-                    </div>
-                ))}
+                {visibleToolUpdates.map((update, index) => {
+                    // Since visibleToolUpdates is sliced from the start (0 to visibleUpdates),
+                    // the index here matches the original toolUpdates array index
+                    
+                    // Render brave search results with message
+                    if (update.type === "step_data" && update.step_data?.type === "brave_default_page") {
+                        const content = update.step_data.content as any;
+                        const webResults = content?.web?.results || [];
+                        
+                        // Filter out duplicates and get up to 5 unique sites for this batch
+                        const uniqueSitesForThisBatch: Array<{
+                            hostname: string;
+                            favicon?: string;
+                            url: string;
+                        }> = [];
+                        
+                        for (const result of webResults) {
+                            if (uniqueSitesForThisBatch.length >= 5) break;
+                            
+                            try {
+                                const hostname = result.meta_url?.hostname || new URL(result.url).hostname;
+                                
+                                // Only add if we haven't shown this hostname yet
+                                if (!shownHostnames.has(hostname)) {
+                                    shownHostnames.add(hostname);
+                                    uniqueSitesForThisBatch.push({
+                                        hostname,
+                                        favicon: result.meta_url?.favicon,
+                                        url: result.url
+                                    });
+                                }
+                            } catch (e) {
+                                // Skip invalid URLs
+                            }
+                        }
+                        
+                        return (
+                            <div key={`brave-${index}`} className="space-y-2">
+                                {/* Always show user visible message first */}
+                                {update.user_visible_message && (
+                                    <div className="text-xs text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom duration-300">
+                                        {update.user_visible_message}
+                                    </div>
+                                )}
+                                
+                                {/* Then show the custom brave search visualization if we have sites */}
+                                {uniqueSitesForThisBatch.length > 0 && (
+                                    <div className="space-y-2 animate-in fade-in slide-in-from-left duration-500">
+                                        <div className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+                                            Analyzing {webResults.length} sources:
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {uniqueSitesForThisBatch.map((site, i) => (
+                                                <div
+                                                    key={site.hostname}
+                                                    className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-bottom"
+                                                    style={{ animationDelay: `${i * 100}ms` }}
+                                                    title={site.url}
+                                                >
+                                                    {site.favicon ? (
+                                                        <img
+                                                            src={site.favicon}
+                                                            alt=""
+                                                            className="w-4 h-4 rounded"
+                                                            onError={(e) => {
+                                                                // Fallback to Globe icon on error
+                                                                (e.target as HTMLImageElement).style.display = "none";
+                                                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                                    )}
+                                                    <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 hidden" />
+                                                    <span className="text-xs text-slate-700 dark:text-slate-300 truncate max-w-[150px]">
+                                                        {site.hostname}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                            
+                                            {/* Show "+X more" indicator if there are additional sites */}
+                                            {webResults.length > uniqueSitesForThisBatch.length && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        // Set the initial tab to this specific update
+                                                        setInitialOverlayTab(`tool-update-${index}`);
+                                                        setIsOverlayOpen(true);
+                                                    }}
+                                                    className="flex items-center gap-1.5 px-2 py-0 rounded-md bg-blue-50 dark:bg-blue-900/20 animate-in fade-in slide-in-from-bottom hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                                                    style={{ animationDelay: `${uniqueSitesForThisBatch.length * 100}ms` }}
+                                                    title={`Click to view all ${webResults.length} sources`}
+                                                >
+                                                    <GiArchiveResearch className="w-4 h-4" />
+                                                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                                                        +{webResults.length - uniqueSitesForThisBatch.length} more...
+                                                    </span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    }
+                    
+                    // Render user visible messages (for non-step_data updates)
+                    if (update.user_visible_message && update.type !== "step_data") {
+                        return (
+                            <div
+                                key={`message-${index}`}
+                                className="text-xs text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom duration-300"
+                            >
+                                {update.user_visible_message}
+                            </div>
+                        );
+                    }
+                    
+                    // Return null for other update types we don't render
+                    return null;
+                })}
             </>
         );
     };
@@ -243,6 +260,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                     <div
                         onClick={(e) => {
                             e.stopPropagation();
+                            setInitialOverlayTab(undefined); // Start from the beginning
                             setIsOverlayOpen(true);
                         }}
                         className="p-1 hover:bg-blue-100 dark:hover:bg-slate-700 rounded transition-colors cursor-pointer"
@@ -253,6 +271,7 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                             if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                setInitialOverlayTab(undefined); // Start from the beginning
                                 setIsOverlayOpen(true);
                             }
                         }}
@@ -269,12 +288,9 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
 
             {/* Content */}
             {isExpanded && (
-                <div className="px-4 py-3 space-y-2">
-                    {/* Custom rendering for recognized step types */}
-                    {stepDataUpdates.some((u) => u.step_data?.type === "brave_default_page") && renderBraveSearchSteps()}
-                    
-                    {/* Generic messages */}
-                    {renderMessages()}
+                <div className="px-4 py-3 space-y-3">
+                    {/* Render all updates in chronological order */}
+                    {renderAllUpdates()}
                     
                     {/* Progress indicator */}
                     {currentPhase === "processing" && (
@@ -290,8 +306,12 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
             {/* Tool Updates Overlay */}
             <ToolUpdatesOverlay
                 isOpen={isOverlayOpen}
-                onClose={() => setIsOverlayOpen(false)}
+                onClose={() => {
+                    setIsOverlayOpen(false);
+                    setInitialOverlayTab(undefined); // Reset the initial tab when closing
+                }}
                 toolUpdates={toolUpdates}
+                initialTab={initialOverlayTab}
             />
         </div>
     );

@@ -129,7 +129,7 @@ export function PromptBuilderRightPanel({
         }
     };
     return (
-        <div className="w-1/2 flex flex-col bg-gray-50 dark:bg-gray-900">
+        <div className="w-1/2 flex flex-col bg-textured">
             {/* Conversation Preview */}
             <div className="flex-1 overflow-y-auto p-6" style={{ scrollbarGutter: "stable" }}>
                 {displayMessages.length === 0 ? (
@@ -169,7 +169,7 @@ export function PromptBuilderRightPanel({
                                                     isStreamActive={isStreaming}
                                                     hideCopyButton={true}
                                                     allowFullScreenEditor={true}
-                                                    className="bg-gray-50 dark:bg-gray-900"
+                                                    className="bg-textured"
                                                     onContentChange={onMessageContentChange ? (newContent) => onMessageContentChange(idx, newContent) : undefined}
                                                 />
                                             )}
@@ -183,7 +183,7 @@ export function PromptBuilderRightPanel({
             </div>
 
             {/* Test Input Area */}
-            <div className="p-4 bg-gray-100 dark:bg-gray-900 space-y-3">
+            <div className="p-4 bg-textured space-y-3">
                 {/* Clear conversation button and stats */}
                 {displayMessages.length > 0 && (
                     <div className="flex items-center justify-center gap-4">
@@ -205,7 +205,7 @@ export function PromptBuilderRightPanel({
                 )}
 
                 {/* Unified Chat Container with Variables and Input */}
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
+                <div className="bg-textured rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
                     {/* Variable Inputs */}
                     {variableDefaults.length > 0 && (
                         <div>

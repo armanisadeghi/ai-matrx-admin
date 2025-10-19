@@ -12,6 +12,7 @@ interface ToolUpdatesOverlayProps {
     isOpen: boolean;
     onClose: () => void;
     toolUpdates: ToolCallObject[];
+    initialTab?: string;
 }
 
 const renderToolUpdateContent = (update: ToolCallObject, index: number): React.ReactNode => {
@@ -290,6 +291,7 @@ export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
     isOpen,
     onClose,
     toolUpdates,
+    initialTab,
 }) => {
     // Generate tabs dynamically from toolUpdates
     const tabs: TabDefinition[] = useMemo(() => {
@@ -331,6 +333,7 @@ export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
             title="Tool Updates"
             description="View MCP tool calls and step data"
             tabs={tabs}
+            initialTab={initialTab}
             width="95vw"
             height="95vh"
         />
