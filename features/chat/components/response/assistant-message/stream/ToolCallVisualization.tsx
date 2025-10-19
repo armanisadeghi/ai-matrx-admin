@@ -82,13 +82,45 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
     const renderBraveSearchSteps = () => {
         if (!stepDataUpdates.length) return null;
 
-        // Show websites being searched
+        // Track shown hostnames across all updates to avoid duplicates
+        const shownHostnames = new Set<string>();
+        
+        // Show websites being searched - process each update separately
         const elements = stepDataUpdates.slice(0, visibleUpdates - 1).map((update, index) => {
             if (update.step_data?.type === "brave_default_page") {
                 const content = update.step_data.content as any;
                 const webResults = content?.web?.results || [];
                 
-                // Show first 5-6 websites with real favicons and URLs
+                // Filter out duplicates and get up to 5 unique sites for this batch
+                const uniqueSitesForThisBatch: Array<{
+                    hostname: string;
+                    favicon?: string;
+                    url: string;
+                }> = [];
+                
+                for (const result of webResults) {
+                    if (uniqueSitesForThisBatch.length >= 5) break;
+                    
+                    try {
+                        const hostname = result.meta_url?.hostname || new URL(result.url).hostname;
+                        
+                        // Only add if we haven't shown this hostname yet
+                        if (!shownHostnames.has(hostname)) {
+                            shownHostnames.add(hostname);
+                            uniqueSitesForThisBatch.push({
+                                hostname,
+                                favicon: result.meta_url?.favicon,
+                                url: result.url
+                            });
+                        }
+                    } catch (e) {
+                        // Skip invalid URLs
+                    }
+                }
+                
+                // Only render if we have unique sites to show
+                if (uniqueSitesForThisBatch.length === 0) return null;
+                
                 return (
                     <div
                         key={index}
@@ -98,38 +130,33 @@ const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({ toolUpdat
                             Analyzing {webResults.length} sources:
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            {webResults.slice(0, 6).map((result: any, i: number) => {
-                                const favicon = result.meta_url?.favicon;
-                                const hostname = result.meta_url?.hostname || new URL(result.url).hostname;
-                                
-                                return (
-                                    <div
-                                        key={i}
-                                        className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-bottom"
-                                        style={{ animationDelay: `${i * 100}ms` }}
-                                        title={result.url}
-                                    >
-                                        {favicon ? (
-                                            <img
-                                                src={favicon}
-                                                alt=""
-                                                className="w-4 h-4 rounded"
-                                                onError={(e) => {
-                                                    // Fallback to Globe icon on error
-                                                    (e.target as HTMLImageElement).style.display = "none";
-                                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
-                                                }}
-                                            />
-                                        ) : (
-                                            <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                        )}
-                                        <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 hidden" />
-                                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate max-w-[150px]">
-                                            {hostname}
-                                        </span>
-                                    </div>
-                                );
-                            })}
+                            {uniqueSitesForThisBatch.map((site, i) => (
+                                <div
+                                    key={site.hostname}
+                                    className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-bottom"
+                                    style={{ animationDelay: `${i * 100}ms` }}
+                                    title={site.url}
+                                >
+                                    {site.favicon ? (
+                                        <img
+                                            src={site.favicon}
+                                            alt=""
+                                            className="w-4 h-4 rounded"
+                                            onError={(e) => {
+                                                // Fallback to Globe icon on error
+                                                (e.target as HTMLImageElement).style.display = "none";
+                                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                                            }}
+                                        />
+                                    ) : (
+                                        <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    )}
+                                    <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 hidden" />
+                                    <span className="text-xs text-slate-700 dark:text-slate-300 truncate max-w-[150px]">
+                                        {site.hostname}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 );
