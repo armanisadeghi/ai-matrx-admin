@@ -7,6 +7,9 @@ import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { NotificationDropdown } from "@/components/ui/notifications";
 import { Notification } from "@/types/notification.types";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 
 interface SidebarLink {
     label: string;
@@ -32,12 +35,30 @@ export default function DesktopLayout({
     uniqueId = "desktop-layout",
     isAdmin = false,
 }: DesktopLayoutProps) {
+    const pathname = usePathname();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(!initialOpen);
-    const [activeLink, setActiveLink] = useState(primaryLinks[0]?.href || "");
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const isAdminIndicatorVisible = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
     
     const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
     const allLinks = [...primaryLinks, ...(isAdmin ? secondaryLinks : [])];
+    
+    // Only show secondary links if admin indicator is visible
+    const shouldShowSecondaryLinks = isAdmin && isAdminIndicatorVisible;
+
+    // Helper function to check if a link is active based on the current pathname
+    const isLinkActive = (linkHref: string) => {
+        // Remove trailing slash from both pathname and linkHref for consistent comparison
+        const normalizedPathname = pathname.endsWith('/') && pathname.length > 1 
+            ? pathname.slice(0, -1) 
+            : pathname;
+        const normalizedHref = linkHref.endsWith('/') && linkHref.length > 1 
+            ? linkHref.slice(0, -1) 
+            : linkHref;
+        
+        // Check if the current pathname starts with the link href
+        return normalizedPathname === normalizedHref || normalizedPathname.startsWith(normalizedHref + '/');
+    };
 
     return (
         <div id={uniqueId} className="min-h-screen bg-textured text-gray-800 dark:text-gray-100"
@@ -99,9 +120,8 @@ export default function DesktopLayout({
                                     <li key={`primary-${index}`}>
                                         <a
                                             href={link.href}
-                                            onClick={() => setActiveLink(link.href)}
                                             className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
-                                                activeLink === link.href
+                                                isLinkActive(link.href)
                                                     ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
                                                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
                                             }`}
@@ -125,8 +145,8 @@ export default function DesktopLayout({
                         </div>
                     )}
 
-                    {/* Secondary Links (Admin) - Scrollable */}
-                    {isAdmin && secondaryLinks.length > 0 && (
+                    {/* Secondary Links (Admin) - Scrollable - Only show if admin indicator is visible */}
+                    {shouldShowSecondaryLinks && secondaryLinks.length > 0 && (
                         <div className="flex-1 flex flex-col min-h-0">
                             <h3 
                                 className={`px-1 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-all duration-300 ease-in-out ${
@@ -143,9 +163,8 @@ export default function DesktopLayout({
                                         <li key={`secondary-${index}`}>
                                             <a
                                                 href={link.href}
-                                                onClick={() => setActiveLink(link.href)}
                                                 className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
-                                                    activeLink === link.href
+                                                    isLinkActive(link.href)
                                                         ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
                                                         : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
                                                 }`}

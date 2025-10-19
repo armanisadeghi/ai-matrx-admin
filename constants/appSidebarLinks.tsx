@@ -69,9 +69,9 @@ export const primaryLinks = [
         icon: <Brain className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
-        label: "Applets",
-        href: "/applets",
-        icon: <LayoutGrid className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        label: "Prompt Builder",
+        href: "/ai/prompts",
+        icon: <ClipboardType className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Chat",
@@ -84,30 +84,15 @@ export const primaryLinks = [
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "Applets",
+        href: "/applets",
+        icon: <LayoutGrid className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },    {
         label: "Voices",
         icon: <AiFillAudio className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         href: "/demo/voice/voice-manager",
     },
-    // {
-    //     label: "Component Editor",
-    //     href: "/brokers/component-editor",
-    //     icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    // },
-    {
-        label: "Math Demo",
-        href: "/tests/math",
-        icon: <SquareSigma className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-        label: "Flash Cards",
-        href: "/flashcard",
-        icon: <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-        label: "Color Converter",
-        href: "/tests/tailwind-test/color-converter",
-        icon: <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
+
     {
         label: "Image Gallery",
         href: "/image-editing/public-image-search", // https://lucide.dev/icons/
@@ -115,7 +100,7 @@ export const primaryLinks = [
     },
     {
         label: "Scrape & Analyze",
-        href: "/demo/component-demo/socket-form-builder/scraper-ui/scraper-one",
+        href: "/scraper",
         icon: <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
@@ -123,6 +108,26 @@ export const primaryLinks = [
         href: "/entity-crud", // https://lucide.dev/icons/
         icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
+        // {
+    //     label: "Component Editor",
+    //     href: "/brokers/component-editor",
+    //     icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
+    // {
+    //     label: "Math Demo",
+    //     href: "/tests/math",
+    //     icon: <SquareSigma className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
+    // {
+    //     label: "Flash Cards",
+    //     href: "/flashcard",
+    //     icon: <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
+    // {
+    //     label: "Color Converter",
+    //     href: "/tests/tailwind-test/color-converter",
+    //     icon: <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    // },
     // {
     //     label: 'Camera',
     //     href: '/tests/camera-test',
