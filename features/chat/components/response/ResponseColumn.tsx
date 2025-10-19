@@ -218,7 +218,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                 <Button
                     onClick={() => setIsToolUpdatesOpen(true)}
                     className="fixed bottom-32 right-8 z-40 shadow-lg"
-                    size="lg"
+                    size="default"
                     variant="default"
                 >
                     <Wrench className="w-4 h-4 mr-2" />

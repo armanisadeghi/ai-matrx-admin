@@ -182,11 +182,16 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
         setSelectedResults(newSelected);
     };
 
-    // Get selected results data
+    // Get selected results data (web and videos)
     const getSelectedResultsData = useMemo(() => {
-        const allResults = data?.content?.web?.results || [];
-        return allResults.filter(r => selectedResults.has(r.url));
-    }, [data?.content?.web?.results, selectedResults]);
+        const allWebResults = data?.content?.web?.results || [];
+        const allVideoResults = data?.content?.videos?.results || [];
+        
+        return {
+            web: allWebResults.filter(r => selectedResults.has(r.url)),
+            videos: allVideoResults.filter(v => selectedResults.has(v.url))
+        };
+    }, [data?.content?.web?.results, data?.content?.videos?.results, selectedResults]);
 
     // Stats for hero section
     const statsItems = [
@@ -228,19 +233,23 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                     </h3>
                     {topWebResults.map((result, index) => (
                         <React.Fragment key={index}>
-                            <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-shadow">
+                            <div 
+                                className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-shadow cursor-pointer"
+                                onClick={(e) => {
+                                    // Don't toggle if clicking on a link
+                                    if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
+                                        toggleSelection(result.url);
+                                    }
+                                }}
+                            >
                                 {/* Selection Checkbox */}
-                                <button
-                                    onClick={() => toggleSelection(result.url)}
-                                    className="absolute top-2 right-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                                    title={selectedResults.has(result.url) ? "Remove from saved" : "Save for reference"}
-                                >
+                                <div className="absolute top-2 right-2 p-1 pointer-events-none">
                                     {selectedResults.has(result.url) ? (
                                         <CheckSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                     ) : (
                                         <Square className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                     )}
-                                </button>
+                                </div>
                                 
                                 <div className="flex items-start gap-2 p-3 pr-10">
                                     <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center mt-0.5">
@@ -263,6 +272,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline line-clamp-1 block"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
                                             {result.title}
                                         </a>
@@ -337,13 +347,28 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                 {topVideos.map((video, index) => (
                                     <div
                                         key={index}
-                                        className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-sm transition-shadow"
+                                        className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-sm transition-shadow cursor-pointer"
+                                        onClick={(e) => {
+                                            if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
+                                                toggleSelection(video.url);
+                                            }
+                                        }}
                                     >
+                                        {/* Selection Checkbox */}
+                                        <div className="absolute top-2 right-2 p-1 pointer-events-none z-10 bg-black/40 rounded">
+                                            {selectedResults.has(video.url) ? (
+                                                <CheckSquare className="w-4 h-4 text-blue-400" />
+                                            ) : (
+                                                <Square className="w-4 h-4 text-white/70" />
+                                            )}
+                                        </div>
+
                                         <a
                                             href={video.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
                                             {video.thumbnail?.src && (
                                                 <div className="relative bg-gray-900 dark:bg-black">
@@ -414,20 +439,22 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                 return (
                     <div
                         key={index}
-                        className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+                        className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={(e) => {
+                            // Don't toggle if clicking on a link
+                            if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
+                                toggleSelection(result.url);
+                            }
+                        }}
                     >
                         {/* Selection Checkbox */}
-                        <button
-                            onClick={() => toggleSelection(result.url)}
-                            className="absolute top-3 right-3 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors z-10"
-                            title={selectedResults.has(result.url) ? "Remove from saved" : "Save for reference"}
-                        >
+                        <div className="absolute top-3 right-3 p-1.5 pointer-events-none z-10">
                             {selectedResults.has(result.url) ? (
                                 <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             ) : (
                                 <Square className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                             )}
-                        </button>
+                        </div>
 
                         <div className="flex gap-4 pr-8">
                             {/* Left side: Favicon + Content */}
@@ -480,6 +507,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="block text-lg font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline mb-2 line-clamp-2"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     {result.title}
                                 </a>
@@ -529,9 +557,23 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
             {data?.content?.videos?.results?.map((video, index) => (
                 <div
                     key={index}
-                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:shadow-md transition-shadow"
+                    className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={(e) => {
+                        if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
+                            toggleSelection(video.url);
+                        }
+                    }}
                 >
-                    <div className="flex items-start gap-3">
+                    {/* Selection Checkbox */}
+                    <div className="absolute top-3 right-3 p-1.5 pointer-events-none z-10">
+                        {selectedResults.has(video.url) ? (
+                            <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        ) : (
+                            <Square className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                        )}
+                    </div>
+
+                    <div className="flex items-start gap-3 pr-8">
                         {video.thumbnail?.src && (
                             <div className="relative flex-shrink-0">
                                 <img src={video.thumbnail.src} alt="" className="w-32 h-20 rounded object-cover" />
@@ -548,6 +590,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 line-clamp-2 mb-1 block"
+                                onClick={(e) => e.stopPropagation()}
                             >
                                 {video.title}
                             </a>
@@ -629,22 +672,54 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
 
     // Saved Sources Content - Functional markdown-ready display
     const SavedSourcesContent = () => {
+        const totalSaved = getSelectedResultsData.web.length + getSelectedResultsData.videos.length;
+        
         const copyToClipboard = () => {
-            const markdown = getSelectedResultsData
-                .map((result, index) => {
+            const allItems: any[] = [];
+            
+            // Add web results
+            getSelectedResultsData.web.forEach(result => {
+                allItems.push({
+                    type: 'web',
+                    title: result.title,
+                    url: result.url,
+                    source: result.meta_url?.hostname || result.profile?.long_name || 'Unknown',
+                    description: result.description,
+                    extra_snippets: result.extra_snippets
+                });
+            });
+            
+            // Add videos
+            getSelectedResultsData.videos.forEach(video => {
+                allItems.push({
+                    type: 'video',
+                    title: video.title,
+                    url: video.url,
+                    source: video.video?.creator || video.video?.publisher || video.meta_url?.hostname || 'Unknown',
+                    description: video.description,
+                    duration: video.video?.duration
+                });
+            });
+            
+            const markdown = allItems
+                .map((item, index) => {
                     const lines = [
-                        `### ${index + 1}. ${result.title}`,
-                        `**URL**: [${result.url}](${result.url})`,
-                        `**Source**: ${result.meta_url?.hostname || result.profile?.long_name || 'Unknown'}`,
+                        `### ${index + 1}. ${item.title}${item.type === 'video' ? ' 🎥' : ''}`,
+                        `**URL**: [${item.url}](${item.url})`,
+                        `**Source**: ${item.source}`,
                     ];
                     
-                    if (result.description) {
-                        lines.push(`**Description**: ${result.description}`);
+                    if (item.duration) {
+                        lines.push(`**Duration**: ${item.duration}`);
                     }
                     
-                    if (result.extra_snippets && result.extra_snippets.length > 0) {
+                    if (item.description) {
+                        lines.push(`**Description**: ${item.description}`);
+                    }
+                    
+                    if (item.extra_snippets && item.extra_snippets.length > 0) {
                         lines.push(`**Additional Info**:`);
-                        result.extra_snippets.forEach(snippet => {
+                        item.extra_snippets.forEach((snippet: string) => {
                             lines.push(`- ${snippet}`);
                         });
                     }
@@ -658,7 +733,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
 
         return (
             <div className="space-y-4">
-                {getSelectedResultsData.length === 0 ? (
+                {totalSaved === 0 ? (
                     <div className="text-center py-12">
                         <Bookmark className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
                         <p className="text-gray-600 dark:text-gray-400 mb-2">No sources saved yet</p>
@@ -670,7 +745,9 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                     <>
                         <div className="flex items-center justify-between mb-4">
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                                {getSelectedResultsData.length} source{getSelectedResultsData.length !== 1 ? 's' : ''} saved
+                                {totalSaved} source{totalSaved !== 1 ? 's' : ''} saved 
+                                {getSelectedResultsData.web.length > 0 && ` (${getSelectedResultsData.web.length} web`}
+                                {getSelectedResultsData.videos.length > 0 && `, ${getSelectedResultsData.videos.length} video${getSelectedResultsData.videos.length !== 1 ? 's' : ''})`}
                             </div>
                             <Button
                                 variant="outline"
@@ -684,7 +761,8 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                         </div>
 
                         <div className="space-y-4">
-                            {getSelectedResultsData.map((result, index) => (
+                            {/* Web Results */}
+                            {getSelectedResultsData.web.map((result, index) => (
                                 <div
                                     key={result.url}
                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
@@ -730,6 +808,61 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                                         <li key={idx}>{snippet}</li>
                                                     ))}
                                                 </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            {/* Video Results */}
+                            {getSelectedResultsData.videos.map((video, index) => (
+                                <div
+                                    key={video.url}
+                                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                                >
+                                    <div className="flex items-start justify-between gap-3 mb-2">
+                                        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1 flex items-center gap-2">
+                                            <Video className="w-4 h-4" />
+                                            {getSelectedResultsData.web.length + index + 1}. {video.title}
+                                        </h3>
+                                        <button
+                                            onClick={() => toggleSelection(video.url)}
+                                            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded transition-colors"
+                                            title="Remove from saved"
+                                        >
+                                            <Delete className="w-6 h-6" />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="space-y-2 text-xs font-mono bg-gray-50 dark:bg-gray-900 p-3 rounded">
+                                        <div className="text-gray-700 dark:text-gray-300">
+                                            <span className="text-gray-500 dark:text-gray-300">Type:</span>{' '}
+                                            Video 🎥
+                                        </div>
+                                        
+                                        <div className="text-gray-700 dark:text-gray-300">
+                                            <span className="text-gray-500 dark:text-gray-300">URL:</span>{' '}
+                                            <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline break-all">
+                                                {video.url}
+                                            </a>
+                                        </div>
+                                        
+                                        {video.video?.duration && (
+                                            <div className="text-gray-700 dark:text-gray-300">
+                                                <span className="text-gray-500 dark:text-gray-300">Duration:</span>{' '}
+                                                {video.video.duration}
+                                            </div>
+                                        )}
+                                        
+                                        <div className="text-gray-700 dark:text-gray-300">
+                                            <span className="text-gray-500 dark:text-gray-300">Creator/Publisher:</span>{' '}
+                                            {video.video?.creator || video.video?.publisher || video.meta_url?.hostname || 'Unknown'}
+                                        </div>
+                                        
+                                        {video.description && (
+                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                <span className="text-gray-500 dark:text-gray-300">Description:</span>{' '}
+                                                {video.description}
                                             </div>
                                         )}
                                     </div>
