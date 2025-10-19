@@ -72,6 +72,13 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const textDirection = useMemo(() => detectTextDirection(content), [content]);
     const directionClasses = getDirectionClasses(textDirection);
     
+    // Memoize LinkComponent wrapper to prevent recreation during streaming
+    const LinkWrapper = useMemo(() => {
+        return ({ node, href, children, ...props }: any) => (
+            <LinkComponent href={href}>{children}</LinkComponent>
+        );
+    }, []); // Empty deps - this doesn't need to change
+    
     const preprocessContent = (rawContent: string): string => {
         let processed = rawContent;
         
@@ -113,7 +120,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const handleMouseEnter = !isStreamActive ? () => setIsHovering(true) : undefined;
     const handleMouseLeave = !isStreamActive ? () => setIsHovering(false) : undefined;
     
-    const components = {
+    // Memoize components to prevent recreation during streaming
+    const components = useMemo(() => ({
         input: ({ node, type, checked, disabled, ...props }: any) => {
             if (type === 'checkbox') {
                 return (
@@ -246,7 +254,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                 </li>
             );
         },
-        a: ({ node, href, children, ...props }) => <LinkComponent href={href}>{children}</LinkComponent>,
+        a: LinkWrapper,
         h1: ({ node, children, ...props }) => {
             const headingText = typeof children === 'string' ? children : 
                 Array.isArray(children) ? children.join('') : '';
@@ -342,7 +350,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         tr: () => null,
         th: () => null,
         td: () => null,
-    };
+    }), []); // Empty deps - LinkWrapper is stable
 
     return (
         <div 
