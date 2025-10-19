@@ -10,6 +10,11 @@ import {
     Filter,
     BarChart3,
     Clock,
+    Bookmark,
+    Copy,
+    CheckSquare,
+    Square,
+    Delete,
 } from "lucide-react";
 import { Card } from "@/components/official/PageTemplate";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -166,6 +171,23 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
         return resultsBySubtype.get(selectedSubtype) || [];
     }, [data?.content?.web?.results, selectedSubtype, resultsBySubtype]);
 
+    // Toggle selection of a result
+    const toggleSelection = (url: string) => {
+        const newSelected = new Set(selectedResults);
+        if (newSelected.has(url)) {
+            newSelected.delete(url);
+        } else {
+            newSelected.add(url);
+        }
+        setSelectedResults(newSelected);
+    };
+
+    // Get selected results data
+    const getSelectedResultsData = useMemo(() => {
+        const allResults = data?.content?.web?.results || [];
+        return allResults.filter(r => selectedResults.has(r.url));
+    }, [data?.content?.web?.results, selectedResults]);
+
     // Stats for hero section
     const statsItems = [
         { label: "Total Results", value: stats.totalResults },
@@ -206,8 +228,21 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                     </h3>
                     {topWebResults.map((result, index) => (
                         <React.Fragment key={index}>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-shadow">
-                                <div className="flex items-start gap-2 p-3">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-shadow">
+                                {/* Selection Checkbox */}
+                                <button
+                                    onClick={() => toggleSelection(result.url)}
+                                    className="absolute top-2 right-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                    title={selectedResults.has(result.url) ? "Remove from saved" : "Save for reference"}
+                                >
+                                    {selectedResults.has(result.url) ? (
+                                        <CheckSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    ) : (
+                                        <Square className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                    )}
+                                </button>
+                                
+                                <div className="flex items-start gap-2 p-3 pr-10">
                                     <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center mt-0.5">
                                         {result.profile?.img ? (
                                             <img 
@@ -379,9 +414,22 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                 return (
                     <div
                         key={index}
-                        className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+                        className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
                     >
-                        <div className="flex gap-4">
+                        {/* Selection Checkbox */}
+                        <button
+                            onClick={() => toggleSelection(result.url)}
+                            className="absolute top-3 right-3 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors z-10"
+                            title={selectedResults.has(result.url) ? "Remove from saved" : "Save for reference"}
+                        >
+                            {selectedResults.has(result.url) ? (
+                                <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            ) : (
+                                <Square className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                            )}
+                        </button>
+
+                        <div className="flex gap-4 pr-8">
                             {/* Left side: Favicon + Content */}
                             <div className="flex-1 min-w-0">
                                 {/* Favicon + URL + Badge Row */}
@@ -579,6 +627,121 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
         </Accordion>
     );
 
+    // Saved Sources Content - Functional markdown-ready display
+    const SavedSourcesContent = () => {
+        const copyToClipboard = () => {
+            const markdown = getSelectedResultsData
+                .map((result, index) => {
+                    const lines = [
+                        `### ${index + 1}. ${result.title}`,
+                        `**URL**: [${result.url}](${result.url})`,
+                        `**Source**: ${result.meta_url?.hostname || result.profile?.long_name || 'Unknown'}`,
+                    ];
+                    
+                    if (result.description) {
+                        lines.push(`**Description**: ${result.description}`);
+                    }
+                    
+                    if (result.extra_snippets && result.extra_snippets.length > 0) {
+                        lines.push(`**Additional Info**:`);
+                        result.extra_snippets.forEach(snippet => {
+                            lines.push(`- ${snippet}`);
+                        });
+                    }
+                    
+                    return lines.join('\n');
+                })
+                .join('\n\n---\n\n');
+            
+            navigator.clipboard.writeText(markdown);
+        };
+
+        return (
+            <div className="space-y-4">
+                {getSelectedResultsData.length === 0 ? (
+                    <div className="text-center py-12">
+                        <Bookmark className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
+                        <p className="text-gray-600 dark:text-gray-400 mb-2">No sources saved yet</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500">
+                            Click the checkbox on any result to save it for reference
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                {getSelectedResultsData.length} source{getSelectedResultsData.length !== 1 ? 's' : ''} saved
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={copyToClipboard}
+                                className="flex items-center gap-2"
+                            >
+                                <Copy className="w-4 h-4" />
+                                Copy as Markdown
+                            </Button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {getSelectedResultsData.map((result, index) => (
+                                <div
+                                    key={result.url}
+                                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                                >
+                                    <div className="flex items-start justify-between gap-3 mb-2">
+                                        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1">
+                                            {index + 1}. {result.title}
+                                        </h3>
+                                        <button
+                                            onClick={() => toggleSelection(result.url)}
+                                            className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded transition-colors"
+                                            title="Remove from saved"
+                                        >
+                                            <Delete className="w-6 h-6" />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="space-y-2 text-xs font-mono bg-gray-50 dark:bg-gray-900 p-3 rounded">
+                                        <div className="text-gray-700 dark:text-gray-300">
+                                            <span className="text-gray-500 dark:text-gray-300">URL:</span>{' '}
+                                            <a href={result.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline break-all">
+                                                {result.url}
+                                            </a>
+                                        </div>
+                                        
+                                        <div className="text-gray-700 dark:text-gray-300">
+                                            <span className="text-gray-500 dark:text-gray-300">Source:</span>{' '}
+                                            {result.meta_url?.hostname || result.profile?.long_name || 'Unknown'}
+                                        </div>
+                                        
+                                        {result.description && (
+                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                <span className="text-gray-500 dark:text-gray-300">Description:</span>{' '}
+                                                {result.description}
+                                            </div>
+                                        )}
+                                        
+                                        {result.extra_snippets && result.extra_snippets.length > 0 && (
+                                            <div className="text-gray-700 dark:text-gray-300 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                <div className="text-gray-500 dark:text-gray-300 mb-1">Additional Info:</div>
+                                                <ul className="list-disc list-inside space-y-1">
+                                                    {result.extra_snippets.map((snippet, idx) => (
+                                                        <li key={idx}>{snippet}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    };
+
     // Define tabs
     const tabs = [
         {
@@ -604,6 +767,12 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
             label: "By Domain",
             icon: FileText,
             content: <ByDomainContent />,
+        },
+        {
+            id: "saved",
+            label: `Saved Sources${selectedResults.size > 0 ? ` (${selectedResults.size})` : ''}`,
+            icon: Bookmark,
+            content: <SavedSourcesContent />,
         },
     ];
 
