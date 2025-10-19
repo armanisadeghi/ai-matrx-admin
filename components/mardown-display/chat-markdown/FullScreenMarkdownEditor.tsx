@@ -93,7 +93,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                     editMode="markdown"
                 />
             ),
-            className: "overflow-hidden p-0 bg-background"
+            className: "overflow-hidden p-0 bg-textured"
         });
     }
     
@@ -110,7 +110,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                     editMode="wysiwyg"
                 />
             ),
-            className: "overflow-hidden p-0 bg-background"
+            className: "overflow-hidden p-0 bg-textured"
         });
     }
     
@@ -120,7 +120,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             label: "Plain Text Editor",
             content: (
                 <textarea
-                    className="w-full h-full p-4 outline-none resize-none border-none bg-background text-foreground text-base font-mono"
+                    className="w-full h-full p-4 outline-none resize-none border-none bg-textured text-foreground text-base font-mono"
                     value={editedContent}
                     onChange={handleTextareaChange}
                     placeholder="Start writing markdown..."
@@ -136,14 +136,14 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             id: "preview",
             label: "Preview",
             content: (
-                <div className="w-full h-full overflow-auto bg-background dark:bg-background">
+                <div className="w-full h-full overflow-auto bg-textured">
                     <div className="flex justify-center min-h-full">
                         <div className="max-w-[750px] w-full p-6 border-x-3 border-gray-500 dark:border-gray-500 shadow-sm min-h-full">
                             <EnhancedChatMarkdown
                                 content={editedContent}
                                 type="message"
                                 role="assistant"
-                                className="bg-transparent dark:bg-transparent p-4"
+                                className="bg-textured p-4"
                                 isStreamActive={false}
                                 analysisData={analysisData}
                                 messageId={messageId}

@@ -88,9 +88,8 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
 
     if (!isAppInitialized) {
         return (
-            <div className="h-full w-full flex flex-col bg-textured">
-                {/* <SkeletonHeader /> */}
-                <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="h-screen w-full flex items-center justify-center bg-textured">
+                <div className="flex flex-col items-center justify-center">
                     <LoadingSpinner size="lg" />
                     <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm animate-pulse">
                         Loading custom Matrx application...

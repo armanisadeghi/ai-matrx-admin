@@ -162,7 +162,7 @@ export function ResultPanel({
                                 taskId={taskId}
                                 type="message"
                                 role="assistant"
-                                className="bg-transparent dark:bg-transparent p-4"
+                                className="bg-textured p-4"
                                 isStreamActive={isStreaming}
                                 analysisData={analysisData}
                                 messageId={null}

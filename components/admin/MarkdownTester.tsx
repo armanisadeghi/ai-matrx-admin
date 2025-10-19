@@ -222,11 +222,11 @@ Right-click for content block templates!"
                   </Badge>
                 </div>
                 
-                <div className="flex-1 border rounded-lg overflow-auto bg-slate-50 dark:bg-slate-900 border-gray-200 dark:border-gray-700 min-h-0">
+                <div className="flex-1 border rounded-lg overflow-auto bg-textured border-gray-200 dark:border-gray-700 min-h-0">
                   <div className="p-4">
                     <EnhancedChatMarkdown
                       content={renderedContent}
-                      className="bg-slate-50 dark:bg-slate-900"
+                      className="bg-textured"
                       type="message"
                       role="assistant"
                       isStreamActive={false}
