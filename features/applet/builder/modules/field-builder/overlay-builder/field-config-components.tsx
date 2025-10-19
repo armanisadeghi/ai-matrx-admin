@@ -95,7 +95,7 @@ export const FieldLabelComponent: React.FC<FieldComponentProps> = ({ fieldId }) 
                 name="label"
                 value={label || ""}
                 onChange={handleLabelChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
         </div>
     );
@@ -119,7 +119,7 @@ export const FieldDescriptionComponent: React.FC<FieldComponentProps> = ({ field
                 value={description || ""}
                 onChange={handleDescriptionChange}
                 rows={3}
-                className="resize-none mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="resize-none mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
         </div>
     );
@@ -143,7 +143,7 @@ export const FieldHelpTextComponent: React.FC<FieldComponentProps> = ({ fieldId 
                 value={helpText || ""}
                 onChange={handleHelpTextChange}
                 rows={3}
-                className="resize-none mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="resize-none mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
         </div>
     );
@@ -166,7 +166,7 @@ export const FieldPlaceholderComponent: React.FC<FieldComponentProps> = ({ field
                 name="placeholder"
                 value={placeholder || ""}
                 onChange={handlePlaceholderChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
         </div>
     );
@@ -214,7 +214,7 @@ export const FieldMinDateComponent: React.FC<FieldComponentProps> = ({ fieldId }
                 name="minDate"
                 value={minDate || ""}
                 onChange={handleMinDateChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
             />
         </div>
     );
@@ -238,7 +238,7 @@ export const FieldMaxDateComponent: React.FC<FieldComponentProps> = ({ fieldId }
                 name="maxDate"
                 value={maxDate || ""}
                 onChange={handleMaxDateChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
             />
         </div>
     );
@@ -274,7 +274,7 @@ export const FieldAutoCompleteComponent: React.FC<FieldComponentProps> = ({ fiel
         <div>
             <FieldLabelAndHelpText fieldName="autoComplete" fieldLabel="Autocomplete" required={false} />
             <Select value={autoComplete || "off"} onValueChange={handleAutoCompleteChange}>
-                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Select autocomplete behavior" />
                 </SelectTrigger>
                 <SelectContent>
@@ -306,7 +306,7 @@ export const FieldMinComponent: React.FC<FieldComponentProps> = ({ fieldId }) =>
                 name="min"
                 value={min === null ? 0 : min}
                 onChange={handleMinChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
             />
         </div>
     );
@@ -330,7 +330,7 @@ export const FieldMaxComponent: React.FC<FieldComponentProps> = ({ fieldId }) =>
                 name="max"
                 value={max === null ? 100 : max}
                 onChange={handleMaxChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
             />
         </div>
     );
@@ -356,7 +356,7 @@ export const FieldStepComponent: React.FC<FieldComponentProps> = ({ fieldId }) =
                 step="0.01"
                 value={step === null ? 1 : step}
                 onChange={handleStepChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
             />
         </div>
     );
@@ -379,7 +379,7 @@ export const FieldValuePrefixComponent: React.FC<FieldComponentProps> = ({ field
                 name="valuePrefix"
                 value={valuePrefix || ""}
                 onChange={handleValuePrefixChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
                 placeholder="e.g., $"
             />
         </div>
@@ -403,7 +403,7 @@ export const FieldValueSuffixComponent: React.FC<FieldComponentProps> = ({ field
                 name="valueSuffix"
                 value={valueSuffix || ""}
                 onChange={handleValueSuffixChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
                 placeholder="e.g., %"
             />
         </div>
@@ -466,7 +466,7 @@ export const FieldRowsComponent: React.FC<FieldComponentProps> = ({ fieldId }) =
                 </Label>
                 <HelpIcon text={fieldHelpTextItems.rows || "Number of rows or items to display before scrolling"} />
             </div>
-            <div className="flex items-center mt-1 border rounded-md border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="flex items-center mt-1 border rounded-md border-gray-200 dark:border-gray-700 bg-textured">
                 <button
                     type="button"
                     onClick={handleRowsDecrease}
@@ -612,7 +612,7 @@ export const FieldMinItemsComponent: React.FC<FieldComponentProps> = ({ fieldId 
                 min={0}
                 value={minItems === null ? 0 : minItems}
                 onChange={handleMinItemsChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
         </div>
     );
@@ -643,7 +643,7 @@ export const FieldMaxItemsComponent: React.FC<FieldComponentProps> = ({ fieldId 
                 min={0}
                 value={maxItems === null || maxItems === undefined ? "" : maxItems}
                 onChange={handleMaxItemsChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="No limit"
             />
         </div>
@@ -668,7 +668,7 @@ export const FieldWidthComponent: React.FC<FieldComponentProps> = ({ fieldId }) 
                 <HelpIcon text={fieldHelpTextItems.width || "Controls the width of the field"} />
             </div>
             <Select value={width || undefined} onValueChange={handleWidthChange}>
-                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Select width" />
                 </SelectTrigger>
                 <SelectContent>
@@ -701,7 +701,7 @@ export const FieldDirectionComponent: React.FC<FieldComponentProps> = ({ fieldId
                 <HelpIcon text={fieldHelpTextItems.direction || "Controls the layout direction"} />
             </div>
             <Select value={direction || undefined} onValueChange={handleDirectionChange}>
-                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Select direction" />
                 </SelectTrigger>
                 <SelectContent>
@@ -734,7 +734,7 @@ export const FieldGridColsComponent: React.FC<FieldComponentProps> = ({ fieldId 
                 <HelpIcon text={fieldHelpTextItems.gridCols || "Number of columns in the grid layout"} />
             </div>
             <Select value={gridCols || undefined} onValueChange={handleGridColsChange}>
-                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <SelectTrigger className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100">
                     <SelectValue placeholder="Select grid columns" />
                 </SelectTrigger>
                 <SelectContent>
@@ -803,7 +803,7 @@ export const FieldMaxLengthComponent: React.FC<FieldComponentProps> = ({ fieldId
                 min={0}
                 value={maxLength === null || maxLength === undefined ? "" : maxLength}
                 onChange={handleMaxLengthChange}
-                className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
                 placeholder="No limit"
             />
         </div>
@@ -837,7 +837,7 @@ export const FieldToggleLabelsComponent: React.FC<FieldComponentProps> = ({ fiel
                             name="onLabel"
                             value={onLabel || ""}
                             onChange={handleOnLabelChange}
-                            className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
                             placeholder="Yes"
                         />
                     </div>
@@ -854,7 +854,7 @@ export const FieldToggleLabelsComponent: React.FC<FieldComponentProps> = ({ fiel
                             name="offLabel"
                             value={offLabel || ""}
                             onChange={handleOffLabelChange}
-                            className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
                             placeholder="No"
                         />
                     </div>
@@ -887,7 +887,7 @@ export const FieldCustomContentComponent: React.FC<FieldComponentProps> = ({ fie
                 value={(customContent || "") as string}
                 onChange={handleCustomContentChange}
                 rows={5}
-                className="resize-none mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                className="resize-none mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100"
                 placeholder="Enter custom content here (supports HTML and Markdown)..."
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">This field accepts HTML and Markdown for rich formatting.</p>

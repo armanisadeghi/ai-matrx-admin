@@ -61,7 +61,7 @@ export const ConversationContextMenu: React.FC<ConversationContextMenuProps> = (
         left: `${adjustedPosition.x}px`,
         zIndex: 50,
       }}
-      className="bg-white dark:bg-gray-900 shadow-lg rounded-md border border-gray-200 dark:border-gray-700 min-w-[180px] overflow-hidden"
+      className="bg-textured shadow-lg rounded-md border border-gray-200 dark:border-gray-700 min-w-[180px] overflow-hidden"
     >
       <div className="py-1">
         <button

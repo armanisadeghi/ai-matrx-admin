@@ -60,7 +60,7 @@ export function PerformanceMetrics({ summary, loading }: PerformanceMetricsProps
                 return (
                     <Card
                         key={metric.label}
-                        className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                        className="bg-textured border-gray-200 dark:border-gray-700"
                     >
                         <CardContent className="p-4">
                             <div className={`w-10 h-10 rounded-lg ${metric.bgColor} flex items-center justify-center mb-3`}>

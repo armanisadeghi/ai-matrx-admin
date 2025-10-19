@@ -23,7 +23,7 @@ function ApiNode({ data, isConnectable }) {
   };
 
   return (
-    <div className="border border-gray-300 rounded-lg bg-white dark:bg-gray-800 shadow-md w-64">
+    <div className="border border-gray-300 rounded-lg bg-textured shadow-md w-64">
       <Handle
         type="target"
         position={Position.Left}

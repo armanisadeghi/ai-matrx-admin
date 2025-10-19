@@ -76,7 +76,7 @@ const EasyImageCropper = ({
         {displayImageUrl && (
           <button 
             onClick={handleReset}
-            className="absolute top-2 right-2 text-xs border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl p-2"
+            className="absolute top-2 right-2 text-xs border border-gray-300 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 rounded-xl p-2"
           >
             Reset
           </button>

@@ -86,7 +86,7 @@ export default function NotificationDropdown({
             
             <PopoverContent 
                 className={cn(
-                    'p-0 border-0 shadow-xl bg-white dark:bg-gray-900',
+                    'p-0 border-0 shadow-xl bg-textured',
                     isMobile ? 'w-screen max-w-sm' : 'w-96'
                 )}
                 align="end"

@@ -412,7 +412,7 @@ ${wordPressCSS}
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-[90vw] max-w-[1400px] w-full h-[90vh] flex flex-col">
+            <div className="bg-textured rounded-lg shadow-xl max-w-[90vw] max-w-[1400px] w-full h-[90vh] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
@@ -809,7 +809,7 @@ ${wordPressCSS}
                                                          type="text"
                                                          value={pageTitle}
                                                          onChange={(e) => setPageTitle(e.target.value)}
-                                                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                          placeholder="Enter page title"
                                                          disabled={!user}
                                                      />
@@ -831,7 +831,7 @@ ${wordPressCSS}
                                                      <textarea
                                                          value={pageDescription}
                                                          onChange={(e) => setPageDescription(e.target.value)}
-                                                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                                          placeholder="Brief description (optional)"
                                                          rows={3}
                                                          disabled={!user}
@@ -870,7 +870,7 @@ ${wordPressCSS}
                                                                  type="text"
                                                                  value={metaTitle}
                                                                  onChange={(e) => setMetaTitle(e.target.value)}
-                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                                  placeholder="Will use page title if empty"
                                                                  disabled={!user}
                                                              />
@@ -892,7 +892,7 @@ ${wordPressCSS}
                                                              <textarea
                                                                  value={metaDescription}
                                                                  onChange={(e) => setMetaDescription(e.target.value)}
-                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                                                  placeholder="Will use page description if empty"
                                                                  rows={3}
                                                                  disabled={!user}
@@ -916,7 +916,7 @@ ${wordPressCSS}
                                                                  type="text"
                                                                  value={metaKeywords}
                                                                  onChange={(e) => setMetaKeywords(e.target.value)}
-                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                                  placeholder="keyword1, keyword2, keyword3"
                                                                  disabled={!user}
                                                              />
@@ -934,7 +934,7 @@ ${wordPressCSS}
                                                                  type="url"
                                                                  value={ogImage}
                                                                  onChange={(e) => setOgImage(e.target.value)}
-                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                                  placeholder="https://example.com/image.jpg"
                                                                  disabled={!user}
                                                              />
@@ -952,7 +952,7 @@ ${wordPressCSS}
                                                                  type="url"
                                                                  value={canonicalUrl}
                                                                  onChange={(e) => setCanonicalUrl(e.target.value)}
-                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                                  placeholder="https://example.com/canonical-page"
                                                                  disabled={!user}
                                                              />
@@ -1098,7 +1098,7 @@ ${wordPressCSS}
                                                      type="text"
                                                      value={pageTitle}
                                                      onChange={(e) => setPageTitle(e.target.value)}
-                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                      placeholder="Enter page title"
                                                      disabled={!user}
                                                  />
@@ -1120,7 +1120,7 @@ ${wordPressCSS}
                                                  <textarea
                                                      value={pageDescription}
                                                      onChange={(e) => setPageDescription(e.target.value)}
-                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                                      placeholder="Brief description (optional)"
                                                      rows={3}
                                                      disabled={!user}
@@ -1159,7 +1159,7 @@ ${wordPressCSS}
                                                              type="text"
                                                              value={metaTitle}
                                                              onChange={(e) => setMetaTitle(e.target.value)}
-                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                              placeholder="Will use page title if empty"
                                                              disabled={!user}
                                                          />
@@ -1181,7 +1181,7 @@ ${wordPressCSS}
                                                          <textarea
                                                              value={metaDescription}
                                                              onChange={(e) => setMetaDescription(e.target.value)}
-                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                                              placeholder="Will use page description if empty"
                                                              rows={3}
                                                              disabled={!user}
@@ -1205,7 +1205,7 @@ ${wordPressCSS}
                                                              type="text"
                                                              value={metaKeywords}
                                                              onChange={(e) => setMetaKeywords(e.target.value)}
-                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                              placeholder="keyword1, keyword2, keyword3"
                                                              disabled={!user}
                                                          />
@@ -1223,7 +1223,7 @@ ${wordPressCSS}
                                                              type="url"
                                                              value={ogImage}
                                                              onChange={(e) => setOgImage(e.target.value)}
-                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                              placeholder="https://example.com/image.jpg"
                                                              disabled={!user}
                                                          />
@@ -1241,7 +1241,7 @@ ${wordPressCSS}
                                                              type="url"
                                                              value={canonicalUrl}
                                                              onChange={(e) => setCanonicalUrl(e.target.value)}
-                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                              placeholder="https://example.com/canonical-page"
                                                              disabled={!user}
                                                          />

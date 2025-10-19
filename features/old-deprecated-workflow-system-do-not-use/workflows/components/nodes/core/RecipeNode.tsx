@@ -45,7 +45,7 @@ const RecipeNode: React.FC<RecipeNodeProps> = ({ data, selected }) => {
       case 'failed':
         return 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-900/20';
       default:
-        return 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800';
+        return 'border-gray-300 dark:border-gray-600 bg-textured';
     }
   };
 

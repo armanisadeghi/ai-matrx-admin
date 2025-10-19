@@ -189,7 +189,7 @@ export default function EditTabLayout({ title, subtitle, tabs, id, onSave, hasCh
                 </div>
             </Tabs>
 
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-10">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-textured border-t border-gray-200 dark:border-gray-700 z-10">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <Button variant="outline" onClick={handleBack} className="flex items-center gap-2">

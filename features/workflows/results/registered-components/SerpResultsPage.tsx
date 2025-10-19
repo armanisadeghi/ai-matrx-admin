@@ -324,7 +324,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                                     return (
                                     <div
                                         key={index}
-                                        className={`flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 ${
+                                        className={`flex items-center space-x-3 p-3 bg-textured rounded-lg border border-gray-200 dark:border-gray-700 ${
                                             isClient ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30' : ''
                                         }`}
                                     >

@@ -460,7 +460,7 @@ const WorkflowCanvas = () => {
   return (
     <div className="w-full h-full flex">
       {/* Left panel (nodes library - could be a separate component) */}
-      <div className={`${nodePanelExpanded ? 'w-64' : 'w-12'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-width duration-300`}>
+      <div className={`${nodePanelExpanded ? 'w-64' : 'w-12'} bg-textured border-r border-gray-200 dark:border-gray-700 flex flex-col transition-width duration-300`}>
         <button 
           className="w-full p-3 flex items-center justify-between font-medium border-b border-gray-200 dark:border-gray-700"
           onClick={() => setNodePanelExpanded(!nodePanelExpanded)}
@@ -561,7 +561,7 @@ const WorkflowCanvas = () => {
       {/* Main canvas */}
       <div className="flex-1 relative overflow-hidden">
         {/* Toolbar */}
-        <div className="absolute top-2 left-2 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 flex items-center p-1">
+        <div className="absolute top-2 left-2 z-10 bg-textured rounded-lg shadow-md border border-gray-200 dark:border-gray-700 flex items-center p-1">
           <button 
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => handleZoom(-0.1)}
@@ -579,7 +579,7 @@ const WorkflowCanvas = () => {
         
         <div
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full bg-white dark:bg-gray-900 cursor-grab"
+          className="absolute inset-0 w-full h-full bg-textured cursor-grab"
           onClick={handleCanvasClick}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => e.preventDefault()}
@@ -634,7 +634,7 @@ const WorkflowCanvas = () => {
         
         {/* Minimap */}
         {minimap && (
-          <div className="absolute bottom-4 right-4 w-48 h-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="absolute bottom-4 right-4 w-48 h-32 bg-textured rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="p-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
               <span>Workflow Overview</span>
               <button 
@@ -684,7 +684,7 @@ const WorkflowCanvas = () => {
       
       {/* Right panel - properties (could be a separate component) */}
       {selectedNode && (
-        <div className="w-64 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
+        <div className="w-64 bg-textured border-l border-gray-200 dark:border-gray-700 flex flex-col">
           <div className="p-3 flex items-center justify-between font-medium border-b border-gray-200 dark:border-gray-700">
             <span>Properties</span>
             <button onClick={() => setSelectedNode(null)}>

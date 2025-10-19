@@ -14,7 +14,7 @@ interface StepperProps {
 
 export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick, showDescription }) => {
   return (
-    <div className="w-full bg-white dark:bg-gray-900 overflow-x-auto">
+    <div className="w-full bg-textured overflow-x-auto">
       <nav aria-label="Progress" className="pb-2">
         {/* Desktop view */}
         <ol role="list" className="hidden md:flex items-center">

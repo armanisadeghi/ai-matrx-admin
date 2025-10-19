@@ -26,7 +26,7 @@ export function BrokerOverlay({ workflowData, isOpen, onClose }: BrokerOverlayPr
       />
       
       {/* Overlay Content */}
-      <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-6xl max-h-[90vh] overflow-hidden mx-4">
+      <div className="relative bg-textured rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-6xl max-h-[90vh] overflow-hidden mx-4">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
@@ -93,7 +93,7 @@ function BrokerCard({ broker }: { broker: BrokerInfo }) {
   const isOrphaned = hasNoProducers && hasConsumers; // Critical issue: consumers waiting for data that will never come
   
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 border ${
+    <div className={`bg-textured rounded-lg p-6 border ${
       isOrphaned 
         ? 'border-red-500 dark:border-red-400 ring-2 ring-red-200 dark:ring-red-800' 
         : 'border-gray-200 dark:border-gray-700'

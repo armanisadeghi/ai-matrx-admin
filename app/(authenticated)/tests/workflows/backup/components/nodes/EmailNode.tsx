@@ -6,7 +6,7 @@ function EmailNode({ data, isConnectable }) {
   const deliveryStatus = data.deliveryStatus || 'pending'; // 'pending', 'delivered', 'failed'
   
   return (
-    <div className="border border-gray-300 rounded-lg bg-white dark:bg-gray-800 shadow-md w-52">
+    <div className="border border-gray-300 rounded-lg bg-textured shadow-md w-52">
       <div className="absolute -left-3 top-1/2 transform -translate-y-1/2">
         <div className="flex items-center justify-center w-6 h-6 bg-blue-300 dark:bg-gray-700 rounded-md">
           <Mail className="h-4 w-4 text-blue-600 dark:text-gray-300" />

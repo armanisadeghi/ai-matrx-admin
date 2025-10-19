@@ -165,7 +165,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ file, isDialog }) => {
                 return (
                     <iframe
                         src={publicUrl}
-                        className={cn(previewClasses, 'h-[400px] bg-white dark:bg-gray-800')}
+                        className={cn(previewClasses, 'h-[400px] bg-textured')}
                         title="Text Preview"
                     />
                 );

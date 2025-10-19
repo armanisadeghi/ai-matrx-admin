@@ -41,7 +41,7 @@ export const RecipeSearchFilters: React.FC<RecipeSearchFiltersProps> = ({
                     placeholder="Search recipes..."
                     value={searchTerm}
                     onChange={onSearchChange}
-                    className="pl-9 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                    className="pl-9 border-gray-200 dark:border-gray-700 bg-textured"
                 />
             </div>
             {/* Tags */}

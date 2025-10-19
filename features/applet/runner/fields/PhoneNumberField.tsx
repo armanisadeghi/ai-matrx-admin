@@ -231,7 +231,7 @@ const PhoneNumberField: React.FC<CommonFieldProps> = ({ field, sourceId="no-appl
                 {/* Country Code Dropdown */}
                 <div className="w-48">
                     <Select value={phone.countryCode} onValueChange={handleCountryCodeChange} disabled={disabled}>
-                        <SelectTrigger className="focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800">
+                        <SelectTrigger className="focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured">
                             <SelectValue placeholder="Code" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[300px]">
@@ -254,7 +254,7 @@ const PhoneNumberField: React.FC<CommonFieldProps> = ({ field, sourceId="no-appl
                         onBlur={() => handleBlur("number")}
                         disabled={disabled}
                         className={cn(
-                            "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                            "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                             getNumberError() && "border-red-500"
                         )}
                     />

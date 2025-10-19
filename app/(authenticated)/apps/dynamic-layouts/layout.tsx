@@ -5,5 +5,5 @@ import { ReactNode } from "react";
 
 export default function DynamicLayout({ children }: { children: ReactNode }) {
 
-    return <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">{children}</div>;
+    return <div className="h-full w-full bg-textured transition-colors">{children}</div>;
 }

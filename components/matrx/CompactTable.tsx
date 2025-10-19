@@ -101,7 +101,7 @@ const CompactTable = ({
             className={`py-2 ${
               rowIndex % 2 === 0 
                 ? 'bg-gray-50 dark:bg-gray-800/50' 
-                : 'bg-white dark:bg-gray-900'
+                : 'bg-textured'
             }`}
           >
             <div className={`grid grid-cols-${colCount} gap-2`}>

@@ -19,7 +19,7 @@ const NodeMenu: React.FC<NodeMenuProps> = ({
 
   return (
     <div
-      className="absolute z-10 bg-white dark:bg-gray-800 shadow-md rounded-md border border-gray-200 dark:border-gray-700 p-2"
+      className="absolute z-10 bg-textured shadow-md rounded-md border border-gray-200 dark:border-gray-700 p-2"
       style={{ left: position.x, top: position.y }}
     >
       <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 px-2">Add Node</div>

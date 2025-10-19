@@ -138,7 +138,7 @@ const SmartJSONEditor: React.FC<SmartJSONEditorProps> = ({ onSave, className = "
     };
 
     return (
-        <div className={`p-4 rounded-lg bg-white dark:bg-gray-900 ${className}`}>
+        <div className={`p-4 rounded-lg bg-textured ${className}`}>
             {rows.map((row, index) => (
                 <EditorRow
                     key={row.id}

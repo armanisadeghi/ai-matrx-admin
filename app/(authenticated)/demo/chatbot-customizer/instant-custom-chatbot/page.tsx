@@ -192,7 +192,7 @@ export default function PromptBuilderUI() {
   
   return (
     <div className="w-full max-w-4xl mx-auto p-4 text-gray-800 dark:text-gray-200">
-      <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
+      <div className="bg-textured p-6 rounded-lg shadow-lg">
         <h1 className="text-2xl font-bold mb-6 flex items-center">
           <Zap className="mr-2 text-purple-600 dark:text-purple-400" size={24} />
           AI Prompt Builder
@@ -211,7 +211,7 @@ export default function PromptBuilderUI() {
                 <label className="block text-sm font-medium mb-1">Primary Language</label>
                 <div className="relative">
                   <select 
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured"
                     value={selectedOptions.language?.id}
                     onChange={(e) => {
                       const option = languageOptions.find(opt => opt.id === e.target.value);
@@ -230,7 +230,7 @@ export default function PromptBuilderUI() {
                 <label className="block text-sm font-medium mb-1">Secondary Language (Optional)</label>
                 <div className="relative">
                   <select 
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured"
                     value={selectedOptions.secondLanguage?.id || ''}
                     onChange={(e) => {
                       if (e.target.value === '') {
@@ -268,7 +268,7 @@ export default function PromptBuilderUI() {
               
               <div className="relative">
                 <select 
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured"
                   value={selectedOptions.persona?.id || ''}
                   onChange={(e) => {
                     if (e.target.value === '') {
@@ -297,7 +297,7 @@ export default function PromptBuilderUI() {
               
               <div className="relative">
                 <select 
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured"
                   value={selectedOptions.toneStyle?.id || ''}
                   onChange={(e) => {
                     if (e.target.value === '') {
@@ -328,7 +328,7 @@ export default function PromptBuilderUI() {
               
               <div className="relative">
                 <select 
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured"
                   value={selectedOptions.cognitiveBias?.id || ''}
                   onChange={(e) => {
                     if (e.target.value === '') {
@@ -357,7 +357,7 @@ export default function PromptBuilderUI() {
               
               <div className="relative">
                 <select 
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured"
                   value={selectedOptions.formatStyle?.id || ''}
                   onChange={(e) => {
                     if (e.target.value === '') {
@@ -451,7 +451,7 @@ export default function PromptBuilderUI() {
           </h2>
           
           <textarea
-            className="w-full p-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 min-h-[100px]"
+            className="w-full p-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-md bg-textured min-h-[100px]"
             placeholder="Enter a test query here to see how your configured AI would respond..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}

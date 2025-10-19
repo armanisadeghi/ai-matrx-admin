@@ -12,7 +12,7 @@ const WorkflowHeader = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 flex justify-between items-center">
+    <div className="bg-textured border-b border-gray-200 dark:border-gray-700 p-2 flex justify-between items-center">
       <div className="flex space-x-2 items-center">
         <h1 className="font-bold text-lg">Workflow Builder</h1>
         <div className="flex space-x-1">

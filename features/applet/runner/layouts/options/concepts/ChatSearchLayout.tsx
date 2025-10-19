@@ -104,7 +104,7 @@ const ChatSearchLayout: React.FC<AppletInputProps> = ({
 
   return (
     <div className={`w-full max-w-3xl mx-auto p-4 ${className}`}>
-      <div className="border rounded-lg bg-white dark:bg-gray-900 shadow-lg overflow-hidden">
+      <div className="border rounded-lg bg-textured shadow-lg overflow-hidden">
         {/* Chat header */}
         <div className="bg-rose-500 p-4">
           <h3 className="text-white font-medium">Search Assistant</h3>
@@ -128,7 +128,7 @@ const ChatSearchLayout: React.FC<AppletInputProps> = ({
               
               return (
                 <div key={index} className="flex justify-end">
-                  <div className="bg-white dark:bg-gray-800 border rounded-lg py-3 px-4 max-w-[85%] shadow-sm">
+                  <div className="bg-textured border rounded-lg py-3 px-4 max-w-[85%] shadow-sm">
                     <div className="flex flex-col space-y-2">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {field.label}

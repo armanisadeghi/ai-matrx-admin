@@ -81,7 +81,7 @@ const ResourcesLoadingVisualization: React.FC<ResourcesLoadingVisualizationProps
           {[1, 2, 3, 4, 5, 6].map((index) => (
             <div 
               key={index}
-              className="bg-white dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 animate-pulse"
+              className="bg-textured/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 animate-pulse"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {/* Card Header */}
@@ -126,7 +126,7 @@ const ResourcesLoadingVisualization: React.FC<ResourcesLoadingVisualizationProps
 
         {/* Loading Text */}
         <div className="text-center mt-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-textured/50 rounded-full border border-gray-200 dark:border-gray-700">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-violet-500 dark:bg-violet-400 rounded-full animate-bounce" />
               <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-bounce delay-100" />

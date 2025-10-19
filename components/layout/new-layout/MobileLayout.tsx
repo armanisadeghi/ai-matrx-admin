@@ -97,7 +97,7 @@ export default function MobileLayout({
       )}
 
       {/* Mobile Sidebar */}
-      <aside className={`fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-gray-900 z-50 transform transition-transform duration-300 lg:hidden ${
+      <aside className={`fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-textured z-50 transform transition-transform duration-300 lg:hidden ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Sidebar Header */}

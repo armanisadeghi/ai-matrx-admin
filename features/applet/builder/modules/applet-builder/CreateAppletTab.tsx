@@ -144,7 +144,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               value={newApplet.name || ''}
               onChange={handleNameChange}
               placeholder="Enter applet name"
-              className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="border-gray-200 dark:border-gray-700 bg-textured"
             />
           </div>
           
@@ -161,7 +161,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               value={newApplet.slug || ''}
               onChange={handleInputChange}
               placeholder="Enter applet slug"
-              className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="border-gray-200 dark:border-gray-700 bg-textured"
             />
           </div>
           
@@ -175,7 +175,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               value={newApplet.description || ''}
               onChange={handleInputChange}
               placeholder="Enter applet description"
-              className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="resize-none border-gray-200 dark:border-gray-700 bg-textured"
               rows={9}
             />
           </div>
@@ -212,7 +212,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
                 value={newApplet.appletSubmitText || ''}
                 onChange={handleInputChange}
                 placeholder="Submit text (Most people do not use this for applets)"
-                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                className="border-gray-200 dark:border-gray-700 bg-textured"
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
                 value={newApplet.primaryColor}
                 onValueChange={(value) => handleSelectChange('primaryColor', value)}
               >
-                <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-textured">
                   <SelectValue placeholder="Select a color" />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,7 +248,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
                 value={newApplet.accentColor}
                 onValueChange={(value) => handleSelectChange('accentColor', value)}
               >
-                <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-textured">
                   <SelectValue placeholder="Select a color" />
                 </SelectTrigger>
                 <SelectContent>
@@ -271,7 +271,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               value={newApplet.layoutType}
               onValueChange={(value) => handleSelectChange('layoutType', value)}
             >
-              <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-textured">
                 <SelectValue placeholder="Select a layout" />
               </SelectTrigger>
               <SelectContent>
@@ -294,7 +294,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               value={newApplet.creator || ''}
               onChange={handleInputChange}
               placeholder="Enter creator name"
-              className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="border-gray-200 dark:border-gray-700 bg-textured"
             />
           </div>
           
@@ -308,7 +308,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               value={newApplet.imageUrl || ''}
               onChange={handleInputChange}
               placeholder="Enter image URL"
-              className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="border-gray-200 dark:border-gray-700 bg-textured"
             />
           </div>
         </div>

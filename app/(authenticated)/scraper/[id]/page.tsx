@@ -23,7 +23,7 @@ export default function ScraperResultPage() {
     return (
         <div className="min-h-screen bg-textured">
             {/* Header Bar */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
                 <div className="flex items-center justify-between max-w-6xl mx-auto">
                     <div className="flex items-center gap-4">
                         <Button

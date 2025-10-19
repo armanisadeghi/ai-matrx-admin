@@ -201,7 +201,7 @@ export default function AIExperienceCustomizer() {
     };
     
     return (
-      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 ${sizeClasses[size]} ${className}`}>
+      <div className={`bg-textured rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 ${sizeClasses[size]} ${className}`}>
         <div className="flex items-center mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
           <span className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mr-2">{icon}</span>
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
@@ -272,7 +272,7 @@ export default function AIExperienceCustomizer() {
   // Render the UI
   return (
     <div className="flex flex-col h-full bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-100">
-      <header className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
+      <header className="sticky top-0 z-10 bg-textured border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <Wand2 className="h-7 w-7 text-blue-600 dark:text-blue-500 mr-2" />
@@ -576,7 +576,7 @@ export default function AIExperienceCustomizer() {
                     name="name"
                     value={personalInfo.name}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-textured text-gray-800 dark:text-gray-200"
                     placeholder="Your name"
                   />
                 </div>
@@ -587,7 +587,7 @@ export default function AIExperienceCustomizer() {
                     name="city"
                     value={personalInfo.city}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-textured text-gray-800 dark:text-gray-200"
                     placeholder="Where you live"
                   />
                 </div>
@@ -598,7 +598,7 @@ export default function AIExperienceCustomizer() {
                     name="occupation"
                     value={personalInfo.occupation}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-textured text-gray-800 dark:text-gray-200"
                     placeholder="Your job or role"
                   />
                 </div>
@@ -609,7 +609,7 @@ export default function AIExperienceCustomizer() {
                     name="interests"
                     value={personalInfo.interests}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-textured text-gray-800 dark:text-gray-200"
                     placeholder="Topics you're interested in (e.g., cooking, technology, travel)"
                   />
                 </div>

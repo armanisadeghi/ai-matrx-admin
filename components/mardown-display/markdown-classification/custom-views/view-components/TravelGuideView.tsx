@@ -173,11 +173,11 @@ const TableComponent = ({ data }: { data: { headers: string[]; rows: string[][] 
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+        <tbody className="bg-textured divide-y divide-gray-200 dark:divide-gray-800">
           {data.rows.map((row, rowIndex) => (
             <tr 
               key={rowIndex} 
-              className={rowIndex % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50'}
+              className={rowIndex % 2 === 0 ? 'bg-textured' : 'bg-gray-50 dark:bg-gray-800/50'}
             >
               {row.map((cell, cellIndex) => (
                 <td 
@@ -338,7 +338,7 @@ const TravelGuide: React.FC<TravelGuideProps> = ({
     <div className={`${darkMode ? 'dark' : ''}`}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-md">
+        <header className="sticky top-0 z-10 bg-textured shadow-md">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <Compass className="h-8 w-8 text-blue-500 dark:text-blue-400" />
@@ -374,7 +374,7 @@ const TravelGuide: React.FC<TravelGuideProps> = ({
           {/* Table of Contents - Sidebar */}
           {showTableOfContents && (
             <aside className="md:w-64 lg:w-72 flex-shrink-0 mb-8 md:mb-0 md:sticky md:top-24 md:h-[calc(100vh-6rem)] md:overflow-y-auto">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+              <div className="bg-textured rounded-lg shadow-md p-4">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-bold text-gray-800 dark:text-white">Contents</h2>
                   <button 
@@ -412,7 +412,7 @@ const TravelGuide: React.FC<TravelGuideProps> = ({
           
           {/* Main Content */}
           <main className={`flex-1 ${showTableOfContents ? 'md:ml-8' : ''}`}>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-8">
+            <div className="bg-textured rounded-lg shadow-md p-6 md:p-8">
               {/* Hero section with the first paragraph */}
               {data.sections[0] && data.sections[0].type === 'paragraph' && (
                 <div className="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
@@ -469,7 +469,7 @@ export const TravelGuideLoading = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Loading Header */}
-      <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-md">
+      <header className="sticky top-0 z-10 bg-textured shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <Compass className="h-8 w-8 text-blue-500 dark:text-blue-400 animate-pulse" />
@@ -490,7 +490,7 @@ export const TravelGuideLoading = () => {
       <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row">
         {/* Table of Contents Skeleton */}
         <aside className="md:w-64 lg:w-72 flex-shrink-0 mb-8 md:mb-0 md:sticky md:top-24 md:h-[calc(100vh-6rem)] md:overflow-y-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+          <div className="bg-textured rounded-lg shadow-md p-4">
             <div className="flex justify-between items-center mb-4">
               <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded loading-shine"></div>
             </div>
@@ -512,7 +512,7 @@ export const TravelGuideLoading = () => {
         
         {/* Main Content Skeleton */}
         <main className="flex-1 md:ml-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-8">
+          <div className="bg-textured rounded-lg shadow-md p-6 md:p-8">
             {/* Progress indicator */}
             <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
               <div className="space-y-3">

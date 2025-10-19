@@ -71,7 +71,7 @@ export function WorkflowCard({ workflow, onSetActive }: WorkflowCardProps) {
     return (
         <Link href={`/tests/workflows/workflow-manager/${workflow.id}`}>
             <div 
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 p-6 h-full cursor-pointer group"
+                className="bg-textured rounded-lg shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 p-6 h-full cursor-pointer group"
                 onClick={handleCardClick}
             >
                 <div className="flex flex-col h-full">

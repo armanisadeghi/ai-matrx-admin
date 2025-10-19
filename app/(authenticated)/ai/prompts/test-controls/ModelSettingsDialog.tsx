@@ -66,7 +66,7 @@ export default function ModelSettingsDialog({
     if (error || !normalizedControls) {
         return (
             <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center" onClick={onClose}>
-                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 p-4">
+                <div className="bg-textured rounded-lg shadow-xl max-w-md w-full mx-4 p-4">
                     <div className="text-xs text-red-600 dark:text-red-400">
                         Error loading model controls: {error}
                     </div>
@@ -79,7 +79,7 @@ export default function ModelSettingsDialog({
     return (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center" onClick={onClose}>
                 <div 
-                    className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-hidden flex flex-col"
+                    className="bg-textured rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-hidden flex flex-col"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
@@ -159,7 +159,7 @@ export default function ModelSettingsDialog({
                                                     handleSettingChange("temperature", val);
                                                 }
                                             }}
-                                            className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                            className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                         />
                                     </>
                                 )}
@@ -200,7 +200,7 @@ export default function ModelSettingsDialog({
                                                     handleSettingChange("max_tokens", val);
                                                 }
                                             }}
-                                            className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                            className="w-20 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                         />
                                     </>
                                 )}
@@ -241,7 +241,7 @@ export default function ModelSettingsDialog({
                                                     handleSettingChange("top_p", val);
                                                 }
                                             }}
-                                            className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                            className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                         />
                                     </>
                                 )}
@@ -282,7 +282,7 @@ export default function ModelSettingsDialog({
                                                     handleSettingChange("top_k", val);
                                                 }
                                             }}
-                                            className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
+                                            className="w-16 h-7 px-2 text-xs text-gray-900 dark:text-gray-100 bg-textured border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-600"
                                         />
                                     </>
                                 )}

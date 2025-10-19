@@ -282,7 +282,7 @@ const SmartAppList = forwardRef<
                     <div className="relative w-full sm:w-64 md:w-72">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <Input
-                            className="pl-10 pr-4 py-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                            className="pl-10 pr-4 py-2 border-gray-200 dark:border-gray-700 bg-textured"
                             placeholder="Search apps..."
                             value={searchTerm}
                             onChange={handleSearch}
@@ -431,7 +431,7 @@ const SmartAppList = forwardRef<
                                                     <div
                                                         className={`
                           rounded-lg flex items-center justify-center
-                          ${viewMode === "grid" ? `bg-white dark:bg-gray-800 shadow-lg p-2` : `bg-white/90 dark:bg-gray-800/90 p-2`}
+                          ${viewMode === "grid" ? `bg-textured shadow-lg p-2` : `bg-white/90 dark:bg-gray-800/90 p-2`}
                         `}
                                                     >
                                                         <IconPicker

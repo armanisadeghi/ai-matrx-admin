@@ -184,7 +184,7 @@ export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdge
             <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
 
             {/* Overlay Content */}
-            <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-4xl mx-4 h-[90vh] flex flex-col">
+            <div className="relative bg-textured rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-4xl mx-4 h-[90vh] flex flex-col">
                 {/* Compact Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-3">

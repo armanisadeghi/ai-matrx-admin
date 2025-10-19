@@ -20,7 +20,7 @@ export const AppManager = ({ appId, layoutType }: AppManagerProps) => {
     return (
         <>
             <CustomAppHeader appId={appId} isDemo={true} />
-            <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
+            <div className="h-full w-full bg-textured transition-colors">
                 <div className="pt-14">
                     <AppletLayoutManager appletId={appId} layoutTypeOverride={layoutType} />
                 </div>

@@ -40,7 +40,7 @@ const BrokerMappingsSection: React.FC<BrokerMappingsSectionProps> = ({
             {Object.entries(selectedNode.data.brokerInputs || {}).map(([paramName, brokerId]) => (
               <div
                 key={paramName}
-                className="grid grid-cols-5 gap-2 items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600"
+                className="grid grid-cols-5 gap-2 items-center p-3 bg-textured rounded-lg border border-gray-200 dark:border-gray-600"
               >
                 <input
                   type="text"
@@ -78,7 +78,7 @@ const BrokerMappingsSection: React.FC<BrokerMappingsSectionProps> = ({
               </div>
             ))}
             {Object.keys(selectedNode.data.brokerInputs || {}).length === 0 && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400 italic bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400 italic bg-textured rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                 No input parameters mapped
                 <div className="text-xs mt-1 text-gray-400 dark:text-gray-500">Click "Add Input" to create parameter mappings</div>
               </div>
@@ -106,7 +106,7 @@ const BrokerMappingsSection: React.FC<BrokerMappingsSectionProps> = ({
             {Object.entries(selectedNode.data.brokerOutputs || {}).map(([resultName, brokerId]) => (
               <div
                 key={resultName}
-                className="grid grid-cols-5 gap-2 items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600"
+                className="grid grid-cols-5 gap-2 items-center p-3 bg-textured rounded-lg border border-gray-200 dark:border-gray-600"
               >
                 <input
                   type="text"
@@ -144,7 +144,7 @@ const BrokerMappingsSection: React.FC<BrokerMappingsSectionProps> = ({
               </div>
             ))}
             {Object.keys(selectedNode.data.brokerOutputs || {}).length === 0 && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400 italic bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400 italic bg-textured rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                 No output results mapped
                 <div className="text-xs mt-1 text-gray-400 dark:text-gray-500">Click "Add Output" to create result mappings</div>
               </div>

@@ -72,7 +72,7 @@ export function AudioPlayer() {
   };
   
   return (
-    <div className="p-6 max-w-md mx-auto rounded-xl shadow-md bg-white dark:bg-gray-800 flex flex-col gap-4">
+    <div className="p-6 max-w-md mx-auto rounded-xl shadow-md bg-textured flex flex-col gap-4">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white">Audio Player Test</h2>
       
       <div className="flex flex-col gap-2">

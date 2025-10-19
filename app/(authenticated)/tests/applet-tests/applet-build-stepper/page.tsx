@@ -230,7 +230,7 @@ const AppletStepper = () => {
               <p className="text-sm text-gray-600 mb-4">Create rules that run when conditions are met</p>
               
               <div className="space-y-4">
-                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200">
+                <div className="p-3 bg-textured rounded-lg border border-gray-200">
                   <div className="flex items-center text-sm">
                     <span className="font-medium">When</span>
                     <span className="mx-2 px-2 py-1 bg-blue-100 text-blue-800 rounded">Task status changes to "Complete"</span>
@@ -259,7 +259,7 @@ const AppletStepper = () => {
               <h3 className="font-medium mb-4">Deployment Options</h3>
               
               <div className="space-y-4">
-                <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div className="flex items-center p-3 bg-textured rounded-lg border border-gray-200 dark:border-gray-600">
                   <input
                     type="radio"
                     id="private"
@@ -272,7 +272,7 @@ const AppletStepper = () => {
                   </label>
                 </div>
                 
-                <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div className="flex items-center p-3 bg-textured rounded-lg border border-gray-200 dark:border-gray-600">
                   <input
                     type="radio"
                     id="team"
@@ -284,7 +284,7 @@ const AppletStepper = () => {
                   </label>
                 </div>
                 
-                <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div className="flex items-center p-3 bg-textured rounded-lg border border-gray-200 dark:border-gray-600">
                   <input
                     type="radio"
                     id="public"
@@ -311,7 +311,7 @@ const AppletStepper = () => {
   };
   
   return (
-    <div className="w-full h-full p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+    <div className="w-full h-full p-6 bg-textured rounded-xl shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>

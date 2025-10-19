@@ -17,7 +17,7 @@ const CodeEditor = ({ code, setCode, resetCode }) => {
           Reset
         </button>
       </div>
-      <div className="flex-1 overflow-auto bg-white dark:bg-gray-900">
+      <div className="flex-1 overflow-auto bg-textured">
         <LiveProvider code={code} noInline={true}>
           <LiveEditor 
             className="min-h-full font-mono text-sm p-4" 

@@ -108,10 +108,10 @@ const SelectField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id
     return (
         <div className={`${safeWidthClass} ${className}`}>
             <Select disabled={disabled} value={selectedOption?.id || ""} onValueChange={handleSelectChange}>
-                <SelectTrigger className="w-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800">
+                <SelectTrigger className="w-full focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured">
                     <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                <SelectContent className="bg-textured border-gray-300 dark:border-gray-700">
                     <SelectGroup>
                         {selectWithOptions.map((option) => (
                             <SelectItem
@@ -129,7 +129,7 @@ const SelectField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id
             {isOtherSelected && (
                 <Input
                     id={`${sourceId}-${id}-other-input`}
-                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured"
                     value={selectedOption?.description || ""}
                     onChange={handleOtherTextChange}
                     placeholder="Please specify..."

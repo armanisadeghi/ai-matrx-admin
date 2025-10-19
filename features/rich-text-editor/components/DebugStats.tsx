@@ -55,7 +55,7 @@ export const DebugStats = forwardRef<HTMLDivElement, { editorId: string }>(({ ed
                     Refresh
                 </button>
             </div>
-            <div className='grid grid-cols-2 gap-4 p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800'>
+            <div className='grid grid-cols-2 gap-4 p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-textured'>
                 {Object.entries(stats).map(([key, value]) => (
                     <div
                         key={key}

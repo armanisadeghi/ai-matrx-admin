@@ -62,7 +62,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
             placeholder={field.placeholder}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         );
       
@@ -76,7 +76,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
             disabled={field.disabled}
             required={field.required}
             rows={field.componentProps.rows}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         );
       
@@ -89,7 +89,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
               onChange={handleChange}
               disabled={field.disabled}
               required={field.required}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
             >
               <option value="">{field.placeholder}</option>
               {field.options?.map(option => (
@@ -107,7 +107,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
                 value={otherValue}
                 onChange={handleOtherChange}
                 placeholder="Enter custom value"
-                className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
               />
             )}
           </div>
@@ -127,7 +127,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
               required={field.required}
               multiple
               size={field.componentProps?.rows || 5}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 appearance-none [&>option]:p-2 [&>option:checked]:bg-blue-600 [&>option:checked]:dark:bg-blue-700 [&>option:checked]:text-white [&>option:checked]:dark:text-white"
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 appearance-none [&>option]:p-2 [&>option:checked]:bg-blue-600 [&>option:checked]:dark:bg-blue-700 [&>option:checked]:text-white [&>option:checked]:dark:text-white"
               style={{ overflow: "auto" }}
             >
               {field.options?.map(option => (
@@ -145,7 +145,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
                 value={otherValue}
                 onChange={handleOtherChange}
                 placeholder="Enter custom value"
-                className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
               />
             )}
           </div>
@@ -194,7 +194,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
                     value={otherValue}
                     onChange={handleOtherChange}
                     placeholder="Enter custom value"
-                    className="w-full ml-6 p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="w-full ml-6 p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                 )}
               </div>
@@ -256,7 +256,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
                     value={otherValue}
                     onChange={handleOtherChange}
                     placeholder="Enter custom value"
-                    className="w-full ml-6 p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="w-full ml-6 p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                 )}
               </div>
@@ -299,7 +299,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
             placeholder={field.placeholder}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         );
       
@@ -314,7 +314,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
             onChange={handleChange}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         );
       
@@ -366,7 +366,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
                 className={`px-2.5 py-1 text-xs rounded-md transition-colors border ${
                   Array.isArray(value) && value.includes(option.id)
                     ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white border-blue-600 dark:border-blue-700'
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750'
+                    : 'bg-textured border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750'
                 } focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {option.label}
@@ -463,7 +463,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
               value={value || 0}
               onChange={handleChange}
               disabled={field.disabled}
-              className="w-20 text-center p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-20 text-center p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             <button
               type="button"
@@ -493,7 +493,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
               placeholder={field.placeholder || "Enter JSON data"}
               rows={field.componentProps?.rows || 5}
               disabled={field.disabled}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-sm placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 font-mono text-sm placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             <button
               type="button"
@@ -540,7 +540,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
             placeholder={field.placeholder}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
         );
     }

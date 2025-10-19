@@ -42,7 +42,7 @@ export default function GoogleAuthDemoPage() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-            <div className="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
+            <div className="w-full max-w-2xl mx-auto bg-textured shadow-lg rounded-lg p-8">
                 <h1 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-2">
                     Google OAuth Scope Approval Demo
                 </h1>
@@ -95,7 +95,7 @@ export default function GoogleAuthDemoPage() {
                         <div className="pt-2">
                             <h3 className="font-semibold mb-1">Granted Scopes:</h3>
                             {grantedScopes.length > 0 ? (
-                                <ul className="list-disc list-inside bg-white dark:bg-gray-800 p-3 rounded-md">
+                                <ul className="list-disc list-inside bg-textured p-3 rounded-md">
                                     {grantedScopes.map(scope => (
                                         <li key={scope}><code>{scope}</code></li>
                                     ))}
@@ -108,7 +108,7 @@ export default function GoogleAuthDemoPage() {
                          {isAuthenticated && token && (
                             <div className="pt-2">
                                 <h3 className="font-semibold mb-1">Access Token:</h3>
-                                <p className="text-xs break-all bg-white dark:bg-gray-800 p-2 rounded-md">
+                                <p className="text-xs break-all bg-textured p-2 rounded-md">
                                     {token}
                                 </p>
                             </div>

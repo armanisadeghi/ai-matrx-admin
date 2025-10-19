@@ -63,7 +63,7 @@ export const RefreshFieldsDialog: React.FC<RefreshFieldsDialogProps> = ({
               Refresh Option
             </Label>
             <Select value={refreshOption} onValueChange={(value) => setRefreshOption(value as "all" | "selected")}>
-              <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-textured">
                 <SelectValue placeholder="Select refresh option" />
               </SelectTrigger>
               <SelectContent>

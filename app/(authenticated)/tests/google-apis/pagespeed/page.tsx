@@ -71,13 +71,13 @@ export default function PageSpeedInsightsPage() {
                                 placeholder="Enter URL to analyze..."
                                 required
                                 disabled={loading}
-                                className="w-full h-11 pl-10 pr-4 rounded-lg bg-white dark:bg-gray-800 border border-white/20 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:opacity-50"
+                                className="w-full h-11 pl-10 pr-4 rounded-lg bg-textured border border-white/20 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:opacity-50"
                             />
                         </div>
                         <button
                             type="submit"
                             disabled={loading || !url.trim()}
-                            className="h-11 px-6 rounded-lg bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                            className="h-11 px-6 rounded-lg bg-textured text-blue-600 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0"
                         >
                             {loading ? (
                                 <>
@@ -120,7 +120,7 @@ export default function PageSpeedInsightsPage() {
                     <>
                         {/* Compact Tabs */}
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "desktop" | "mobile")} className="space-y-4">
-                            <TabsList className="grid w-full max-w-md grid-cols-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                            <TabsList className="grid w-full max-w-md grid-cols-2 bg-textured border border-gray-200 dark:border-gray-700">
                                 <TabsTrigger
                                     value="desktop"
                                     disabled={!results.desktop}

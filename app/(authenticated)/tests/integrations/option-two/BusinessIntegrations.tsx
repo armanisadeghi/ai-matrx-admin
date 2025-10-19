@@ -74,7 +74,7 @@ const BusinessIntegrations: React.FC = () => {
     return (
         <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900">
             {/* Header */}
-            <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-md w-full">
+            <header className="sticky top-0 z-10 bg-textured shadow-md w-full">
                 <div className="max-w-full px-4 py-4 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                     <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Business Integrations</h1>
 
@@ -105,7 +105,7 @@ const BusinessIntegrations: React.FC = () => {
             <div className="flex w-full">
                 {/* Filters sidebar - desktop (fixed position) */}
                 <aside className="hidden md:block w-64 fixed top-[125px] bottom-0 overflow-y-auto">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 m-4 h-auto">
+                    <div className="bg-textured rounded-lg shadow p-6 m-4 h-auto">
                         <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Filters</h2>
 
                         {/* Connection status */}
@@ -142,7 +142,7 @@ const BusinessIntegrations: React.FC = () => {
                 {/* Mobile filter panel */}
                 {isFilterOpen && (
                     <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-20 flex justify-end">
-                        <div className="bg-white dark:bg-gray-800 w-64 h-full p-4 overflow-y-auto">
+                        <div className="bg-textured w-64 h-full p-4 overflow-y-auto">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Filters</h2>
                                 <button onClick={() => setIsFilterOpen(false)}>
@@ -192,7 +192,7 @@ const BusinessIntegrations: React.FC = () => {
                                     {groupedIntegrations[category as Category].map((integration) => (
                                         <div
                                             key={integration.id}
-                                            className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow p-4 border border-gray-200 dark:border-gray-700 flex flex-col"
+                                            className="bg-textured rounded-lg shadow hover:shadow-md transition-shadow p-4 border border-gray-200 dark:border-gray-700 flex flex-col"
                                         >
                                             <div className="flex items-center space-x-3 mb-2">
                                                 {/* Service icon */}
@@ -241,7 +241,7 @@ const BusinessIntegrations: React.FC = () => {
                             </div>
                         ))
                     ) : (
-                        <div className="flex items-center justify-center h-64 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                        <div className="flex items-center justify-center h-64 bg-textured rounded-lg shadow p-4">
                             <p className="text-gray-500 dark:text-gray-400">No integrations found matching your filters.</p>
                         </div>
                     )}

@@ -33,7 +33,7 @@ This should show the loading visualization.`;
 
     return (
         <div className="container mx-auto p-8 space-y-8">
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
+            <div className="bg-textured rounded-lg shadow-lg p-6">
                 <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-100">
                     Presentation Detection Test
                 </h1>
@@ -42,7 +42,7 @@ This should show the loading visualization.`;
                 </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
+            <div className="bg-textured rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
                     Complete Presentation (Should render Slideshow)
                 </h2>
@@ -54,7 +54,7 @@ This should show the loading visualization.`;
                 />
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
+            <div className="bg-textured rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
                     Streaming Presentation (Should show loading)
                 </h2>

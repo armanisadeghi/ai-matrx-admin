@@ -185,7 +185,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Fullscreen Header */}
           {isFullScreen && (
@@ -196,7 +196,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
               </div>
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
               >
                 <Minimize2 className="h-4 w-4" />
                 <span>Exit</span>
@@ -242,7 +242,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                 {(research.researchScope || research.keyFocusAreas || research.analysisPeriod) && (
                   <div className="grid md:grid-cols-3 gap-4 mb-4">
                     {research.researchScope && (
-                      <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800/50">
+                      <div className="bg-textured/50 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800/50">
                         <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1">
                           <Target className="h-4 w-4" />
                           <span className="text-xs font-medium">Scope</span>
@@ -251,7 +251,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                       </div>
                     )}
                     {research.keyFocusAreas && (
-                      <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-teal-200 dark:border-teal-800/50">
+                      <div className="bg-textured/50 rounded-lg p-3 border border-teal-200 dark:border-teal-800/50">
                         <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 mb-1">
                           <Eye className="h-4 w-4" />
                           <span className="text-xs font-medium">Focus Areas</span>
@@ -260,7 +260,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                       </div>
                     )}
                     {research.analysisPeriod && (
-                      <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-cyan-200 dark:border-cyan-800/50">
+                      <div className="bg-textured/50 rounded-lg p-3 border border-cyan-200 dark:border-cyan-800/50">
                         <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 mb-1">
                           <Clock className="h-4 w-4" />
                           <span className="text-xs font-medium">Period</span>
@@ -285,7 +285,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                       onClick={() => setActiveTab(tab.id as any)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         activeTab === tab.id
-                          ? 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 shadow-md border border-emerald-300 dark:border-emerald-700'
+                          ? 'bg-textured text-emerald-700 dark:text-emerald-300 shadow-md border border-emerald-300 dark:border-emerald-700'
                           : 'text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white/50 dark:hover:bg-gray-800/50'
                       }`}
                     >
@@ -301,7 +301,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                 <div className="space-y-6">
                   {/* Executive Summary */}
                   {research.executiveSummary && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                         <Award className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                         Executive Summary
@@ -312,7 +312,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
 
                   {/* Introduction */}
                   {research.introduction && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Introduction</h2>
                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">{research.introduction}</p>
                       
@@ -347,7 +347,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                       <select
                         value={selectedFilter}
                         onChange={(e) => setSelectedFilter(e.target.value as any)}
-                        className="text-sm px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                        className="text-sm px-3 py-1.5 rounded-lg bg-textured border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                       >
                         <option value="all">All Confidence Levels</option>
                         <option value="HIGH">High Confidence</option>
@@ -359,7 +359,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
 
                   {/* Research Sections */}
                   {filteredSections.map((section) => (
-                    <div key={section.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div key={section.id} className="bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                       <button
                         onClick={() => toggleSection(section.id)}
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
@@ -476,7 +476,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                 <div className="space-y-6">
                   {/* Convergent Themes */}
                   {research.convergentThemes.length > 0 && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                         <BarChart3 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         Convergent Themes
@@ -495,7 +495,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                   {/* Future Outlook */}
                   <div className="grid lg:grid-cols-3 gap-6">
                     {research.shortTermOutlook.length > 0 && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                      <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                         <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                           <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
                           Short-term (1-2 years)
@@ -512,7 +512,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                     )}
 
                     {research.mediumTermOutlook.length > 0 && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                      <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                         <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                           <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           Medium-term (3-5 years)
@@ -529,7 +529,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                     )}
 
                     {research.longTermVision.length > 0 && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                      <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                         <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                           <Star className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                           Long-term (5+ years)
@@ -548,7 +548,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
 
                   {/* Conclusion and Key Takeaways */}
                   {(research.conclusion || research.keyTakeaways.length > 0) && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Conclusion</h2>
                       {research.conclusion && (
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">{research.conclusion}</p>
@@ -582,7 +582,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                     if (targetRecs.length === 0) return null;
 
                     return (
-                      <div key={target} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                      <div key={target} className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                           {getRecommendationIcon(target)}
                           For {target.charAt(0).toUpperCase() + target.slice(1)}
@@ -601,7 +601,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
 
                   {/* Challenges and Limitations */}
                   {(research.challenges.length > 0 || research.limitations.length > 0) && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                         Challenges & Limitations
@@ -629,7 +629,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
               {activeTab === 'debug' && (
                 <div className="space-y-6">
                   {/* Parsing Statistics */}
-                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                  <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       Parsing Statistics
@@ -656,7 +656,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
 
                   {/* Unrecognized Sections */}
                   {research.unrecognizedSections.length > 0 && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-orange-200 dark:border-orange-800">
+                    <div className="bg-textured rounded-xl p-6 shadow-lg border border-orange-200 dark:border-orange-800">
                       <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                         Unrecognized Sections ({research.unrecognizedSections.length})
@@ -677,7 +677,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                   )}
 
                   {/* All Sections Overview */}
-                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                  <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                       <BookOpen className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                       All Sections Overview
@@ -716,7 +716,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research }) => {
                   </div>
 
                   {/* Raw Content */}
-                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                  <div className="bg-textured rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                       <BookOpen className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       Raw Content

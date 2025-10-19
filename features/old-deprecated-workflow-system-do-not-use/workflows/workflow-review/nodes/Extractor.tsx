@@ -119,7 +119,7 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
                                 type="text"
                                 value={editValues.inputBrokerId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, inputBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-green-300 dark:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                className="w-full text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border border-green-300 dark:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                                 placeholder="Input Broker ID"
                             />
                         ) : (
@@ -128,10 +128,10 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
                                 {editValues.inputBrokerId !== 'None' ? (
                                     <ClickableBroker
                                         brokerId={editValues.inputBrokerId}
-                                        className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-green-200 dark:border-green-600 break-all"
+                                        className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border border-green-200 dark:border-green-600 break-all"
                                     />
                                 ) : (
-                                    <div className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                    <div className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border">
                                         None
                                     </div>
                                 )}
@@ -149,7 +149,7 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
                                 type="text"
                                 value={editValues.configBrokerId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, configBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-green-300 dark:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                className="w-full text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border border-green-300 dark:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                                 placeholder="Config Broker ID"
                             />
                         ) : (
@@ -158,10 +158,10 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
                                 {editValues.configBrokerId !== 'None' ? (
                                     <ClickableBroker
                                         brokerId={editValues.configBrokerId}
-                                        className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-green-200 dark:border-green-600 break-all"
+                                        className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border border-green-200 dark:border-green-600 break-all"
                                     />
                                 ) : (
-                                    <div className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                    <div className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border">
                                         None
                                     </div>
                                 )}
@@ -194,7 +194,7 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
                                                 type="text"
                                                 value={brokerId}
                                                 onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
-                                                className="flex-1 text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-green-300 dark:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                className="flex-1 text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border border-green-300 dark:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                                                 placeholder="Return Broker ID"
                                             />
                                             {editValues.returnBrokerIds.length > 1 && (
@@ -211,10 +211,10 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
                                             {brokerId && brokerId !== 'None' ? (
                                                 <ClickableBroker
                                                     brokerId={brokerId}
-                                                    className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-green-200 dark:border-green-600 break-all"
+                                                    className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border border-green-200 dark:border-green-600 break-all"
                                                 />
                                             ) : (
-                                                <div className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                                <div className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-3 py-2 rounded border">
                                                     None
                                                 </div>
                                             )}

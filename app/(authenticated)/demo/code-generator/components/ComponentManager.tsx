@@ -16,12 +16,12 @@ const ComponentManager = ({
   return (
     <>
       {/* Save Component Section */}
-      <div className="bg-white dark:bg-gray-900 p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="bg-textured p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex space-x-2">
           <input
             type="text"
             placeholder="Component name"
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-800 dark:text-gray-200"
             value={currentComponentName}
             onChange={(e) => setCurrentComponentName(e.target.value)}
           />
@@ -35,7 +35,7 @@ const ComponentManager = ({
       </div>
       
       {/* Saved Components */}
-      <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div className="bg-textured border-t border-gray-200 dark:border-gray-700">
         <div className="bg-gray-100 dark:bg-gray-800 p-2 border-b border-gray-200 dark:border-gray-700">
           <h2 className="font-semibold text-gray-700 dark:text-gray-200">Saved Components</h2>
         </div>

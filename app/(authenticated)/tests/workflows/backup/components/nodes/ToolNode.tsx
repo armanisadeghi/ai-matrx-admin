@@ -5,9 +5,9 @@ import { Calendar, AlertTriangle } from 'lucide-react';
 
 function ToolNode({ data, isConnectable }) {
   return (
-    <div className="relative border border-gray-300 rounded-lg bg-white dark:bg-gray-800 shadow-md w-56">
+    <div className="relative border border-gray-300 rounded-lg bg-textured shadow-md w-56">
       {data.hasError && (
-        <div className="absolute -right-2 -top-2 w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full border-2 border-red-500">
+        <div className="absolute -right-2 -top-2 w-8 h-8 flex items-center justify-center bg-textured rounded-full border-2 border-red-500">
           <AlertTriangle className="h-4 w-4 text-red-500" />
         </div>
       )}

@@ -281,9 +281,9 @@ export const ConfigBuilder = () => {
     };
 
     return (
-        <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
+        <div className="w-full h-full px-4 bg-textured">
             <div className="w-full max-w-[1600px] mx-auto">
-                <Card className="border-none bg-white dark:bg-gray-900 space-y-2">
+                <Card className="border-none bg-textured space-y-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold text-rose-500 pt-4">App Configuration Builder</CardTitle>
                     </CardHeader>

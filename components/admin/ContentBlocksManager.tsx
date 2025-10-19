@@ -406,7 +406,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     }
 
     return (
-        <div className={`flex h-full w-full bg-white dark:bg-gray-900 ${className}`}>
+        <div className={`flex h-full w-full bg-textured ${className}`}>
             {/* Sidebar */}
             <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col">
                 {/* Sidebar Header */}
@@ -575,7 +575,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                 {selectedBlock ? (
                     <>
                         {/* Header with Save/Discard buttons */}
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-textured">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">

@@ -33,7 +33,7 @@ const NavigationSelects: React.FC<NavigationRowsProps> = ({
         onContextMenu={(e) => onContextMenu && onContextMenu(e, selectedPath)}
         className={`
           text-xs px-2 py-1 rounded border min-w-0 flex-shrink
-          bg-white dark:bg-gray-800 
+          bg-textured 
           border-gray-300 dark:border-gray-600
           text-gray-900 dark:text-gray-100
           hover:border-gray-400 dark:hover:border-gray-500

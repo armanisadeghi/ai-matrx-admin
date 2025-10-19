@@ -133,7 +133,7 @@ const ButtonSelectionField: React.FC<CommonFieldProps> = ({ field, sourceId="no-
                                 "px-2.5 py-1 text-xs rounded-md transition-colors border",
                                 isOptionSelected(option.id)
                                     ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white border-blue-600 dark:border-blue-700"
-                                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750",
+                                    : "bg-textured border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750",
                                 "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             role={multiSelect ? "checkbox" : "radio"}

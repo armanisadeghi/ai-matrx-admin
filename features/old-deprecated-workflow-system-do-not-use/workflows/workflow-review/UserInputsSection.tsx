@@ -137,7 +137,7 @@ function UserInputCard({ input, index }: UserInputCardProps) {
     const formattedValue = formatValue(input.value);
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg p-3 border border-indigo-200 dark:border-indigo-600 transition-all duration-200 ${
+        <div className={`bg-textured rounded-lg p-3 border border-indigo-200 dark:border-indigo-600 transition-all duration-200 ${
             isHighlighted ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600' : ''
         }`}>
             {/* Compact Header - Input number, broker ID, and type in one line */}

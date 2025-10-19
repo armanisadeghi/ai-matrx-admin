@@ -704,7 +704,7 @@ const WorkflowBuilder = () => {
 
     return (
         <div className="w-full h-full flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 overflow-hidden">
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 flex justify-between items-center">
+            <div className="bg-textured border-b border-gray-200 dark:border-gray-700 p-2 flex justify-between items-center">
                 <div className="flex space-x-2 items-center">
                     <h1 className="font-bold text-lg">Workflow Builder</h1>
                     <div className="flex space-x-1">
@@ -750,7 +750,7 @@ const WorkflowBuilder = () => {
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Left sidebar - Component library */}
-                <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+                <div className="w-64 bg-textured border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
                     {/* Action Library */}
                     <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
@@ -1116,7 +1116,7 @@ const WorkflowBuilder = () => {
                 <div className="flex-1 relative overflow-hidden" ref={workflowContainerRef}>
                     <div
                         ref={canvasRef}
-                        className="absolute inset-0 w-full h-full bg-white dark:bg-gray-900 cursor-grab"
+                        className="absolute inset-0 w-full h-full bg-textured cursor-grab"
                         onClick={handleCanvasClick}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={(e) => e.preventDefault()}
@@ -1157,7 +1157,7 @@ const WorkflowBuilder = () => {
 
                     {/* Minimap */}
                     {minimap && (
-                        <div className="absolute bottom-4 right-4 w-48 h-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div className="absolute bottom-4 right-4 w-48 h-32 bg-textured rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div className="p-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                                 Workflow Overview
                             </div>

@@ -305,7 +305,7 @@ export const AppBuilder = () => {
 
     return (
         <div className="container mx-auto px-4 py-6">
-            <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+            <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-blue-500 dark:text-blue-400">App Builder</CardTitle>
                     <CardDescription className="text-gray-500 dark:text-gray-400">Create and manage custom apps</CardDescription>
@@ -342,7 +342,7 @@ export const AppBuilder = () => {
                                                 value={newApp.name || ""}
                                                 onChange={handleNameChange}
                                                 placeholder="Enter app name"
-                                                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                                className="border-gray-200 dark:border-gray-700 bg-textured"
                                             />
                                         </div>
 
@@ -356,7 +356,7 @@ export const AppBuilder = () => {
                                                 value={newApp.slug || ""}
                                                 onChange={handleInputChange}
                                                 placeholder="Enter slug"
-                                                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                                className="border-gray-200 dark:border-gray-700 bg-textured"
                                             />
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                                 Auto-generated from name, but can be customized
@@ -373,7 +373,7 @@ export const AppBuilder = () => {
                                                 value={newApp.description || ""}
                                                 onChange={handleInputChange}
                                                 placeholder="Enter app description"
-                                                className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                                className="resize-none border-gray-200 dark:border-gray-700 bg-textured"
                                                 rows={3}
                                             />
                                         </div>
@@ -388,7 +388,7 @@ export const AppBuilder = () => {
                                                 value={newApp.creator || ""}
                                                 onChange={handleInputChange}
                                                 placeholder="Enter creator name"
-                                                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                                className="border-gray-200 dark:border-gray-700 bg-textured"
                                             />
                                         </div>
                                     </div>
@@ -466,7 +466,7 @@ export const AppBuilder = () => {
                                                 value={newApp.layoutType ?? DEFAULT_APP_CONFIG.layoutType}
                                                 onValueChange={(value) => handleSelectChange("layoutType", value)}
                                             >
-                                                <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                                <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-textured">
                                                     <SelectValue placeholder="Select a layout" />
                                                 </SelectTrigger>
                                                 <SelectContent>

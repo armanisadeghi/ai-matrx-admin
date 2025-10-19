@@ -220,7 +220,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({
   const sectionTitle = markdown.match(/^## ([^\n]+)/m)?.[1]?.trim() || '';
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 max-w-3xl mx-auto">
+    <div className="bg-textured rounded-lg shadow-sm p-6 max-w-3xl mx-auto">
       {sectionTitle && (
         <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
           {sectionTitle}

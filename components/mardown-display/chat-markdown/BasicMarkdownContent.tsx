@@ -129,7 +129,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                         type="checkbox"
                         checked={checked}
                         disabled={disabled}
-                        className="mr-2 h-4 w-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-500 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                        className="mr-2 h-4 w-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-500 bg-textured focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
                         {...props}
                     />
                 );

@@ -22,7 +22,7 @@ export default async function PromptTemplatePage({
 
     if (error || !template) {
         return (
-            <Card className="h-full w-full bg-white dark:bg-gray-900 border-none shadow-lg">
+            <Card className="h-full w-full bg-textured border-none shadow-lg">
                 <div className="p-8 md:p-12">
                     <div className="text-center">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -49,7 +49,7 @@ export default async function PromptTemplatePage({
     };
 
     return (
-        <Card className="h-full w-full bg-white dark:bg-gray-900 border-none shadow-lg">
+        <Card className="h-full w-full bg-textured border-none shadow-lg">
             <div className="p-8 md:p-12">
                 <div className="flex items-center gap-4 mb-8">
                     <Link href="/ai/prompts/templates">
@@ -96,7 +96,7 @@ export default async function PromptTemplatePage({
                                     <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
                                         Messages
                                     </h3>
-                                    <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto max-h-96">
+                                    <pre className="bg-textured p-4 rounded-lg text-sm overflow-auto max-h-96">
                                         {JSON.stringify(template.messages, null, 2)}
                                     </pre>
                                 </div>
@@ -107,7 +107,7 @@ export default async function PromptTemplatePage({
                                     <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
                                         Variable Defaults
                                     </h3>
-                                    <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto">
+                                    <pre className="bg-textured p-4 rounded-lg text-sm overflow-auto">
                                         {JSON.stringify(template.variable_defaults, null, 2)}
                                     </pre>
                                 </div>
@@ -118,7 +118,7 @@ export default async function PromptTemplatePage({
                                     <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
                                         Tools
                                     </h3>
-                                    <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto">
+                                    <pre className="bg-textured p-4 rounded-lg text-sm overflow-auto">
                                         {JSON.stringify(template.tools, null, 2)}
                                     </pre>
                                 </div>
@@ -129,7 +129,7 @@ export default async function PromptTemplatePage({
                                     <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
                                         Settings
                                     </h3>
-                                    <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto">
+                                    <pre className="bg-textured p-4 rounded-lg text-sm overflow-auto">
                                         {JSON.stringify(template.settings, null, 2)}
                                     </pre>
                                 </div>

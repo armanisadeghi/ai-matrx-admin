@@ -77,7 +77,7 @@ const NumberInputField: React.FC<CommonFieldProps> = ({ field, sourceId="no-appl
               ${
                   isDecrementDisabled
                       ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800"
-                      : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      : "bg-textured hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
                         aria-label="Decrease value"
                     >
@@ -110,7 +110,7 @@ const NumberInputField: React.FC<CommonFieldProps> = ({ field, sourceId="no-appl
               ${
                   isIncrementDisabled
                       ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800"
-                      : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      : "bg-textured hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
                         aria-label="Increase value"
                     >

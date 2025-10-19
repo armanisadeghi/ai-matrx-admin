@@ -551,7 +551,7 @@ const SmartAppListsDemo = () => {
                                             />
                                         </div>
 
-                                        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <div className="p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
                                             <div className="flex justify-between items-center mb-3">
                                                 <h4 className="font-medium text-sm">Selected Applets ({selectedApplets.length})</h4>
                                                 <Button
@@ -688,7 +688,7 @@ const SmartAppListsDemo = () => {
                                         </p>
 
                                         {/* Example 1: Workflow Builder */}
-                                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+                                        <div className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
                                             <div className="flex items-center mb-3">
                                                 <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-md mr-3">
                                                     <PlayIcon className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
@@ -721,7 +721,7 @@ const SmartAppListsDemo = () => {
                                                             {workflowSelectedApplets.map((applet, index) => (
                                                                 <div
                                                                     key={applet.id}
-                                                                    className="flex items-center p-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
+                                                                    className="flex items-center p-2 bg-textured rounded-md border border-gray-200 dark:border-gray-700"
                                                                 >
                                                                     <div className="flex items-center justify-center h-6 w-6 bg-emerald-500 dark:bg-emerald-600 rounded-full text-white text-xs font-medium mr-3">
                                                                         {index + 1}
@@ -736,7 +736,7 @@ const SmartAppListsDemo = () => {
                                         </div>
 
                                         {/* Example 2: Dashboard Builder */}
-                                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+                                        <div className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
                                             <div className="flex items-center mb-3">
                                                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-md mr-3">
                                                     <BoxIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
@@ -802,7 +802,7 @@ const SmartAppListsDemo = () => {
                                 />
                             </div>
 
-                            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
                                 <h4 className="font-medium text-sm mb-3 flex items-center">
                                     <LayoutGrid className="h-4 w-4 mr-1 text-amber-500" />
                                     Selected Groups ({selectedGroups.length})
@@ -866,7 +866,7 @@ const SmartAppListsDemo = () => {
                                 />
                             </div>
 
-                            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
                                 <h4 className="font-medium text-sm mb-3 flex items-center">
                                     <FormInput className="h-4 w-4 mr-1 text-purple-500" />
                                     Selected Fields ({selectedFields.length})

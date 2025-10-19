@@ -34,7 +34,7 @@ export default function FunctionPreview({ selectedFunction }: FunctionPreviewPro
                     </h4>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                         {selectedFunction.args?.map((arg: any, idx: number) => (
-                            <div key={idx} className="text-xs bg-white dark:bg-gray-800 rounded p-2 border">
+                            <div key={idx} className="text-xs bg-textured rounded p-2 border">
                                 <div className="font-medium">
                                     {arg.name} ({arg.dataType})
                                 </div>

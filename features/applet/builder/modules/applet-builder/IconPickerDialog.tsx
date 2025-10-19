@@ -54,7 +54,7 @@ export const IconPickerDialog: React.FC<IconPickerDialogProps> = ({
             placeholder="Search icons..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+            className="border-gray-200 dark:border-gray-700 bg-textured"
           />
         </div>
         

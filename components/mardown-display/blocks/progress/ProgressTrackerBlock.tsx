@@ -218,7 +218,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Fullscreen Header */}
           {isFullScreen && (
@@ -229,7 +229,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
               </div>
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
               >
                 <Minimize2 className="h-4 w-4" />
                 <span>Exit</span>
@@ -305,28 +305,28 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
 
                 {/* Stats Grid */}
                 <div className="grid md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800/50">
                     <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
                       <Target className="h-4 w-4" />
                       <span className="text-xs font-medium">Total Goals</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{progressStats.totalItems}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
                       <CheckCircle2 className="h-4 w-4" />
                       <span className="text-xs font-medium">Completed</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{progressStats.completedCount}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-orange-200 dark:border-orange-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-orange-200 dark:border-orange-800/50">
                     <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 mb-1">
                       <Clock className="h-4 w-4" />
                       <span className="text-xs font-medium">Remaining</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{progressStats.totalItems - progressStats.completedCount}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-purple-200 dark:border-purple-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-purple-200 dark:border-purple-800/50">
                     <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1">
                       <TrendingUp className="h-4 w-4" />
                       <span className="text-xs font-medium">Categories</span>
@@ -341,7 +341,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                     <select
                       value={selectedPriority}
                       onChange={(e) => setSelectedPriority(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="all">All Priority</option>
                       <option value="high">High Priority</option>
@@ -383,7 +383,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                   const allItemsCompleted = category.items.every(item => completedItems.has(item.id));
 
                   return (
-                    <div key={category.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 ${borderColor} dark:border-opacity-50 overflow-hidden`}>
+                    <div key={category.id} className={`bg-textured rounded-xl shadow-lg border-2 ${borderColor} dark:border-opacity-50 overflow-hidden`}>
                       <div className="p-4">
                         {/* Category Header */}
                         <div className="flex items-center justify-between mb-4">

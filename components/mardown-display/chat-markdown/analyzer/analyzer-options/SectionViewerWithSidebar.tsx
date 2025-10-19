@@ -173,7 +173,7 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
       <div className="h-full flex gap-4 max-w-7xl mx-auto">
         {/* Sidebar - Show when we have valid data OR when in JSON explorer mode */}
         {(shouldShowSidebar || showJsonExplorer) && (
-          <div className="w-80 flex-shrink-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+          <div className="w-80 flex-shrink-0 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               <div className="flex items-center justify-between">
                 <div>
@@ -248,7 +248,7 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
         )}
         
         {/* Main Content */}
-        <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+        <div className="flex-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
           {showJsonExplorer ? (
             /* JSON Explorer Mode */
             <>

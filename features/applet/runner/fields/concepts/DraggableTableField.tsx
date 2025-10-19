@@ -134,7 +134,7 @@ const DraggableTableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-a
                                                         // No other inline styles needed on TR here, library handles position
                                                     }}
                                                     className={cn(
-                                                        "bg-white dark:bg-gray-800",
+                                                        "bg-textured",
                                                         "hover:bg-gray-50 dark:hover:bg-gray-700/50",
                                                         snapshotDraggable.isDragging ? "shadow-xl opacity-95" : "shadow-none opacity-100", // Enhanced shadow
                                                         "transition-[box-shadow,opacity] duration-150 ease-in-out"

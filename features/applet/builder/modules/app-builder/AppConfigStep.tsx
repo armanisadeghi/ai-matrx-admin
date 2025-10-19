@@ -312,7 +312,7 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved,
                                             placeholder="Enter app name"
                                             value={name || ""}
                                             onChange={handleNameChange}
-                                            className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                            className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                                         />
                                     </div>
 
@@ -328,7 +328,7 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved,
                                                 placeholder="Enter unique app slug"
                                                 value={slug || ""}
                                                 onChange={handleSlugChange}
-                                                className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
+                                                className={`border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
                                                     slugStatus === "notUnique" ? "border-red-500 dark:border-red-500" : ""
                                                 } pr-10`}
                                             />
@@ -352,7 +352,7 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved,
                                         value={description || ""}
                                         onChange={handleDescriptionChange}
                                         rows={3}
-                                        className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                        className="resize-none border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                                     />
                                 </div>
 
@@ -426,7 +426,7 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved,
                                             placeholder="Enter your name"
                                             value={creator || ""}
                                             onChange={handleCreatorChange}
-                                            className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                            className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                                         />
                                     </div>
                                 </div>

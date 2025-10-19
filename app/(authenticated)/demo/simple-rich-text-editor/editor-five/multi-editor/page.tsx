@@ -126,7 +126,7 @@ const MultiEditorPage = () => {
                         {/* Editor Container */}
                         <div className={`
                             border border-gray-300 dark:border-gray-700 rounded-lg 
-                            bg-white dark:bg-gray-800 pl-8 p-4
+                            bg-textured pl-8 p-4
                             ${dropTargetId === id ? 'border-blue-500 shadow-lg' : ''}
                         `}>
                             <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">

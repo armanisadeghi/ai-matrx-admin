@@ -86,7 +86,7 @@ export default function ArgumentOverrides({
             </h3>
             <div className="space-y-4">
                 {selectedFunction.args.map((arg: any) => (
-                    <div key={arg.name} className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
+                    <div key={arg.name} className="bg-textured rounded-lg p-4 border">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                             <div>
                                 <div className="font-medium text-gray-900 dark:text-gray-100">{arg.name}</div>

@@ -41,7 +41,7 @@ const ViewTableModal: React.FC<ViewTableModalProps> = ({
       }}
     >
       <DialogContent className={cn(
-        "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden",
+        "bg-textured text-gray-900 dark:text-gray-100 overflow-hidden",
         "max-w-[95vw] w-[95vw] h-[95vh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl"
       )}>
         <DialogHeader className="flex flex-row items-center justify-between mb-1">
@@ -51,7 +51,7 @@ const ViewTableModal: React.FC<ViewTableModalProps> = ({
         </DialogHeader>
         
         <div className="py-0">          
-          <div className="h-[calc(85vh-140px)] overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+          <div className="h-[calc(85vh-140px)] overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-textured">
             <UserTableViewer tableId={tableInfo.table_id} showTableSelector={false} />
           </div>
         </div>

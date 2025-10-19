@@ -118,7 +118,7 @@ const TroubleshootingLoadingVisualization: React.FC<TroubleshootingLoadingVisual
         {/* Issue Preview Cards */}
         <div className="grid md:grid-cols-2 gap-4 mb-8">
           {[1, 2, 3, 4].map((issue) => (
-            <div key={issue} className="bg-white dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${issue * 150}ms` }}>
+            <div key={issue} className="bg-textured/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${issue * 150}ms` }}>
               {/* Issue Header */}
               <div className="flex items-start gap-3 mb-3">
                 <div className={`p-2 rounded-lg ${
@@ -172,7 +172,7 @@ const TroubleshootingLoadingVisualization: React.FC<TroubleshootingLoadingVisual
             { label: 'Solutions', icon: Wrench, color: 'text-green-600 dark:text-green-400' },
             { label: 'Steps', icon: CheckCircle2, color: 'text-blue-600 dark:text-blue-400' }
           ].map((stat, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${index * 100}ms` }}>
+            <div key={index} className="bg-textured/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${index * 100}ms` }}>
               <div className={`flex items-center gap-2 ${stat.color} mb-2`}>
                 <stat.icon className="h-4 w-4" />
                 <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-12" />
@@ -183,7 +183,7 @@ const TroubleshootingLoadingVisualization: React.FC<TroubleshootingLoadingVisual
         </div>
 
         {/* Solution Steps Preview */}
-        <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div className="bg-textured/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <Zap className="h-5 w-5 text-yellow-500 animate-pulse" />
             <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32 animate-pulse" />
@@ -207,7 +207,7 @@ const TroubleshootingLoadingVisualization: React.FC<TroubleshootingLoadingVisual
 
         {/* Loading Text */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-textured/50 rounded-full border border-gray-200 dark:border-gray-700">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-red-500 dark:bg-red-400 rounded-full animate-bounce" />
               <div className="w-2 h-2 bg-orange-500 dark:bg-orange-400 rounded-full animate-bounce delay-100" />

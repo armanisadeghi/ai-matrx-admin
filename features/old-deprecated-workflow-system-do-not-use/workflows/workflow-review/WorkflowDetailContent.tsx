@@ -84,7 +84,7 @@ export function WorkflowDetailContent({ workflowId }: WorkflowDetailContentProps
         <BrokerHighlightContext.Provider value={{ highlightedBroker, setHighlightedBroker }}>
             <div className="flex flex-col min-h-0">
                 {/* Compact Header */}
-                <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
+                <div className="bg-textured border-b border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{workflow.name || "Untitled Workflow"}</h1>
@@ -113,7 +113,7 @@ export function WorkflowDetailContent({ workflowId }: WorkflowDetailContentProps
                 {/* Main Content - Clean 60/40 split */}
                 <div className="flex-1 grid grid-cols-1 xl:grid-cols-5 gap-0 min-h-0">
                     {/* Left Column - Steps (60% of space) */}
-                    <div className="xl:col-span-3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col min-h-0">
+                    <div className="xl:col-span-3 bg-textured border-r border-gray-200 dark:border-gray-700 flex flex-col min-h-0">
                         <WorkflowStepsSection steps={backendData?.steps || []} onUpdate={handleUpdatedSteps} />
                     </div>
 

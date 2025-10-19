@@ -84,7 +84,7 @@ export const ShoppingSearchBar = () => {
                             <label className="text-xs text-gray-500">Chest (in)</label>
                             <input
                                 type="number"
-                                className="w-full mt-1 p-2 rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800"
+                                className="w-full mt-1 p-2 rounded-md border dark:border-gray-700 bg-textured"
                                 placeholder="inches"
                             />
                         </div>
@@ -92,7 +92,7 @@ export const ShoppingSearchBar = () => {
                             <label className="text-xs text-gray-500">Waist (in)</label>
                             <input
                                 type="number"
-                                className="w-full mt-1 p-2 rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800"
+                                className="w-full mt-1 p-2 rounded-md border dark:border-gray-700 bg-textured"
                                 placeholder="inches"
                             />
                         </div>
@@ -120,7 +120,7 @@ export const ShoppingSearchBar = () => {
                                 <span className="absolute left-3 top-2 text-gray-500">$</span>
                                 <input
                                     type="number"
-                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800"
+                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-textured"
                                     placeholder="0"
                                 />
                             </div>
@@ -131,7 +131,7 @@ export const ShoppingSearchBar = () => {
                                 <span className="absolute left-3 top-2 text-gray-500">$</span>
                                 <input
                                     type="number"
-                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800"
+                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-textured"
                                     placeholder="200"
                                 />
                             </div>
@@ -170,7 +170,7 @@ export const ShoppingSearchBar = () => {
                         <div className="relative">
                             <input
                                 type="text"
-                                className="w-full p-2 pl-9 rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800"
+                                className="w-full p-2 pl-9 rounded-md border dark:border-gray-700 bg-textured"
                                 placeholder="Enter zip code or address"
                             />
                             <MapPin size={16} className="absolute left-2.5 top-2.5 text-gray-400" />
@@ -288,7 +288,7 @@ export const ShoppingSearchBar = () => {
                                 <span className="absolute left-3 top-2 text-gray-500">$</span>
                                 <input
                                     type="number"
-                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800"
+                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-textured"
                                     placeholder="0"
                                 />
                             </div>
@@ -299,7 +299,7 @@ export const ShoppingSearchBar = () => {
                                 <span className="absolute left-3 top-2 text-gray-500">$</span>
                                 <input
                                     type="number"
-                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800"
+                                    className="pl-7 p-2 w-24 rounded-md border dark:border-gray-700 bg-textured"
                                     placeholder="2000"
                                 />
                             </div>

@@ -41,7 +41,7 @@ const Editor = ({
             {/* Editor Container */}
             <div 
                 className="border border-gray-300 dark:border-gray-700 rounded-lg 
-                          bg-white dark:bg-gray-800 p-4 pr-12
+                          bg-textured p-4 pr-12
                           shadow-sm hover:shadow-md transition-shadow"
                 draggable={false} // Prevent editor content from being draggable
             >

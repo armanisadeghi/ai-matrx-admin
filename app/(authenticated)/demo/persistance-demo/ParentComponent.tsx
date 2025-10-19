@@ -18,7 +18,7 @@ const ParentComponent = () => {
   return (
     <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-950 p-4">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
+        <div className="bg-textured p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
           <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Parent Component Controls</h2>
           
           <div className="space-y-4">
@@ -30,7 +30,7 @@ const ParentComponent = () => {
                 type="text"
                 value={parentContent}
                 onChange={(e) => updateParentContent(e.target.value)}
-                className="p-2 border rounded w-full bg-white dark:bg-gray-800 text-black dark:text-white"
+                className="p-2 border rounded w-full bg-textured text-black dark:text-white"
                 placeholder="Update parent content..."
               />
             </div>
@@ -63,7 +63,7 @@ const ParentComponent = () => {
         
         <Tabs 
           defaultValue="tab1" 
-          className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-800"
+          className="bg-textured p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-800"
         >
           <TabsList className="mb-4">
             <TabsTrigger value="tab1">Child Component</TabsTrigger>
@@ -106,7 +106,7 @@ const ParentComponent = () => {
           </TabsContent>
         </Tabs>
         
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
+        <div className="bg-textured p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
           <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">How to Test:</h3>
           <ol className="list-decimal pl-5 space-y-2 text-gray-700 dark:text-gray-300">
             <li>Change the "Local content" in the child component</li>

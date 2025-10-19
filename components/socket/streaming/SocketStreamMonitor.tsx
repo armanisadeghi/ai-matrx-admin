@@ -64,7 +64,7 @@ export const SocketStreamMonitor = ({ taskId }: { taskId: string }) => {
                                                 onValueChange={setSelectedListenerId}
                                                 disabled={Object.keys(allResponses).length === 0}
                                             >
-                                                <SelectTrigger className="max-w-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                                                <SelectTrigger className="max-w-md bg-textured text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                                                     <SelectValue placeholder="Select an event ID" />
                                                 </SelectTrigger>
                                                 <SelectContent>

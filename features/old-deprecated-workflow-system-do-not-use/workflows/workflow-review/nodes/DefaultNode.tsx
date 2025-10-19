@@ -155,13 +155,13 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                             <select
                                 value={editValues.functionType}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, functionType: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="registered_function">Registered Function</option>
                                 <option value="workflow_recipe_executor">Workflow Recipe Executor</option>
                             </select>
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.functionType}
                             </div>
                         )}
@@ -177,11 +177,11 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                                 type="text"
                                 value={editValues.functionId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, functionId: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Function ID"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border break-all">
+                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border break-all">
                                 {editValues.functionId}
                             </div>
                         )}
@@ -197,11 +197,11 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                                 type="text"
                                 value={editValues.stepName}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, stepName: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Step Name"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.stepName}
                             </div>
                         )}
@@ -224,7 +224,7 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                         </div>
                         <div className="space-y-2">
                             {Object.entries(editValues.argMappings).map(([argName, brokerId]) => (
-                                <div key={argName} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-600">
+                                <div key={argName} className="bg-textured rounded-lg p-3 border border-blue-200 dark:border-blue-600">
                                     {isEditing ? (
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                                                 type="text"
                                                 value={String(brokerId || '')}
                                                 onChange={(e) => handleArgMappingChange(argName, e.target.value)}
-                                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-2 py-1 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 placeholder="Broker ID"
                                             />
                                         </div>
@@ -304,7 +304,7 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                                                 type="text"
                                                 value={brokerId}
                                                 onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
-                                                className="flex-1 text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="flex-1 text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 placeholder="Return Broker ID"
                                             />
                                             {editValues.returnBrokerIds.length > 1 && (
@@ -321,10 +321,10 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                                             {brokerId && brokerId !== 'None' ? (
                                                 <ClickableBroker
                                                     brokerId={brokerId}
-                                                    className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-200 dark:border-blue-600 break-all"
+                                                    className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-200 dark:border-blue-600 break-all"
                                                 />
                                             ) : (
-                                                <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                                <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border">
                                                     None
                                                 </div>
                                             )}

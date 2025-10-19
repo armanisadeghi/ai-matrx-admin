@@ -95,18 +95,18 @@ export const CompactResponseDataDisplay = ({ title = "Data Response", listenerId
                     <CardContent className="p-3 pt-0 flex-1">
                         <TabsContent value="tree" className="h-56 overflow-auto">
                             {hasContent ? (
-                                <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
+                                <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-textured p-3">
                                     <JsonToCollapsible title="" data={data} defaultExpanded={true} className="text-xs font-mono" />
                                 </div>
                             ) : (
-                                <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 flex items-center justify-center">
+                                <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-textured p-3 flex items-center justify-center">
                                     <span className="text-gray-500 dark:text-gray-400 italic text-xs">No data available</span>
                                 </div>
                             )}
                         </TabsContent>
 
                         <TabsContent value="json" className="h-56 overflow-auto">
-                            <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-auto">
+                            <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-textured overflow-auto">
                                 {hasContent ? (
                                     <pre className="p-3 text-xs font-mono whitespace-pre-wrap break-words text-gray-800 dark:text-gray-300">
                                         {jsonString}

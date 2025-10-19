@@ -338,7 +338,7 @@ const IntelligentViewer = ({ data, bookmark }: IntelligentViewerProps) => {
         <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
             <div className="h-full flex gap-4 max-w-7xl mx-auto">
                 {/* Dynamic Sidebar */}
-                <div className="w-80 flex-shrink-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+                <div className="w-80 flex-shrink-0 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
                     <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                         <div className="flex items-center justify-between">
                             <div>
@@ -423,7 +423,7 @@ const IntelligentViewer = ({ data, bookmark }: IntelligentViewerProps) => {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+                <div className="flex-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
                     {/* Header */}
                     <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                         <div className="flex items-center justify-between">
@@ -531,7 +531,7 @@ const IntelligentViewer = ({ data, bookmark }: IntelligentViewerProps) => {
                                         <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg border">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs text-gray-600 dark:text-gray-400">Root bookmark path:</span>
-                                                <span className="text-xs text-gray-800 dark:text-gray-200 font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded border">
+                                                <span className="text-xs text-gray-800 dark:text-gray-200 font-mono bg-textured px-2 py-1 rounded border">
                                                     {bookmark}
                                                 </span>
                                                 <button

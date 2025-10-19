@@ -246,7 +246,7 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 disabled={isExporting}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm disabled:opacity-50"
             >
                 {isExporting ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -265,7 +265,7 @@ const PresentationExportMenu: React.FC<PresentationExportMenuProps> = ({
                     />
                     
                     {/* Dropdown Menu */}
-                    <div className="absolute right-0 top-full mt-2 w-96 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-96 z-50 bg-textured rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                         {exportStatus && (
                             <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800">
                                 <p className="text-xs text-blue-700 dark:text-blue-300">{exportStatus}</p>

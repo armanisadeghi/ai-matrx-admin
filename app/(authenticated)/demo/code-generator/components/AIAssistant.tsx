@@ -7,13 +7,13 @@ import React from 'react';
 // Component for AI assistance
 const AIAssistant = ({ generateWithAI, isGenerating, aiSuggestion, applySuggestion }) => {
   return (
-    <div className="bg-white dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="bg-textured p-4 border-b border-gray-200 dark:border-gray-700">
       <h2 className="font-bold text-lg mb-2 text-gray-800 dark:text-gray-100">AI Assistant</h2>
       <div className="flex space-x-2 mb-3">
         <input
           type="text"
           placeholder="Describe what you want to create..."
-          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-800 dark:text-gray-200"
           onKeyDown={(e) => e.key === 'Enter' && generateWithAI((e.target as HTMLInputElement).value)}
         />
         <button

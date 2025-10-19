@@ -88,7 +88,7 @@ export default function SearchAppletPage() {
     );
 
     return (
-        <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
+        <div className="h-full w-full bg-textured transition-colors">
             <CustomAppHeader isDemo={true} />
 
             <div className="w-full mt-24 mb-8">

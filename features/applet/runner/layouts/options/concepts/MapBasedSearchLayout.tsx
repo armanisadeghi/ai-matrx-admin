@@ -44,13 +44,13 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
           
           {/* Map controls */}
           <div className="absolute top-4 right-4 flex flex-col space-y-2">
-            <button className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+            <button className="bg-textured rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
               <MoveVertical size={24} />
             </button>
-            <button className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+            <button className="bg-textured rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
               <Plus size={24} />
             </button>
-            <button className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+            <button className="bg-textured rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
               <PlusSquare size={24} />
             </button>
           </div>
@@ -99,7 +99,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
               <input 
                 type="text" 
                 placeholder="Search location..."
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full py-2 pl-10 pr-4 shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+                className="w-full bg-textured border border-gray-300 dark:border-gray-600 rounded-full py-2 pl-10 pr-4 shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <div className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">
                 <Search size={18} />
@@ -110,7 +110,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
         
         {/* Filter panel (slides in from the side) */}
         <div 
-          className={`absolute right-0 top-0 bottom-0 w-96 bg-white dark:bg-gray-800 shadow-xl transition-transform duration-300 transform ${
+          className={`absolute right-0 top-0 bottom-0 w-96 bg-textured shadow-xl transition-transform duration-300 transform ${
             isFilterPanelOpen ? 'translate-x-0' : 'translate-x-full'
           } z-20 overflow-auto`}
         >

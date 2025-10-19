@@ -69,7 +69,7 @@ const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected }) => {
     if (data.currentValue !== undefined && data.currentValue !== null && data.currentValue !== '') {
       return 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20';
     }
-    return 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800';
+    return 'border-gray-300 dark:border-gray-600 bg-textured';
   };
 
   const hasValidationRules = data.validationRules && data.validationRules.length > 0;

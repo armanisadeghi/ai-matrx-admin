@@ -49,7 +49,7 @@ const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
   const currentStatus = statusColors[status];
 
   return (
-    <header className="border-b bg-white dark:bg-gray-800 px-4 py-3 shadow-sm">
+    <header className="border-b bg-textured px-4 py-3 shadow-sm">
       <div className="flex items-center justify-between">
         {/* Left side: Title and breadcrumbs */}
         <div className="flex items-center space-x-3">

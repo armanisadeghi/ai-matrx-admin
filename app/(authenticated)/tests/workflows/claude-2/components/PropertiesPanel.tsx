@@ -16,7 +16,7 @@ const PropertiesPanel = () => {
 
   if (!expanded) {
     return (
-      <div className="w-10 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
+      <div className="w-10 bg-textured border-l border-gray-200 dark:border-gray-700 flex flex-col">
         <button 
           className="p-3 flex justify-center"
           onClick={() => setExpanded(true)}
@@ -28,7 +28,7 @@ const PropertiesPanel = () => {
   }
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+    <div className="w-64 bg-textured border-l border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
       <div className="p-3 flex items-center justify-between font-medium border-b border-gray-200 dark:border-gray-700">
         <span className="flex items-center">
           <Settings className="mr-2" size={18} />

@@ -21,7 +21,7 @@ export default function OverlayDemoPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <div className="bg-textured rounded-lg shadow-lg p-6 mb-6">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                         🎉 Workflow Step Creator Overlay Demo
                     </h1>
@@ -50,7 +50,7 @@ export default function OverlayDemoPage() {
                 </div>
 
                 {/* Features Overview */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <div className="bg-textured rounded-lg shadow-lg p-6 mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                         ✨ Key Features
                     </h2>
@@ -117,7 +117,7 @@ export default function OverlayDemoPage() {
                 </div>
 
                 {/* Usage Example */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <div className="bg-textured rounded-lg shadow-lg p-6 mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                         💻 Usage Example
                     </h2>
@@ -154,7 +154,7 @@ export default function OverlayDemoPage() {
 
                 {/* Created Steps Display */}
                 {createdSteps.length > 0 && (
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                    <div className="bg-textured rounded-lg shadow-lg p-6">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                             📋 Created Steps ({createdSteps.length})
                         </h2>

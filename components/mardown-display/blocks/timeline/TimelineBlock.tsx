@@ -125,7 +125,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
       case 'pending':
         return 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50';
       default:
-        return 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800';
+        return 'border-gray-200 dark:border-gray-700 bg-textured';
     }
   };
 
@@ -140,7 +140,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-2' : 'py-3'}`}>
-        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Scrollable Content */}
           <div className={isFullScreen ? 'flex-1 overflow-y-auto' : ''}>
@@ -178,7 +178,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
                     {isFullScreen && (
                       <button
                         onClick={() => setIsFullScreen(false)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
+                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
                       >
                         <Minimize2 className="h-3 w-3" />
                         <span className="hidden sm:inline">Exit</span>
@@ -210,7 +210,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
                         <select
                           value={selectedCategory}
                           onChange={(e) => setSelectedCategory(e.target.value)}
-                          className="text-xs px-2 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                          className="text-xs px-2 py-1 rounded bg-textured border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                         >
                           {categories.map(cat => (
                             <option key={cat} value={cat}>

@@ -49,7 +49,7 @@ export default function AIChat() {
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
             {/* Left Sidebar */}
-            <div className={`w-64 bg-white dark:bg-gray-800 transition-all duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className={`w-64 bg-textured transition-all duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <Button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="absolute top-4 left-4">
                     {isSidebarOpen ? 'Hide' : 'Show'} Controls
                 </Button>
@@ -120,7 +120,7 @@ export default function AIChat() {
 
             {/* Right Panel (Optional) */}
             {isRightPanelOpen && (
-                <div className="w-1/2 bg-white dark:bg-gray-800">
+                <div className="w-1/2 bg-textured">
                     {/* Content for the right panel */}
                 </div>
             )}

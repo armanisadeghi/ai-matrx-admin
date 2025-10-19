@@ -11,7 +11,7 @@ interface SocketConfigBuilderProps {
 
 export const SocketTaskBuilder: React.FC<SocketConfigBuilderProps> = ({
   taskId,
-  className = "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
+  className = "bg-textured text-gray-900 dark:text-gray-100",
   onConfigChange
 }) => {
   const [currentConfig, setCurrentConfig] = useState<any>({});

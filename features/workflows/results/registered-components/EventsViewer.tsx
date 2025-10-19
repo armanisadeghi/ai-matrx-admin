@@ -183,7 +183,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
 
         return (
             <div
-                className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ${
+                className={`bg-textured rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ${
                     compact ? "p-3" : "p-4"
                 }`}
             >
@@ -490,7 +490,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
                                             </div>
                                         </div>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                    <DropdownMenuContent className="bg-textured border border-gray-200 dark:border-gray-700">
                                         <DropdownMenuItem
                                             onClick={handleTestPageNavigation}
                                             className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"

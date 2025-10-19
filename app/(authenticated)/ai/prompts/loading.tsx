@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PromptsLoading() {
     return (
-        <Card className="h-full w-full bg-white dark:bg-gray-900 border-none shadow-lg">
+        <Card className="h-full w-full bg-textured border-none shadow-lg">
             <div className="p-8 md:p-12">
                 <div className="text-center mb-8">
                     <Skeleton className="h-9 w-64 mx-auto mb-3" />

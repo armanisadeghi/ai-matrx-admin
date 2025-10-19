@@ -214,7 +214,7 @@ export default function AppletDemoPage() {
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
             Function Explorer
           </h2>
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md">
+          <div className="bg-textured p-4 rounded-lg shadow-md">
             <AppletFunctionPicker dependencies={dependencies} />
           </div>
         </div>
@@ -224,14 +224,14 @@ export default function AppletDemoPage() {
             Sample Applets
           </h2>
           
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md mb-8">
+          <div className="bg-textured p-4 rounded-lg shadow-md mb-8">
             <AppletRunner 
               applet={utilityDemoApplet} 
               customDependencies={dependencies}
             />
           </div>
           
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md">
+          <div className="bg-textured p-4 rounded-lg shadow-md">
             <AppletRunner 
               applet={sampleApplet} 
               customDependencies={dependencies}

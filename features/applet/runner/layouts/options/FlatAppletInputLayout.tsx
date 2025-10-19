@@ -16,7 +16,7 @@ const FlatAppletInputLayout: React.FC<AppletInputProps> = ({
     
     return (
         <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
-            <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 p-6">
+            <div className="border rounded-lg bg-textured dark:border-gray-700 p-6">
                 {appletContainers.map((container, groupIndex) => (
                     <div key={container.id} className="mb-8">
                         {/* Group header with minimal padding */}

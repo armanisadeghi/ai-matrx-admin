@@ -206,7 +206,7 @@ const ButtonColumnField: React.FC<CommonFieldProps> = ({ field, sourceId="no-app
                                     "px-3 py-1.5 text-sm rounded-md transition-colors border",
                                     isSelected
                                         ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white border-blue-600 dark:border-blue-700"
-                                        : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750",
+                                        : "bg-textured border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750",
                                     "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                                 )}
                                 role={multiSelect ? "checkbox" : "radio"}
@@ -223,7 +223,7 @@ const ButtonColumnField: React.FC<CommonFieldProps> = ({ field, sourceId="no-app
             {isOtherSelected && (
                 <Input
                     id={`${sourceId}-${id}-other-input`}
-                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured"
                     value={otherText}
                     onChange={handleOtherTextChange}
                     onBlur={handleBlur}

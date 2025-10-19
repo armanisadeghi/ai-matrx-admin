@@ -76,7 +76,7 @@ const FloatingSheetDemo = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Floating Sheet Component Demo</h1>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <div className="bg-textured rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Select a Demo</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
               {Object.keys(sheetConfigs).map((key) => (

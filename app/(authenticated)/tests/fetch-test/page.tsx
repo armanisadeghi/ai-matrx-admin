@@ -48,7 +48,7 @@ export default function FetchRecordsTest() {
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
-            <div className="max-w-6xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="max-w-6xl mx-auto bg-textured rounded-lg shadow-md p-6">
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Message Fetch Records Test</h1>
 
                 <div className="mb-6">
@@ -107,7 +107,7 @@ export default function FetchRecordsTest() {
                         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Results</h2>
 
                         <div className="overflow-x-auto">
-                            <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
+                            <table className="min-w-full bg-textured border border-gray-300 dark:border-gray-700">
                                 <thead>
                                     <tr className="bg-gray-100 dark:bg-gray-700">
                                         <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-600 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -199,7 +199,7 @@ export default function FetchRecordsTest() {
 
             {/* Payload preview */}
             {conversationId && (
-                <div className="max-w-6xl mx-auto mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <div className="max-w-6xl mx-auto mt-6 bg-textured rounded-lg shadow-md p-6">
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Action Payload Preview</h2>
                     <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md overflow-x-auto text-sm text-gray-800 dark:text-gray-200">
                         {JSON.stringify(

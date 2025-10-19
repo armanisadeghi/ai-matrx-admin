@@ -25,7 +25,7 @@ const SideBySideAppDisplay: React.FC<AppDisplayProps> = ({
             {/* Icon and Name side by side - aligned to top */}
             <div className="flex items-center gap-4 w-full">
               {/* App Icon - much bigger */}
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-md flex-shrink-0 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-xl overflow-hidden bg-textured shadow-md flex-shrink-0 flex items-center justify-center">
                 {appIcon ? (
                   getAppIconWithBg({
                     icon: appIcon,

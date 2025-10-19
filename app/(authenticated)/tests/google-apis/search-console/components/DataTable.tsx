@@ -91,7 +91,7 @@ export function DataTable({ data, dimension, title }: DataTableProps) {
 
     if (!data || !data.rows || data.rows.length === 0) {
         return (
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <Card className="bg-textured border-gray-200 dark:border-gray-700">
                 <CardHeader>
                     <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         {title}
@@ -147,7 +147,7 @@ export function DataTable({ data, dimension, title }: DataTableProps) {
     };
 
     return (
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <Card className="bg-textured border-gray-200 dark:border-gray-700">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">

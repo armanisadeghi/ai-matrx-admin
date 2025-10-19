@@ -116,7 +116,7 @@ export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onTo
                                 type="text"
                                 value={editValues.inputBrokerId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, inputBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono text-orange-900 dark:text-orange-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-orange-300 dark:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                className="w-full text-sm font-mono text-orange-900 dark:text-orange-100 bg-textured px-3 py-2 rounded border border-orange-300 dark:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
                                 placeholder="Batch Configs Broker ID"
                             />
                         ) : (
@@ -125,10 +125,10 @@ export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onTo
                                 {editValues.inputBrokerId !== 'None' ? (
                                     <ClickableBroker
                                         brokerId={editValues.inputBrokerId}
-                                        className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-orange-200 dark:border-orange-600 break-all"
+                                        className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-textured px-3 py-2 rounded border border-orange-200 dark:border-orange-600 break-all"
                                     />
                                 ) : (
-                                    <div className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                    <div className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-textured px-3 py-2 rounded border">
                                         None
                                     </div>
                                 )}
@@ -161,7 +161,7 @@ export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onTo
                                                 type="text"
                                                 value={brokerId}
                                                 onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
-                                                className="flex-1 text-sm font-mono text-orange-900 dark:text-orange-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-orange-300 dark:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                                className="flex-1 text-sm font-mono text-orange-900 dark:text-orange-100 bg-textured px-3 py-2 rounded border border-orange-300 dark:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
                                                 placeholder="Return Broker ID"
                                             />
                                             {editValues.returnBrokerIds.length > 1 && (
@@ -178,10 +178,10 @@ export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onTo
                                             {brokerId && brokerId !== 'None' ? (
                                                 <ClickableBroker
                                                     brokerId={brokerId}
-                                                    className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-orange-200 dark:border-orange-600 break-all"
+                                                    className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-textured px-3 py-2 rounded border border-orange-200 dark:border-orange-600 break-all"
                                                 />
                                             ) : (
-                                                <div className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                                <div className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-textured px-3 py-2 rounded border">
                                                     None
                                                 </div>
                                             )}

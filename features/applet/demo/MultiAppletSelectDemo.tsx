@@ -89,7 +89,7 @@ const MultiAppletSelectorDemo = () => {
                   />
                 </div>
                 
-                <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
                   <div className="flex justify-between items-center mb-3">
                     <h4 className="font-medium text-sm">Selected Applets ({selectedApplets.length})</h4>
                     <Button 
@@ -273,7 +273,7 @@ const MultiAppletSelectorDemo = () => {
                 </p>
                 
                 {/* Example 1: Workflow Builder */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+                <div className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
                   <div className="flex items-center mb-3">
                     <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-md mr-3">
                       <PlayIcon className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
@@ -305,7 +305,7 @@ const MultiAppletSelectorDemo = () => {
                           {workflowSelectedApplets.map((applet, index) => (
                             <div 
                               key={applet.id} 
-                              className="flex items-center p-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
+                              className="flex items-center p-2 bg-textured rounded-md border border-gray-200 dark:border-gray-700"
                             >
                               <div className="flex items-center justify-center h-6 w-6 bg-emerald-500 dark:bg-emerald-600 rounded-full text-white text-xs font-medium mr-3">
                                 {index + 1}
@@ -320,7 +320,7 @@ const MultiAppletSelectorDemo = () => {
                 </div>
                 
                 {/* Example 2: Dashboard Builder */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+                <div className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
                   <div className="flex items-center mb-3">
                     <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-md mr-3">
                       <BoxIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
@@ -353,7 +353,7 @@ const MultiAppletSelectorDemo = () => {
                           {dashboardSelectedApplets.map((applet) => (
                             <div 
                               key={applet.id} 
-                              className="p-3 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
+                              className="p-3 bg-textured rounded-md border border-gray-200 dark:border-gray-700"
                             >
                               <div className="flex items-center space-x-2 mb-2">
                                 <BoxIcon className="h-4 w-4 text-blue-500 dark:text-blue-400" />
@@ -371,7 +371,7 @@ const MultiAppletSelectorDemo = () => {
                 </div>
                 
                 {/* Example 3: Integration Setup */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <div className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex items-center mb-3">
                     <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-md mr-3">
                       <Settings className="h-5 w-5 text-purple-500 dark:text-purple-400" />
@@ -403,7 +403,7 @@ const MultiAppletSelectorDemo = () => {
                           {integrationSelectedApplets.map((applet) => (
                             <div 
                               key={applet.id} 
-                              className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
+                              className="flex items-center justify-between p-2 bg-textured rounded-md border border-gray-200 dark:border-gray-700"
                             >
                               <div className="flex items-center space-x-2">
                                 <div className="h-2 w-2 rounded-full bg-green-500"></div>
@@ -444,7 +444,7 @@ const MultiAppletSelectorDemo = () => {
                     </ul>
                   </div>
                   
-                  <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
                     <h4 className="text-base font-medium mb-2">Advanced Features</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                       The MultiAppletSelector component can be extended with additional features:

@@ -33,7 +33,7 @@ const ComponentLibrary = () => {
   });
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+    <div className="w-64 bg-textured border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
       {/* Action Library */}
       <div className="border-b border-gray-200 dark:border-gray-700">
         <button 

@@ -31,7 +31,7 @@ const AppConfigViewer = ({ app }: Props) => {
   const accentColor = app.accentColor || 'rose';
   
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden`}>
+    <div className={`bg-textured rounded-lg shadow overflow-hidden`}>
       <div className={`bg-${primaryColor}-100 dark:bg-${primaryColor}-900 p-6`}>
         <div className="relative">
           {/* Icon in the top right */}

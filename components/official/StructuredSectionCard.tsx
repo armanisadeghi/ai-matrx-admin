@@ -29,7 +29,7 @@ const StructuredSectionCard: React.FC<StructuredSectionCardProps> = ({
 
   return (
     <div className={cn(
-      "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm rounded-xl overflow-hidden",
+      "border border-gray-200 dark:border-gray-700 bg-textured shadow-sm rounded-xl overflow-hidden",
       className
     )}>
       {/* Header with title, description, and actions */}

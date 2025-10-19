@@ -187,7 +187,7 @@ const BrokerLegend = ({
   onClearSelection: () => void
 }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-xs">
+    <div className="bg-textured p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-xs">
       <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
         <Package className="h-4 w-4 text-purple-500 dark:text-purple-400" />
         Active Brokers ({brokers.length})

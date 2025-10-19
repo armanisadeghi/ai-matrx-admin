@@ -21,7 +21,7 @@ export default async function PromptTemplatesPage() {
     }
 
     return (
-        <Card className="h-full w-full bg-white dark:bg-gray-900 border-none shadow-lg">
+        <Card className="h-full w-full bg-textured border-none shadow-lg">
             <div className="p-8 md:p-12">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">

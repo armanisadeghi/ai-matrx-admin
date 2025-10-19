@@ -70,7 +70,7 @@ const DynamicField = ({ field }) => {
             required={field.required}
             maxLength={field.componentProps.maxLength}
             minLength={field.componentProps.minLength}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
           />
         );
       
@@ -84,7 +84,7 @@ const DynamicField = ({ field }) => {
             disabled={field.disabled}
             required={field.required}
             rows={field.componentProps.rows}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
           />
         );
       
@@ -96,7 +96,7 @@ const DynamicField = ({ field }) => {
             onChange={handleChange}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
           >
             <option value="">{field.placeholder}</option>
             {field.options.map(option => (
@@ -117,7 +117,7 @@ const DynamicField = ({ field }) => {
             disabled={field.disabled}
             required={field.required}
             multiple
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded h-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded h-32 bg-textured text-gray-900 dark:text-gray-100"
           >
             {field.options.map(option => (
               <option key={option.id} value={option.id}>{option.label}</option>
@@ -209,7 +209,7 @@ const DynamicField = ({ field }) => {
             placeholder={field.placeholder}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
           />
         );
       
@@ -224,7 +224,7 @@ const DynamicField = ({ field }) => {
             onChange={handleChange}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
           />
         );
       
@@ -238,7 +238,7 @@ const DynamicField = ({ field }) => {
             placeholder={field.placeholder}
             disabled={field.disabled}
             required={field.required}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
           />
         );
     }
@@ -301,7 +301,7 @@ const FieldEditor = ({ field, onChange }) => {
           name="component" 
           value={field.component} 
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
         >
           <option value="input">Input</option>
           <option value="textarea">Textarea</option>
@@ -322,7 +322,7 @@ const FieldEditor = ({ field, onChange }) => {
           name="label" 
           value={field.label} 
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
         />
       </div>
       
@@ -333,7 +333,7 @@ const FieldEditor = ({ field, onChange }) => {
           name="description" 
           value={field.description} 
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
         />
       </div>
       
@@ -344,7 +344,7 @@ const FieldEditor = ({ field, onChange }) => {
           name="helpText" 
           value={field.helpText} 
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
         />
       </div>
       
@@ -355,7 +355,7 @@ const FieldEditor = ({ field, onChange }) => {
           name="placeholder" 
           value={field.placeholder} 
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+          className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
         />
       </div>
       
@@ -385,7 +385,7 @@ const FieldEditor = ({ field, onChange }) => {
       
       {/* Component-specific properties based on the type */}
       {(field.component === 'slider' || field.component === 'number') && (
-        <div className="space-y-2 p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900">
+        <div className="space-y-2 p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured">
           <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Range Properties</h3>
           <div className="grid grid-cols-3 gap-2">
             <div>
@@ -395,7 +395,7 @@ const FieldEditor = ({ field, onChange }) => {
                 name="min" 
                 value={field.componentProps.min} 
                 onChange={handleComponentPropsChange}
-                className="w-full p-1 border border-gray-300 dark:border-gray-700 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full p-1 border border-gray-300 dark:border-gray-700 rounded text-sm bg-textured text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
@@ -405,7 +405,7 @@ const FieldEditor = ({ field, onChange }) => {
                 name="max" 
                 value={field.componentProps.max} 
                 onChange={handleComponentPropsChange}
-                className="w-full p-1 border border-gray-300 dark:border-gray-700 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full p-1 border border-gray-300 dark:border-gray-700 rounded text-sm bg-textured text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
@@ -415,7 +415,7 @@ const FieldEditor = ({ field, onChange }) => {
                 name="step" 
                 value={field.componentProps.step} 
                 onChange={handleComponentPropsChange}
-                className="w-full p-1 border border-gray-300 dark:border-gray-700 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full p-1 border border-gray-300 dark:border-gray-700 rounded text-sm bg-textured text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
@@ -430,7 +430,7 @@ const FieldEditor = ({ field, onChange }) => {
             name="rows" 
             value={field.componentProps.rows} 
             onChange={handleComponentPropsChange}
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
           />
         </div>
       )}
@@ -444,7 +444,7 @@ const FieldEditor = ({ field, onChange }) => {
               name="minLength" 
               value={field.componentProps.minLength} 
               onChange={handleComponentPropsChange}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
             />
           </div>
           <div>
@@ -454,7 +454,7 @@ const FieldEditor = ({ field, onChange }) => {
               name="maxLength" 
               value={field.componentProps.maxLength} 
               onChange={handleComponentPropsChange}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
@@ -469,7 +469,7 @@ const FieldEditor = ({ field, onChange }) => {
               name="minDate" 
               value={field.componentProps.minDate} 
               onChange={handleComponentPropsChange}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
             />
           </div>
           <div>
@@ -479,7 +479,7 @@ const FieldEditor = ({ field, onChange }) => {
               name="maxDate" 
               value={field.componentProps.maxDate} 
               onChange={handleComponentPropsChange}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
@@ -517,7 +517,7 @@ const DemoComponent = () => {
         </div>
         
         {/* Right side: Preview of current component */}
-        <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm">
+        <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-textured shadow-sm">
           <h2 className="text-lg font-semibold mb-3 capitalize text-gray-900 dark:text-gray-100">
             {fieldDefinition.component} Component (Current Selection)
           </h2>
@@ -536,7 +536,7 @@ const DemoComponent = () => {
           };
           
           return (
-            <div key={type} className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm">
+            <div key={type} className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-textured shadow-sm">
               <h3 className="text-md font-semibold mb-2 capitalize text-gray-900 dark:text-gray-100">{type}</h3>
               <DynamicField field={modifiedField} />
             </div>

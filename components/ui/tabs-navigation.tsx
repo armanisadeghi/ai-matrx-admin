@@ -194,7 +194,7 @@ const TabsNavigation: React.FC<TabsNavigationProps> = ({
               </button>
               
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-700">
+                <div className="absolute right-0 mt-2 w-48 bg-textured rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-700">
                   {hiddenTabs.map((tab) => (
                     <Link
                       key={tab.id}

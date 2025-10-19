@@ -198,7 +198,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Fullscreen Header */}
           {isFullScreen && (
@@ -209,7 +209,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
               </div>
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
               >
                 <Minimize2 className="h-4 w-4" />
                 <span>Exit</span>
@@ -261,14 +261,14 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                         placeholder="Search issues or solutions..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                        className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                       />
                     </div>
                     
                     <select
                       value={selectedSeverity}
                       onChange={(e) => setSelectedSeverity(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="all">All Severities</option>
                       <option value="critical">Critical</option>
@@ -294,7 +294,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   const severityIcon = getSeverityIcon(issue.severity);
 
                   return (
-                    <div key={issue.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 ${severityColor.split(' ').slice(2).join(' ')} overflow-hidden`}>
+                    <div key={issue.id} className={`bg-textured rounded-xl shadow-lg border-2 ${severityColor.split(' ').slice(2).join(' ')} overflow-hidden`}>
                       
                       {/* Issue Header */}
                       <button
@@ -420,7 +420,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                                               <div key={step.id} className={`border rounded-lg ${
                                                 isStepCompleted 
                                                   ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-950/20' 
-                                                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                                                  : 'border-gray-200 dark:border-gray-700 bg-textured'
                                               }`}>
                                                 <div className="flex items-start gap-3 p-3">
                                                   <button
@@ -571,7 +571,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
 
               {/* Summary Stats */}
               <div className="grid md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-2">
                     <Target className="h-5 w-5 text-red-600 dark:text-red-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Total Issues</span>
@@ -581,7 +581,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   </div>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-2">
                     <Wrench className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Solutions</span>
@@ -591,7 +591,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   </div>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Completed</span>
@@ -601,7 +601,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   </div>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-2">
                     <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Total Steps</span>

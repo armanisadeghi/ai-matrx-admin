@@ -144,7 +144,7 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                                 type="text"
                                 value={editValues.inputBrokerId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, inputBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                className="w-full text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
                                 placeholder="Input Broker ID"
                             />
                         ) : (
@@ -153,10 +153,10 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                                 {editValues.inputBrokerId !== 'None' ? (
                                     <ClickableBroker
                                         brokerId={editValues.inputBrokerId}
-                                        className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-200 dark:border-amber-600 break-all"
+                                        className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured px-3 py-2 rounded border border-amber-200 dark:border-amber-600 break-all"
                                     />
                                 ) : (
-                                    <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                    <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured px-3 py-2 rounded border">
                                         None
                                     </div>
                                 )}
@@ -173,11 +173,11 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                             <textarea
                                 value={editValues.config}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, config: e.target.value }))}
-                                className="w-full text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[100px]"
+                                className="w-full text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[100px]"
                                 placeholder="Configuration (JSON or text)"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 rounded p-3 border border-amber-200 dark:border-amber-600 max-h-32 overflow-y-auto">
+                            <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured rounded p-3 border border-amber-200 dark:border-amber-600 max-h-32 overflow-y-auto">
                                 {editValues.config ? (
                                     <pre className="whitespace-pre-wrap break-words">
                                         {typeof editValues.config === 'string' 
@@ -217,7 +217,7 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                                                 type="text"
                                                 value={brokerId}
                                                 onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
-                                                className="flex-1 text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                                className="flex-1 text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
                                                 placeholder="Return Broker ID"
                                             />
                                             {editValues.returnBrokerIds.length > 1 && (
@@ -234,10 +234,10 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                                             {brokerId && brokerId !== 'None' ? (
                                                 <ClickableBroker
                                                     brokerId={brokerId}
-                                                    className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-200 dark:border-amber-600 break-all"
+                                                    className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured px-3 py-2 rounded border border-amber-200 dark:border-amber-600 break-all"
                                                 />
                                             ) : (
-                                                <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                                <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-textured px-3 py-2 rounded border">
                                                     None
                                                 </div>
                                             )}

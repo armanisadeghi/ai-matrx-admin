@@ -393,7 +393,7 @@ export const TransformableCard: React.FC<TransformableCardProps> = ({
           whileHover={{ scale: 1.05 }}
           onClick={handlePillClick}
           className={cn(
-            "flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border-2 border-blue-400 dark:border-blue-600 rounded-full shadow-sm cursor-pointer transition-all",
+            "flex items-center gap-2 px-3 py-2 bg-textured border-2 border-blue-400 dark:border-blue-600 rounded-full shadow-sm cursor-pointer transition-all",
             currentContainerId ? "ring-1 ring-blue-500" : "",
             isDragging ? "ring-2 ring-blue-500 shadow-lg z-50" : "",
             pillClassName

@@ -119,7 +119,7 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode, onAddCus
     };
 
     return (
-        <div className="w-40 bg-white dark:bg-gray-800 flex flex-col">
+        <div className="w-40 bg-textured flex flex-col">
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
                 {/* Core System Nodes - Direct access at the top */}

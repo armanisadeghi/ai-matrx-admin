@@ -141,8 +141,8 @@ export default function ColorTesterPage() {
           <div className="p-4 border rounded-lg">
             <h3 className="font-medium mb-2">Background Colors</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <code className="text-sm p-1 bg-gray-100 dark:bg-gray-800 rounded">search-bg-main: bg-white dark:bg-gray-900</code>
-              <code className="text-sm p-1 bg-gray-100 dark:bg-gray-800 rounded">search-bg-container: bg-white dark:bg-gray-800</code>
+              <code className="text-sm p-1 bg-gray-100 dark:bg-gray-800 rounded">search-bg-main: bg-textured</code>
+              <code className="text-sm p-1 bg-gray-100 dark:bg-gray-800 rounded">search-bg-container: bg-textured</code>
               <code className="text-sm p-1 bg-gray-100 dark:bg-gray-800 rounded">search-bg-hover: hover:bg-gray-200 dark:hover:bg-gray-700</code>
             </div>
           </div>
@@ -206,7 +206,7 @@ const TextColorBlock = ({ name, lightClass, darkClass, usage }) => (
       <h3 className="font-medium">{name}</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400">{usage}</p>
     </div>
-    <div className="p-4 flex flex-col items-center justify-center space-y-2 bg-white dark:bg-gray-800">
+    <div className="p-4 flex flex-col items-center justify-center space-y-2 bg-textured">
       <p className={`text-lg font-medium ${lightClass} ${darkClass}`}>Sample Text</p>
       <code className="text-sm bg-gray-100 dark:bg-gray-700 p-1 rounded">{lightClass} {darkClass}</code>
     </div>
@@ -220,7 +220,7 @@ const BorderColorBlock = ({ name, lightClass, darkClass, usage }) => (
       <h3 className="font-medium">{name}</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400">{usage}</p>
     </div>
-    <div className="p-4 flex flex-col items-center justify-center bg-white dark:bg-gray-800">
+    <div className="p-4 flex flex-col items-center justify-center bg-textured">
       <div className={`w-full h-16 border-2 rounded ${lightClass} ${darkClass} flex items-center justify-center`}>
         <code className="text-sm bg-gray-100 dark:bg-gray-700 p-1 rounded">
           {lightClass} {darkClass}
@@ -237,7 +237,7 @@ const ButtonColorBlock = ({ name, normalClass, hoverClass, darkClass, usage }) =
       <h3 className="font-medium">{name}</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400">{usage}</p>
     </div>
-    <div className="p-6 flex flex-col items-center justify-center bg-white dark:bg-gray-800 space-y-4">
+    <div className="p-6 flex flex-col items-center justify-center bg-textured space-y-4">
       <button className={`px-4 py-2 rounded-full transition-colors ${normalClass} ${hoverClass} ${darkClass}`}>
         Sample Button
       </button>
@@ -257,7 +257,7 @@ const ShadowBlock = ({ name, shadowClass, usage, isInteractive = false, customSt
       <h3 className="font-medium">{name}</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400">{usage}</p>
     </div>
-    <div className="p-6 flex items-center justify-center bg-white dark:bg-gray-800">
+    <div className="p-6 flex items-center justify-center bg-textured">
       <div 
         className={`w-32 h-32 rounded-lg bg-white dark:bg-gray-700 flex items-center justify-center ${shadowClass} ${isInteractive ? "transition-shadow" : ""}`}
         style={customStyle}

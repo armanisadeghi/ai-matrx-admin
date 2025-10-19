@@ -54,9 +54,9 @@ const ViewTablePage: React.FC<ViewTablePageProps> = ({ nodeData, brokerId, table
     };
 
     return (
-        <div className={cn("bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-full h-full flex flex-col")}>
+        <div className={cn("bg-textured text-gray-900 dark:text-gray-100 w-full h-full flex flex-col")}>
             <div className="flex-1 flex flex-col">
-                <div className="flex-1 overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                <div className="flex-1 overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-textured">
                     <UserTableViewer tableId={dataToUse.table_id} showTableSelector={false} />
                 </div>
             </div>

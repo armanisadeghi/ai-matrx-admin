@@ -57,7 +57,7 @@ export const SavedGroupsList: React.FC<SavedGroupsListProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {savedGroups.map(group => (
-            <Card key={group.id} className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <Card key={group.id} className="border border-gray-200 dark:border-gray-700 bg-textured">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
                   {group.label}

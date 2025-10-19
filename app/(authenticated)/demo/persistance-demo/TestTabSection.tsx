@@ -22,7 +22,7 @@ const TestTabSection = forwardRef<HTMLDivElement, TestTabSectionProps>(
 
     return (
       <div 
-        className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 text-black dark:text-white p-6 rounded-lg" 
+        className="w-full h-full flex flex-col items-center justify-center bg-textured text-black dark:text-white p-6 rounded-lg" 
         ref={ref}
       >
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 border-2 border-gray-300 dark:border-gray-700 shadow-xl w-full mb-4">

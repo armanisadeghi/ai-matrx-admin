@@ -312,7 +312,7 @@ export default function InlineCopyButtonDisplay({ component }: ComponentDisplayP
                                         {/* Code box example */}
                                         <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
                                             <h3 className="text-md font-medium mb-2">Code block with side buttons</h3>
-                                            <div className="relative rounded-md bg-white dark:bg-gray-900 p-4 h-44 overflow-y-auto">
+                                            <div className="relative rounded-md bg-textured p-4 h-44 overflow-y-auto">
                                                 <pre className="font-mono text-sm">
 {`function processData(data) {
   if (!data || !data.items) {

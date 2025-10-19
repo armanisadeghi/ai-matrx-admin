@@ -127,7 +127,7 @@ export default function TuiTestPage() {
                                             <textarea
                                                 value={stagedMarkdown}
                                                 onChange={(e) => setStagedMarkdown(e.target.value)}
-                                                className="w-full h-96 p-4 font-mono text-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="w-full h-96 p-4 font-mono text-sm resize-none bg-textured text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 placeholder="Paste your markdown here..."
                                             />
                                             <Button onClick={handleLoadMarkdown} className="w-full">

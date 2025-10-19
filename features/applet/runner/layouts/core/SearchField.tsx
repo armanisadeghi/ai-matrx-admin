@@ -175,7 +175,7 @@ const SearchField: React.FC<ContainerRenderProps> = ({
                 {actionButton}
             </button>
             {/* Popover content - always mounted but conditionally visible */}
-            <div ref={popoverRef} style={popoverStyle} className="bg-white dark:bg-gray-800 border dark:border-gray-700">
+            <div ref={popoverRef} style={popoverStyle} className="bg-textured border dark:border-gray-700">
                 {children}
             </div>
         </div>

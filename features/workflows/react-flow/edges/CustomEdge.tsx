@@ -74,7 +74,7 @@ export default function CustomEdge({
                         <span
                             className={`
                 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-normal
-                bg-white dark:bg-gray-800 
+                bg-textured 
                 border shadow-sm transition-colors hover:shadow-md
                 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]
                 ${

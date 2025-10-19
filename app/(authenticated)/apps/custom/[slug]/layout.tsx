@@ -25,7 +25,7 @@ interface CustomAppLayoutProps {
 // Skeleton header component that displays during loading
 const SkeletonHeader: React.FC = () => {
     return (
-        <div className="sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm">
+        <div className="sticky top-0 w-full z-40 h-14 bg-textured transition-colors shadow-sm">
             <div className="flex items-center justify-between h-full px-4">
                 {/* Left section - App icon placeholder */}
                 <div className="flex items-center">

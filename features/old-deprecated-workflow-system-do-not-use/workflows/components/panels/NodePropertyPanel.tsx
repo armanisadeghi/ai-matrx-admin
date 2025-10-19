@@ -102,7 +102,7 @@ const NodePropertyPanel: React.FC<NodePropertyPanelProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-[calc(100vh-180px)] overflow-y-auto w-[350px]">
+    <div className="bg-textured p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-[calc(100vh-180px)] overflow-y-auto w-[350px]">
       {/* Header with title, expand and close buttons */}
       <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -192,7 +192,7 @@ const NodePropertyPanel: React.FC<NodePropertyPanelProps> = ({
                     placeholder="Search functions..."
                     value={functionSearchTerm}
                     onChange={(e) => setFunctionSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded bg-textured text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                   />
                 </div>
               </div>

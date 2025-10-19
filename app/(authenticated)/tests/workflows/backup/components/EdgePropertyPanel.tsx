@@ -78,7 +78,7 @@ const EdgePropertyPanel: React.FC<EdgePropertyPanelProps> = ({
   const edgeLabel = selectedEdge.label || '';
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-[calc(100vh-180px)] overflow-y-auto w-[350px]">
+    <div className="bg-textured p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-[calc(100vh-180px)] overflow-y-auto w-[350px]">
       {/* Header with title and close button */}
       <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -102,7 +102,7 @@ const EdgePropertyPanel: React.FC<EdgePropertyPanelProps> = ({
               height: `${Math.min(edgeStrokeWidth, 6)}px`
             }}>
               {edgeLabel && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 px-2 text-xs border border-gray-200 dark:border-gray-700 rounded">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-textured px-2 text-xs border border-gray-200 dark:border-gray-700 rounded">
                   {edgeLabel}
                 </div>
               )}

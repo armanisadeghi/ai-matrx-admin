@@ -57,7 +57,7 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ fieldId, componentType = "t
             spacing="relaxed"
         >
             {/* Current component preview */}
-            <div className="mt-6 mb-8 border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
+            <div className="mt-6 mb-8 border border-gray-300 dark:border-gray-700 rounded p-4 bg-textured shadow-sm rounded-xl min-h-[250px]">
                 {/* Use FieldContainerPreview instead of fieldController directly */}
                 {componentType && (
                     <FieldContainerPreview

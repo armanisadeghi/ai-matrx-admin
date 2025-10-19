@@ -32,7 +32,7 @@ const SearchField = ({
           {actionButton}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-full min-w-96 p-0 bg-white dark:bg-gray-800 border dark:border-gray-700" align={isLast ? "end" : "start"} side="bottom">
+      <PopoverContent className="w-full min-w-96 p-0 bg-textured border dark:border-gray-700" align={isLast ? "end" : "start"} side="bottom">
         {children}
       </PopoverContent>
     </Popover>

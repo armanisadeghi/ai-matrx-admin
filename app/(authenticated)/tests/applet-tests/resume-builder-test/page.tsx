@@ -675,7 +675,7 @@ const ResumeBuilder = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-xl">
+    <div className="max-w-4xl mx-auto p-6 md:p-8 bg-textured rounded-2xl shadow-xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Professional Resume Builder</h1>
         <p className="text-gray-600 dark:text-gray-400">Create a standout resume for elite medical and legal positions</p>
@@ -729,7 +729,7 @@ const ResumeBuilder = () => {
           className={`flex items-center px-6 py-3 rounded-lg font-medium ${
             currentStep === 0
               ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-              : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              : 'bg-textured border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           <ChevronLeft className="mr-2" size={18} />

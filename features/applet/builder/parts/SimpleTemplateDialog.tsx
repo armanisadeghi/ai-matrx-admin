@@ -44,7 +44,7 @@ const SimpleTemplateDialog: React.FC<SimpleTemplateDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900">
+      <DialogContent className="sm:max-w-md bg-textured">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
             Create Simple App Template

@@ -76,7 +76,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
   }, [headerAnalysis.groupedHeaders]);
 
   return (
-    <div className="w-full h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 overflow-y-auto">
+    <div className="w-full h-full bg-textured text-gray-800 dark:text-gray-200 p-4 overflow-y-auto">
       <div className="max-w-7xl mx-auto">
         {/* Page Title */}
         <div className="mb-6">
@@ -133,7 +133,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {/* Score Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">SEO Score</h3>
                   <div className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium px-2.5 py-0.5 rounded">Beta</div>
@@ -170,7 +170,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
               </div>
               
               {/* Page Title Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Page Title</h3>
                 <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                   Length: <span className={titleAnalysis.statusClass}>{titleAnalysis.length} characters</span>
@@ -184,7 +184,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
               </div>
               
               {/* Content Metrics Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Content Metrics</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
@@ -212,7 +212,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
             </div>
             
             {/* SEO Quick Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700 mb-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <button className="flex items-center justify-center px-4 py-2 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
@@ -244,7 +244,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               {/* Heading Structure Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Heading Structure</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
@@ -279,7 +279,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
               </div>
               
               {/* Content Length Analysis */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Content Length</h3>
                 <div className="mb-4">
                   <div className="flex justify-between mb-1">
@@ -309,7 +309,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
             </div>
             
             {/* Heading Structure Visualization */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700 mb-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Page Outline</h3>
                 <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
@@ -354,7 +354,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
         {/* Suggestions Section */}
         {activeSection === 'suggestions' && (
           <div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700 mb-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">SEO Improvement Suggestions</h3>
                 <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center">
@@ -413,7 +413,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
             
             {/* Additional Improvement Tools */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
                   <svg className="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -426,7 +426,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
                 </button>
               </div>
               
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
                   <svg className="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -439,7 +439,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
                 </button>
               </div>
               
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
                   <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -454,7 +454,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
             </div>
             
             {/* FAQ Schema Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+            <div className="bg-textured rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">FAQ Schema Opportunity</h3>
                 <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${

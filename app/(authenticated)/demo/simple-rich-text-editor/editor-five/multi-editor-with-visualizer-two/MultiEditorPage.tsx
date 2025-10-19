@@ -152,7 +152,7 @@ const MultiEditorPage = () => {
                         {/* Editor Container */}
                         <div
                             className='border border-gray-300 dark:border-gray-700 rounded-lg 
-                                      bg-white dark:bg-gray-800 pl-8 p-4 mb-2'
+                                      bg-textured pl-8 p-4 mb-2'
                         >
                             <div className='mb-2 text-sm text-gray-500 dark:text-gray-400'>{editor.id}</div>
                             <ManagedMessageEditor

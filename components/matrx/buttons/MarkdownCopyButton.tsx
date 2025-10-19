@@ -144,7 +144,7 @@ export function MarkdownCopyButton({ markdownContent, className = "" }) {
                                 dropdownPosition === "above" 
                                     ? "bottom-full mb-1" 
                                     : "top-full mt-1"
-                            } min-w-56 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
+                            } min-w-56 right-0 bg-textured border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
                         >
                             <button
                                 onClick={handleRegularCopy}
@@ -361,7 +361,7 @@ export function InlineCopyButton({
                         dropdownPosition === "above" 
                             ? "bottom-full mb-1" 
                             : "top-full mt-1"
-                    } min-w-56 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
+                    } min-w-56 right-0 bg-textured border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
                 >
                     <button
                         onClick={handleRegularCopy}

@@ -108,7 +108,7 @@ export function UnifiedRegisteredNodeDisplay({ step, index, isExpanded, onToggle
                     {/* Function ID */}
                     <div className="p-3 bg-teal-100 dark:bg-teal-800 rounded-lg">
                         <span className="text-sm font-semibold text-teal-800 dark:text-teal-200">Function ID:</span>
-                        <div className="text-xs font-mono text-teal-900 dark:text-teal-100 mt-1 bg-white dark:bg-gray-800 rounded p-2 border border-teal-200 dark:border-teal-600 break-all">
+                        <div className="text-xs font-mono text-teal-900 dark:text-teal-100 mt-1 bg-textured rounded p-2 border border-teal-200 dark:border-teal-600 break-all">
                             {step.function_id}
                         </div>
                     </div>
@@ -123,11 +123,11 @@ export function UnifiedRegisteredNodeDisplay({ step, index, isExpanded, onToggle
                                 type="text"
                                 value={editValues.stepName}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, stepName: e.target.value }))}
-                                className="w-full text-sm font-mono text-teal-900 dark:text-teal-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-teal-300 dark:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                className="w-full text-sm font-mono text-teal-900 dark:text-teal-100 bg-textured px-3 py-2 rounded border border-teal-300 dark:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder="Step Name"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-teal-900 dark:text-teal-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-teal-900 dark:text-teal-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.stepName}
                             </div>
                         )}
@@ -141,7 +141,7 @@ export function UnifiedRegisteredNodeDisplay({ step, index, isExpanded, onToggle
                             </h4>
                             <div className="space-y-2">
                                 {argOverrides.map((override: any, idx: number) => (
-                                    <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-teal-200 dark:border-teal-600">
+                                    <div key={idx} className="bg-textured rounded-lg p-3 border border-teal-200 dark:border-teal-600">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="font-mono text-sm font-medium text-teal-900 dark:text-teal-100">
                                                 {override.name || 'Unknown'}
@@ -188,7 +188,7 @@ export function UnifiedRegisteredNodeDisplay({ step, index, isExpanded, onToggle
                         </div>
                         <div className="space-y-2">
                             {Object.entries(editValues.argMappings).map(([argName, brokerId]) => (
-                                <div key={argName} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-teal-200 dark:border-teal-600">
+                                <div key={argName} className="bg-textured rounded-lg p-3 border border-teal-200 dark:border-teal-600">
                                     {isEditing ? (
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export function UnifiedRegisteredNodeDisplay({ step, index, isExpanded, onToggle
                                                 type="text"
                                                 value={String(brokerId || '')}
                                                 onChange={(e) => handleArgMappingChange(argName, e.target.value)}
-                                                className="w-full text-sm font-mono text-teal-900 dark:text-teal-100 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-teal-300 dark:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                                                className="w-full text-sm font-mono text-teal-900 dark:text-teal-100 bg-textured px-2 py-1 rounded border border-teal-300 dark:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-500"
                                                 placeholder="Broker ID"
                                             />
                                         </div>
@@ -253,7 +253,7 @@ export function UnifiedRegisteredNodeDisplay({ step, index, isExpanded, onToggle
                                 type="text"
                                 value={editValues.returnBrokerId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, returnBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono text-teal-900 dark:text-teal-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-teal-300 dark:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                className="w-full text-sm font-mono text-teal-900 dark:text-teal-100 bg-textured px-3 py-2 rounded border border-teal-300 dark:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 placeholder="Return Broker ID"
                             />
                         ) : (
@@ -262,10 +262,10 @@ export function UnifiedRegisteredNodeDisplay({ step, index, isExpanded, onToggle
                                 {editValues.returnBrokerId !== 'None' ? (
                                     <ClickableBroker
                                         brokerId={editValues.returnBrokerId}
-                                        className="text-sm font-mono text-teal-900 dark:text-teal-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-teal-200 dark:border-teal-600 break-all"
+                                        className="text-sm font-mono text-teal-900 dark:text-teal-100 bg-textured px-3 py-2 rounded border border-teal-200 dark:border-teal-600 break-all"
                                     />
                                 ) : (
-                                    <div className="text-sm font-mono text-teal-900 dark:text-teal-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                    <div className="text-sm font-mono text-teal-900 dark:text-teal-100 bg-textured px-3 py-2 rounded border">
                                         None
                                     </div>
                                 )}

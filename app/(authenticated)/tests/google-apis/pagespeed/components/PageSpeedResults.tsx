@@ -94,7 +94,7 @@ export function PageSpeedResults({ data, strategy }: PageSpeedResultsProps) {
                     return (
                         <div
                             key={key}
-                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                            className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-4"
                         >
                             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                                 {category.title}
@@ -116,7 +116,7 @@ export function PageSpeedResults({ data, strategy }: PageSpeedResultsProps) {
             </div>
 
             {/* Detailed Results */}
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <Tabs defaultValue="metrics" className="w-full">
                     <TabsList className="grid w-full grid-cols-5 bg-gray-100 dark:bg-gray-700 h-9">
                         <TabsTrigger value="metrics" className="text-xs">Metrics</TabsTrigger>

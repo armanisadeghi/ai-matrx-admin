@@ -25,7 +25,7 @@ const ExpandedNodePropertyPanel: React.FC<ExpandedNodePropertyPanelProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-6xl h-[90vh] flex flex-col">
+            <div className="bg-textured rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-6xl h-[90vh] flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-4">

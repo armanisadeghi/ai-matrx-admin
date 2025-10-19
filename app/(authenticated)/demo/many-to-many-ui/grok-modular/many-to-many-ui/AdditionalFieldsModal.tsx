@@ -26,7 +26,7 @@ const AdditionalFieldsModal: React.FC<AdditionalFieldsModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
         >
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
+            <div className="bg-textured p-6 rounded-lg shadow-xl w-96">
                 <h3 className="text-lg font-bold mb-4">Additional Fields</h3>
                 <form
                     onSubmit={(e) => {

@@ -47,7 +47,7 @@ const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
   return (
     <div 
       ref={menuRef}
-      className="absolute z-10 bg-white dark:bg-gray-800 shadow-md rounded-md border border-gray-200 dark:border-gray-700 p-1"
+      className="absolute z-10 bg-textured shadow-md rounded-md border border-gray-200 dark:border-gray-700 p-1"
       style={{ 
         left: position.x, 
         top: position.y,

@@ -234,7 +234,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                     {topWebResults.map((result, index) => (
                         <React.Fragment key={index}>
                             <div 
-                                className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-shadow cursor-pointer"
+                                className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm transition-shadow cursor-pointer"
                                 onClick={(e) => {
                                     // Don't toggle if clicking on a link
                                     if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
@@ -290,7 +290,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                             
                             {/* Insert image gallery after 3rd result */}
                             {index === 2 && resultsWithImages.length > 0 && (
-                                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                                <div className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-3">
                                     <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                                         <FileText className="w-3 h-3 mr-1.5" />
                                         Related Images
@@ -347,7 +347,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                 {topVideos.map((video, index) => (
                                     <div
                                         key={index}
-                                        className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-sm transition-shadow cursor-pointer"
+                                        className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-sm transition-shadow cursor-pointer"
                                         onClick={(e) => {
                                             if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
                                                 toggleSelection(video.url);
@@ -439,7 +439,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                 return (
                     <div
                         key={index}
-                        className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer"
                         onClick={(e) => {
                             // Don't toggle if clicking on a link
                             if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
@@ -557,7 +557,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
             {data?.content?.videos?.results?.map((video, index) => (
                 <div
                     key={index}
-                    className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:shadow-md transition-shadow cursor-pointer"
+                    className="relative bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:shadow-md transition-shadow cursor-pointer"
                     onClick={(e) => {
                         if ((e.target as HTMLElement).tagName !== 'A' && !(e.target as HTMLElement).closest('a')) {
                             toggleSelection(video.url);
@@ -765,7 +765,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                             {getSelectedResultsData.web.map((result, index) => (
                                 <div
                                     key={result.url}
-                                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                                    className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4"
                                 >
                                     <div className="flex items-start justify-between gap-3 mb-2">
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1">
@@ -818,7 +818,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                             {getSelectedResultsData.videos.map((video, index) => (
                                 <div
                                     key={video.url}
-                                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4"
+                                    className="bg-textured rounded-lg border border-gray-200 dark:border-gray-700 p-4"
                                 >
                                     <div className="flex items-start justify-between gap-3 mb-2">
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex-1 flex items-center gap-2">

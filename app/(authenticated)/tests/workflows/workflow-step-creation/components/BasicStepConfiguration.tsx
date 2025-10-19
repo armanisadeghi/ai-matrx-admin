@@ -28,7 +28,7 @@ export default function BasicStepConfiguration({
                         value={stepName}
                         onChange={(e) => onStepNameChange(e.target.value)}
                         placeholder="Enter step name..."
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-textured text-gray-900 dark:text-gray-100"
                     />
                 </div>
                 <div>
@@ -55,7 +55,7 @@ export default function BasicStepConfiguration({
                         type="text"
                         value={returnBroker}
                         onChange={(e) => onReturnBrokerChange(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-textured text-gray-900 dark:text-gray-100"
                     />
                 </div>
             </div>

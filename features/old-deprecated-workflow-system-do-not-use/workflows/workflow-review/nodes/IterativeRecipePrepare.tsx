@@ -194,11 +194,11 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                 type="text"
                                 value={editValues.recipeId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, recipeId: e.target.value }))}
-                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 placeholder="Recipe ID"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border break-all">
+                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border break-all">
                                 {editValues.recipeId}
                             </div>
                         )}
@@ -214,11 +214,11 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                 type="text"
                                 value={editValues.version}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, version: e.target.value }))}
-                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 placeholder="Version"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.version}
                             </div>
                         )}
@@ -234,11 +234,11 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                 type="text"
                                 value={editValues.maxCount}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, maxCount: e.target.value }))}
-                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 placeholder="Max Count"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.maxCount}
                             </div>
                         )}
@@ -254,11 +254,11 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                 type="text"
                                 value={editValues.modelOverride}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, modelOverride: e.target.value }))}
-                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 placeholder="Model Override"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.modelOverride}
                             </div>
                         )}
@@ -274,11 +274,11 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                 type="text"
                                 value={editValues.toolsOverride}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, toolsOverride: e.target.value }))}
-                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 placeholder="Tools Override (comma-separated)"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border">
                                 {formatToolsOverride(editValues.toolsOverride)}
                             </div>
                         )}
@@ -301,7 +301,7 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                         </div>
                         <div className="space-y-2">
                             {Object.entries(editValues.argMappings).map(([argName, brokerId]) => (
-                                <div key={argName} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-600">
+                                <div key={argName} className="bg-textured rounded-lg p-3 border border-purple-200 dark:border-purple-600">
                                     {isEditing ? (
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                                 type="text"
                                                 value={String(brokerId || '')}
                                                 onChange={(e) => handleArgMappingChange(argName, e.target.value)}
-                                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                                className="w-full text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-2 py-1 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                                 placeholder="Broker ID"
                                             />
                                         </div>
@@ -381,7 +381,7 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                                 type="text"
                                                 value={brokerId}
                                                 onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
-                                                className="flex-1 text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                className="flex-1 text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border border-purple-300 dark:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                                 placeholder="Return Broker ID"
                                             />
                                             {editValues.returnBrokerIds.length > 1 && (
@@ -398,10 +398,10 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
                                             {brokerId && brokerId !== 'None' ? (
                                                 <ClickableBroker
                                                     brokerId={brokerId}
-                                                    className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-purple-200 dark:border-purple-600 break-all"
+                                                    className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border border-purple-200 dark:border-purple-600 break-all"
                                                 />
                                             ) : (
-                                                <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                                <div className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-textured px-3 py-2 rounded border">
                                                     None
                                                 </div>
                                             )}

@@ -135,7 +135,7 @@ export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
                                                     <Badge
                                                         key={tag}
                                                         variant="outline"
-                                                        className="text-xs px-1.5 py-0 h-5 border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800/60 text-blue-600 dark:text-blue-300"
+                                                        className="text-xs px-1.5 py-0 h-5 border-blue-200 dark:border-blue-700 bg-textured/60 text-blue-600 dark:text-blue-300"
                                                     >
                                                         {tag}
                                                     </Badge>

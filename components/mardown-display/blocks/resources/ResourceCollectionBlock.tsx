@@ -184,7 +184,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Fullscreen Header */}
           {isFullScreen && (
@@ -195,7 +195,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
               </div>
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
               >
                 <Minimize2 className="h-4 w-4" />
                 <span>Exit</span>
@@ -239,28 +239,28 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
 
                 {/* Progress and Stats */}
                 <div className="grid md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-violet-200 dark:border-violet-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-violet-200 dark:border-violet-800/50">
                     <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 mb-1">
                       <BookOpen className="h-4 w-4" />
                       <span className="text-xs font-medium">Total Resources</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{totalResources}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
                       <Check className="h-4 w-4" />
                       <span className="text-xs font-medium">Completed</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{completedCount}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-pink-200 dark:border-pink-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-pink-200 dark:border-pink-800/50">
                     <div className="flex items-center gap-2 text-pink-600 dark:text-pink-400 mb-1">
                       <Heart className="h-4 w-4" />
                       <span className="text-xs font-medium">Favorites</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{favorites.size}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800/50">
                     <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
                       <TrendingUp className="h-4 w-4" />
                       <span className="text-xs font-medium">Progress</span>
@@ -292,7 +292,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                       placeholder="Search resources..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                     />
                   </div>
                   
@@ -300,7 +300,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                     <select
                       value={selectedType}
                       onChange={(e) => setSelectedType(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="all">All Types</option>
                       {allTypes.map(type => (
@@ -314,7 +314,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                       <select
                         value={selectedDifficulty}
                         onChange={(e) => setSelectedDifficulty(e.target.value)}
-                        className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                        className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
                       >
                         <option value="all">All Levels</option>
                         {allDifficulties.map(difficulty => (
@@ -331,7 +331,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
               {/* Resource Categories */}
               <div className="space-y-6">
                 {filteredCategories.map((category, categoryIndex) => (
-                  <div key={category.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div key={category.id} className="bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <button
                       onClick={() => toggleCategory(category.id)}
                       className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"

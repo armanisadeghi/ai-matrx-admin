@@ -45,7 +45,7 @@ const ComparisonLoadingVisualization: React.FC<ComparisonLoadingVisualizationPro
         </div>
 
         {/* Animated Table Structure */}
-        <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
+        <div className="bg-textured/50 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
           {/* Table Header */}
           <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-4">
@@ -101,7 +101,7 @@ const ComparisonLoadingVisualization: React.FC<ComparisonLoadingVisualizationPro
             { label: 'Criteria', icon: BarChart3, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-950/30' },
             { label: 'Analysis', icon: TrendingUp, color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-950/30' }
           ].map((metric, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${index * 200}ms` }}>
+            <div key={index} className="bg-textured/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${index * 200}ms` }}>
               <div className={`flex items-center gap-3 ${metric.color} mb-3`}>
                 <div className={`p-2 ${metric.bgColor} rounded-lg`}>
                   <metric.icon className="h-4 w-4" />
@@ -173,7 +173,7 @@ const ComparisonLoadingVisualization: React.FC<ComparisonLoadingVisualizationPro
 
         {/* Loading Text */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-textured/50 rounded-full border border-gray-200 dark:border-gray-700">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-emerald-500 dark:bg-emerald-400 rounded-full animate-bounce" />
               <div className="w-2 h-2 bg-teal-500 dark:bg-teal-400 rounded-full animate-bounce delay-100" />

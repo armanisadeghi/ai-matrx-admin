@@ -78,7 +78,7 @@ const DesktopAppletBrokerContainer: React.FC<DesktopAppletBrokerContainerProps> 
   });
 
   return (
-    <div className={`flex rounded-full border shadow-lg bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}>
+    <div className={`flex rounded-full border shadow-lg bg-textured dark:border-gray-700 ${className}`}>
       {enhancedChildren}
     </div>
   );

@@ -89,7 +89,7 @@ const IntegrationPortal: React.FC = () => {
   return (
     <div className="flex h-full bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
-      <div className="hidden md:block w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+      <div className="hidden md:block w-64 bg-textured border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Categories</h2>
           <nav>
@@ -117,7 +117,7 @@ const IntegrationPortal: React.FC = () => {
       </div>
       
       {/* Mobile category tabs */}
-      <div className="md:hidden fixed top-[72px] left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 overflow-x-auto">
+      <div className="md:hidden fixed top-[72px] left-0 right-0 bg-textured border-b border-gray-200 dark:border-gray-700 z-10 overflow-x-auto">
         <div className="flex p-2 space-x-2">
           {categoriesWithCount.map(({ name }) => (
             <button
@@ -139,7 +139,7 @@ const IntegrationPortal: React.FC = () => {
       {/* Main content */}
       <div className="flex-1 overflow-y-auto">
         {/* Sticky header */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="sticky top-0 z-10 bg-textured border-b border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="px-6 py-4">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
               Connect Your Business Tools
@@ -152,7 +152,7 @@ const IntegrationPortal: React.FC = () => {
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md leading-5 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
                 placeholder="Search integrations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -196,7 +196,7 @@ const IntegrationPortal: React.FC = () => {
                             relative p-4 rounded-lg border transition-all duration-200
                             ${connected 
                               ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20' 
-                              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md'}
+                              : 'border-gray-200 dark:border-gray-700 bg-textured hover:shadow-md'}
                           `}
                         >
                           <div className="flex items-start">
@@ -223,7 +223,7 @@ const IntegrationPortal: React.FC = () => {
                                 className={`
                                   mt-3 inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium transition-colors
                                   ${connected
-                                    ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    ? 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-textured hover:bg-gray-50 dark:hover:bg-gray-700'
                                     : 'border-transparent text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'}
                                 `}
                               >

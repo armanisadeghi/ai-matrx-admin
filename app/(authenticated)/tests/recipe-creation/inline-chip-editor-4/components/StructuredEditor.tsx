@@ -305,7 +305,7 @@ export const StructuredEditor: React.FC<StructuredEditorProps> = ({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        className="min-h-[200px] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700"
+        className="min-h-[200px] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-textured text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700"
         onPaste={handlePaste}
         onBlur={processContent}
       />

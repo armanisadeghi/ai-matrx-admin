@@ -75,7 +75,7 @@ const EditorTestPage: React.FC<EditorTestPageProps> = ({ editorId, initialConten
                     <div>
                         <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>Text Representation</label>
                         <textarea
-                            className='w-full h-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            className='w-full h-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-textured text-gray-900 dark:text-gray-100'
                             value={currentText}
                             readOnly
                         />

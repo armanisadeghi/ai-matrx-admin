@@ -152,11 +152,11 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 type="text"
                                 value={editValues.recipeId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, recipeId: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Recipe ID"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border break-all">
+                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border break-all">
                                 {editValues.recipeId}
                             </div>
                         )}
@@ -172,11 +172,11 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 type="text"
                                 value={editValues.version}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, version: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Version"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.version}
                             </div>
                         )}
@@ -199,7 +199,7 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                         </div>
                         <div className="space-y-2">
                             {argMappingEntries.map(([paramName, brokerId], idx) => (
-                                <div key={idx} className="bg-white dark:bg-gray-800 rounded p-3 border border-blue-200 dark:border-blue-600">
+                                <div key={idx} className="bg-textured rounded p-3 border border-blue-200 dark:border-blue-600">
                                     {isEditing ? (
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                                 type="text"
                                                 value={String(brokerId)}
                                                 onChange={(e) => handleArgMappingChange(paramName, e.target.value)}
-                                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-2 py-1 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 placeholder="Broker ID"
                                             />
                                         </div>
@@ -261,11 +261,11 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 type="text"
                                 value={editValues.modelOverride}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, modelOverride: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Model Override"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border">
                                 {editValues.modelOverride}
                             </div>
                         )}
@@ -281,11 +281,11 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 type="text"
                                 value={editValues.toolsOverride}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, toolsOverride: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Tools Override (comma-separated)"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border">
                                 {formatToolsOverride(editValues.toolsOverride)}
                             </div>
                         )}
@@ -301,7 +301,7 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 type="text"
                                 value={editValues.returnBrokerId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, returnBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Return Broker ID"
                             />
                         ) : (
@@ -310,10 +310,10 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 {editValues.returnBrokerId !== 'None' ? (
                                     <ClickableBroker
                                         brokerId={editValues.returnBrokerId}
-                                        className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-200 dark:border-blue-600 break-all"
+                                        className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border border-blue-200 dark:border-blue-600 break-all"
                                     />
                                 ) : (
-                                    <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                    <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-textured px-3 py-2 rounded border">
                                         None
                                     </div>
                                 )}

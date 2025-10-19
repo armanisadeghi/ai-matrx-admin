@@ -59,7 +59,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
     
     return (
         <div
-            className={`${containerWidthClass} border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}
+            className={`${containerWidthClass} border rounded-lg overflow-hidden bg-textured dark:border-gray-700 ${className}`}
         >
             <div className="flex flex-col md:flex-row h-full">
                 {/* Sidebar */}
@@ -93,7 +93,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                 </div>
                 
                 {/* Main content area with relative positioning */}
-                <div className="flex-grow p-6 bg-white dark:bg-gray-900 relative flex flex-col">
+                <div className="flex-grow p-6 bg-textured relative flex flex-col">
                     {/* Content container with fixed height */}
                     <div className="flex-grow relative" style={{ minHeight: "400px" }}>
                         {appletContainers.map((container) => (

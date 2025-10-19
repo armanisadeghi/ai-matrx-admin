@@ -12,7 +12,7 @@ export default function PromptsError({
     reset: () => void;
 }) {
     return (
-        <Card className="h-full w-full bg-white dark:bg-gray-900 border-none shadow-lg">
+        <Card className="h-full w-full bg-textured border-none shadow-lg">
             <div className="p-8 md:p-12">
                 <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
                     <AlertCircle className="h-16 w-16 text-red-500 dark:text-red-400 mb-4" />

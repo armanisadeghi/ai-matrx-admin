@@ -19,7 +19,7 @@ function WebhookNode({ data, isConnectable }) {
   };
   
   return (
-    <div className="border border-gray-300 rounded-lg bg-white dark:bg-gray-800 shadow-md w-52">
+    <div className="border border-gray-300 rounded-lg bg-textured shadow-md w-52">
       <div className="absolute -left-3 top-1/2 transform -translate-y-1/2">
         <div className="flex items-center justify-center w-6 h-6 bg-yellow-300 dark:bg-gray-700 rounded-md">
           <Globe className="h-4 w-4 text-yellow-600 dark:text-gray-300" />

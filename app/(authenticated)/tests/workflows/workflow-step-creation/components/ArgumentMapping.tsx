@@ -32,7 +32,7 @@ export default function ArgumentMapping({
                     <select
                         value={newMappingArg}
                         onChange={(e) => onNewMappingArgChange(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100"
                     >
                         <option value="">Select argument...</option>
                         {selectedFunction.args
@@ -51,7 +51,7 @@ export default function ArgumentMapping({
                         value={newMappingBroker}
                         onChange={(e) => onNewMappingBrokerChange(e.target.value)}
                         placeholder="Enter broker ID..."
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100"
                     />
                 </div>
                 <button
@@ -73,7 +73,7 @@ export default function ArgumentMapping({
                         {Object.entries(argMappings).map(([argName, brokerId]) => (
                             <div
                                 key={argName}
-                                className="flex items-center justify-between bg-white dark:bg-gray-800 rounded p-2 border"
+                                className="flex items-center justify-between bg-textured rounded p-2 border"
                             >
                                 <span className="text-sm">
                                     <span className="font-medium">{argName}</span> →

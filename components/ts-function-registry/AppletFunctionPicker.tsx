@@ -178,7 +178,7 @@ export default function AppletFunctionPicker({ dependencies = {} }: AppletFuncti
   };
   
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="bg-textured p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
       <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
         Applet Function Picker
       </h2>
@@ -262,7 +262,7 @@ export default function AppletFunctionPicker({ dependencies = {} }: AppletFuncti
       {executeResult !== null && !error && (
         <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
           <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-200">Result</h3>
-          <pre className="whitespace-pre-wrap text-sm bg-white dark:bg-gray-800 p-4 rounded-md overflow-x-auto">
+          <pre className="whitespace-pre-wrap text-sm bg-textured p-4 rounded-md overflow-x-auto">
             {JSON.stringify(executeResult, null, 2)}
           </pre>
         </div>

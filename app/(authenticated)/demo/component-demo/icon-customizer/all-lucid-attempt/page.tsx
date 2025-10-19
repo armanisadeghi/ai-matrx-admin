@@ -165,7 +165,7 @@ const IconCustomizer = () => {
             </div>
 
             {/* Preview and Controls Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+            <div className="bg-textured rounded-lg shadow-lg p-6 space-y-6">
                 {/* Preview Section */}
                 <div className="flex justify-center items-center h-96 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden">
                     <SelectedIcon

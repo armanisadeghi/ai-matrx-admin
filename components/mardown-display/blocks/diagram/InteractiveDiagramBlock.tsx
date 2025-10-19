@@ -66,7 +66,7 @@ const CustomNode = ({ data, selected }: any) => {
       case 'api': return 'bg-teal-100 dark:bg-teal-950/30 border-teal-500 text-teal-700 dark:text-teal-300';
       case 'compute': return 'bg-yellow-100 dark:bg-yellow-950/30 border-yellow-500 text-yellow-700 dark:text-yellow-300';
       case 'storage': return 'bg-pink-100 dark:bg-pink-950/30 border-pink-500 text-pink-700 dark:text-pink-300';
-      default: return 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300';
+      default: return 'bg-textured border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300';
     }
   };
 
@@ -87,7 +87,7 @@ const CustomNode = ({ data, selected }: any) => {
           transform: 'translateX(-50%)',
           top: '-6px'
         } : {}}
-        className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-800 hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
+        className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-textured hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
       />
       
       {isOrgChart ? (
@@ -130,7 +130,7 @@ const CustomNode = ({ data, selected }: any) => {
           transform: 'translateX(-50%)',
           bottom: '-6px'
         } : {}}
-        className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-800 hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
+        className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-textured hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
       />
     </div>
   );
@@ -462,13 +462,13 @@ const DiagramFlow: React.FC<{
       />
       
       <Controls 
-        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+        className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
         showInteractive={false}
       />
       
       {showMiniMap && (
         <MiniMap
-          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+          className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
           nodeColor={(node) => {
             switch (node.data.nodeType) {
               case 'start': return '#10b981';
@@ -483,7 +483,7 @@ const DiagramFlow: React.FC<{
         />
       )}
 
-      <Panel position="top-right" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1">
+      <Panel position="top-right" className="bg-textured rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1">
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
             <button
@@ -634,7 +634,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-4'}`}>
-        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Header */}
           <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700' : ''}`}>
@@ -674,7 +674,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                   {isFullScreen && (
                     <button
                       onClick={() => setIsFullScreen(false)}
-                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border border-gray-200 dark:border-gray-600"
+                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm border border-gray-200 dark:border-gray-600"
                       title="Exit Fullscreen"
                     >
                       <Minimize2 className="h-4 w-4" />
@@ -682,7 +682,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
                   )}
                   <button
                     onClick={exportDiagramJSON}
-                    className="flex items-center justify-center gap-2 px-2 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                    className="flex items-center justify-center gap-2 px-2 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
                     title="Export as JSON"
                   >
                     <Download className="h-4 w-4" />
@@ -693,7 +693,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
           </div>
 
           {/* ReactFlow Container */}
-          <div className={`${isFullScreen ? 'flex-1' : 'h-[600px] mt-4'} bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden`}>
+          <div className={`${isFullScreen ? 'flex-1' : 'h-[600px] mt-4'} bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden`}>
             <ReactFlowProvider>
               <DiagramFlow 
                 diagram={diagram}
@@ -743,7 +743,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
 
             return (
               <div className={`${isFullScreen ? 'flex-shrink-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700' : 'mt-4'}`}>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-textured rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
                   <div className={`grid gap-3 ${relevantLegendItems.length <= 2 ? 'grid-cols-2' : relevantLegendItems.length <= 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-5'}`}>
                     {relevantLegendItems.map(({ type, label, color, icon: Icon }) => (
                       <div key={type} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${color} text-xs font-medium`}>

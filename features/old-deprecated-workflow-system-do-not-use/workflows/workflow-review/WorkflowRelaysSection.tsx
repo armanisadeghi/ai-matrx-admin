@@ -89,7 +89,7 @@ export function WorkflowRelaysSection({ workflowRelays }: WorkflowRelaysSectionP
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-600">
+                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-textured rounded-lg border border-emerald-200 dark:border-emerald-600">
                                     <div className="text-lg mb-1">🔗</div>
                                     <p className="text-xs">No simple relays configured</p>
                                 </div>
@@ -108,7 +108,7 @@ export function WorkflowRelaysSection({ workflowRelays }: WorkflowRelaysSectionP
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-600">
+                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-textured rounded-lg border border-emerald-200 dark:border-emerald-600">
                                     <div className="text-lg mb-1">↔️</div>
                                     <p className="text-xs">No bidirectional relays configured</p>
                                 </div>
@@ -127,7 +127,7 @@ export function WorkflowRelaysSection({ workflowRelays }: WorkflowRelaysSectionP
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-600">
+                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-textured rounded-lg border border-emerald-200 dark:border-emerald-600">
                                     <div className="text-lg mb-1">⛓️</div>
                                     <p className="text-xs">No relay chains configured</p>
                                 </div>
@@ -152,7 +152,7 @@ function SimpleRelayCard({ relay, index }: SimpleRelayCardProps) {
     const isHighlighted = isSourceHighlighted || isAnyTargetHighlighted;
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg p-3 border border-orange-200 dark:border-orange-700 transition-all duration-200 ${
+        <div className={`bg-textured rounded-lg p-3 border border-orange-200 dark:border-orange-700 transition-all duration-200 ${
             isHighlighted ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600' : ''
         }`}>
             <div className="flex items-center gap-2 mb-3">
@@ -204,7 +204,7 @@ function BidirectionalRelayCard({ relay, index }: BidirectionalRelayCardProps) {
     const isHighlighted = isBrokerAHighlighted || isBrokerBHighlighted;
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700 transition-all duration-200 ${
+        <div className={`bg-textured rounded-lg p-3 border border-blue-200 dark:border-blue-700 transition-all duration-200 ${
             isHighlighted ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600' : ''
         }`}>
             <div className="flex items-center gap-2 mb-3">
@@ -253,7 +253,7 @@ function RelayChainCard({ chain, index }: RelayChainCardProps) {
     const isHighlighted = chainBrokers.some(broker => highlightedBroker === broker);
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-700 transition-all duration-200 ${
+        <div className={`bg-textured rounded-lg p-3 border border-purple-200 dark:border-purple-700 transition-all duration-200 ${
             isHighlighted ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600' : ''
         }`}>
             <div className="flex items-center gap-2 mb-3">

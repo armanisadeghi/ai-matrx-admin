@@ -199,7 +199,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
           }`}>
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1">
-                <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white dark:bg-gray-800'}`}>
+                <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-textured'}`}>
                   <IconComponent className={`h-4 w-4 ${isActive ? 'text-white' : ''}`} />
                   {isCompleted && (
                     <CheckCircle2 className="h-3 w-3 text-green-500 absolute -mt-1 -ml-1" />
@@ -300,7 +300,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Fullscreen Header */}
           {isFullScreen && (
@@ -311,7 +311,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
               </div>
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
               >
                 <Minimize2 className="h-4 w-4" />
                 <span>Exit</span>
@@ -360,7 +360,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
                   <div className="flex items-center gap-3">
                     <button
                       onClick={goToRoot}
-                      className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
                     >
                       <Home className="h-4 w-4" />
                       Start Over
@@ -369,7 +369,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
                     <button
                       onClick={goBack}
                       disabled={navigationHistory.length === 0}
-                      className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Back
@@ -377,7 +377,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
                     
                     <button
                       onClick={resetTree}
-                      className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 transition-colors"
                     >
                       <RotateCcw className="h-4 w-4" />
                       Reset
@@ -388,7 +388,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         showFullTree 
                           ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700'
-                          : 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
+                          : 'bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
                       }`}
                     >
                       <GitBranch className="h-4 w-4" />
@@ -403,28 +403,28 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
 
                 {/* Progress Stats */}
                 <div className="grid md:grid-cols-4 gap-4">
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-indigo-200 dark:border-indigo-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-indigo-200 dark:border-indigo-800/50">
                     <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-1">
                       <GitBranch className="h-4 w-4" />
                       <span className="text-xs font-medium">Total Nodes</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{treeStats.totalNodes}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-orange-200 dark:border-orange-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-orange-200 dark:border-orange-800/50">
                     <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 mb-1">
                       <HelpCircle className="h-4 w-4" />
                       <span className="text-xs font-medium">Questions</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{treeStats.questionNodes}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-purple-200 dark:border-purple-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-purple-200 dark:border-purple-800/50">
                     <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1">
                       <Target className="h-4 w-4" />
                       <span className="text-xs font-medium">Actions</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{treeStats.actionNodes}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
                       <CheckCircle2 className="h-4 w-4" />
                       <span className="text-xs font-medium">Completed</span>
@@ -436,7 +436,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
 
               {/* Navigation Breadcrumbs */}
               {navigationHistory.length > 0 && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                     <ArrowRight className="h-4 w-4" />
                     Decision Path
@@ -467,7 +467,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
               )}
 
               {/* Decision Tree Visualization */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -518,7 +518,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
                         </button>
                         <button
                           onClick={goToRoot}
-                          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-lg text-sm font-medium hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 bg-textured text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-lg text-sm font-medium hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
                         >
                           <RotateCcw className="h-4 w-4" />
                           Start New Decision

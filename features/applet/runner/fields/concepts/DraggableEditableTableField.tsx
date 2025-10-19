@@ -203,7 +203,7 @@ const DraggableEditableTableField: React.FC<CommonFieldProps> = ({ field, source
         return (
             <table ref={provided.innerRef} {...provided.draggableProps}
                 style={{ ...provided.draggableProps.style, borderCollapse: 'collapse', tableLayout: 'fixed', width: totalWidth, opacity: 0.95 }}
-                className={cn("bg-white dark:bg-gray-800", "shadow-lg rounded overflow-hidden")}>
+                className={cn("bg-textured", "shadow-lg rounded overflow-hidden")}>
                 <tbody>
                     <tr className="border-b border-gray-200 dark:border-gray-700">
                         <td className="p-0 border-r border-gray-200 dark:border-gray-700 align-middle" style={{ width: columnWidths[0] ?? 'auto' }}>
@@ -293,7 +293,7 @@ const DraggableEditableTableField: React.FC<CommonFieldProps> = ({ field, source
                                                 <tr ref={providedRowDraggable.innerRef} {...providedRowDraggable.draggableProps}
                                                     style={{ ...providedRowDraggable.draggableProps.style }}
                                                     className={cn(
-                                                        "bg-white dark:bg-gray-800",
+                                                        "bg-textured",
                                                         !snapshotRowDraggable.isDragging && "hover:bg-gray-50 dark:hover:bg-gray-700/50",
                                                         snapshotRowDraggable.isDragging ? "opacity-0" : "opacity-100",
                                                         "border-b border-gray-200 dark:border-gray-700",

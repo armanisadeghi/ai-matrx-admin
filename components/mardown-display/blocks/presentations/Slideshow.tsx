@@ -69,7 +69,7 @@ const Slideshow = (presentationData: PresentationData) => {
       )}
       
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700'}`}>
-        <div className={`bg-white dark:bg-gray-900 ${isFullScreen ? 'h-full w-full max-w-7xl max-h-[95vh] rounded-2xl overflow-hidden' : 'w-full'} flex flex-col`}>
+        <div className={`bg-textured ${isFullScreen ? 'h-full w-full max-w-7xl max-h-[95vh] rounded-2xl overflow-hidden' : 'w-full'} flex flex-col`}>
           
           {/* Header with Controls */}
           <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
@@ -108,7 +108,7 @@ const Slideshow = (presentationData: PresentationData) => {
               {/* Fullscreen Toggle */}
               <button
                 onClick={() => setIsFullScreen(!isFullScreen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
               >
                 {isFullScreen ? (
                   <>
@@ -128,7 +128,7 @@ const Slideshow = (presentationData: PresentationData) => {
           {/* Main Slide Area */}
           <div 
             ref={slideContainerRef}
-            className={`flex-1 flex items-center justify-center relative overflow-hidden bg-white dark:bg-gray-900 ${isFullScreen ? 'p-8 min-h-[600px]' : 'p-6 min-h-[550px]'}`}
+            className={`flex-1 flex items-center justify-center relative overflow-hidden bg-textured ${isFullScreen ? 'p-8 min-h-[600px]' : 'p-6 min-h-[550px]'}`}
           >
             <div 
               key={currentSlide}

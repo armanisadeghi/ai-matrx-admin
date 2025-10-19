@@ -109,7 +109,7 @@ export const getFieldComponentStyle = (componentType?: string) => {
     
     // Default text and card background colors
     const defaultTextClass = 'text-gray-900 dark:text-gray-100';
-    const defaultCardBg = 'bg-white dark:bg-gray-800';
+    const defaultCardBg = 'bg-textured';
     const defaultCardFooterBg = 'bg-gray-50 dark:bg-gray-800';
     const defaultDescriptionClass = 'text-gray-600 dark:text-gray-300';
     
@@ -225,7 +225,7 @@ export const getFieldComponentStyle = (componentType?: string) => {
     
     // Default text and card background colors
     const defaultTextClass = 'text-gray-900 dark:text-gray-100';
-    const defaultCardBg = 'bg-white dark:bg-gray-800';
+    const defaultCardBg = 'bg-textured';
     const defaultCardFooterBg = 'bg-gray-50 dark:bg-gray-800';
     const defaultDescriptionClass = 'text-gray-600 dark:text-gray-300';
     

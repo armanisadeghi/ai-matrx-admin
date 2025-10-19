@@ -156,7 +156,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
     const baseStyle = "p-3 rounded-lg border cursor-pointer transition-all duration-200 text-left";
     
     if (!isAnswered) {
-      return `${baseStyle} bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30`;
+      return `${baseStyle} bg-textured border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30`;
     } else {
       // After answer selected
       if (optionIndex === currentQuestion.correctAnswer) {
@@ -174,7 +174,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
     return (
       <div className="w-full py-3">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-textured rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
             <div className="text-center mb-4">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Trophy className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
@@ -187,7 +187,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
             <div className="flex justify-center mb-4">
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-                  <div className="w-16 h-16 rounded-full bg-white dark:bg-gray-900 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-textured flex flex-col items-center justify-center">
                     <span className="text-lg font-bold text-gray-800 dark:text-gray-100">{scorePercentage}%</span>
                     <span className="text-xs text-gray-600 dark:text-gray-400">Score</span>
                   </div>
@@ -254,7 +254,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
       )}
       
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-2' : 'py-3'}`}>
-        <div className={`max-w-4xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-4xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Scrollable content area */}
           <div className={isFullScreen ? 'flex-1 overflow-y-auto p-3' : 'p-3'}>
@@ -360,7 +360,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ questions }) =>
           </div>
 
         {/* Navigation Buttons - Fixed at bottom in fullscreen */}
-        <div className={isFullScreen ? 'flex-shrink-0 p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900' : ''}>
+        <div className={isFullScreen ? 'flex-shrink-0 p-3 border-t border-gray-200 dark:border-gray-700 bg-textured' : ''}>
           <div className="flex justify-between items-center gap-3">
             <button
               onClick={handlePrevious}

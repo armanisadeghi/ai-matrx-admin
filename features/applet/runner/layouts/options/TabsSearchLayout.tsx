@@ -127,7 +127,7 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
         )}
       </div>
       
-      <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 relative">
+      <div className="border rounded-lg bg-textured dark:border-gray-700 relative">
         {appletContainers.map((container, index) => {
           const isActive = index === activeGroupIndex;
           const isPrevious = isTransitioning && index === previousGroupIndex;

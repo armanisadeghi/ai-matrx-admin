@@ -89,7 +89,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     return (
         <html>
             <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center p-4">
-                <div className="max-w-lg w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+                <div className="max-w-lg w-full bg-textured shadow-lg rounded-lg overflow-hidden">
                     <div className="p-6">
                         <div className="flex items-center justify-center mb-6">
                             <svg

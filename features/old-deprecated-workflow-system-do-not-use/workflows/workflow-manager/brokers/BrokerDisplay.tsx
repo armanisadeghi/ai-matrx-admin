@@ -22,12 +22,12 @@ export function BrokerDisplay({ label, brokerId }: { label: string; brokerId: st
                             <ClickableBroker
                                 key={index}
                                 brokerId={id}
-                                className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-green-200 dark:border-green-600"
+                                className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-2 py-1 rounded border border-green-200 dark:border-green-600"
                             />
                         ))}
                     </div>
                 ) : (
-                    <span className="text-sm font-mono text-green-900 dark:text-green-100 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-green-200 dark:border-green-600">
+                    <span className="text-sm font-mono text-green-900 dark:text-green-100 bg-textured px-2 py-1 rounded border border-green-200 dark:border-green-600">
                         None
                     </span>
                 )}

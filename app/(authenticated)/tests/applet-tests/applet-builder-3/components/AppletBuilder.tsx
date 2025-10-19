@@ -24,7 +24,7 @@ export default function AppletBuilder() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-textured rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">

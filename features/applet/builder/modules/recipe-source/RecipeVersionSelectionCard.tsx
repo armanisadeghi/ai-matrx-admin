@@ -86,7 +86,7 @@ export const RecipeVersionSelectionCard: React.FC<RecipeVersionSelectionCardProp
                                 min="1"
                                 value={specificVersion}
                                 onChange={onSpecificVersionChange}
-                                className={`w-20 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${
+                                className={`w-20 border-gray-200 dark:border-gray-700 bg-textured ${
                                     !isVersionValid ? "border-red-300 dark:border-red-700" : ""
                                 }`}
                             />

@@ -138,7 +138,7 @@ function AppletRow({
   if (!applet) return null;
   
   return (
-    <tr className="bg-white dark:bg-gray-900">
+    <tr className="bg-textured">
       <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{applet.name}</td>
       <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{applet.slug}</td>
       <td className="px-4 py-3 text-right">

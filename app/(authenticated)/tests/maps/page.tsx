@@ -117,7 +117,7 @@ export default function MapsPage() {
 
                 {/* Controls sidebar */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                    <div className="bg-textured rounded-lg shadow-md p-4">
                         <h2 className="text-lg font-semibold mb-3">Map Configuration</h2>
 
                         <div className="space-y-3">
@@ -187,7 +187,7 @@ export default function MapsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                    <div className="bg-textured rounded-lg shadow-md p-4">
                         <h2 className="text-lg font-semibold mb-3">Features</h2>
 
                         <div className="space-y-2">
@@ -241,7 +241,7 @@ export default function MapsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                    <div className="bg-textured rounded-lg shadow-md p-4">
                         <h2 className="text-lg font-semibold mb-3">Layers</h2>
 
                         <div className="space-y-2">

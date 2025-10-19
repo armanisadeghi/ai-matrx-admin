@@ -207,7 +207,7 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                             <h4 className="text-xs font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                                                 Clean Line
                                                             </h4>
-                                                            <div className="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded font-mono text-xs whitespace-pre-wrap">
+                                                            <div className="p-2 bg-textured border border-gray-200 dark:border-gray-700 rounded font-mono text-xs whitespace-pre-wrap">
                                                                 {item.clean_line}
                                                             </div>
                                                         </div>
@@ -216,7 +216,7 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
                                                         <h4 className="text-xs font-semibold mb-2 text-gray-700 dark:text-gray-300">
                                                             Raw Data
                                                         </h4>
-                                                        <div className="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded">
+                                                        <div className="p-2 bg-textured border border-gray-200 dark:border-gray-700 rounded">
                                                             <pre className="text-xs overflow-auto max-h-40">
                                                                 {JSON.stringify(item, null, 2)}
                                                             </pre>

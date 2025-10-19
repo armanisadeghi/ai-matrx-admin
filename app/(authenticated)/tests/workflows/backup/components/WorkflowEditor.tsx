@@ -153,7 +153,7 @@ const BrokerLegend = ({
   onSelectBroker: (brokerId: string) => void
 }) => {
   return (
-    <div className="absolute top-4 left-4 z-10 bg-white dark:bg-gray-800 p-2 rounded-md shadow-md border border-gray-200 dark:border-gray-700 max-w-xs">
+    <div className="absolute top-4 left-4 z-10 bg-textured p-2 rounded-md shadow-md border border-gray-200 dark:border-gray-700 max-w-xs">
       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
         <Package className="h-4 w-4 text-purple-500 dark:text-purple-400" />
         Active Brokers

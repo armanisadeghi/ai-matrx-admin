@@ -160,7 +160,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
   return (
     <div className={cn("w-full h-full flex flex-col bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200", className)}>
       {/* Header */}
-      <div className="w-full p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="w-full p-4 bg-textured border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Socket Schema Builder</h1>
@@ -172,7 +172,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
               type="text"
               value={taskName}
               onChange={(e) => setTaskName(e.target.value)}
-              className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+              className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
               placeholder="Enter task name (e.g., Create User)"
             />
           </div>
@@ -202,7 +202,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
             {fields.map((field, index) => (
               <div 
                 key={index}
-                className="w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm"
+                className="w-full bg-textured rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm"
               >
                 <AccordionWrapper
                   title={`Field ${index + 1}: ${field.name || "New Field"}`}
@@ -217,7 +217,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                           type="text"
                           value={field.name}
                           onChange={(e) => updateField(index, { name: e.target.value })}
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                           placeholder="e.g., user_id"
                         />
                       </div>
@@ -226,7 +226,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                         <select
                           value={field.DATA_TYPE}
                           onChange={(e) => updateField(index, { DATA_TYPE: e.target.value })}
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                         >
                           {dataTypes.map((type) => (
                             <option key={type} value={type}>
@@ -245,7 +245,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                               DEFAULT: e.target.value === "" ? null : e.target.value,
                             })
                           }
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                           placeholder="Enter the default value"
                         />
                       </div>
@@ -254,7 +254,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                         <select
                           value={field.REFERENCE || ""}
                           onChange={(e) => updateField(index, { REFERENCE: e.target.value || null })}
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                         >
                           <option value="">None</option>
                           {referenceOptions.map((option) => (
@@ -269,7 +269,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                         <select
                           value={field.COMPONENT}
                           onChange={(e) => updateField(index, { COMPONENT: e.target.value })}
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                         >
                           {components.map((comp) => (
                             <option key={comp} value={comp}>
@@ -285,7 +285,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                             type="text"
                             value={field.ICON_NAME}
                             onChange={(e) => updateField(index, { ICON_NAME: e.target.value })}
-                            className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                            className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                             placeholder="Must be a valid Lucide icon name"
                           />
                           <button
@@ -314,7 +314,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                           onChange={(e) =>
                             updateField(index, { VALIDATION: e.target.value || null })
                           }
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                           placeholder="Must be a pre-defined Python function"
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 italic">Must be a pre-defined Python function</p>
@@ -327,7 +327,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                           onChange={(e) =>
                             updateField(index, { CONVERSION: e.target.value || null })
                           }
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                           placeholder="Must be a pre-defined Python function"
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 italic">Must be a pre-defined Python function</p>
@@ -337,7 +337,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
                         <textarea
                           value={field.DESCRIPTION}
                           onChange={(e) => updateField(index, { DESCRIPTION: e.target.value })}
-                          className="mt-1 block w-full rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
+                          className="mt-1 block w-full rounded-md bg-textured border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-800 focus:ring-opacity-50 text-gray-900 dark:text-gray-100"
                           placeholder="Enter field description"
                           rows={2}
                         />
@@ -370,7 +370,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({ onGenerate, className }) 
 
         {/* Right side - Code preview */}
         <div className="w-full lg:w-1/2 h-full p-4 border-t lg:border-t-0 lg:border-l border-gray-300 dark:border-gray-700">
-          <div className="h-full bg-white dark:bg-gray-900 rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+          <div className="h-full bg-textured rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
             <div className="p-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 flex justify-between items-center">
               <h3 className="font-medium text-gray-900 dark:text-gray-100">Generated Schema</h3>
               <button

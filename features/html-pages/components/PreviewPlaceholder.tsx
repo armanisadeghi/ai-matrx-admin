@@ -52,7 +52,7 @@ export function PreviewPlaceholder({ isLoading = false }: PreviewPlaceholderProp
                     <div className="absolute -bottom-4 -right-4 opacity-30">
                         <Sparkles className="w-6 h-6 text-purple-400 dark:text-purple-300 animate-pulse" style={{ animationDelay: '500ms' }} />
                     </div>
-                    <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
+                    <div className="relative bg-textured rounded-2xl p-8 shadow-xl">
                         <div className="flex space-x-4">
                             <div className="transform -rotate-12 opacity-60">
                                 <FileCode2 className="w-12 h-12 text-blue-400 dark:text-blue-300" />

@@ -101,7 +101,7 @@ const HierarchicalExample = () => {
                         <FileJson size={18} />
                         <h3 className="font-medium">Component State Debug Info</h3>
                     </div>
-                    <pre className="text-xs bg-white dark:bg-gray-800 rounded p-3 overflow-auto max-h-80">
+                    <pre className="text-xs bg-textured rounded p-3 overflow-auto max-h-80">
                         {JSON.stringify(debugInfo.allSelections, null, 2)}
                     </pre>
                 </div>

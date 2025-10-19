@@ -330,7 +330,7 @@ const CheckboxGroupField: React.FC<CommonFieldProps> = ({ field, sourceId="no-ap
             {isOtherSelected && (
                 <Input
                     id={`${sourceId}-${id}-other-input`}
-                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured"
                     value={otherText}
                     onChange={handleOtherTextChange}
                     onBlur={handleBlur}

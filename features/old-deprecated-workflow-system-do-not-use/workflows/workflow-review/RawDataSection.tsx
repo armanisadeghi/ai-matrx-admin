@@ -59,22 +59,22 @@ export function RawDataSection({ workflow }: RawDataSectionProps) {
                 <div className="px-4 pb-4">
                     {/* Data Stats */}
                     <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                        <div className="bg-textured rounded-lg p-3 border border-slate-200 dark:border-slate-600">
                             <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{lineCount}</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400">Lines</div>
                         </div>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                        <div className="bg-textured rounded-lg p-3 border border-slate-200 dark:border-slate-600">
                             <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{charCount.toLocaleString()}</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400">Characters</div>
                         </div>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
+                        <div className="bg-textured rounded-lg p-3 border border-slate-200 dark:border-slate-600">
                             <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{sizeInKB}</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400">KB</div>
                         </div>
                     </div>
 
                     {/* JSON Content */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
+                    <div className="bg-textured rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
                         <div className="p-3 border-b border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">

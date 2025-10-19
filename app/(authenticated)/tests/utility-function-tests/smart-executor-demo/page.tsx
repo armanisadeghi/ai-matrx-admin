@@ -71,7 +71,7 @@ export default function SmartExecutorDemo() {
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-white dark:bg-gray-900 rounded-md shadow-md">
+          <div className="p-4 bg-textured rounded-md shadow-md">
             <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-200">Registered Functions</h3>
             <div className="h-48 overflow-y-auto">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -88,7 +88,7 @@ export default function SmartExecutorDemo() {
             </div>
           </div>
           
-          <div className="p-4 bg-white dark:bg-gray-900 rounded-md shadow-md">
+          <div className="p-4 bg-textured rounded-md shadow-md">
             <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-gray-200">Registered Result Components</h3>
             <div className="h-48 overflow-y-auto">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -111,7 +111,7 @@ export default function SmartExecutorDemo() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Date Formatter with specialized display */}
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+        <div className="p-6 bg-textured rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Format Date</h3>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             This example uses the dateDisplay component to show formatted date results.
@@ -127,7 +127,7 @@ export default function SmartExecutorDemo() {
         </div>
         
         {/* String Transformation with specialized display */}
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+        <div className="p-6 bg-textured rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Transform String</h3>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             This example uses the stringTransformDisplay component to show before/after comparison.
@@ -143,7 +143,7 @@ export default function SmartExecutorDemo() {
         </div>
         
         {/* Email Validation with specialized display */}
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+        <div className="p-6 bg-textured rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Validate Email</h3>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             This example uses the validationDisplay component to show validation status.
@@ -159,7 +159,7 @@ export default function SmartExecutorDemo() {
         </div>
         
         {/* Statistics with specialized display */}
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+        <div className="p-6 bg-textured rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Calculate Statistics</h3>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             This example uses the statsDisplay component to show statistical results in a grid.
@@ -175,7 +175,7 @@ export default function SmartExecutorDemo() {
         </div>
         
         {/* Random Data Generation with specialized display */}
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+        <div className="p-6 bg-textured rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Generate Random Data</h3>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             This example uses the randomDataDisplay component to show randomly generated data.
@@ -191,7 +191,7 @@ export default function SmartExecutorDemo() {
         </div>
         
         {/* Generic JSON viewer fallback */}
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+        <div className="p-6 bg-textured rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-3 text-gray-800 dark:text-gray-200">Generic JSON Viewer</h3>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             This example uses the generic jsonViewer component which works with any function.

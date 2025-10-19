@@ -148,7 +148,7 @@ const SortableField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-
                                                 cursor: "move",
                                             }}
                                             className={cn(
-                                                "relative flex items-center p-4 bg-white dark:bg-gray-800",
+                                                "relative flex items-center p-4 bg-textured",
                                                 "transition-shadow duration-200",
                                                 "border-b border-gray-100 dark:border-gray-700 last:border-b-0",
                                                 snapshot.isDragging &&
