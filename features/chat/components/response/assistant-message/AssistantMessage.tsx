@@ -230,13 +230,12 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             >
                                 <MoreHorizontal size={16} />
                             </button>
-                            {showOptions && (
-                                <MessageOptionsMenu 
-                                    content={content} 
-                                    onClose={() => setShowOptions(false)}
-                                    onShowHtmlPreview={handleShowHtmlPreview}
-                                />
-                            )}
+                            <MessageOptionsMenu 
+                                isOpen={showOptions}
+                                content={content} 
+                                onClose={() => setShowOptions(false)}
+                                onShowHtmlPreview={handleShowHtmlPreview}
+                            />
                         </div>
                     </div>
                 )}

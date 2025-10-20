@@ -185,6 +185,14 @@ export const componentList: ComponentEntry[] = [
     tags: ['accordion', 'collapsible', 'expandable', 'fullscreen', 'actions']
   },
   {
+    id: 'advanced-menu',
+    name: 'Advanced Menu',
+    path: 'components/official/AdvancedMenu.tsx',
+    description: 'Beautiful menu component with automatic action feedback, loading states, and mobile responsiveness',
+    categories: ['navigation', 'interactive', 'feedback'],
+    tags: ['menu', 'dropdown', 'context menu', 'actions', 'feedback', 'loading', 'mobile', 'toast']
+  },
+  {
     id: 'full-screen-overlay',
     name: 'Full Screen Overlay',
     path: 'components/official/FullScreenOverlay.tsx',

@@ -50,13 +50,20 @@ export default function OfficialComponentsPage() {
   
   // Apply filtering when search query or selected category changes
   useEffect(() => {
-    let results = searchQuery ? searchComponents(searchQuery) : componentList;
-    
-    if (selectedCategory !== 'all') {
-      results = results.filter(component => component.categories.includes(selectedCategory));
+    // If searching, search ALL components (ignore category filter)
+    if (searchQuery) {
+      const results = searchComponents(searchQuery);
+      setFilteredComponents(results);
+      return;
     }
     
-    setFilteredComponents(results);
+    // If not searching, apply category filter
+    if (selectedCategory !== 'all') {
+      const results = componentList.filter(component => component.categories.includes(selectedCategory));
+      setFilteredComponents(results);
+    } else {
+      setFilteredComponents(componentList);
+    }
   }, [searchQuery, selectedCategory]);
   
   // Get organized categories
@@ -91,8 +98,17 @@ export default function OfficialComponentsPage() {
               placeholder="Search components by name, description, or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label="Clear search"
+              >
+                <span className="text-lg">×</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -103,8 +119,13 @@ export default function OfficialComponentsPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-medium">Categories</CardTitle>
+              {searchQuery && (
+                <CardDescription className="text-xs mt-1">
+                  Category filter disabled during search
+                </CardDescription>
+              )}
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className={cn("p-0", searchQuery && "opacity-50 pointer-events-none")}>
               <ScrollArea className="h-[calc(100vh-350px)]">
                 <div className="px-2 pb-4">
                   {/* All components option */}
@@ -176,13 +197,15 @@ export default function OfficialComponentsPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-medium">
-                {selectedCategory === 'all' 
-                  ? 'All Components' 
-                  : `${categoryNames[selectedCategory]} Components`}
-                {searchQuery && ` matching "${searchQuery}"`}
+                {searchQuery 
+                  ? `Search Results for "${searchQuery}"` 
+                  : selectedCategory === 'all' 
+                    ? 'All Components' 
+                    : `${categoryNames[selectedCategory]} Components`}
               </CardTitle>
               <CardDescription>
-                {filteredComponents.length} component{filteredComponents.length !== 1 ? 's' : ''}
+                {filteredComponents.length} component{filteredComponents.length !== 1 ? 's' : ''} found
+                {searchQuery && ' (searching all categories)'}
               </CardDescription>
             </CardHeader>
             <CardContent>

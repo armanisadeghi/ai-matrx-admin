@@ -3,8 +3,8 @@ import { MessageSquare, Trash2, Paperclip, RefreshCw, ArrowUp, CornerDownLeft, I
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
-import { PromptErrorMessage } from "./PromptErrorMessage";
+import { PromptUserMessage } from "./PromptUserMessage";
+import { PromptAssistantMessage } from "./PromptAssistantMessage";
 import { PromptStats } from "./PromptStats";
 import { useAppSelector } from "@/lib/redux";
 import { selectPrimaryResponseTextByTaskId, selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
@@ -147,33 +147,20 @@ export function PromptBuilderRightPanel({
                             return (
                                 <div key={idx}>
                                     {msg.role === "user" ? (
-                                        <div className="bg-blue-100 dark:bg-blue-900/30 ml-12 p-4 rounded-lg">
-                                            <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
-                                                User
-                                            </div>
-                                            <div className="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words overflow-hidden">{msg.content}</div>
-                                        </div>
+                                        <PromptUserMessage
+                                            content={msg.content}
+                                            messageIndex={idx}
+                                            onContentChange={onMessageContentChange}
+                                        />
                                     ) : (
-                                        <div className="mr-12">
-                                            <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
-                                                Assistant
-                                            </div>
-                                            {msg.content.startsWith("Error:") ? (
-                                                <PromptErrorMessage message={msg.content.replace("Error: ", "")} />
-                                            ) : (
-                                                <EnhancedChatMarkdown
-                                                    content={msg.content}
-                                                    taskId={msg.taskId}
-                                                    type="message"
-                                                    role="assistant"
-                                                    isStreamActive={isStreaming}
-                                                    hideCopyButton={true}
-                                                    allowFullScreenEditor={true}
-                                                    className="bg-textured"
-                                                    onContentChange={onMessageContentChange ? (newContent) => onMessageContentChange(idx, newContent) : undefined}
-                                                />
-                                            )}
-                                        </div>
+                                        <PromptAssistantMessage
+                                            content={msg.content}
+                                            taskId={msg.taskId}
+                                            messageIndex={idx}
+                                            isStreamActive={isStreaming}
+                                            onContentChange={onMessageContentChange}
+                                            metadata={msg.metadata}
+                                        />
                                     )}
                                 </div>
                             );
