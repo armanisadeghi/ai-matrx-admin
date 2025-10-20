@@ -118,7 +118,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         <div className="relative">
             <FileChipsWithPreview files={fileManager.files} onRemoveFile={fileManager.removeFile} />
 
-            <div className="relative rounded-3xl">
+            <div className="relative rounded-3xl border border-zinc-300 dark:border-zinc-700 ">
                 <TextInput
                     ref={textInputRef}
                     content={content}
@@ -138,7 +138,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             </div>
 
             {fileManager.showFileUpload && (
-                <div className="absolute bottom-full mb-10 w-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-3xl">
+                <div className="absolute bottom-full mb-10 w-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-3xl">
                     <FileUploadWithStorage
                         bucket="userContent"
                         path={`chat-attachments/conversation-${conversationId}`}
