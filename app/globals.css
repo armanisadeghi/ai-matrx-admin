@@ -98,10 +98,10 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --sidebar-ring: 217.2 91.2% 59.8%;
 
         /* Scrollbar colors for light mode */
-        --scrollbar-track: 240 5% 96%;
-        --scrollbar-thumb: 240 5% 65%;
-        --scrollbar-thumb-hover: 240 8% 45%;
-        --scrollbar-thumb-active: 210 80% 45%;
+        --scrollbar-track: 240 5% 96%; /* zinc-100 */
+        --scrollbar-thumb: 240 5% 84%; /* zinc-300 - subtle and minimal */
+        --scrollbar-thumb-hover: 240 5% 70%; /* zinc-400 - slightly more visible */
+        --scrollbar-thumb-active: 240 6% 60%; /* zinc-500 - active state */
 
         --typography-fontFamily-sans: var(--font-inter), var(--font-opensans), var(--font-roboto), var(--font-montserrat), ui-sans-serif,
             system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
@@ -195,10 +195,10 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --sidebar-ring: 217.2 91.2% 59.8%;
 
         /* Scrollbar colors for dark mode */
-        --scrollbar-track: 222 47% 11%;
-        --scrollbar-thumb: 240 5% 35%;
-        --scrollbar-thumb-hover: 221 83% 53%;
-        --scrollbar-thumb-active: 275 60% 50%;
+        --scrollbar-track: 240 4% 14%; /* zinc-850 - matches dark background */
+        --scrollbar-thumb: 240 4% 35%; /* zinc-700 - subtle and minimal */
+        --scrollbar-thumb-hover: 240 5% 45%; /* zinc-600 - slightly more visible */
+        --scrollbar-thumb-active: 240 5% 55%; /* zinc-500 - active state */
     }
 }
 

@@ -105,4 +105,3 @@ export const textureUtilities = {
         '@apply bg-textured-light dark:bg-textured-dark': {},
     },
 };
-
