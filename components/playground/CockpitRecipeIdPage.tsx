@@ -51,19 +51,19 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
 
     const aiCockpitHook = useAiCockpit();
 
-    const { activeRecipeId, messages, onPlay, registerComponentSave } = aiCockpitHook;
+    const { activeRecipeId, messages, onPlay, recipeMessageIsLoading, registerComponentSave } = aiCockpitHook;
 
     const [open, setOpen] = useState(false);
 
     // Handle routing when activeRecipeId differs from current route
     useEffect(() => {
-        if (activeRecipeId && activeRecipeId !== recipeId) {
+        if (activeRecipeId && !open && activeRecipeId !== recipeId) {
             setIsRedirecting(true);
             router.push(`/ai/cockpit/${activeRecipeId}`);
         } else if (activeRecipeId === recipeId) {
             setIsRedirecting(false);
         }
-    }, [activeRecipeId, recipeId, router]);
+    }, [activeRecipeId, recipeId, router, open]);
 
     const panelsRef = useRef<PanelRefs>({
         leftPanel: null,

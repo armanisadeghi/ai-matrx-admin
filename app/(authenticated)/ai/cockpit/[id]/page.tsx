@@ -10,6 +10,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     const recipeId = resolvedParams.id;
 
   
-  return <CockpitRecipeIdPage recipeId={recipeId}/>;
+  return <CockpitRecipeIdPage key={recipeId} recipeId={recipeId}/>;
 }
   

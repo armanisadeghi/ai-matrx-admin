@@ -4,10 +4,7 @@ import React, { useRef, useState, useLayoutEffect, useEffect, useCallback } from
 import { useRouter } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import ModelSettingsPanel from '@/components/playground/settings/ModelSettingsPanel';
-import CockpitPanels from '@/components/playground/CockpitPanels';
 import { Button } from '@/components/ui/button';
-import BrokerSidebar from '@/components/playground/brokers/BrokersSidebar';
 import AICockpitIntro from '@/components/playground/components/AICockpitIntro';
 import EntityCreateRecordSheet from '@/app/entities/layout/EntityCreateRecordSheet';
 import AddTemplateMessages from '@/components/playground/messages/AddTemplateMessages';
@@ -48,10 +45,10 @@ export default function AiCockpitPage() {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        if (activeRecipeId) {
+        if (activeRecipeId && !open) {
             router.push(`/ai/cockpit/${activeRecipeId}`);
         }
-    }, [activeRecipeId, router]);
+    }, [activeRecipeId, router, open]);
 
     const panelsRef = useRef<PanelRefs>({
         leftPanel: null,

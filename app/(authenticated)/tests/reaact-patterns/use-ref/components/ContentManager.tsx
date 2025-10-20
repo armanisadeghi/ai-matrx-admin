@@ -79,7 +79,7 @@ const ContentManager: React.FC<ContentManagerProps> = (
                 </button>
             ) : (
                  <div className="space-y-4">
-                     <div className="p-4 bg-matrx-background rounded">Content goes here</div>
+                     <div className="p-4 bg-textured rounded">Content goes here</div>
                      <div className="space-x-2">
                          <button
                              onClick={() => setShowContentState(false)}

@@ -42,21 +42,27 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
         const messagesPanelRef = useRef<ImperativePanelHandle>(null);
         const resultsPanelRef = useRef<ImperativePanelHandle>(null);
         const rightPanelRef = useRef<ImperativePanelHandle>(null);
-
-
+        
         const [showBrokers, setShowBrokers] = useState(false);
         const [showSettings, setShowSettings] = useState(false);
         const [showMessages, setShowMessages] = useState(false);
         const [showResults, setShowResults] = useState(false);
+        const [isActive, setIsActive] = useState(false);
 
         const { activeRecipeMatrxId } = cockpitControls.aiCockpitHook;
 
         useEffect(() => {
             if (activeRecipeMatrxId) {
-                setShowMessages(true);
-                setShowSettings(true);
-                setShowResults(true);
-                setShowBrokers(true);
+                // Delay activation by 1000ms to allow things to settle
+                const timer = setTimeout(() => {
+                    setShowMessages(true);
+                    setShowSettings(true);
+                    setShowResults(true);
+                    setShowBrokers(true);
+                    setIsActive(true);
+                }, 2000);
+
+                return () => clearTimeout(timer);
             }
         }, [activeRecipeMatrxId]);
 
@@ -84,7 +90,9 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
         return (
             <div
                 ref={measureRef}
-                className={`flex-1 h-full overflow-hidden ${className}`}
+                className={`flex-1 h-full overflow-hidden transition-opacity duration-1000 ${
+                    isActive ? 'opacity-100' : 'opacity-50'
+                } ${!isActive ? 'pointer-events-none' : ''} ${className}`}
             >
                 <PanelGroup
                     direction='horizontal'
