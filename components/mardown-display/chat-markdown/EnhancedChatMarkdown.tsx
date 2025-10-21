@@ -7,7 +7,7 @@ import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import ThinkingVisualization from "../blocks/thinking-reasoning/ThinkingVisualization";
 import BasicMarkdownContent from "./BasicMarkdownContent";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
-import ImageBlock from "./ImageBlock";
+import ImageBlock from "@/components/mardown-display/blocks/images/ImageBlock";
 import TranscriptBlock from "@/components/mardown-display/blocks/transcripts/TranscriptBlock";
 import TasksBlock from "@/components/mardown-display/blocks/tasks/TasksBlock";
 import { ContentBlock, splitContentIntoBlocks } from "../markdown-classification/processors/utils/content-splitter";
@@ -285,10 +285,13 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     // Parse the complete quiz JSON
                     try {
                         const quizData = JSON.parse(block.content);
-                        if (quizData.multiple_choice && Array.isArray(quizData.multiple_choice)) {
-                            return <MultipleChoiceQuiz key={index} questions={quizData.multiple_choice} />;
+                        
+                        // Validate quiz structure: { quiz_title, category?, multiple_choice }
+                        if (quizData.quiz_title && Array.isArray(quizData.multiple_choice) && quizData.multiple_choice.length > 0) {
+                            return <MultipleChoiceQuiz key={index} quizData={quizData} />;
                         }
-                        // If parsing failed or no multiple_choice, fall back to code block
+                        
+                        // If not valid quiz structure, fall back to code block
                         return (
                             <CodeBlock
                                 key={index}

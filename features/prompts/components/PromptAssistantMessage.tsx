@@ -35,7 +35,6 @@ export function PromptAssistantMessage({
     const [htmlContent, setHtmlContent] = useState<string>('');
     const [htmlTitle, setHtmlTitle] = useState<string>('HTML Preview');
     const [isCopied, setIsCopied] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
     
     const handleContentChange = (newContent: string) => {
         if (onContentChange) {
@@ -88,11 +87,7 @@ export function PromptAssistantMessage({
     const isError = content.startsWith("Error:");
     
     return (
-        <div 
-            className="mr-12"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
+        <div className="mr-12">
             <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
                 Assistant
                 {metadata && metadata.totalTime && (
@@ -116,7 +111,7 @@ export function PromptAssistantMessage({
                         className="bg-textured"
                         onContentChange={handleContentChange}
                     />
-                    {!isStreamActive && (isHovered || showOptionsMenu) && (
+                    {!isStreamActive && (
                         <div className="flex items-center gap-1 mt-2">
                             <Button
                                 variant="ghost"

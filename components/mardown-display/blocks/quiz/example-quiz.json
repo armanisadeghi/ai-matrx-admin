@@ -1,0 +1,52 @@
+{
+  "quiz_title": "JavaScript Fundamentals",
+  "category": "Programming",
+  "multiple_choice": [
+    {
+      "id": 1,
+      "question": "What is the output of: typeof null?",
+      "options": ["null", "object", "undefined", "number"],
+      "correctAnswer": 1,
+      "explanation": "This is a known quirk in JavaScript. typeof null returns 'object' due to a legacy bug that was never fixed for backward compatibility reasons."
+    },
+    {
+      "id": 2,
+      "question": "Which method is used to add an element to the end of an array?",
+      "options": ["push()", "pop()", "shift()", "unshift()"],
+      "correctAnswer": 0,
+      "explanation": "The push() method adds one or more elements to the end of an array and returns the new length of the array."
+    },
+    {
+      "id": 3,
+      "question": "What is a closure in JavaScript?",
+      "options": [
+        "A function that has been closed",
+        "A function with access to its outer scope",
+        "A way to close browser windows",
+        "A method to end a program"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A closure is a function that has access to variables in its outer (enclosing) lexical scope, even after the outer function has returned."
+    },
+    {
+      "id": 4,
+      "question": "What does 'use strict' do in JavaScript?",
+      "options": [
+        "Makes code run faster",
+        "Enables strict mode for safer code",
+        "Disables all errors",
+        "Compiles the code"
+      ],
+      "correctAnswer": 1,
+      "explanation": "'use strict' enables strict mode, which catches common coding errors and prevents the use of certain problematic language features."
+    },
+    {
+      "id": 5,
+      "question": "Which of these is NOT a JavaScript data type?",
+      "options": ["String", "Boolean", "Float", "Symbol"],
+      "correctAnswer": 2,
+      "explanation": "JavaScript has Number (which includes integers and floats), but not a separate Float type. The primitive types are: String, Number, Boolean, Null, Undefined, Symbol, and BigInt."
+    }
+  ]
+}
+

@@ -7,6 +7,7 @@ export type QuizSession = {
   id: string;
   user_id: string;
   title: string | null;
+  category: string | null;
   state: QuizState;
   is_completed: boolean;
   created_at: string;
@@ -54,14 +55,18 @@ export async function findExistingQuizByHash(
 }
 
 /**
- * Create a new quiz session in the database
+ * Create a new quiz session in the database (without duplicate check)
+ * Use findExistingQuizByHash BEFORE calling this if you want duplicate detection
+ * 
+ * @param metadata - Additional custom metadata (not for title/category - those have dedicated columns)
  */
 export async function createQuizSession(
   state: QuizState,
   title?: string,
+  category?: string,
   contentHash?: string,
   metadata?: Record<string, any>
-): Promise<{ success: boolean; data?: QuizSession; error?: string; existingSession?: QuizSession }> {
+): Promise<{ success: boolean; data?: QuizSession; error?: string }> {
   try {
     const supabase = await createClient();
     
@@ -71,24 +76,12 @@ export async function createQuizSession(
       return { success: false, error: 'Not authenticated' };
     }
 
-    // Check for existing quiz with same hash
-    if (contentHash) {
-      const existingResult = await findExistingQuizByHash(contentHash);
-      if (existingResult.success && existingResult.data) {
-        // Found an existing in-progress quiz with same content
-        return { 
-          success: true, 
-          data: existingResult.data,
-          existingSession: existingResult.data
-        };
-      }
-    }
-
     const { data, error } = await supabase
       .from('quiz_sessions')
       .insert({
         user_id: user.id,
-        title,
+        title: title || null,
+        category: category || null,
         state,
         is_completed: false,
         quiz_content_hash: contentHash || null,

@@ -4,8 +4,9 @@ import {
   Calendar, Clock, CheckCircle2, Circle, 
   Maximize2, Minimize2, MapPin, Flag, 
   ArrowRight, Play, Pause, RotateCcw,
-  ChevronDown, ChevronRight, Expand
+  ChevronDown, ChevronRight, Expand, ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface TimelineEvent {
   id: string;
@@ -38,6 +39,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
   const [collapsedPeriods, setCollapsedPeriods] = useState<Set<string>>(
     new Set(timeline.periods.map(period => period.period))
   );
+  const { open: openCanvas } = useCanvas();
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -167,13 +169,26 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
 
                   <div className="flex items-center gap-2">
                     {!isFullScreen && (
-                      <button
-                        onClick={() => setIsFullScreen(true)}
-                        className="p-1.5 rounded-md bg-blue-500 dark:bg-blue-600 text-white shadow-sm hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-md transform hover:scale-105 transition-all flex-shrink-0"
-                        title="Expand to full screen"
-                      >
-                        <Expand className="h-3 w-3" />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => openCanvas({
+                            type: 'timeline',
+                            data: timeline,
+                            metadata: { title: timeline.title }
+                          })}
+                          className="p-1.5 rounded-md bg-purple-500 dark:bg-purple-600 text-white shadow-sm hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-md transform hover:scale-105 transition-all flex-shrink-0"
+                          title="Open in side panel"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => setIsFullScreen(true)}
+                          className="p-1.5 rounded-md bg-blue-500 dark:bg-blue-600 text-white shadow-sm hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-md transform hover:scale-105 transition-all flex-shrink-0"
+                          title="Expand to full screen"
+                        >
+                          <Expand className="h-3 w-3" />
+                        </button>
+                      </>
                     )}
                     {isFullScreen && (
                       <button

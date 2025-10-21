@@ -1,135 +1,4 @@
 import React, { RefObject, useRef } from "react";
-
-// Global scroll blocking system
-let isScrollBlocked = false;
-let blockedScrollPositions: { element: Element | Window, scrollTop: number, scrollLeft: number }[] = [];
-
-const blockAllScrolling = () => {
-    if (isScrollBlocked) return;
-    
-    isScrollBlocked = true;
-    blockedScrollPositions = [];
-    
-    // Save current scroll positions
-    blockedScrollPositions.push({
-        element: window,
-        scrollTop: window.pageYOffset || document.documentElement.scrollTop,
-        scrollLeft: window.pageXOffset || document.documentElement.scrollLeft
-    });
-    
-    // Find and save all scrollable containers
-    document.querySelectorAll('*').forEach((element) => {
-        const computedStyle = window.getComputedStyle(element);
-        const overflowY = computedStyle.overflowY;
-        const overflowX = computedStyle.overflowX;
-        
-        if ((overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') && 
-            (element.scrollTop > 0 || element.scrollLeft > 0)) {
-            blockedScrollPositions.push({
-                element,
-                scrollTop: element.scrollTop,
-                scrollLeft: element.scrollLeft
-            });
-        }
-    });
-    
-    // Add scroll event listeners to prevent scrolling
-    const preventScroll = (e: Event) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        
-        // Restore blocked positions
-        blockedScrollPositions.forEach(({ element, scrollTop, scrollLeft }) => {
-            if (element === window) {
-                window.scrollTo(scrollLeft, scrollTop);
-            } else {
-                (element as HTMLElement).scrollTop = scrollTop;
-                (element as HTMLElement).scrollLeft = scrollLeft;
-            }
-        });
-        
-        return false;
-    };
-    
-    // Block all scroll events on all elements
-    window.addEventListener('scroll', preventScroll, { passive: false, capture: true });
-    document.addEventListener('scroll', preventScroll, { passive: false, capture: true });
-    
-    // Store the event listener for cleanup
-    (window as any)._preventScrollListener = preventScroll;
-};
-
-const unblockAllScrolling = () => {
-    if (!isScrollBlocked) return;
-    
-    isScrollBlocked = false;
-    
-    // Remove scroll event listeners
-    const preventScroll = (window as any)._preventScrollListener;
-    if (preventScroll) {
-        window.removeEventListener('scroll', preventScroll, { capture: true });
-        document.removeEventListener('scroll', preventScroll, { capture: true });
-        delete (window as any)._preventScrollListener;
-    }
-    
-    blockedScrollPositions = [];
-};
-
-// Utility function to find all scrollable parent containers and preserve their scroll positions
-const preserveAllScrollPositions = (element: HTMLElement, callback: () => void) => {
-    const scrollableParents: Array<{ element: Element | Window, scrollTop: number, scrollLeft: number }> = [];
-    
-    // Save window scroll position
-    scrollableParents.push({
-        element: window,
-        scrollTop: window.pageYOffset || document.documentElement.scrollTop,
-        scrollLeft: window.pageXOffset || document.documentElement.scrollLeft
-    });
-    
-    // Find all scrollable parent elements
-    let parent = element.parentElement;
-    while (parent) {
-        const computedStyle = window.getComputedStyle(parent);
-        const overflowY = computedStyle.overflowY;
-        const overflowX = computedStyle.overflowX;
-        
-        if (overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') {
-            scrollableParents.push({
-                element: parent,
-                scrollTop: parent.scrollTop,
-                scrollLeft: parent.scrollLeft
-            });
-        }
-        parent = parent.parentElement;
-    }
-    
-    // Execute the callback (textarea resize)
-    callback();
-    
-    // Restore all scroll positions using requestAnimationFrame
-    const restoreScrollPositions = () => {
-        scrollableParents.forEach(({ element, scrollTop, scrollLeft }) => {
-            if (element === window) {
-                window.scrollTo(scrollLeft, scrollTop);
-            } else {
-                (element as HTMLElement).scrollTop = scrollTop;
-                (element as HTMLElement).scrollLeft = scrollLeft;
-            }
-        });
-    };
-    
-    // Use multiple requestAnimationFrame calls to ensure restoration happens after all browser adjustments
-    requestAnimationFrame(() => {
-        restoreScrollPositions();
-        requestAnimationFrame(() => {
-            restoreScrollPositions();
-            requestAnimationFrame(() => {
-                restoreScrollPositions();
-            });
-        });
-    });
-};
 import { Plus, X, Edit2, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -329,35 +198,9 @@ export function PromptMessages({
                                                 value={message.content}
                                                 onChange={(e) => {
                                                     onMessageContentChange(index, e.target.value);
-                                                    // Block ALL scrolling during textarea resize
-                                                    blockAllScrolling();
+                                                    // Auto-resize textarea
                                                     e.target.style.height = "auto";
                                                     e.target.style.height = e.target.scrollHeight + "px";
-                                                    // Keep scroll blocked for a moment to prevent any delayed scrolling
-                                                    setTimeout(() => {
-                                                        unblockAllScrolling();
-                                                    }, 100);
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    // Capture scroll position before any key action, especially for delete key
-                                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                                                    
-                                                    // Store scroll position for restoration after key processing
-                                                    (e.target as any)._savedScrollTop = scrollTop;
-                                                    (e.target as any)._savedScrollLeft = scrollLeft;
-                                                }}
-                                                onKeyUp={(e) => {
-                                                    // Restore scroll position after key processing, especially important for delete key
-                                                    const savedScrollTop = (e.target as any)._savedScrollTop;
-                                                    const savedScrollLeft = (e.target as any)._savedScrollLeft;
-                                                    
-                                                    if (savedScrollTop !== undefined && savedScrollLeft !== undefined) {
-                                                        // Use comprehensive scroll restoration for all parent containers
-                                                        preserveAllScrollPositions(e.target as HTMLElement, () => {
-                                                            // No resize needed here, just ensuring scroll positions are maintained
-                                                        });
-                                                    }
                                                 }}
                                                 onSelect={(e) => {
                                                     // Track cursor position
@@ -372,8 +215,7 @@ export function PromptMessages({
                                                     contextMenuOpenRef.current = true;
                                                 }}
                                                 onFocus={(e) => {
-                                                    // Block ALL scrolling during focus and initial resize
-                                                    blockAllScrolling();
+                                                    // Auto-resize textarea
                                                     e.target.style.height = "auto";
                                                     e.target.style.height = e.target.scrollHeight + "px";
                                                     
@@ -386,19 +228,11 @@ export function PromptMessages({
                                                         ...cursorPositions,
                                                         [index]: length,
                                                     });
-                                                    
-                                                    // Keep scroll blocked for a moment to prevent focus-related scrolling
-                                                    setTimeout(() => {
-                                                        unblockAllScrolling();
-                                                    }, 200);
                                                 }}
                                                 placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
                                                 className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden leading-normal"
                                                 autoFocus
                                                 onBlur={() => {
-                                                    // Ensure scroll blocking is disabled when leaving textarea
-                                                    unblockAllScrolling();
-                                                    
                                                     // Don't close edit mode if context menu is open
                                                     if (!contextMenuOpenRef.current) {
                                                         onEditingMessageIndexChange(null);

@@ -6,6 +6,7 @@ import {
   Bug, Wrench, Zap, Clock, Star, Copy, Check, ArrowRight,
   AlertCircle, Info, Target, BookOpen, Users, MessageSquare
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface TroubleshootingStep {
   id: string;
@@ -56,6 +57,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [copiedCommands, setCopiedCommands] = useState<Set<string>>(new Set());
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+  const { open: openCanvas } = useCanvas();
 
   // Filter issues based on search and severity
   const filteredIssues = useMemo(() => {
@@ -241,13 +243,26 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
                   </div>
 
                   {!isFullScreen && (
-                    <button
-                      onClick={() => setIsFullScreen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 dark:bg-red-600 text-white text-sm font-semibold shadow-md hover:bg-red-600 dark:hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                      <span>Debug Mode</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openCanvas({
+                          type: 'troubleshooting',
+                          data: troubleshooting,
+                          metadata: { title: troubleshooting.title }
+                        })}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span>Side Panel</span>
+                      </button>
+                      <button
+                        onClick={() => setIsFullScreen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 dark:bg-red-600 text-white text-sm font-semibold shadow-md hover:bg-red-600 dark:hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                        <span>Debug Mode</span>
+                      </button>
+                    </div>
                   )}
                 </div>
 

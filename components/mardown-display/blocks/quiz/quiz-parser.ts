@@ -1,33 +1,21 @@
 /**
  * Quiz Parser and Hash Utilities
- * Handles parsing both old and new quiz formats
+ * Handles parsing quiz JSON with content hashing
  */
 
 import type { OriginalQuestion } from './quiz-types';
 
 export type QuizData = {
   questions: OriginalQuestion[];
-  title?: string;
-  quizId?: string;
+  title: string;
   category?: string;
   contentHash: string;
 };
 
 export type RawQuizJSON = {
-  // New format fields
-  quizId?: string;
-  title?: string;
+  quiz_title: string;
   category?: string;
-  
-  // Question arrays (new format can have both)
-  multiple_choice?: Array<{
-    id: number;
-    question: string;
-    options: string[];
-    correctAnswer: number;
-    explanation: string;
-  }>;
-  questions?: Array<{
+  multiple_choice: Array<{
     id: number;
     question: string;
     options: string[];
@@ -62,37 +50,21 @@ export async function generateQuizHash(questions: OriginalQuestion[]): Promise<s
 }
 
 /**
- * Parse quiz JSON (supports both old and new formats)
+ * Parse quiz JSON
  */
 export async function parseQuizJSON(jsonData: RawQuizJSON): Promise<QuizData> {
-  // Collect all questions from both possible arrays
-  const allQuestions: OriginalQuestion[] = [];
-  
-  // Add questions from multiple_choice array (old and new format)
-  if (Array.isArray(jsonData.multiple_choice)) {
-    allQuestions.push(...jsonData.multiple_choice);
-  }
-  
-  // Add questions from questions array (new format)
-  if (Array.isArray(jsonData.questions)) {
-    allQuestions.push(...jsonData.questions);
-  }
-  
-  // Remove duplicates by ID (in case same question appears in both arrays)
-  const uniqueQuestions = Array.from(
-    new Map(allQuestions.map(q => [q.id, q])).values()
-  );
+  // Get questions from multiple_choice array
+  const questions = [...jsonData.multiple_choice];
   
   // Sort by ID for consistency
-  uniqueQuestions.sort((a, b) => a.id - b.id);
+  questions.sort((a, b) => a.id - b.id);
   
   // Generate content hash
-  const contentHash = await generateQuizHash(uniqueQuestions);
+  const contentHash = await generateQuizHash(questions);
   
   return {
-    questions: uniqueQuestions,
-    title: jsonData.title,
-    quizId: jsonData.quizId,
+    questions,
+    title: jsonData.quiz_title,
     category: jsonData.category,
     contentHash
   };
@@ -121,20 +93,22 @@ export function isValidQuizData(data: any): data is RawQuizJSON {
     return false;
   }
   
-  // Must have at least one question array
-  const hasMultipleChoice = Array.isArray(data.multiple_choice) && data.multiple_choice.length > 0;
-  const hasQuestions = Array.isArray(data.questions) && data.questions.length > 0;
+  // Must have quiz_title
+  if (!data.quiz_title || typeof data.quiz_title !== 'string') {
+    return false;
+  }
   
-  if (!hasMultipleChoice && !hasQuestions) {
+  // Must have multiple_choice array with questions
+  if (!Array.isArray(data.multiple_choice) || data.multiple_choice.length === 0) {
     return false;
   }
   
   // Validate question structure
-  const questions = [...(data.multiple_choice || []), ...(data.questions || [])];
-  return questions.every(q => 
+  return data.multiple_choice.every((q: any) => 
     typeof q.id === 'number' &&
     typeof q.question === 'string' &&
     Array.isArray(q.options) &&
+    q.options.length > 0 &&
     typeof q.correctAnswer === 'number' &&
     typeof q.explanation === 'string'
   );

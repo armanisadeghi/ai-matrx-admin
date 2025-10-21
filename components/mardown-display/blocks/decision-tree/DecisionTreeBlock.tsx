@@ -4,8 +4,9 @@ import {
   GitBranch, ArrowRight, ArrowLeft, CheckCircle2, XCircle, 
   Maximize2, Minimize2, RotateCcw, Home, HelpCircle,
   Target, Lightbulb, AlertCircle, Info, Zap, Star,
-  ChevronRight, ChevronDown, PlayCircle, StopCircle, Clock
+  ChevronRight, ChevronDown, PlayCircle, StopCircle, Clock, ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface DecisionNode {
   id: string;
@@ -44,6 +45,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
   const [completedPaths, setCompletedPaths] = useState<Set<string>>(new Set());
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
   const [showFullTree, setShowFullTree] = useState(false);
+  const { open: openCanvas } = useCanvas();
 
   // Calculate tree statistics
   const treeStats = useMemo(() => {
@@ -344,13 +346,26 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({ decisionTree }) =
 
                   <div className="flex gap-2">
                     {!isFullScreen && (
-                      <button
-                        onClick={() => setIsFullScreen(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-500 dark:bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-600 dark:hover:bg-indigo-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                        <span>Focus Mode</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => openCanvas({
+                            type: 'decision-tree',
+                            data: decisionTree,
+                            metadata: { title: decisionTree.title }
+                          })}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          <span>Side Panel</span>
+                        </button>
+                        <button
+                          onClick={() => setIsFullScreen(true)}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-500 dark:bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-600 dark:hover:bg-indigo-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                          <span>Focus Mode</span>
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

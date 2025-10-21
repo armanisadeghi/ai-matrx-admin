@@ -6,6 +6,7 @@ import {
   Award, Bookmark, Eye, Play, Download, Globe, Code, 
   Users, Zap, Target, TrendingUp, Heart
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface ResourceItem {
   id: string;
@@ -46,6 +47,7 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['category-0'])); // First category expanded by default
+  const { open: openCanvas } = useCanvas();
 
   // Get all unique types and difficulties
   const allTypes = useMemo(() => {
@@ -227,13 +229,26 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
                   </div>
 
                   {!isFullScreen && (
-                    <button
-                      onClick={() => setIsFullScreen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-violet-500 dark:bg-violet-600 text-white text-sm font-semibold shadow-md hover:bg-violet-600 dark:hover:bg-violet-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                      <span>Library View</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openCanvas({
+                          type: 'resources',
+                          data: collection,
+                          metadata: { title: collection.title }
+                        })}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span>Side Panel</span>
+                      </button>
+                      <button
+                        onClick={() => setIsFullScreen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-violet-500 dark:bg-violet-600 text-white text-sm font-semibold shadow-md hover:bg-violet-600 dark:hover:bg-violet-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                        <span>Library View</span>
+                      </button>
+                    </div>
                   )}
                 </div>
 

@@ -23,7 +23,6 @@ interface CodeBlockHeaderProps {
     isMobile: boolean;
     isCompleteHTML?: boolean;
     handleViewHTML?: () => void;
-    isViewingHTML?: boolean;
     isCreatingPage?: boolean;
 }
 
@@ -45,7 +44,6 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
     isMobile,
     isCompleteHTML = false,
     handleViewHTML,
-    isViewingHTML = false,
     isCreatingPage = false,
 }) => {
     // Determine if collapse functionality should be available
@@ -88,8 +86,8 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
                             e.stopPropagation();
                             handleViewHTML();
                         }}
-                        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
-                        title={isViewingHTML ? "Show Code" : "View HTML Page"}
+                        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 text-purple-700 dark:text-purple-300"
+                        title="Open HTML Preview in Side Panel"
                         disabled={isCreatingPage}
                     >
                         {isCreatingPage ? (
@@ -97,15 +95,10 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
                                 <Loader2 size={14} className="animate-spin" />
                                 <span>Creating...</span>
                             </>
-                        ) : isViewingHTML ? (
-                            <>
-                                <Eye size={14} />
-                                <span>Code</span>
-                            </>
                         ) : (
                             <>
                                 <Globe size={14} />
-                                <span>View</span>
+                                <span>Preview</span>
                             </>
                         )}
                     </button>

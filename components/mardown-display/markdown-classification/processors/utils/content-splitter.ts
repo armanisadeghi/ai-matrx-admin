@@ -546,13 +546,10 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     const isQuizJson = (jsonContent: string): { isQuiz: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
         
-        // Fast check: Must start with exact pattern for quiz
-        // Support both old format (multiple_choice first) and new format (quizId first)
-        const hasOldFormat = trimmed.startsWith('{\n  "multiple_choice"') || trimmed.startsWith('{"multiple_choice"');
-        const hasNewFormat = trimmed.startsWith('{\n  "quizId"') || trimmed.startsWith('{"quizId"');
+        // Fast check: Must start with quiz_title
+        const hasQuizFormat = trimmed.startsWith('{\n  "quiz_title"') || trimmed.startsWith('{"quiz_title"');
         
-        // This prevents false positives and doesn't delay normal JSON display
-        if (!hasOldFormat && !hasNewFormat) {
+        if (!hasQuizFormat) {
             return { isQuiz: false, isComplete: false };
         }
         
@@ -564,15 +561,13 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             try {
                 const parsed = JSON.parse(trimmed);
                 
-                // Old format: { multiple_choice: [...] }
-                const hasMultipleChoice = parsed && Array.isArray(parsed.multiple_choice);
+                // Must have quiz_title and multiple_choice array
+                const isValidQuiz = parsed && 
+                    parsed.quiz_title && 
+                    Array.isArray(parsed.multiple_choice) &&
+                    parsed.multiple_choice.length > 0;
                 
-                // New format: { quizId: "...", title: "...", multiple_choice: [...] or questions: [...] }
-                const hasNewStructure = parsed && 
-                    parsed.quizId && 
-                    (Array.isArray(parsed.multiple_choice) || Array.isArray(parsed.questions));
-                
-                return { isQuiz: hasMultipleChoice || hasNewStructure, isComplete: true };
+                return { isQuiz: isValidQuiz, isComplete: true };
             } catch (error) {
                 // Parse failed, not a valid quiz
                 return { isQuiz: false, isComplete: false };

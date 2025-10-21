@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp, Copy, Edit, Check, X } from "lucide-react";
+import { Copy, Edit, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PromptUserMessageProps {
@@ -10,24 +10,14 @@ interface PromptUserMessageProps {
 }
 
 export function PromptUserMessage({ content, messageIndex, onContentChange }: PromptUserMessageProps) {
-    const [isHovered, setIsHovered] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(content);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const [isCopied, setIsCopied] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    const canCollapse = content.length > 300;
-
-    // Auto-collapse long messages on mount
-    useEffect(() => {
-        if (content.length > 300) {
-            setIsCollapsed(true);
-        }
-    }, [content.length]);
 
     // Reset edit content when message changes
     useEffect(() => {
@@ -57,6 +47,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
         e.stopPropagation();
         setEditContent(content);
         setIsEditing(true);
+        setIsCollapsed(false); // Expand when editing
     };
 
     const handleSave = () => {
@@ -80,25 +71,30 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
         setHasUnsavedChanges(newContent !== content);
     };
 
-    const toggleCollapse = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (canCollapse) {
+    const toggleCollapse = () => {
+        if (!isEditing) {
             setIsCollapsed(!isCollapsed);
         }
     };
 
+    const handleHeaderClick = () => {
+        if (!isEditing) {
+            toggleCollapse();
+        }
+    };
+
     return (
-        <div
-            className="bg-blue-100 dark:bg-blue-900/30 ml-12 rounded-lg relative"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            {/* Header with controls */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-1">
-                <div className="text-xs font-semibold text-gray-600 dark:text-gray-400">
-                    User
-                </div>
-                {(isHovered || isEditing) && (
+        <div className="ml-12">
+            {/* Unified container with border and background */}
+            <div className={`bg-zinc-100 dark:bg-zinc-850 border border-zinc-300 dark:border-zinc-700 ${isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
+                {/* Thin delicate header */}
+                <div 
+                    className="flex items-center justify-between px-3 py-2 cursor-pointer"
+                    onClick={handleHeaderClick}
+                >
+                    <div className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                        User
+                    </div>
                     <div className="flex items-center gap-1">
                         {isEditing ? (
                             <>
@@ -143,62 +139,45 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                                         <Edit className="w-3.5 h-3.5" />
                                     </Button>
                                 )}
-                                {canCollapse && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={toggleCollapse}
-                                        className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
-                                        title={isCollapsed ? "Expand" : "Collapse"}
-                                    >
-                                        {isCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
-                                    </Button>
-                                )}
                             </>
                         )}
                     </div>
-                )}
-            </div>
+                </div>
 
-            {/* Content */}
-            <div className="px-4 pb-3">
-                {isEditing ? (
-                    <div className="space-y-2">
-                        <textarea
-                            ref={textareaRef}
-                            value={editContent}
-                            onChange={handleTextareaChange}
-                            className="w-full px-3 py-2 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 scrollbar-thin"
-                            rows={5}
-                        />
-                        {hasUnsavedChanges && (
-                            <div className="text-xs text-amber-600 dark:text-amber-400">
-                                Unsaved changes
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="relative">
-                        <div
-                            ref={contentRef}
-                            className={`text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${
-                                isCollapsed ? "max-h-20" : ""
-                            }`}
-                        >
-                            {content}
-                        </div>
-                        {isCollapsed && canCollapse && (
-                            <div
-                                className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-blue-100 dark:from-blue-900/30 to-transparent cursor-pointer rounded"
-                                onClick={toggleCollapse}
-                            >
-                                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 text-gray-500 dark:text-gray-400 text-xs">
-                                    Click to expand
+                {/* Content */}
+                <div className="px-3 pb-3 relative">
+                    {isEditing ? (
+                        <div className="space-y-2">
+                            <textarea
+                                ref={textareaRef}
+                                value={editContent}
+                                onChange={handleTextareaChange}
+                                className="w-full text-sm text-gray-800 dark:text-gray-200 bg-zinc-50 dark:bg-zinc-900 border-none outline-none focus:outline-none focus:ring-0 resize-none overflow-hidden"
+                            />
+                            {hasUnsavedChanges && (
+                                <div className="text-xs text-amber-600 dark:text-amber-400">
+                                    Unsaved changes
                                 </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="relative">
+                            <div
+                                ref={contentRef}
+                                className={`text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${
+                                    isCollapsed ? "max-h-16" : ""
+                                }`}
+                            >
+                                {content}
                             </div>
-                        )}
-                    </div>
-                )}
+                            {isCollapsed && (
+                                <div
+                                    className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-zinc-100 dark:from-zinc-850 to-transparent pointer-events-none"
+                                />
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

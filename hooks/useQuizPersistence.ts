@@ -4,6 +4,7 @@ import {
   createQuizSession,
   updateQuizSession,
   getQuizSession,
+  findExistingQuizByHash,
   type QuizSession
 } from '@/actions/quiz.actions';
 
@@ -11,8 +12,10 @@ export type QuizPersistenceOptions = {
   autoSave?: boolean;
   autoSaveInterval?: number; // milliseconds
   sessionId?: string; // If provided, loads existing session
+  title?: string; // Quiz title
+  category?: string; // Quiz category
   contentHash?: string; // Quiz content hash for duplicate detection
-  metadata?: Record<string, any>; // Quiz metadata (title, category, etc)
+  metadata?: Record<string, any>; // Additional custom metadata (empty for now, reserved for future use)
 };
 
 export function useQuizPersistence(
@@ -23,6 +26,8 @@ export function useQuizPersistence(
     autoSave = true,
     autoSaveInterval = 10000, // 10 seconds default
     sessionId: initialSessionId,
+    title,
+    category,
     contentHash,
     metadata
   } = options;
@@ -33,6 +38,7 @@ export function useQuizPersistence(
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!!initialSessionId);
   const [loadedSession, setLoadedSession] = useState<QuizSession | null>(null);
+  const [hasCheckedDuplicate, setHasCheckedDuplicate] = useState(false);
 
   const lastSaveAttempt = useRef<number>(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,7 +46,7 @@ export function useQuizPersistence(
   /**
    * Save the current quiz state to database
    */
-  const saveQuizState = useCallback(async (state: QuizState, title?: string) => {
+  const saveQuizState = useCallback(async (state: QuizState) => {
     // Prevent rapid-fire saves
     const now = Date.now();
     if (now - lastSaveAttempt.current < 1000) {
@@ -61,19 +67,14 @@ export function useQuizPersistence(
           setSaveError(result.error || 'Failed to save quiz');
         }
       } else {
-        // Create new session (with duplicate detection via content hash)
-        const result = await createQuizSession(state, title, contentHash, metadata);
+        // Create new session (duplicate check already done at initialization)
+        const result = await createQuizSession(state, title, category, contentHash, metadata);
         if (result.success && result.data) {
           setSessionId(result.data.id);
           setLastSaved(new Date());
           
           // Update the quizId in the state to match the database ID
           state.quizId = result.data.id;
-          
-          // If this was an existing session, load its state
-          if (result.existingSession) {
-            setLoadedSession(result.existingSession);
-          }
         } else {
           setSaveError(result.error || 'Failed to create quiz session');
         }
@@ -84,7 +85,7 @@ export function useQuizPersistence(
     } finally {
       setIsSaving(false);
     }
-  }, [sessionId, contentHash, metadata]);
+  }, [sessionId, title, category, contentHash, metadata]);
 
   /**
    * Load a quiz session from database
@@ -151,6 +152,36 @@ export function useQuizPersistence(
       saveQuizState(quizState);
     }
   }, [quizState.results, saveQuizState]);
+
+  /**
+   * Check for duplicate quiz on initialization (BEFORE user starts answering)
+   */
+  useEffect(() => {
+    const checkForDuplicate = async () => {
+      // Only check once, and only if no session ID provided
+      if (hasCheckedDuplicate || initialSessionId || !contentHash) {
+        return;
+      }
+
+      setHasCheckedDuplicate(true);
+      setIsLoading(true);
+
+      try {
+        const result = await findExistingQuizByHash(contentHash);
+        if (result.success && result.data) {
+          // Found existing session - load it immediately
+          setLoadedSession(result.data);
+          setSessionId(result.data.id);
+        }
+      } catch (error) {
+        console.error('Error checking for duplicate:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkForDuplicate();
+  }, [contentHash, initialSessionId, hasCheckedDuplicate]);
 
   /**
    * Load initial session if provided

@@ -4,8 +4,10 @@ import {
   BarChart3, CheckCircle2, Circle, Target, Trophy, Flame, Calendar,
   Maximize2, Minimize2, Play, Pause, RotateCcw, TrendingUp, Award,
   Zap, Clock, Star, ChevronRight, ChevronDown, Plus, Minus,
-  BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles
+  BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles,
+  ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface ProgressItem {
   id: string;
@@ -43,6 +45,7 @@ interface ProgressTrackerBlockProps {
 
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const { open: openCanvas } = useCanvas();
   
   // Initialize completedItems with items that are already marked as completed in the tracker data
   const [completedItems, setCompletedItems] = useState<Set<string>>(() => {
@@ -261,13 +264,26 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                   </div>
 
                   {!isFullScreen && (
-                    <button
-                      onClick={() => setIsFullScreen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                      <span>Focus Mode</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openCanvas({
+                          type: 'progress',
+                          data: tracker,
+                          metadata: { title: tracker.title }
+                        })}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span>Side Panel</span>
+                      </button>
+                      <button
+                        onClick={() => setIsFullScreen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                        <span>Focus Mode</span>
+                      </button>
+                    </div>
                   )}
                 </div>
 

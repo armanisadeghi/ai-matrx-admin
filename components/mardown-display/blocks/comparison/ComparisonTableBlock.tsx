@@ -4,8 +4,9 @@ import {
   Table, ArrowUpDown, ArrowUp, ArrowDown, Star, DollarSign, Check, X,
   Maximize2, Minimize2, Search, Filter, Trophy, Medal, Award,
   TrendingUp, TrendingDown, Minus, Plus, Eye, EyeOff, Sparkles,
-  Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle
+  Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle, ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface ComparisonCriterion {
   name: string;
@@ -36,6 +37,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
   const [showScores, setShowScores] = useState(false);
+  const { open: openCanvas } = useCanvas();
 
   // Calculate scores for each item based on criteria
   const itemScores = useMemo(() => {
@@ -340,13 +342,26 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
 
                   <div className="flex gap-2">
                     {!isFullScreen && (
-                      <button
-                        onClick={() => setIsFullScreen(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 dark:bg-emerald-600 text-white text-sm font-semibold shadow-md hover:bg-emerald-600 dark:hover:bg-emerald-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                        <span>Expand</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => openCanvas({
+                            type: 'comparison',
+                            data: comparison,
+                            metadata: { title: comparison.title }
+                          })}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          <span>Side Panel</span>
+                        </button>
+                        <button
+                          onClick={() => setIsFullScreen(true)}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 dark:bg-emerald-600 text-white text-sm font-semibold shadow-md hover:bg-emerald-600 dark:hover:bg-emerald-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                          <span>Expand</span>
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

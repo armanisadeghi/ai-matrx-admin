@@ -17,7 +17,7 @@ CHECK (quiz_content_hash IS NULL OR quiz_content_hash ~ '^[a-f0-9]{64}$');
 
 -- Add comment
 COMMENT ON COLUMN quiz_sessions.quiz_content_hash IS 'SHA-256 hash of quiz questions content for duplicate detection';
-COMMENT ON COLUMN quiz_sessions.quiz_metadata IS 'Quiz metadata like title, category, quizId from AI generation';
+COMMENT ON COLUMN quiz_sessions.quiz_metadata IS 'Additional custom metadata (title/category use dedicated columns)';
 
 -- Optional: Add unique constraint if you want to prevent duplicate quiz sessions per user
 -- Uncomment if you want users to have only one session per unique quiz

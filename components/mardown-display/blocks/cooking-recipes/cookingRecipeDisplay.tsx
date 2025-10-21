@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { 
   ChefHat, Clock, Users, CheckCircle2, Circle, 
   Maximize2, Minimize2, Timer, Flame, UtensilsCrossed,
-  AlertCircle, Sparkles, Plus, Minus
+  AlertCircle, Sparkles, Plus, Minus, ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface Ingredient {
   amount: string;
@@ -36,6 +37,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [servingMultiplier, setServingMultiplier] = useState(1);
+  const { open: openCanvas } = useCanvas();
 
   // Calculate progress
   const ingredientProgress = useMemo(() => 
@@ -135,13 +137,26 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
 
                   <div className="flex items-center gap-2">
                     {!isFullScreen && (
-                      <button
-                        onClick={() => setIsFullScreen(true)}
-                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500 dark:bg-orange-600 text-white text-xs font-semibold shadow-sm hover:bg-orange-600 dark:hover:bg-orange-700 hover:shadow-md transform hover:scale-105 transition-all"
-                      >
-                        <Maximize2 className="h-3 w-3" />
-                        <span>Cook Mode</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => openCanvas({
+                            type: 'recipe',
+                            data: recipe,
+                            metadata: { title: recipe.title }
+                          })}
+                          className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-xs font-semibold shadow-sm hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-md transform hover:scale-105 transition-all"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Side Panel</span>
+                        </button>
+                        <button
+                          onClick={() => setIsFullScreen(true)}
+                          className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500 dark:bg-orange-600 text-white text-xs font-semibold shadow-sm hover:bg-orange-600 dark:hover:bg-orange-700 hover:shadow-md transform hover:scale-105 transition-all"
+                        >
+                          <Maximize2 className="h-3 w-3" />
+                          <span>Cook Mode</span>
+                        </button>
+                      </>
                     )}
                     {isFullScreen && (
                       <button

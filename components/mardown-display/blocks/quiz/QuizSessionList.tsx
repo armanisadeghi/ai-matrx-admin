@@ -95,15 +95,24 @@ export const QuizSessionList: React.FC<QuizSessionListProps> = ({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  {session.is_completed ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  ) : (
-                    <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div className="mb-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    {session.is_completed ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    )}
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                      {session.title || `Quiz ${session.id.substring(0, 8)}`}
+                    </h3>
+                  </div>
+                  {session.category && (
+                    <div className="ml-7">
+                      <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
+                        {session.category}
+                      </span>
+                    </div>
                   )}
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-                    {session.title || `Quiz ${session.id.substring(0, 8)}`}
-                  </h3>
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-2">

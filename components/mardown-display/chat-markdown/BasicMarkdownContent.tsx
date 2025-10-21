@@ -6,7 +6,7 @@ import remarkBreaks from "remark-breaks";
 import { cn } from "@/styles/themes/utils";
 import { PencilIcon } from "lucide-react";
 import { useState, useMemo } from "react";
-import { LinkComponent } from "./parts/LinkComponent";
+import { LinkComponent } from "@/components/mardown-display/blocks/links/LinkComponent";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });

@@ -1,66 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-
-// Utility function to find all scrollable parent containers and preserve their scroll positions
-const preserveAllScrollPositions = (element: HTMLElement, callback: () => void) => {
-    const scrollableParents: Array<{ element: Element | Window, scrollTop: number, scrollLeft: number }> = [];
-    
-    // Save window scroll position
-    scrollableParents.push({
-        element: window,
-        scrollTop: window.pageYOffset || document.documentElement.scrollTop,
-        scrollLeft: window.pageXOffset || document.documentElement.scrollLeft
-    });
-    
-    // Find all scrollable parent elements
-    let parent = element.parentElement;
-    while (parent) {
-        const computedStyle = window.getComputedStyle(parent);
-        const overflowY = computedStyle.overflowY;
-        const overflowX = computedStyle.overflowX;
-        
-        if (overflowY === 'auto' || overflowY === 'scroll' || overflowX === 'auto' || overflowX === 'scroll') {
-            scrollableParents.push({
-                element: parent,
-                scrollTop: parent.scrollTop,
-                scrollLeft: parent.scrollLeft
-            });
-        }
-        parent = parent.parentElement;
-    }
-    
-    // Execute the callback (textarea resize)
-    callback();
-    
-    // Restore all scroll positions using requestAnimationFrame
-    const restoreScrollPositions = () => {
-        scrollableParents.forEach(({ element, scrollTop, scrollLeft }) => {
-            if (element === window) {
-                window.scrollTo(scrollLeft, scrollTop);
-            } else {
-                (element as HTMLElement).scrollTop = scrollTop;
-                (element as HTMLElement).scrollLeft = scrollLeft;
-            }
-        });
-    };
-    
-    // Use multiple requestAnimationFrame calls to ensure restoration happens after all browser adjustments
-    requestAnimationFrame(() => {
-        restoreScrollPositions();
-        requestAnimationFrame(() => {
-            restoreScrollPositions();
-            requestAnimationFrame(() => {
-                restoreScrollPositions();
-            });
-        });
-    });
-};
 import { usePromptsWithFetch, PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { useRouter, usePathname } from "next/navigation";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
+import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { useModelControls, getModelDefaults } from "../hooks/useModelControls";
 import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
 import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
@@ -434,11 +380,9 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             setTimeout(() => {
                 textarea.focus();
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
-                // Prevent scrolling in all parent containers during auto-resize
-                preserveAllScrollPositions(textarea, () => {
-                    textarea.style.height = "auto";
-                    textarea.style.height = textarea.scrollHeight + "px";
-                });
+                // Auto-resize textarea
+                textarea.style.height = "auto";
+                textarea.style.height = textarea.scrollHeight + "px";
             }, 0);
         }
     };
@@ -466,11 +410,9 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             setTimeout(() => {
                 textarea.focus();
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
-                // Prevent scrolling in all parent containers during auto-resize
-                preserveAllScrollPositions(textarea, () => {
-                    textarea.style.height = "auto";
-                    textarea.style.height = textarea.scrollHeight + "px";
-                });
+                // Auto-resize textarea
+                textarea.style.height = "auto";
+                textarea.style.height = textarea.scrollHeight + "px";
             }, 0);
         }
     };
@@ -716,24 +658,26 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     };
 
     return (
-        <div className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-textured overflow-hidden">
-            {/* Render prompt controls in main header */}
-            <PromptHeader
-                promptName={promptName}
-                onPromptNameChange={(value) => {
-                    setPromptName(value);
-                    setIsDirty(true);
-                }}
-                isDirty={isDirty}
-                isSaving={isSaving}
-                onSave={handleSave}
-                onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
-                onOpenSettings={() => setIsSettingsModalOpen(true)}
-            />
-
-            {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Left Panel - Configuration */}
+        <>
+        <AdaptiveLayout
+            className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
+            mobileBreakpoint={950}
+            leftPanelMaxWidth={640}
+            header={
+                <PromptHeader
+                    promptName={promptName}
+                    onPromptNameChange={(value) => {
+                        setPromptName(value);
+                        setIsDirty(true);
+                    }}
+                    isDirty={isDirty}
+                    isSaving={isSaving}
+                    onSave={handleSave}
+                    onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
+                    onOpenSettings={() => setIsSettingsModalOpen(true)}
+                />
+            }
+            leftPanel={
                 <PromptBuilderLeftPanel
                     models={models}
                     model={model}
@@ -806,8 +750,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                         setIsFullScreenEditorOpen(true);
                     }}
                 />
-
-                {/* Right Panel - Preview & Testing */}
+            }
+            rightPanel={
                 <PromptBuilderRightPanel
                     conversationMessages={conversationMessages}
                     onClearConversation={() => {
@@ -851,56 +795,57 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                         });
                     }}
                 />
-            </div>
+            }
+        />
 
-            {/* Model Settings Dialog */}
-            <ModelSettingsDialog
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
-                modelId={model}
-                models={models}
-                settings={modelConfig}
-                onSettingsChange={setModelConfig}
-            />
+        {/* Model Settings Dialog */}
+        <ModelSettingsDialog
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            modelId={model}
+            models={models}
+            settings={modelConfig}
+            onSettingsChange={setModelConfig}
+        />
 
-            {/* Full Screen Editor */}
-            <FullScreenEditor
-                isOpen={isFullScreenEditorOpen}
-                onClose={() => {
-                    setIsFullScreenEditorOpen(false);
-                    setFullScreenEditorInitialSelection(null);
-                }}
-                developerMessage={developerMessage}
-                onDeveloperMessageChange={(value) => {
-                    setDeveloperMessage(value);
-                    setIsDirty(true);
-                }}
-                messages={messages}
-                onMessageContentChange={(index, content) => {
-                    updateMessage(index, content);
-                }}
-                onMessageRoleChange={(index, role) => {
-                    const updated = [...messages];
-                    updated[index] = { ...updated[index], role };
-                    setMessages(updated);
-                    setIsDirty(true);
-                }}
-                initialSelection={fullScreenEditorInitialSelection}
-                onAddMessage={addMessage}
-            />
+        {/* Full Screen Editor */}
+        <FullScreenEditor
+            isOpen={isFullScreenEditorOpen}
+            onClose={() => {
+                setIsFullScreenEditorOpen(false);
+                setFullScreenEditorInitialSelection(null);
+            }}
+            developerMessage={developerMessage}
+            onDeveloperMessageChange={(value) => {
+                setDeveloperMessage(value);
+                setIsDirty(true);
+            }}
+            messages={messages}
+            onMessageContentChange={(index, content) => {
+                updateMessage(index, content);
+            }}
+            onMessageRoleChange={(index, role) => {
+                const updated = [...messages];
+                updated[index] = { ...updated[index], role };
+                setMessages(updated);
+                setIsDirty(true);
+            }}
+            initialSelection={fullScreenEditorInitialSelection}
+            onAddMessage={addMessage}
+        />
 
-            {/* Settings Modal */}
-            <PromptSettingsModal
-                isOpen={isSettingsModalOpen}
-                onClose={() => setIsSettingsModalOpen(false)}
-                promptId={initialData?.id}
-                promptName={promptName}
-                promptDescription={promptDescription}
-                variableDefaults={variableDefaults}
-                onUpdate={handleSettingsUpdate}
-                onLocalStateUpdate={handleLocalStateUpdate}
-            />
-        </div>
+        {/* Settings Modal */}
+        <PromptSettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+            promptId={initialData?.id}
+            promptName={promptName}
+            promptDescription={promptDescription}
+            variableDefaults={variableDefaults}
+            onUpdate={handleSettingsUpdate}
+            onLocalStateUpdate={handleLocalStateUpdate}
+        />
+        </>
     );
 }
 

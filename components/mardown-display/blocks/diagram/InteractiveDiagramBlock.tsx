@@ -25,8 +25,9 @@ import 'reactflow/dist/style.css';
 import { 
   Network, Maximize2, Minimize2, Download, Layers, Settings, 
   CheckCircle2, XCircle, GitBranch, Users, Database, Server, Globe, 
-  Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle, Camera
+  Cpu, HardDrive, RotateCcw, Square, Circle, Sparkles, Shuffle, Camera, ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 import { getLayoutedElements, getLayoutOptionsForDiagramType, getRadialLayout, getOrgChartLayout } from './layout-utils';
 import { getOrgChartRoleIcon, formatDiagramType } from './ui-utils';
 
@@ -551,6 +552,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showMiniMap, setShowMiniMap] = useState(false);
   const [backgroundVariant, setBackgroundVariant] = useState<BackgroundVariant>(BackgroundVariant.Dots);
+  const { open: openCanvas } = useCanvas();
 
   const exportDiagramJSON = () => {
     const exportData = {
@@ -663,13 +665,26 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({ diagr
 
                 <div className="flex flex-col gap-2">
                   {!isFullScreen && (
-                    <button
-                      onClick={() => setIsFullScreen(true)}
-                      className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                      title="Fullscreen"
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => openCanvas({
+                          type: 'diagram',
+                          data: diagram,
+                          metadata: { title: diagram.title }
+                        })}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        title="Open in side panel"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setIsFullScreen(true)}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        title="Fullscreen"
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                      </button>
+                    </>
                   )}
                   {isFullScreen && (
                     <button

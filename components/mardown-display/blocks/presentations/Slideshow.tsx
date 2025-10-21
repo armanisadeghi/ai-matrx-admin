@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 import PresentationExportMenu from './PresentationExportMenu';
+import { useCanvas } from '@/hooks/useCanvas';
 
 
 // Helper to parse markdown bold syntax
@@ -27,6 +28,7 @@ const Slideshow = (presentationData: PresentationData) => {
   const [direction, setDirection] = useState('next');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const slideContainerRef = useRef<HTMLDivElement>(null);
+  const { open: openCanvas } = useCanvas();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -104,6 +106,22 @@ const Slideshow = (presentationData: PresentationData) => {
                 slideContainerRef={slideContainerRef}
                 slides={slides}
               />
+              
+              {/* Canvas Button - Only show when not in fullscreen */}
+              {!isFullScreen && (
+                <button
+                  onClick={() => openCanvas({
+                    type: 'presentation',
+                    data: presentationData,
+                    metadata: { title: slides[0]?.title || 'Presentation' }
+                  })}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white text-xs font-medium transition-all shadow-sm"
+                  title="Open in side panel"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>Side Panel</span>
+                </button>
+              )}
               
               {/* Fullscreen Toggle */}
               <button

@@ -47,6 +47,7 @@ import overlaySlice from "./slices/overlaySlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
+import canvasReducer from "./slices/canvasSlice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -137,6 +138,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         workflows: workflowSlice,
         workflowNodes: workflowNodeSlice,
+
+        canvas: canvasReducer,
 
     });
 };

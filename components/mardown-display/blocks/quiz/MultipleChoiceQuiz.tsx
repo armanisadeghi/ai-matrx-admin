@@ -1,5 +1,6 @@
   import React, { useState, useEffect, useMemo } from 'react';
-import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff } from 'lucide-react';
+import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 import type { OriginalQuestion, QuizState } from './quiz-types';
 import {
   initializeQuizState,
@@ -19,12 +20,10 @@ import { parseQuizJSON, type RawQuizJSON } from './quiz-parser';
 export type Question = OriginalQuestion;
 
 interface MultipleChoiceQuizProps {
-  questions?: Question[]; // Legacy format: array of questions
-  quizData?: RawQuizJSON; // New format: full quiz object with metadata
+  quizData: RawQuizJSON; // Quiz object: { quiz_title, category?, multiple_choice }
   sessionId?: string; // Load existing quiz session from database
   enableAutoSave?: boolean; // Enable automatic saving to database (default: true)
   autoSaveInterval?: number; // Auto-save interval in milliseconds (default: 10000)
-  quizTitle?: string; // Optional title for the quiz (overrides metadata title)
 }
 
 // Component for expandable question text
@@ -107,47 +106,35 @@ const ExplanationText: React.FC<{explanation: string, isCorrect: boolean, isFull
 };
 
 const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({ 
-  questions, 
   quizData,
   sessionId,
   enableAutoSave = true,
-  autoSaveInterval = 10000,
-  quizTitle
+  autoSaveInterval = 10000
 }) => {
+  // Canvas integration
+  const { open: openCanvas } = useCanvas();
+  
   // Parse quiz data and extract metadata
   const [parsedQuiz, setParsedQuiz] = useState<{
     questions: Question[];
-    title?: string;
-    contentHash?: string;
-    metadata?: Record<string, any>;
+    title: string;
+    category?: string;
+    contentHash: string;
   } | null>(null);
 
   useEffect(() => {
     const parseQuiz = async () => {
-      if (quizData) {
-        // New format with metadata
-        const parsed = await parseQuizJSON(quizData);
-        setParsedQuiz({
-          questions: parsed.questions,
-          title: quizTitle || parsed.title,
-          contentHash: parsed.contentHash,
-          metadata: {
-            quizId: parsed.quizId,
-            title: parsed.title,
-            category: parsed.category
-          }
-        });
-      } else if (questions) {
-        // Legacy format: just questions array
-        setParsedQuiz({
-          questions,
-          title: quizTitle
-        });
-      }
+      const parsed = await parseQuizJSON(quizData);
+      setParsedQuiz({
+        questions: parsed.questions,
+        title: parsed.title,
+        category: parsed.category,
+        contentHash: parsed.contentHash
+      });
     };
     
     parseQuiz();
-  }, [questions, quizData, quizTitle]);
+  }, [quizData]);
 
   // Initialize quiz state with randomized questions
   const [quizState, setQuizState] = useState<QuizState | null>(null);
@@ -162,7 +149,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     }
   }, [parsedQuiz, quizState]);
 
-  // Database persistence
+  // Database persistence (always call hooks)
   const {
     sessionId: dbSessionId,
     isSaving,
@@ -175,8 +162,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     autoSave: enableAutoSave && !!quizState,
     autoSaveInterval,
     sessionId,
+    title: parsedQuiz?.title || '',
+    category: parsedQuiz?.category,
     contentHash: parsedQuiz?.contentHash,
-    metadata: parsedQuiz?.metadata
+    metadata: {} // Empty for now - reserved for future custom metadata
   });
 
   // Load session data if available
@@ -189,11 +178,25 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     }
   }, [loadedSession]);
 
-  // Show loading if quiz not parsed yet
-  if (!parsedQuiz || !quizState) {
+  // Calculate results (always call this hook)
+  const results = useMemo(() => {
+    if (!quizState) return null;
+    if (showResults && !quizState.results) {
+      return calculateResults(quizState.randomizedQuestions, quizState.progress);
+    }
+    return quizState.results;
+  }, [showResults, quizState]);
+
+  // Show loading if quiz not parsed yet OR if checking for duplicates (after all hooks)
+  if (!parsedQuiz || !quizState || isLoadingSession) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {isLoadingSession ? 'Checking for saved progress...' : 'Loading quiz...'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -203,14 +206,6 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   const selectedAnswer = quizState.progress.answers[currentQuestionIndex];
   const isAnswered = selectedAnswer !== undefined;
   const isCorrect = selectedAnswer?.isCorrect ?? false;
-
-  // Calculate results
-  const results = useMemo(() => {
-    if (showResults && !quizState.results) {
-      return calculateResults(quizState.randomizedQuestions, quizState.progress);
-    }
-    return quizState.results;
-  }, [showResults, quizState]);
 
   const answeredCount = Object.keys(quizState.progress.answers).length;
   const correctCount = results?.correctCount ?? 0;
@@ -272,7 +267,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   };
 
   const handleRetry = () => {
-    const newState = initializeQuizState(questions);
+    const newState = initializeQuizState(parsedQuiz.questions);
     setQuizState(newState);
     setShowResults(false);
     setQuestionStartTime(Date.now());
@@ -532,15 +527,20 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           <div className={isFullScreen ? 'flex-1 overflow-y-auto p-3' : 'p-3'}>
 
         {/* Quiz Title */}
-        {parsedQuiz.title && (
-          <div className="mb-3">
-            <h1 className={`font-bold text-center text-gray-800 dark:text-gray-100 ${
-              isFullScreen ? 'text-3xl' : 'text-2xl'
-            }`}>
-              {parsedQuiz.title}
-            </h1>
-          </div>
-        )}
+        <div className="mb-3">
+          <h1 className={`font-bold text-center text-gray-800 dark:text-gray-100 ${
+            isFullScreen ? 'text-3xl' : 'text-2xl'
+          }`}>
+            {parsedQuiz.title}
+          </h1>
+          {parsedQuiz.category && (
+            <div className="text-center mt-2">
+              <span className="text-sm bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full">
+                {parsedQuiz.category}
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* Quiz Mode Indicator */}
         {quizState.mode === 'retake' && (
@@ -621,13 +621,29 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                   <Upload className="h-4 w-4" />
                 </button>
                 {!isFullScreen && (
-                  <button
-                    onClick={() => setIsFullScreen(true)}
-                    className="p-2 rounded-md bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-sm"
-                    title="Enter focus mode"
-                  >
-                    <Maximize2 className="h-4 w-4" />
-                  </button>
+                  <>
+                    <button
+                      onClick={() => openCanvas({
+                        type: 'quiz',
+                        data: quizData,
+                        metadata: {
+                          title: parsedQuiz.title,
+                          sourceMessageId: sessionId
+                        }
+                      })}
+                      className="p-2 rounded-md bg-purple-500 dark:bg-purple-600 text-white hover:bg-purple-600 dark:hover:bg-purple-700 transition-all shadow-sm"
+                      title="Open in side panel"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setIsFullScreen(true)}
+                      className="p-2 rounded-md bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-sm"
+                      title="Enter focus mode"
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                    </button>
+                  </>
                 )}
                 {isFullScreen && (
                   <button

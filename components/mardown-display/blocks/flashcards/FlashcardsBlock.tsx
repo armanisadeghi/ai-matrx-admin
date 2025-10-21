@@ -1,11 +1,12 @@
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
-import { BookOpen, Grid2x2, LayoutList, Maximize2, X } from "lucide-react";
+import { BookOpen, Grid2x2, LayoutList, Maximize2, X, ExternalLink } from "lucide-react";
 import ChatCollapsibleWrapper from "@/components/mardown-display/blocks/ChatCollapsibleWrapper";
 import FlashcardItem from "./FlashcardItem";
 import { parseFlashcards } from "./flashcard-parser";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/styles/themes/utils";
+import { useCanvas } from "@/hooks/useCanvas";
 
 interface FlashcardsBlockProps {
     content: string;
@@ -58,6 +59,7 @@ const LayoutToggle: React.FC<LayoutToggleProps> = ({ layoutMode, onLayoutChange 
 const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
     const [layoutMode, setLayoutMode] = useState<LayoutMode>("grid");
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const { open: openCanvas } = useCanvas();
 
     // Parse flashcards from content
     const { flashcards, isComplete, partialCard } = useMemo(() => {
@@ -205,6 +207,22 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                         <Button
                             variant="ghost"
                             size="sm"
+                            className="h-7 w-7 p-0 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openCanvas({
+                                    type: 'flashcards',
+                                    data: content,
+                                    metadata: { title: 'Flashcards' }
+                                });
+                            }}
+                            title="Open in side panel"
+                        >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-7 w-7 p-0"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -235,6 +253,19 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                         <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
                     </div>
                     <div className="h-4 w-px bg-border" />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
+                        onClick={() => openCanvas({
+                            type: 'flashcards',
+                            data: content,
+                            metadata: { title: 'Flashcards' }
+                        })}
+                    >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Side Panel
+                    </Button>
                     <Button
                         variant="ghost"
                         size="sm"
