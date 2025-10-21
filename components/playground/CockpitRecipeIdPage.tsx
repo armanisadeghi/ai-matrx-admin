@@ -33,10 +33,12 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
     const dispatch = useDispatch();
     const { actions, selectors, store } = useEntityTools('recipe');
     const [isRedirecting, setIsRedirecting] = useState(false);
+    const [forceRefresh, setForceRefresh] = useState(false);
 
     useEffect(() => {
         if (recipeId) {
             dispatch(actions.setActiveRecord(recipeId));
+            setForceRefresh(true);
         }
     }, [recipeId]);
 
@@ -49,7 +51,7 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
     const [recipeVersion, setRecipeVersion] = useState(1);
     const [showPlayground, setShowPlayground] = useState(false);
 
-    const aiCockpitHook = useAiCockpit();
+    const aiCockpitHook = useAiCockpit(forceRefresh);
 
     const { activeRecipeId, messages, onPlay, recipeMessageIsLoading, registerComponentSave } = aiCockpitHook;
 
@@ -58,6 +60,7 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
     // Handle routing when activeRecipeId differs from current route
     useEffect(() => {
         if (activeRecipeId && !open && activeRecipeId !== recipeId) {
+            setForceRefresh(false);
             setIsRedirecting(true);
             router.push(`/ai/cockpit/${activeRecipeId}`);
         } else if (activeRecipeId === recipeId) {
@@ -202,7 +205,7 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
             {/* Render cockpit controls in main header */}
             <CockpitHeader cockpitControls={playgroundControls} />
             
-            {isRedirecting || (activeRecipeId && activeRecipeId !== recipeId) ? (
+            {recipeMessageIsLoading || isRedirecting || (activeRecipeId && activeRecipeId !== recipeId) ? (
                 <div className="flex-1 flex items-center justify-center bg-textured">
                     <div className="flex flex-col items-center gap-4">
                         <LoadingSpinner size="xl" />

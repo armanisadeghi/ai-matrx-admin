@@ -8,7 +8,7 @@ import _ from "lodash";
 import { useRelationshipDirectCreate } from "../crud/useDirectRelCreate";
 import { useStableRelationships } from "./new/useStableRelationships";
 
-export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
+export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number, forceRefresh?: boolean) {
     const {
         // Entity names
         parentEntity,
@@ -41,7 +41,7 @@ export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: M
         isJoinLoading,
 
         triggerProcessing,
-    } = useStableRelationships(relDefSimple, anyParentId);
+    } = useStableRelationships(relDefSimple, anyParentId, forceRefresh);
 
     const isLoading = isJoinLoading || isChildLoading;
 
@@ -135,27 +135,27 @@ export function filterAllJoinRecordKeysForChild(
     return recordKeys;
 }
 
-export function useJoinedActiveParentProcessing(relDef: SimpleRelDef) {
+export function useJoinedActiveParentProcessing(relDef: SimpleRelDef, forceRefresh?: boolean) {
     const selectors = createEntitySelectors(relDef.parent.name);
     const activeParentMatrxId = useAppSelector(selectors.selectActiveRecordId);
     const activeParentId = toPkValue(activeParentMatrxId);
 
-    const relationshipHook = useRelFetchProcessing(relDef, activeParentId);
+    const relationshipHook = useRelFetchProcessing(relDef, activeParentId, forceRefresh);
 
     return { activeParentMatrxId, activeParentId, relationshipHook };
 }
 
 export type JoinedActiveParentProcessingHook = ReturnType<typeof useJoinedActiveParentProcessing>;
 
-export function useDoubleJoinedActiveParentProcessing(firstRelKey: KnownRelDef, secondRelKey: KnownRelDef) {
+export function useDoubleJoinedActiveParentProcessing(firstRelKey: KnownRelDef, secondRelKey: KnownRelDef, forceRefresh?: boolean) {
     const firstRelDef = getStandardRelationship(firstRelKey);
     const secondRelDef = getStandardRelationship(secondRelKey);
     const selectors = createEntitySelectors(firstRelDef.parent.name);
     const activeParentMatrxId = useAppSelector(selectors.selectActiveRecordId);
     const activeParentId = toPkValue(activeParentMatrxId);
 
-    const firstRelHook = useRelFetchProcessing(firstRelDef, activeParentId);
-    const secondRelHook = useRelFetchProcessing(secondRelDef, activeParentId);
+    const firstRelHook = useRelFetchProcessing(firstRelDef, activeParentId, forceRefresh);
+    const secondRelHook = useRelFetchProcessing(secondRelDef, activeParentId, forceRefresh);
 
     return { activeParentMatrxId, activeParentId, firstRelHook, secondRelHook };
 }
@@ -165,14 +165,15 @@ export type DoubleJoinedActiveParentProcessingHook = ReturnType<typeof useDouble
 export function useDoubleStableRelationships(
     firstRelKey: KnownRelDef,
     secondRelKey: KnownRelDef,
-    anyParentId: MatrxRecordId | string | number
+    anyParentId: MatrxRecordId | string | number,
+    forceRefresh?: boolean
 ) {
     const firstRelDef = getStandardRelationship(firstRelKey);
     const secondRelDef = getStandardRelationship(secondRelKey);
     const selectors = createEntitySelectors(firstRelDef.parent.name);
 
-    const firstRelHook = useRelFetchProcessing(firstRelDef, anyParentId);
-    const secondRelHook = useRelFetchProcessing(secondRelDef, anyParentId);
+    const firstRelHook = useRelFetchProcessing(firstRelDef, anyParentId, forceRefresh);
+    const secondRelHook = useRelFetchProcessing(secondRelDef, anyParentId, forceRefresh);
 
     return { firstRelHook, secondRelHook };
 }

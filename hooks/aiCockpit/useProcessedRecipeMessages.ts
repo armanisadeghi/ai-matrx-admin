@@ -150,6 +150,13 @@ export function useProcessedRecipeMessages(recipeMessagesProcessingHook: Relatio
         }
     }, [validateMessages]);
 
+
+
+    useEffect(() => {
+        console.log("Loading state changed:", JSON.stringify(recipeMessageLoadingState, null, 2));
+        console.log("Recipe message is loading:", recipeMessageIsLoading);
+    }, [recipeMessageLoadingState, recipeMessageIsLoading]);
+
     return {
         recipeMatrxId,
         recipePkId,
