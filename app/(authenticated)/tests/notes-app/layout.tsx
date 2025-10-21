@@ -1,7 +1,7 @@
 // app/(authenticated)/tests/notes-app/layout.tsx
 'use client';
 import {NotesManagerProvider} from '@/contexts/NotesManagerContext';
-import ResponsiveModuleHeaderWithProvider from '@/components/matrx/navigation/ResponsiveModuleHeaderWithProvider';
+import { ModuleHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 
 export default function Layout(
@@ -14,14 +14,12 @@ export default function Layout(
 
     return (
         <div className="flex flex-col h-full">
-            <div className="sticky top-0 z-10 bg-matrx-card-background">
-                <ResponsiveModuleHeaderWithProvider
-                    pages={filteredPages}
-                    currentPath={currentPath}
-                    moduleHome={MODULE_HOME}
-                    moduleName={MODULE_NAME}
-                />
-            </div>
+            <ModuleHeader
+                pages={filteredPages}
+                currentPath={currentPath}
+                moduleHome={MODULE_HOME}
+                moduleName={MODULE_NAME}
+            />
             <main className="flex-1 overflow-hidden">
                 <NotesManagerProvider>
                     {children}

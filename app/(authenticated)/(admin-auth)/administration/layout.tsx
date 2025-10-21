@@ -1,6 +1,7 @@
 // /layout.tsx
+"use client";
 
-import ResponsiveModuleHeaderWithProvider from '@/components/matrx/navigation/ResponsiveModuleHeaderWithProvider';
+import { ModuleHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 
 export default function Layout(
@@ -12,14 +13,12 @@ export default function Layout(
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
     return (
         <div className="flex flex-col" style={{ height: 'calc(100vh - 12px)' }}>
-            <div className="flex-shrink-0 bg-matrx-card-background">
-                <ResponsiveModuleHeaderWithProvider
-                    pages={filteredPages}
-                    currentPath={currentPath}
-                    moduleHome={MODULE_HOME}
-                    moduleName={MODULE_NAME}
-                />
-            </div>
+            <ModuleHeader
+                pages={filteredPages}
+                currentPath={currentPath}
+                moduleHome={MODULE_HOME}
+                moduleName={MODULE_NAME}
+            />
             <main className="w-full flex-1 min-h-0 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
                 {children}
             </main>

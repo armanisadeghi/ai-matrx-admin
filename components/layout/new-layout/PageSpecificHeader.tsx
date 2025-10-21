@@ -165,3 +165,40 @@ export function AppletHeader(props: AppletHeaderProps) {
     </PageSpecificHeader>
   );
 }
+
+interface ModuleHeaderProps {
+  pages: Array<{
+    title: string;
+    path: string;
+    relative: boolean;
+    description: string;
+    icon?: React.ReactNode;
+    color?: string;
+    layout?: string;
+  }>;
+  currentPath: string;
+  moduleHome: string;
+  moduleName?: string;
+  className?: string;
+}
+
+export function ModuleHeader(props: ModuleHeaderProps) {
+  // Dynamically import the component to avoid SSR issues
+  const [ResponsiveModuleHeaderContent, setResponsiveModuleHeaderContent] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/components/matrx/navigation/ResponsiveModuleHeaderContent').then((module) => {
+      setResponsiveModuleHeaderContent(() => module.default);
+    });
+  }, []);
+
+  if (!ResponsiveModuleHeaderContent) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <ResponsiveModuleHeaderContent {...props} />
+    </PageSpecificHeader>
+  );
+}

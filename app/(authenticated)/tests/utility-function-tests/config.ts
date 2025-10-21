@@ -4,82 +4,34 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: '📚 System Documentation',
+        path: 'documentation',
         relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
+        description: 'Comprehensive system analysis, guides, and development roadmap'
     },
     {
         title: 'Applet Function Registry Demo',
         path: 'function-registry-demo',
         relative: true,
-        description: ''
-    },
-    {
-        title: 'Create Table Templates',
-        path: 'create-table-templates',
-        relative: true,
-        description: ''
+        description: 'Browse and execute registered functions, see pre-built applets in action'
     },
     {
         title: 'Function Button Demo',
         path: 'function-button-demo',
         relative: true,
-        description: 'Demo of a generic button that can execute any registered function'
+        description: 'Test individual functions with custom JSON input data'
     },
     {
         title: 'Smart Function Executor Demo',
         path: 'smart-executor-demo',
         relative: true,
-        description: 'Demo of the SmartFunctionExecutor that combines functions with specialized result displays'
+        description: 'Specialized result display components for different function types'
+    },
+    {
+        title: 'Create Table Templates',
+        path: 'create-table-templates',
+        relative: true,
+        description: 'Real-world example: Create database tables from templates with flashcard data import'
     },
 ];
 

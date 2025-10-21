@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import ResponsiveModuleHeaderWithProvider from "@/components/matrx/navigation/ResponsiveModuleHeaderWithProvider";
+import { ModuleHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { filteredPages, MODULE_HOME, MODULE_NAME } from "./config";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -9,14 +9,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="sticky top-0 z-10 bg-matrx-card-background">
-                <ResponsiveModuleHeaderWithProvider
-                    pages={filteredPages}
-                    currentPath={currentPath}
-                    moduleHome={MODULE_HOME}
-                    moduleName={MODULE_NAME}
-                />
-            </div>
+            <ModuleHeader
+                pages={filteredPages}
+                currentPath={currentPath}
+                moduleHome={MODULE_HOME}
+                moduleName={MODULE_NAME}
+            />
             <main className="flex-1 overflow-y-auto overflow-x-hidden pb-6">{children}</main>
         </div>
     );
