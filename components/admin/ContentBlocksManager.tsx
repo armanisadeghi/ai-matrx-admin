@@ -22,7 +22,10 @@ import {
     Save,
     X,
     ChevronDown,
-    ChevronRight
+    ChevronRight,
+    Edit2,
+    Settings,
+    Check
 } from 'lucide-react';
 import { 
     ContentBlockDB, 
@@ -109,6 +112,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     // Collapsible state management
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
     const [expandedSubcategories, setExpandedSubcategories] = useState<Set<string>>(new Set());
+    // Category management
+    const [isCategoryManagementOpen, setIsCategoryManagementOpen] = useState(false);
+    const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+    const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+    const [newCategoryLabel, setNewCategoryLabel] = useState('');
+    const [newSubcategoryData, setNewSubcategoryData] = useState<{ categoryId: string; label: string } | null>(null);
 
     // Load data from Supabase
     const loadData = async () => {
@@ -395,6 +404,151 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const isSubcategoryExpanded = (categoryId: string, subcategoryId: string) => 
         expandedSubcategories.has(`${categoryId}-${subcategoryId}`);
 
+    // Category management handlers
+    const handleCreateCategory = async () => {
+        if (!newCategoryLabel.trim()) return;
+        
+        try {
+            const supabase = getBrowserSupabaseClient();
+            const categoryId = newCategoryLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const maxSortOrder = Math.max(0, ...categories.map(c => c.sort_order || 0));
+            
+            const { error } = await supabase
+                .from('category_configs')
+                .insert([{
+                    category_id: categoryId,
+                    label: newCategoryLabel,
+                    sort_order: maxSortOrder + 1,
+                    is_active: true
+                }]);
+
+            if (error) throw error;
+            
+            setNewCategoryLabel('');
+            loadData();
+        } catch (error) {
+            console.error('Error creating category:', error);
+            alert('Error creating category. Make sure the category ID is unique.');
+        }
+    };
+
+    const handleUpdateCategory = async (categoryId: string, updates: Partial<CategoryConfigDB>) => {
+        try {
+            const supabase = getBrowserSupabaseClient();
+            const { error } = await supabase
+                .from('category_configs')
+                .update(updates)
+                .eq('category_id', categoryId);
+
+            if (error) throw error;
+            
+            loadData();
+        } catch (error) {
+            console.error('Error updating category:', error);
+        }
+    };
+
+    const handleDeleteCategory = async (categoryId: string) => {
+        // Check if category is in use
+        const blocksInCategory = contentBlocks.filter(b => b.category === categoryId);
+        if (blocksInCategory.length > 0) {
+            if (!confirm(`This category has ${blocksInCategory.length} content blocks. Are you sure you want to deactivate it?`)) {
+                return;
+            }
+            // Deactivate instead of delete
+            await handleUpdateCategory(categoryId, { is_active: false });
+        } else {
+            if (!confirm('Are you sure you want to delete this category?')) return;
+            
+            try {
+                const supabase = getBrowserSupabaseClient();
+                const { error } = await supabase
+                    .from('category_configs')
+                    .delete()
+                    .eq('category_id', categoryId);
+
+                if (error) throw error;
+                
+                loadData();
+            } catch (error) {
+                console.error('Error deleting category:', error);
+            }
+        }
+    };
+
+    const handleCreateSubcategory = async (categoryId: string, label: string) => {
+        if (!label.trim()) return;
+        
+        try {
+            const supabase = getBrowserSupabaseClient();
+            const subcategoryId = label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const category = categories.find(c => c.category_id === categoryId);
+            const maxSortOrder = Math.max(0, ...(category?.subcategories || []).map(s => s.sort_order || 0));
+            
+            const { error } = await supabase
+                .from('subcategory_configs')
+                .insert([{
+                    subcategory_id: subcategoryId,
+                    category_id: categoryId,
+                    label: label,
+                    sort_order: maxSortOrder + 1,
+                    is_active: true
+                }]);
+
+            if (error) throw error;
+            
+            setNewSubcategoryData(null);
+            loadData();
+        } catch (error) {
+            console.error('Error creating subcategory:', error);
+            alert('Error creating subcategory. Make sure the subcategory ID is unique.');
+        }
+    };
+
+    const handleUpdateSubcategory = async (subcategoryId: string, updates: Partial<SubcategoryConfigDB>) => {
+        try {
+            const supabase = getBrowserSupabaseClient();
+            const { error } = await supabase
+                .from('subcategory_configs')
+                .update(updates)
+                .eq('subcategory_id', subcategoryId);
+
+            if (error) throw error;
+            
+            loadData();
+        } catch (error) {
+            console.error('Error updating subcategory:', error);
+        }
+    };
+
+    const handleDeleteSubcategory = async (subcategoryId: string) => {
+        // Check if subcategory is in use
+        const blocksInSubcategory = contentBlocks.filter(b => b.subcategory === subcategoryId);
+        if (blocksInSubcategory.length > 0) {
+            if (!confirm(`This subcategory has ${blocksInSubcategory.length} content blocks. Are you sure you want to deactivate it?`)) {
+                return;
+            }
+            // Deactivate instead of delete
+            await handleUpdateSubcategory(subcategoryId, { is_active: false });
+        } else {
+            if (!confirm('Are you sure you want to delete this subcategory?')) return;
+            
+            try {
+                const supabase = getBrowserSupabaseClient();
+                const { error } = await supabase
+                    .from('subcategory_configs')
+                    .delete()
+                    .eq('subcategory_id', subcategoryId);
+
+                if (error) throw error;
+                
+                loadData();
+            } catch (error) {
+                console.error('Error deleting subcategory:', error);
+            }
+        }
+    };
+
     const selectedBlock = selectedBlockId ? contentBlocks.find(b => b.id === selectedBlockId) : null;
 
     if (loading) {
@@ -415,10 +569,16 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             Content Blocks
                         </h2>
-                        <Button onClick={handleCreateNew} size="sm">
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button onClick={() => setIsCategoryManagementOpen(true)} size="sm" variant="outline">
+                                <Settings className="w-4 h-4 mr-1" />
+                                Manage
+                            </Button>
+                            <Button onClick={handleCreateNew} size="sm">
+                                <Plus className="w-4 h-4 mr-1" />
+                                Add
+                            </Button>
+                        </div>
                     </div>
                     
                     {/* Search */}
@@ -879,6 +1039,264 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 </Button>
                             </div>
                         </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Category Management Dialog */}
+            <Dialog open={isCategoryManagementOpen} onOpenChange={setIsCategoryManagementOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle>Manage Categories & Subcategories</DialogTitle>
+                    </DialogHeader>
+                    
+                    <ScrollArea className="flex-1 pr-4">
+                        <div className="space-y-6">
+                            {/* Create New Category */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Create New Category</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            placeholder="Category name (e.g., 'Structure')"
+                                            value={newCategoryLabel}
+                                            onChange={(e) => setNewCategoryLabel(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+                                        />
+                                        <Button onClick={handleCreateCategory} disabled={!newCategoryLabel.trim()}>
+                                            <Plus className="w-4 h-4 mr-1" />
+                                            Create
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Existing Categories */}
+                            <div className="space-y-3">
+                                {categories.map(category => (
+                                    <Card key={category.category_id} className={!category.is_active ? 'opacity-60' : ''}>
+                                        <CardHeader className="pb-3">
+                                            <div className="flex items-center gap-3">
+                                                <Folder className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                                {editingCategoryId === category.category_id ? (
+                                                    <div className="flex-1 flex gap-2">
+                                                        <Input
+                                                            value={category.label}
+                                                            onChange={(e) => {
+                                                                // Update local state immediately for responsive UI
+                                                                const updatedCategories = categories.map(c =>
+                                                                    c.category_id === category.category_id
+                                                                        ? { ...c, label: e.target.value }
+                                                                        : c
+                                                                );
+                                                                setCategories(updatedCategories);
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateCategory(category.category_id, { label: category.label });
+                                                                    setEditingCategoryId(null);
+                                                                }
+                                                            }}
+                                                            autoFocus
+                                                        />
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                handleUpdateCategory(category.category_id, { label: category.label });
+                                                                setEditingCategoryId(null);
+                                                            }}
+                                                        >
+                                                            <Check className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setEditingCategoryId(null);
+                                                                loadData(); // Reload to reset
+                                                            }}
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex-1">
+                                                            <div className="font-semibold text-gray-900 dark:text-gray-100">
+                                                                {category.label}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                ID: {category.category_id} • Sort: {category.sort_order}
+                                                            </div>
+                                                        </div>
+                                                        {!category.is_active && (
+                                                            <Badge variant="outline" className="text-orange-600 border-orange-600">
+                                                                Inactive
+                                                            </Badge>
+                                                        )}
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => setEditingCategoryId(category.category_id)}
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => handleDeleteCategory(category.category_id)}
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="pt-0">
+                                            {/* Subcategories */}
+                                            <div className="space-y-2 ml-8">
+                                                {category.subcategories.map(subcat => (
+                                                    <div
+                                                        key={subcat.subcategory_id}
+                                                        className={`flex items-center gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 ${!subcat.is_active ? 'opacity-60' : ''}`}
+                                                    >
+                                                        <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                                                        {editingSubcategoryId === subcat.subcategory_id ? (
+                                                            <div className="flex-1 flex gap-2">
+                                                                <Input
+                                                                    value={subcat.label}
+                                                                    onChange={(e) => {
+                                                                        // Update local state immediately
+                                                                        const updatedCategories = categories.map(c =>
+                                                                            c.category_id === category.category_id
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    subcategories: c.subcategories.map(s =>
+                                                                                        s.subcategory_id === subcat.subcategory_id
+                                                                                            ? { ...s, label: e.target.value }
+                                                                                            : s
+                                                                                    )
+                                                                                }
+                                                                                : c
+                                                                        );
+                                                                        setCategories(updatedCategories);
+                                                                    }}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter') {
+                                                                            handleUpdateSubcategory(subcat.subcategory_id, { label: subcat.label });
+                                                                            setEditingSubcategoryId(null);
+                                                                        }
+                                                                    }}
+                                                                    className="text-sm"
+                                                                    autoFocus
+                                                                />
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        handleUpdateSubcategory(subcat.subcategory_id, { label: subcat.label });
+                                                                        setEditingSubcategoryId(null);
+                                                                    }}
+                                                                >
+                                                                    <Check className="w-3 h-3" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        setEditingSubcategoryId(null);
+                                                                        loadData();
+                                                                    }}
+                                                                >
+                                                                    <X className="w-3 h-3" />
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex-1 text-sm">
+                                                                    <span className="text-gray-900 dark:text-gray-100">{subcat.label}</span>
+                                                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                                                                        ({subcat.subcategory_id})
+                                                                    </span>
+                                                                </div>
+                                                                {!subcat.is_active && (
+                                                                    <Badge variant="outline" className="text-xs text-orange-600 border-orange-600">
+                                                                        Inactive
+                                                                    </Badge>
+                                                                )}
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => setEditingSubcategoryId(subcat.subcategory_id)}
+                                                                >
+                                                                    <Edit2 className="w-3 h-3" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleDeleteSubcategory(subcat.subcategory_id)}
+                                                                >
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                
+                                                {/* Add Subcategory */}
+                                                {newSubcategoryData?.categoryId === category.category_id ? (
+                                                    <div className="flex gap-2 p-2">
+                                                        <Input
+                                                            placeholder="Subcategory name"
+                                                            value={newSubcategoryData.label}
+                                                            onChange={(e) => setNewSubcategoryData({ ...newSubcategoryData, label: e.target.value })}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleCreateSubcategory(category.category_id, newSubcategoryData.label);
+                                                                }
+                                                            }}
+                                                            className="text-sm"
+                                                            autoFocus
+                                                        />
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleCreateSubcategory(category.category_id, newSubcategoryData.label)}
+                                                            disabled={!newSubcategoryData.label.trim()}
+                                                        >
+                                                            <Check className="w-3 h-3" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => setNewSubcategoryData(null)}
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="w-full"
+                                                        onClick={() => setNewSubcategoryData({ categoryId: category.category_id, label: '' })}
+                                                    >
+                                                        <Plus className="w-3 h-3 mr-1" />
+                                                        Add Subcategory
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    </ScrollArea>
+
+                    <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <Button onClick={() => setIsCategoryManagementOpen(false)}>
+                            Done
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
