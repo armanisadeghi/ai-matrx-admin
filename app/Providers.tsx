@@ -32,6 +32,7 @@ import { SelectedImagesProvider } from "@/components/image/context/SelectedImage
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core";
 import { GlobalBrokersInitializer } from "@/components/broker/UserBrokerInitializer";
 import ClientOverlayProvider from "@/components/overlays/ClientOverlayProvider";
+import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
@@ -54,8 +55,9 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
 
     return (
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
-            <StoreProvider initialState={initialReduxState}>
-                <GlobalBrokerRegistration>
+            <ReactQueryProvider>
+                <StoreProvider initialState={initialReduxState}>
+                    <GlobalBrokerRegistration>
 
                         <GlobalBrokersInitializer user={initialReduxState.user} />
 
@@ -102,8 +104,9 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                             </EntityProvider>
                         </PersistentComponentProvider>
                     </ThemeProvider>
-                </GlobalBrokerRegistration>
-            </StoreProvider>
+                    </GlobalBrokerRegistration>
+                </StoreProvider>
+            </ReactQueryProvider>
         </SchemaProvider>
     );
 }

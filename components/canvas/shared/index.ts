@@ -1,0 +1,2 @@
+export { SharedCanvasView } from './SharedCanvasView';
+

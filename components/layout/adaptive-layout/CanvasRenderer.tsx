@@ -16,6 +16,8 @@ import {
 import { CanvasHeader, ViewMode } from "./CanvasHeader";
 import { CanvasNavigation } from "./CanvasNavigation";
 import { SavedCanvasItems } from "@/components/canvas/SavedCanvasItems";
+import { CanvasShareSheet } from "@/components/canvas/social/CanvasShareSheet";
+import type { CanvasType } from "@/types/canvas-social";
 
 // Import all interactive blocks
 import MultipleChoiceQuiz from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
@@ -47,6 +49,7 @@ interface CanvasRendererProps {
 export function CanvasRenderer({ content: propContent }: CanvasRendererProps) {
   const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ViewMode>('preview');
+  const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
   
   // Get canvas state from Redux
   const currentItem = useAppSelector(selectCurrentCanvasItem);
@@ -83,8 +86,7 @@ export function CanvasRenderer({ content: propContent }: CanvasRendererProps) {
   };
 
   const handleShare = () => {
-    // TODO: Implement share functionality
-    console.log('Share clicked for:', content.type);
+    setIsShareSheetOpen(true);
   };
 
   const [isSyncing, setIsSyncing] = useState(false);
@@ -162,6 +164,16 @@ export function CanvasRenderer({ content: propContent }: CanvasRendererProps) {
           </div>
         )}
       </div>
+
+      {/* Share Sheet */}
+      <CanvasShareSheet
+        open={isShareSheetOpen}
+        onOpenChange={setIsShareSheetOpen}
+        canvasData={content.data}
+        canvasType={content.type as CanvasType}
+        defaultTitle={content.metadata?.title || getDefaultTitle(content.type)}
+        hasScoring={content.type === 'quiz' || content.type === 'flashcards'}
+      />
     </div>
   );
 }
