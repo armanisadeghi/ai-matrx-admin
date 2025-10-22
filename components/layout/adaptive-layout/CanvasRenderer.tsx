@@ -47,9 +47,9 @@ export function CanvasRenderer({ content }: CanvasRendererProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-textured">
+    <div className="h-full flex flex-col bg-textured rounded-tl-2xl overflow-hidden">
       {/* Canvas Header - Rounded top with subtle background */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-t-2xl border-b border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-tl-2xl border-b border-gray-200/50 dark:border-gray-700/50">
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
             {content.metadata?.title || 'Canvas View'}

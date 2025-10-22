@@ -8,7 +8,7 @@ import { CanvasRenderer } from "./CanvasRenderer";
 
 interface AdaptiveLayoutProps {
     header?: React.ReactNode;
-    leftPanel: React.ReactNode;
+    leftPanel?: React.ReactNode; // Optional - if not provided, content takes full width
     rightPanel: React.ReactNode;
     canvasPanel?: React.ReactNode; // Optional override - if not provided, uses Redux canvas
     className?: string;
@@ -209,34 +209,37 @@ export function AdaptiveLayout({
                     isMobile ? "flex-col overflow-y-auto" : "flex-row overflow-hidden"
                 )}
             >
-                {/* Left Panel - equal shrinking with right panel, max at leftPanelMaxWidth */}
-                <div 
-                    ref={leftPanelRef}
-                    className={cn(
-                        isMobile ? "w-full" : "overflow-y-auto"
-                    )}
-                    style={isMobile ? undefined : {
-                        flex: `1 1 0`,
-                        maxWidth: `${leftPanelMaxWidth}px`,
-                        minWidth: '300px', // Minimum width before switching to mobile
-                        overflowAnchor: 'none', // Prevent browser auto-scroll
-                        scrollPaddingTop: '0px', // Prevent scroll-into-view padding
-                    }}
-                >
-                    {leftPanel}
-                </div>
+                {/* Left Panel - equal shrinking with right panel, max at leftPanelMaxWidth (optional) */}
+                {leftPanel && (
+                    <div 
+                        ref={leftPanelRef}
+                        className={cn(
+                            isMobile ? "w-full" : "overflow-y-auto"
+                        )}
+                        style={isMobile ? undefined : {
+                            flex: `1 1 0`,
+                            maxWidth: `${leftPanelMaxWidth}px`,
+                            minWidth: '300px', // Minimum width before switching to mobile
+                            overflowAnchor: 'none', // Prevent browser auto-scroll
+                            scrollPaddingTop: '0px', // Prevent scroll-into-view padding
+                        }}
+                    >
+                        {leftPanel}
+                    </div>
+                )}
 
-                {/* Right Panel - equal shrinking with left panel, no max width */}
+                {/* Right Panel - equal shrinking with left panel (or full width if no left panel) */}
                 <div 
                     ref={containerRef}
                     className={cn(
                         "relative flex",
-                        !isMobile && "overflow-hidden"
+                        !isMobile && "overflow-hidden",
+                        !leftPanel && "flex-1" // Take full width if no left panel
                     )}
-                    style={isMobile ? undefined : {
+                    style={isMobile ? undefined : (leftPanel ? {
                         flex: `1 1 0`,
                         minWidth: '400px', // Minimum width to keep content readable
-                    }}
+                    } : undefined)}
                 >
                     {/* Content Area */}
                     <div 
@@ -262,21 +265,38 @@ export function AdaptiveLayout({
                     {/* Canvas Panel - optional, right side (desktop only) */}
                     {hasCanvas && !isMobile && (
                         <>
-                            {/* Resizer Handle - Delicate, minimalistic design */}
+                            {/* Resizer Handle - Delicate line with hover handle */}
                             <div
                                 className={cn(
-                                    "absolute top-0 bottom-0 w-px cursor-col-resize z-10",
-                                    "bg-gray-300 dark:bg-gray-700"
+                                    "group absolute top-0 bottom-0 w-px cursor-col-resize z-10",
+                                    "bg-gray-300 dark:bg-gray-700",
+                                    "hover:bg-blue-400 dark:hover:bg-blue-600 transition-colors"
                                 )}
                                 style={{
                                     right: `${canvasWidth}px`,
                                 }}
                                 onMouseDown={() => setIsResizing(true)}
-                            />
+                            >
+                                {/* Drag Handle - appears on hover */}
+                                <div className={cn(
+                                    "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
+                                    "w-1 h-12 rounded-full",
+                                    "bg-gray-400 dark:bg-gray-600",
+                                    "opacity-0 group-hover:opacity-100",
+                                    "transition-opacity duration-200",
+                                    "shadow-md"
+                                )}>
+                                    {/* Grip lines */}
+                                    <div className="absolute inset-0 flex items-center justify-center gap-0.5">
+                                        <div className="w-0.5 h-6 bg-white dark:bg-gray-800 rounded-full opacity-50" />
+                                        <div className="w-0.5 h-6 bg-white dark:bg-gray-800 rounded-full opacity-50" />
+                                    </div>
+                                </div>
+                            </div>
 
                             {/* Canvas Panel */}
                             <div
-                                className="absolute top-0 bottom-0 right-0 overflow-y-auto"
+                                className="absolute top-0 bottom-0 right-0 overflow-hidden rounded-tl-2xl shadow-lg"
                                 style={{
                                     width: `${canvasWidth}px`,
                                 }}
