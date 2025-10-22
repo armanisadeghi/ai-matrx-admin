@@ -317,7 +317,7 @@ export default function DesktopLayout({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Link
-                                    href="/preferences"
+                                    href="/dashboard/preferences"
                                     className="relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
                                 >
                                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-medium">

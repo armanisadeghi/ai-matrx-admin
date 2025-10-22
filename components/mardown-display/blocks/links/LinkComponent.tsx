@@ -266,56 +266,61 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
     const popupMenu = isPopupActive && isHovered && isMountedRef.current && (
         <div 
             ref={menuRef}
-            className="bg-textured border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl backdrop-blur-sm py-0 min-w-[300px] text-gray-700 dark:text-gray-200 text-sm overflow-hidden"
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl backdrop-blur-sm py-0 w-[280px] text-gray-700 dark:text-gray-200 text-sm overflow-hidden"
             style={getMenuStyle()}
         >
-            {/* URL Info Section */}
-            <div className="border-b border-gray-100 dark:border-gray-700/50 px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800">
-                <div className="font-semibold mb-1.5 truncate text-gray-900 dark:text-gray-100" title={displayText}>
+            {/* Title Section */}
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="font-semibold text-base truncate text-gray-900 dark:text-gray-100" title={displayText}>
                     {displayText}
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 truncate break-all font-mono bg-white/60 dark:bg-gray-700/50 px-2 py-1 rounded-md" title={href}>
-                    {truncateUrl(href, 45)}
                 </div>
             </div>
             
-            <div className="py-1">
+            {/* Action Items */}
+            <div className="py-2">
                 <div 
-                    className="px-4 py-2.5 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/20 dark:hover:to-emerald-900/20 cursor-pointer flex items-center gap-3 transition-all duration-200 group"
+                    className="px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer flex items-center gap-3 transition-colors duration-150 group"
                     onClick={handleCopyLink}
                 >
                     {copied ? (
                         <Check size={16} className="text-green-600 dark:text-green-400 flex-shrink-0" />
                     ) : (
-                        <Copy size={16} className="text-blue-600 dark:text-blue-400 group-hover:text-green-600 dark:group-hover:text-green-400 flex-shrink-0 transition-colors" />
+                        <Copy size={16} className="text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors" />
                     )}
-                    <span className={`font-medium ${copied ? 'text-green-700 dark:text-green-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                    <span className={`${copied ? 'text-green-700 dark:text-green-300' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'}`}>
                         {copied ? 'Copied!' : 'Copy link'}
                     </span>
                 </div>
                 
                 <div 
-                    className="px-4 py-2.5 hover:bg-gradient-to-r hover:from-amber-50 hover:to-yellow-50 dark:hover:from-amber-900/20 dark:hover:to-yellow-900/20 cursor-pointer flex items-center gap-3 transition-all duration-200 group"
-                    onClick={handleAddToFavorites}
-                >
-                    <Bookmark size={16} className="text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 flex-shrink-0 transition-colors" />
-                    <span className="font-medium text-gray-700 dark:text-gray-300 truncate">Add to favorites</span>
-                </div>
-                
-                <div 
-                    className="px-4 py-2.5 hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 cursor-pointer flex items-center gap-3 transition-all duration-200 group"
+                    className="px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer flex items-center gap-3 transition-colors duration-150 group"
                     onClick={handleOpenInNewTab}
                 >
-                    <ExternalLink size={16} className="text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 flex-shrink-0 transition-colors" />
-                    <span className="font-medium text-gray-700 dark:text-gray-300 truncate">Open in new tab</span>
+                    <ExternalLink size={16} className="text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors" />
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 truncate">Open in new tab</span>
                 </div>
                 
                 <div 
-                    className="px-4 py-2.5 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 cursor-pointer flex items-center gap-3 transition-all duration-200 group"
+                    className="px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer flex items-center gap-3 transition-colors duration-150 group"
+                    onClick={handleAddToFavorites}
+                >
+                    <Bookmark size={16} className="text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors" />
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 truncate">Add to favorites</span>
+                </div>
+                
+                <div 
+                    className="px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer flex items-center gap-3 transition-colors duration-150 group"
                     onClick={handleGetContent}
                 >
-                    <FileText size={16} className="text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 flex-shrink-0 transition-colors" />
-                    <span className="font-medium text-gray-700 dark:text-gray-300 truncate">Get content</span>
+                    <FileText size={16} className="text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors" />
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 truncate">Get content</span>
+                </div>
+            </div>
+
+            {/* URL Footer */}
+            <div className="px-4 py-2.5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
+                <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate font-mono" title={href}>
+                    {truncateUrl(href, 40)}
                 </div>
             </div>
         </div>
@@ -335,7 +340,7 @@ const LinkComponentCore = ({ href, children }: { href: string; children: React.R
                     className={cn(
                         "text-blue-600 dark:text-blue-400 underline font-medium",
                         "transition-all duration-200 hover:text-blue-700 dark:hover:text-blue-300",
-                        (isHovered && isPopupActive) && "text-blue-800 dark:text-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 rounded-md px-2 py-0.5 shadow-sm"
+                        (isHovered && isPopupActive) && "text-blue-800 dark:text-blue-200"
                     )}
                 >
                     {children}
