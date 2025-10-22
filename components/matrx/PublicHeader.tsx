@@ -19,7 +19,7 @@ export function PublicHeader() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm">
-            <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="w-full px-4 h-14 flex items-center justify-between">
                 {/* Logo */}
                 <Link 
                     href="/" 

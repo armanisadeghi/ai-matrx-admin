@@ -11,7 +11,7 @@ export function PublicProviders({ children }: { children: React.ReactNode }) {
         <ReactQueryProvider>
             <NextThemesProvider 
                 attribute="class" 
-                defaultTheme="dark" 
+                defaultTheme="system" 
                 enableSystem={true}
                 storageKey="theme"
             >

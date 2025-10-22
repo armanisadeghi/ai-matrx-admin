@@ -4,31 +4,29 @@ export class HTMLPageService {
   /**
    * Create a new HTML page
    * @param {string} htmlContent - Complete HTML content
-   * @param {string} title - Page title
-   * @param {string} description - Optional description
+   * @param {string} metaTitle - SEO meta title (required)
+   * @param {string} metaDescription - SEO meta description (optional)
    * @param {string} userId - User ID from your main app
    * @param {Object} metaFields - Optional meta fields
-   * @param {string} metaFields.metaTitle - SEO meta title
-   * @param {string} metaFields.metaDescription - SEO meta description
    * @param {string} metaFields.metaKeywords - SEO meta keywords
    * @param {string} metaFields.ogImage - Open Graph image URL
    * @param {string} metaFields.canonicalUrl - Canonical URL
+   * @param {boolean} metaFields.isIndexable - Whether the page should be indexed (defaults to false)
    * @returns {Promise<{success: boolean, pageId: string, url: string}>}
    */
-  static async createPage(htmlContent, title, description = '', userId, metaFields = {}) {
+  static async createPage(htmlContent, metaTitle, metaDescription = '', userId, metaFields = {}) {
     try {
 
       const insertData = {
         html_content: htmlContent,
-        title: title,
-        description: description,
         user_id: userId,
-        // Meta fields with defaults
-        meta_title: metaFields.metaTitle || title,
-        meta_description: metaFields.metaDescription || description,
+        // Meta fields
+        meta_title: metaTitle,
+        meta_description: metaDescription,
         meta_keywords: metaFields.metaKeywords || null,
         og_image: metaFields.ogImage || null,
-        canonical_url: metaFields.canonicalUrl || null
+        canonical_url: metaFields.canonicalUrl || null,
+        is_indexable: metaFields.isIndexable || false
       };
 
       const { data, error } = await supabaseHtml
@@ -48,8 +46,9 @@ export class HTMLPageService {
         success: true,
         pageId: data.id,
         url: pageUrl,
-        title: data.title,
-        description: data.description,
+        metaTitle: data.meta_title,
+        metaDescription: data.meta_description,
+        isIndexable: data.is_indexable,
         createdAt: data.created_at
       };
 
@@ -68,7 +67,7 @@ export class HTMLPageService {
     try {
       const { data, error } = await supabaseHtml
         .from('html_pages')
-        .select('id, title, description, created_at')
+        .select('id, meta_title, meta_description, is_indexable, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -91,25 +90,25 @@ export class HTMLPageService {
    * Update an existing HTML page
    * @param {string} pageId - Page ID
    * @param {string} htmlContent - Updated HTML content
-   * @param {string} title - Updated title
-   * @param {string} description - Updated description
+   * @param {string} metaTitle - Updated meta title
+   * @param {string} metaDescription - Updated meta description
    * @param {string} userId - User ID (for security)
    * @param {Object} metaFields - Optional meta fields
+   * @param {boolean} metaFields.isIndexable - Whether the page should be indexed
    * @returns {Promise<{success: boolean, pageId: string, url: string}>}
    */
-  static async updatePage(pageId, htmlContent, title, description = '', userId, metaFields = {}) {
+  static async updatePage(pageId, htmlContent, metaTitle, metaDescription = '', userId, metaFields = {}) {
     try {
 
       const updateData = {
         html_content: htmlContent,
-        title: title,
-        description: description,
-        // Meta fields with defaults
-        meta_title: metaFields.metaTitle || title,
-        meta_description: metaFields.metaDescription || description,
+        // Meta fields
+        meta_title: metaTitle,
+        meta_description: metaDescription,
         meta_keywords: metaFields.metaKeywords || null,
         og_image: metaFields.ogImage || null,
         canonical_url: metaFields.canonicalUrl || null,
+        is_indexable: metaFields.isIndexable !== undefined ? metaFields.isIndexable : false,
         updated_at: new Date().toISOString()
       };
 
@@ -132,8 +131,9 @@ export class HTMLPageService {
         success: true,
         pageId: data.id,
         url: pageUrl,
-        title: data.title,
-        description: data.description,
+        metaTitle: data.meta_title,
+        metaDescription: data.meta_description,
+        isIndexable: data.is_indexable,
         updatedAt: data.updated_at
       };
 

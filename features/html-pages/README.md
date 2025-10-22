@@ -147,10 +147,10 @@ This allows intelligent regeneration—only regenerate when needed.
 ```typescript
 if (publishedPageId) {
   // Update existing page
-  result = await updateHTMLPage(publishedPageId, html, title, desc, metaFields);
+  result = await updateHTMLPage(publishedPageId, html, metaTitle, metaDesc, metaFields);
 } else {
   // Create new page (first time only)
-  result = await createHTMLPage(html, title, desc, metaFields);
+  result = await createHTMLPage(html, metaTitle, metaDesc, metaFields);
   onPageIdChange?.(result.pageId); // Store ID in parent
 }
 ```
@@ -349,24 +349,24 @@ import { HTMLPageService } from '@/features/html-pages/services/htmlPageService'
 // Create page
 const result = await HTMLPageService.createPage(
   htmlContent,
-  title,
-  description,
+  metaTitle,        // Required: SEO meta title
+  metaDescription,  // Optional: SEO meta description
   userId,
-  metaFields  // { metaTitle, metaDescription, metaKeywords, ogImage, canonicalUrl }
+  metaFields        // { metaKeywords, ogImage, canonicalUrl, isIndexable }
 );
-// Returns: { success, pageId, url, title, description, createdAt }
+// Returns: { success, pageId, url, metaTitle, metaDescription, isIndexable, createdAt }
 
 // Update page
 const result = await HTMLPageService.updatePage(
   pageId,
   htmlContent,
-  title,
-  description,
+  metaTitle,        // Required: SEO meta title
+  metaDescription,  // Optional: SEO meta description
   userId,
-  metaFields
+  metaFields        // { metaKeywords, ogImage, canonicalUrl, isIndexable }
 );
 
-// Get user's pages
+// Get user's pages (returns meta_title, meta_description, is_indexable)
 const pages = await HTMLPageService.getUserPages(userId);
 
 // Get single page
@@ -499,15 +499,14 @@ async function publishPage(userId) {
   
   const result = await HTMLPageService.createPage(
     htmlContent,
-    'My Page Title',
-    'A short description',
+    'My Page Title',              // metaTitle (required)
+    'A short description',        // metaDescription (optional)
     userId,
     {
-      metaTitle: 'SEO Title',
-      metaDescription: 'SEO description for search engines',
       metaKeywords: 'keyword1, keyword2',
       ogImage: 'https://example.com/image.jpg',
-      canonicalUrl: 'https://example.com/canonical'
+      canonicalUrl: 'https://example.com/canonical',
+      isIndexable: false  // Default: false (noindex)
     }
   );
 
@@ -555,16 +554,17 @@ The `html_pages` table in Supabase:
 CREATE TABLE html_pages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   html_content TEXT NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
   user_id UUID NOT NULL,
   
-  -- SEO Metadata
-  meta_title VARCHAR(255),
+  -- SEO Metadata (unified fields)
+  meta_title VARCHAR(255) NOT NULL,
   meta_description TEXT,
   meta_keywords TEXT,
   og_image TEXT,
   canonical_url TEXT,
+  
+  -- Search Engine Indexing Control
+  is_indexable BOOLEAN DEFAULT FALSE,
   
   -- Timestamps
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -575,6 +575,11 @@ CREATE TABLE html_pages (
 CREATE INDEX idx_html_pages_user_id ON html_pages(user_id);
 CREATE INDEX idx_html_pages_created_at ON html_pages(created_at DESC);
 ```
+
+**Important Schema Notes:**
+- `meta_title` and `meta_description` are now the **only** title/description fields (no duplication)
+- `is_indexable` defaults to `FALSE` to prevent duplicate content issues with search engines
+- Pages are **noindex by default** - only set `is_indexable: true` for pages you want indexed
 
 ### Row Level Security (RLS)
 
