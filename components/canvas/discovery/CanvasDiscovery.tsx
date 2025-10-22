@@ -13,8 +13,8 @@ import {
     TrendingUp, 
     Clock, 
     Trophy, 
-    Sparkles,
-    Filter
+    Filter,
+    Grid3x3
 } from 'lucide-react';
 import { CanvasCard } from '@/components/canvas/discovery/CanvasCard';
 import { cn } from '@/lib/utils';
@@ -85,27 +85,28 @@ export function CanvasDiscovery() {
     ).sort();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-            {/* Hero Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="text-center space-y-4">
-                        <div className="flex justify-center">
-                            <Sparkles className="w-12 h-12" />
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+            {/* Hero Header - Professional */}
+            <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="space-y-1">
+                            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                                <Grid3x3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                Discover Content
+                            </h1>
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                Explore interactive content created by our community
+                            </p>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold">
-                            Discover Amazing Content
-                        </h1>
-                        <p className="text-lg text-blue-100 max-w-2xl mx-auto">
-                            Explore interactive quizzes, flashcards, presentations, and more created by our community
-                        </p>
-                        <div className="flex justify-center gap-4 pt-4">
-                            <Link href="/">
-                                <Button variant="secondary" size="lg">
-                                    Create Your Own
-                                </Button>
-                            </Link>
-                        </div>
+                        <Link href="/sign-in">
+                            <Button 
+                                size="sm"
+                                className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white hidden sm:flex"
+                            >
+                                Create Your Own
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>
