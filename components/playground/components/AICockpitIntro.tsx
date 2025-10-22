@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { PlusCircle, Book, Boxes, Sparkles } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PlusCircle, Book, Boxes, Sparkles, Zap } from 'lucide-react';
 import { BackgroundBeamsWithCollision } from '@/components/ui/background-beams-with-collision';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import QuickRefSearchableSelect from '@/app/entities/quick-reference/QuickRefSearchableSelect';
+import { RecipeTemplatesGallery } from '../templates';
 
 const AICockpitIntro = ({ onNewRecipe }) => {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [isTemplatesDialogOpen, setIsTemplatesDialogOpen] = useState(false);
 
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -24,6 +27,13 @@ const AICockpitIntro = ({ onNewRecipe }) => {
         if (onNewRecipe && typeof onNewRecipe === 'function') {
             onNewRecipe();
         }
+    };
+
+    const handleSelectTemplate = (template) => {
+        // Template will be loaded when new recipe is created
+        localStorage.setItem('pendingRecipeTemplate', JSON.stringify(template));
+        handleNewRecipe();
+        setIsTemplatesDialogOpen(false);
     };
 
     return (
@@ -49,7 +59,7 @@ const AICockpitIntro = ({ onNewRecipe }) => {
                     </div>
 
                     {/* Action cards */}
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full'>
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full'>
                         {/* Start New Card */}
                         <Card
                             onClick={handleNewRecipe}
@@ -63,7 +73,25 @@ const AICockpitIntro = ({ onNewRecipe }) => {
                                 </div>
                                 <h2 className='text-xl font-semibold mb-2 text-slate-900 dark:text-white'>Start New</h2>
                                 <p className='text-slate-600 dark:text-slate-400'>
-                                    Create a new AI workflow from scratch. Design sophisticated prompts and agents.
+                                    Create a new AI workflow from scratch.
+                                </p>
+                            </div>
+                        </Card>
+
+                        {/* Recipe Templates Card */}
+                        <Card
+                            onClick={() => setIsTemplatesDialogOpen(true)}
+                            className='group relative overflow-hidden p-6 bg-white/80 dark:bg-slate-800/50 hover:bg-white/90 dark:hover:bg-slate-800/80 backdrop-blur-sm transition-all duration-300 cursor-pointer border-0 shadow-lg'
+                        >
+                            <div className='absolute inset-0 bg-gradient-to-r from-amber-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+                            <div className='relative z-10'>
+                                <div className='flex items-center justify-between mb-4'>
+                                    <Zap className='h-8 w-8 text-amber-600 dark:text-amber-400' />
+                                    <div className='h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/30 absolute right-0 top-0 transform -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+                                </div>
+                                <h2 className='text-xl font-semibold mb-2 text-slate-900 dark:text-white'>Recipe Templates</h2>
+                                <p className='text-slate-600 dark:text-slate-400'>
+                                    Start with pre-built workflow templates.
                                 </p>
                             </div>
                         </Card>
@@ -79,7 +107,7 @@ const AICockpitIntro = ({ onNewRecipe }) => {
                                     <div className='h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 absolute right-0 top-0 transform -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
                                 </div>
                                 <h2 className='text-xl font-semibold mb-2 text-slate-900 dark:text-white'>Use Saved</h2>
-                                <p className='text-slate-600 pb-2 dark:text-slate-400'>Access your previously created recipes and workflows.</p>
+                                <p className='text-slate-600 pb-2 dark:text-slate-400'>Access your previously created recipes.</p>
                                 <QuickRefSearchableSelect
                                     entityKey='recipe'
                                     fetchMode='fkIfk'
@@ -96,6 +124,16 @@ const AICockpitIntro = ({ onNewRecipe }) => {
                     </div>
                 </div>
             </BackgroundBeamsWithCollision>
+
+            {/* Recipe Templates Dialog */}
+            <Dialog open={isTemplatesDialogOpen} onOpenChange={setIsTemplatesDialogOpen}>
+                <DialogContent className='max-w-[95vw] max-h-[95vh] p-0'>
+                    <RecipeTemplatesGallery 
+                        onSelectTemplate={handleSelectTemplate}
+                        className='h-[90vh]'
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
