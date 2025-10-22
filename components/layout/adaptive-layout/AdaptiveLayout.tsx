@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { selectCanvasIsOpen, selectCanvasContent, selectCanvasWidth, setCanvasWidth } from "@/lib/redux/slices/canvasSlice";
+import { useAppSelector } from "@/lib/redux";
+import { selectCanvasIsOpen, selectCanvasContent } from "@/lib/redux/slices/canvasSlice";
 import { CanvasRenderer } from "./CanvasRenderer";
 
 interface AdaptiveLayoutProps {
@@ -41,9 +41,9 @@ export function AdaptiveLayout({
     leftPanelMaxWidth = 640,
     disableAutoCanvas = false,
 }: AdaptiveLayoutProps) {
-    const dispatch = useAppDispatch();
     const [isResizing, setIsResizing] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [canvasWidth, setCanvasWidth] = useState(1000); // Local state for canvas width
     const containerRef = useRef<HTMLDivElement>(null);
     const mainContainerRef = useRef<HTMLDivElement>(null);
     const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -52,14 +52,12 @@ export function AdaptiveLayout({
     // Get canvas state from Redux
     const isCanvasOpen = useAppSelector(selectCanvasIsOpen);
     const canvasContent = useAppSelector(selectCanvasContent);
-    const reduxCanvasWidth = useAppSelector(selectCanvasWidth);
 
     // Determine which canvas to show: explicit prop or Redux canvas
     const effectiveCanvasPanel = canvasPanel || 
       (!disableAutoCanvas && isCanvasOpen ? <CanvasRenderer content={canvasContent} /> : undefined);
     
     const hasCanvas = !!effectiveCanvasPanel;
-    const canvasWidth = reduxCanvasWidth; // Use Redux width for consistency
 
     // Track window width to determine mobile vs desktop
     useEffect(() => {
@@ -71,6 +69,32 @@ export function AdaptiveLayout({
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, [mobileBreakpoint]);
+
+    // Intelligently set canvas width when it first opens
+    useEffect(() => {
+        if (!hasCanvas) return;
+
+        const windowWidth = window.innerWidth;
+        const targetWidth = 1200;
+        const minMainContentWidth = 700;
+        const leftPanelWidth = leftPanel ? leftPanelMaxWidth : 0;
+        
+        // Calculate available space: window - leftPanel
+        const availableForCanvasAndMain = windowWidth - leftPanelWidth;
+        
+        // If we have enough space for target + min main content, use target
+        if (availableForCanvasAndMain >= targetWidth + minMainContentWidth) {
+            setCanvasWidth(targetWidth);
+        } else {
+            // Otherwise, maximize canvas while keeping main content readable
+            const maxPossibleWidth = Math.max(
+                400, // Absolute minimum canvas width
+                availableForCanvasAndMain - minMainContentWidth
+            );
+            // Cap at 1200px max
+            setCanvasWidth(Math.min(maxPossibleWidth, 1200));
+        }
+    }, [hasCanvas, leftPanel, leftPanelMaxWidth]);
 
     // Prevent ALL auto-scrolling behavior - AGGRESSIVE approach
     useEffect(() => {
@@ -148,30 +172,31 @@ export function AdaptiveLayout({
         };
     }, []);
 
+    // Handle mouse drag for resizing canvas panel - optimized with useCallback
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!containerRef.current) return;
+
+        const containerRect = containerRef.current.getBoundingClientRect();
+        
+        // Calculate width from the right edge
+        const newWidth = containerRect.right - e.clientX;
+        
+        // Constrain canvas width between 400px min and 1200px max
+        const minWidth = 400;
+        const maxWidth = 1200;
+        const constrainedWidth = Math.min(Math.max(newWidth, minWidth), maxWidth);
+        
+        // Update local state directly - much faster than Redux
+        setCanvasWidth(constrainedWidth);
+    }, []);
+
+    const handleMouseUp = useCallback(() => {
+        setIsResizing(false);
+    }, []);
+
     // Handle mouse drag for resizing canvas panel
     useEffect(() => {
         if (!isResizing) return;
-
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!containerRef.current) return;
-
-            const containerRect = containerRef.current.getBoundingClientRect();
-            
-            // Calculate width from the right edge
-            const newWidth = containerRect.right - e.clientX;
-            
-            // Constrain canvas width between 400px min and 1175px max
-            const minWidth = 400;
-            const maxWidth = 1175;
-            const constrainedWidth = Math.min(Math.max(newWidth, minWidth), maxWidth);
-            
-            // Update Redux state with new canvas width
-            dispatch(setCanvasWidth(constrainedWidth));
-        };
-
-        const handleMouseUp = () => {
-            setIsResizing(false);
-        };
 
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -180,7 +205,7 @@ export function AdaptiveLayout({
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isResizing, dispatch]);
+    }, [isResizing, handleMouseMove, handleMouseUp]);
 
     // Prevent text selection during resize
     useEffect(() => {
@@ -265,40 +290,54 @@ export function AdaptiveLayout({
                     {/* Canvas Panel - optional, right side (desktop only) */}
                     {hasCanvas && !isMobile && (
                         <>
-                            {/* Resizer Handle - Delicate line with hover handle */}
+                            {/* Resizer Handle - Wider hit area with visible handle */}
                             <div
                                 className={cn(
-                                    "group absolute top-0 bottom-0 w-px cursor-col-resize z-10",
-                                    "bg-gray-300 dark:bg-gray-700",
-                                    "hover:bg-blue-400 dark:hover:bg-blue-600 transition-colors"
+                                    "group absolute top-0 bottom-0 cursor-col-resize z-10",
+                                    "flex items-center justify-center"
                                 )}
                                 style={{
                                     right: `${canvasWidth}px`,
+                                    width: '16px', // Wider hit area
+                                    marginRight: '-8px', // Center on the border
                                 }}
                                 onMouseDown={() => setIsResizing(true)}
                             >
-                                {/* Drag Handle - appears on hover */}
+                                {/* Visual separator line - hidden in top rounded area */}
+                                <div className={cn(
+                                    "absolute bottom-0 w-px left-1/2 transform -translate-x-1/2",
+                                    "bg-gray-300 dark:bg-gray-700",
+                                    "group-hover:bg-zinc-400 dark:group-hover:bg-zinc-600 transition-colors"
+                                )}
+                                style={{
+                                    top: '4rem', // Start below the rounded corner (rounded-tl-2xl)
+                                }}
+                                />
+                                
+                                {/* Drag Handle - always visible, more prominent on hover */}
                                 <div className={cn(
                                     "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
-                                    "w-1 h-12 rounded-full",
+                                    "w-1.5 h-16 rounded-full",
                                     "bg-gray-400 dark:bg-gray-600",
-                                    "opacity-0 group-hover:opacity-100",
-                                    "transition-opacity duration-200",
+                                    "opacity-60 group-hover:opacity-100",
+                                    "group-hover:bg-zinc-500 dark:group-hover:bg-zinc-500",
+                                    "transition-all duration-200",
                                     "shadow-md"
                                 )}>
                                     {/* Grip lines */}
                                     <div className="absolute inset-0 flex items-center justify-center gap-0.5">
-                                        <div className="w-0.5 h-6 bg-white dark:bg-gray-800 rounded-full opacity-50" />
-                                        <div className="w-0.5 h-6 bg-white dark:bg-gray-800 rounded-full opacity-50" />
+                                        <div className="w-px h-8 bg-white dark:bg-gray-200 rounded-full opacity-60" />
+                                        <div className="w-px h-8 bg-white dark:bg-gray-200 rounded-full opacity-60" />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Canvas Panel */}
                             <div
-                                className="absolute top-0 bottom-0 right-0 overflow-hidden rounded-tl-2xl shadow-lg"
+                                className="absolute top-0 bottom-0 right-0 overflow-hidden shadow-lg border-l border-t border-zinc-200 dark:border-zinc-800 rounded-tl-2xl"
                                 style={{
                                     width: `${canvasWidth}px`,
+                                    pointerEvents: isResizing ? 'none' : 'auto', // Disable interaction during resize
                                 }}
                             >
                                 {effectiveCanvasPanel}

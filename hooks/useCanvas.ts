@@ -46,7 +46,7 @@ export function useCanvas() {
   }, [dispatch]);
 
   const update = useCallback((canvasContent: CanvasContent) => {
-    dispatch(updateCanvasContent(canvasContent));
+    dispatch(updateCanvasContent({ content: canvasContent }));
   }, [dispatch]);
 
   return {

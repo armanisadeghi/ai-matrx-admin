@@ -1,10 +1,21 @@
 "use client";
 
-import React from "react";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAppDispatch } from "@/lib/redux";
-import { closeCanvas, CanvasContent } from "@/lib/redux/slices/canvasSlice";
+import React, { useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { 
+  closeCanvas, 
+  clearCanvas,
+  setCurrentItem, 
+  removeCanvasItem,
+  selectCurrentCanvasItem,
+  selectCanvasItems,
+  selectCurrentItemId,
+  type CanvasItem,
+  type CanvasContent,
+} from "@/lib/redux/slices/canvasSlice";
+import { CanvasHeader, ViewMode } from "./CanvasHeader";
+import { CanvasNavigation } from "./CanvasNavigation";
+import { SavedCanvasItems } from "@/components/canvas/SavedCanvasItems";
 
 // Import all interactive blocks
 import MultipleChoiceQuiz from "@/components/mardown-display/blocks/quiz/MultipleChoiceQuiz";
@@ -22,7 +33,8 @@ import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/Flas
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 
 interface CanvasRendererProps {
-  content: CanvasContent | null;
+  // Props are now optional - component gets data from Redux
+  content?: CanvasContent | null;
 }
 
 /**
@@ -30,9 +42,19 @@ interface CanvasRendererProps {
  * 
  * Handles rendering of different interactive content types in the canvas panel.
  * Each block type is rendered with appropriate props and full interactivity.
+ * Now supports multiple canvas items with navigation and history.
  */
-export function CanvasRenderer({ content }: CanvasRendererProps) {
+export function CanvasRenderer({ content: propContent }: CanvasRendererProps) {
   const dispatch = useAppDispatch();
+  const [viewMode, setViewMode] = useState<ViewMode>('preview');
+  
+  // Get canvas state from Redux
+  const currentItem = useAppSelector(selectCurrentCanvasItem);
+  const allItems = useAppSelector(selectCanvasItems);
+  const currentItemId = useAppSelector(selectCurrentItemId);
+  
+  // Use prop content if provided, otherwise use Redux state
+  const content = propContent || currentItem?.content;
 
   if (!content) {
     return (
@@ -45,32 +67,141 @@ export function CanvasRenderer({ content }: CanvasRendererProps) {
   const handleClose = () => {
     dispatch(closeCanvas());
   };
+  
+  const handleNavigate = (itemId: string) => {
+    dispatch(setCurrentItem(itemId));
+    // Reset view mode when switching items
+    setViewMode('preview');
+  };
+  
+  const handleRemove = (itemId: string) => {
+    dispatch(removeCanvasItem(itemId));
+  };
+  
+  const handleClearAll = () => {
+    dispatch(clearCanvas());
+  };
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    console.log('Share clicked for:', content.type);
+  };
+
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  const handleSync = async () => {
+    if (!content || !currentItem) return;
+    
+    setIsSyncing(true);
+    
+    // Import the service dynamically to avoid circular dependencies
+    const { canvasItemsService } = await import('@/services/canvasItemsService');
+    const { markItemSynced } = await import('@/lib/redux/slices/canvasSlice');
+    
+    const { data, isDuplicate, error } = await canvasItemsService.save({
+      content,
+      source_message_id: content.metadata?.sourceMessageId,
+      task_id: content.metadata?.sourceTaskId,
+    });
+    
+    if (data && !error) {
+      // Mark item as synced in Redux
+      dispatch(markItemSynced({ 
+        canvasItemId: currentItem.id, 
+        savedItemId: data.id 
+      }));
+    }
+    
+    setIsSyncing(false);
+  };
+
+  // All canvas types now have sync support
+  const hasSyncSupport = true;
+  const isSynced = currentItem?.isSynced || false;
 
   return (
-    <div className="h-full flex flex-col bg-textured rounded-tl-2xl overflow-hidden">
-      {/* Canvas Header - Rounded top with subtle background */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-tl-2xl border-b border-gray-200/50 dark:border-gray-700/50">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-            {content.metadata?.title || 'Canvas View'}
-          </h3>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClose}
-          className="flex-shrink-0 ml-2 hover:bg-gray-200 dark:hover:bg-gray-700"
-        >
-          <X className="w-4 h-4" />
-        </Button>
-      </div>
+    <div className="h-full flex flex-col bg-textured overflow-hidden">
+      {/* Canvas Header */}
+      <CanvasHeader
+        title={viewMode === 'library' ? 'Saved Items' : (content.metadata?.title || getDefaultTitle(content.type))}
+        subtitle={viewMode === 'library' ? 'Manage your saved canvas items' : getSubtitle(content.type)}
+        onClose={handleClose}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        showLibraryToggle={true}
+        isSynced={isSynced}
+        isSyncing={isSyncing}
+        onSync={hasSyncSupport ? handleSync : undefined}
+        hideSync={!hasSyncSupport}
+        onShare={handleShare}
+        hideViewToggle={viewMode === 'library'}
+        customActions={
+          viewMode !== 'library' && (
+            <CanvasNavigation
+              items={allItems}
+              currentItemId={currentItemId}
+              onNavigate={handleNavigate}
+              onRemove={handleRemove}
+              onClearAll={handleClearAll}
+            />
+          )
+        }
+      />
 
       {/* Canvas Content */}
-      <div className="flex-1 overflow-y-auto">
-        {renderContent(content)}
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+        {viewMode === 'library' ? (
+          <SavedCanvasItems />
+        ) : viewMode === 'preview' ? (
+          renderContent(content)
+        ) : (
+          <div className="h-full p-4">
+            <pre className="text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900 p-4 rounded-lg overflow-auto h-full border border-zinc-200 dark:border-zinc-800 scrollbar-thin">
+              {JSON.stringify(content, null, 2)}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );
+}
+
+/**
+ * Get default title based on content type
+ */
+function getDefaultTitle(type: string): string {
+  const titles: Record<string, string> = {
+    quiz: 'Quiz',
+    presentation: 'Presentation',
+    iframe: 'Web View',
+    html: 'HTML View',
+    code: 'Code Viewer',
+    image: 'Image',
+    diagram: 'Diagram',
+    comparison: 'Comparison',
+    timeline: 'Timeline',
+    research: 'Research',
+    troubleshooting: 'Troubleshooting',
+    'decision-tree': 'Decision Tree',
+    flashcards: 'Flashcards',
+    recipe: 'Recipe',
+    resources: 'Resources',
+    progress: 'Progress Tracker',
+  };
+  return titles[type] || 'Canvas View';
+}
+
+/**
+ * Get subtitle based on content type
+ */
+function getSubtitle(type: string): string | undefined {
+  const subtitles: Record<string, string> = {
+    quiz: 'Interactive quiz',
+    presentation: 'Slideshow presentation',
+    code: 'Code snippet',
+    diagram: 'Interactive diagram',
+  };
+  return subtitles[type];
 }
 
 /**

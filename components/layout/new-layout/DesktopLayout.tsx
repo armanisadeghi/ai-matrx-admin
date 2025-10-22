@@ -38,10 +38,18 @@ export default function DesktopLayout({
 }: DesktopLayoutProps) {
     const pathname = usePathname();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(!initialOpen);
+    const [isAdminMenuCollapsed, setIsAdminMenuCollapsed] = useState(false);
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const isAdminIndicatorVisible = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
     
-    const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
+    const toggleSidebar = () => {
+        setIsTransitioning(true);
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+        // Clear transition flag after animation completes (300ms duration)
+        setTimeout(() => setIsTransitioning(false), 350);
+    };
+    const toggleAdminMenu = () => setIsAdminMenuCollapsed(!isAdminMenuCollapsed);
     const allLinks = [...primaryLinks, ...(isAdmin ? secondaryLinks : [])];
     
     // Only show secondary links if admin indicator is visible
@@ -150,18 +158,6 @@ export default function DesktopLayout({
                             className={`mb-2 flex-shrink-0 ${
                                 isSidebarCollapsed ? "cursor-ew-resize" : ""
                             }`}
-                            onClick={(e) => {
-                                if (isSidebarCollapsed) {
-                                    const target = e.target as HTMLElement;
-                                    const isLink = target.tagName === 'A' || target.closest('a') === target;
-                                    const isButton = target.tagName === 'BUTTON';
-                                    const isInput = target.tagName === 'INPUT';
-                                    
-                                    if (!isLink && !isButton && !isInput) {
-                                        toggleSidebar();
-                                    }
-                                }
-                            }}
                         >
                             <ul className="space-y-1">
                                 {primaryLinks.map((link, index) => (
@@ -190,7 +186,7 @@ export default function DesktopLayout({
                                                     </span>
                                                 </a>
                                             </TooltipTrigger>
-                                            {isSidebarCollapsed && (
+                                            {isSidebarCollapsed && !isTransitioning && (
                                                 <TooltipContent 
                                                     side="right" 
                                                     className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
@@ -208,111 +204,79 @@ export default function DesktopLayout({
                     {/* Route-specific content area - Scrollable middle section */}
                     <div 
                         className={`flex-1 min-h-0 overflow-y-auto scrollbar-none mb-2 ${
-                            isSidebarCollapsed ? "cursor-ew-resize" : ""
+                            isSidebarCollapsed ? "cursor-ew-resize pointer-events-none" : ""
                         }`}
-                        onClick={(e) => {
-                            if (isSidebarCollapsed) {
-                                const target = e.target as HTMLElement;
-                                const isLink = target.tagName === 'A' || target.closest('a') === target;
-                                const isButton = target.tagName === 'BUTTON';
-                                const isInput = target.tagName === 'INPUT';
-                                
-                                if (!isLink && !isButton && !isInput) {
-                                    toggleSidebar();
-                                }
-                            }
-                        }}
                     >
-                        <div id="page-specific-sidebar-content" className="h-full" />
+                        <div id="page-specific-sidebar-content" className={`h-full ${isSidebarCollapsed ? "pointer-events-none" : ""}`} />
                     </div>
 
                     {/* Secondary Links (Admin) - Only show if admin indicator is visible */}
                     {shouldShowSecondaryLinks && secondaryLinks.length > 0 && (
                         <div 
-                            className={`flex-shrink-0 border-t border-gray-300 dark:border-gray-700 pt-2 mb-2 ${
-                                isSidebarCollapsed ? "cursor-ew-resize" : ""
-                            }`}
-                            onClick={(e) => {
-                                if (isSidebarCollapsed) {
-                                    const target = e.target as HTMLElement;
-                                    const isLink = target.tagName === 'A' || target.closest('a') === target;
-                                    const isButton = target.tagName === 'BUTTON';
-                                    const isInput = target.tagName === 'INPUT';
-                                    
-                                    if (!isLink && !isButton && !isInput) {
-                                        toggleSidebar();
-                                    }
-                                }
-                            }}
+                            className="flex-shrink-0 border-t border-gray-300 dark:border-gray-700 pt-2 mb-2 flex flex-col min-h-0"
                         >
                             <h3 
-                                className={`px-1 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-all duration-300 ease-in-out ${
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleAdminMenu();
+                                }}
+                                className={`px-1 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-all duration-300 ease-in-out cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 flex-shrink-0 ${
                                     isSidebarCollapsed 
                                         ? "opacity-0 translate-x-2 pointer-events-none" 
                                         : "opacity-100 translate-x-0"
                                 }`}
                             >
-                                Admin
+                                Admin {!isSidebarCollapsed && (isAdminMenuCollapsed ? "▸" : "▾")}
                             </h3>
-                            <ul className="space-y-1">
-                                {secondaryLinks.map((link, index) => (
-                                    <li key={`secondary-${index}`}>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <a
-                                                    href={link.href}
-                                                    className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
-                                                        isLinkActive(link.href)
-                                                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
-                                                            : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
-                                                    }`}
-                                                >
-                                                    <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                                                        {link.icon}
-                                                    </div>
-                                                    <span 
-                                                        className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
-                                                            isSidebarCollapsed 
-                                                                ? "opacity-0 translate-x-2 pointer-events-none" 
-                                                                : "opacity-100 translate-x-0"
-                                                        }`}
-                                                    >
-                                                        {link.label}
-                                                    </span>
-                                                </a>
-                                            </TooltipTrigger>
-                                            {isSidebarCollapsed && (
-                                                <TooltipContent 
-                                                    side="right" 
-                                                    className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
-                                                >
-                                                    {link.label}
-                                                </TooltipContent>
-                                            )}
-                                        </Tooltip>
-                                    </li>
-                                ))}
-                            </ul>
+                            {!isAdminMenuCollapsed && (
+                                <div className="overflow-y-auto scrollbar-none max-h-[300px]">
+                                    <ul className="space-y-1">
+                                        {secondaryLinks.map((link, index) => (
+                                            <li key={`secondary-${index}`}>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <a
+                                                            href={link.href}
+                                                            className={`relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] ${
+                                                                isLinkActive(link.href)
+                                                                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 shadow-sm"
+                                                                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
+                                                            }`}
+                                                        >
+                                                            <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                                                                {link.icon}
+                                                            </div>
+                                                            <span 
+                                                                className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
+                                                                    isSidebarCollapsed 
+                                                                        ? "opacity-0 translate-x-2 pointer-events-none" 
+                                                                        : "opacity-100 translate-x-0"
+                                                                }`}
+                                                            >
+                                                                {link.label}
+                                                            </span>
+                                                        </a>
+                                                    </TooltipTrigger>
+                                                    {isSidebarCollapsed && !isTransitioning && (
+                                                        <TooltipContent 
+                                                            side="right" 
+                                                            className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
+                                                        >
+                                                            {link.label}
+                                                        </TooltipContent>
+                                                    )}
+                                                </Tooltip>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     )}
 
                     {/* User Profile Section - Fixed at bottom */}
                     <div 
-                        className={`flex-shrink-0 border-t border-gray-300 dark:border-gray-700 pt-2 ${
-                            isSidebarCollapsed ? "cursor-ew-resize" : ""
-                        }`}
-                        onClick={(e) => {
-                            if (isSidebarCollapsed) {
-                                const target = e.target as HTMLElement;
-                                const isLink = target.tagName === 'A' || target.closest('a') === target;
-                                const isButton = target.tagName === 'BUTTON';
-                                const isInput = target.tagName === 'INPUT';
-                                
-                                if (!isLink && !isButton && !isInput) {
-                                    toggleSidebar();
-                                }
-                            }
-                        }}
+                        className="flex-shrink-0 border-t border-gray-300 dark:border-gray-700 pt-2"
                     >
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -334,7 +298,7 @@ export default function DesktopLayout({
                                     </span>
                                 </Link>
                             </TooltipTrigger>
-                            {isSidebarCollapsed && (
+                            {isSidebarCollapsed && !isTransitioning && (
                                 <TooltipContent 
                                     side="right" 
                                     className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
