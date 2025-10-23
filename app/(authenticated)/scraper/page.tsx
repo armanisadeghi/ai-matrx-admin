@@ -82,9 +82,9 @@ export default function Page() {
     };
 
     return (
-        <div className="min-h-screen bg-textured">
+        <div className="h-full flex flex-col bg-textured">
             {/* Compact Input Row */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured flex-shrink-0">
                 <div className="flex gap-3 items-center max-w-6xl mx-auto">
                     <div className="flex-1">
                         <Input
@@ -142,7 +142,14 @@ export default function Page() {
                 )}
             </div>
 
-            {/* Results will be shown on dedicated results page */}
+            {/* Main content area - can be expanded for future features */}
+            <div className="flex-1 flex items-center justify-center p-8">
+                <div className="text-center text-gray-500 dark:text-gray-400">
+                    <Globe className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <h2 className="text-xl font-semibold mb-2">Web Scraper</h2>
+                    <p className="text-sm">Enter a URL above to start scraping content</p>
+                </div>
+            </div>
         </div>
     );
 }
