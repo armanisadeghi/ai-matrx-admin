@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       '@ai-sdk/google':
-        specifier: latest
-        version: 2.0.23(zod@3.24.1)
+        specifier: ^2.0.23
+        version: 2.0.23(zod@4.1.12)
       '@ai-sdk/openai':
-        specifier: latest
-        version: 2.0.53(zod@3.24.1)
+        specifier: ^2.0.53
+        version: 2.0.53(zod@4.1.12)
       '@anthropic-ai/sdk':
         specifier: latest
-        version: 0.67.0(zod@3.24.1)
+        version: 0.67.0(zod@4.1.12)
       '@cartesia/cartesia-js':
         specifier: ^2.2.3
         version: 2.2.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -270,11 +270,11 @@ importers:
         specifier: ^33.3.0
         version: 33.3.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       ai:
-        specifier: latest
-        version: 5.0.76(zod@3.24.1)
+        specifier: ^5.0.76
+        version: 5.0.76(zod@4.1.12)
       anthropic-vertex-ai:
         specifier: latest
-        version: 1.0.2(zod@3.24.1)
+        version: 1.0.2(zod@4.1.12)
       array-move:
         specifier: latest
         version: 4.0.0
@@ -403,7 +403,7 @@ importers:
         version: 6.10.0
       openai:
         specifier: latest
-        version: 4.98.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)
+        version: 4.98.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.12)
       papaparse:
         specifier: ^5.5.2
         version: 5.5.2
@@ -626,9 +626,6 @@ importers:
       xlsx:
         specifier: latest
         version: 0.18.5
-      zod:
-        specifier: 3.24.1
-        version: 3.24.1
     devDependencies:
       '@iconify/react':
         specifier: ^5.2.1
@@ -12169,6 +12166,9 @@ packages:
   zod@3.24.4:
     resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
 
+  zod@4.1.12:
+    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
+
   zustand@3.7.2:
     resolution: {integrity: sha512-PIJDIZKtokhof+9+60cpockVOq05sJzHCriyvaLBmEJixseQ1a5Kdov6fWZfWOu5SK9c+FhH1jU0tntLxRJYMA==}
     engines: {node: '>=12.7.0'}
@@ -12216,40 +12216,40 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/gateway@2.0.0(zod@3.24.1)':
+  '@ai-sdk/gateway@2.0.0(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.12(zod@3.24.1)
+      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
       '@vercel/oidc': 3.0.3
-      zod: 3.24.1
+      zod: 4.1.12
 
-  '@ai-sdk/google@2.0.23(zod@3.24.1)':
+  '@ai-sdk/google@2.0.23(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.12(zod@3.24.1)
-      zod: 3.24.1
+      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
+      zod: 4.1.12
 
-  '@ai-sdk/openai@2.0.53(zod@3.24.1)':
+  '@ai-sdk/openai@2.0.53(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.12(zod@3.24.1)
-      zod: 3.24.1
+      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
+      zod: 4.1.12
 
-  '@ai-sdk/provider-utils@1.0.20(zod@3.24.1)':
+  '@ai-sdk/provider-utils@1.0.20(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 0.0.24
       eventsource-parser: 1.1.2
       nanoid: 3.3.6
       secure-json-parse: 2.7.0
     optionalDependencies:
-      zod: 3.24.1
+      zod: 4.1.12
 
-  '@ai-sdk/provider-utils@3.0.12(zod@3.24.1)':
+  '@ai-sdk/provider-utils@3.0.12(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.6
-      zod: 3.24.1
+      zod: 4.1.12
 
   '@ai-sdk/provider@0.0.24':
     dependencies:
@@ -12322,11 +12322,11 @@ snapshots:
 
   '@antfu/utils@9.3.0': {}
 
-  '@anthropic-ai/sdk@0.67.0(zod@3.24.1)':
+  '@anthropic-ai/sdk@0.67.0(zod@4.1.12)':
     dependencies:
       json-schema-to-ts: 3.1.1
     optionalDependencies:
-      zod: 3.24.1
+      zod: 4.1.12
 
   '@asamuzakjp/css-color@3.1.7':
     dependencies:
@@ -18957,13 +18957,13 @@ snapshots:
       screenfull: 5.2.0
       tslib: 2.8.1
 
-  ai@5.0.76(zod@3.24.1):
+  ai@5.0.76(zod@4.1.12):
     dependencies:
-      '@ai-sdk/gateway': 2.0.0(zod@3.24.1)
+      '@ai-sdk/gateway': 2.0.0(zod@4.1.12)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.12(zod@3.24.1)
+      '@ai-sdk/provider-utils': 3.0.12(zod@4.1.12)
       '@opentelemetry/api': 1.9.0
-      zod: 3.24.1
+      zod: 4.1.12
 
   ajv-errors@1.0.1(ajv@6.12.6):
     dependencies:
@@ -19075,12 +19075,12 @@ snapshots:
       - luxon
       - moment
 
-  anthropic-vertex-ai@1.0.2(zod@3.24.1):
+  anthropic-vertex-ai@1.0.2(zod@4.1.12):
     dependencies:
       '@ai-sdk/provider': 0.0.24
-      '@ai-sdk/provider-utils': 1.0.20(zod@3.24.1)
+      '@ai-sdk/provider-utils': 1.0.20(zod@4.1.12)
       google-auth-library: 9.15.1
-      zod: 3.24.1
+      zod: 4.1.12
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -23103,7 +23103,7 @@ snapshots:
 
   md5.js@1.3.5:
     dependencies:
-      hash-base: 3.0.5
+      hash-base: 3.1.2
       inherits: 2.0.4
       safe-buffer: 5.2.1
 
@@ -24111,7 +24111,7 @@ snapshots:
       iconv-lite: 0.6.3
       undici: 6.21.3
 
-  openai@4.98.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1):
+  openai@4.98.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.12):
     dependencies:
       '@types/node': 18.19.100
       '@types/node-fetch': 2.6.12
@@ -24122,7 +24122,7 @@ snapshots:
       node-fetch: 2.7.0
     optionalDependencies:
       ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      zod: 3.24.1
+      zod: 4.1.12
     transitivePeerDependencies:
       - encoding
 
@@ -27659,6 +27659,8 @@ snapshots:
   zod@3.24.1: {}
 
   zod@3.24.4: {}
+
+  zod@4.1.12: {}
 
   zustand@3.7.2(react@19.2.0):
     optionalDependencies:

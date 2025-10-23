@@ -16,8 +16,8 @@
     "migrate-content-blocks": "npx tsx scripts/migrate-content-blocks.ts"
   },
   "dependencies": {
-    "@ai-sdk/google": "latest",
-    "@ai-sdk/openai": "latest",
+    "@ai-sdk/google": "^2.0.23",
+    "@ai-sdk/openai": "^2.0.53",
     "@anthropic-ai/sdk": "latest",
     "@cartesia/cartesia-js": "^2.2.3",
     "@cerebras/cerebras_cloud_sdk": "latest",
@@ -103,7 +103,7 @@
     "@xyflow/react": "latest",
     "ag-grid-community": "^33.3.0",
     "ag-grid-react": "^33.3.0",
-    "ai": "latest",
+    "ai": "^5.0.76",
     "anthropic-vertex-ai": "latest",
     "array-move": "latest",
     "canvas": "latest",
@@ -221,8 +221,7 @@
     "wavesurfer.js": "^7.9.5",
     "websocket": "^1.0.35",
     "wikipedia": "latest",
-    "xlsx": "latest",
-    "zod": "3.24.1"
+    "xlsx": "latest"
   },
   "devDependencies": {
     "@iconify/react": "^5.2.1",
