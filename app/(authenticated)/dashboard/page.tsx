@@ -13,9 +13,10 @@ import {
     Brain,
     Settings,
     User,
+    FileText,
+    Workflow,
+    Scissors,
 } from "lucide-react";
-import { BalancedMatrxFloatingMenu } from "@/components/layout/BalancedMatrxFloatingMenu";
-import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { Grid, CardProps, HorizontalCardProps, List } from "@/components/official/card-and-grid";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AiFillAudio } from "react-icons/ai";
@@ -131,6 +132,27 @@ const DashboardPage = () => {
             icon: <Image />,
             color: "rose",
             path: "/image-editing/public-image-search",
+        },
+        {
+            title: "Prompts",
+            description: "Create and manage AI prompts for better interactions",
+            icon: <FileText />,
+            color: "teal",
+            path: "/ai/prompts",
+        },
+        {
+            title: "Workflow",
+            description: "Design and automate complex workflows",
+            icon: <Workflow />,
+            color: "purple",
+            path: "/workflow",
+        },
+        {
+            title: "Scraper",
+            description: "Extract and process data from web sources",
+            icon: <Scissors />,
+            color: "amber",
+            path: "/scraper",
         },
     ];
 

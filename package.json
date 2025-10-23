@@ -222,7 +222,7 @@
     "websocket": "^1.0.35",
     "wikipedia": "latest",
     "xlsx": "latest",
-    "zod": "latest"
+    "zod": "4.0.0"
   },
   "devDependencies": {
     "@iconify/react": "^5.2.1",
