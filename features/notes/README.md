@@ -169,6 +169,39 @@ import { QuickCaptureButton } from '@/features/notes';
 />
 ```
 
+### How Auto-Labeling Works
+
+**All quick save utilities benefit from automatic labeling:**
+
+When you call `NotesAPI.create()` or use any quick save button:
+1. If `label` is missing, empty, or "New Note"
+2. AND content is provided
+3. The system automatically generates a smart label from the content
+
+**Examples:**
+```typescript
+// This will auto-generate a label from content
+await NotesAPI.create({
+    content: "Remember to buy milk and eggs tomorrow",
+    folder_name: "Personal"
+});
+// Result: Label = "Remember to buy milk and eggs..."
+
+// This will use the provided label
+await NotesAPI.create({
+    label: "Shopping List",
+    content: "Remember to buy milk and eggs tomorrow",
+    folder_name: "Personal"
+});
+// Result: Label = "Shopping List"
+
+// Copying a note with "New Note" label will auto-generate
+const copied = await NotesAPI.copy(noteWithNewNoteLabel);
+// Result: New label generated from content, not "New Note (Copy)"
+```
+
+This means **you never have to worry about labeling** when using quick save utilities - just provide content and the system handles the rest!
+
 ## Context Hook
 
 For custom UIs that need shared state:
@@ -196,11 +229,14 @@ function MyComponent() {
 ## Key Features
 
 ### Core Functionality
-- **Auto-labeling**: Generates titles from content (12+ chars or Enter key)
+- **Auto-labeling**: 
+  - UI: Generates titles from content (12+ chars or Enter key)
+  - API: Automatically labels on save if label is missing or "New Note"
+  - Works everywhere: Manual creation, quick saves, API calls
 - **No duplicates**: Smart checking prevents multiple empty notes
 - **Real-time sync**: All views share state automatically
 - **Auto-save**: 1-second debounce with dirty tracking
-- **Copy notes**: Duplicate any note with one click
+- **Copy notes**: Duplicate any note with one click (smart label handling)
 - **Share notes**: Generate shareable links for collaboration
 
 ### Organization

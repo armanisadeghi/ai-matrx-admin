@@ -1,9 +1,11 @@
-import React from "react";
-import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain } from "lucide-react";
+import React, { useState } from "react";
+import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import { toast } from "@/components/ui/use-toast";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
+import { NotesAPI } from "@/features/notes";
+import { QuickSaveModal } from "@/features/notes";
 
 interface MessageOptionsMenuProps {
   content: string;
@@ -13,6 +15,21 @@ interface MessageOptionsMenuProps {
 }
 
 const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, isOpen }) => {
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+
+  // Notes handlers
+  const handleSaveToScratch = async () => {
+    await NotesAPI.create({
+      label: 'New Note',
+      content: content,
+      folder_name: 'Scratch',
+      tags: [],
+    });
+  };
+
+  const handleSaveToNotes = () => {
+    setIsSaveModalOpen(true);
+  };
 
   // Copy handlers - simplified without state management
   const handleCopyPlain = async () => {
@@ -168,14 +185,26 @@ ${cssContent}
     },
     // Action Options
     { 
-      key: 'save-data',
-      icon: Database, 
+      key: 'save-scratch',
+      icon: FileText, 
       iconColor: "text-cyan-500 dark:text-cyan-400", 
-      label: "Save to data", 
-      description: "Store in database",
-      action: () => {},
+      label: "Save to Scratch", 
+      description: "Quick save to Scratch folder",
+      action: handleSaveToScratch,
       category: "Actions",
-      disabled: true,
+      successMessage: "Saved to Scratch!",
+      errorMessage: "Failed to save to Scratch"
+    },
+    { 
+      key: 'save-notes',
+      icon: Save, 
+      iconColor: "text-violet-500 dark:text-violet-400", 
+      label: "Save to Notes", 
+      description: "Edit and choose folder",
+      action: handleSaveToNotes,
+      category: "Actions",
+      successMessage: "Opening save dialog...",
+      errorMessage: "Failed to open save dialog",
       showToast: false
     },
     { 
@@ -214,14 +243,27 @@ ${cssContent}
   ];
 
   return (
-    <AdvancedMenu
-      isOpen={isOpen}
-      onClose={onClose}
-      items={menuItems}
-      title="Message Options"
-      description="Copy, export, or save this message"
-      position="bottom-left"
-    />
+    <>
+      <AdvancedMenu
+        isOpen={isOpen}
+        onClose={onClose}
+        items={menuItems}
+        title="Message Options"
+        description="Copy, export, or save this message"
+        position="bottom-left"
+      />
+      
+      <QuickSaveModal
+        open={isSaveModalOpen}
+        onOpenChange={setIsSaveModalOpen}
+        initialContent={content}
+        defaultFolder="Scratch"
+        onSaved={() => {
+          setIsSaveModalOpen(false);
+          onClose();
+        }}
+      />
+    </>
   );
 };
 

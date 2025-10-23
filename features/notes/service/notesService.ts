@@ -2,6 +2,7 @@
 
 import { supabase } from '@/utils/supabase/client';
 import type { Note, CreateNoteInput, UpdateNoteInput } from '../types';
+import { generateLabelFromContent } from '../hooks/useAutoLabel';
 
 /**
  * Fetch all notes for the current user (excluding deleted)
@@ -42,6 +43,7 @@ export async function fetchNoteById(id: string): Promise<Note | null> {
 
 /**
  * Create a new note
+ * Automatically generates label from content if label is missing or is "New Note"
  */
 export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
     const { data: userData } = await supabase.auth.getUser();
@@ -50,12 +52,29 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
         throw new Error('User not authenticated');
     }
 
+    // Auto-generate label from content if needed
+    let finalLabel = input.label || 'New Note';
+    const content = input.content || '';
+    
+    // Check if we should auto-generate the label
+    const shouldAutoGenerate = 
+        !finalLabel || 
+        finalLabel.trim() === '' || 
+        finalLabel.toLowerCase() === 'new note';
+    
+    if (shouldAutoGenerate && content.trim()) {
+        const generatedLabel = generateLabelFromContent(content);
+        if (generatedLabel) {
+            finalLabel = generatedLabel;
+        }
+    }
+
     const { data, error } = await supabase
         .from('notes')
         .insert({
             user_id: userData.user.id,
-            label: input.label || 'New Note',
-            content: input.content || '',
+            label: finalLabel,
+            content: content,
             folder_name: input.folder_name || 'Draft',
             tags: input.tags || [],
             metadata: input.metadata || {},
@@ -123,6 +142,7 @@ export async function permanentlyDeleteNote(id: string): Promise<void> {
 
 /**
  * Copy/duplicate a note
+ * Smart labeling: If original was "New Note", auto-generate from content
  */
 export async function copyNote(id: string): Promise<Note> {
     // First fetch the original note
@@ -137,9 +157,19 @@ export async function copyNote(id: string): Promise<Note> {
         throw fetchError || new Error('Note not found');
     }
 
+    // Smart label handling
+    let copyLabel: string;
+    if (original.label.toLowerCase() === 'new note') {
+        // If original was "New Note", let auto-labeling handle it
+        copyLabel = 'New Note';
+    } else {
+        // Otherwise, append (Copy) to the original label
+        copyLabel = `${original.label} (Copy)`;
+    }
+
     // Create a copy with modified label
     const copy: CreateNoteInput = {
-        label: `${original.label} (Copy)`,
+        label: copyLabel,
         content: original.content,
         folder_name: original.folder_name,
         tags: original.tags || [],

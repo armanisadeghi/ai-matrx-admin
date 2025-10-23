@@ -53,7 +53,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
     if (!initialLoadComplete) {
         return (
             <div
-            className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 z-50"
+            className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 z-50 bg-textured"
         >
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100">Chat reimagined.</h1>
@@ -84,7 +84,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
 
     // Before first message - show welcome screen centered in parent's scrollable area
     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 pointer-events-none bg-textured">
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100">Chat reimagined.</h1>
                 <p className="text-xl text-gray-600 dark:text-gray-400">Artificial Intelligence with Matrx Superpowers.</p>

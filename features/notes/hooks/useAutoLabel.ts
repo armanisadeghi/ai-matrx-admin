@@ -71,8 +71,10 @@ export function useAutoLabel({
  * - Removes extra whitespace
  * - Capitalizes first letter
  * - Adds ellipsis if truncated
+ * 
+ * Exported for use in service layer auto-labeling
  */
-function generateLabelFromContent(content: string, maxLength: number = 30): string {
+export function generateLabelFromContent(content: string, maxLength: number = 30): string {
     if (!content || content.trim() === '') {
         return '';
     }

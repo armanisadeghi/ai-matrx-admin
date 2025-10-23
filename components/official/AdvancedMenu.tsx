@@ -339,14 +339,14 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           getPositionClasses(),
           "z-50 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
           "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]",
-          "rounded-2xl border-2 border-zinc-300 dark:border-zinc-600",
+          "rounded-xl border border-zinc-300 dark:border-zinc-600",
           "overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",
           className
         )}
       >
         {/* Header */}
         {showHeader && (
-          <div className="px-3 py-2 border-b-2 border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-800/60">
+          <div className="px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-800/60">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
               {title}
             </h3>
@@ -361,10 +361,10 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
         {/* Menu Content */}
         <div className="overflow-y-auto scrollbar-thin">
           {Object.entries(groupedItems).map(([category, categoryItems]) => (
-            <div key={category} className="py-1.5">
+            <div key={category} className="py-1">
               {/* Category Header (only show if categorizing and category name exists) */}
               {categorizeItems && category && (
-                <div className="px-3 py-1">
+                <div className="px-3 py-0.5">
                   <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {category}
                   </h4>
@@ -387,7 +387,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
                       onClick={() => !isDisabled && handleAction(item)}
                       disabled={isDisabled}
                       className={cn(
-                        "w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg",
+                        "w-full flex items-start gap-2 px-2.5 py-1.5 rounded-lg",
                         "text-left transition-all duration-150",
                         isDisabled
                           ? "opacity-50 cursor-not-allowed"
@@ -400,7 +400,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
                       {/* Icon */}
                       <div
                         className={cn(
-                          "flex-shrink-0 mt-0.5 transition-transform duration-150",
+                          "flex-shrink-0 transition-transform duration-150",
                           !isDisabled && "group-hover:scale-110"
                         )}
                       >
@@ -442,7 +442,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
                           )}
                         </div>
                         {item.description && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
                             {isLoading
                               ? item.loadingMessage || "Processing..."
                               : isSuccess
