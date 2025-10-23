@@ -9,7 +9,7 @@ export * from './flashcards.types';
 export * from './FlexibleId';
 export * from './FlexRef';
 export * from './imageEditorTypes';
-export * from './notes.types';
+export * from '../features/notes/types';
 export * from './reduxTypes';
 export * from './schema';
 export * from './admin/fileIndexTypes';

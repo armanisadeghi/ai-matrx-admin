@@ -19,8 +19,6 @@ import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
 import uiReducer from "./ui/uiSlice";
 import { entitySliceRegistry, initializeEntitySlices } from "./entity/entitySlice";
 import { fieldReducer } from "@/lib/redux/concepts/fields/fieldSlice";
-import notesReducer from "./notes/notesSlice";
-import tagsReducer from "./notes/tagsSlice";
 import { storageReducer } from "./storage";
 import { createFileSystemSlice } from "./fileSystem/slice";
 import { AvailableBuckets, FileManagement } from "./fileSystem/types";
@@ -108,8 +106,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         adminDebug: adminDebugReducer,
         globalCache: globalCacheSlice.reducer,
         ui: uiReducer,
-        notes: notesReducer,
-        tags: tagsReducer,
         storage: storageReducer,
         conversation: conversationReducer,
         messages: messagesReducer,

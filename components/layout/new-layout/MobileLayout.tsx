@@ -6,6 +6,7 @@ import { ThemeSwitcherIcon } from '@/styles/themes/ThemeSwitcher';
 import { NavigationMenu } from '@/components/ui/navigation-menu';
 import { NotificationDropdown } from '@/components/ui/notifications';
 import { Notification } from '@/types/notification.types';
+import { QuickActionsMenu } from '@/components/layout/QuickActionsMenu';
 
 interface SidebarLink {
   label: string;
@@ -82,6 +83,7 @@ export default function MobileLayout({
                 }
               }}
             />
+            <QuickActionsMenu className="hover:bg-gray-100 dark:hover:bg-gray-800" />
             <ThemeSwitcherIcon className="hover:bg-gray-100 dark:hover:bg-gray-800" />
             <NavigationMenu />
           </div>

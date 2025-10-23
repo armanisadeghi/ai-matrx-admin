@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { QuickActionsMenu } from "@/components/layout/QuickActionsMenu";
 
 interface SidebarLink {
     label: string;
@@ -133,6 +134,7 @@ export default function DesktopLayout({
                                 }
                             }}
                         />
+                        <QuickActionsMenu className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <ThemeSwitcherIcon className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <NavigationMenu />
                     </div>
