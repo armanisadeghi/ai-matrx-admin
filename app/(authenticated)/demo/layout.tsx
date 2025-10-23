@@ -13,14 +13,14 @@ export default function Layout(
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-[calc(100vh-2.5rem)]">
             <ModuleHeader
                 pages={filteredPages}
                 currentPath={currentPath}
                 moduleHome={MODULE_HOME}
                 moduleName={MODULE_NAME}
             />
-            <main className="w-full h-full bg-gray-100 dark:bg-gray-800">
+            <main className="w-full h-full bg-textured">
                 {children}
             </main>
         </div>

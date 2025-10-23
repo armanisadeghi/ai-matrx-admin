@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/components/ui/use-toast';
 import {
     Plus,
     Trash2,
@@ -118,6 +119,9 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
     const [newCategoryLabel, setNewCategoryLabel] = useState('');
     const [newSubcategoryData, setNewSubcategoryData] = useState<{ categoryId: string; label: string } | null>(null);
+
+    // Toast notifications
+    const { toast } = useToast();
 
     // Load data from Supabase
     const loadData = async () => {
@@ -410,7 +414,33 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         
         try {
             const supabase = getBrowserSupabaseClient();
-            const categoryId = newCategoryLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            
+            // Generate base ID from label
+            let baseId = newCategoryLabel
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, ''); // Remove leading/trailing dashes
+            
+            // Ensure we have a valid ID
+            if (!baseId) {
+                toast({
+                    title: "Invalid Name",
+                    description: "Please enter a valid category name with letters or numbers.",
+                    variant: "destructive"
+                });
+                return;
+            }
+            
+            // Check if ID already exists and make it unique if needed
+            let categoryId = baseId;
+            let counter = 1;
+            const existingIds = categories.map(c => c.category_id);
+            
+            while (existingIds.includes(categoryId)) {
+                categoryId = `${baseId}-${counter}`;
+                counter++;
+            }
+            
             const maxSortOrder = Math.max(0, ...categories.map(c => c.sort_order || 0));
             
             const { error } = await supabase
@@ -422,13 +452,48 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     is_active: true
                 }]);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase error details:', error);
+                
+                let title = "Error Creating Category";
+                let description = "";
+                
+                // Check for specific error types
+                if (error.code === '23505') {
+                    // Unique constraint violation
+                    title = "Duplicate ID";
+                    description = `Category ID "${categoryId}" already exists in the database.`;
+                } else if (error.code === '23502') {
+                    // NOT NULL constraint violation
+                    const match = error.message.match(/column "([^"]+)"/);
+                    const column = match ? match[1] : 'unknown';
+                    title = "Missing Required Field";
+                    description = `Database requires field "${column}" but it wasn't provided. This is a bug - please report it.`;
+                } else {
+                    // Generic error
+                    description = `${error.message}\n\nError Code: ${error.code || 'unknown'}`;
+                }
+                
+                toast({
+                    title,
+                    description,
+                    variant: "destructive"
+                });
+                
+                throw error;
+            }
+            
+            toast({
+                title: "Success",
+                description: `Category "${newCategoryLabel}" created successfully.`,
+                variant: "success"
+            });
             
             setNewCategoryLabel('');
             loadData();
-        } catch (error) {
-            console.error('Error creating category:', error);
-            alert('Error creating category. Make sure the category ID is unique.');
+        } catch (error: any) {
+            console.error('Error creating category - full error:', error);
+            // Error toast already shown above if it's a Supabase error
         }
     };
 
@@ -481,7 +546,35 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         
         try {
             const supabase = getBrowserSupabaseClient();
-            const subcategoryId = label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            
+            // Generate base ID from label
+            let baseId = label
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, ''); // Remove leading/trailing dashes
+            
+            // Ensure we have a valid ID
+            if (!baseId) {
+                toast({
+                    title: "Invalid Name",
+                    description: "Please enter a valid subcategory name with letters or numbers.",
+                    variant: "destructive"
+                });
+                return;
+            }
+            
+            // Check if ID already exists across ALL categories and make it unique if needed
+            let subcategoryId = baseId;
+            let counter = 1;
+            const existingIds = categories.flatMap(c => 
+                (c.subcategories || []).map(s => s.subcategory_id)
+            );
+            
+            while (existingIds.includes(subcategoryId)) {
+                subcategoryId = `${baseId}-${counter}`;
+                counter++;
+            }
+            
             const category = categories.find(c => c.category_id === categoryId);
             const maxSortOrder = Math.max(0, ...(category?.subcategories || []).map(s => s.sort_order || 0));
             
@@ -491,17 +584,57 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     subcategory_id: subcategoryId,
                     category_id: categoryId,
                     label: label,
+                    icon_name: 'Folder', // Default icon
                     sort_order: maxSortOrder + 1,
                     is_active: true
                 }]);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase error details:', error);
+                
+                let title = "Error Creating Subcategory";
+                let description = "";
+                
+                // Check for specific error types
+                if (error.code === '23505') {
+                    // Unique constraint violation
+                    title = "Duplicate ID";
+                    description = `Subcategory ID "${subcategoryId}" already exists in the database.`;
+                } else if (error.code === '23502') {
+                    // NOT NULL constraint violation
+                    const match = error.message.match(/column "([^"]+)"/);
+                    const column = match ? match[1] : 'unknown';
+                    title = "Missing Required Field";
+                    description = `Database requires field "${column}" but it wasn't provided. This is a bug - please report it.`;
+                } else if (error.code === '23503') {
+                    // Foreign key violation
+                    title = "Invalid Reference";
+                    description = `Category "${categoryId}" does not exist.`;
+                } else {
+                    // Generic error
+                    description = `${error.message}\n\nError Code: ${error.code || 'unknown'}`;
+                }
+                
+                toast({
+                    title,
+                    description,
+                    variant: "destructive"
+                });
+                
+                throw error;
+            }
+            
+            toast({
+                title: "Success",
+                description: `Subcategory "${label}" created successfully.`,
+                variant: "success"
+            });
             
             setNewSubcategoryData(null);
             loadData();
-        } catch (error) {
-            console.error('Error creating subcategory:', error);
-            alert('Error creating subcategory. Make sure the subcategory ID is unique.');
+        } catch (error: any) {
+            console.error('Error creating subcategory - full error:', error);
+            // Error toast already shown above if it's a Supabase error
         }
     };
 
@@ -560,9 +693,9 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     }
 
     return (
-        <div className={`flex h-full w-full bg-textured ${className}`}>
+        <div className={`flex h-full w-full bg-textured overflow-hidden ${className}`}>
             {/* Sidebar */}
-            <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+            <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
@@ -731,7 +864,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 {selectedBlock ? (
                     <>
                         {/* Header with Save/Discard buttons */}
@@ -1058,7 +1191,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                     <CardTitle className="text-base">Create New Category</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex gap-2">
+                                    <div className="flex items-center gap-2">
                                         <Input
                                             placeholder="Category name (e.g., 'Structure')"
                                             value={newCategoryLabel}
@@ -1081,7 +1214,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                             <div className="flex items-center gap-3">
                                                 <Folder className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                                                 {editingCategoryId === category.category_id ? (
-                                                    <div className="flex-1 flex gap-2">
+                                                    <div className="flex-1 flex items-center gap-2">
                                                         <Input
                                                             value={category.label}
                                                             onChange={(e) => {
@@ -1164,7 +1297,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     >
                                                         <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
                                                         {editingSubcategoryId === subcat.subcategory_id ? (
-                                                            <div className="flex-1 flex gap-2">
+                                                            <div className="flex-1 flex items-center gap-2">
                                                                 <Input
                                                                     value={subcat.label}
                                                                     onChange={(e) => {
@@ -1246,7 +1379,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                 
                                                 {/* Add Subcategory */}
                                                 {newSubcategoryData?.categoryId === category.category_id ? (
-                                                    <div className="flex gap-2 p-2">
+                                                    <div className="flex items-center gap-2 p-2">
                                                         <Input
                                                             placeholder="Subcategory name"
                                                             value={newSubcategoryData.label}

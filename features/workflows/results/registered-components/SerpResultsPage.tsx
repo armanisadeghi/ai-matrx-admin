@@ -429,7 +429,7 @@ const SerpResultsPage: React.FC<SerpResultsPageProps> = ({ data }) => {
                             <div className="flex items-start space-x-4">
                                 {/* Image Preview */}
                                 <div className="flex-shrink-0">
-                                    <div className="h-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex items-center justify-center min-w-[80px] max-w-[200px]">
+                                    <div className="h-full bg-textured rounded-lg overflow-hidden flex items-center justify-center min-w-[80px] max-w-[200px]">
                                         <img
                                             src={image.thumbnail || image.original}
                                             alt={image.title || `Image ${index + 1}`}

@@ -62,7 +62,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setVisible(true)}
             onMouseLeave={() => setVisible(false)}
-            className='p-[2px] rounded-lg transition duration-300 group/input'
+            className='p-[2px] rounded-lg transition duration-300 group/input w-full'
         >
             <input
                 type={type}

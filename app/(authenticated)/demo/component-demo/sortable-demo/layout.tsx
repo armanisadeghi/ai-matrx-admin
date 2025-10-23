@@ -20,7 +20,7 @@ export default function Layout(
                 moduleHome={MODULE_HOME}
                 moduleName={MODULE_NAME}
             />
-            <main className="w-full h-full bg-gray-100 dark:bg-neutral-800">
+            <main className="w-full h-full bg-textured">
                 {children}
             </main>
         </div>

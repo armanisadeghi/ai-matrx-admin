@@ -271,7 +271,7 @@ export default function AIExperienceCustomizer() {
   
   // Render the UI
   return (
-    <div className="flex flex-col h-full bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-100">
+    <div className="flex flex-col h-full bg-textured text-gray-800 dark:text-gray-100">
       <header className="sticky top-0 z-10 bg-textured border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
