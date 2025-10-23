@@ -8,6 +8,8 @@ export interface CreateTaskInput {
   project_id?: string | null;
   due_date?: string | null;
   status?: 'incomplete' | 'completed';
+  user_id?: string | null;
+  authenticated_read?: boolean | null;
 }
 
 export interface UpdateTaskInput {
@@ -16,6 +18,8 @@ export interface UpdateTaskInput {
   project_id?: string | null;
   due_date?: string | null;
   status?: 'incomplete' | 'completed';
+  user_id?: string | null;
+  authenticated_read?: boolean | null;
 }
 
 export interface CreateTaskOptions {
@@ -43,7 +47,8 @@ export async function createTask(input: CreateTaskInput): Promise<DatabaseTask |
         project_id: input.project_id || null,
         due_date: input.due_date || null,
         status: input.status || 'incomplete',
-        created_by: userData.user.id,
+        user_id: userData.user.id, // ← Using the correct column name
+        authenticated_read: input.authenticated_read ?? false,
       })
       .select()
       .single();
@@ -90,7 +95,7 @@ export async function getUserTasks(): Promise<DatabaseTask[]> {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('created_by', userData.user.id)
+      .eq('user_id', userData.user.id)
       .order('created_at', { ascending: false });
 
     if (error) {

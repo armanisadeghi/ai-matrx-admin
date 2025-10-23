@@ -41,9 +41,11 @@ export interface TaskContextType {
   toggleProjectExpand: (projectId: string) => void;
   toggleTaskExpand: (taskId: string) => void;
   addProject: (e: React.FormEvent) => Promise<void>;
+  updateProject: (projectId: string, name: string) => Promise<void>;
   deleteProject: (projectId: string, e: React.MouseEvent) => Promise<void>;
   addTask: (e: React.FormEvent, description?: string, dueDate?: string) => Promise<void>;
   toggleTaskComplete: (projectId: string, taskId: string) => Promise<void>;
+  updateTaskTitle: (projectId: string, taskId: string, title: string) => Promise<void>;
   updateTaskDescription: (projectId: string, taskId: string, description: string) => Promise<void>;
   updateTaskDueDate: (projectId: string, taskId: string, dueDate: string) => Promise<void>;
   deleteTask: (projectId: string, taskId: string, e: React.MouseEvent) => Promise<void>;

@@ -3,6 +3,7 @@ import React, { JSX } from 'react';
 import { FolderPlus, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { TaskFilterType } from '@/features/tasks/types';
+import EditableProjectName from './EditableProjectName';
 
 export default function Sidebar(): JSX.Element {
   const {
@@ -17,6 +18,7 @@ export default function Sidebar(): JSX.Element {
     toggleProjectExpand,
     addProject,
     deleteProject,
+    updateProject,
     setFilter,
     filter
   } = useTaskContext();
@@ -89,20 +91,25 @@ export default function Sidebar(): JSX.Element {
               {projects.map(project => (
                 <li key={project.id}>
                   <div 
-                    className={`flex items-center py-2 px-3 rounded-md text-sm w-full cursor-pointer transition-colors ${
+                    className={`flex items-center py-2 px-3 rounded-md text-sm w-full cursor-pointer transition-colors group ${
                       activeProject === project.id 
                         ? 'bg-blue-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400' 
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                     }`}
                     onClick={() => setActiveProject(project.id)}
                   >
-                    <span className="truncate flex-1">{project.name}</span>
+                    <EditableProjectName
+                      name={project.name}
+                      onSave={async (newName) => {
+                        await updateProject(project.id, newName);
+                      }}
+                    />
                     <span className="ml-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-1.5 py-0.5 rounded">
                       {project.tasks.length}
                     </span>
                     <button
                       onClick={(e) => deleteProject(project.id, e)}
-                      className="ml-1 text-gray-400 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 p-0.5"
+                      className="ml-1 text-gray-400 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X size={14} />
                     </button>

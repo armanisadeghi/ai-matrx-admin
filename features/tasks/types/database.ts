@@ -1,4 +1,5 @@
 // Database types for task management
+// Matching the ACTUAL database schema
 
 export interface DatabaseProject {
   id: string;
@@ -14,12 +15,12 @@ export interface DatabaseTask {
   title: string;
   description: string | null;
   project_id: string | null;
-  status: 'incomplete' | 'completed';
+  status: string; // 'incomplete' | 'completed'
   due_date: string | null;
-  user_id: string | null;
-  authenticated_read: boolean;
-  created_at: string;
-  updated_at: string;
+  user_id: string | null; // ← This is the correct column name!
+  authenticated_read: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface TaskAttachment {
@@ -58,15 +59,17 @@ export interface ProjectWithTasks extends DatabaseProject {
 // Simple task creation interface for external use (AI, etc.)
 export interface CreateTaskInput {
   title: string;
-  description?: string;
-  project_id?: string;
-  due_date?: string;
-  user_id?: string;
+  description?: string | null;
+  project_id?: string | null;
+  due_date?: string | null;
+  status?: string;
+  user_id?: string | null;
+  authenticated_read?: boolean | null;
 }
 
 // Full task creation with all options
-export interface CreateTaskOptions extends CreateTaskInput {
-  status?: 'incomplete' | 'completed';
-  authenticated_read?: boolean;
+export interface CreateTaskOptions {
+  projectId?: string;
+  description?: string;
+  dueDate?: string;
 }
-

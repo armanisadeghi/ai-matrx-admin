@@ -136,6 +136,17 @@ export function TaskProvider({ children }: TaskProviderProps) {
     setNewProjectName('');
   };
 
+  // Update project
+  const updateProject = async (projectId: string, name: string) => {
+    const success = await projectService.updateProject(projectId, { name });
+    if (success) {
+      toast.success('Project updated');
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to update project');
+    }
+  };
+
   // Delete project
   const deleteProject = async (projectId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -195,6 +206,17 @@ export function TaskProvider({ children }: TaskProviderProps) {
       } else {
         toast.error('Failed to update task');
       }
+    }
+  };
+
+  // Update task title
+  const updateTaskTitle = async (projectId: string, taskId: string, title: string) => {
+    const success = await taskService.updateTask(taskId, { title });
+    if (success) {
+      toast.success('Task title updated');
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to update title');
     }
   };
 
@@ -330,9 +352,11 @@ export function TaskProvider({ children }: TaskProviderProps) {
     toggleProjectExpand,
     toggleTaskExpand,
     addProject,
+    updateProject,
     deleteProject,
     addTask,
     toggleTaskComplete,
+    updateTaskTitle,
     updateTaskDescription,
     updateTaskDueDate,
     deleteTask,

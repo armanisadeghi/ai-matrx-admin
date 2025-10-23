@@ -34,9 +34,19 @@ export default function TaskContent(): JSX.Element {
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskTitle.trim()) return;
     
-    await addTask(e as any, taskDescription, taskDueDate);
+    // Validation
+    const trimmedTitle = newTaskTitle.trim();
+    if (!trimmedTitle) {
+      return; // Don't create empty tasks
+    }
+    
+    if (trimmedTitle.length > 200) {
+      // Could add a toast here
+      return;
+    }
+    
+    await addTask(e as any, taskDescription.trim(), taskDueDate);
     
     // Reset all fields
     setTaskDescription('');
