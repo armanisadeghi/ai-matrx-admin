@@ -121,10 +121,10 @@ export const ChatSidebarContent: React.FC = () => {
                 <div
                   key={convo.id}
                   className={clsx(
-                    "relative group px-2 py-1.5 rounded-md transition-all duration-150",
+                    "relative group px-2 py-1.5 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]",
                     selectedConversation === convo.id
-                      ? "bg-blue-50 dark:bg-blue-950/20"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      ? "bg-blue-100 dark:bg-blue-900/30 shadow-sm"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm"
                   )}
                 >
                   <button
@@ -197,7 +197,7 @@ export const ChatSidebarContent: React.FC = () => {
             <div className="px-1 py-2">
               <button
                 onClick={handleShowMore}
-                className="w-full px-2 py-1 text-[11px] font-light text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-md transition-colors"
+                className="w-full px-2 py-1 text-[11px] font-light text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 Show More ({totalConversations - displayLimit} more)
               </button>

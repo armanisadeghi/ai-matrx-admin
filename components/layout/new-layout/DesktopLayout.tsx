@@ -129,36 +129,15 @@ export default function DesktopLayout({
 
             {/* Sidebar */}
             <aside 
-                className={`fixed left-0 top-10 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-64"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden ${
-                    isSidebarCollapsed ? "cursor-ew-resize" : ""
-                }`}
+                className={`fixed left-0 top-10 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-64"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden`}
                 style={{ backgroundImage: BACKGROUND_PATTERN }}
-                onClick={(e) => {
-                    // When collapsed, clicking anywhere except on interactive elements should expand
-                    if (isSidebarCollapsed) {
-                        const target = e.target as HTMLElement;
-                        // Check if the click target itself is an interactive element or contains one that was actually clicked
-                        const isLink = target.tagName === 'A' || target.closest('a') === target;
-                        const isButton = target.tagName === 'BUTTON';
-                        const isInput = target.tagName === 'INPUT';
-                        
-                        // If not clicking on an interactive element, expand the sidebar
-                        if (!isLink && !isButton && !isInput) {
-                            toggleSidebar();
-                        }
-                    }
-                }}
             >
                 <nav 
                     className="px-1 h-full flex flex-col"
                 >
                     {/* Primary Links */}
                     {primaryLinks.length > 0 && (
-                        <div 
-                            className={`mb-2 flex-shrink-0 ${
-                                isSidebarCollapsed ? "cursor-ew-resize" : ""
-                            }`}
-                        >
+                        <div className="mb-2 flex-shrink-0">
                             <ul className="space-y-1">
                                 {primaryLinks.map((link, index) => (
                                     <li key={`primary-${index}`}>
@@ -202,12 +181,8 @@ export default function DesktopLayout({
                     )}
 
                     {/* Route-specific content area - Scrollable middle section */}
-                    <div 
-                        className={`flex-1 min-h-0 overflow-y-auto scrollbar-none mb-2 ${
-                            isSidebarCollapsed ? "cursor-ew-resize pointer-events-none" : ""
-                        }`}
-                    >
-                        <div id="page-specific-sidebar-content" className={`h-full ${isSidebarCollapsed ? "pointer-events-none" : ""}`} />
+                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none mb-2">
+                        <div id="page-specific-sidebar-content" className="h-full" />
                     </div>
 
                     {/* Secondary Links (Admin) - Only show if admin indicator is visible */}
