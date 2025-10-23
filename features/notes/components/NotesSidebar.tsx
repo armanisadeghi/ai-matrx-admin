@@ -274,7 +274,7 @@ export function NotesSidebar({
                                                 return (
                                                     <div
                                                         key={note.id}
-                                                        className="group flex items-center gap-1"
+                                                        className="group flex items-center gap-1 min-w-0"
                                                         draggable
                                                         onDragStart={handleDragStart(note)}
                                                         onDragEnd={handleDragEnd}
@@ -283,14 +283,14 @@ export function NotesSidebar({
                                                             variant="ghost"
                                                             size="sm"
                                                             className={cn(
-                                                                "h-7 px-2 flex-1 justify-start text-xs hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-move",
+                                                                "h-7 px-2 flex-1 justify-start text-xs hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-move min-w-0",
                                                                 isActive && "bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 font-medium border-l-2 border-blue-500",
                                                                 isDragging && "opacity-50"
                                                             )}
                                                             onClick={() => onSelectNote(note)}
                                                         >
                                                             <FileText className="h-3 w-3 mr-1.5 shrink-0" />
-                                                            <span className="truncate flex-1 text-left">
+                                                            <span className="truncate flex-1 text-left min-w-0">
                                                                 {note.label}
                                                             </span>
                                                         </Button>

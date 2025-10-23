@@ -59,7 +59,7 @@ import { createTaskResponseSelectors } from "@/lib/redux/socket-io";
 interface ChatMarkdownDisplayProps {
     content: string;
     taskId?: string;
-    type: "flashcard" | "message" | "text" | "image" | "audio" | "video" | "file" | string;
+    type?: "flashcard" | "message" | "text" | "image" | "audio" | "video" | "file" | string;
     role?: "user" | "assistant" | "system" | "tool" | string;
     className?: string;
     isStreamActive?: boolean;
@@ -73,7 +73,7 @@ interface ChatMarkdownDisplayProps {
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     content,
     taskId,
-    type,
+    type = "message",
     role = "assistant",
     className,
     isStreamActive,

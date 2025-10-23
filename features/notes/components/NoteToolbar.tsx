@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { Plus, Trash2, RefreshCw, Copy, Share2 } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Copy, Share2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Note } from '../types';
@@ -14,6 +14,7 @@ interface NoteToolbarProps {
     onDeleteNote: (noteId: string) => void;
     onCopyNote?: (noteId: string) => void;
     onShareNote?: (noteId: string) => void;
+    onSave?: () => void;
     onRefresh: () => void;
     className?: string;
 }
@@ -24,6 +25,7 @@ export function NoteToolbar({
     onDeleteNote,
     onCopyNote,
     onShareNote,
+    onSave,
     onRefresh,
     className,
 }: NoteToolbarProps) {
@@ -44,6 +46,24 @@ export function NoteToolbar({
                     <TooltipContent>Create New Note</TooltipContent>
                 </Tooltip>
             </TooltipProvider>
+
+            {activeNote && onSave && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={onSave}
+                            >
+                                <Save className="h-4 w-4 text-green-600 dark:text-green-500" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Save Note</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
 
             {activeNote && onCopyNote && (
                 <TooltipProvider>

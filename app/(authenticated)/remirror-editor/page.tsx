@@ -1,4 +1,4 @@
-// File Location: app/(authenticated)/tests/rich-text-editor/hold-hold-page.tsx
+// File Location: app\(authenticated)\remirror-editor\page.tsx
 'use client';
 import dynamic from 'next/dynamic';
 

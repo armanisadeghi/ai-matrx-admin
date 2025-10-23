@@ -111,6 +111,24 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         setShareNoteId(noteId);
     }, []);
 
+    const handleSaveNote = useCallback(async () => {
+        if (!activeNote) return;
+        
+        try {
+            // Force save by triggering an update with current data
+            await updateNote(activeNote.id, {
+                label: activeNote.label,
+                content: activeNote.content,
+                folder_name: activeNote.folder_name,
+                tags: activeNote.tags,
+            });
+            toast.success('Note saved');
+        } catch (error) {
+            console.error('Error saving note:', error);
+            toast.error(error);
+        }
+    }, [activeNote, updateNote, toast]);
+
     const handleUpdateNote = useCallback((noteId: string, updates: Partial<Note>) => {
         // Context handles optimistic updates automatically
         updateNote(noteId, updates);
@@ -189,6 +207,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 <NoteToolbar
                     activeNote={activeNote}
                     onCreateNote={handleCreateNote}
+                    onSave={handleSaveNote}
                     onCopyNote={handleCopyNote}
                     onShareNote={handleShareNote}
                     onDeleteNote={handleDeleteNote}

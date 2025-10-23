@@ -202,6 +202,118 @@ const copied = await NotesAPI.copy(noteWithNewNoteLabel);
 
 This means **you never have to worry about labeling** when using quick save utilities - just provide content and the system handles the rest!
 
+## Rich Text Editing
+
+**For when you need formatting** - The notes system includes multiple editing modes with inline view switching.
+
+### How It Works
+
+**Floating Mode Buttons** in the top-right corner of each note:
+- 📝 **Plain Text** - Fast textarea (default)
+- ✨ **WYSIWYG** - Rich text editor with formatting toolbar
+- 📱 **Markdown Split** - Side-by-side markdown + preview
+- 👁️ **Preview** - Rendered markdown (read-only)
+
+**Switch instantly** - Click any button to change modes. No popups, no delays. The system remembers your last used mode per note.
+
+### Editing Modes
+
+**1. Plain Text (Default)**
+- Lightning fast textarea
+- Perfect for quick notes
+- Zero overhead
+- Best for mobile
+
+**2. WYSIWYG Mode**
+- Visual formatting toolbar
+- Headers, bold, italic, lists
+- Tables, code blocks, quotes
+- What you see is what you get
+- Great for formatted documents
+
+**3. Markdown Split**
+- Side-by-side editing + preview
+- Write markdown on left
+- See preview on right
+- Perfect for technical notes
+
+**4. Preview Mode**
+- Read-only rendered view
+- Full markdown rendering
+- Code syntax highlighting
+- Great for reviewing content
+
+### Usage
+
+```typescript
+// Main Interface
+1. Open any note
+2. See floating buttons in top-right
+3. Click to switch modes instantly
+4. Auto-saves with your preference
+
+// Quick saves (always plain text)
+SaveToScratchButton → Plain only ✓
+SaveSelectionButton → Plain only ✓
+QuickSaveModal → Plain only ✓
+```
+
+### Mode Persistence
+
+The system remembers your last mode per note:
+
+```typescript
+// Automatically saved in metadata
+{
+  content: "# My Rich Note\n\nWith **formatting**",
+  metadata: {
+    lastEditorMode: 'wysiwyg'  // or 'plain' | 'markdown' | 'preview'
+  }
+}
+
+// Next time you open this note:
+// - Automatically opens in WYSIWYG mode
+// - All formatting preserved
+// - Switch back to plain anytime
+```
+
+### Technical Details
+
+- **Storage**: All content stored as markdown text (no schema change)
+- **Performance**: Rich modes load on-demand (dynamic import)
+- **Compatibility**: All modes work with the same content
+- **Backward compatible**: Existing notes work perfectly
+- **No overhead**: Zero impact on quick saves and plain text
+- **Seamless switching**: No data loss when changing modes
+
+### When to Use Each Mode
+
+**Plain Text** 📝
+- Quick captures
+- Simple notes
+- Maximum speed
+- Mobile editing
+
+**WYSIWYG** ✨
+- Formatted documents
+- Meeting notes
+- Visual editing
+- Less technical users
+
+**Markdown Split** 📱
+- Technical docs
+- Code examples
+- Markdown power users
+- Learning markdown
+
+**Preview** 👁️
+- Reviewing content
+- Sharing screen
+- Reading mode
+- Checking formatting
+
+**Key Philosophy:** All modes are equal citizens. Switch freely based on your needs. The content remains the same - only the view changes.
+
 ## Context Hook
 
 For custom UIs that need shared state:
@@ -238,6 +350,7 @@ function MyComponent() {
 - **Auto-save**: 1-second debounce with dirty tracking
 - **Copy notes**: Duplicate any note with one click (smart label handling)
 - **Share notes**: Generate shareable links for collaboration
+- **Rich text editing**: Optional WYSIWYG markdown editor with live preview (opt-in per note)
 
 ### Organization
 - **Folder organization**: Drag & drop between folders
