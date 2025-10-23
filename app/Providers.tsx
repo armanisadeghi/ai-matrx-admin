@@ -33,6 +33,7 @@ import { UniformHeightProvider } from "@/features/applet/runner/layouts/core";
 import { GlobalBrokersInitializer } from "@/components/broker/UserBrokerInitializer";
 import ClientOverlayProvider from "@/components/overlays/ClientOverlayProvider";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
+import { NotesProvider } from "@/features/notes";
 
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
@@ -81,9 +82,11 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                                     <GoogleAPIProvider>
                                                                                         <UniformHeightProvider>
                                                                                             <SelectedImagesProvider>
-                                                                                                <PersistentDOMConnector />
-                                                                                                <ClientOverlayProvider />
-                                                                                                {children}
+                                                                                                <NotesProvider>
+                                                                                                    <PersistentDOMConnector />
+                                                                                                    <ClientOverlayProvider />
+                                                                                                    {children}
+                                                                                                </NotesProvider>
                                                                                             </SelectedImagesProvider>
                                                                                         </UniformHeightProvider>
                                                                                     </GoogleAPIProvider>

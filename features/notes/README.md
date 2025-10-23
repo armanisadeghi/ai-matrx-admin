@@ -1,172 +1,150 @@
 # Notes Feature
 
-A simple, modern, and performant notes application with auto-save functionality.
+A simple, fast notes system with folder organization, tags, and auto-labeling.
 
-## Features
+## Programmatic Usage
 
-- ✨ **Simple & Clean UI** - Minimalistic VSCode-style interface
-- 📁 **Folder Organization** - Group notes by folders
-- 🏷️ **Tags** - Tag notes for easy filtering
-- 💾 **Auto-Save** - Automatic saving with debouncing (1s delay)
-- 📱 **Mobile Responsive** - Fully responsive with mobile-friendly sidebar
-- 🎨 **Modern Design** - Clean, elegant UI with dark mode support
-- ⚡ **Performant** - Optimistic updates and smart dirty state tracking
-
-## Structure
-
-```
-features/notes/
-├── components/          # React components
-│   ├── NotesLayout.tsx  # Main layout component
-│   ├── NotesSidebar.tsx # Folder/file tree sidebar
-│   ├── NoteEditor.tsx   # Note editor with auto-save
-│   └── NoteToolbar.tsx  # Action toolbar
-├── hooks/               # React hooks
-│   ├── useNotes.ts      # Fetch and manage notes
-│   ├── useAutoSave.ts   # Auto-save with debouncing
-│   └── useActiveNote.ts # Manage active note
-├── service/             # Business logic
-│   ├── notesService.ts  # Supabase CRUD operations
-│   └── notesApi.ts      # Public API for external use
-├── utils/               # Utility functions
-│   └── noteUtils.ts     # Filtering, sorting, grouping
-├── types.ts             # TypeScript types
-└── index.ts             # Public exports
-```
-
-## Usage
-
-### In a Page Component
-
-```tsx
-import { NotesLayout } from '@/features/notes';
-
-export default function NotesPage() {
-    return <NotesLayout />;
-}
-```
-
-### As a Popover/Sheet Component
-
-```tsx
-import { NotesLayout } from '@/features/notes';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-
-function MyComponent() {
-    return (
-        <Sheet>
-            <SheetContent className="w-full sm:max-w-4xl">
-                <NotesLayout />
-            </SheetContent>
-        </Sheet>
-    );
-}
-```
-
-### Using the Public API
-
-Create, update, and delete notes programmatically from anywhere in your app:
+Use `NotesAPI` to interact with notes from anywhere in your app:
 
 ```typescript
 import { NotesAPI } from '@/features/notes';
 
 // Create a note
 const note = await NotesAPI.create({
-    label: "My Note",
-    content: "Some content",
-    folder_name: "Personal",
-    tags: ["important"]
+    label: 'Meeting Notes',
+    content: 'Discussion points...',
+    folder_name: 'Work',
+    tags: ['important', 'meeting']
 });
 
-// Quick create
-const quickNote = await NotesAPI.quickCreate("Quick note content");
-
-// Update a note
-await NotesAPI.update(noteId, {
-    content: "Updated content",
-    tags: ["updated"]
-});
+// Quick create (auto-labels, reuses empty notes, defaults to Draft)
+const quickNote = await NotesAPI.quickCreate(
+    'Content here',
+    'Work'  // folder name (optional, defaults to Draft)
+);
 
 // Get all notes
 const notes = await NotesAPI.getAll();
 
-// Get a single note
-const note = await NotesAPI.getById(noteId);
+// Get specific note
+const note = await NotesAPI.getById('note-id');
+
+// Update a note
+await NotesAPI.update('note-id', {
+    content: 'Updated content',
+    tags: ['updated']
+});
 
 // Delete a note
-await NotesAPI.remove(noteId);
+await NotesAPI.delete('note-id');
 ```
 
-## Database Schema
+## UI Components
 
-The notes table includes:
+### Main Interface
+Full notes app at `/notes` or use `<NotesLayout />` component.
 
-- `id` - UUID primary key
-- `user_id` - Foreign key to auth.users
-- `label` - Note title (default: "New Note")
-- `content` - Note content (text)
-- `folder_name` - Folder name (default: "General")
-- `tags` - Array of tag strings
-- `metadata` - JSONB for additional data
-- `shared_with` - JSONB for sharing info
-- `is_deleted` - Soft delete flag
-- `position` - For custom ordering
-- `created_at` - Timestamp
-- `updated_at` - Auto-updated timestamp
+### Quick Access
+- **Quick Sheet**: `⚡` → Notes (side panel for fast capture)
+- **Utilities Hub**: `⚡` → Utilities Hub (full overlay)
+- Both include "Open in New Tab" button to open `/notes` page
 
-## How It Works
+### Embed Anywhere
+```typescript
+import { NotesLayout } from '@/features/notes';
 
-### Auto-Save
+// Full interface with sidebar
+<NotesLayout />
+```
 
-The auto-save system uses a debounced approach:
+## Context Hook
 
-1. User types in the editor
-2. Changes are queued and marked as "dirty"
-3. After 1 second of inactivity, changes are saved
-4. On blur or unmount, pending changes are force-saved
-5. Status indicator shows: "Unsaved", "Saving...", or "Saved"
+For custom UIs that need shared state:
 
-### Active Note Management
+```typescript
+import { useNotesContext } from '@/features/notes';
 
-The system always ensures there's an active note:
+function MyComponent() {
+    const {
+        notes,              // All notes
+        activeNote,         // Currently selected
+        isLoading,
+        createNote,         // Smart create (no duplicates)
+        updateNote,         // Auto-syncs everywhere
+        deleteNote,
+        refreshNotes,
+        findOrCreateEmptyNote,  // Never creates duplicates
+    } = useNotesContext();
+    
+    // Use the shared state
+}
+```
 
-1. On load, selects the most recently updated note
-2. If no notes exist, creates a default "New Note"
-3. If active note is deleted, selects another note
-4. New notes are automatically set as active
+## Key Features
 
-### Mobile Responsiveness
+- **Auto-labeling**: Generates titles from content (12+ chars or Enter key)
+- **No duplicates**: Smart checking prevents multiple empty notes
+- **Real-time sync**: All views share state automatically
+- **Auto-save**: 1-second debounce with dirty tracking
+- **Folder organization**: Drag & drop between folders
+- **Default folders**: Always-visible folders (Draft, Personal, Business, Prompts, Scratch) with custom icons
+- **Tags**: Multi-tag support with inline editor
+- **Mobile-friendly**: Responsive design
 
-- Desktop: Fixed sidebar on the left
-- Mobile: Sidebar in a sheet/drawer, triggered by menu button
-- Automatically closes sidebar after selecting/creating a note on mobile
+## Default Folders
 
-## Styling
+Five default folders always appear (even when empty):
+- **Draft** ✏️ - Work in progress (default for new notes)
+- **Personal** 👤 - Personal notes
+- **Business** 💼 - Work-related
+- **Prompts** 💡 - AI prompts & templates
+- **Scratch** 📄 - Quick notes
 
-The notes feature follows the app's design system:
+**Note**: All auto-generated notes default to "Draft" folder. Custom folders can still be created and appear after defaults alphabetically.
 
-- Uses Tailwind CSS with dark mode support
-- Clean, minimalistic UI with lucide-react icons
-- Responsive spacing and typography
-- Consistent with the rest of the application
+### Getting Folder List Programmatically
 
-## Performance
+Use the centralized folder utility (single source of truth):
 
-- **Optimistic Updates**: UI updates immediately, then syncs with database
-- **Debounced Auto-Save**: Reduces database calls
-- **Indexed Queries**: Database indexes on common query fields
-- **Smart Caching**: React state management with proper memoization
+```typescript
+import { getAllFolders } from '@/features/notes';
 
-## Future Enhancements
+// Get complete folder list (default + custom)
+const folders = getAllFolders(notes);
+// Returns: ['Draft', 'Personal', 'Business', 'Prompts', 'Scratch', 'CustomFolder1', ...]
 
-Potential features to add:
+// Check if folder is a default
+import { isDefaultFolder } from '@/features/notes';
+const isDefault = isDefaultFolder('Draft'); // true
 
-- Rich text editing
-- Note sharing
-- Search by tags
-- Export notes
-- Note templates
-- Keyboard shortcuts
-- Nested folders
-- Drag-and-drop reordering
+// Get only custom folders
+import { getCustomFolders } from '@/features/notes';
+const customFolders = getCustomFolders(notes); // ['CustomFolder1', ...]
+```
+
+## Database
+
+Table: `notes`
+```sql
+- id (uuid)
+- user_id (uuid, RLS protected)
+- label (text)
+- content (text)
+- folder_name (text)
+- tags (text[])
+- metadata (jsonb)
+- is_deleted (boolean)
+- position (integer)
+- created_at (timestamptz)
+- updated_at (timestamptz, auto-updated)
+```
+
+## Architecture
+
+- **Provider**: Single instance in `app/Providers.tsx`
+- **Service**: Supabase CRUD operations
+- **Context**: Global state management
+- **API**: Public programmatic interface
+
+That's it. Simple, clean, works everywhere.
 

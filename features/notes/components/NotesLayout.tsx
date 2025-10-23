@@ -1,15 +1,13 @@
 // features/notes/components/NotesLayout.tsx
 "use client";
 
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { NotesSidebar } from './NotesSidebar';
 import { NoteEditor } from './NoteEditor';
 import { NoteToolbar } from './NoteToolbar';
 import { CreateFolderDialog } from './CreateFolderDialog';
-import { useNotes } from '../hooks/useNotes';
-import { useActiveNote } from '../hooks/useActiveNote';
-import { createNote, deleteNote, updateNote } from '../service/notesService';
-import { generateUniqueLabel, findEmptyNewNote, findEmptyNewNoteInFolder } from '../utils/noteUtils';
+import { useNotesContext } from '../context/NotesContext';
+import { getAllFolders } from '../utils/folderUtils';
 import type { Note } from '../types';
 import { cn } from '@/lib/utils';
 import { Loader2, Menu } from 'lucide-react';
@@ -22,58 +20,48 @@ interface NotesLayoutProps {
 }
 
 export function NotesLayout({ className }: NotesLayoutProps) {
-    const { notes, isLoading, refreshNotes, setNotes } = useNotes();
+    const {
+        notes,
+        isLoading,
+        activeNote,
+        setActiveNote,
+        createNote,
+        updateNote,
+        deleteNote,
+        refreshNotes,
+        findOrCreateEmptyNote,
+    } = useNotesContext();
+
     const [sidebarWidth, setSidebarWidth] = useState(280);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
     const toast = useToastManager('notes');
 
-    // Get existing folder names for validation
+    // Refresh notes when component mounts (handles switching between views)
+    useEffect(() => {
+        refreshNotes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once on mount
+
+    // Get all folders (default + custom) - single source of truth
     const existingFolders = useMemo(() => {
-        return Array.from(new Set(notes.map(n => n.folder_name)));
+        return getAllFolders(notes);
     }, [notes]);
-
-    const handleNoteCreated = useCallback((note: Note) => {
-        setNotes(prev => [note, ...prev]);
-    }, [setNotes]);
-
-    const { activeNote, setActiveNote, updateActiveNoteLocally } = useActiveNote({
-        notes,
-        onNoteCreated: handleNoteCreated,
-    });
 
     const handleCreateNote = useCallback(async (folderName?: string) => {
         try {
-            const targetFolder = folderName || 'General';
+            const targetFolder = folderName || 'Draft';
             
-            // Check if there's already an empty "New Note" in this folder
-            const existingEmptyNote = findEmptyNewNoteInFolder(notes, targetFolder);
-            if (existingEmptyNote) {
-                // Just activate the existing empty note instead of creating a new one
-                setActiveNote(existingEmptyNote);
-                setIsMobileSidebarOpen(false);
-                toast.info('Using existing empty note');
-                return;
-            }
-            
-            const uniqueLabel = generateUniqueLabel(notes);
-            const newNote = await createNote({
-                label: uniqueLabel,
-                folder_name: targetFolder,
-                content: '',
-            });
-            
-            // Add to notes list and set as active
-            setNotes(prev => [newNote, ...prev]);
-            setActiveNote(newNote);
+            // Use the context method which handles duplicate checking
+            const note = await findOrCreateEmptyNote(targetFolder);
             setIsMobileSidebarOpen(false);
             
-            toast.success('Note created successfully');
+            toast.success('Note ready');
         } catch (error) {
             console.error('Error creating note:', error);
             toast.error(error);
         }
-    }, [notes, setNotes, setActiveNote, toast]);
+    }, [findOrCreateEmptyNote, toast]);
 
     const handleCreateFolder = useCallback(() => {
         setIsCreateFolderOpen(true);
@@ -81,108 +69,47 @@ export function NotesLayout({ className }: NotesLayoutProps) {
 
     const handleConfirmCreateFolder = useCallback(async (folderName: string) => {
         try {
-            // Check if there's already an empty "New Note" - reuse it with new folder
-            const existingEmptyNote = findEmptyNewNote(notes);
-            if (existingEmptyNote) {
-                // Move the existing empty note to the new folder
-                const updatedNote = { ...existingEmptyNote, folder_name: folderName };
-                await updateNote(existingEmptyNote.id, { folder_name: folderName });
-                
-                // Update in state
-                setNotes(prev => prev.map(n => n.id === existingEmptyNote.id ? updatedNote : n));
-                setActiveNote(updatedNote);
-                setIsMobileSidebarOpen(false);
-                
-                toast.success(`Folder "${folderName}" created successfully`);
-                return;
-            }
-            
-            // Create an empty note in the new folder to establish it
-            const newNote = await createNote({
-                label: 'New Note',
-                folder_name: folderName,
-                content: '',
-            });
-            
-            // Add to notes list and set as active
-            setNotes(prev => [newNote, ...prev]);
-            setActiveNote(newNote);
+            // Use the context method which finds or creates an empty note
+            await findOrCreateEmptyNote(folderName);
             setIsMobileSidebarOpen(false);
             
-            toast.success(`Folder "${folderName}" created successfully`);
+            toast.success(`Folder "${folderName}" created`);
         } catch (error) {
             console.error('Error creating folder:', error);
             toast.error(error);
         }
-    }, [notes, setNotes, setActiveNote, toast]);
+    }, [findOrCreateEmptyNote, toast]);
 
     const handleDeleteNote = useCallback(async (noteId: string) => {
         try {
             const noteToDelete = notes.find(n => n.id === noteId);
             await deleteNote(noteId);
             
-            // Remove from notes list
-            setNotes(prev => prev.filter(n => n.id !== noteId));
-            
-            // If the deleted note was active, select another one
-            if (activeNote?.id === noteId) {
-                const remaining = notes.filter(n => n.id !== noteId);
-                if (remaining.length > 0) {
-                    setActiveNote(remaining[0]);
-                } else {
-                    setActiveNote(null);
-                }
-            }
-            
             toast.success(`"${noteToDelete?.label || 'Note'}" deleted`);
         } catch (error) {
             console.error('Error deleting note:', error);
             toast.error(error);
         }
-    }, [notes, activeNote, setNotes, setActiveNote, toast]);
+    }, [notes, deleteNote, toast]);
 
     const handleUpdateNote = useCallback((noteId: string, updates: Partial<Note>) => {
-        // Optimistic update
-        setNotes(prev =>
-            prev.map(note =>
-                note.id === noteId ? { ...note, ...updates, updated_at: new Date().toISOString() } : note
-            )
-        );
-        
-        // Update active note if it's the one being edited
-        if (activeNote?.id === noteId) {
-            updateActiveNoteLocally(updates);
-        }
-    }, [setNotes, activeNote, updateActiveNoteLocally]);
+        // Context handles optimistic updates automatically
+        updateNote(noteId, updates);
+    }, [updateNote]);
 
     const handleMoveNote = useCallback(async (noteId: string, newFolder: string) => {
         try {
             const note = notes.find(n => n.id === noteId);
             if (!note) return;
-
-            // Optimistic update
-            setNotes(prev =>
-                prev.map(n =>
-                    n.id === noteId ? { ...n, folder_name: newFolder, updated_at: new Date().toISOString() } : n
-                )
-            );
-
-            // Update active note if it's the one being moved
-            if (activeNote?.id === noteId) {
-                updateActiveNoteLocally({ folder_name: newFolder });
-            }
-
-            // Save to database
+            
             await updateNote(noteId, { folder_name: newFolder });
             
             toast.success(`Moved "${note.label}" to "${newFolder}"`);
         } catch (error) {
             console.error('Error moving note:', error);
             toast.error(error);
-            // Revert on error
-            refreshNotes();
         }
-    }, [notes, activeNote, setNotes, updateActiveNoteLocally, refreshNotes, toast]);
+    }, [notes, updateNote, toast]);
 
 
     const handleSelectNote = useCallback((note: Note) => {

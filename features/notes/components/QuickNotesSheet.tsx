@@ -1,22 +1,20 @@
 // features/notes/components/QuickNotesSheet.tsx
 "use client";
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { NoteEditor } from './NoteEditor';
-import { useNotes } from '../hooks/useNotes';
-import { useActiveNote } from '../hooks/useActiveNote';
-import { createNote, deleteNote, updateNote } from '../service/notesService';
-import { generateUniqueLabel, findEmptyNewNote, findEmptyNewNoteInFolder } from '../utils/noteUtils';
+import { useNotesContext } from '../context/NotesContext';
+import { getAllFolders } from '../utils/folderUtils';
 import type { Note } from '../types';
 import { 
     Select, 
     SelectContent, 
     SelectItem, 
     SelectTrigger, 
-    SelectValue 
+    SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, FolderOpen } from 'lucide-react';
+import { Plus, Trash2, FolderOpen, ExternalLink } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToastManager } from '@/hooks/useToastManager';
 import { cn } from '@/lib/utils';
@@ -27,90 +25,72 @@ interface QuickNotesSheetProps {
 }
 
 export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
-    const { notes, isLoading, refreshNotes, setNotes } = useNotes();
+    const {
+        notes,
+        isLoading,
+        activeNote,
+        setActiveNote,
+        deleteNote,
+        updateNote,
+        refreshNotes,
+        findOrCreateEmptyNote,
+    } = useNotesContext();
     const toast = useToastManager('notes');
 
-    const handleNoteCreated = useCallback((note: Note) => {
-        setNotes(prev => [note, ...prev]);
-    }, [setNotes]);
+    // Refresh when sheet opens
+    useEffect(() => {
+        refreshNotes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once when component mounts
 
-    const { activeNote, setActiveNote, updateActiveNoteLocally } = useActiveNote({
-        notes,
-        onNoteCreated: handleNoteCreated,
-    });
-
-    // Group notes by folder for the selector
+    // Group notes by folder for the selector - single source of truth
     const notesByFolder = useMemo(() => {
+        const allFolders = getAllFolders(notes);
         const grouped: Record<string, Note[]> = {};
-        notes.forEach(note => {
-            if (!grouped[note.folder_name]) {
-                grouped[note.folder_name] = [];
-            }
-            grouped[note.folder_name].push(note);
+        
+        // Initialize all folders (including defaults)
+        allFolders.forEach(folder => {
+            grouped[folder] = [];
         });
+        
+        // Add notes to their folders
+        notes.forEach(note => {
+            if (grouped[note.folder_name]) {
+                grouped[note.folder_name].push(note);
+            }
+        });
+        
         return grouped;
     }, [notes]);
 
-    const handleCreateNote = useCallback(async (folderName?: string) => {
+    const handleCreateNote = useCallback(async () => {
         try {
-            const targetFolder = folderName || activeNote?.folder_name || 'General';
-            
-            // Check if there's already an empty "New Note" in this folder
-            const existingEmptyNote = findEmptyNewNoteInFolder(notes, targetFolder);
-            if (existingEmptyNote) {
-                setActiveNote(existingEmptyNote);
-                return;
-            }
-            
-            const uniqueLabel = generateUniqueLabel(notes);
-            const newNote = await createNote({
-                label: uniqueLabel,
-                folder_name: targetFolder,
-                content: '',
-            });
-            
-            setNotes(prev => [newNote, ...prev]);
-            setActiveNote(newNote);
+            const targetFolder = activeNote?.folder_name || 'Draft';
+            await findOrCreateEmptyNote(targetFolder);
+            toast.success('Note ready');
         } catch (error) {
             console.error('Error creating note:', error);
             toast.error(error);
         }
-    }, [notes, activeNote, setNotes, setActiveNote, toast]);
+    }, [activeNote, findOrCreateEmptyNote, toast]);
 
-    const handleDeleteNote = useCallback(async (noteId: string) => {
+    const handleDeleteNote = useCallback(async () => {
+        if (!activeNote) return;
+        
         try {
-            const noteToDelete = notes.find(n => n.id === noteId);
-            await deleteNote(noteId);
-            
-            setNotes(prev => prev.filter(n => n.id !== noteId));
-            
-            if (activeNote?.id === noteId) {
-                const remaining = notes.filter(n => n.id !== noteId);
-                if (remaining.length > 0) {
-                    setActiveNote(remaining[0]);
-                } else {
-                    setActiveNote(null);
-                }
-            }
-            
-            toast.success(`"${noteToDelete?.label || 'Note'}" deleted`);
+            const noteLabel = activeNote.label;
+            await deleteNote(activeNote.id);
+            toast.success(`"${noteLabel}" deleted`);
         } catch (error) {
             console.error('Error deleting note:', error);
             toast.error(error);
         }
-    }, [notes, activeNote, setNotes, setActiveNote, toast]);
+    }, [activeNote, deleteNote, toast]);
 
     const handleUpdateNote = useCallback((noteId: string, updates: Partial<Note>) => {
-        setNotes(prev =>
-            prev.map(note =>
-                note.id === noteId ? { ...note, ...updates, updated_at: new Date().toISOString() } : note
-            )
-        );
-        
-        if (activeNote?.id === noteId) {
-            updateActiveNoteLocally(updates);
-        }
-    }, [setNotes, activeNote, updateActiveNoteLocally]);
+        // Context handles the update
+        updateNote(noteId, updates);
+    }, [updateNote]);
 
     const handleSelectNote = useCallback((noteId: string) => {
         const note = notes.find(n => n.id === noteId);
@@ -172,7 +152,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8"
-                                onClick={() => handleCreateNote()}
+                                onClick={handleCreateNote}
                             >
                                 <Plus className="h-4 w-4" />
                             </Button>
@@ -189,7 +169,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8"
-                                    onClick={() => handleDeleteNote(activeNote.id)}
+                                    onClick={handleDeleteNote}
                                 >
                                     <Trash2 className="h-4 w-4 text-red-500" />
                                 </Button>
@@ -198,6 +178,24 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                         </Tooltip>
                     </TooltipProvider>
                 )}
+
+                <div className="ml-auto pl-2 border-l border-zinc-200 dark:border-zinc-800">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => window.open('/notes', '_blank')}
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Open in New Tab</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             </div>
 
             {/* Editor - Takes full remaining space */}
@@ -212,4 +210,3 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
         </div>
     );
 }
-

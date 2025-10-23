@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Note, NoteFilters, NoteSortConfig } from '../types';
 import { filterNotes, sortNotes, groupNotesByFolder } from '../utils/noteUtils';
+import { getDefaultFolder } from '../constants/defaultFolders';
 import { cn } from '@/lib/utils';
 
 interface NotesSidebarProps {
@@ -214,6 +215,9 @@ export function NotesSidebar({
                         folderGroups.map((group) => {
                             const isCollapsed = collapsedFolders.has(group.folder_name);
                             const isDropTarget = dropTargetFolder === group.folder_name;
+                            const defaultFolder = getDefaultFolder(group.folder_name);
+                            const FolderIcon = defaultFolder?.icon || FolderOpen;
+                            const iconColor = defaultFolder?.color || '';
                             
                             return (
                                 <div key={group.folder_name} className="mb-1">
@@ -238,7 +242,7 @@ export function NotesSidebar({
                                             ) : (
                                                 <ChevronDown className="h-3 w-3 mr-1" />
                                             )}
-                                            <FolderOpen className="h-3 w-3 mr-1.5" />
+                                            <FolderIcon className={cn("h-3 w-3 mr-1.5", iconColor)} />
                                             <span className="truncate flex-1 text-left">{group.folder_name}</span>
                                             <span className="text-zinc-400 dark:text-zinc-500 ml-1">
                                                 {group.count}

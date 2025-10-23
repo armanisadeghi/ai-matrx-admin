@@ -16,6 +16,8 @@ import {
 import { TagInput } from './TagInput';
 import type { Note } from '../types';
 import { useAutoSave } from '../hooks/useAutoSave';
+import { useAutoLabel } from '../hooks/useAutoLabel';
+import { getAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
 
@@ -29,14 +31,13 @@ interface NoteEditorProps {
 export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEditorProps) {
     const [localLabel, setLocalLabel] = useState(note?.label || '');
     const [localContent, setLocalContent] = useState(note?.content || '');
-    const [localFolder, setLocalFolder] = useState(note?.folder_name || 'General');
+    const [localFolder, setLocalFolder] = useState(note?.folder_name || 'Draft');
     const [localTags, setLocalTags] = useState<string[]>(note?.tags || []);
     const toast = useToastManager('notes');
 
-    // Extract unique folder names from all notes
+    // Get all folders (default + custom) - single source of truth
     const availableFolders = useMemo(() => {
-        const folders = new Set(allNotes.map(n => n.folder_name));
-        return Array.from(folders).sort();
+        return getAllFolders(allNotes);
     }, [allNotes]);
 
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
@@ -53,6 +54,18 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
                 });
             }
         },
+    });
+
+    // Auto-generate label from content (like iPhone Notes)
+    useAutoLabel({
+        content: localContent,
+        currentLabel: localLabel,
+        onLabelChange: (newLabel) => {
+            setLocalLabel(newLabel);
+            updateWithAutoSave({ label: newLabel });
+        },
+        enabled: true,
+        maxLength: 30,
     });
 
     // Update local state when note changes

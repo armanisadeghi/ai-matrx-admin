@@ -1,6 +1,7 @@
 // features/notes/utils/noteUtils.ts
 
 import type { Note, NoteFilters, NoteSortConfig, FolderGroup } from '../types';
+import { DEFAULT_FOLDER_NAMES } from '../constants/defaultFolders';
 
 /**
  * Filter notes based on search, tags, and folder
@@ -70,12 +71,19 @@ export function sortNotes(notes: Note[], sortConfig: NoteSortConfig): Note[] {
 
 /**
  * Group notes by folder
+ * Ensures default folders always appear (even if empty)
  */
 export function groupNotesByFolder(notes: Note[]): FolderGroup[] {
     const folderMap = new Map<string, Note[]>();
 
+    // Initialize default folders (they'll show even if empty)
+    DEFAULT_FOLDER_NAMES.forEach(folderName => {
+        folderMap.set(folderName, []);
+    });
+
+    // Add notes to their respective folders
     notes.forEach(note => {
-        const folder = note.folder_name || 'General';
+        const folder = note.folder_name || 'Draft';
         if (!folderMap.has(folder)) {
             folderMap.set(folder, []);
         }
@@ -88,8 +96,21 @@ export function groupNotesByFolder(notes: Note[]): FolderGroup[] {
         count: notes.length,
     }));
 
-    // Sort groups alphabetically
-    groups.sort((a, b) => a.folder_name.localeCompare(b.folder_name));
+    // Sort: Default folders first (in order), then custom folders alphabetically
+    groups.sort((a, b) => {
+        const aIsDefault = DEFAULT_FOLDER_NAMES.includes(a.folder_name);
+        const bIsDefault = DEFAULT_FOLDER_NAMES.includes(b.folder_name);
+
+        if (aIsDefault && bIsDefault) {
+            // Both default: maintain DEFAULT_FOLDERS order
+            return DEFAULT_FOLDER_NAMES.indexOf(a.folder_name) - DEFAULT_FOLDER_NAMES.indexOf(b.folder_name);
+        }
+        if (aIsDefault) return -1; // Default folders first
+        if (bIsDefault) return 1;
+        
+        // Both custom: alphabetical
+        return a.folder_name.localeCompare(b.folder_name);
+    });
 
     return groups;
 }

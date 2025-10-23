@@ -1,4 +1,5 @@
 // features/notes/hooks/useNotes.ts
+"use client";
 
 import { useCallback, useEffect, useState } from 'react';
 import { fetchNotes } from '../service/notesService';

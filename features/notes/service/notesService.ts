@@ -56,7 +56,7 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
             user_id: userData.user.id,
             label: input.label || 'New Note',
             content: input.content || '',
-            folder_name: input.folder_name || 'General',
+            folder_name: input.folder_name || 'Draft',
             tags: input.tags || [],
             metadata: input.metadata || {},
             position: input.position || 0,

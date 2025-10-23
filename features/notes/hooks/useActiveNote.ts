@@ -1,4 +1,5 @@
 // features/notes/hooks/useActiveNote.ts
+"use client";
 
 import { useCallback, useEffect, useState } from 'react';
 import { createNote } from '../service/notesService';
@@ -45,10 +46,10 @@ export function useActiveNote({ notes, onNoteCreated }: UseActiveNoteOptions) {
         if (!isCreatingDefault) {
             try {
                 setIsCreatingDefault(true);
-                const newNote = await createNote({
-                    label: 'New Note',
-                    content: '',
-                    folder_name: 'General',
+                        const newNote = await createNote({
+                            label: 'New Note',
+                            content: '',
+                            folder_name: 'Draft',
                 });
                 setActiveNote(newNote);
                 onNoteCreated?.(newNote);

@@ -86,7 +86,7 @@ export async function quickCreate(content: string, label?: string): Promise<Note
     return createNoteService({
         label: label || 'Quick Note',
         content,
-        folder_name: 'General',
+        folder_name: 'Draft',
     });
 }
 
