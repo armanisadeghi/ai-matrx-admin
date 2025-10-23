@@ -1,5 +1,7 @@
 import type { Note } from '../types';
-import { DEFAULT_FOLDER_NAMES } from '../constants/defaultFolders';
+import { DEFAULT_FOLDER_NAMES, getDefaultFolder } from '../constants/defaultFolders';
+import { getCategoryIconAndColor } from '../constants/folderCategories';
+import type { LucideIcon } from 'lucide-react';
 
 /**
  * Get a complete list of all folders (default + custom)
@@ -53,5 +55,20 @@ export function isDefaultFolder(folderName: string): boolean {
 export function getCustomFolders(notes: Note[]): string[] {
     const allFolders = getAllFolders(notes);
     return allFolders.filter(folder => !isDefaultFolder(folder));
+}
+
+/**
+ * Get icon and color for any folder
+ * First checks default folders, then checks category system
+ */
+export function getFolderIconAndColor(folderName: string): { icon: LucideIcon; color?: string } {
+    // First check if it's a default folder
+    const defaultFolder = getDefaultFolder(folderName);
+    if (defaultFolder) {
+        return { icon: defaultFolder.icon, color: defaultFolder.color };
+    }
+    
+    // Otherwise check category system
+    return getCategoryIconAndColor(folderName);
 }
 

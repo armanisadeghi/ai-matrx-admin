@@ -6,6 +6,7 @@ import { NotesSidebar } from './NotesSidebar';
 import { NoteEditor } from './NoteEditor';
 import { NoteToolbar } from './NoteToolbar';
 import { CreateFolderDialog } from './CreateFolderDialog';
+import { ShareNoteDialog } from './ShareNoteDialog';
 import { useNotesContext } from '../context/NotesContext';
 import { getAllFolders } from '../utils/folderUtils';
 import type { Note } from '../types';
@@ -28,6 +29,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         createNote,
         updateNote,
         deleteNote,
+        copyNote,
         refreshNotes,
         findOrCreateEmptyNote,
     } = useNotesContext();
@@ -35,6 +37,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     const [sidebarWidth, setSidebarWidth] = useState(280);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
+    const [shareNoteId, setShareNoteId] = useState<string | null>(null);
     const toast = useToastManager('notes');
 
     // Refresh notes when component mounts (handles switching between views)
@@ -91,6 +94,22 @@ export function NotesLayout({ className }: NotesLayoutProps) {
             toast.error(error);
         }
     }, [notes, deleteNote, toast]);
+
+    const handleCopyNote = useCallback(async (noteId: string) => {
+        try {
+            const noteToCopy = notes.find(n => n.id === noteId);
+            await copyNote(noteId);
+            
+            toast.success(`"${noteToCopy?.label || 'Note'}" copied`);
+        } catch (error) {
+            console.error('Error copying note:', error);
+            toast.error(error);
+        }
+    }, [notes, copyNote, toast]);
+
+    const handleShareNote = useCallback((noteId: string) => {
+        setShareNoteId(noteId);
+    }, []);
 
     const handleUpdateNote = useCallback((noteId: string, updates: Partial<Note>) => {
         // Context handles optimistic updates automatically
@@ -170,6 +189,8 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 <NoteToolbar
                     activeNote={activeNote}
                     onCreateNote={handleCreateNote}
+                    onCopyNote={handleCopyNote}
+                    onShareNote={handleShareNote}
                     onDeleteNote={handleDeleteNote}
                     onRefresh={refreshNotes}
                     className="hidden md:flex"
@@ -190,6 +211,16 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 onConfirm={handleConfirmCreateFolder}
                 existingFolders={existingFolders}
             />
+
+            {/* Share Note Dialog */}
+            {shareNoteId && (
+                <ShareNoteDialog
+                    open={shareNoteId !== null}
+                    onOpenChange={(open) => !open && setShareNoteId(null)}
+                    noteId={shareNoteId}
+                    noteLabel={notes.find(n => n.id === shareNoteId)?.label || 'Note'}
+                />
+            )}
         </div>
     );
 }

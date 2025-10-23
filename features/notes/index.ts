@@ -27,4 +27,5 @@ export * from './utils/folderUtils';
 
 // Constants
 export * from './constants/defaultFolders';
+export * from './constants/folderCategories';
 

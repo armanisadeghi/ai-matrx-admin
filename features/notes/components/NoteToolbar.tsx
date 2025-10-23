@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Copy, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Note } from '../types';
@@ -12,6 +12,8 @@ interface NoteToolbarProps {
     activeNote: Note | null;
     onCreateNote: () => void;
     onDeleteNote: (noteId: string) => void;
+    onCopyNote?: (noteId: string) => void;
+    onShareNote?: (noteId: string) => void;
     onRefresh: () => void;
     className?: string;
 }
@@ -20,6 +22,8 @@ export function NoteToolbar({
     activeNote,
     onCreateNote,
     onDeleteNote,
+    onCopyNote,
+    onShareNote,
     onRefresh,
     className,
 }: NoteToolbarProps) {
@@ -40,6 +44,42 @@ export function NoteToolbar({
                     <TooltipContent>Create New Note</TooltipContent>
                 </Tooltip>
             </TooltipProvider>
+
+            {activeNote && onCopyNote && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => onCopyNote(activeNote.id)}
+                            >
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy Note</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
+
+            {activeNote && onShareNote && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => onShareNote(activeNote.id)}
+                            >
+                                <Share2 className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Share Note</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
 
             {activeNote && (
                 <TooltipProvider>

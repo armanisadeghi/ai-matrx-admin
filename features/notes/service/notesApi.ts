@@ -8,6 +8,7 @@ import {
     createNote as createNoteService,
     updateNote as updateNoteService,
     deleteNote as deleteNoteService,
+    copyNote as copyNoteService,
     fetchNotes,
     fetchNoteById,
 } from './notesService';
@@ -90,11 +91,23 @@ export async function quickCreate(content: string, label?: string): Promise<Note
     });
 }
 
+/**
+ * Copy/duplicate a note
+ * @example
+ * ```typescript
+ * const copiedNote = await NotesAPI.copy(noteId);
+ * ```
+ */
+export async function copy(noteId: string): Promise<Note> {
+    return copyNoteService(noteId);
+}
+
 // Default export as namespace
 export const NotesAPI = {
     create,
     update,
     remove,
+    copy,
     getAll,
     getById,
     quickCreate,

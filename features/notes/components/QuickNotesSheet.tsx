@@ -1,7 +1,7 @@
 // features/notes/components/QuickNotesSheet.tsx
 "use client";
 
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { NoteEditor } from './NoteEditor';
 import { useNotesContext } from '../context/NotesContext';
 import { getAllFolders } from '../utils/folderUtils';
@@ -14,8 +14,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, FolderOpen, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, FolderOpen, ExternalLink, Copy, Share2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ShareNoteDialog } from './ShareNoteDialog';
 import { useToastManager } from '@/hooks/useToastManager';
 import { cn } from '@/lib/utils';
 
@@ -31,11 +32,13 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
         activeNote,
         setActiveNote,
         deleteNote,
+        copyNote,
         updateNote,
         refreshNotes,
         findOrCreateEmptyNote,
     } = useNotesContext();
     const toast = useToastManager('notes');
+    const [shareNoteId, setShareNoteId] = useState<string | null>(null);
 
     // Refresh when sheet opens
     useEffect(() => {
@@ -86,6 +89,24 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
             toast.error(error);
         }
     }, [activeNote, deleteNote, toast]);
+
+    const handleCopyNote = useCallback(async () => {
+        if (!activeNote) return;
+        
+        try {
+            const noteLabel = activeNote.label;
+            await copyNote(activeNote.id);
+            toast.success(`"${noteLabel}" copied`);
+        } catch (error) {
+            console.error('Error copying note:', error);
+            toast.error(error);
+        }
+    }, [activeNote, copyNote, toast]);
+
+    const handleShareNote = useCallback(() => {
+        if (!activeNote) return;
+        setShareNoteId(activeNote.id);
+    }, [activeNote]);
 
     const handleUpdateNote = useCallback((noteId: string, updates: Partial<Note>) => {
         // Context handles the update
@@ -162,21 +183,55 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                 </TooltipProvider>
 
                 {activeNote && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={handleDeleteNote}
-                                >
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Delete Note</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={handleCopyNote}
+                                    >
+                                        <Copy className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Copy Note</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={handleShareNote}
+                                    >
+                                        <Share2 className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Share Note</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={handleDeleteNote}
+                                    >
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete Note</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </>
                 )}
 
                 <div className="ml-auto pl-2 border-l border-zinc-200 dark:border-zinc-800">
@@ -207,6 +262,16 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                     className="h-full"
                 />
             </div>
+
+            {/* Share Note Dialog */}
+            {shareNoteId && (
+                <ShareNoteDialog
+                    open={shareNoteId !== null}
+                    onOpenChange={(open) => !open && setShareNoteId(null)}
+                    noteId={shareNoteId}
+                    noteLabel={notes.find(n => n.id === shareNoteId)?.label || 'Note'}
+                />
+            )}
         </div>
     );
 }

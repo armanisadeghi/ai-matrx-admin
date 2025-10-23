@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { fetchNotes, createNote as createNoteService, updateNote as updateNoteService, deleteNote as deleteNoteService } from '../service/notesService';
+import { fetchNotes, createNote as createNoteService, updateNote as updateNoteService, deleteNote as deleteNoteService, copyNote as copyNoteService } from '../service/notesService';
 import { findEmptyNewNote, generateUniqueLabel } from '../utils/noteUtils';
 import type { Note, CreateNoteInput, UpdateNoteInput } from '../types';
 
@@ -14,6 +14,7 @@ interface NotesContextType {
     createNote: (input: CreateNoteInput) => Promise<Note>;
     updateNote: (id: string, updates: UpdateNoteInput) => Promise<Note>;
     deleteNote: (id: string) => Promise<void>;
+    copyNote: (id: string) => Promise<Note>;
     refreshNotes: () => Promise<void>;
     findOrCreateEmptyNote: (folderName?: string) => Promise<Note>;
 }
@@ -166,6 +167,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         await deleteNoteService(id);
     }, [notes, activeNote]);
 
+    // Copy a note
+    const copyNote = useCallback(async (id: string): Promise<Note> => {
+        const copiedNote = await copyNoteService(id);
+        setNotes(prev => [copiedNote, ...prev]);
+        setActiveNote(copiedNote);
+        return copiedNote;
+    }, []);
+
     const value: NotesContextType = {
         notes,
         isLoading,
@@ -175,6 +184,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         createNote,
         updateNote,
         deleteNote,
+        copyNote,
         refreshNotes,
         findOrCreateEmptyNote,
     };

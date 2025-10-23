@@ -122,6 +122,108 @@ export async function permanentlyDeleteNote(id: string): Promise<void> {
 }
 
 /**
+ * Copy/duplicate a note
+ */
+export async function copyNote(id: string): Promise<Note> {
+    // First fetch the original note
+    const { data: original, error: fetchError} = await supabase
+        .from('notes')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (fetchError || !original) {
+        console.error('Error fetching note to copy:', fetchError);
+        throw fetchError || new Error('Note not found');
+    }
+
+    // Create a copy with modified label
+    const copy: CreateNoteInput = {
+        label: `${original.label} (Copy)`,
+        content: original.content,
+        folder_name: original.folder_name,
+        tags: original.tags || [],
+        metadata: original.metadata || {},
+    };
+
+    return await createNote(copy);
+}
+
+/**
+ * Generate a shareable link for a note
+ * Returns a URL that users can visit to accept the share
+ */
+export function generateShareLink(noteId: string): string {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${baseUrl}/notes/share/${noteId}`;
+}
+
+/**
+ * Accept a shared note (adds current user to shared_with)
+ */
+export async function acceptSharedNote(noteId: string, userId: string): Promise<Note> {
+    // First get the current shared_with array
+    const { data: note, error: fetchError } = await supabase
+        .from('notes')
+        .select('shared_with')
+        .eq('id', noteId)
+        .single();
+
+    if (fetchError || !note) {
+        console.error('Error fetching note:', fetchError);
+        throw fetchError || new Error('Note not found');
+    }
+
+    const currentSharedWith = (note.shared_with as any) || {};
+    const userIds = currentSharedWith.userIds || [];
+    
+    // Add user if not already in the list
+    if (!userIds.includes(userId)) {
+        userIds.push(userId);
+    }
+
+    // Update the note
+    const { data: updated, error: updateError } = await supabase
+        .from('notes')
+        .update({ 
+            shared_with: { ...currentSharedWith, userIds } 
+        })
+        .eq('id', noteId)
+        .select()
+        .single();
+
+    if (updateError) {
+        console.error('Error accepting shared note:', updateError);
+        throw updateError;
+    }
+
+    return updated;
+}
+
+/**
+ * Fetch notes shared with the current user
+ */
+export async function fetchSharedNotes(userId: string): Promise<Note[]> {
+    const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('is_deleted', false)
+        .order('updated_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching shared notes:', error);
+        return [];
+    }
+
+    // Filter notes where userId is in shared_with.userIds
+    return data.filter(note => {
+        const sharedWith = (note.shared_with as any) || {};
+        const userIds = sharedWith.userIds || [];
+        return userIds.includes(userId);
+    });
+}
+
+/**
  * Get all unique folder names
  */
 export async function fetchFolderNames(): Promise<string[]> {
