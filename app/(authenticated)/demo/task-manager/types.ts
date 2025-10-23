@@ -1,9 +1,10 @@
 // types.ts
 import { ReactNode } from 'react';
+import type { DatabaseTask, DatabaseProject } from './types/database';
 
-// Basic entity types
+// UI-friendly task type (maps from database)
 export interface Task {
-  id: number;
+  id: string;
   title: string;
   completed: boolean;
   description: string;
@@ -11,15 +12,16 @@ export interface Task {
   dueDate: string;
 }
 
+// UI-friendly project type (maps from database)
 export interface Project {
-  id: number;
+  id: string;
   name: string;
   tasks: Task[];
 }
 
 // Extended types for UI
 export interface TaskWithProject extends Task {
-  projectId: number;
+  projectId: string;
   projectName: string;
 }
 
@@ -30,10 +32,11 @@ export type TaskFilterType = 'all' | 'completed' | 'incomplete' | 'overdue';
 export interface TaskContextType {
   // State
   projects: Project[];
+  loading: boolean;
   newProjectName: string;
-  expandedProjects: number[];
-  expandedTasks: number[];
-  activeProject: number | null;
+  expandedProjects: string[];
+  expandedTasks: string[];
+  activeProject: string | null;
   newTaskTitle: string;
   filter: TaskFilterType;
   showAllProjects: boolean;
@@ -41,24 +44,25 @@ export interface TaskContextType {
   // Setters
   setNewProjectName: (name: string) => void;
   setNewTaskTitle: (title: string) => void;
-  setActiveProject: (projectId: number) => void;
+  setActiveProject: (projectId: string) => void;
   setFilter: (filter: TaskFilterType) => void;
   setShowAllProjects: (show: boolean) => void;
   
   // Actions
-  toggleProjectExpand: (projectId: number) => void;
-  toggleTaskExpand: (taskId: number) => void;
+  toggleProjectExpand: (projectId: string) => void;
+  toggleTaskExpand: (taskId: string) => void;
   addProject: (e: React.FormEvent) => void;
-  deleteProject: (projectId: number, e: React.MouseEvent) => void;
+  deleteProject: (projectId: string, e: React.MouseEvent) => void;
   addTask: (e: React.FormEvent) => void;
-  toggleTaskComplete: (projectId: number, taskId: number) => void;
-  updateTaskDescription: (projectId: number, taskId: number, description: string) => void;
-  updateTaskDueDate: (projectId: number, taskId: number, dueDate: string) => void;
-  deleteTask: (projectId: number, taskId: number, e: React.MouseEvent) => void;
-  addAttachment: (projectId: number, taskId: number, e: React.MouseEvent) => void;
-  removeAttachment: (projectId: number, taskId: number, attachmentName: string) => void;
+  toggleTaskComplete: (projectId: string, taskId: string) => void;
+  updateTaskDescription: (projectId: string, taskId: string, description: string) => void;
+  updateTaskDueDate: (projectId: string, taskId: string, dueDate: string) => void;
+  deleteTask: (projectId: string, taskId: string, e: React.MouseEvent) => void;
+  addAttachment: (projectId: string, taskId: string, e: React.MouseEvent) => void;
+  removeAttachment: (projectId: string, taskId: string, attachmentName: string) => void;
   copyTaskToClipboard: (task: TaskWithProject, e: React.MouseEvent) => void;
   getFilteredTasks: () => TaskWithProject[];
+  refresh: () => void;
 }
 
 export interface TaskProviderProps {
@@ -76,4 +80,24 @@ export interface TaskListProps {
 
 export interface TaskDetailsProps {
   task: TaskWithProject;
+}
+
+// Utility functions to convert between database and UI types
+export function dbTaskToTask(dbTask: DatabaseTask): Task {
+  return {
+    id: dbTask.id,
+    title: dbTask.title,
+    completed: dbTask.status === 'completed',
+    description: dbTask.description || '',
+    attachments: [], // TODO: Load from task_attachments table
+    dueDate: dbTask.due_date || '',
+  };
+}
+
+export function dbProjectToProject(dbProject: DatabaseProject, tasks: DatabaseTask[]): Project {
+  return {
+    id: dbProject.id,
+    name: dbProject.name,
+    tasks: tasks.map(dbTaskToTask),
+  };
 }

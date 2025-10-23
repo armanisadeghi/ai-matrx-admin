@@ -1,24 +1,26 @@
-// context/TaskContext.tsx
+// Task Context with Database Integration
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabase/client';
+import { useToastManager } from '@/hooks/useToastManager';
 import type { 
   TaskContextType, 
   TaskProviderProps, 
   TaskFilterType,
   TaskWithProject,
-  Project
+  Project,
+  ProjectWithTasks
 } from '../types';
-import type { DatabaseTask, DatabaseProject, ProjectWithTasks } from '../types/database';
-import { dbTaskToTask } from '../types';
 import * as taskService from '../services/taskService';
 import * as projectService from '../services/projectService';
 
-// Create context with initial undefined value
+// Create context
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: TaskProviderProps) {
+  const toast = useToastManager('tasks');
+  
   // Database state
   const [dbProjectsWithTasks, setDbProjectsWithTasks] = useState<ProjectWithTasks[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,30 +43,43 @@ export function TaskProvider({ children }: TaskProviderProps) {
       title: dbTask.title,
       completed: dbTask.status === 'completed',
       description: dbTask.description || '',
-      attachments: [], // TODO: Load from task_attachments table
+      attachments: [],
       dueDate: dbTask.due_date || '',
     })),
   }));
 
   // Load projects with tasks from database
   const loadProjectsWithTasks = useCallback(async () => {
-    setLoading(true);
     try {
       const data = await projectService.getProjectsWithTasks();
       setDbProjectsWithTasks(data);
       
-      // Auto-expand first project and set as active if none selected
+      // Auto-expand and select first project if none selected
       if (data.length > 0 && !activeProject) {
         const firstProjectId = data[0].id;
         setExpandedProjects([firstProjectId]);
         setActiveProject(firstProjectId);
       }
+      
+      // If no projects exist, ensure default "Personal" project
+      if (data.length === 0 && !showAllProjects) {
+        const defaultProject = await projectService.ensureDefaultProject();
+        if (defaultProject) {
+          // Reload to get the new project
+          const updatedData = await projectService.getProjectsWithTasks();
+          setDbProjectsWithTasks(updatedData);
+          if (updatedData.length > 0) {
+            setActiveProject(updatedData[0].id);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error loading projects:', error);
+      toast.error('Failed to load projects');
     } finally {
       setLoading(false);
     }
-  }, [activeProject]);
+  }, [activeProject, showAllProjects, toast]);
 
   // Initial load and real-time subscription
   useEffect(() => {
@@ -73,28 +88,12 @@ export function TaskProvider({ children }: TaskProviderProps) {
     // Subscribe to real-time changes
     const channel = supabase
       .channel('task-manager-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'projects',
-        },
-        () => {
-          loadProjectsWithTasks();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'tasks',
-        },
-        () => {
-          loadProjectsWithTasks();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+        loadProjectsWithTasks();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        loadProjectsWithTasks();
+      })
       .subscribe();
 
     return () => {
@@ -125,89 +124,136 @@ export function TaskProvider({ children }: TaskProviderProps) {
     e.preventDefault();
     if (!newProjectName.trim()) return;
     
-    await projectService.createProject(newProjectName);
+    const newProject = await projectService.createProject(newProjectName);
+    if (newProject) {
+      setActiveProject(newProject.id);
+      toast.success(`Project "${newProjectName}" created`);
+      // Force immediate refresh
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to create project');
+    }
     setNewProjectName('');
   };
 
   // Delete project
   const deleteProject = async (projectId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    await projectService.deleteProject(projectId);
+    const project = projects.find(p => p.id === projectId);
+    const success = await projectService.deleteProject(projectId);
+    
+    if (success) {
+      toast.success(`Project "${project?.name}" deleted`);
+      // If deleted project was active, clear selection
+      if (activeProject === projectId) {
+        setActiveProject(null);
+      }
+      // Force immediate refresh
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to delete project');
+    }
   };
 
-  // Add new task to active project
-  const addTask = async (e: React.FormEvent) => {
+  // Add new task - can be to a project or standalone
+  const addTask = async (e: React.FormEvent, description?: string, dueDate?: string) => {
     e.preventDefault();
-    if (!newTaskTitle.trim() || !activeProject) return;
+    if (!newTaskTitle.trim()) return;
     
-    await taskService.createTask({
+    const newTask = await taskService.createTask({
       title: newTaskTitle,
-      project_id: activeProject,
+      description: description || null,
+      due_date: dueDate || null,
+      project_id: activeProject || null,
     });
     
-    setNewTaskTitle('');
+    if (newTask) {
+      toast.success('Task added');
+      setNewTaskTitle('');
+      // Force immediate refresh
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to add task');
+    }
   };
 
   // Toggle task completion
   const toggleTaskComplete = async (projectId: string, taskId: string) => {
-    // Find the task to get its current status
     const project = dbProjectsWithTasks.find(p => p.id === projectId);
     const task = project?.tasks?.find(t => t.id === taskId);
     
     if (task) {
-      await taskService.updateTask(taskId, {
-        status: task.status === 'completed' ? 'incomplete' : 'completed',
+      const newStatus = task.status === 'completed' ? 'incomplete' : 'completed';
+      const success = await taskService.updateTask(taskId, {
+        status: newStatus,
       });
+      
+      if (success) {
+        toast.success(newStatus === 'completed' ? 'Task completed' : 'Task reopened');
+        // Force immediate refresh
+        await loadProjectsWithTasks();
+      } else {
+        toast.error('Failed to update task');
+      }
     }
   };
 
   // Update task description
   const updateTaskDescription = async (projectId: string, taskId: string, description: string) => {
-    await taskService.updateTask(taskId, {
-      description,
-    });
+    const success = await taskService.updateTask(taskId, { description });
+    if (success) {
+      toast.success('Description updated');
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to update description');
+    }
   };
 
   // Update task due date
   const updateTaskDueDate = async (projectId: string, taskId: string, dueDate: string) => {
-    await taskService.updateTask(taskId, {
-      due_date: dueDate || null,
-    });
+    const success = await taskService.updateTask(taskId, { due_date: dueDate || null });
+    if (success) {
+      toast.success('Due date updated');
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to update due date');
+    }
   };
 
   // Delete task
   const deleteTask = async (projectId: string, taskId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    await taskService.deleteTask(taskId);
+    const success = await taskService.deleteTask(taskId);
+    if (success) {
+      toast.success('Task deleted');
+      await loadProjectsWithTasks();
+    } else {
+      toast.error('Failed to delete task');
+    }
   };
 
-  // Add attachment to task (simulated for now)
+  // Add attachment to task
   const addAttachment = (projectId: string, taskId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement file upload to task_attachments table
-    console.log('Attachment feature coming soon!');
-    alert('Attachment feature will be implemented with file storage.');
+    toast.info('File attachments coming soon!');
   };
 
   // Remove attachment from task
   const removeAttachment = (projectId: string, taskId: string, attachmentName: string) => {
-    // TODO: Implement attachment removal from task_attachments table
-    console.log('Attachment feature coming soon!');
+    toast.info('File attachments coming soon!');
   };
 
   // Copy task to clipboard
-  const copyTaskToClipboard = (task: TaskWithProject, e: React.MouseEvent) => {
+  const copyTaskToClipboard = async (task: TaskWithProject, e: React.MouseEvent) => {
     e.stopPropagation();
     const taskText = `${task.title}${task.description ? `\n${task.description}` : ''}${task.dueDate ? `\nDue: ${task.dueDate}` : ''}`;
     
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(taskText)
-        .then(() => {
-          alert('Task copied to clipboard');
-        })
-        .catch(err => {
-          console.error('Could not copy text: ', err);
-        });
+    try {
+      await navigator.clipboard.writeText(taskText);
+      toast.success('Task copied to clipboard');
+    } catch (err) {
+      console.error('Could not copy text:', err);
+      toast.error('Failed to copy task');
     }
   };
 
@@ -216,7 +262,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
     const today = new Date().toISOString().split('T')[0];
     
     if (showAllProjects) {
-      // Flatten all tasks from all projects and apply filter
       let allTasks: TaskWithProject[] = [];
       
       projects.forEach(project => {
@@ -229,7 +274,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
         });
       });
       
-      // Apply the current filter
       switch (filter) {
         case 'completed':
           return allTasks.filter(task => task.completed);
@@ -241,43 +285,31 @@ export function TaskProvider({ children }: TaskProviderProps) {
           return allTasks;
       }
     } else if (activeProject !== null) {
-      // Return tasks for the active project only
       const activeProjectData = projects.find(project => project.id === activeProject);
       
       if (!activeProjectData) return [];
       
-      // Apply the current filter
+      const mapTask = (task: typeof activeProjectData.tasks[0]) => ({
+        ...task, 
+        projectId: activeProject,
+        projectName: activeProjectData.name
+      });
+      
       switch (filter) {
         case 'completed':
-          return activeProjectData.tasks.filter(task => task.completed).map(task => ({
-            ...task, 
-            projectId: activeProject,
-            projectName: activeProjectData.name
-          }));
+          return activeProjectData.tasks.filter(task => task.completed).map(mapTask);
         case 'incomplete':
-          return activeProjectData.tasks.filter(task => !task.completed).map(task => ({
-            ...task, 
-            projectId: activeProject,
-            projectName: activeProjectData.name
-          }));
+          return activeProjectData.tasks.filter(task => !task.completed).map(mapTask);
         case 'overdue':
           return activeProjectData.tasks.filter(task => 
             !task.completed && task.dueDate && task.dueDate < today
-          ).map(task => ({
-            ...task, 
-            projectId: activeProject,
-            projectName: activeProjectData.name
-          }));
+          ).map(mapTask);
         default:
-          return activeProjectData.tasks.map(task => ({
-            ...task, 
-            projectId: activeProject,
-            projectName: activeProjectData.name
-          }));
+          return activeProjectData.tasks.map(mapTask);
       }
     }
     
-    return []; // Return empty array if no active project
+    return [];
   };
 
   const value: TaskContextType = {

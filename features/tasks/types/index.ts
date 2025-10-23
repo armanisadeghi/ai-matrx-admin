@@ -1,0 +1,62 @@
+// UI Types for Task Manager
+import { ReactNode } from 'react';
+
+export interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+  description: string;
+  attachments: string[];
+  dueDate: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  tasks: Task[];
+}
+
+export interface TaskWithProject extends Task {
+  projectId: string;
+  projectName: string;
+}
+
+export type TaskFilterType = 'all' | 'completed' | 'incomplete' | 'overdue';
+
+export interface TaskContextType {
+  projects: Project[];
+  loading: boolean;
+  newProjectName: string;
+  expandedProjects: string[];
+  expandedTasks: string[];
+  activeProject: string | null;
+  newTaskTitle: string;
+  filter: TaskFilterType;
+  showAllProjects: boolean;
+  setNewProjectName: (name: string) => void;
+  setNewTaskTitle: (title: string) => void;
+  setActiveProject: (projectId: string | null) => void;
+  setFilter: (filter: TaskFilterType) => void;
+  setShowAllProjects: (show: boolean) => void;
+  toggleProjectExpand: (projectId: string) => void;
+  toggleTaskExpand: (taskId: string) => void;
+  addProject: (e: React.FormEvent) => Promise<void>;
+  deleteProject: (projectId: string, e: React.MouseEvent) => Promise<void>;
+  addTask: (e: React.FormEvent, description?: string, dueDate?: string) => Promise<void>;
+  toggleTaskComplete: (projectId: string, taskId: string) => Promise<void>;
+  updateTaskDescription: (projectId: string, taskId: string, description: string) => Promise<void>;
+  updateTaskDueDate: (projectId: string, taskId: string, dueDate: string) => Promise<void>;
+  deleteTask: (projectId: string, taskId: string, e: React.MouseEvent) => Promise<void>;
+  addAttachment: (projectId: string, taskId: string, e: React.MouseEvent) => void;
+  removeAttachment: (projectId: string, taskId: string, attachmentName: string) => void;
+  copyTaskToClipboard: (task: TaskWithProject, e: React.MouseEvent) => Promise<void>;
+  getFilteredTasks: () => TaskWithProject[];
+  refresh: () => Promise<void>;
+}
+
+export interface TaskProviderProps {
+  children: ReactNode;
+}
+
+// Re-export database types
+export * from './database';
