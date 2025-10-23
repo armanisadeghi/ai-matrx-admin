@@ -4,12 +4,6 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
     {
-        title: 'Task Manager',
-        path: 'task-manager',
-        relative: true,
-        description: ''
-    },
-    {
         title: 'Service Demo: Ref Manager & Callback Manager',
         path: 'service-demo',
         relative: true,
