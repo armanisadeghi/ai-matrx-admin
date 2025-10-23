@@ -384,6 +384,30 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     .scrollbar-none::-webkit-scrollbar {
         display: none;             /* Chrome, Safari and Opera */
     }
+
+    /* Dynamic Viewport Height utilities - adjusts when keyboard appears */
+    /* Use these instead of h-screen, min-h-screen when you need keyboard-aware heights */
+    .h-dvh {
+        height: 100dvh; /* Dynamic viewport height - adjusts for keyboard */
+    }
+    
+    .min-h-dvh {
+        min-height: 100dvh;
+    }
+    
+    .max-h-dvh {
+        max-height: 100dvh;
+    }
+
+    /* Keyboard-safe bottom spacing utilities */
+    /* Use these for fixed bottom elements to ensure they stay visible when keyboard appears */
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 1rem);
+    }
+    
+    .mb-safe {
+        margin-bottom: env(safe-area-inset-bottom, 1rem);
+    }
 }
 
 /* Contrast Red */

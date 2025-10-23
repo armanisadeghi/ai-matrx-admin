@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, Search, Bell } from "lucide-react";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/NavigationMenu";
@@ -43,11 +43,19 @@ export default function DesktopLayout({
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const isAdminIndicatorVisible = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
     
-    const toggleSidebar = () => {
+    // Force hide tooltips immediately when sidebar state changes
+    useEffect(() => {
+        // Set transitioning state immediately on collapse state change
         setIsTransitioning(true);
+        const timer = setTimeout(() => {
+            setIsTransitioning(false);
+        }, 350);
+        
+        return () => clearTimeout(timer);
+    }, [isSidebarCollapsed]);
+    
+    const toggleSidebar = () => {
         setIsSidebarCollapsed(!isSidebarCollapsed);
-        // Clear transition flag after animation completes (300ms duration)
-        setTimeout(() => setIsTransitioning(false), 350);
     };
     const toggleAdminMenu = () => setIsAdminMenuCollapsed(!isAdminMenuCollapsed);
     const allLinks = [...primaryLinks, ...(isAdmin ? secondaryLinks : [])];
@@ -70,7 +78,11 @@ export default function DesktopLayout({
     };
 
     return (
-        <TooltipProvider delayDuration={300} skipDelayDuration={0}>
+        <TooltipProvider 
+            key={`tooltip-provider-${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
+            delayDuration={300} 
+            skipDelayDuration={0}
+        >
             <div id={uniqueId} className="min-h-screen bg-textured text-gray-800 dark:text-gray-100"
             >
                 {/* Main Header */}

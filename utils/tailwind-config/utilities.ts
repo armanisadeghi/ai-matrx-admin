@@ -86,6 +86,41 @@ export function createUtilities({ addUtilities, theme }: any) {
             "-webkit-mask-image": "linear-gradient(to bottom, black 50%, transparent 100%)",
             "mask-image": "linear-gradient(to bottom, black 50%, transparent 100%)",
         },
+        // Dynamic Viewport Height utilities - for keyboard-aware layouts
+        ".h-dvh": {
+            height: "100dvh",
+        },
+        ".min-h-dvh": {
+            minHeight: "100dvh",
+        },
+        ".max-h-dvh": {
+            maxHeight: "100dvh",
+        },
+        ".h-svh": {
+            height: "100svh", // Small viewport height (smallest)
+        },
+        ".min-h-svh": {
+            minHeight: "100svh",
+        },
+        ".h-lvh": {
+            height: "100lvh", // Large viewport height (largest)
+        },
+        ".min-h-lvh": {
+            minHeight: "100lvh",
+        },
+        // Keyboard-safe spacing utilities
+        ".pb-safe": {
+            paddingBottom: "env(safe-area-inset-bottom, 1rem)",
+        },
+        ".mb-safe": {
+            marginBottom: "env(safe-area-inset-bottom, 1rem)",
+        },
+        ".pt-safe": {
+            paddingTop: "env(safe-area-inset-top, 1rem)",
+        },
+        ".mt-safe": {
+            marginTop: "env(safe-area-inset-top, 1rem)",
+        },
     };
     addUtilities(utilities, ["responsive", "hover", "focus", "dark"]);
 }

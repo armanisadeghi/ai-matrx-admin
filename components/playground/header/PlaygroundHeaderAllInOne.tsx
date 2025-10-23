@@ -142,7 +142,7 @@ const PlaygroundHeaderAllInOne = ({
                     </Button>
 
                     {/* Recipe selector - only show on larger screens */}
-                    <div className="hidden lg:block min-w-[160px] max-w-[200px]">
+                    <div className="hidden lg:block min-w-[260px] max-w-[300px]">
                         <QuickRefSearchableSelect entityKey="recipe" />
                     </div>
 
