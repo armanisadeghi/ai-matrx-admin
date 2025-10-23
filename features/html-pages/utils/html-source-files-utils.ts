@@ -18,6 +18,7 @@ export interface HtmlMetadata {
     metaKeywords: string;
     ogImage: string;
     canonicalUrl: string;
+    isIndexable?: boolean;
 }
 
 export interface HtmlSourceFiles {
@@ -41,6 +42,11 @@ export function generateCompleteHtmlFromSources(sources: HtmlSourceFiles): strin
     
     // Build meta tags
     const metaTags: string[] = [];
+    
+    // Robots meta tag - default to noindex if not explicitly set to true
+    if (!metadata.isIndexable) {
+        metaTags.push(`    <meta name="robots" content="noindex, nofollow">`);
+    }
     
     if (pageDescription) {
         metaTags.push(`    <meta name="description" content="${escapeHtml(pageDescription)}">`);
@@ -282,6 +288,7 @@ export function createEmptyMetadata(): HtmlMetadata {
         metaKeywords: '',
         ogImage: '',
         canonicalUrl: '',
+        isIndexable: false,
     };
 }
 
@@ -306,6 +313,7 @@ export function parseJsonToMetadata(jsonString: string): HtmlMetadata {
             metaKeywords: parsed.metaKeywords || '',
             ogImage: parsed.ogImage || '',
             canonicalUrl: parsed.canonicalUrl || '',
+            isIndexable: parsed.isIndexable || false,
         };
     } catch (error) {
         console.error("Error parsing JSON to metadata:", error);
@@ -337,7 +345,8 @@ export function isMetadataDifferent(meta1: HtmlMetadata, meta2: HtmlMetadata): b
         meta1.metaDescription !== meta2.metaDescription ||
         meta1.metaKeywords !== meta2.metaKeywords ||
         meta1.ogImage !== meta2.ogImage ||
-        meta1.canonicalUrl !== meta2.canonicalUrl
+        meta1.canonicalUrl !== meta2.canonicalUrl ||
+        meta1.isIndexable !== meta2.isIndexable
     );
 }
 

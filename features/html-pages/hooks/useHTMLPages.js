@@ -6,7 +6,7 @@ export function useHTMLPages(userId) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const createHTMLPage = async (htmlContent, title, description = '', metaFields = {}) => {
+  const createHTMLPage = async (htmlContent, metaTitle, metaDescription = '', metaFields = {}) => {
     if (!userId) {
       throw new Error('User ID is required to create HTML pages');
     }
@@ -17,8 +17,8 @@ export function useHTMLPages(userId) {
     try {
       const result = await HTMLPageService.createPage(
         htmlContent, 
-        title, 
-        description, 
+        metaTitle, 
+        metaDescription, 
         userId,
         metaFields
       );
@@ -67,7 +67,7 @@ export function useHTMLPages(userId) {
     }
   };
 
-  const updateHTMLPage = async (pageId, htmlContent, title, description = '', metaFields = {}) => {
+  const updateHTMLPage = async (pageId, htmlContent, metaTitle, metaDescription = '', metaFields = {}) => {
     if (!userId) {
       throw new Error('User ID is required to update HTML pages');
     }
@@ -79,8 +79,8 @@ export function useHTMLPages(userId) {
       const result = await HTMLPageService.updatePage(
         pageId,
         htmlContent,
-        title,
-        description,
+        metaTitle,
+        metaDescription,
         userId,
         metaFields
       );

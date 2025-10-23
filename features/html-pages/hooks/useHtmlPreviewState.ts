@@ -290,24 +290,23 @@ export function useHtmlPreviewState({
             });
 
             // Step 3: Prepare metadata for API
-            const title = finalMetadata.title || "Generated Content";
-            const description = finalMetadata.description || "";
+            const metaTitle = finalMetadata.metaTitle || finalMetadata.title || "Generated Content";
+            const metaDescription = finalMetadata.metaDescription || finalMetadata.description || "";
             const metaFields = useMetadata ? {
-                metaTitle: finalMetadata.metaTitle || title,
-                metaDescription: finalMetadata.metaDescription || description,
                 metaKeywords: finalMetadata.metaKeywords || null,
                 ogImage: finalMetadata.ogImage || null,
                 canonicalUrl: finalMetadata.canonicalUrl || null,
+                isIndexable: finalMetadata.isIndexable || false,
             } : {};
 
             // Step 4: API call - Create or update page
             let result;
             if (publishedPageId) {
                 console.log("📝 Updating existing page with ID:", publishedPageId);
-                result = await updateHTMLPage(publishedPageId, completeHtml, title, description, metaFields);
+                result = await updateHTMLPage(publishedPageId, completeHtml, metaTitle, metaDescription, metaFields);
             } else {
                 console.log("✨ Creating NEW page (no existing ID)");
-                result = await createHTMLPage(completeHtml, title, description, metaFields);
+                result = await createHTMLPage(completeHtml, metaTitle, metaDescription, metaFields);
                 console.log("📌 New page created with ID:", result.pageId);
                 onPageIdChange?.(result.pageId);
             }
