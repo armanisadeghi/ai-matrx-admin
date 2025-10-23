@@ -4,12 +4,6 @@ import React, { useState } from 'react';
 import { X, Plus, Copy, Check, Wand2, ChevronDown, ChevronUp, ListFilter } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { Input } from '@/components/ui';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 const UUIDArrayField = () => {
     const [inputValue, setInputValue] = useState('');
