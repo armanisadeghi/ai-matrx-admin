@@ -6,7 +6,6 @@ import { ChatMode } from "@/types/chat/chat.types";
 import PromptInputContainer from "@/features/chat/components/input/PromptInputContainer";
 import { useNewChat } from "@/features/chat/hooks/useNewChat";
 import { useAppDispatch } from "@/lib/redux";
-import { BACKGROUND_PATTERN } from "@/constants/chat";
 
 interface WelcomeScreenProps {
     initialModelId?: string;
@@ -54,8 +53,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
     if (!initialLoadComplete) {
         return (
             <div
-            className="fixed inset-0 flex flex-col items-center justify-center px-4 md:px-8 w-screen h-screen bg-textured text-gray-800 dark:text-gray-100 z-50"
-            style={{ backgroundImage: BACKGROUND_PATTERN }}
+            className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 z-50"
         >
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100">Chat reimagined.</h1>
@@ -74,8 +72,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
     if (submitSuccess) {
         // After first message - show input at bottom like normal chat
         return (
-            <div className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-gray-950">
-                <PromptInputContainer disabled={isDisabled} onSubmit={handleActualSubmit} />
+            <div className="absolute bottom-0 left-0 right-0 bg-textured pb-4 pt-2">
+                <div className="w-full max-w-[800px] mx-auto px-4">
+                    <div className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-gray-950">
+                        <PromptInputContainer disabled={isDisabled} onSubmit={handleActualSubmit} />
+                    </div>
+                </div>
             </div>
         );
     }
