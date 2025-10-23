@@ -197,14 +197,13 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                         settings={settings}
                     />
                 )}
-                {shouldShowLoader && (
-                    <AssistantStream
-                        key={streamKey}
-                        taskId={taskId}
-                        handleVisibility={handleAutoScrollToBottom}
-                        scrollToBottom={handleScrollToBottom}
-                    />
-                )}
+                {/* ALWAYS render AssistantStream - it handles its own visibility */}
+                <AssistantStream
+                    key={streamKey}
+                    taskId={taskId}
+                    handleVisibility={handleAutoScrollToBottom}
+                    scrollToBottom={handleScrollToBottom}
+                />
                 {hasUserVisibleMessage && (
                     <ErrorCard message={streamError[0].user_visible_message} onRetry={handleRetry} onClose={handleClose} />
                 )}

@@ -16,7 +16,6 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     
     // Check if we're on a specific chat page (has an ID) or the welcome screen
     const isWelcomeScreen = pathname === '/chat' || pathname === '/chat/';
-    const isSpecificChat = !isWelcomeScreen;
 
     return (
         <>
@@ -26,37 +25,31 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                 <ChatHeader baseRoute="/chat" />
                 
                 <main className="flex-1 overflow-hidden">
-                    {isWelcomeScreen ? (
-                        // Welcome Screen - Just centered input, no ResponseColumn
-                        <div className="h-full w-full flex items-center justify-center bg-textured overflow-hidden">
-                            <div className="w-full max-w-[800px] px-4">
-                                {children}
-                            </div>
-                        </div>
-                    ) : (
-                        // Specific Chat - Show messages and input
-                        <AdaptiveLayout
-                            header={null}
-                            rightPanel={
-                                <div className="h-full w-full flex flex-col bg-textured relative">
-                                    {/* Messages - Scrollable area with padding for input */}
-                                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pb-32">
-                                        <div className="w-full max-w-[800px] mx-auto pt-0">
-                                            <ResponseColumn />
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Input Container - Fixed at bottom of right panel */}
-                                    <div className="absolute bottom-0 left-0 right-0 bg-textured pb-4 pt-2">
-                                        <div className="w-full max-w-[800px] mx-auto px-4">
-                                            {children}
-                                        </div>
+                    <AdaptiveLayout
+                        header={null}
+                        rightPanel={
+                            <div className="h-full w-full flex flex-col bg-textured relative">
+                                {/* Messages - ALWAYS render ResponseColumn (never unmount) */}
+                                <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pb-32">
+                                    <div className="w-full max-w-[800px] mx-auto pt-0">
+                                        <ResponseColumn />
                                     </div>
                                 </div>
-                            }
-                            mobileBreakpoint={768}
-                        />
-                    )}
+                                
+                                {/* Input Container - Position changes based on route */}
+                                <div className={`absolute left-0 right-0 bg-textured pb-4 pt-2 transition-all duration-300 ${
+                                    isWelcomeScreen 
+                                        ? 'top-1/2 -translate-y-1/2' 
+                                        : 'bottom-0'
+                                }`}>
+                                    <div className="w-full max-w-[800px] mx-auto px-4">
+                                        {children}
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        mobileBreakpoint={768}
+                    />
                 </main>
             </div>
         </>
