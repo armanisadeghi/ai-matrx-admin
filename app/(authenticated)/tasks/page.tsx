@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { TaskProvider } from '@/features/tasks';
 import Sidebar from '@/features/tasks/components/Sidebar';
 import TaskContent from '@/features/tasks/components/TaskContent';
 
@@ -14,12 +13,10 @@ import TaskContent from '@/features/tasks/components/TaskContent';
 export default function TasksPage() {
   return (
     <div className="w-full overflow-hidden" style={{ height: '100vh' }}>
-      <TaskProvider>
         <div className="flex w-full bg-textured" style={{ height: '100vh' }}>
           <Sidebar />
           <TaskContent />
         </div>
-      </TaskProvider>
     </div>
   );
 }

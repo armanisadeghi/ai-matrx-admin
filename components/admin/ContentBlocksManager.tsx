@@ -26,7 +26,9 @@ import {
     ChevronRight,
     Edit2,
     Settings,
-    Check
+    Check,
+    Columns2,
+    PanelLeft
 } from 'lucide-react';
 import { 
     ContentBlockDB, 
@@ -37,6 +39,8 @@ import {
     CategoryWithSubcategories
 } from '@/types/content-blocks-db';
 import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
+import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 
 interface ContentBlocksManagerProps {
     className?: string;
@@ -125,6 +129,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [quickCreateContext, setQuickCreateContext] = useState<'edit' | 'create'>('create');
     const [quickCategoryData, setQuickCategoryData] = useState({ label: '', icon_name: 'Folder', color: '#3b82f6' });
     const [quickSubcategoryData, setQuickSubcategoryData] = useState({ label: '', icon_name: 'FolderOpen', categoryId: '' });
+    // Split view toggle for Template Content
+    const [showPreview, setShowPreview] = useState(false);
 
     // Toast notifications
     const { toast } = useToast();
@@ -746,7 +752,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <div className="text-lg text-gray-600 dark:text-gray-400">Loading content blocks...</div>
+                <MatrxMiniLoader />
             </div>
         );
     }
@@ -1107,19 +1113,58 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 {/* Template Content */}
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Template Content</CardTitle>
-                                        <CardDescription>
-                                            This is the content that will be inserted when users select this block from context menus.
-                                        </CardDescription>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle>Template Content</CardTitle>
+                                                <CardDescription>
+                                                    This is the content that will be inserted when users select this block from context menus.
+                                                </CardDescription>
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setShowPreview(!showPreview)}
+                                                className="flex items-center gap-2"
+                                            >
+                                                {showPreview ? (
+                                                    <>
+                                                        <PanelLeft className="w-4 h-4" />
+                                                        Editor Only
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Columns2 className="w-4 h-4" />
+                                                        Split View
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
-                                        <AutoResizeTextarea
-                                            value={editData.template || ''}
-                                            onChange={(e) => handleEditChange('template', e.target.value)}
-                                            placeholder="Enter the template content that will be inserted..."
-                                            className="font-mono text-sm"
-                                            minHeight={300}
-                                        />
+                                        <div className={showPreview ? "flex flex-col lg:flex-row gap-4 items-stretch" : ""}>
+                                            {/* Editor Section */}
+                                            <div className={showPreview ? "flex-1 min-w-0" : ""}>
+                                                <AutoResizeTextarea
+                                                    value={editData.template || ''}
+                                                    onChange={(e) => handleEditChange('template', e.target.value)}
+                                                    placeholder="Enter the template content that will be inserted..."
+                                                    className="font-mono text-sm h-full"
+                                                    minHeight={300}
+                                                />
+                                            </div>
+                                            
+                                            {/* Preview Section */}
+                                            {showPreview && (
+                                                <div className="flex-1 min-w-0 min-h-[300px] border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-textured overflow-auto">
+                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                                                        PREVIEW
+                                                    </div>
+                                                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                                                        <EnhancedChatMarkdown content={editData.template || ''} />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </div>
