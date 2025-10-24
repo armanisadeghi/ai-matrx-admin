@@ -248,6 +248,34 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     select {
         font-size: 1.0625rem; /* Match body font size for form elements */
     }
+
+    /* RTL/Arabic font size adjustments - make RTL text slightly larger for better readability */
+    .rtl,
+    [dir="rtl"] {
+        font-size: 1.125rem; /* 18px - slightly larger than base 17px for better Arabic readability */
+        line-height: 1.7; /* Slightly increased line height for RTL text */
+    }
+
+    /* RTL-specific adjustments for different text sizes */
+    .rtl.text-sm,
+    [dir="rtl"].text-sm {
+        font-size: 1rem; /* 16px instead of 14px */
+    }
+
+    .rtl.text-lg,
+    [dir="rtl"].text-lg {
+        font-size: 1.25rem; /* 20px instead of 18px */
+    }
+
+    .rtl.text-xl,
+    [dir="rtl"].text-xl {
+        font-size: 1.375rem; /* 22px instead of 20px */
+    }
+
+    .rtl.text-2xl,
+    [dir="rtl"].text-2xl {
+        font-size: 1.5rem; /* 24px instead of 24px (same, but explicit) */
+    }
 }
 
 @layer components {

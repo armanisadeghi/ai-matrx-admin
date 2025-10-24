@@ -11,9 +11,6 @@ import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton"
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
-// Context to track if we're inside an ordered list
-const OrderedListContext = createContext<{ getNextIndex: () => number } | null>(null);
-
 // Detect text direction utility
 const detectTextDirection = (text: string): 'rtl' | 'ltr' => {
     // RTL Unicode ranges for Arabic, Hebrew, Persian, Urdu, etc.
@@ -40,11 +37,14 @@ const detectTextDirection = (text: string): 'rtl' | 'ltr' => {
         }
     }
     
-    // If RTL characters are more than 30% of alphabetic characters, consider it RTL
+    // If RTL characters are more than 10% of alphabetic characters, consider it RTL
+    // Lowered from 30% to 10% to catch mixed content better
     const totalAlphabetic = rtlCount + ltrCount;
     if (totalAlphabetic === 0) return 'ltr';
     
-    return (rtlCount / totalAlphabetic) > 0.3 ? 'rtl' : 'ltr';
+    const direction = (rtlCount / totalAlphabetic) > 0.1 ? 'rtl' : 'ltr';
+    
+    return direction;
 };
 
 // Get direction classes based on text direction
@@ -54,102 +54,29 @@ const getDirectionClasses = (direction: 'rtl' | 'ltr') => {
         : 'text-left ltr';
 };
 
-// Ordered List Wrapper Component
-const OrderedListComponent: React.FC<{ children: React.ReactNode; node?: any }> = ({ children, node }) => {
-    const indexRef = useRef(0);
-    
-    // Reset counter at the start of each render
-    indexRef.current = 0;
-    
-    const listText = typeof children === 'string' ? children : 
-        Array.isArray(children) ? children.join('') : '';
-    const listDirection = detectTextDirection(listText);
-    
-    const getNextIndex = () => {
-        indexRef.current++;
-        return indexRef.current;
-    };
-    
-    return (
-        <OrderedListContext.Provider value={{ getNextIndex }}>
-            <ol 
-                className={`list-none mb-3 leading-relaxed text-md pl-0 ml-0 ${getDirectionClasses(listDirection)}`}
-                dir={listDirection}
-            >
-                {children}
-            </ol>
-        </OrderedListContext.Provider>
-    );
-};
-
-// List Item Wrapper Component
+// Simple List Item Component
 const ListItemComponent: React.FC<{ children: React.ReactNode; node?: any }> = ({ children, node }) => {
     // Detect direction for list item content
     const itemText = typeof children === 'string' ? children : 
         Array.isArray(children) ? children.join('') : '';
     const itemDirection = detectTextDirection(itemText);
-    const isRtl = itemDirection === 'rtl';
     
     // Check if this is a task list item (contains a checkbox)
     const isTaskItem = node?.properties?.className?.includes('task-list-item');
     
-    // Check if we're inside an ordered list using context
-    const orderedListContext = useContext(OrderedListContext);
-    const isOrdered = orderedListContext !== null;
-    
-    // Check if content already starts with a bullet-like character
-    const startsWithBullet = /^[•●◦▪▫⁃‣⦿⦾]\s/.test(itemText);
-    
-    // Get the item number for ordered lists
-    let itemNumber = 1;
-    if (isOrdered && orderedListContext) {
-        itemNumber = orderedListContext.getNextIndex();
-    }
-    
-    if (isOrdered) {
-        return (
-            <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
-                <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1.5rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
-                    {itemNumber}.
-                </span>
-                <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
-                    {children}
-                </span>
-            </li>
-        );
-    }
-    
-    // Task list item (no bullet needed, checkbox is rendered)
+    // For task items, just return the content without additional styling
     if (isTaskItem) {
         return (
-            <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
-                <span className={`flex-1 leading-relaxed`}>
-                    {children}
-                </span>
-            </li>
-        );
-    }
-    
-    // If content already has a bullet character, don't add another one
-    if (startsWithBullet) {
-        return (
-            <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
-                <span className={`flex-1 leading-relaxed`}>
-                    {children}
-                </span>
-            </li>
-        );
-    }
-    
-    // Unordered list item with custom bullet
-    return (
-        <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
-            <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
-                •
-            </span>
-            <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
+            <li className={`mb-1 text-sm ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
                 {children}
-            </span>
+            </li>
+        );
+    }
+    
+    // For regular list items, use simple styling
+    return (
+        <li className={`mb-1 text-sm ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
+            {children}
         </li>
     );
 };
@@ -205,7 +132,14 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         
         // Ensure proper separation between list items and following paragraph content
         // This handles cases where content follows a list without proper spacing
-        processed = processed.replace(/(^|\n)(- .+)\n([^\n\-#*\s])/gm, '$1$2\n\n$3');
+        
+        // First, handle nested/indented list items (most specific case)
+        processed = processed.replace(/(^|\n)(\s+[*-] .+)\n([^\n\s\-#*\d][^\n]*)/gm, '$1$2\n\n$3');
+        
+        // Then handle regular list items
+        processed = processed.replace(/(^|\n)(- .+)\n([^\n\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
+        processed = processed.replace(/(^|\n)(\d+\. .+)\n([^\n\d\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
+        processed = processed.replace(/(^|\n)(\d+\) .+)\n([^\n\d\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
         
         // Clean up any excessive line breaks (more than 2 consecutive newlines)
         processed = processed.replace(/\n{3,}/g, '\n\n');
@@ -241,14 +175,25 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         },
         p: ({ node, children, ...props }: any) => {
             // Detect direction for this specific paragraph
-            const paragraphText = typeof children === 'string' ? children : 
-                Array.isArray(children) ? children.join('') : '';
+            // Better text extraction that handles nested React elements
+            const extractTextFromChildren = (children: any): string => {
+                if (typeof children === 'string') return children;
+                if (Array.isArray(children)) {
+                    return children.map(child => extractTextFromChildren(child)).join('');
+                }
+                if (children && typeof children === 'object' && children.props) {
+                    return extractTextFromChildren(children.props.children);
+                }
+                return '';
+            };
+            
+            const paragraphText = extractTextFromChildren(children);
             const paragraphDirection = detectTextDirection(paragraphText);
             const paragraphDirClasses = getDirectionClasses(paragraphDirection);
             
             return (
                 <p 
-                    className={`font-sans tracking-wide leading-relaxed text-sm mb-2 ${paragraphDirClasses}`} 
+                    className={`font-sans tracking-wide leading-relaxed text-sm mb-2 pl-0 ml-0 ${paragraphDirClasses}`} 
                     dir={paragraphDirection}
                     {...props}
                 >
@@ -260,8 +205,18 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             const parentTagName = node.parent?.tagName?.toLowerCase() || "";
             const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(parentTagName);
             
+            // Detect direction for bold text content
+            const boldText = typeof children === 'string' ? children : 
+                Array.isArray(children) ? children.join('') : '';
+            const boldDirection = detectTextDirection(boldText);
+            const boldDirClasses = getDirectionClasses(boldDirection);
+            
             return (
-                <strong className={isInHeading ? "" : "font-extrabold"} {...props}>
+                <strong 
+                    className={`${isInHeading ? "" : "font-extrabold"} ${boldDirClasses}`} 
+                    dir={boldDirection}
+                    {...props}
+                >
                     {children}
                 </strong>
             );
@@ -270,8 +225,18 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             const parentTagName = node.parent?.tagName?.toLowerCase() || "";
             const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(parentTagName);
             
+            // Detect direction for italic text content
+            const italicText = typeof children === 'string' ? children : 
+                Array.isArray(children) ? children.join('') : '';
+            const italicDirection = detectTextDirection(italicText);
+            const italicDirClasses = getDirectionClasses(italicDirection);
+            
             return (
-                <em className={isInHeading ? "italic" : "italic text-blue-600 dark:text-blue-400"} {...props}>
+                <em 
+                    className={`${isInHeading ? "italic" : "italic text-blue-600 dark:text-blue-400"} ${italicDirClasses}`} 
+                    dir={italicDirection}
+                    {...props}
+                >
                     {children}
                 </em>
             );
@@ -285,7 +250,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <blockquote 
-                className={`${isRtl ? 'pr-4 border-r-4' : 'pl-4 border-l-4'} py-3 border-gray-300 dark:border-gray-600 italic text-amber-600 dark:text-amber-400 ${getDirectionClasses(blockquoteDirection)}`}
+                className={`${isRtl ? 'pr-4 border-r-4' : 'pl-4 border-l-4'} py-3 border-blue-200 dark:border-blue-700 italic text-gray-700 dark:text-gray-300 bg-blue-50 dark:bg-blue-950/20 ${getDirectionClasses(blockquoteDirection)}`}
                 dir={blockquoteDirection}
                     {...props}
                 >
@@ -301,7 +266,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <ul 
-                    className={`list-none mb-3 leading-relaxed text-md pl-0 ml-0 ${getDirectionClasses(listDirection)}`}
+                    className={`list-disc mb-3 leading-relaxed text-sm pl-6 ${getDirectionClasses(listDirection)}`}
                     dir={listDirection}
                     {...props}
                 >
@@ -310,7 +275,20 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             );
         },
         ol: ({ node, children, ...props }) => {
-            return <OrderedListComponent node={node}>{children}</OrderedListComponent>;
+            // Detect direction for list content
+            const listText = typeof children === 'string' ? children : 
+                Array.isArray(children) ? children.join('') : '';
+            const listDirection = detectTextDirection(listText);
+            
+            return (
+                <ol 
+                    className={`list-decimal mb-3 leading-relaxed text-sm pl-6 ${getDirectionClasses(listDirection)}`}
+                    dir={listDirection}
+                    {...props}
+                >
+                    {children}
+                </ol>
+            );
         },
         li: ({ node, children, ...props }) => {
             return <ListItemComponent node={node}>{children}</ListItemComponent>;
@@ -368,7 +346,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <h4 
-                    className={`text-md pt-2 text-blue-500 font-medium mb-1 mt-3 font-heading ${getDirectionClasses(headingDirection)}`}
+                    className={`text-lg pt-2 text-blue-500 font-medium mb-1 mt-3 font-heading ${getDirectionClasses(headingDirection)}`}
                     dir={headingDirection}
                     {...props}
                 >
@@ -389,7 +367,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                     <code
                         className={cn(
                             "px-1.5 py-0 rounded font-mono text-sm font-medium",
-                            "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+                            "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
                             className
                         )}
                         {...props}
