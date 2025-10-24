@@ -43,6 +43,8 @@ import {
     LayoutPanelLeft,
     Puzzle,
     Workflow,
+    StickyNote,
+    ListTodo,
 } from "lucide-react";
 import { IoLogoReact } from "react-icons/io5";
 import { TbBrandSocketIo } from "react-icons/tb";
@@ -67,6 +69,20 @@ export const navigationLinks = [
         label: "Chat",
         icon: <SiGooglechat className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
         href: "/chat",
+        profileMenu: true,
+        dashboard: true,
+    },
+    {
+        label: "Notes",
+        icon: <StickyNote className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
+        href: "/notes",
+        profileMenu: true,
+        dashboard: true,
+    },
+    {
+        label: "Tasks",
+        icon: <ListTodo className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
+        href: "/tasks",
         profileMenu: true,
         dashboard: true,
     },

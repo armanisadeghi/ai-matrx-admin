@@ -37,6 +37,8 @@ import {
     Puzzle,
     Workflow,
     BookOpen,
+    StickyNote,
+    ListTodo,
 } from "lucide-react";
 import React from "react";
 import { IoLogoReact } from "react-icons/io5";
@@ -79,6 +81,16 @@ export const primaryLinks = [
         icon: <BsChatRight className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "Notes",
+        href: "/notes",
+        icon: <StickyNote className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Tasks",
+        href: "/tasks",
+        icon: <ListTodo className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
         label: "Tables",
         href: "/data",
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
@@ -93,7 +105,6 @@ export const primaryLinks = [
         icon: <AiFillAudio className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         href: "/demo/voice/voice-manager",
     },
-
     {
         label: "Image Gallery",
         href: "/image-editing/public-image-search", // https://lucide.dev/icons/
