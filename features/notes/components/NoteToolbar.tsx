@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Plus, Trash2, RefreshCw, Copy, Share2, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/ButtonMine';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Note } from '../types';
 import { cn } from '@/lib/utils';
@@ -30,20 +30,20 @@ export function NoteToolbar({
     className,
 }: NoteToolbarProps) {
     return (
-        <div className={cn("flex items-center gap-2 px-2 py-1.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900", className)}>
+        <div className={cn("flex items-center gap-1 px-2 py-1.5 border-b border-zinc-200 dark:border-zinc-800 bg-textured", className)}>
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-7 w-7 p-0"
                             onClick={() => onCreateNote()}
                         >
                             <Plus className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Create New Note</TooltipContent>
+                    <TooltipContent>New</TooltipContent>
                 </Tooltip>
             </TooltipProvider>
 
@@ -52,15 +52,15 @@ export function NoteToolbar({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
-                                className="h-8 w-8"
+                                className="h-7 w-7 p-0"
                                 onClick={onSave}
                             >
                                 <Save className="h-4 w-4 text-green-600 dark:text-green-500" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Save Note</TooltipContent>
+                        <TooltipContent>Save</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             )}
@@ -70,15 +70,15 @@ export function NoteToolbar({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
-                                className="h-8 w-8"
+                                className="h-7 w-7 p-0"
                                 onClick={() => onCopyNote(activeNote.id)}
                             >
                                 <Copy className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Copy Note</TooltipContent>
+                        <TooltipContent>Duplicate</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             )}
@@ -88,15 +88,15 @@ export function NoteToolbar({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
-                                className="h-8 w-8"
+                                className="h-7 w-7 p-0"
                                 onClick={() => onShareNote(activeNote.id)}
                             >
                                 <Share2 className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Share Note</TooltipContent>
+                        <TooltipContent>Share</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             )}
@@ -106,15 +106,15 @@ export function NoteToolbar({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
-                                className="h-8 w-8"
+                                className="h-7 w-7 p-0"
                                 onClick={() => onDeleteNote(activeNote.id)}
                             >
                                 <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Delete Note</TooltipContent>
+                        <TooltipContent>Delete</TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             )}
@@ -123,15 +123,15 @@ export function NoteToolbar({
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-7 w-7 p-0"
                             onClick={onRefresh}
                         >
                             <RefreshCw className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Refresh Notes</TooltipContent>
+                    <TooltipContent>Refresh All</TooltipContent>
                 </Tooltip>
             </TooltipProvider>
 

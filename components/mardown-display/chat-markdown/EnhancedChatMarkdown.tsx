@@ -824,7 +824,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
             )}
             
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
-            {!hideCopyButton && <InlineCopyButton markdownContent={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true} />}
+            {!hideCopyButton && <InlineCopyButton markdownContent={currentContent} size="xs" position="center-right" isMarkdown={true} />}
 
             {allowFullScreenEditor && (
                 <FullScreenMarkdownEditor

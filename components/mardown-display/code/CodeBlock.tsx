@@ -1,10 +1,12 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { Prism as SyntaxHighlighterBase } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
+
+// Type assertion to resolve React 19 type incompatibility
+const SyntaxHighlighter = SyntaxHighlighterBase as any;
 import { cn } from "@/styles/themes/utils";
 import SmallCodeEditor from "./SmallCodeEditor";
 import CodeBlockHeader from "./CodeBlockHeader";
-import { EditButton } from "./CodeBlockHeader";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import StickyButtons from "./StickyButtons";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -136,7 +138,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 // Small delay to allow animation to complete before changing state
                 setTimeout(() => {
                     setIsFullScreen(false);
-                    setIsEditing(false);
                     setIsCollapsed(false);
                 }, 50);
             }
@@ -194,7 +195,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             // Small delay to allow animation to complete before changing state
             setTimeout(() => {
                 setIsFullScreen(false);
-                setIsEditing(false);
                 setIsCollapsed(false);
             }, 150);
         } else {
@@ -216,11 +216,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         e.stopPropagation();
         setIsEditing(!isEditing);
         if (!isEditing) {
-            setIsFullScreen(true);
-            setIsCollapsed(false);
-        } else {
-            setIsFullScreen(false);
-            setIsEditing(false);
+            // Entering edit mode - maintain current fullscreen state
             setIsCollapsed(false);
         }
     };
@@ -276,10 +272,15 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 />
             )}
             <div className={cn("relative", isFullScreen && "flex-1 overflow-hidden")}>
-                <EditButton isEditing={isEditing} toggleEdit={toggleEdit} />
                 {isEditing ? (
-                    <div className={cn("w-full", isFullScreen ? "h-[calc(100vh-15rem)]" : "min-h-[200px]")}>
-                        <SmallCodeEditor language={language} initialCode={code} onChange={handleCodeChange} mode={mode} />
+                    <div className="w-full">
+                        <SmallCodeEditor 
+                            language={language} 
+                            initialCode={code} 
+                            onChange={handleCodeChange} 
+                            mode={mode}
+                            height={isFullScreen ? "calc(100vh - 15rem)" : `${Math.max(400, code.split("\n").length * 20 + 100)}px`}
+                        />
                     </div>
                 ) : (
                     // Code View

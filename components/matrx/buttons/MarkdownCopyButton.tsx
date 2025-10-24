@@ -247,8 +247,13 @@ export function InlineCopyButton({
     const positionClasses = {
         "top-right": "absolute top-1 right-1",
         "top-left": "absolute top-1 left-1",
+        "top-center": "absolute top-1 left-1/2 -translate-x-1/2",
         "bottom-right": "absolute bottom-1 right-1",
         "bottom-left": "absolute bottom-1 left-1",
+        "bottom-center": "absolute bottom-1 left-1/2 -translate-x-1/2",
+        "center-left": "absolute top-1/2 -translate-y-1/2 left-1",
+        "center-right": "absolute top-1/2 -translate-y-1/2 right-1",
+        "center": "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
     };
     
     const handleMouseEnter = () => {

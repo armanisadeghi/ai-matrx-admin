@@ -161,26 +161,23 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
 
     return (
         <div className="flex items-center space-x-1">
-            {toggleLineNumbers && !isMobile && (
-                <button onClick={toggleLineNumbers} className={buttonClass} title="Toggle line numbers">
-                    <Hash size={16} />
-                    <span>Lines</span>
-                </button>
-            )}
-
-            {toggleWrapLines && !isMobile && (
-                <button onClick={toggleWrapLines} className={buttonClass} title="Toggle wrap lines">
-                    <WrapText size={16} />
-                    <span>Wrap</span>
-                </button>
-            )}
-
-            {toggleFullScreen && !isEditing && !isMobile && (
+            {/* Fullscreen - Always visible */}
+            {toggleFullScreen && !isMobile && (
                 <button onClick={toggleFullScreen} className={buttonClass} title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}>
                     {isFullScreen ? <Minimize size={16} /> : <Expand size={16} />}
-                    <span>{isFullScreen ? "Exit Fullscreen" : "Fullscreen"}</span>
+                    <span>{isFullScreen ? "Exit" : "Fullscreen"}</span>
                 </button>
             )}
+
+            {/* Collapse - Only when not editing and can collapse */}
+            {toggleCollapse && !isEditing && canCollapse && (
+                <button onClick={toggleCollapse} className={buttonClass} title={isCollapsed ? "Expand" : "Collapse"}>
+                    {isCollapsed ? <BsChevronBarContract size={16} /> : <BsChevronBarExpand size={16} />}
+                    <span>{isCollapsed ? "Expand" : "Collapse"}</span>
+                </button>
+            )}
+
+            {/* Download - Always visible */}
             {!isMobile && (
                 <button onClick={handleDownload} className={buttonClass} title="Download code">
                     <Download size={16} />
@@ -188,23 +185,32 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
                 </button>
             )}
 
-            {toggleEdit && isEditing && !isMobile && (
-                <button onClick={toggleEdit} className={buttonClass} title="Exit edit mode">
-                    <Eye size={16} />
-                    <span>View</span>
-                </button>
-            )}
-
-            {toggleCollapse && !isEditing && canCollapse && (
-                <button onClick={toggleCollapse} className={buttonClass} title={isCollapsed ? "Expand" : "Collapse"}>
-                    {isCollapsed ? <BsChevronBarContract size={16} /> : <BsChevronBarExpand size={16} />}
-                    <span>{isCollapsed ? "Expand" : "Collapse"}</span>
-                </button>
-            )}
+            {/* Copy - Always visible */}
             <button onClick={handleCopy} className={buttonClass} title={isCopied ? "Copied!" : "Copy code"}>
                 {isCopied ? <Check size={16} /> : <Copy size={16} />}
                 <span>Copy</span>
             </button>
+
+            {/* Edit/View Toggle - Always visible, LAST to prevent shifting */}
+            {toggleEdit && !isMobile && (
+                <button 
+                    onClick={toggleEdit} 
+                    className={buttonClass} 
+                    title={isEditing ? "Exit edit mode" : "Edit code"}
+                >
+                    {isEditing ? (
+                        <>
+                            <Eye size={16} />
+                            <span>View</span>
+                        </>
+                    ) : (
+                        <>
+                            <Edit2 size={16} />
+                            <span>Edit</span>
+                        </>
+                    )}
+                </button>
+            )}
         </div>
     );
 };
