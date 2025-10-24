@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { TemplateCard } from "./TemplateCard";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,9 +23,27 @@ interface TemplatesGridProps {
 
 export function TemplatesGrid({ templates }: TemplatesGridProps) {
     const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+    const [navigatingId, setNavigatingId] = useState<string | null>(null);
+    const [usingTemplateId, setUsingTemplateId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("all");
 
+    const handleNavigate = (id: string, path: string) => {
+        // Prevent navigation if already navigating or using a template
+        if (navigatingId || usingTemplateId) return;
+        
+        setNavigatingId(id);
+        startTransition(() => {
+            router.push(path);
+        });
+    };
+
     const handleUseTemplate = async (id: string) => {
+        // Prevent action if already processing
+        if (usingTemplateId || navigatingId) return;
+        
+        setUsingTemplateId(id);
+        
         try {
             const response = await fetch(`/api/prompts/templates/${id}/use`, {
                 method: "POST",
@@ -38,10 +56,13 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
             const { prompt } = await response.json();
             
             // Redirect to edit the newly created prompt
-            router.push(`/ai/prompts/edit/${prompt.id}`);
+            startTransition(() => {
+                router.push(`/ai/prompts/edit/${prompt.id}`);
+            });
         } catch (error) {
             console.error("Error using template:", error);
             toast.error("Failed to create prompt from template. Please try again.");
+            setUsingTemplateId(null);
         }
     };
 
@@ -91,6 +112,10 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
                         isFeatured={template.is_featured}
                         useCount={template.use_count}
                         onUseTemplate={handleUseTemplate}
+                        onNavigate={handleNavigate}
+                        isNavigating={navigatingId === template.id}
+                        isUsingTemplate={usingTemplateId === template.id}
+                        isAnyProcessing={navigatingId !== null || usingTemplateId !== null}
                     />
                 ))}
             </div>
