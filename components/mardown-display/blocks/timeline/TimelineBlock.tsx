@@ -4,9 +4,11 @@ import {
   Calendar, Clock, CheckCircle2, Circle, 
   Maximize2, Minimize2, MapPin, Flag, 
   ArrowRight, Play, Pause, RotateCcw,
-  ChevronDown, ChevronRight, Expand, ExternalLink
+  ChevronDown, ChevronRight, Expand, ExternalLink, Upload
 } from 'lucide-react';
 import { useCanvas } from '@/hooks/useCanvas';
+import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
+import { convertTimelineToTasks } from '@/features/tasks/utils/importConverters';
 
 interface TimelineEvent {
   id: string;
@@ -35,11 +37,35 @@ interface TimelineBlockProps {
 const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
   const [completedEvents, setCompletedEvents] = useState<Set<string>>(new Set());
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [collapsedPeriods, setCollapsedPeriods] = useState<Set<string>>(
     new Set(timeline.periods.map(period => period.period))
   );
   const { open: openCanvas } = useCanvas();
+
+  // Convert timeline to tasks format
+  const convertedTasks = useMemo(() => {
+    return convertTimelineToTasks(timeline.title, timeline.periods);
+  }, [timeline]);
+
+  // Build checkbox state from completed events
+  const checkboxState = useMemo(() => {
+    const state: Record<string, boolean> = {};
+    convertedTasks.forEach(section => {
+      if (section.children) {
+        section.children.forEach(task => {
+          state[task.id] = task.checked || false;
+          if (task.children) {
+            task.children.forEach(subtask => {
+              state[subtask.id] = subtask.checked || false;
+            });
+          }
+        });
+      }
+    });
+    return state;
+  }, [convertedTasks]);
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -170,6 +196,13 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
                   <div className="flex items-center gap-2">
                     {!isFullScreen && (
                       <>
+                        <button
+                          onClick={() => setIsImportModalOpen(true)}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-500 dark:bg-green-600 text-white text-xs font-semibold shadow-sm hover:bg-green-600 dark:hover:bg-green-700 hover:shadow-md transform hover:scale-105 transition-all"
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">Import</span>
+                        </button>
                         <button
                           onClick={() => openCanvas({
                             type: 'timeline',
@@ -372,6 +405,14 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
           </div>
         </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportTasksModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        tasks={convertedTasks}
+        checkboxState={checkboxState}
+      />
     </>
   );
 };

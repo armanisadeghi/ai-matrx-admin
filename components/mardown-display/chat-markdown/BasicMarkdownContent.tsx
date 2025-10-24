@@ -129,7 +129,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                         type="checkbox"
                         checked={checked}
                         disabled={disabled}
-                        className="mr-2 h-4 w-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-500 bg-textured focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                        className="mr-2 h-4 w-4 rounded border-2 border-blue-400 dark:border-blue-500 text-blue-600 dark:text-blue-400 checked:bg-blue-600 dark:checked:bg-blue-500 checked:border-blue-600 dark:checked:border-blue-500 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-0 cursor-pointer transition-colors"
                         {...props}
                     />
                 );
@@ -229,6 +229,9 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             const itemDirection = detectTextDirection(itemText);
             const isRtl = itemDirection === 'rtl';
             
+            // Check if this is a task list item (contains a checkbox)
+            const isTaskItem = node?.properties?.className?.includes('task-list-item');
+            
             if (ordered && typeof index === "number") {
                 return (
                     <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
@@ -236,6 +239,17 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                             {index + 1}.
                         </span>
                         <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
+                            {children}
+                        </span>
+                    </li>
+                );
+            }
+            
+            // Task list item (no bullet needed, checkbox is rendered)
+            if (isTaskItem) {
+                return (
+                    <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
+                        <span className={`flex-1 leading-relaxed`}>
                             {children}
                         </span>
                     </li>

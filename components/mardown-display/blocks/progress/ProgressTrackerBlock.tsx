@@ -5,9 +5,11 @@ import {
   Maximize2, Minimize2, Play, Pause, RotateCcw, TrendingUp, Award,
   Zap, Clock, Star, ChevronRight, ChevronDown, Plus, Minus,
   BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles,
-  ExternalLink
+  ExternalLink, Upload
 } from 'lucide-react';
 import { useCanvas } from '@/hooks/useCanvas';
+import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
+import { convertProgressToTasks } from '@/features/tasks/utils/importConverters';
 
 interface ProgressItem {
   id: string;
@@ -45,6 +47,7 @@ interface ProgressTrackerBlockProps {
 
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { open: openCanvas } = useCanvas();
   
   // Initialize completedItems with items that are already marked as completed in the tracker data
@@ -63,6 +66,25 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['category-1'])); // First category expanded by default
   const [showCompletedOnly, setShowCompletedOnly] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
+
+  // Convert progress tracker to tasks format
+  const convertedTasks = useMemo(() => {
+    return convertProgressToTasks(tracker.title, tracker.categories);
+  }, [tracker]);
+
+  // Build checkbox state from completed items
+  const checkboxState = useMemo(() => {
+    const state: Record<string, boolean> = {};
+    convertedTasks.forEach(task => {
+      state[task.id] = task.checked || false;
+      if (task.children) {
+        task.children.forEach(child => {
+          state[child.id] = child.checked || false;
+        });
+      }
+    });
+    return state;
+  }, [convertedTasks]);
 
   // Update completedItems when tracker data changes (in case the component receives new data)
   React.useEffect(() => {
@@ -265,6 +287,13 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
 
                   {!isFullScreen && (
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500 dark:bg-green-600 text-white text-sm font-semibold shadow-md hover:bg-green-600 dark:hover:bg-green-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Upload className="h-4 w-4" />
+                        <span>Import to Tasks</span>
+                      </button>
                       <button
                         onClick={() => openCanvas({
                           type: 'progress',
@@ -551,6 +580,14 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
           </div>
         </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportTasksModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        tasks={convertedTasks}
+        checkboxState={checkboxState}
+      />
     </>
   );
 };

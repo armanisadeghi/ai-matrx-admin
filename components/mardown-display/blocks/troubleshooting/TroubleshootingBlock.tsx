@@ -4,9 +4,11 @@ import {
   HelpCircle, ChevronDown, ChevronRight, AlertTriangle, CheckCircle2, 
   Maximize2, Minimize2, Search, Filter, Lightbulb, ExternalLink,
   Bug, Wrench, Zap, Clock, Star, Copy, Check, ArrowRight,
-  AlertCircle, Info, Target, BookOpen, Users, MessageSquare
+  AlertCircle, Info, Target, BookOpen, Users, MessageSquare, Upload
 } from 'lucide-react';
 import { useCanvas } from '@/hooks/useCanvas';
+import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
+import { convertTroubleshootingToTasks } from '@/features/tasks/utils/importConverters';
 
 interface TroubleshootingStep {
   id: string;
@@ -50,6 +52,7 @@ interface TroubleshootingBlockProps {
 
 const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshooting }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [expandedIssues, setExpandedIssues] = useState<Set<string>>(new Set(['issue-0'])); // First issue expanded by default
   const [expandedSolutions, setExpandedSolutions] = useState<Set<string>>(new Set());
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
@@ -58,6 +61,25 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
   const [copiedCommands, setCopiedCommands] = useState<Set<string>>(new Set());
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const { open: openCanvas } = useCanvas();
+
+  // Convert troubleshooting to tasks format
+  const convertedTasks = useMemo(() => {
+    return convertTroubleshootingToTasks(troubleshooting.title, troubleshooting.issues);
+  }, [troubleshooting]);
+
+  // Build checkbox state from completed steps
+  const checkboxState = useMemo(() => {
+    const state: Record<string, boolean> = {};
+    convertedTasks.forEach(task => {
+      state[task.id] = task.checked || false;
+      if (task.children) {
+        task.children.forEach(child => {
+          state[child.id] = child.checked || false;
+        });
+      }
+    });
+    return state;
+  }, [convertedTasks]);
 
   // Filter issues based on search and severity
   const filteredIssues = useMemo(() => {
@@ -244,6 +266,13 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
 
                   {!isFullScreen && (
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500 dark:bg-green-600 text-white text-sm font-semibold shadow-md hover:bg-green-600 dark:hover:bg-green-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Upload className="h-4 w-4" />
+                        <span>Import to Tasks</span>
+                      </button>
                       <button
                         onClick={() => openCanvas({
                           type: 'troubleshooting',
@@ -632,6 +661,14 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({ troubleshoo
           </div>
         </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportTasksModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        tasks={convertedTasks}
+        checkboxState={checkboxState}
+      />
     </>
   );
 };
