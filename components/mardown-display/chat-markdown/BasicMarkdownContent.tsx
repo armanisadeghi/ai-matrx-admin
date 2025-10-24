@@ -5,21 +5,16 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { cn } from "@/styles/themes/utils";
 import { PencilIcon } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, createContext, useContext, useRef } from "react";
 import { LinkComponent } from "@/components/mardown-display/blocks/links/LinkComponent";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
-interface BasicMarkdownContentProps {
-    content: string;
-    isStreamActive?: boolean;
-    onEditRequest?: () => void;
-    messageId?: string;
-    showCopyButton?: boolean;
-}
+// Context to track if we're inside an ordered list
+const OrderedListContext = createContext<{ getNextIndex: () => number } | null>(null);
 
-// RTL language detection utility
+// Detect text direction utility
 const detectTextDirection = (text: string): 'rtl' | 'ltr' => {
     // RTL Unicode ranges for Arabic, Hebrew, Persian, Urdu, etc.
     const rtlRanges = [
@@ -58,6 +53,114 @@ const getDirectionClasses = (direction: 'rtl' | 'ltr') => {
         ? 'text-right rtl' 
         : 'text-left ltr';
 };
+
+// Ordered List Wrapper Component
+const OrderedListComponent: React.FC<{ children: React.ReactNode; node?: any }> = ({ children, node }) => {
+    const indexRef = useRef(0);
+    
+    // Reset counter at the start of each render
+    indexRef.current = 0;
+    
+    const listText = typeof children === 'string' ? children : 
+        Array.isArray(children) ? children.join('') : '';
+    const listDirection = detectTextDirection(listText);
+    
+    const getNextIndex = () => {
+        indexRef.current++;
+        return indexRef.current;
+    };
+    
+    return (
+        <OrderedListContext.Provider value={{ getNextIndex }}>
+            <ol 
+                className={`list-none mb-3 leading-relaxed text-md pl-0 ml-0 ${getDirectionClasses(listDirection)}`}
+                dir={listDirection}
+            >
+                {children}
+            </ol>
+        </OrderedListContext.Provider>
+    );
+};
+
+// List Item Wrapper Component
+const ListItemComponent: React.FC<{ children: React.ReactNode; node?: any }> = ({ children, node }) => {
+    // Detect direction for list item content
+    const itemText = typeof children === 'string' ? children : 
+        Array.isArray(children) ? children.join('') : '';
+    const itemDirection = detectTextDirection(itemText);
+    const isRtl = itemDirection === 'rtl';
+    
+    // Check if this is a task list item (contains a checkbox)
+    const isTaskItem = node?.properties?.className?.includes('task-list-item');
+    
+    // Check if we're inside an ordered list using context
+    const orderedListContext = useContext(OrderedListContext);
+    const isOrdered = orderedListContext !== null;
+    
+    // Check if content already starts with a bullet-like character
+    const startsWithBullet = /^[•●◦▪▫⁃‣⦿⦾]\s/.test(itemText);
+    
+    // Get the item number for ordered lists
+    let itemNumber = 1;
+    if (isOrdered && orderedListContext) {
+        itemNumber = orderedListContext.getNextIndex();
+    }
+    
+    if (isOrdered) {
+        return (
+            <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
+                <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1.5rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
+                    {itemNumber}.
+                </span>
+                <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
+                    {children}
+                </span>
+            </li>
+        );
+    }
+    
+    // Task list item (no bullet needed, checkbox is rendered)
+    if (isTaskItem) {
+        return (
+            <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
+                <span className={`flex-1 leading-relaxed`}>
+                    {children}
+                </span>
+            </li>
+        );
+    }
+    
+    // If content already has a bullet character, don't add another one
+    if (startsWithBullet) {
+        return (
+            <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
+                <span className={`flex-1 leading-relaxed`}>
+                    {children}
+                </span>
+            </li>
+        );
+    }
+    
+    // Unordered list item with custom bullet
+    return (
+        <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection}>
+            <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
+                •
+            </span>
+            <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
+                {children}
+            </span>
+        </li>
+    );
+};
+
+interface BasicMarkdownContentProps {
+    content: string;
+    isStreamActive?: boolean;
+    onEditRequest?: () => void;
+    messageId?: string;
+    showCopyButton?: boolean;
+}
 
 export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ 
     content, 
@@ -198,7 +301,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <ul 
-                    className={`list-none mb-3 leading-relaxed text-md ${getDirectionClasses(listDirection)}`}
+                    className={`list-none mb-3 leading-relaxed text-md pl-0 ml-0 ${getDirectionClasses(listDirection)}`}
                     dir={listDirection}
                     {...props}
                 >
@@ -207,66 +310,10 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             );
         },
         ol: ({ node, children, ...props }) => {
-            // Detect direction for ordered list content
-            const listText = typeof children === 'string' ? children : 
-                Array.isArray(children) ? children.join('') : '';
-            const listDirection = detectTextDirection(listText);
-            
-            return (
-                <ol 
-                    className={`list-none mb-3 leading-relaxed text-md ${getDirectionClasses(listDirection)}`}
-                    dir={listDirection}
-                    {...props}
-                >
-                    {children}
-                </ol>
-            );
+            return <OrderedListComponent node={node}>{children}</OrderedListComponent>;
         },
-        li: ({ node, children, ordered, index, ...props }: any) => {
-            // Detect direction for list item content
-            const itemText = typeof children === 'string' ? children : 
-                Array.isArray(children) ? children.join('') : '';
-            const itemDirection = detectTextDirection(itemText);
-            const isRtl = itemDirection === 'rtl';
-            
-            // Check if this is a task list item (contains a checkbox)
-            const isTaskItem = node?.properties?.className?.includes('task-list-item');
-            
-            if (ordered && typeof index === "number") {
-                return (
-                    <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
-                        <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1.5rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
-                            {index + 1}.
-                        </span>
-                        <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
-                            {children}
-                        </span>
-                    </li>
-                );
-            }
-            
-            // Task list item (no bullet needed, checkbox is rendered)
-            if (isTaskItem) {
-                return (
-                    <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
-                        <span className={`flex-1 leading-relaxed`}>
-                            {children}
-                        </span>
-                    </li>
-                );
-            }
-            
-            // Unordered list item with custom bullet
-            return (
-                <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
-                    <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
-                        •
-                    </span>
-                    <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
-                        {children}
-                    </span>
-                </li>
-            );
+        li: ({ node, children, ...props }) => {
+            return <ListItemComponent node={node}>{children}</ListItemComponent>;
         },
         a: LinkWrapper,
         h1: ({ node, children, ...props }) => {
