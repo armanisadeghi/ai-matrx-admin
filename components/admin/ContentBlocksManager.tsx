@@ -119,6 +119,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
     const [newCategoryLabel, setNewCategoryLabel] = useState('');
     const [newSubcategoryData, setNewSubcategoryData] = useState<{ categoryId: string; label: string } | null>(null);
+    // Quick create modals for "New..." option
+    const [isQuickCreateCategoryOpen, setIsQuickCreateCategoryOpen] = useState(false);
+    const [isQuickCreateSubcategoryOpen, setIsQuickCreateSubcategoryOpen] = useState(false);
+    const [quickCreateContext, setQuickCreateContext] = useState<'edit' | 'create'>('create');
+    const [quickCategoryData, setQuickCategoryData] = useState({ label: '', icon_name: 'Folder', color: '#3b82f6' });
+    const [quickSubcategoryData, setQuickSubcategoryData] = useState({ label: '', icon_name: 'FolderOpen', categoryId: '' });
 
     // Toast notifications
     const { toast } = useToast();
@@ -409,14 +415,14 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         expandedSubcategories.has(`${categoryId}-${subcategoryId}`);
 
     // Category management handlers
-    const handleCreateCategory = async () => {
-        if (!newCategoryLabel.trim()) return;
+    const handleCreateCategory = async (label: string, iconName: string = 'Folder', color: string = '#3b82f6') => {
+        if (!label.trim()) return null;
         
         try {
             const supabase = getBrowserSupabaseClient();
             
             // Generate base ID from label
-            let baseId = newCategoryLabel
+            let baseId = label
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/^-+|-+$/g, ''); // Remove leading/trailing dashes
@@ -428,7 +434,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     description: "Please enter a valid category name with letters or numbers.",
                     variant: "destructive"
                 });
-                return;
+                return null;
             }
             
             // Check if ID already exists and make it unique if needed
@@ -447,7 +453,9 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                 .from('category_configs')
                 .insert([{
                     category_id: categoryId,
-                    label: newCategoryLabel,
+                    label: label,
+                    icon_name: iconName,
+                    color: color,
                     sort_order: maxSortOrder + 1,
                     is_active: true
                 }]);
@@ -485,15 +493,15 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             
             toast({
                 title: "Success",
-                description: `Category "${newCategoryLabel}" created successfully.`,
+                description: `Category "${label}" created successfully.`,
                 variant: "success"
             });
             
-            setNewCategoryLabel('');
-            loadData();
+            await loadData();
+            return categoryId;
         } catch (error: any) {
             console.error('Error creating category - full error:', error);
-            // Error toast already shown above if it's a Supabase error
+            return null;
         }
     };
 
@@ -541,8 +549,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
         }
     };
 
-    const handleCreateSubcategory = async (categoryId: string, label: string) => {
-        if (!label.trim()) return;
+    const handleCreateSubcategory = async (categoryId: string, label: string, iconName: string = 'FolderOpen') => {
+        if (!label.trim()) return null;
         
         try {
             const supabase = getBrowserSupabaseClient();
@@ -560,7 +568,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     description: "Please enter a valid subcategory name with letters or numbers.",
                     variant: "destructive"
                 });
-                return;
+                return null;
             }
             
             // Check if ID already exists across ALL categories and make it unique if needed
@@ -584,7 +592,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                     subcategory_id: subcategoryId,
                     category_id: categoryId,
                     label: label,
-                    icon_name: 'Folder', // Default icon
+                    icon_name: iconName,
                     sort_order: maxSortOrder + 1,
                     is_active: true
                 }]);
@@ -631,10 +639,11 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             });
             
             setNewSubcategoryData(null);
-            loadData();
+            await loadData();
+            return subcategoryId;
         } catch (error: any) {
             console.error('Error creating subcategory - full error:', error);
-            // Error toast already shown above if it's a Supabase error
+            return null;
         }
     };
 
@@ -679,6 +688,56 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             } catch (error) {
                 console.error('Error deleting subcategory:', error);
             }
+        }
+    };
+
+    // Quick create handlers
+    const handleQuickCreateCategory = async () => {
+        const categoryId = await handleCreateCategory(
+            quickCategoryData.label, 
+            quickCategoryData.icon_name, 
+            quickCategoryData.color
+        );
+        
+        if (categoryId) {
+            // Set the newly created category in the form
+            if (quickCreateContext === 'create') {
+                setCreateFormData({ ...createFormData, category: categoryId as any, subcategory: undefined });
+            } else {
+                handleEditChange('category', categoryId);
+                handleEditChange('subcategory', null);
+            }
+            
+            // Reset and close
+            setQuickCategoryData({ label: '', icon_name: 'Folder', color: '#3b82f6' });
+            setIsQuickCreateCategoryOpen(false);
+        }
+    };
+
+    const handleQuickCreateSubcategory = async () => {
+        const categoryId = quickCreateContext === 'create' 
+            ? createFormData.category 
+            : editData.category;
+            
+        if (!categoryId) return;
+        
+        const subcategoryId = await handleCreateSubcategory(
+            categoryId,
+            quickSubcategoryData.label,
+            quickSubcategoryData.icon_name
+        );
+        
+        if (subcategoryId) {
+            // Set the newly created subcategory in the form
+            if (quickCreateContext === 'create') {
+                setCreateFormData({ ...createFormData, subcategory: subcategoryId });
+            } else {
+                handleEditChange('subcategory', subcategoryId);
+            }
+            
+            // Reset and close
+            setQuickSubcategoryData({ label: '', icon_name: 'FolderOpen', categoryId: '' });
+            setIsQuickCreateSubcategoryOpen(false);
         }
     };
 
@@ -966,7 +1025,14 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                 <Label htmlFor="edit-category">Category</Label>
                                                 <Select 
                                                     value={editData.category || ''} 
-                                                    onValueChange={(value) => handleEditChange('category', value)}
+                                                    onValueChange={(value) => {
+                                                        if (value === '__new__') {
+                                                            setQuickCreateContext('edit');
+                                                            setIsQuickCreateCategoryOpen(true);
+                                                        } else {
+                                                            handleEditChange('category', value);
+                                                        }
+                                                    }}
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select category" />
@@ -977,6 +1043,10 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                 {category.label}
                                                             </SelectItem>
                                                         ))}
+                                                        <SelectItem value="__new__" className="text-blue-600 dark:text-blue-400 font-medium">
+                                                            <Plus className="w-3 h-3 inline mr-1" />
+                                                            New Category...
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -984,7 +1054,15 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                 <Label htmlFor="edit-subcategory">Subcategory</Label>
                                                 <Select 
                                                     value={editData.subcategory || 'none'} 
-                                                    onValueChange={(value) => handleEditChange('subcategory', value === 'none' ? null : value)}
+                                                    onValueChange={(value) => {
+                                                        if (value === '__new__') {
+                                                            setQuickCreateContext('edit');
+                                                            setIsQuickCreateSubcategoryOpen(true);
+                                                        } else {
+                                                            handleEditChange('subcategory', value === 'none' ? null : value);
+                                                        }
+                                                    }}
+                                                    disabled={!editData.category}
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select subcategory" />
@@ -996,6 +1074,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                 {subcat.label}
                                                             </SelectItem>
                                                         ))}
+                                                        {editData.category && (
+                                                            <SelectItem value="__new__" className="text-blue-600 dark:text-blue-400 font-medium">
+                                                                <Plus className="w-3 h-3 inline mr-1" />
+                                                                New Subcategory...
+                                                            </SelectItem>
+                                                        )}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -1098,7 +1182,14 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 <Label htmlFor="create-category">Category</Label>
                                 <Select 
                                     value={createFormData.category || ''} 
-                                    onValueChange={(value) => setCreateFormData({ ...createFormData, category: value as any, subcategory: undefined })}
+                                    onValueChange={(value) => {
+                                        if (value === '__new__') {
+                                            setQuickCreateContext('create');
+                                            setIsQuickCreateCategoryOpen(true);
+                                        } else {
+                                            setCreateFormData({ ...createFormData, category: value as any, subcategory: undefined });
+                                        }
+                                    }}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select category" />
@@ -1109,6 +1200,10 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                 {category.label}
                                             </SelectItem>
                                         ))}
+                                        <SelectItem value="__new__" className="text-blue-600 dark:text-blue-400 font-medium">
+                                            <Plus className="w-3 h-3 inline mr-1" />
+                                            New Category...
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -1116,7 +1211,15 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 <Label htmlFor="create-subcategory">Subcategory</Label>
                                 <Select 
                                     value={createFormData.subcategory || 'none'} 
-                                    onValueChange={(value) => setCreateFormData({ ...createFormData, subcategory: value === 'none' ? undefined : value })}
+                                    onValueChange={(value) => {
+                                        if (value === '__new__') {
+                                            setQuickCreateContext('create');
+                                            setIsQuickCreateSubcategoryOpen(true);
+                                        } else {
+                                            setCreateFormData({ ...createFormData, subcategory: value === 'none' ? undefined : value });
+                                        }
+                                    }}
+                                    disabled={!createFormData.category}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select subcategory" />
@@ -1128,6 +1231,12 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                 {subcat.label}
                                             </SelectItem>
                                         ))}
+                                        {createFormData.category && (
+                                            <SelectItem value="__new__" className="text-blue-600 dark:text-blue-400 font-medium">
+                                                <Plus className="w-3 h-3 inline mr-1" />
+                                                New Subcategory...
+                                            </SelectItem>
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -1183,25 +1292,60 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                         <DialogTitle>Manage Categories & Subcategories</DialogTitle>
                     </DialogHeader>
                     
-                    <ScrollArea className="flex-1 pr-4">
-                        <div className="space-y-6">
+                    <div className="flex-1 overflow-y-auto pr-4" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+                        <div className="space-y-6 pb-6">
                             {/* Create New Category */}
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-base">Create New Category</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex items-center gap-2">
-                                        <Input
-                                            placeholder="Category name (e.g., 'Structure')"
-                                            value={newCategoryLabel}
-                                            onChange={(e) => setNewCategoryLabel(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
-                                        />
-                                        <Button onClick={handleCreateCategory} disabled={!newCategoryLabel.trim()}>
-                                            <Plus className="w-4 h-4 mr-1" />
-                                            Create
-                                        </Button>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                placeholder="Category name (e.g., 'Structure')"
+                                                value={newCategoryLabel}
+                                                onChange={(e) => setNewCategoryLabel(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && newCategoryLabel.trim() && handleCreateCategory(newCategoryLabel, quickCategoryData.icon_name, quickCategoryData.color).then(() => setNewCategoryLabel(''))}
+                                                className="flex-1"
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <Label className="text-xs">Icon</Label>
+                                                <Input
+                                                    placeholder="Icon name (e.g., Folder)"
+                                                    value={quickCategoryData.icon_name}
+                                                    onChange={(e) => setQuickCategoryData({ ...quickCategoryData, icon_name: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <Label className="text-xs">Color</Label>
+                                                <div className="flex gap-2">
+                                                    <Input
+                                                        type="color"
+                                                        value={quickCategoryData.color}
+                                                        onChange={(e) => setQuickCategoryData({ ...quickCategoryData, color: e.target.value })}
+                                                        className="w-16 h-9"
+                                                    />
+                                                    <Input
+                                                        type="text"
+                                                        value={quickCategoryData.color}
+                                                        onChange={(e) => setQuickCategoryData({ ...quickCategoryData, color: e.target.value })}
+                                                        placeholder="#3b82f6"
+                                                        className="flex-1"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                onClick={() => handleCreateCategory(newCategoryLabel, quickCategoryData.icon_name, quickCategoryData.color).then(() => setNewCategoryLabel(''))} 
+                                                disabled={!newCategoryLabel.trim()}
+                                                className="mt-5"
+                                            >
+                                                <Plus className="w-4 h-4 mr-1" />
+                                                Create
+                                            </Button>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -1212,47 +1356,78 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                     <Card key={category.category_id} className={!category.is_active ? 'opacity-60' : ''}>
                                         <CardHeader className="pb-3">
                                             <div className="flex items-center gap-3">
-                                                <Folder className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                                <div 
+                                                    className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0" 
+                                                    style={{ backgroundColor: category.color }}
+                                                >
+                                                    <Folder className="w-5 h-5 text-white" />
+                                                </div>
                                                 {editingCategoryId === category.category_id ? (
-                                                    <div className="flex-1 flex items-center gap-2">
-                                                        <Input
-                                                            value={category.label}
-                                                            onChange={(e) => {
-                                                                // Update local state immediately for responsive UI
-                                                                const updatedCategories = categories.map(c =>
-                                                                    c.category_id === category.category_id
-                                                                        ? { ...c, label: e.target.value }
-                                                                        : c
-                                                                );
-                                                                setCategories(updatedCategories);
-                                                            }}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    handleUpdateCategory(category.category_id, { label: category.label });
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <Input
+                                                                value={category.label}
+                                                                onChange={(e) => {
+                                                                    const updatedCategories = categories.map(c =>
+                                                                        c.category_id === category.category_id
+                                                                            ? { ...c, label: e.target.value }
+                                                                            : c
+                                                                    );
+                                                                    setCategories(updatedCategories);
+                                                                }}
+                                                                placeholder="Label"
+                                                                className="flex-1"
+                                                            />
+                                                            <Input
+                                                                value={category.icon_name}
+                                                                onChange={(e) => {
+                                                                    const updatedCategories = categories.map(c =>
+                                                                        c.category_id === category.category_id
+                                                                            ? { ...c, icon_name: e.target.value }
+                                                                            : c
+                                                                    );
+                                                                    setCategories(updatedCategories);
+                                                                }}
+                                                                placeholder="Icon"
+                                                                className="w-32"
+                                                            />
+                                                            <Input
+                                                                type="color"
+                                                                value={category.color}
+                                                                onChange={(e) => {
+                                                                    const updatedCategories = categories.map(c =>
+                                                                        c.category_id === category.category_id
+                                                                            ? { ...c, color: e.target.value }
+                                                                            : c
+                                                                    );
+                                                                    setCategories(updatedCategories);
+                                                                }}
+                                                                className="w-16 h-9"
+                                                            />
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    handleUpdateCategory(category.category_id, { 
+                                                                        label: category.label,
+                                                                        icon_name: category.icon_name,
+                                                                        color: category.color
+                                                                    });
                                                                     setEditingCategoryId(null);
-                                                                }
-                                                            }}
-                                                            autoFocus
-                                                        />
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                handleUpdateCategory(category.category_id, { label: category.label });
-                                                                setEditingCategoryId(null);
-                                                            }}
-                                                        >
-                                                            <Check className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                setEditingCategoryId(null);
-                                                                loadData(); // Reload to reset
-                                                            }}
-                                                        >
-                                                            <X className="w-4 h-4" />
-                                                        </Button>
+                                                                }}
+                                                            >
+                                                                <Check className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    setEditingCategoryId(null);
+                                                                    loadData();
+                                                                }}
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <>
@@ -1261,7 +1436,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                 {category.label}
                                                             </div>
                                                             <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                                ID: {category.category_id} • Sort: {category.sort_order}
+                                                                ID: {category.category_id} • Icon: {category.icon_name} • Color: {category.color} • Sort: {category.sort_order}
                                                             </div>
                                                         </div>
                                                         {!category.is_active && (
@@ -1301,7 +1476,6 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                 <Input
                                                                     value={subcat.label}
                                                                     onChange={(e) => {
-                                                                        // Update local state immediately
                                                                         const updatedCategories = categories.map(c =>
                                                                             c.category_id === category.category_id
                                                                                 ? {
@@ -1316,19 +1490,36 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                         );
                                                                         setCategories(updatedCategories);
                                                                     }}
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter') {
-                                                                            handleUpdateSubcategory(subcat.subcategory_id, { label: subcat.label });
-                                                                            setEditingSubcategoryId(null);
-                                                                        }
+                                                                    placeholder="Label"
+                                                                    className="text-sm flex-1"
+                                                                />
+                                                                <Input
+                                                                    value={subcat.icon_name}
+                                                                    onChange={(e) => {
+                                                                        const updatedCategories = categories.map(c =>
+                                                                            c.category_id === category.category_id
+                                                                                ? {
+                                                                                    ...c,
+                                                                                    subcategories: c.subcategories.map(s =>
+                                                                                        s.subcategory_id === subcat.subcategory_id
+                                                                                            ? { ...s, icon_name: e.target.value }
+                                                                                            : s
+                                                                                    )
+                                                                                }
+                                                                                : c
+                                                                        );
+                                                                        setCategories(updatedCategories);
                                                                     }}
-                                                                    className="text-sm"
-                                                                    autoFocus
+                                                                    placeholder="Icon"
+                                                                    className="text-sm w-32"
                                                                 />
                                                                 <Button
                                                                     size="sm"
                                                                     onClick={() => {
-                                                                        handleUpdateSubcategory(subcat.subcategory_id, { label: subcat.label });
+                                                                        handleUpdateSubcategory(subcat.subcategory_id, { 
+                                                                            label: subcat.label,
+                                                                            icon_name: subcat.icon_name
+                                                                        });
                                                                         setEditingSubcategoryId(null);
                                                                     }}
                                                                 >
@@ -1350,7 +1541,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                                 <div className="flex-1 text-sm">
                                                                     <span className="text-gray-900 dark:text-gray-100">{subcat.label}</span>
                                                                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                                                        ({subcat.subcategory_id})
+                                                                        ({subcat.subcategory_id} • Icon: {subcat.icon_name})
                                                                     </span>
                                                                 </div>
                                                                 {!subcat.is_active && (
@@ -1424,12 +1615,141 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                 ))}
                             </div>
                         </div>
-                    </ScrollArea>
+                    </div>
 
                     <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
                         <Button onClick={() => setIsCategoryManagementOpen(false)}>
                             Done
                         </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Quick Create Category Modal */}
+            <Dialog open={isQuickCreateCategoryOpen} onOpenChange={setIsQuickCreateCategoryOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Create New Category</DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <Label htmlFor="quick-category-label">Category Name</Label>
+                            <Input
+                                id="quick-category-label"
+                                value={quickCategoryData.label}
+                                onChange={(e) => setQuickCategoryData({ ...quickCategoryData, label: e.target.value })}
+                                placeholder="e.g., Structure"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && quickCategoryData.label.trim()) {
+                                        handleQuickCreateCategory();
+                                    }
+                                }}
+                                autoFocus
+                            />
+                        </div>
+                        
+                        <div>
+                            <Label htmlFor="quick-category-icon">Icon Name</Label>
+                            <Input
+                                id="quick-category-icon"
+                                value={quickCategoryData.icon_name}
+                                onChange={(e) => setQuickCategoryData({ ...quickCategoryData, icon_name: e.target.value })}
+                                placeholder="e.g., Folder"
+                            />
+                        </div>
+                        
+                        <div>
+                            <Label htmlFor="quick-category-color">Color</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    type="color"
+                                    value={quickCategoryData.color}
+                                    onChange={(e) => setQuickCategoryData({ ...quickCategoryData, color: e.target.value })}
+                                    className="w-16 h-9"
+                                />
+                                <Input
+                                    type="text"
+                                    value={quickCategoryData.color}
+                                    onChange={(e) => setQuickCategoryData({ ...quickCategoryData, color: e.target.value })}
+                                    placeholder="#3b82f6"
+                                    className="flex-1"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-end gap-2">
+                            <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                    setIsQuickCreateCategoryOpen(false);
+                                    setQuickCategoryData({ label: '', icon_name: 'Folder', color: '#3b82f6' });
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                onClick={handleQuickCreateCategory}
+                                disabled={!quickCategoryData.label.trim()}
+                            >
+                                Create & Select
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Quick Create Subcategory Modal */}
+            <Dialog open={isQuickCreateSubcategoryOpen} onOpenChange={setIsQuickCreateSubcategoryOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Create New Subcategory</DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <Label htmlFor="quick-subcategory-label">Subcategory Name</Label>
+                            <Input
+                                id="quick-subcategory-label"
+                                value={quickSubcategoryData.label}
+                                onChange={(e) => setQuickSubcategoryData({ ...quickSubcategoryData, label: e.target.value })}
+                                placeholder="e.g., Headers"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && quickSubcategoryData.label.trim()) {
+                                        handleQuickCreateSubcategory();
+                                    }
+                                }}
+                                autoFocus
+                            />
+                        </div>
+                        
+                        <div>
+                            <Label htmlFor="quick-subcategory-icon">Icon Name</Label>
+                            <Input
+                                id="quick-subcategory-icon"
+                                value={quickSubcategoryData.icon_name}
+                                onChange={(e) => setQuickSubcategoryData({ ...quickSubcategoryData, icon_name: e.target.value })}
+                                placeholder="e.g., FolderOpen"
+                            />
+                        </div>
+                        
+                        <div className="flex justify-end gap-2">
+                            <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                    setIsQuickCreateSubcategoryOpen(false);
+                                    setQuickSubcategoryData({ label: '', icon_name: 'FolderOpen', categoryId: '' });
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                onClick={handleQuickCreateSubcategory}
+                                disabled={!quickSubcategoryData.label.trim()}
+                            >
+                                Create & Select
+                            </Button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
