@@ -66,11 +66,11 @@ export default function TaskContent(): JSX.Element {
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       <TaskHeader />
       
-      <main className="flex-1 overflow-y-auto p-6 bg-textured">
+      <main className="flex-1 overflow-y-auto p-4 bg-textured">
         {/* Add Task Form - Show when viewing tasks */}
         {canShowTasks && (
-          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-            <form onSubmit={handleAddTask} className="space-y-3">
+          <div className="mb-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm">
+            <form onSubmit={handleAddTask} className="space-y-2">
               <div className="flex items-center gap-2">
                 <Input
                   type="text"
@@ -82,21 +82,21 @@ export default function TaskContent(): JSX.Element {
                 <Button
                   type="submit"
                   disabled={!newTaskTitle.trim()}
-                  className="px-5"
+                  className="px-4"
                 >
-                  <PlusCircle size={18} className="mr-2" />
-                  Add Task
+                  <PlusCircle size={16} className="mr-1.5" />
+                  Add
                 </Button>
               </div>
               
               {/* Advanced options - Show when user starts typing */}
               {showAdvanced && (
-                <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                        <Calendar size={14} />
-                        Due Date (optional)
+                <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                        <Calendar size={12} />
+                        Due Date
                       </label>
                       <Input
                         type="date"
@@ -106,10 +106,10 @@ export default function TaskContent(): JSX.Element {
                       />
                     </div>
                     
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                        <FileText size={14} />
-                        Description (optional)
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                        <FileText size={12} />
+                        Description
                       </label>
                       <Textarea
                         value={taskDescription}
@@ -126,8 +126,8 @@ export default function TaskContent(): JSX.Element {
                     onClick={() => setShowAdvanced(false)}
                     className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1"
                   >
-                    <ChevronUp size={14} />
-                    Hide options
+                    <ChevronUp size={12} />
+                    Hide
                   </button>
                 </div>
               )}

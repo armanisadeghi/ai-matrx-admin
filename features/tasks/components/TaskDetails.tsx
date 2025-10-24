@@ -49,10 +49,10 @@ export default function TaskDetails({ task }: { task: any }) {
   }, [debouncedDueDate]);
 
   return (
-    <div className="mt-4 pl-9">
-      <div className="mb-4">
+    <div className="mt-3 pl-6 space-y-3">
+      <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
             Due Date
           </label>
           {isSaving && (
@@ -72,7 +72,7 @@ export default function TaskDetails({ task }: { task: any }) {
       
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
             Details
           </label>
           {isSaving && (
@@ -82,32 +82,31 @@ export default function TaskDetails({ task }: { task: any }) {
             </span>
           )}
         </div>
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Add details about this task..."
-          className="text-sm resize-none"
-          rows={3}
-        />
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Auto-saves after you stop typing
-        </p>
+        <div className="max-h-48 overflow-y-auto">
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add details about this task..."
+            className="text-sm resize-none"
+            rows={8}
+          />
+        </div>
       </div>
       
       {/* Attachments */}
       {task.attachments && task.attachments.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Attachments</h4>
-          <ul className="space-y-2">
+        <div>
+          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Attachments</h4>
+          <ul className="space-y-1.5">
             {task.attachments.map((attachment: string, index: number) => (
-              <li key={index} className="flex items-center rounded px-3 py-2 bg-gray-50 dark:bg-gray-700">
-                <Paperclip size={14} className="text-gray-500 dark:text-gray-400" />
-                <span className="text-sm flex-1 truncate ml-2 text-gray-600 dark:text-gray-300">{attachment}</span>
+              <li key={index} className="flex items-center rounded px-2 py-1.5 bg-gray-50 dark:bg-gray-700">
+                <Paperclip size={12} className="text-gray-500 dark:text-gray-400" />
+                <span className="text-xs flex-1 truncate ml-2 text-gray-600 dark:text-gray-300">{attachment}</span>
                 <button
                   onClick={() => removeAttachment(task.projectId, task.id, attachment)}
                   className="text-gray-400 hover:text-red-500 cursor-pointer dark:text-gray-400 dark:hover:text-red-400"
                 >
-                  <X size={14} />
+                  <X size={12} />
                 </button>
               </li>
             ))}

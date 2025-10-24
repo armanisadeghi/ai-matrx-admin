@@ -5,7 +5,7 @@ export default function TaskList({ tasks }) {
   return (
     <>
       {tasks.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {tasks.map(task => (
             <TaskItem key={task.id} task={task} />
           ))}

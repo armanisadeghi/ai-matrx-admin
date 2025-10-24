@@ -28,11 +28,11 @@ export default function Sidebar(): JSX.Element {
   };
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col h-full overflow-hidden">
-      <h1 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Tasks</h1>
+    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col overflow-hidden" style={{ height: '100vh' }}>
+      <h1 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Tasks</h1>
       
       {/* Project options */}
-      <div className="flex items-center mb-4 gap-2 flex-shrink-0">
+      <div className="flex items-center mb-3 gap-2 flex-shrink-0">
         <div 
           className={`flex-1 py-2 px-3 cursor-pointer rounded-md text-sm text-center transition-colors ${
             showAllProjects 
@@ -58,8 +58,8 @@ export default function Sidebar(): JSX.Element {
       {!showAllProjects && (
         <>
           {/* Add Project Form - Moved to top for better UX */}
-          <form onSubmit={addProject} className="mb-4 flex-shrink-0">
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase">
+          <form onSubmit={addProject} className="mb-3 flex-shrink-0">
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase">
               Create Project
             </label>
             <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export default function Sidebar(): JSX.Element {
           </form>
 
           {/* Projects List */}
-          <div className="flex-1 overflow-y-auto mb-4">
+          <div className="flex-1 overflow-y-auto mb-3 min-h-0">
             <h2 className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-2">Your Projects</h2>
             <ul className="space-y-1">
               {projects.map(project => (

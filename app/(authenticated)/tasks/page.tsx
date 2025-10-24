@@ -13,9 +13,9 @@ import TaskContent from '@/features/tasks/components/TaskContent';
  */
 export default function TasksPage() {
   return (
-    <div className="h-full w-full overflow-hidden">
+    <div className="w-full overflow-hidden" style={{ height: '100vh' }}>
       <TaskProvider>
-        <div className="flex h-full w-full bg-textured">
+        <div className="flex w-full bg-textured" style={{ height: '100vh' }}>
           <Sidebar />
           <TaskContent />
         </div>
