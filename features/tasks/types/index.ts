@@ -8,6 +8,8 @@ export interface Task {
   description: string;
   attachments: string[];
   dueDate: string;
+  parentTaskId?: string | null;
+  subtasks?: Task[];
 }
 
 export interface Project {

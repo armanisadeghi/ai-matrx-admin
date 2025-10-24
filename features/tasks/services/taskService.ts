@@ -6,6 +6,7 @@ export interface CreateTaskInput {
   title: string;
   description?: string | null;
   project_id?: string | null;
+  parent_task_id?: string | null;
   due_date?: string | null;
   status?: 'incomplete' | 'completed';
   user_id?: string | null;
@@ -16,6 +17,7 @@ export interface UpdateTaskInput {
   title?: string;
   description?: string | null;
   project_id?: string | null;
+  parent_task_id?: string | null;
   due_date?: string | null;
   status?: 'incomplete' | 'completed';
   user_id?: string | null;
@@ -45,6 +47,7 @@ export async function createTask(input: CreateTaskInput): Promise<DatabaseTask |
         title: input.title,
         description: input.description || null,
         project_id: input.project_id || null,
+        parent_task_id: input.parent_task_id || null,
         due_date: input.due_date || null,
         status: input.status || 'incomplete',
         user_id: userData.user.id, // ← Using the correct column name
@@ -180,4 +183,42 @@ export async function deleteTask(taskId: string): Promise<boolean> {
     console.error('Exception deleting task:', error);
     return false;
   }
+}
+
+/**
+ * Get subtasks for a specific task
+ */
+export async function getSubtasks(taskId: string): Promise<DatabaseTask[]> {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('parent_task_id', taskId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching subtasks:', error.message);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Exception fetching subtasks:', error);
+    return [];
+  }
+}
+
+/**
+ * Create a subtask for a parent task
+ */
+export async function createSubtask(
+  parentTaskId: string,
+  title: string,
+  description?: string
+): Promise<DatabaseTask | null> {
+  return createTask({
+    title,
+    description: description || null,
+    parent_task_id: parentTaskId,
+  });
 }

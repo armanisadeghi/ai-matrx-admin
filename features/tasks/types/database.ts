@@ -15,6 +15,7 @@ export interface DatabaseTask {
   title: string;
   description: string | null;
   project_id: string | null;
+  parent_task_id: string | null; // For subtask support
   status: string; // 'incomplete' | 'completed'
   due_date: string | null;
   user_id: string | null; // ← This is the correct column name!
@@ -61,6 +62,7 @@ export interface CreateTaskInput {
   title: string;
   description?: string | null;
   project_id?: string | null;
+  parent_task_id?: string | null; // For creating subtasks
   due_date?: string | null;
   status?: string;
   user_id?: string | null;

@@ -34,19 +34,48 @@ export function TaskProvider({ children }: TaskProviderProps) {
   const [filter, setFilter] = useState<TaskFilterType>('all');
   const [showAllProjects, setShowAllProjects] = useState(false);
 
-  // Convert database projects to UI projects
-  const projects: Project[] = dbProjectsWithTasks.map(dbProject => ({
-    id: dbProject.id,
-    name: dbProject.name,
-    tasks: (dbProject.tasks || []).map(dbTask => ({
-      id: dbTask.id,
-      title: dbTask.title,
-      completed: dbTask.status === 'completed',
-      description: dbTask.description || '',
-      attachments: [],
-      dueDate: dbTask.due_date || '',
-    })),
-  }));
+  // Convert database projects to UI projects with subtasks
+  const projects: Project[] = dbProjectsWithTasks.map(dbProject => {
+    const allTasks = dbProject.tasks || [];
+    
+    // Build subtask relationships
+    const taskMap = new Map();
+    const rootTasks: any[] = [];
+    
+    // First pass: create all task objects
+    allTasks.forEach(dbTask => {
+      const task = {
+        id: dbTask.id,
+        title: dbTask.title,
+        completed: dbTask.status === 'completed',
+        description: dbTask.description || '',
+        attachments: [],
+        dueDate: dbTask.due_date || '',
+        parentTaskId: dbTask.parent_task_id || null,
+        subtasks: [],
+      };
+      taskMap.set(dbTask.id, task);
+    });
+    
+    // Second pass: organize into parent-child relationships
+    allTasks.forEach(dbTask => {
+      const task = taskMap.get(dbTask.id);
+      if (dbTask.parent_task_id) {
+        const parent = taskMap.get(dbTask.parent_task_id);
+        if (parent) {
+          parent.subtasks.push(task);
+        }
+      } else {
+        rootTasks.push(task);
+      }
+    });
+    
+    return {
+      id: dbProject.id,
+      name: dbProject.name,
+      tasks: rootTasks,
+    };
+  });
 
   // Load projects with tasks from database
   const loadProjectsWithTasks = useCallback(async () => {
