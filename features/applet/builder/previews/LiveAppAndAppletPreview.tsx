@@ -91,7 +91,7 @@ export default function LiveAppAndAppletPreview({
     }
 
     return (
-        <div className={`flex flex-col bg-white dark:bg-gray-900 transition-colors ${className || "h-full w-full"}`}>
+        <div className={`flex flex-col bg-textured transition-colors ${className || "h-full w-full"}`}>
             {(!hideHeader || forceHeaderDisplay) && (
                 <div className="w-full">
                     <CustomAppHeader

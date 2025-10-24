@@ -144,7 +144,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({
       {isVisible && typeof document !== 'undefined' && createPortal(
         <div 
           ref={tooltipRef}
-          className="fixed max-w-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
+          className="fixed max-w-sm bg-textured border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
           style={{ 
             top: `${position.top}px`, 
             left: `${position.left}px`,
@@ -203,7 +203,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({
           </div>
           
           {/* Tooltip arrow */}
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-gray-900 border-r border-b border-gray-200 dark:border-gray-700 rotate-45"></div>
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-textured border-r border-b border-gray-200 dark:border-gray-700 rotate-45"></div>
         </div>,
         document.body
       )}

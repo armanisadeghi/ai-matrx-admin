@@ -5,21 +5,13 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { cn } from "@/styles/themes/utils";
 import { PencilIcon } from "lucide-react";
-import { useState, useMemo } from "react";
-import { LinkComponent } from "./parts/LinkComponent";
+import { useState, useMemo, createContext, useContext, useRef } from "react";
+import { LinkComponent } from "@/components/mardown-display/blocks/links/LinkComponent";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
-interface BasicMarkdownContentProps {
-    content: string;
-    isStreamActive?: boolean;
-    onEditRequest?: () => void;
-    messageId?: string;
-    showCopyButton?: boolean;
-}
-
-// RTL language detection utility
+// Detect text direction utility
 const detectTextDirection = (text: string): 'rtl' | 'ltr' => {
     // RTL Unicode ranges for Arabic, Hebrew, Persian, Urdu, etc.
     const rtlRanges = [
@@ -45,11 +37,14 @@ const detectTextDirection = (text: string): 'rtl' | 'ltr' => {
         }
     }
     
-    // If RTL characters are more than 30% of alphabetic characters, consider it RTL
+    // If RTL characters are more than 10% of alphabetic characters, consider it RTL
+    // Lowered from 30% to 10% to catch mixed content better
     const totalAlphabetic = rtlCount + ltrCount;
     if (totalAlphabetic === 0) return 'ltr';
     
-    return (rtlCount / totalAlphabetic) > 0.3 ? 'rtl' : 'ltr';
+    const direction = (rtlCount / totalAlphabetic) > 0.1 ? 'rtl' : 'ltr';
+    
+    return direction;
 };
 
 // Get direction classes based on text direction
@@ -58,6 +53,41 @@ const getDirectionClasses = (direction: 'rtl' | 'ltr') => {
         ? 'text-right rtl' 
         : 'text-left ltr';
 };
+
+// Simple List Item Component
+const ListItemComponent: React.FC<{ children: React.ReactNode; node?: any }> = ({ children, node }) => {
+    // Detect direction for list item content
+    const itemText = typeof children === 'string' ? children : 
+        Array.isArray(children) ? children.join('') : '';
+    const itemDirection = detectTextDirection(itemText);
+    
+    // Check if this is a task list item (contains a checkbox)
+    const isTaskItem = node?.properties?.className?.includes('task-list-item');
+    
+    // For task items, just return the content without additional styling
+    if (isTaskItem) {
+        return (
+            <li className={`mb-1 text-sm ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
+                {children}
+            </li>
+        );
+    }
+    
+    // For regular list items, use simple styling
+    return (
+        <li className={`mb-1 text-sm ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
+            {children}
+        </li>
+    );
+};
+
+interface BasicMarkdownContentProps {
+    content: string;
+    isStreamActive?: boolean;
+    onEditRequest?: () => void;
+    messageId?: string;
+    showCopyButton?: boolean;
+}
 
 export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ 
     content, 
@@ -71,6 +101,13 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     // Detect text direction
     const textDirection = useMemo(() => detectTextDirection(content), [content]);
     const directionClasses = getDirectionClasses(textDirection);
+    
+    // Memoize LinkComponent wrapper to prevent recreation during streaming
+    const LinkWrapper = useMemo(() => {
+        return ({ node, href, children, ...props }: any) => (
+            <LinkComponent href={href}>{children}</LinkComponent>
+        );
+    }, []); // Empty deps - this doesn't need to change
     
     const preprocessContent = (rawContent: string): string => {
         let processed = rawContent;
@@ -95,7 +132,14 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         
         // Ensure proper separation between list items and following paragraph content
         // This handles cases where content follows a list without proper spacing
-        processed = processed.replace(/(^|\n)(- .+)\n([^\n\-#*\s])/gm, '$1$2\n\n$3');
+        
+        // First, handle nested/indented list items (most specific case)
+        processed = processed.replace(/(^|\n)(\s+[*-] .+)\n([^\n\s\-#*\d][^\n]*)/gm, '$1$2\n\n$3');
+        
+        // Then handle regular list items
+        processed = processed.replace(/(^|\n)(- .+)\n([^\n\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
+        processed = processed.replace(/(^|\n)(\d+\. .+)\n([^\n\d\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
+        processed = processed.replace(/(^|\n)(\d+\) .+)\n([^\n\d\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
         
         // Clean up any excessive line breaks (more than 2 consecutive newlines)
         processed = processed.replace(/\n{3,}/g, '\n\n');
@@ -113,7 +157,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const handleMouseEnter = !isStreamActive ? () => setIsHovering(true) : undefined;
     const handleMouseLeave = !isStreamActive ? () => setIsHovering(false) : undefined;
     
-    const components = {
+    // Memoize components to prevent recreation during streaming
+    const components = useMemo(() => ({
         input: ({ node, type, checked, disabled, ...props }: any) => {
             if (type === 'checkbox') {
                 return (
@@ -121,7 +166,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                         type="checkbox"
                         checked={checked}
                         disabled={disabled}
-                        className="mr-2 h-4 w-4 rounded border-2 border-gray-300 dark:border-gray-600 text-blue-500 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                        className="mr-2 h-4 w-4 rounded border-2 border-blue-400 dark:border-blue-500 text-blue-600 dark:text-blue-400 checked:bg-blue-600 dark:checked:bg-blue-500 checked:border-blue-600 dark:checked:border-blue-500 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-0 cursor-pointer transition-colors"
                         {...props}
                     />
                 );
@@ -130,14 +175,25 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         },
         p: ({ node, children, ...props }: any) => {
             // Detect direction for this specific paragraph
-            const paragraphText = typeof children === 'string' ? children : 
-                Array.isArray(children) ? children.join('') : '';
+            // Better text extraction that handles nested React elements
+            const extractTextFromChildren = (children: any): string => {
+                if (typeof children === 'string') return children;
+                if (Array.isArray(children)) {
+                    return children.map(child => extractTextFromChildren(child)).join('');
+                }
+                if (children && typeof children === 'object' && children.props) {
+                    return extractTextFromChildren(children.props.children);
+                }
+                return '';
+            };
+            
+            const paragraphText = extractTextFromChildren(children);
             const paragraphDirection = detectTextDirection(paragraphText);
             const paragraphDirClasses = getDirectionClasses(paragraphDirection);
             
             return (
                 <p 
-                    className={`font-sans tracking-wide leading-relaxed text-sm mb-2 ${paragraphDirClasses}`} 
+                    className={`font-sans tracking-wide leading-relaxed text-sm mb-2 pl-0 ml-0 ${paragraphDirClasses}`} 
                     dir={paragraphDirection}
                     {...props}
                 >
@@ -149,8 +205,18 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             const parentTagName = node.parent?.tagName?.toLowerCase() || "";
             const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(parentTagName);
             
+            // Detect direction for bold text content
+            const boldText = typeof children === 'string' ? children : 
+                Array.isArray(children) ? children.join('') : '';
+            const boldDirection = detectTextDirection(boldText);
+            const boldDirClasses = getDirectionClasses(boldDirection);
+            
             return (
-                <strong className={isInHeading ? "" : "font-extrabold"} {...props}>
+                <strong 
+                    className={`${isInHeading ? "" : "font-extrabold"} ${boldDirClasses}`} 
+                    dir={boldDirection}
+                    {...props}
+                >
                     {children}
                 </strong>
             );
@@ -159,8 +225,18 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             const parentTagName = node.parent?.tagName?.toLowerCase() || "";
             const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(parentTagName);
             
+            // Detect direction for italic text content
+            const italicText = typeof children === 'string' ? children : 
+                Array.isArray(children) ? children.join('') : '';
+            const italicDirection = detectTextDirection(italicText);
+            const italicDirClasses = getDirectionClasses(italicDirection);
+            
             return (
-                <em className={isInHeading ? "italic" : "italic text-blue-600 dark:text-blue-400"} {...props}>
+                <em 
+                    className={`${isInHeading ? "italic" : "italic text-blue-600 dark:text-blue-400"} ${italicDirClasses}`} 
+                    dir={italicDirection}
+                    {...props}
+                >
                     {children}
                 </em>
             );
@@ -174,7 +250,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <blockquote 
-                className={`${isRtl ? 'pr-4 border-r-4' : 'pl-4 border-l-4'} py-3 border-gray-300 dark:border-gray-600 italic text-amber-600 dark:text-amber-400 ${getDirectionClasses(blockquoteDirection)}`}
+                className={`${isRtl ? 'pr-4 border-r-4' : 'pl-4 border-l-4'} py-3 border-blue-200 dark:border-blue-700 italic text-gray-700 dark:text-gray-300 bg-blue-50 dark:bg-blue-950/20 ${getDirectionClasses(blockquoteDirection)}`}
                 dir={blockquoteDirection}
                     {...props}
                 >
@@ -190,7 +266,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <ul 
-                    className={`list-none mb-3 leading-relaxed text-md ${getDirectionClasses(listDirection)}`}
+                    className={`list-disc mb-3 leading-relaxed text-sm pl-6 ${getDirectionClasses(listDirection)}`}
                     dir={listDirection}
                     {...props}
                 >
@@ -199,14 +275,14 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             );
         },
         ol: ({ node, children, ...props }) => {
-            // Detect direction for ordered list content
+            // Detect direction for list content
             const listText = typeof children === 'string' ? children : 
                 Array.isArray(children) ? children.join('') : '';
             const listDirection = detectTextDirection(listText);
             
             return (
                 <ol 
-                    className={`list-none mb-3 leading-relaxed text-md ${getDirectionClasses(listDirection)}`}
+                    className={`list-decimal mb-3 leading-relaxed text-sm pl-6 ${getDirectionClasses(listDirection)}`}
                     dir={listDirection}
                     {...props}
                 >
@@ -214,39 +290,10 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                 </ol>
             );
         },
-        li: ({ node, children, ordered, index, ...props }: any) => {
-            // Detect direction for list item content
-            const itemText = typeof children === 'string' ? children : 
-                Array.isArray(children) ? children.join('') : '';
-            const itemDirection = detectTextDirection(itemText);
-            const isRtl = itemDirection === 'rtl';
-            
-            if (ordered && typeof index === "number") {
-                return (
-                    <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
-                        <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1.5rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
-                            {index + 1}.
-                        </span>
-                        <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
-                            {children}
-                        </span>
-                    </li>
-                );
-            }
-            
-            // Unordered list item with custom bullet
-            return (
-                <li className={`mb-1 text-md ${getDirectionClasses(itemDirection)} flex items-start`} dir={itemDirection} {...props}>
-                    <span className={`${isRtl ? 'ml-2 order-2' : 'mr-2 order-1'} flex-shrink-0 min-w-[1rem] ${isRtl ? 'text-left' : 'text-right'} leading-relaxed`}>
-                        •
-                    </span>
-                    <span className={`flex-1 ${isRtl ? 'order-1' : 'order-2'} leading-relaxed`}>
-                        {children}
-                    </span>
-                </li>
-            );
+        li: ({ node, children, ...props }) => {
+            return <ListItemComponent node={node}>{children}</ListItemComponent>;
         },
-        a: ({ node, href, children, ...props }) => <LinkComponent href={href}>{children}</LinkComponent>,
+        a: LinkWrapper,
         h1: ({ node, children, ...props }) => {
             const headingText = typeof children === 'string' ? children : 
                 Array.isArray(children) ? children.join('') : '';
@@ -299,7 +346,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <h4 
-                    className={`text-md pt-2 text-blue-500 font-medium mb-1 mt-3 font-heading ${getDirectionClasses(headingDirection)}`}
+                    className={`text-lg pt-2 text-blue-500 font-medium mb-1 mt-3 font-heading ${getDirectionClasses(headingDirection)}`}
                     dir={headingDirection}
                     {...props}
                 >
@@ -320,7 +367,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                     <code
                         className={cn(
                             "px-1.5 py-0 rounded font-mono text-sm font-medium",
-                            "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+                            "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
                             className
                         )}
                         {...props}
@@ -342,7 +389,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         tr: () => null,
         th: () => null,
         td: () => null,
-    };
+    }), []); // Empty deps - LinkWrapper is stable
 
     return (
         <div 

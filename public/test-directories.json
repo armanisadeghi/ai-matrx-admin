@@ -48,6 +48,10 @@
     "name": "fetch-test"
   },
   {
+    "path": "/tests/field-tests",
+    "name": "field-tests"
+  },
+  {
     "path": "/tests/flashcard-app-tests",
     "name": "flashcard-app-tests"
   },
@@ -92,16 +96,16 @@
     "name": "matrx-table"
   },
   {
+    "path": "/tests/metadata-test",
+    "name": "metadata-test"
+  },
+  {
     "path": "/tests/modals",
     "name": "modals"
   },
   {
     "path": "/tests/monoco-editor",
     "name": "monoco-editor"
-  },
-  {
-    "path": "/tests/notes-app",
-    "name": "notes-app"
   },
   {
     "path": "/tests/oauth",
@@ -122,10 +126,6 @@
   {
     "path": "/tests/reaact-patterns",
     "name": "reaact-patterns"
-  },
-  {
-    "path": "/tests/recipe-creation",
-    "name": "recipe-creation"
   },
   {
     "path": "/tests/relationship-management",
@@ -172,7 +172,7 @@
     "name": "windows"
   },
   {
-    "path": "/tests/workflows",
-    "name": "workflows"
+    "path": "/tests/workflow-source-config",
+    "name": "workflow-source-config"
   }
 ]

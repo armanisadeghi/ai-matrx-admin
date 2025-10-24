@@ -1,0 +1,43 @@
+---
+alwaysApply: false
+---
+# Navigation Feedback Pattern
+
+## Requirements
+All clickable cards/items that navigate to new routes must provide immediate visual feedback and prevent duplicate actions.
+
+## Implementation
+
+### Parent Component (Grid/List)
+```typescript
+const [isPending, startTransition] = useTransition();
+const [navigatingId, setNavigatingId] = useState<string | null>(null);
+
+const handleNavigate = (id: string, path: string) => {
+  if (navigatingId) return; // Prevent duplicate clicks
+  setNavigatingId(id);
+  startTransition(() => router.push(path));
+};
+```
+
+### Child Component (Card/Item)
+```typescript
+const isDisabled = isNavigating || isAnyNavigating;
+
+// Loading overlay on navigating card
+{isNavigating && (
+  <div className="absolute inset-0 bg-slate-900/20 dark:bg-slate-950/40 backdrop-blur-sm z-20 flex items-center justify-center">
+    <Loader2 className="w-8 h-8 animate-spin" />
+  </div>
+)}
+
+// Disable card: opacity-60 cursor-not-allowed
+// Disable all buttons: disabled={isDisabled}
+```
+
+## Checklist
+- ✅ `useTransition` + `startTransition` for navigation
+- ✅ Loading overlay with spinner on active card
+- ✅ Disable all cards when any is navigating
+- ✅ Prevent duplicate clicks with state check
+- ✅ Update tooltips/aria-labels to "Please wait..."

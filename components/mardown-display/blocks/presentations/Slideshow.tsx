@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 import PresentationExportMenu from './PresentationExportMenu';
+import { useCanvas } from '@/hooks/useCanvas';
 
 
 // Helper to parse markdown bold syntax
@@ -27,6 +28,7 @@ const Slideshow = (presentationData: PresentationData) => {
   const [direction, setDirection] = useState('next');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const slideContainerRef = useRef<HTMLDivElement>(null);
+  const { open: openCanvas } = useCanvas();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -69,7 +71,7 @@ const Slideshow = (presentationData: PresentationData) => {
       )}
       
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700'}`}>
-        <div className={`bg-white dark:bg-gray-900 ${isFullScreen ? 'h-full w-full max-w-7xl max-h-[95vh] rounded-2xl overflow-hidden' : 'w-full'} flex flex-col`}>
+        <div className={`bg-textured ${isFullScreen ? 'h-full w-full max-w-7xl max-h-[95vh] rounded-2xl overflow-hidden' : 'w-full'} flex flex-col`}>
           
           {/* Header with Controls */}
           <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
@@ -105,10 +107,26 @@ const Slideshow = (presentationData: PresentationData) => {
                 slides={slides}
               />
               
+              {/* Canvas Button - Only show when not in fullscreen */}
+              {!isFullScreen && (
+                <button
+                  onClick={() => openCanvas({
+                    type: 'presentation',
+                    data: presentationData,
+                    metadata: { title: slides[0]?.title || 'Presentation' }
+                  })}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white text-xs font-medium transition-all shadow-sm"
+                  title="Open in side panel"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>Side Panel</span>
+                </button>
+              )}
+              
               {/* Fullscreen Toggle */}
               <button
                 onClick={() => setIsFullScreen(!isFullScreen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
               >
                 {isFullScreen ? (
                   <>
@@ -128,7 +146,7 @@ const Slideshow = (presentationData: PresentationData) => {
           {/* Main Slide Area */}
           <div 
             ref={slideContainerRef}
-            className={`flex-1 flex items-center justify-center relative overflow-hidden bg-white dark:bg-gray-900 ${isFullScreen ? 'p-8 min-h-[600px]' : 'p-6 min-h-[550px]'}`}
+            className={`flex-1 flex items-center justify-center relative overflow-hidden bg-textured ${isFullScreen ? 'p-8 min-h-[600px]' : 'p-6 min-h-[550px]'}`}
           >
             <div 
               key={currentSlide}

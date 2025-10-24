@@ -104,7 +104,7 @@ export function FullScreenEditor({
             <DialogContent className="max-w-none w-screen h-screen p-0 m-0 rounded-none">
                 <div className="flex h-full bg-gray-50 dark:bg-gray-950">
                     {/* Sidebar */}
-                    <div className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+                    <div className="w-80 bg-textured border-r border-gray-200 dark:border-gray-800 flex flex-col">
                         {/* Sidebar Header */}
                         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
                             <div className="flex items-center justify-between">
@@ -197,7 +197,7 @@ export function FullScreenEditor({
                     {/* Editor Area */}
                     <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
                         {/* Editor Header */}
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-800 bg-textured">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -215,7 +215,7 @@ export function FullScreenEditor({
                                                         onMessageRoleChange(selectedItem.index, e.target.value);
                                                     }
                                                 }}
-                                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-textured text-gray-900 dark:text-gray-100"
                                             >
                                                 <option value="user">User</option>
                                                 <option value="assistant">Assistant</option>
@@ -243,7 +243,7 @@ export function FullScreenEditor({
                                             ? "Enter system instructions for the AI..."
                                             : "Enter message content..."
                                     }
-                                    className="w-full h-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg p-6 text-base text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 overflow-y-auto"
+                                    className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-6 text-base text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 overflow-y-auto"
                                     autoFocus
                                 />
                             </PromptEditorContextMenu>

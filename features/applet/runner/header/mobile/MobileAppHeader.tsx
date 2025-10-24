@@ -68,7 +68,7 @@ export const MobileAppHeader = ({
     };
 
     return (
-        <div className="w-full h-full bg-white dark:bg-gray-900 transition-colors">
+        <div className="w-full h-full bg-textured transition-colors">
             <div className={`flex items-center justify-between ${isPreview ? 'p-1' : 'p-2'}`}>
                 {/* Left section - App icon */}
                 <div className="shrink-0">

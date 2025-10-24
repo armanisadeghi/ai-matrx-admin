@@ -90,7 +90,7 @@ const FullscreenMarkdownEditor = ({
       >
         <div 
           ref={contentRef}
-          className="w-[95vw] h-[90vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col overflow-hidden"
+          className="w-[95vw] h-[90vh] bg-textured rounded-lg shadow-xl flex flex-col overflow-hidden"
           onClick={handleContentClick}
         >
           <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
@@ -138,7 +138,7 @@ const FullscreenMarkdownEditor = ({
         >
           <div 
             ref={contentRef}
-            className="w-[95vw] h-[95vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col overflow-hidden"
+            className="w-[95vw] h-[95vh] bg-textured rounded-lg shadow-xl flex flex-col overflow-hidden"
             onClick={handleContentClick}
           >
             <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">

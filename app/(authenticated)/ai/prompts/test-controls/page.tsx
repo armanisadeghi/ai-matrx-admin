@@ -2,12 +2,13 @@ import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { Card } from "@/components/ui/card";
 import { TestControlsWrapper } from "./TestControlsWrapper";
 
+
 export default async function TestControlsPage() {
     const aiModels = await fetchAIModels();
 
     return (
         <div className="h-full w-full p-8 overflow-auto">
-            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+            <Card className="bg-textured border-gray-200 dark:border-gray-800">
                 <div className="p-6 border-b border-gray-200 dark:border-gray-800">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         Test: Dynamic Model Controls

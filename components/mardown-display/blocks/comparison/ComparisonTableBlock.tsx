@@ -4,8 +4,9 @@ import {
   Table, ArrowUpDown, ArrowUp, ArrowDown, Star, DollarSign, Check, X,
   Maximize2, Minimize2, Search, Filter, Trophy, Medal, Award,
   TrendingUp, TrendingDown, Minus, Plus, Eye, EyeOff, Sparkles,
-  Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle
+  Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle, ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface ComparisonCriterion {
   name: string;
@@ -36,6 +37,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
   const [showScores, setShowScores] = useState(false);
+  const { open: openCanvas } = useCanvas();
 
   // Calculate scores for each item based on criteria
   const itemScores = useMemo(() => {
@@ -296,7 +298,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Fullscreen Header */}
           {isFullScreen && (
@@ -307,7 +309,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
               </div>
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
               >
                 <Minimize2 className="h-4 w-4" />
                 <span>Exit</span>
@@ -340,13 +342,26 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
 
                   <div className="flex gap-2">
                     {!isFullScreen && (
-                      <button
-                        onClick={() => setIsFullScreen(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 dark:bg-emerald-600 text-white text-sm font-semibold shadow-md hover:bg-emerald-600 dark:hover:bg-emerald-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                        <span>Expand</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => openCanvas({
+                            type: 'comparison',
+                            data: comparison,
+                            metadata: { title: comparison.title }
+                          })}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          <span>Side Panel</span>
+                        </button>
+                        <button
+                          onClick={() => setIsFullScreen(true)}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 dark:bg-emerald-600 text-white text-sm font-semibold shadow-md hover:bg-emerald-600 dark:hover:bg-emerald-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                          <span>Expand</span>
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -361,7 +376,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
                         placeholder="Search items or criteria..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                       />
                     </div>
                     
@@ -445,7 +460,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
               )}
 
               {/* Column Visibility Controls */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -473,7 +488,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
               </div>
 
               {/* Comparison Table */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-textured rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-900/50">
@@ -576,7 +591,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
 
               {/* Summary Stats */}
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-2">
                     <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Items Compared</span>
@@ -586,7 +601,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
                   </div>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-2">
                     <Table className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Criteria</span>
@@ -596,7 +611,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison 
                   </div>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-textured rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3 mb-2">
                     <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Avg Score</span>

@@ -125,6 +125,16 @@ export const HeaderTabGroup = ({
         }
     }, [containerWidth, appletList, activeAppletSlug, preserveTabOrder]);
 
+    // Calculate the width of visible tabs for the underline
+    const calculateVisibleTabsWidth = () => {
+        let totalWidth = 0;
+        visibleTabs.forEach((applet, index) => {
+            totalWidth += estimateTabWidth(applet.label);
+            if (index < visibleTabs.length - 1) totalWidth += GAP_SIZE; // Add gap between tabs
+        });
+        return totalWidth;
+    };
+
     return (
         <div className="relative w-full" ref={containerRef} >
             <Tabs value={activeAppletSlug} onValueChange={(value) => handleAppletChange(value)} className="w-full">
@@ -158,8 +168,11 @@ export const HeaderTabGroup = ({
                     )}
                 </TabsList>
             </Tabs>
-            {/* Border that extends fully */}
-            <div className="absolute bottom-0 left-0 w-full h-px bg-gray-200 dark:bg-gray-700" />
+            {/* Border that spans only the visible tabs */}
+            <div 
+                className="absolute bottom-0 left-0 h-px bg-gray-200 dark:bg-gray-700 transition-all duration-300"
+                style={{ width: `${Math.min(calculateVisibleTabsWidth(), containerWidth || 0)}px` }}
+            />
         </div>
     );
 };

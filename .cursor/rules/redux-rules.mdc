@@ -1,7 +1,5 @@
 ---
-description: 
-globs: 
-alwaysApply: true
+alwaysApply: false
 ---
 - Avoid local state for anything that has a Redux Slice.
 - Use small state updates directly with useAppDispatch and get small state from dedicated selectors with useAppSelector.
@@ -11,7 +9,7 @@ alwaysApply: true
 'use client';
 
 import { useDispatch, useSelector, useStore } from 'react-redux';
-import type { AppDispatch, AppStore, RootState } from './store';
+import type { AppDispatch, AppStore, RootState } from '@/lib/redux/store';
 
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();

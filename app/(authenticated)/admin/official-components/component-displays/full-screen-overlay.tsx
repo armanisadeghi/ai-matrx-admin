@@ -22,7 +22,6 @@ export default function FullScreenOverlayDisplay({ component }: ComponentDisplay
       label: 'General',
       content: (
         <div className="p-6">
-          <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">General Settings</h3>
           <p className="text-gray-700 dark:text-gray-300">This is the content for the general tab.</p>
         </div>
       )
@@ -32,7 +31,6 @@ export default function FullScreenOverlayDisplay({ component }: ComponentDisplay
       label: 'Advanced',
       content: (
         <div className="p-6">
-          <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Advanced Settings</h3>
           <p className="text-gray-700 dark:text-gray-300">This is the content for the advanced tab.</p>
         </div>
       )
@@ -50,7 +48,6 @@ const tabs: TabDefinition[] = [
     label: 'General',
     content: (
       <div className="p-6">
-        <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">General Settings</h3>
         <p className="text-gray-700 dark:text-gray-300">This is the content for the general tab.</p>
       </div>
     )
@@ -60,7 +57,6 @@ const tabs: TabDefinition[] = [
     label: 'Advanced',
     content: (
       <div className="p-6">
-        <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Advanced Settings</h3>
         <p className="text-gray-700 dark:text-gray-300">This is the content for the advanced tab.</p>
       </div>
     )

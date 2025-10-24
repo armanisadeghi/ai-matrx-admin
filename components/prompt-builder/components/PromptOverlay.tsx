@@ -126,7 +126,7 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
             tabIndex={-1}
         >
             <div
-                className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700"
+                className="bg-textured rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -227,7 +227,7 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
                                     value={message.content}
                                     onChange={(e) => handleMessageChange(index, e.target.value)}
                                     placeholder={`Enter ${message.role} message... Use {{variable}} for variables`}
-                                    className="w-full p-3 text-sm resize-none border-0 focus:outline-none focus:ring-0 min-h-[200px] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                    className="w-full p-3 text-sm resize-none border-0 focus:outline-none focus:ring-0 min-h-[200px] bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                                     rows={18}
                                 />
                             </div>
@@ -251,7 +251,7 @@ const PromptOverlay = ({ isOpen, onClose, onSave, initialMessages = [], currentP
                                                 value={defaultValues[variable] || ""}
                                                 onChange={(e) => handleDefaultValueChange(variable, e.target.value)}
                                                 placeholder={`Default value for ${variable}`}
-                                                className="w-full p-2 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+                                                className="w-full p-2 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 resize-none"
                                                 rows={3}
                                             />
                                         </div>

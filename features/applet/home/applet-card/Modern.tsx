@@ -40,7 +40,7 @@ const ModernAppletCard: React.FC<AppletCardProps> = ({
         </div>
         
         {/* Right content area */}
-        <div className="flex-grow p-4 bg-white dark:bg-gray-800">
+        <div className="flex-grow p-4 bg-textured">
           {/* Card header with name and creator */}
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-[70%]">

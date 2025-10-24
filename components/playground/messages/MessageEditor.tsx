@@ -277,7 +277,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     };
 
     return (
-        <Card className="h-full p-0 overflow-hidden bg-background border-elevation2">
+        <Card className="h-full p-0 overflow-hidden bg-textured border-elevation2">
             <MessageToolbar
                 messageRecordId={messageRecordId}
                 role={message.role}

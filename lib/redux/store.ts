@@ -9,7 +9,6 @@ import { loggerMiddleware } from "@/utils/logger";
 import { storageMiddleware } from "./storage/storageMiddleware";
 import { enableMapSet } from "immer";
 import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
-import { Socket } from "socket.io-client";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 
 const sagaMiddleware = createSagaMiddleware();

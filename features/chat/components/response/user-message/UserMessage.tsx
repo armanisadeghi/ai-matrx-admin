@@ -164,7 +164,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                                   prose dark:prose-invert prose-lg max-w-none
                                   transition-all duration-300
                                   ${isCollapsed ? "overflow-hidden fade-bottom" : "overflow-visible"}
-                                  whitespace-pre-wrap
+                                  whitespace-pre-wrap break-words
                                 `}
                             >
                                 {message.content}

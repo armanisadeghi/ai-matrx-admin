@@ -56,7 +56,7 @@ const AppletCard: React.FC<AppletCardProps> = ({
       </div>
       
       {/* Card content */}
-      <div className="p-4 bg-white dark:bg-gray-800">
+      <div className="p-4 bg-textured">
         <div className="h-[3.5rem] mb-4">
           {applet.description ? (
             <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3">

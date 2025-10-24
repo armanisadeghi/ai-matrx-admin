@@ -31,7 +31,7 @@ export const SocketPanelResponseWrapper: React.FC<SocketPresetResponseProps> = (
   // If we have a task ID, show the response panel
   if (taskId) {
     return (
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-textured">
         <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />

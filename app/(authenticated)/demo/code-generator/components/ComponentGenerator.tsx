@@ -147,7 +147,7 @@ function EnhancedCounter() {
       </div>
       
       {showHistory && (
-        <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg">
+        <div className="mt-4 p-3 bg-textured rounded-lg">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Count History:
           </h3>
@@ -259,7 +259,7 @@ function FormComponent() {
   };
   
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+    <div className="p-6 bg-textured rounded-xl shadow-md">
       {submitted ? (
         <div className="text-center py-8">
           <h2 className="text-2xl font-bold text-green-600 dark:text-green-500 mb-2">Form Submitted!</h2>

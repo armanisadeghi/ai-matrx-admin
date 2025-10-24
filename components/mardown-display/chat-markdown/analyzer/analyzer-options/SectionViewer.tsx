@@ -180,7 +180,7 @@ const SectionViewer = ({ data }: { data: any }) => {
                 return (
                   <div
                     key={index}
-                    className="bg-white dark:bg-gray-900 border border-orange-200 dark:border-orange-700 rounded-lg p-4 shadow-sm"
+                    className="bg-textured border border-orange-200 dark:border-orange-700 rounded-lg p-4 shadow-sm"
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <FileText size={14} className="text-orange-500 dark:text-orange-400" />
@@ -198,7 +198,7 @@ const SectionViewer = ({ data }: { data: any }) => {
               return (
                 <div
                   key={index}
-                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">

@@ -19,7 +19,7 @@ export const SingleDropdownWithSearchHeader: React.FC<DesktopAppHeaderProps> = (
     isAdmin,
     isPreview,
 }) => {
-    const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
+    const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-textured transition-colors shadow-sm";
     const finalHeaderClass = headerClassName || defaultHeaderClass;
     
     return (
@@ -60,7 +60,7 @@ export const SingleDropdownWithSearchHeader: React.FC<DesktopAppHeaderProps> = (
                                         )}
                                     </div>
                                     <div className="relative inline-block">
-                                        <div className={`flex items-center bg-white dark:bg-gray-800 rounded-md shadow-sm transition-colors ${isPreviewMode ? 'px-2 py-1' : 'px-4 py-2'}`}>
+                                        <div className={`flex items-center bg-textured rounded-md shadow-sm transition-colors ${isPreviewMode ? 'px-2 py-1' : 'px-4 py-2'}`}>
                                             <Search className={`text-gray-400 ${isPreviewMode ? 'w-3 h-3 mr-1' : 'w-4 h-4 mr-2'}`} />
                                             <span className="mr-2">{activeApplet?.label || 'Select Applet'}</span>
                                             <ChevronDown size={isPreviewMode ? 14 : 16} />

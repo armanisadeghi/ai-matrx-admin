@@ -188,7 +188,7 @@ export default function ContainerEditPage({ params }: { params: Promise<{ id: st
             </Tabs>
 
             {activeTab === "properties" && (
-                <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-0">
+                <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg p-0">
                     <CardHeader className="bg-white dark:bg-gray-700 rounded-t-lg">
                         <CardTitle>Container Properties</CardTitle>
                         <CardDescription className="text-gray-500 dark:text-gray-400 text-sm pb-2 border-b border-gray-200 dark:border-gray-700">
@@ -251,7 +251,7 @@ export default function ContainerEditPage({ params }: { params: Promise<{ id: st
             )}
 
             {activeTab === "fields" && (
-                <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+                <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
@@ -340,7 +340,7 @@ export default function ContainerEditPage({ params }: { params: Promise<{ id: st
             )}
 
             {activeTab === "permissions" && (
-                <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+                <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg">
                     <CardHeader>
                         <CardTitle>Permissions</CardTitle>
                         <CardDescription className="text-gray-500 dark:text-gray-400 text-sm pb-2">

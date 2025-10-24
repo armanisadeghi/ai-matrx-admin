@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     const isMobile = useIsMobile();
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-gray-900 transition-colors">
+        <div className="flex flex-col h-full bg-textured transition-colors">
             <main className="flex-1">{children}</main>
 
             {!isMobile && (

@@ -33,7 +33,7 @@ const EntityBaseField: React.FC<EntityBaseFieldProps> = (
             type="text"
             value={value}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 rounded border bg-textured text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder={dynamicFieldInfo.name}
         />
     );

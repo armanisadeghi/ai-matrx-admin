@@ -77,11 +77,9 @@ export * from './selectors/moduleSelectors';
 export * from './slices/featureSliceCreator';
 export * from './slices/layoutSlice';
 export * from './slices/moduleSliceCreator';
-export * from './notes/notesSlice';
 export * from './slices/testRoutesSlice';
 export * from './slices/userSlice';
 export * from './ui/uiSelectors';
 export * from './ui/uiSlice';
 export * from './ui/uiThunks';
 export * from './ui/uiTypes';
-

@@ -303,7 +303,7 @@ export const QuickAppMaker: React.FC<QuickAppMakerProps> = ({ currentAppId, onAp
                                             placeholder="Enter app name"
                                             value={name || ""}
                                             onChange={handleNameChange}
-                                            className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                            className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                                         />
                                     </div>
 
@@ -319,7 +319,7 @@ export const QuickAppMaker: React.FC<QuickAppMakerProps> = ({ currentAppId, onAp
                                                 placeholder="Enter unique app slug"
                                                 value={slug || ""}
                                                 onChange={handleSlugChange}
-                                                className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
+                                                className={`border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
                                                     slugStatus === "notUnique" ? "border-red-500 dark:border-red-500" : ""
                                                 } pr-10`}
                                             />
@@ -340,7 +340,7 @@ export const QuickAppMaker: React.FC<QuickAppMakerProps> = ({ currentAppId, onAp
                                             placeholder="Enter your name"
                                             value={creator || ""}
                                             onChange={handleCreatorChange}
-                                            className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                            className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                                         />
                                     </div>
                                 </div>
@@ -357,7 +357,7 @@ export const QuickAppMaker: React.FC<QuickAppMakerProps> = ({ currentAppId, onAp
                                         value={description || ""}
                                         onChange={handleDescriptionChange}
                                         rows={3}
-                                        className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                        className="resize-none border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                                     />
                                 </div>
 

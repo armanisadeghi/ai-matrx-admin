@@ -104,7 +104,7 @@ const RemovalDetails = ({ allRemovals }) => {
             type="text"
             value={textFilter}
             onChange={(e) => setTextFilter(e.target.value)}
-            className="p-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            className="p-1 border border-gray-300 dark:border-gray-600 rounded bg-textured text-gray-800 dark:text-gray-200"
           />
         </div>
       </div>
@@ -140,7 +140,7 @@ const RemovalDetails = ({ allRemovals }) => {
             {filteredDetails.map((item, index) => (
               <tr
                 key={index}
-                className={`${index % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : "bg-white dark:bg-gray-900"} hover:bg-gray-100 dark:hover:bg-gray-700`}
+                className={`${index % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : "bg-textured"} hover:bg-gray-100 dark:hover:bg-gray-700`}
               >
                 <td 
                   className="border p-2 cursor-pointer overflow-hidden text-ellipsis" 
@@ -160,7 +160,7 @@ const RemovalDetails = ({ allRemovals }) => {
 
       {selectedItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-md max-w-3xl w-full max-h-[80vh] overflow-auto">
+          <div className="bg-textured p-4 rounded-md max-w-3xl w-full max-h-[80vh] overflow-auto">
             <h2 className="text-xl font-bold mb-2">Full Text</h2>
             <p><strong>Type:</strong> {getDisplayValue(selectedItem.type, typeMap)}</p>
             <p><strong>Details:</strong> {getDisplayValue(selectedItem.details, detailsMap)}</p>
@@ -176,7 +176,7 @@ const RemovalDetails = ({ allRemovals }) => {
 
       {filterModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-md max-w-md w-full">
+          <div className="bg-textured p-4 rounded-md max-w-md w-full">
             <h2 className="text-xl font-bold mb-2">Filter {filterModal}</h2>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {uniqueValues(filterModal).map((value) => (

@@ -52,7 +52,7 @@ const JsonExplorerWithBookmarks = () => {
         </TabsList>
         
         <TabsContent value="explorer" className="mt-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-4">
+          <div className="bg-textured rounded-lg shadow p-4">
             <p className="mb-4 text-gray-600 dark:text-gray-400">
               Explore your JSON structure, save paths as bookmarks, and export them for later use.
             </p>
@@ -61,7 +61,7 @@ const JsonExplorerWithBookmarks = () => {
         </TabsContent>
         
         <TabsContent value="viewer" className="mt-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-4">
+          <div className="bg-textured rounded-lg shadow p-4">
             <p className="mb-4 text-gray-600 dark:text-gray-400">
               Import your saved bookmarks to quickly view values from your data structure.
             </p>

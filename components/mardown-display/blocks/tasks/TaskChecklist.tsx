@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ButtonMine";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,8 +16,9 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
-import { MoreHorizontal, Edit, Trash, Plus, Check, Save, RotateCcw } from "lucide-react";
+import { MoreHorizontal, Edit, Trash, Plus, Check, Save, RotateCcw, Upload } from "lucide-react";
 import { parseMarkdownChecklist } from "./tasklist-parser";
+import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 
 // Define TypeScript types for our components and data structures
 export type CheckboxStateType = Record<string, boolean>;
@@ -63,6 +63,7 @@ const TaskChecklist = ({
     const [addPosition, setAddPosition] = useState<"above" | "below" | "">("");
     const [addToTaskId, setAddToTaskId] = useState("");
     const [resetSuccess, setResetSuccess] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     // Parse the markdown content to extract checklist structure
     useEffect(() => {
@@ -501,7 +502,7 @@ const TaskChecklist = ({
                         }
                     })}
 
-                    {/* Bottom right save/reset buttons */}
+                    {/* Bottom right save/reset/import buttons */}
                     <div className="mt-6 flex justify-end space-x-2">
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -541,9 +542,30 @@ const TaskChecklist = ({
                             </TooltipTrigger>
                             <TooltipContent>Save current state</TooltipContent>
                         </Tooltip>
+
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    size="xs"
+                                    onClick={() => setIsImportModalOpen(true)}
+                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
+                                >
+                                    <Upload className="h-3.5 w-3.5 mr-1" /> Import to Tasks
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Import these tasks into your task manager</TooltipContent>
+                        </Tooltip>
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Import Tasks Modal */}
+            <ImportTasksModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                tasks={checklist}
+                checkboxState={checkboxState}
+            />
 
             {/* Edit/Add Task Modal */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

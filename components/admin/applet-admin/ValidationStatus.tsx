@@ -105,7 +105,7 @@ function IssueItem({ issue }: { issue: ValidationIssue }) {
       </div>
       
       {showData && issue.data && (
-        <pre className="mt-1 p-1 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded overflow-x-auto">
+        <pre className="mt-1 p-1 text-xs bg-textured border border-gray-200 dark:border-gray-700 rounded overflow-x-auto">
           {JSON.stringify(issue.data, null, 2)}
         </pre>
       )}

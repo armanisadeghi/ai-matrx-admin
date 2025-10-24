@@ -166,7 +166,7 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search tools..."
-                            className="block w-full pl-9 pr-9 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                            className="block w-full pl-9 pr-9 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
                         />
                         {searchQuery && (
                             <button onClick={() => setSearchQuery("")} className="absolute inset-y-0 right-0 pr-2.5 flex items-center">
@@ -272,7 +272,7 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
                             {Object.entries(toolsByCategory).map(([category, tools]) => (
                                 <div key={category}>
                                     <div
-                                        className="px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 sticky top-0 bg-white dark:bg-gray-900 z-10"
+                                        className="px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 sticky top-0 bg-textured z-10"
                                         onClick={() => toggleCategory(category)}
                                     >
                                         <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100">{category}</h3>

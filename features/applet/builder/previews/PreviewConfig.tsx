@@ -229,7 +229,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
   
   return (
     <div className="w-full">
-      <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden rounded-3xl">
+      <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg overflow-hidden rounded-3xl">
         <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div>

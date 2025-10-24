@@ -44,7 +44,7 @@ export function AppLayoutSelection({
         value={currentLayout}
         onValueChange={handleLayoutChange}
       >
-        <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-textured">
           <SelectValue placeholder="Select a layout" />
         </SelectTrigger>
         <SelectContent>

@@ -105,7 +105,7 @@ export default function AppDemoManager({
             <CustomAppHeader appId={appId} isDemo={true} headerClassName={demoHeaderClassName} />
 
             {/* Main content area */}
-            <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors overflow-auto">
+            <div className="h-full w-full bg-textured transition-colors overflow-auto">
                 <div className="w-full px-4 py-3">
                     <div className="max-w-lg">
                         <LayoutSelector currentLayout={layoutTypeOverride} />

@@ -4,6 +4,9 @@ import { createClient } from "@/utils/supabase/server";
 import { mapUserData } from "@/utils/userDataMapper";
 import { adminIds } from "@/components/layout";
 
+// Admin pages require authentication and cannot be statically generated
+export const dynamic = 'force-dynamic';
+
 
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();

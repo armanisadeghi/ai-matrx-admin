@@ -124,7 +124,7 @@ export default function Page() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Header */}
-        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <Card className="bg-textured border border-gray-200 dark:border-gray-700">
           <CardHeader className="text-center py-6">
             <div className="flex items-center justify-center gap-3 mb-4">
               <svg width="32" height="32" viewBox="0 0 24 24" className="flex-shrink-0">
@@ -150,7 +150,7 @@ export default function Page() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           {/* Left Side - Input Form */}
           <div className="xl:col-span-4 space-y-6">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <Card className="bg-textured border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Input Data</CardTitle>
               </CardHeader>
@@ -211,7 +211,7 @@ export default function Page() {
 
             {/* Results */}
             {(result.titleWidth > 0 || result.descriptionWidth > 0 || result.titleCharCount > 0 || result.descriptionCharCount > 0) && (
-              <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <Card className="bg-textured border border-gray-200 dark:border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Analysis</CardTitle>
                 </CardHeader>
@@ -304,7 +304,7 @@ export default function Page() {
 
           {/* Right Side - Google Search Preview - Much Larger */}
           <div className="xl:col-span-8 space-y-6">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <Card className="bg-textured border border-gray-200 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-lg text-gray-900 dark:text-gray-100">Live Google Search Preview</CardTitle>
               </CardHeader>

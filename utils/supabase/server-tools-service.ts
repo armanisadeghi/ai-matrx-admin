@@ -1,7 +1,7 @@
 // utils/supabase/server-tools-service.ts
 // Server-side only - do not import in client components
 
-import { createClient } from './server';
+import { getScriptSupabaseClient } from './getScriptClient';
 import { DatabaseTool } from './tools-service';
 
 /**
@@ -13,7 +13,7 @@ export class ServerToolsService {
    */
   async fetchTools(): Promise<DatabaseTool[]> {
     try {
-      const supabase = await createClient();
+      const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
         .from('tools')
         .select('*')
@@ -38,7 +38,7 @@ export class ServerToolsService {
    */
   async fetchToolsByCategory(category: string): Promise<DatabaseTool[]> {
     try {
-      const supabase = await createClient();
+      const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
         .from('tools')
         .select('*')
@@ -65,7 +65,7 @@ export class ServerToolsService {
     if (!query.trim()) return this.fetchTools();
 
     try {
-      const supabase = await createClient();
+      const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
         .from('tools')
         .select('*')
@@ -93,7 +93,7 @@ export class ServerToolsService {
     if (toolIdentifiers.length === 0) return [];
 
     try {
-      const supabase = await createClient();
+      const supabase = getScriptSupabaseClient();
       const { data, error } = await supabase
         .from('tools')
         .select('*')

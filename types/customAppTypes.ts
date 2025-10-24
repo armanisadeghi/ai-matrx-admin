@@ -155,6 +155,12 @@ export interface OtherSourceConfig {
   [key: string]: any;
 }
 
+export interface PromptSourceConfig {
+  sourceType: "prompt";
+  id: string;
+  [key: string]: any;
+}
+
 export interface NeededBroker {
   id: string;
   name: string;
@@ -172,8 +178,8 @@ export interface RecipeSourceConfig {
 }
 
 export interface AppletSourceConfig {
-  sourceType?: "recipe" | "workflow" | "api" | "database" | "other" | string;
-  config?: RecipeSourceConfig | WorkflowSourceConfig | ApiSourceConfig | DatabaseSourceConfig | OtherSourceConfig;
+  sourceType?: "recipe" | "workflow" | "api" | "database" | "prompt" | "other" | string;
+  config?: RecipeSourceConfig | WorkflowSourceConfig | ApiSourceConfig | DatabaseSourceConfig | PromptSourceConfig | OtherSourceConfig;
 }
 
 

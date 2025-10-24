@@ -20,7 +20,7 @@ const GenericPreview: React.FC<GenericPreviewProps> = ({ file }) => {
   const iconColor = file.details?.color || "text-gray-500 dark:text-gray-400";
   
   return (
-    <div className="flex items-center justify-center h-full w-full bg-white dark:bg-gray-800">
+    <div className="flex items-center justify-center h-full w-full bg-textured">
       <div className="text-center p-8">
         {/* File icon with background */}
         <div className="flex justify-center mb-6">

@@ -23,7 +23,7 @@ const DynamicModal = ({ isOpen, onClose }) => {
                         initial={{ scale: 0.9, y: 20 }}
                         animate={{ scale: 1, y: 0 }}
                         exit={{ scale: 0.9, y: 20 }}
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6"
+                        className="bg-textured rounded-lg shadow-lg w-full max-w-md p-6"
                     >
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Product</h2>

@@ -24,7 +24,7 @@ const AppDisplay: React.FC<AppDisplayProps> = ({
       >
         {/* App Icon - Small square container */}
         <div 
-          className="w-24 h-24 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-md flex-shrink-0 flex items-center justify-center border-2 border-green-500"
+          className="w-24 h-24 rounded-xl overflow-hidden bg-textured shadow-md flex-shrink-0 flex items-center justify-center border-2 border-green-500"
         >
           {appIcon ? (
             getAppIconWithBg({

@@ -123,7 +123,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ appId, className }) => 
           
           {/* App Features/Statistics */}
           <div className="grid grid-cols-2 gap-2 mt-4">
-            <div className={`p-2 rounded-md bg-white dark:bg-gray-800 ${primaryBorderClass} border`}>
+            <div className={`p-2 rounded-md bg-textured ${primaryBorderClass} border`}>
               <div className="flex items-center space-x-2">
                 <UsersIcon className={`h-4 w-4 ${primaryTextClass}`} />
                 <span className="text-xs text-gray-600 dark:text-gray-300">
@@ -132,7 +132,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ appId, className }) => 
               </div>
             </div>
             
-            <div className={`p-2 rounded-md bg-white dark:bg-gray-800 ${primaryBorderClass} border`}>
+            <div className={`p-2 rounded-md bg-textured ${primaryBorderClass} border`}>
               <div className="flex items-center space-x-2">
                 <StarIcon className={`h-4 w-4 ${primaryTextClass}`} />
                 <span className="text-xs text-gray-600 dark:text-gray-300">

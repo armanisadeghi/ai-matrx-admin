@@ -191,7 +191,7 @@ export function registerResultComponents() {
           {originalInput && (
             <div className="mb-3">
               <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Original:</div>
-              <div className="text-gray-800 dark:text-gray-200 p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
+              <div className="text-gray-800 dark:text-gray-200 p-2 bg-textured rounded border border-gray-200 dark:border-gray-700">
                 {originalInput}
               </div>
             </div>

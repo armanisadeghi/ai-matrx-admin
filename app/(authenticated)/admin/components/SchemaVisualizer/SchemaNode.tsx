@@ -173,7 +173,7 @@ function SchemaNode({ data }: SchemaNodeProps) {
             <Handle type="target" position={Position.Top} className="!bg-gray-400 dark:!bg-gray-500" />
             <div
                 onClick={handleTableClick}
-                className="rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 min-w-[300px] max-w-[400px] overflow-hidden shadow-lg cursor-pointer hover:border-primary/50 transition-colors"
+                className="rounded-lg bg-textured border border-gray-200 dark:border-gray-700 min-w-[300px] max-w-[400px] overflow-hidden shadow-lg cursor-pointer hover:border-primary/50 transition-colors"
             >
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
                     <div className="flex items-center justify-between">

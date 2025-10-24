@@ -17,7 +17,7 @@ const ModernAppDisplay: React.FC<AppDisplayProps> = ({
 }) => {
   return (
     <div className="max-w-7xl mx-auto mb-12">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-textured rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left column: App information */}
           <div className="md:w-3/5 p-6 md:p-8 flex flex-col">

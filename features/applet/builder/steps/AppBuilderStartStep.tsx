@@ -88,7 +88,7 @@ const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({ onAppSelected
     ];
 
     return (
-        <Card className="w-full bg-white dark:bg-gray-900 border-none shadow-lg">
+        <Card className="w-full bg-textured border-none shadow-lg">
             {view === "choice" && (
                 <div className="p-8 md:p-12">
                     <CardGrid
@@ -96,7 +96,7 @@ const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({ onAppSelected
                         cards={cards}
                         columns={2}
                         headerClassName="text-center pb-8"
-                        className="bg-slate-100 dark:bg-slate-900 border-none shadow-none"
+                        className="bg-textured border-none shadow-none"
                     />
                 </div>
             )}

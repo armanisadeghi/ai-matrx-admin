@@ -61,7 +61,7 @@ export function DynamicResizableLayout(
     };
 
     return (
-        <div className={`h-[calc(90vh-4rem)] overflow-hidden ${className}`}>
+        <div className={`h-full overflow-hidden ${className}`}>
             <ResizablePanelGroup
                 direction={direction}
                 className="h-full"

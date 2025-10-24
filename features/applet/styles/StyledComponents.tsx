@@ -298,7 +298,7 @@ export const COLOR_VARIANTS = {
     },
 
     background: {
-        gray: "bg-white dark:bg-gray-900",
+        gray: "bg-textured",
         rose: "bg-rose-500 dark:bg-rose-900",
         blue: "bg-blue-500 dark:bg-blue-900",
         green: "bg-green-500 dark:bg-green-900",

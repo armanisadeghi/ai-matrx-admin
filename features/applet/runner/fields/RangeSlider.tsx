@@ -174,7 +174,7 @@ const RangeSliderField: React.FC<CommonFieldProps> = ({ field, sourceId="no-appl
                                 step={stepValue}
                                 className={cn(
                                     "w-20 h-8 px-2 border border-gray-300 dark:border-gray-700 rounded-md text-center text-sm",
-                                    "text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                    "text-gray-700 dark:text-gray-300 bg-textured",
                                     "focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600",
                                     prefixValue && "pl-6"
                                 )}
@@ -197,7 +197,7 @@ const RangeSliderField: React.FC<CommonFieldProps> = ({ field, sourceId="no-appl
                                 step={stepValue}
                                 className={cn(
                                     "w-20 h-8 px-2 border border-gray-300 dark:border-gray-700 rounded-md text-center text-sm",
-                                    "text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                    "text-gray-700 dark:text-gray-300 bg-textured",
                                     "focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600",
                                     prefixValue && "pl-6"
                                 )}

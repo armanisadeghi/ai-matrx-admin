@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             </head>
             <body
                 className={cn(
-                    "min-h-screen bg-matrx-background font-sans antialiased",
+                    "min-h-dvh bg-textured font-sans antialiased",
                     // Add data attributes to prevent autofill on body level
                     "data-form-type-none data-autofill-off"
                 )}

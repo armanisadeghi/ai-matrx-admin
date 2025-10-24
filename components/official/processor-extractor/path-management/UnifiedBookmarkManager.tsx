@@ -399,7 +399,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                 )}
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
-                                  <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                                  <div className="bg-textured p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
                                     <div className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b">
                                       Type Details
                                     </div>
@@ -424,7 +424,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                     </div>
                                   </div>
 
-                                  <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                                  <div className="bg-textured p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
                                     <div className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b">
                                       Metadata
                                     </div>
@@ -450,7 +450,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                   </div>
                                 </div>
 
-                                <div className="bg-white dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <div className="bg-textured p-3 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
                                   <div className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b flex justify-between items-center">
                                     <span>Full Path</span>
                                     <Button 

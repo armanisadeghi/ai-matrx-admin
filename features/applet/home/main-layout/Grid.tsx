@@ -87,7 +87,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
               <div 
                 key={applet.id}
                 onClick={() => navigateToApplet(applet.slug)}
-                className="group relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow transition-all duration-200 cursor-pointer flex flex-col h-48"
+                className="group relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-textured shadow-sm hover:shadow transition-all duration-200 cursor-pointer flex flex-col h-48"
               >
                 {/* Card image/banner top section */}
                 <div className="h-20 bg-gray-100 dark:bg-gray-700 relative">
@@ -109,7 +109,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
                   )}
                   
                   {/* Icon overlay */}
-                  <div className="absolute -bottom-4 left-3 w-8 h-8 rounded-md bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                  <div className="absolute -bottom-4 left-3 w-8 h-8 rounded-md bg-textured shadow-sm flex items-center justify-center border border-gray-200 dark:border-gray-700">
                     {applet.appletIcon ? (
                       getAppIcon({
                         icon: applet.appletIcon,

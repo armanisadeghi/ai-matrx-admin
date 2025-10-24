@@ -42,7 +42,7 @@ export function PageSpeedForm({ onAnalyze, loading }: PageSpeedFormProps) {
     };
 
     return (
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <Card className="bg-textured border-gray-200 dark:border-gray-700">
             <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     Configure Analysis

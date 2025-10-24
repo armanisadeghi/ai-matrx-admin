@@ -135,7 +135,7 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
         {activeTab === "headers" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Header Distribution */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
+            <div className="bg-textured rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Header Distribution</h2>
               
               <div className="space-y-4">
@@ -157,7 +157,7 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
             </div>
 
             {/* Header Hierarchy Check */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
+            <div className="bg-textured rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Header Hierarchy</h2>
               
               <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4">
@@ -205,7 +205,7 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
             </div>
 
             {/* Header Details */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md col-span-1 lg:col-span-2 border border-gray-100 dark:border-gray-700">
+            <div className="bg-textured rounded-xl shadow-md col-span-1 lg:col-span-2 border border-gray-100 dark:border-gray-700">
               <div className="p-6">
                 <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Header Details</h2>
               </div>
@@ -235,7 +235,7 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
                           {texts.map((text, idx) => (
                             <div
                               key={idx}
-                              className="p-4 rounded-lg bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                              className="p-4 rounded-lg bg-textured shadow-sm border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                             >
                               <span className={`${headerSizes[tag]} text-gray-800 dark:text-gray-200`}>{text}</span>
                             </div>
@@ -251,14 +251,14 @@ const HeaderAnalysis = ({ overview }: { overview: Overview }) => {
         )}
 
         {activeTab === "overview" && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+          <div className="bg-textured rounded-xl shadow-md p-6">
             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Content Overview</h2>
             <p className="text-gray-600 dark:text-gray-400">Content overview statistics and detailed information will appear here.</p>
           </div>
         )}
 
         {activeTab === "seo" && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+          <div className="bg-textured rounded-xl shadow-md p-6">
             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">SEO Recommendations</h2>
             <p className="text-gray-600 dark:text-gray-400">SEO recommendations based on header analysis will appear here.</p>
           </div>

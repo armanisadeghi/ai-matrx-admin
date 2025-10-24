@@ -257,7 +257,7 @@ const ComponentLibrary = () => {
     if (isLoading) {
         return (
             <div className="container mx-auto px-4 py-6 min-h-screen">
-                <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg h-full">
+                <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg h-full">
                     <CardContent className="p-8 flex justify-center items-center min-h-[80vh]">
                         <div className="text-center">
                             <div className="animate-pulse h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-4"></div>
@@ -271,7 +271,7 @@ const ComponentLibrary = () => {
 
     return (
         <div className="container mx-auto px-4 py-6 min-h-screen">
-            <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg h-full">
+            <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg h-full">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-blue-500 dark:text-blue-400">Component Library</CardTitle>
                     <CardDescription className="text-gray-500 dark:text-gray-400">Import and export components for reuse</CardDescription>
@@ -393,7 +393,7 @@ const ComponentLibrary = () => {
                                         value={importData}
                                         onChange={handleImportDataChange}
                                         placeholder="Paste JSON export data here..."
-                                        className="font-mono text-sm flex-grow h-full min-h-[600px] border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                        className="font-mono text-sm flex-grow h-full min-h-[600px] border-gray-200 dark:border-gray-700 bg-textured"
                                     />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                         Note: Import will merge with existing data. Duplicate IDs will be skipped.

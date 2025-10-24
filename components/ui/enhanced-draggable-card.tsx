@@ -458,7 +458,7 @@ export const DropContainer: React.FC<DropContainerProps> = ({
     <div
       ref={containerRef}
       className={cn(
-        "p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 min-h-[250px] relative z-0 shadow-sm",
+        "p-4 bg-textured rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 min-h-[250px] relative z-0 shadow-sm",
         className
       )}
     >

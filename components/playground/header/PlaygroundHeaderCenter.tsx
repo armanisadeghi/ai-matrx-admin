@@ -49,7 +49,7 @@ const PlaygroundHeaderCenter = ({
     return (
         <div className="flex items-center w-full px-2 h-10">
             <div className="flex items-center gap-4 w-full">
-                <PlaygroundNavContainer currentMode={currentMode} onModeChange={onModeChange} />
+                {/* <PlaygroundNavContainer currentMode={currentMode} onModeChange={onModeChange} /> */}
 
                 <div className="flex items-center gap-2 flex-1 pl-5 min-w-0">
                     <Button variant="ghost" size="md" className="bg-elevation2 h-8 w-8 px-2 shrink-0" onClick={() => onNewRecipe()}>
@@ -94,13 +94,13 @@ const PlaygroundHeaderCenter = ({
                             />
                         )}
 
-                        <Button variant="ghost" size="md" className="h-8 w-8 p-0 shrink-0" onClick={() => setIsHistoryOpen(true)}>
+                        {/* <Button variant="ghost" size="md" className="h-8 w-8 p-0 shrink-0" onClick={() => setIsHistoryOpen(true)}>
                             <History size={16} />
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
 
-                <PlaygroundHistoryDialog isOpen={isHistoryOpen} onOpenChange={setIsHistoryOpen} />
+                {/* <PlaygroundHistoryDialog isOpen={isHistoryOpen} onOpenChange={setIsHistoryOpen} /> */}
             </div>
         </div>
     );

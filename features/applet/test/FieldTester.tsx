@@ -54,7 +54,7 @@ const FieldTester: React.FC = () => {
           Field Component Tester
         </h1>
         
-        <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="mb-6 p-4 bg-textured rounded-lg shadow">
           <h2 className="text-lg font-medium mb-3 text-gray-900 dark:text-gray-100">
             Filter fields
           </h2>
@@ -124,7 +124,7 @@ const FieldTester: React.FC = () => {
           {fieldsToRender.map(def => (
             <div 
               key={def.id} 
-              className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow"
+              className="p-6 bg-textured rounded-lg shadow"
             >
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-xl font-medium text-gray-900 dark:text-gray-100">

@@ -206,7 +206,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                         onBlur={() => handleBlur("address1")}
                         disabled={disabled}
                         className={cn(
-                            "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                            "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                             getFieldError("address1") && "border-red-500"
                         )}
                     />
@@ -221,7 +221,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                         value={address.address2}
                         onChange={(e) => handleAddressChange("address2", e.target.value)}
                         disabled={disabled}
-                        className="focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                        className="focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured"
                     />
                 </div>
                 
@@ -237,7 +237,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                             onBlur={() => handleBlur("city")}
                             disabled={disabled}
                             className={cn(
-                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                                 getFieldError("city") && "border-red-500"
                             )}
                         />
@@ -254,7 +254,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                             onBlur={() => handleBlur("state")}
                             disabled={disabled}
                             className={cn(
-                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                                 getFieldError("state") && "border-red-500"
                             )}
                         />
@@ -271,7 +271,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                             onBlur={() => handleBlur("postalCode")}
                             disabled={disabled}
                             className={cn(
-                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                                 getFieldError("postalCode") && "border-red-500"
                             )}
                         />
@@ -284,7 +284,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                     <Select value={address.country} onValueChange={(value) => handleAddressChange("country", value)} disabled={disabled}>
                         <SelectTrigger
                             className={cn(
-                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                                 getFieldError("country") && "border-red-500"
                             )}
                         >
@@ -314,7 +314,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                             onBlur={() => handleBlur("website")}
                             disabled={disabled}
                             className={cn(
-                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                                 getFieldError("website") && "border-red-500"
                             )}
                         />
@@ -332,7 +332,7 @@ const AddressBlockField: React.FC<CommonFieldProps> = ({
                             onBlur={() => handleBlur("primaryPhone")}
                             disabled={disabled}
                             className={cn(
-                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                                "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                                 getFieldError("primaryPhone") && "border-red-500"
                             )}
                         />

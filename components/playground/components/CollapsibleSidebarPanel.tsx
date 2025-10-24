@@ -50,7 +50,7 @@ const CollapsibleSidebarPanel = forwardRef<ImperativePanelHandle, CollapsibleSid
                 onExpand={onExpand}
             >
                 <Card
-                    className={`rounded-none bg-background ${className}`}
+                    className={`rounded-none bg-textured ${className}`}
                     style={{ height: `${height}px`, overflow: 'hidden' }}
                 >
                     <div className='h-full overflow-y-auto'>

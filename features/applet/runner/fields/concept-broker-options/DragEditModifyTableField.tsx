@@ -193,7 +193,7 @@ const DragEditModifyTableField: React.FC<{
                 ref={provided.innerRef}
                 {...provided.draggableProps}
                 style={{ ...provided.draggableProps.style, width: totalWidth, opacity: 0.95 }}
-                className="bg-white dark:bg-gray-800 shadow-lg rounded overflow-hidden"
+                className="bg-textured shadow-lg rounded overflow-hidden"
             >
                 <tbody>
                     <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -289,7 +289,7 @@ const DragEditModifyTableField: React.FC<{
                                                                         }}
                                                                         onBlur={() => handleColumnRename(col.id, columnEditValue)}
                                                                         autoFocus
-                                                                        className="flex-grow px-1 py-0.5 text-sm font-medium border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                                        className="flex-grow px-1 py-0.5 text-sm font-medium border rounded border-gray-300 dark:border-gray-600 bg-textured text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                                     />
                                                                 ) : (
                                                                     <div
@@ -368,7 +368,7 @@ const DragEditModifyTableField: React.FC<{
                                                         {...providedRow.draggableProps}
                                                         style={{ ...providedRow.draggableProps.style }}
                                                         className={cn(
-                                                            "bg-white dark:bg-gray-800",
+                                                            "bg-textured",
                                                             !snapshotRow.isDragging && "hover:bg-gray-50 dark:hover:bg-gray-700/50",
                                                             snapshotRow.isDragging ? "opacity-0" : "opacity-100",
                                                             "border-b border-gray-200 dark:border-gray-700"

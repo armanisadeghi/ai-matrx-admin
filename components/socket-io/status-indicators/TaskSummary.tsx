@@ -85,7 +85,7 @@ export const TaskSummary = ({ taskId }: { taskId: string }) => {
     }
   ];
   return (
-    <div className="p-4 border rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+    <div className="p-4 border rounded-lg bg-textured shadow-sm">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <h3 className="text-lg font-medium mb-4">Task #{taskId.substring(0, 8)}</h3>
@@ -209,7 +209,7 @@ export const TaskWithStreams = ({ taskId }: { taskId: string }) => {
       <TaskSummary taskId={taskId} />
       
       {listenerIds.length > 0 && (
-        <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
+        <div className="border rounded-lg p-4 bg-textured">
           <h4 className="text-sm font-medium mb-3">Stream Statuses</h4>
           <div className="space-y-2">
             {listenerIds.map(id => (

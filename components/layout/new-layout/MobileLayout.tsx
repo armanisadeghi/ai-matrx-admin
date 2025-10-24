@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Menu, Search, X, Home, ChevronRight } from 'lucide-react';
+import { Menu, X, Home, ChevronRight } from 'lucide-react';
 import { ThemeSwitcherIcon } from '@/styles/themes/ThemeSwitcher';
 import { NavigationMenu } from '@/components/ui/navigation-menu';
+import { NotificationDropdown } from '@/components/ui/notifications';
+import { Notification } from '@/types/notification.types';
+import { QuickActionsMenu } from '@/components/layout/QuickActionsMenu';
 
 interface SidebarLink {
   label: string;
@@ -27,11 +30,10 @@ export default function MobileLayout({
   isAdmin = false
 }: MobileLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(primaryLinks[0]?.href || '');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
 
   const handleLinkClick = (href: string) => {
     setActiveLink(href);
@@ -39,45 +41,51 @@ export default function MobileLayout({
   };
 
   return (
-    <div id={uniqueId} className="min-h-screen bg-slate-100 dark:bg-slate-900">
+    <div id={uniqueId} className="min-h-screen bg-textured">
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-textured border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between h-full px-4">
-          {/* Left side - Menu and Logo */}
-          <div className="flex items-center gap-3">
+          {/* Left side - Menu, Logo and page-specific content */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <button
               onClick={toggleSidebar}
-              className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
             >
               <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
-            <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Home className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            
+            {/* Page-specific controls will be inserted here */}
+            <div id="page-specific-header-content" className="flex-1 min-w-0" />
           </div>
 
           {/* Right side - Actions */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={toggleSearch}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <Search className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </button>
+            <NotificationDropdown
+              notifications={notifications}
+              isMobile={true}
+              onMarkAsRead={(id) => {
+                setNotifications(prev => 
+                  prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+                );
+              }}
+              onMarkAllAsRead={() => {
+                setNotifications(prev => 
+                  prev.map(n => ({ ...n, isRead: true }))
+                );
+              }}
+              onClearAll={() => {
+                setNotifications([]);
+              }}
+              onNotificationClick={(notification) => {
+                if (notification.link) {
+                  window.location.href = notification.link;
+                }
+              }}
+            />
+            <QuickActionsMenu className="hover:bg-gray-100 dark:hover:bg-gray-800" />
             <ThemeSwitcherIcon className="hover:bg-gray-100 dark:hover:bg-gray-800" />
             <NavigationMenu />
-          </div>
-        </div>
-
-        {/* Search Bar (slides down when open) */}
-        <div className={`absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-transform duration-200 ${
-          isSearchOpen ? 'translate-y-0' : '-translate-y-full'
-        }`}>
-          <div className="p-4">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
-              autoFocus
-            />
           </div>
         </div>
       </header>
@@ -91,7 +99,7 @@ export default function MobileLayout({
       )}
 
       {/* Mobile Sidebar */}
-      <aside className={`fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-gray-900 z-50 transform transition-transform duration-300 lg:hidden ${
+      <aside className={`fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-textured z-50 transform transition-transform duration-300 lg:hidden ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Sidebar Header */}
@@ -165,10 +173,8 @@ export default function MobileLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="pt-14 min-h-screen">
-        <div className="p-4">
-          {children}
-        </div>
+      <main className="pt-12 min-h-screen">
+        {children}
       </main>
     </div>
   );

@@ -129,7 +129,7 @@ const SmartGroupListWrapper = forwardRef<SmartContainerListRefType, SmartGroupLi
               fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
               w-[calc(100%-2rem)] md:w-[90%] lg:w-[80%] xl:w-[70%] max-w-6xl
               max-h-[calc(100vh-4rem)] flex flex-col
-              bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-50
+              bg-textured rounded-xl shadow-2xl z-50
               ${className}
             `}
             onClick={(e) => e.stopPropagation()}

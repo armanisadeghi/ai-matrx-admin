@@ -56,13 +56,13 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
     }
 
     return (
-        <div className='h-full flex flex-col bg-background rounded-xl'>
+        <div className='h-full flex flex-col bg-textured rounded-xl'>
             {currentView === 'compiled' ? (
                 <CompiledRecipeDisplay cockpitControls={playgroundControls} />
             ) : (
                 <PanelGroup
                     direction='vertical'
-                    className='flex-1 bg-background rounded-xl'
+                    className='flex-1 bg-textured rounded-xl'
                 >
                     {recordTabs.map((tab, index) => 
                         renderPanel({

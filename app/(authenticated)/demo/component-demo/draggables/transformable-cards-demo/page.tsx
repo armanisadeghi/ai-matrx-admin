@@ -30,7 +30,7 @@ const ContainerAssignmentDisplay = () => {
   });
   
   return (
-    <div className="mt-8 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="mt-8 p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
       <h2 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Task Assignments</h2>
       <div className="grid grid-cols-3 gap-4">
         {Object.entries(containerAssignments).map(([containerId, cardIds]) => (

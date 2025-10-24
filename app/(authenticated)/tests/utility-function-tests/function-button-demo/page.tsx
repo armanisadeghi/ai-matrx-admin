@@ -139,7 +139,7 @@ export default function FunctionButtonDemo() {
             </select>
           </div>
           
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md">
+          <div className="bg-textured p-4 rounded-lg shadow-md">
             <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
               This JSON data simulates data coming from an external source:
             </p>
@@ -164,7 +164,7 @@ export default function FunctionButtonDemo() {
             Function Button
           </h2>
           
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md mb-8">
+          <div className="bg-textured p-6 rounded-lg shadow-md mb-8">
             <p className="mb-4 text-gray-600 dark:text-gray-400">
               This button executes the selected function with the data from the JSON editor.
               It is completely generic and has no knowledge of specific function implementations.
@@ -198,7 +198,7 @@ export default function FunctionButtonDemo() {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md">
+          <div className="bg-textured p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">
               Multiple Function Buttons Demo
             </h3>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { PromptCard } from "./PromptCard";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
@@ -26,6 +26,8 @@ interface PromptsGridProps {
 
 export function PromptsGrid({ prompts }: PromptsGridProps) {
     const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+    const [navigatingId, setNavigatingId] = useState<string | null>(null);
     const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
     const [duplicatingIds, setDuplicatingIds] = useState<Set<string>>(new Set());
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -98,6 +100,16 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
         setPromptToDelete(null);
     };
 
+    const handleNavigate = (id: string, path: string) => {
+        // Prevent navigation if already navigating
+        if (navigatingId) return;
+        
+        setNavigatingId(id);
+        startTransition(() => {
+            router.push(path);
+        });
+    };
+
     if (prompts.length === 0) {
         return (
             <div className="text-center py-12">
@@ -121,8 +133,11 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                             }
                         }}
                         onDuplicate={handleDuplicate}
+                        onNavigate={handleNavigate}
                         isDeleting={deletingIds.has(prompt.id)}
                         isDuplicating={duplicatingIds.has(prompt.id)}
+                        isNavigating={navigatingId === prompt.id}
+                        isAnyNavigating={navigatingId !== null}
                     />
                 ))}
             </div>

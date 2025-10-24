@@ -13,9 +13,10 @@ import {
     Brain,
     Settings,
     User,
+    FileText,
+    Workflow,
+    Scissors,
 } from "lucide-react";
-import { BalancedMatrxFloatingMenu } from "@/components/layout/BalancedMatrxFloatingMenu";
-import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { Grid, CardProps, HorizontalCardProps, List } from "@/components/official/card-and-grid";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AiFillAudio } from "react-icons/ai";
@@ -132,6 +133,27 @@ const DashboardPage = () => {
             color: "rose",
             path: "/image-editing/public-image-search",
         },
+        {
+            title: "Prompts",
+            description: "Create and manage AI prompts for better interactions",
+            icon: <FileText />,
+            color: "teal",
+            path: "/ai/prompts",
+        },
+        {
+            title: "Workflow",
+            description: "Design and automate complex workflows",
+            icon: <Workflow />,
+            color: "purple",
+            path: "/workflow",
+        },
+        {
+            title: "Scraper",
+            description: "Extract and process data from web sources",
+            icon: <Scissors />,
+            color: "amber",
+            path: "/scraper",
+        },
     ];
 
     // User settings cards
@@ -156,17 +178,8 @@ const DashboardPage = () => {
         <div className="flex flex-col h-full w-full overflow-hidden">
             {/* Wrapper div that contains both the floating menu and the content */}
             <div 
-                className="flex flex-col w-full h-full bg-zinc-100 dark:bg-zinc-850 text-gray-800 dark:text-gray-100"
-                style={{ backgroundImage: BACKGROUND_PATTERN }}
+                className="flex flex-col w-full h-full bg-textured text-gray-800 dark:text-gray-100"
             >
-                {/* Floating menu - using the same background as the main content */}
-                <div className="sticky top-0 z-50 bg-zinc-100 dark:bg-zinc-850 pt-1">
-                    {/* Original floating menu (commented out) */}
-                    {/* <MatrxFloatingMenu /> */}
-                    
-                    {/* New balanced floating menu with bottom labels */}
-                    <BalancedMatrxFloatingMenu growthFactor={1.5} labelPosition="bottom" />
-                </div>
 
                 {/* Main content with fixed height and scrollable sections */}
                 <div className={`w-full ${isMobile ? 'px-3' : 'px-6'} pt-4 ${isMobile ? 'h-full overflow-y-auto' : 'h-[calc(100vh-64px)] overflow-hidden'}`}>

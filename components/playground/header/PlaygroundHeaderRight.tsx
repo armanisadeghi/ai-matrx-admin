@@ -42,7 +42,7 @@ const PlaygroundHeaderRight = ({
       </Button>
 
       <div className="flex items-center gap-1">
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           onClick={onShowCode}
@@ -50,9 +50,9 @@ const PlaygroundHeaderRight = ({
         >
           <Code size={18} />
         </Button>
-        {fullScreenToggleButton}
-
-        <PlaygroundActionsDropdown />
+        {fullScreenToggleButton} */}
+{/* 
+        <PlaygroundActionsDropdown /> */}
 
         <PanelToggle
           side="right"

@@ -75,13 +75,11 @@ const SmallIndicator: React.FC<SmallIndicatorProps> = ({ onDragStart, onSizeChan
             {/* Socket.IO Connection Status */}
             <div className="flex items-center gap-1" title={`Socket: ${isConnected ? "Connected" : "Disconnected"}`}>
                 <div className={`w-2 h-2 rounded-full ${getSocketIndicatorColor()}`} />
-                <TbBrandSocketIo size={14} />
             </div>
 
             {/* Server Status */}
             <div className="flex items-center gap-1" title={`Server: ${currentServer}`}>
                 <div className={`w-2 h-2 rounded-full ${getServerIndicatorColor()}`} />
-                <Server size={14} />
             </div>
 
             {/* Authentication Status - only show if connected but not authenticated */}
@@ -105,9 +103,9 @@ const SmallIndicator: React.FC<SmallIndicatorProps> = ({ onDragStart, onSizeChan
                     e.stopPropagation(); // Prevent event from bubbling up
                     onSizeChange();
                 }}
-                className="p-1 rounded hover:bg-slate-700"
+                className="p-0 rounded hover:bg-slate-700"
             >
-                <ChevronRight size={14} />
+                <ChevronRight size={12} />
             </button>
         </div>
     );

@@ -133,7 +133,7 @@ export const CompiledRecipeView = ({ recipeId }: { recipeId: string }) => {
                             content={message.content}
                             type="message"
                             role={message.role}
-                            className="bg-transparent dark:bg-transparent p-4"
+                            className="bg-textured p-4"
                             allowFullScreenEditor={false}
                         />
                     </div>

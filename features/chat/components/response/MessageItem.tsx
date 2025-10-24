@@ -23,11 +23,13 @@ export type localMessage = {
 
 const MessageItem = React.memo(
     ({
+        taskId,
         message,
         onScrollToBottom,
         isOverlay = false,
         audioControls,
     }: {
+        taskId: string;
         message: localMessage;
         onScrollToBottom: () => void;
         isOverlay?: boolean;
@@ -69,6 +71,7 @@ const MessageItem = React.memo(
             <AssistantMessage
                 key={message.id}
                 message={localMessage}
+                taskId={taskId}
                 isStreamActive={false}
                 onScrollToBottom={onScrollToBottom}
                 onContentUpdate={handleContentEdit}

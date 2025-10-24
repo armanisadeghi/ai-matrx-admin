@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { LayoutPanelTop, Menu, User, SunMoon } from "lucide-react";
 
-import { CustomAppHeader } from "@/features/applet/runner/header/CustomAppHeader";
+import { AppletHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { selectAppletRuntimeActiveAppletId, selectActiveAppletSlug } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import {
     selectAppRuntimeId,
@@ -16,6 +16,7 @@ import {
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { fetchAppWithApplets } from "@/lib/redux/app-runner/thunks/appRunnerThunks";
+import { brokerSelectors } from "@/lib/redux/brokerSlice";
 
 interface CustomAppLayoutProps {
     children: React.ReactNode;
@@ -24,7 +25,7 @@ interface CustomAppLayoutProps {
 // Skeleton header component that displays during loading
 const SkeletonHeader: React.FC = () => {
     return (
-        <div className="sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm">
+        <div className="sticky top-0 w-full z-40 h-14 bg-textured transition-colors shadow-sm">
             <div className="flex items-center justify-between h-full px-4">
                 {/* Left section - App icon placeholder */}
                 <div className="flex items-center">
@@ -81,13 +82,14 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
     const isDebug = useAppSelector(selectAppRuntimeIsDebug);
     const appId = useAppSelector(selectAppRuntimeId);
     const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
+    const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"));
+    const isAdmin = useAppSelector((state) => brokerSelectors.selectValue(state, "GLOBAL_USER_IS_ADMIN"));
 
 
     if (!isAppInitialized) {
         return (
-            <div className="h-full w-full flex flex-col bg-white dark:bg-gray-900 transition-colors">
-                <SkeletonHeader />
-                <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="h-screen w-full flex items-center justify-center bg-textured">
+                <div className="flex flex-col items-center justify-center">
                     <LoadingSpinner size="lg" />
                     <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm animate-pulse">
                         Loading custom Matrx application...
@@ -98,9 +100,20 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
     }
 
     return (
-        <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
-            <CustomAppHeader appId={appId} initialActiveAppletSlug={activeAppletSlug} isDemo={isDemo} isDebug={isDebug} />
-            {children}
+        <div className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-textured overflow-hidden">
+            {/* Render applet controls in main header */}
+            <AppletHeader 
+                appId={appId} 
+                activeAppletSlug={activeAppletSlug} 
+                isDemo={isDemo} 
+                isDebug={isDebug}
+                isCreator={userIsCreator}
+                isAdmin={isAdmin}
+            />
+            
+            <div className="flex-1 overflow-hidden">
+                {children}
+            </div>
         </div>
     );
 }

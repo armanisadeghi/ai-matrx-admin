@@ -346,7 +346,7 @@ const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId=
         const item = sortedRows[rubric.source.index]; 
         const totalWidth = columnWidths.length === (1 + columns.length + 1) ? columnWidths.reduce((sum, width) => sum + parseFloat(width || '0'), 0) + 'px' : 'auto'; 
         return ( 
-        <table ref={provided.innerRef} {...provided.draggableProps} style={{ ...provided.draggableProps.style, borderCollapse: 'collapse', tableLayout: 'fixed', width: totalWidth, opacity: 0.95 }} className={cn("bg-white dark:bg-gray-800", "shadow-lg rounded overflow-hidden")}> 
+        <table ref={provided.innerRef} {...provided.draggableProps} style={{ ...provided.draggableProps.style, borderCollapse: 'collapse', tableLayout: 'fixed', width: totalWidth, opacity: 0.95 }} className={cn("bg-textured", "shadow-lg rounded overflow-hidden")}> 
             <tbody> 
                 <tr className="border-b border-gray-200 dark:border-gray-700"> 
                     <td className="p-0 border-r border-gray-200 dark:border-gray-700 align-middle" style={{ width: columnWidths[0] ?? 'auto' }}> 
@@ -412,7 +412,7 @@ const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId=
                                                             >
                                                                 <div className="flex items-center justify-between h-full px-3 py-2 space-x-2">
                                                                     {isCurrentlyEditingThisColumn ? (
-                                                                         <input type="text" value={columnEditValue} onChange={(e) => setColumnEditValue(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { handleColumnRename(col.id, columnEditValue); e.preventDefault(); } else if (e.key === 'Escape') { setEditingColumnId(null); setColumnEditValue(""); }}} onBlur={() => handleColumnRename(col.id, columnEditValue)} autoFocus className="flex-grow px-1 py-0.5 text-sm font-medium border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                                                         <input type="text" value={columnEditValue} onChange={(e) => setColumnEditValue(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { handleColumnRename(col.id, columnEditValue); e.preventDefault(); } else if (e.key === 'Escape') { setEditingColumnId(null); setColumnEditValue(""); }}} onBlur={() => handleColumnRename(col.id, columnEditValue)} autoFocus className="flex-grow px-1 py-0.5 text-sm font-medium border rounded border-gray-300 dark:border-gray-600 bg-textured text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                                                                     ) : (
                                                                         <div className="flex items-center space-x-2 flex-grow min-w-0" onClick={() => handleStartRenameColumn(col)}>
                                                                             {!col.isFixed && !disabled && <GripHorizontal className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />}
@@ -455,7 +455,7 @@ const DragEditModifyTableField: React.FC<CommonFieldProps> = ({ field, sourceId=
                                                         {...providedRowDraggable.draggableProps}
                                                         style={{ ...providedRowDraggable.draggableProps.style }}
                                                         className={cn(
-                                                            "bg-white dark:bg-gray-800",
+                                                            "bg-textured",
                                                             !snapshotRowDraggable.isDragging && "hover:bg-gray-50 dark:hover:bg-gray-700/50",
                                                             snapshotRowDraggable.isDragging ? "opacity-0" : "opacity-100",
                                                             "border-b border-gray-200 dark:border-gray-700",

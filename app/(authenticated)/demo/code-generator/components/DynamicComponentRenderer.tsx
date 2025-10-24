@@ -84,13 +84,13 @@ const DynamicComponentRenderer = ({ code, containerClassName = '' }) => {
         </div>
       ) : processedCode ? (
         <LiveProvider code={processedCode} scope={scope} noInline={false}>
-          <div className="live-preview-wrapper bg-white dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
+          <div className="live-preview-wrapper bg-textured p-4 rounded-md border border-gray-200 dark:border-gray-700">
             <LiveError className="p-3 mb-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-red-700 dark:text-red-300 text-sm" />
             <LivePreview />
           </div>
         </LiveProvider>
       ) : (
-        <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 flex items-center justify-center min-h-[200px]">
+        <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-md bg-textured text-gray-400 dark:text-gray-500 flex items-center justify-center min-h-[200px]">
           <p>No component code provided</p>
         </div>
       )}

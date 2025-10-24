@@ -27,7 +27,7 @@ export function LogicStep() {
           </p>
 
           <div className="space-y-4">
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <Card className="bg-textured border-gray-200 dark:border-gray-700">
               <div className="space-y-3">
                 <div className="flex items-center text-sm">
                   <span className="font-medium text-gray-700 dark:text-gray-300">When</span>

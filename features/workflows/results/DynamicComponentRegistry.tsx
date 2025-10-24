@@ -7,6 +7,7 @@ import SmartDisplay from './registered-components/SmartDisplay';
 import ViewTablePage from '@/features/workflows/results/registered-components/ViewTablePage';
 import SitemapViewer from './registered-components/SitemapViewer';
 import EventsViewer from './registered-components/EventsViewer';
+import BraveSearchViewer from './registered-components/BraveSearchViewer';
 
 // Registry interface
 export interface ComponentRegistryEntry {
@@ -69,6 +70,12 @@ export const DYNAMIC_COMPONENT_REGISTRY: Record<string, ComponentRegistryEntry> 
         component: EventsViewer,
         displayName: 'Events Viewer',
         description: 'Displays a events viewer',
+        expectedProps: ['data']
+    },
+    'BraveSearchViewer': {
+        component: BraveSearchViewer,
+        displayName: 'Brave Search Viewer',
+        description: 'Displays a brave search viewer',
         expectedProps: ['data']
     },
     

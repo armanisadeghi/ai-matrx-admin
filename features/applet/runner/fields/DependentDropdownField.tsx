@@ -384,7 +384,7 @@ const DependentDropdownField: React.FC<CommonFieldProps> = ({ field, sourceId="n
                                     className={cn(
                                         "w-full justify-between focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600",
                                         "border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300",
-                                        "bg-white dark:bg-gray-800",
+                                        "bg-textured",
                                         showValidationError && "border-red-500"
                                     )}
                                     disabled={disabled || displayOptions.length === 0}
@@ -394,7 +394,7 @@ const DependentDropdownField: React.FC<CommonFieldProps> = ({ field, sourceId="n
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent
-                                className="w-full p-0 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+                                className="w-full p-0 bg-textured border-gray-300 dark:border-gray-700"
                                 align="start"
                                 sideOffset={5}
                             >
@@ -479,7 +479,7 @@ const DependentDropdownField: React.FC<CommonFieldProps> = ({ field, sourceId="n
             {isOtherSelected && (
                 <Input
                     id={`${sourceId}-${id}-other-input`}
-                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured"
                     value={otherText}
                     onChange={handleOtherTextChange}
                     placeholder="Please specify..."

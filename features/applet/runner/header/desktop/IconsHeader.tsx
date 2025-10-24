@@ -20,7 +20,7 @@ export const IconsHeader: React.FC<DesktopAppHeaderProps> = ({
     isPreview,
 }) => {
     // Use the default header class if no custom className is provided
-    const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
+    const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-textured transition-colors shadow-sm";
     const finalHeaderClass = headerClassName || defaultHeaderClass;
     
     return (

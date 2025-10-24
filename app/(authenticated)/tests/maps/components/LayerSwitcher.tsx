@@ -96,7 +96,7 @@ export default function LayerSwitcher({
         // Create buttons container
         const buttonsContainer = L.DomUtil.create(
           'div',
-          'flex flex-col bg-white dark:bg-gray-800 p-1 rounded shadow',
+          'flex flex-col bg-textured p-1 rounded shadow',
           container
         );
         

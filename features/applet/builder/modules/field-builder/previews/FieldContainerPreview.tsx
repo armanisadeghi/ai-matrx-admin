@@ -28,7 +28,7 @@ const FieldContainerPreview: React.FC<any> = ({ fields, appletId, source, classN
     return (
         <div className={`w-full max-w-4xl mx-auto p-3 ${className}`}>
             {appletContainers.map((container, index) => (
-                <div key={container.id} className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700">
+                <div key={container.id} className="border rounded-lg overflow-hidden bg-textured dark:border-gray-700">
                     {/* SearchContainerHeader inlined */}
                     {container.label && (
                         <div className="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700">

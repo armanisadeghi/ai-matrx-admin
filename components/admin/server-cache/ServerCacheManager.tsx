@@ -132,7 +132,7 @@ export default function ServerCacheManager() {
                         return (
                             <Card 
                                 key={item.id}
-                                className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                                className="p-6 bg-textured border-gray-200 dark:border-gray-700"
                             >
                                 <div className="space-y-4">
                                     {/* Header */}

@@ -2,40 +2,14 @@
 
 import React from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import { componentList, ComponentEntry, ComponentCategory } from '../parts/component-list';
+import { componentList, ComponentEntry, ComponentCategory, categoryIcons, categoryNames } from '../parts/component-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ExternalLink, FileCode, Menu, PanelLeft, Layers, Layout, BarChart, Eye, MessageSquare, FileUp, Image } from 'lucide-react';
+import { ChevronLeft, ExternalLink, FileCode } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import dynamic from 'next/dynamic';
-
-// Map categories to icons
-const categoryIcons: Record<ComponentCategory, React.ReactNode> = {
-  buttons: <Menu className="h-5 w-5" />,
-  navigation: <PanelLeft className="h-5 w-5" />,
-  layout: <Layout className="h-5 w-5" />,
-  inputs: <FileUp className="h-5 w-5" />,
-  display: <Eye className="h-5 w-5" />,
-  feedback: <MessageSquare className="h-5 w-5" />,
-  data: <BarChart className="h-5 w-5" />,
-  overlays: <Layers className="h-5 w-5" />,
-  media: <Image className="h-5 w-5" />
-};
-
-// Human-friendly category names
-const categoryNames: Record<ComponentCategory, string> = {
-  buttons: 'Buttons',
-  navigation: 'Navigation',
-  layout: 'Layout',
-  inputs: 'Inputs',
-  display: 'Display',
-  feedback: 'Feedback',
-  data: 'Data',
-  overlays: 'Overlays',
-  media: 'Media'
-};
 
 // Create a type for the dynamic component that accepts component prop
 type ComponentDisplayProps = {
@@ -62,9 +36,9 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
     }
   );
   
-  // Find related components (same category)
+  // Find related components (share at least one category)
   const relatedComponents = componentList
-    .filter(c => c.category === component.category && c.id !== component.id)
+    .filter(c => c.categories.some(cat => component.categories.includes(cat)) && c.id !== component.id)
     .slice(0, 3);
   
   return (
@@ -85,9 +59,11 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="text-xs font-medium px-2 py-0.5">
-                      {categoryNames[component.category]}
-                    </Badge>
+                    {component.categories.map(cat => (
+                      <Badge key={cat} className="text-xs font-medium px-2 py-0.5">
+                        {categoryNames[cat]}
+                      </Badge>
+                    ))}
                     {component.tags?.map(tag => (
                       <Badge key={tag} variant="secondary" className="text-xs font-normal">
                         {tag}
@@ -95,7 +71,7 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
                     ))}
                   </div>
                   <CardTitle className="text-2xl flex items-center gap-2">
-                    {categoryIcons[component.category]}
+                    {categoryIcons[component.categories[0]]}
                     {component.name}
                   </CardTitle>
                   <CardDescription className="mt-2">
@@ -147,11 +123,15 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Category</h4>
-                <p className="flex items-center gap-2 mt-1">
-                  {categoryIcons[component.category]}
-                  {categoryNames[component.category]}
-                </p>
+                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Categories</h4>
+                <div className="flex flex-col gap-1 mt-1">
+                  {component.categories.map(cat => (
+                    <p key={cat} className="flex items-center gap-2">
+                      {categoryIcons[cat]}
+                      {categoryNames[cat]}
+                    </p>
+                  ))}
+                </div>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tags</h4>
@@ -182,7 +162,7 @@ export default function ComponentDetailPage({ params }: { params: Promise<{ comp
                         onClick={() => router.push(`/admin/official-components/${related.id}`)}
                       >
                         <div className="flex items-center gap-2">
-                          {categoryIcons[related.category]}
+                          {categoryIcons[related.categories[0]]}
                           <span>{related.name}</span>
                         </div>
                       </Button>

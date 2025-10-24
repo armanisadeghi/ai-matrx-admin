@@ -19,7 +19,7 @@ export const SingleDropdownHeader: React.FC<DesktopAppHeaderProps> = ({
     isAdmin,
     isPreview,
 }) => {
-    const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
+    const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-textured transition-colors shadow-sm";
     const finalHeaderClass = headerClassName || defaultHeaderClass;
     
     return (
@@ -61,7 +61,7 @@ export const SingleDropdownHeader: React.FC<DesktopAppHeaderProps> = ({
                                     </div>
                                     <div className="relative inline-block">
                                         <button 
-                                            className={`flex items-center ${isPreviewMode ? 'px-2 py-1 text-sm' : 'px-4 py-2'} bg-white dark:bg-gray-800 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors`}
+                                            className={`flex items-center ${isPreviewMode ? 'px-2 py-1 text-sm' : 'px-4 py-2'} bg-textured rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors`}
                                         >
                                             <span className="mr-2">{activeApplet?.label || 'Select Applet'}</span>
                                             <ChevronDown size={isPreviewMode ? 14 : 16} />

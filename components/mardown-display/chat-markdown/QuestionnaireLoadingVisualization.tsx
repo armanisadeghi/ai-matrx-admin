@@ -55,13 +55,13 @@ const QuestionnaireLoadingVisualization: React.FC<QuestionnaireLoadingVisualizat
                 {/* Field 1 */}
                 <div className="space-y-2">
                     <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse" />
-                    <div className="h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
+                    <div className="h-10 bg-textured border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
                 </div>
 
                 {/* Field 2 */}
                 <div className="space-y-2">
                     <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse" />
-                    <div className="h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
+                    <div className="h-10 bg-textured border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
                 </div>
 
                 {/* Field 3 - Radio/Checkbox group */}
@@ -86,19 +86,19 @@ const QuestionnaireLoadingVisualization: React.FC<QuestionnaireLoadingVisualizat
                 {/* Field 4 - Textarea */}
                 <div className="space-y-2">
                     <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4 animate-pulse" />
-                    <div className="h-20 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
+                    <div className="h-20 bg-textured border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
                 </div>
 
                 {/* Field 5 */}
                 <div className="space-y-2">
                     <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/5 animate-pulse" />
-                    <div className="h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
+                    <div className="h-10 bg-textured border border-gray-300 dark:border-gray-600 rounded-md animate-pulse" />
                 </div>
 
                 {/* Field 6 - Select/Dropdown */}
                 <div className="space-y-2">
                     <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse" />
-                    <div className="h-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md animate-pulse relative">
+                    <div className="h-10 bg-textured border border-gray-300 dark:border-gray-600 rounded-md animate-pulse relative">
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                             <div className="h-2 w-2 bg-gray-400 dark:bg-gray-500 rounded animate-pulse" />
                         </div>

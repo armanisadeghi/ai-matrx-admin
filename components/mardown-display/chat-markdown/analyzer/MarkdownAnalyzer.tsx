@@ -31,7 +31,7 @@ const MarkdownAnalyzer: React.FC<MarkdownAnalyzerProps> = ({ messageId }) => {
     const totalTabs = markdownAnalysis.section_groups.length + 1; // +1 for Analysis tab
 
     return (
-        <div className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="w-full bg-textured rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 dark:border-gray-700">
                 {markdownAnalysis.section_groups.map((_, index) => (

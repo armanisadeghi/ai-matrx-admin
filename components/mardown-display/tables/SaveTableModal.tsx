@@ -245,7 +245,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                     value={tableName}
                     onChange={(e) => setTableName(e.target.value)}
                     placeholder="Enter table name"
-                    className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                    className="border border-gray-300 dark:border-gray-700 bg-textured"
                     disabled={isLoading}
                     onKeyDown={handleKeyDown}
                 />
@@ -261,7 +261,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                     onChange={(e) => setTableDescription(e.target.value)}
                     placeholder="Enter table description"
                     rows={3}
-                    className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 resize-none"
+                    className="border border-gray-300 dark:border-gray-700 bg-textured resize-none"
                     disabled={isLoading}
                     onKeyDown={handleKeyDown}
                 />
@@ -276,7 +276,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
                     Your new table was created with {saveResponse.row_count} rows and {saveResponse.field_count} fields per row.
                 </div>
 
-                <div className="h-[calc(85vh-140px)] overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                <div className="h-[calc(85vh-140px)] overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-textured">
                     <UserTableViewer tableId={saveResponse.table_id} showTableSelector={false} />
                 </div>
             </div>
@@ -366,7 +366,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({ isOpen, onClose, onSave
             >
                 <DialogContent
                     className={cn(
-                        "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden",
+                        "bg-textured text-gray-900 dark:text-gray-100 overflow-hidden",
                         stage === "result"
                             ? "max-w-[95vw] w-[95vw] h-[90vh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl"
                             : "sm:max-w-[425px] p-6"

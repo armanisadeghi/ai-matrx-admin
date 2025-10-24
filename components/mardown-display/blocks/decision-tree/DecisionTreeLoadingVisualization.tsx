@@ -45,7 +45,7 @@ const DecisionTreeLoadingVisualization: React.FC<DecisionTreeLoadingVisualizatio
         </div>
 
         {/* Decision Tree Structure Preview */}
-        <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <div className="bg-textured/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <GitBranch className="h-5 w-5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
             <div className="h-4 bg-indigo-300 dark:bg-indigo-600 rounded w-32 animate-pulse" />
@@ -144,7 +144,7 @@ const DecisionTreeLoadingVisualization: React.FC<DecisionTreeLoadingVisualizatio
             { label: 'Branches', icon: GitBranch, color: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-100 dark:bg-indigo-950/30' },
             { label: 'Outcomes', icon: CheckCircle2, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-950/30' }
           ].map((stat, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${index * 150}ms` }}>
+            <div key={index} className="bg-textured/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 animate-pulse" style={{ animationDelay: `${index * 150}ms` }}>
               <div className={`flex items-center gap-2 ${stat.color} mb-2`}>
                 <div className={`p-1.5 ${stat.bgColor} rounded`}>
                   <stat.icon className="h-3 w-3" />
@@ -157,7 +157,7 @@ const DecisionTreeLoadingVisualization: React.FC<DecisionTreeLoadingVisualizatio
         </div>
 
         {/* Decision Path Preview */}
-        <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div className="bg-textured/50 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <ArrowRight className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-pulse" />
             <div className="h-4 bg-blue-300 dark:bg-blue-600 rounded w-24 animate-pulse" />
@@ -212,7 +212,7 @@ const DecisionTreeLoadingVisualization: React.FC<DecisionTreeLoadingVisualizatio
 
         {/* Loading Text */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-textured/50 rounded-full border border-gray-200 dark:border-gray-700">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce" />
               <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-bounce delay-100" />

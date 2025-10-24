@@ -97,7 +97,7 @@ export const AppletVisuals: React.FC<AppletVisualsProps> = ({
                                 id={`${isNew ? "new" : "edit"}-submit-text`}
                                 value={appletSubmitText || DEFAULT_APPLET_CONFIG.appletSubmitText}
                                 onChange={handleAppletSubmitTextChange}
-                                className="flex-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                className="flex-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                                 placeholder="Optional button text"
                             />
                         </div>

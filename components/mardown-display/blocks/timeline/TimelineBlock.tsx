@@ -4,8 +4,11 @@ import {
   Calendar, Clock, CheckCircle2, Circle, 
   Maximize2, Minimize2, MapPin, Flag, 
   ArrowRight, Play, Pause, RotateCcw,
-  ChevronDown, ChevronRight, Expand
+  ChevronDown, ChevronRight, Expand, ExternalLink, Upload
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
+import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
+import { convertTimelineToTasks } from '@/features/tasks/utils/importConverters';
 
 interface TimelineEvent {
   id: string;
@@ -34,10 +37,35 @@ interface TimelineBlockProps {
 const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
   const [completedEvents, setCompletedEvents] = useState<Set<string>>(new Set());
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [collapsedPeriods, setCollapsedPeriods] = useState<Set<string>>(
     new Set(timeline.periods.map(period => period.period))
   );
+  const { open: openCanvas } = useCanvas();
+
+  // Convert timeline to tasks format
+  const convertedTasks = useMemo(() => {
+    return convertTimelineToTasks(timeline.title, timeline.periods);
+  }, [timeline]);
+
+  // Build checkbox state from completed events
+  const checkboxState = useMemo(() => {
+    const state: Record<string, boolean> = {};
+    convertedTasks.forEach(section => {
+      if (section.children) {
+        section.children.forEach(task => {
+          state[task.id] = task.checked || false;
+          if (task.children) {
+            task.children.forEach(subtask => {
+              state[subtask.id] = subtask.checked || false;
+            });
+          }
+        });
+      }
+    });
+    return state;
+  }, [convertedTasks]);
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -125,7 +153,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
       case 'pending':
         return 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50';
       default:
-        return 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800';
+        return 'border-gray-200 dark:border-gray-700 bg-textured';
     }
   };
 
@@ -140,7 +168,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-2' : 'py-3'}`}>
-        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Scrollable Content */}
           <div className={isFullScreen ? 'flex-1 overflow-y-auto' : ''}>
@@ -167,18 +195,38 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
 
                   <div className="flex items-center gap-2">
                     {!isFullScreen && (
-                      <button
-                        onClick={() => setIsFullScreen(true)}
-                        className="p-1.5 rounded-md bg-blue-500 dark:bg-blue-600 text-white shadow-sm hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-md transform hover:scale-105 transition-all flex-shrink-0"
-                        title="Expand to full screen"
-                      >
-                        <Expand className="h-3 w-3" />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => setIsImportModalOpen(true)}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-500 dark:bg-green-600 text-white text-xs font-semibold shadow-sm hover:bg-green-600 dark:hover:bg-green-700 hover:shadow-md transform hover:scale-105 transition-all"
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">Import</span>
+                        </button>
+                        <button
+                          onClick={() => openCanvas({
+                            type: 'timeline',
+                            data: timeline,
+                            metadata: { title: timeline.title }
+                          })}
+                          className="p-1.5 rounded-md bg-purple-500 dark:bg-purple-600 text-white shadow-sm hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-md transform hover:scale-105 transition-all flex-shrink-0"
+                          title="Open in side panel"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => setIsFullScreen(true)}
+                          className="p-1.5 rounded-md bg-blue-500 dark:bg-blue-600 text-white shadow-sm hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-md transform hover:scale-105 transition-all flex-shrink-0"
+                          title="Expand to full screen"
+                        >
+                          <Expand className="h-3 w-3" />
+                        </button>
+                      </>
                     )}
                     {isFullScreen && (
                       <button
                         onClick={() => setIsFullScreen(false)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
+                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
                       >
                         <Minimize2 className="h-3 w-3" />
                         <span className="hidden sm:inline">Exit</span>
@@ -210,7 +258,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
                         <select
                           value={selectedCategory}
                           onChange={(e) => setSelectedCategory(e.target.value)}
-                          className="text-xs px-2 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                          className="text-xs px-2 py-1 rounded bg-textured border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                         >
                           {categories.map(cat => (
                             <option key={cat} value={cat}>
@@ -357,6 +405,14 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({ timeline }) => {
           </div>
         </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportTasksModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        tasks={convertedTasks}
+        checkboxState={checkboxState}
+      />
     </>
   );
 };

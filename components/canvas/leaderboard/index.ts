@@ -1,0 +1,2 @@
+export { CanvasLeaderboard } from './CanvasLeaderboard';
+

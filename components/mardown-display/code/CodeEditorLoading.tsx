@@ -5,7 +5,7 @@ import { FileCode } from 'lucide-react';
 
 const CodeEditorLoading = () => {
   return (
-    <div className="w-full h-full bg-white dark:bg-gray-900 flex items-center justify-center">
+    <div className="w-full h-full bg-textured flex items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
         {/* Animated Code Icon */}
         <div className="relative">

@@ -4,8 +4,12 @@ import {
   BarChart3, CheckCircle2, Circle, Target, Trophy, Flame, Calendar,
   Maximize2, Minimize2, Play, Pause, RotateCcw, TrendingUp, Award,
   Zap, Clock, Star, ChevronRight, ChevronDown, Plus, Minus,
-  BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles
+  BookOpen, Code, Lightbulb, Users, Coffee, Heart, PartyPopper, Sparkles,
+  ExternalLink, Upload
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
+import ImportTasksModal from '@/features/tasks/components/ImportTasksModal';
+import { convertProgressToTasks } from '@/features/tasks/utils/importConverters';
 
 interface ProgressItem {
   id: string;
@@ -43,6 +47,8 @@ interface ProgressTrackerBlockProps {
 
 const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const { open: openCanvas } = useCanvas();
   
   // Initialize completedItems with items that are already marked as completed in the tracker data
   const [completedItems, setCompletedItems] = useState<Set<string>>(() => {
@@ -60,6 +66,25 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['category-1'])); // First category expanded by default
   const [showCompletedOnly, setShowCompletedOnly] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
+
+  // Convert progress tracker to tasks format
+  const convertedTasks = useMemo(() => {
+    return convertProgressToTasks(tracker.title, tracker.categories);
+  }, [tracker]);
+
+  // Build checkbox state from completed items
+  const checkboxState = useMemo(() => {
+    const state: Record<string, boolean> = {};
+    convertedTasks.forEach(task => {
+      state[task.id] = task.checked || false;
+      if (task.children) {
+        task.children.forEach(child => {
+          state[child.id] = child.checked || false;
+        });
+      }
+    });
+    return state;
+  }, [convertedTasks]);
 
   // Update completedItems when tracker data changes (in case the component receives new data)
   React.useEffect(() => {
@@ -218,7 +243,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Fullscreen Header */}
           {isFullScreen && (
@@ -229,7 +254,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
               </div>
               <button
                 onClick={() => setIsFullScreen(false)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-all shadow-sm"
               >
                 <Minimize2 className="h-4 w-4" />
                 <span>Exit</span>
@@ -261,13 +286,33 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                   </div>
 
                   {!isFullScreen && (
-                    <button
-                      onClick={() => setIsFullScreen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                      <span>Focus Mode</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500 dark:bg-green-600 text-white text-sm font-semibold shadow-md hover:bg-green-600 dark:hover:bg-green-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Upload className="h-4 w-4" />
+                        <span>Import to Tasks</span>
+                      </button>
+                      <button
+                        onClick={() => openCanvas({
+                          type: 'progress',
+                          data: tracker,
+                          metadata: { title: tracker.title }
+                        })}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span>Side Panel</span>
+                      </button>
+                      <button
+                        onClick={() => setIsFullScreen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500 dark:bg-blue-600 text-white text-sm font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg transform hover:scale-105 transition-all"
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                        <span>Focus Mode</span>
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -305,28 +350,28 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
 
                 {/* Stats Grid */}
                 <div className="grid md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800/50">
                     <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
                       <Target className="h-4 w-4" />
                       <span className="text-xs font-medium">Total Goals</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{progressStats.totalItems}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-green-200 dark:border-green-800/50">
                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
                       <CheckCircle2 className="h-4 w-4" />
                       <span className="text-xs font-medium">Completed</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{progressStats.completedCount}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-orange-200 dark:border-orange-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-orange-200 dark:border-orange-800/50">
                     <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 mb-1">
                       <Clock className="h-4 w-4" />
                       <span className="text-xs font-medium">Remaining</span>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{progressStats.totalItems - progressStats.completedCount}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-3 border border-purple-200 dark:border-purple-800/50">
+                  <div className="bg-textured/50 rounded-lg p-3 border border-purple-200 dark:border-purple-800/50">
                     <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1">
                       <TrendingUp className="h-4 w-4" />
                       <span className="text-xs font-medium">Categories</span>
@@ -341,7 +386,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                     <select
                       value={selectedPriority}
                       onChange={(e) => setSelectedPriority(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                      className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="all">All Priority</option>
                       <option value="high">High Priority</option>
@@ -383,7 +428,7 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
                   const allItemsCompleted = category.items.every(item => completedItems.has(item.id));
 
                   return (
-                    <div key={category.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 ${borderColor} dark:border-opacity-50 overflow-hidden`}>
+                    <div key={category.id} className={`bg-textured rounded-xl shadow-lg border-2 ${borderColor} dark:border-opacity-50 overflow-hidden`}>
                       <div className="p-4">
                         {/* Category Header */}
                         <div className="flex items-center justify-between mb-4">
@@ -535,6 +580,14 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({ tracker }) 
           </div>
         </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportTasksModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        tasks={convertedTasks}
+        checkboxState={checkboxState}
+      />
     </>
   );
 };

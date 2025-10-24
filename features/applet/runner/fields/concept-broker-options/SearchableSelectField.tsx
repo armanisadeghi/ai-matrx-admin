@@ -115,7 +115,7 @@ const SearchableSelectFieldConcept: React.FC<CommonFieldProps> = ({
                     <Button
                         variant="outline"
                         role="combobox"
-                        className="w-full justify-between focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                        className="w-full justify-between focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured"
                         disabled={disabled}
                     >
                         {selectedOption?.label || placeholder}
@@ -123,7 +123,7 @@ const SearchableSelectFieldConcept: React.FC<CommonFieldProps> = ({
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-full p-0 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+                    className="w-full p-0 bg-textured border-gray-300 dark:border-gray-700"
                     align="start"
                     sideOffset={5}
                 >
@@ -177,7 +177,7 @@ const SearchableSelectFieldConcept: React.FC<CommonFieldProps> = ({
             {isOtherSelected && (
                 <Input
                     id={`${sourceId}-${id}-other-input`}
-                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured"
                     value={otherOption?.otherText || ""}
                     onChange={handleOtherTextChange}
                     placeholder="Please specify..."

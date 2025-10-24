@@ -79,7 +79,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   }, []);
 
   const containerClasses = isFullScreen 
-    ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900'
+    ? 'fixed inset-0 z-50 bg-textured'
     : `h-screen flex flex-col ${className || ''}`;
 
   // Calculate available height considering external header (assuming ~64px for typical header)
@@ -93,7 +93,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
       
       <div className={containerClasses} style={{ height: availableHeight }}>
         {/* Fixed Header Section */}
-        <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex-shrink-0 bg-textured border-b border-gray-200 dark:border-gray-700 p-4">
           {/* Title and Main Controls */}
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -185,7 +185,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
               <Badge variant="outline" className="text-xs">Markdown/JSON</Badge>
             </div>
             
-            <div className="flex-1 min-h-0 overflow-auto border rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <div className="flex-1 min-h-0 overflow-auto border rounded-lg bg-textured border-gray-200 dark:border-gray-700">
               <PromptEditorContextMenu
                 getTextarea={getTextarea}
                 onContentInserted={handleContentInserted}
@@ -222,11 +222,11 @@ Right-click for content block templates!"
                   </Badge>
                 </div>
                 
-                <div className="flex-1 border rounded-lg overflow-auto bg-slate-50 dark:bg-slate-900 border-gray-200 dark:border-gray-700 min-h-0">
+                <div className="flex-1 border rounded-lg overflow-auto bg-textured border-gray-200 dark:border-gray-700 min-h-0">
                   <div className="p-4">
                     <EnhancedChatMarkdown
                       content={renderedContent}
-                      className="bg-slate-50 dark:bg-slate-900"
+                      className="bg-textured"
                       type="message"
                       role="assistant"
                       isStreamActive={false}

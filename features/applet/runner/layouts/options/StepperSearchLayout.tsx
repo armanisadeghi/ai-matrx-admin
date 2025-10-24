@@ -76,7 +76,7 @@ const StepperSearchLayout: React.FC<AppletInputProps>= ({
         ))}
       </div>
       
-      <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700">
+      <div className="border rounded-lg overflow-hidden bg-textured dark:border-gray-700">
         {/* Header section with lighter background */}
         <SearchGroupHeader 
           label={appletContainers[currentStep]?.label} 

@@ -19,15 +19,41 @@ export const useStableRelationships = (
     forceRefresh?: boolean 
 ) => {
     const parentId = anyParentId ? (typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString()) : undefined;
-    const [activeParentId, setActiveParentId] = useState(parentId);
     const [needsReprocess, setNeedsReprocess] = useState(true);
     
     // Track last force refresh to detect changes
     const lastForceRefreshRef = useRef(forceRefresh);
     
-    useEffect(() => {
-        setActiveParentId(parentId);
-    }, [parentId]);
+    const stableRef = useRef({
+        lastStableRecords: null,
+        previousRawRecords: null,
+        stableChildMatrxIds: null as string[] | null,
+        lastParentId: parentId,
+        stabilizedAfterParentChange: false,
+        lastStableChildIds: null as string[] | null,
+        lastForceRefresh: forceRefresh,
+        rendersSinceParentChange: 0,
+    });
+    
+    // Detect parent change and reset immediately
+    const parentChanged = stableRef.current.lastParentId !== parentId;
+    
+    if (parentChanged) {
+        if (DEBUG_PRINTS) {
+            console.log('Parent ID changed from', stableRef.current.lastParentId, 'to', parentId);
+        }
+        // Immediately reset all stability flags
+        stableRef.current.stabilizedAfterParentChange = false;
+        stableRef.current.lastParentId = parentId;
+        stableRef.current.lastStableChildIds = null;
+        stableRef.current.lastStableRecords = null;
+        stableRef.current.previousRawRecords = null;
+        stableRef.current.rendersSinceParentChange = 0;
+        setNeedsReprocess(true);
+    } else {
+        // Increment render count since parent change
+        stableRef.current.rendersSinceParentChange += 1;
+    }
     
     // Force reprocessing when forceRefresh changes
     useEffect(() => {
@@ -40,35 +66,18 @@ export const useStableRelationships = (
         }
     }, [forceRefresh]);
     
-    const parentChanged = activeParentId !== parentId;
     if (DEBUG_PRINTS) {
         console.log('-------------');
         console.log('parentChanged', parentChanged);
         console.log('parentId', parentId);
-        console.log('activeParentId', activeParentId);
+        console.log('lastParentId', stableRef.current.lastParentId);
+        console.log('rendersSinceParentChange', stableRef.current.rendersSinceParentChange);
         console.log('forceRefresh', forceRefresh);
         console.log('-------------');
     }
     
-    const stableRef = useRef({
-        lastStableRecords: null,
-        previousRawRecords: null,
-        stableChildMatrxIds: null as string[] | null,
-        lastParentId: null as string | null,
-        stabilizedAfterParentChange: false,
-        lastStableChildIds: null as string[] | null,
-        lastForceRefresh: forceRefresh,
-    });
-    
     if (VERBOSE_PRINTS) {
         console.log('stableRef', stableRef.current);
-    }
-    
-    // Track parent changes and reset stability
-    if (parentChanged) {
-        stableRef.current.stabilizedAfterParentChange = false;
-        stableRef.current.lastParentId = parentId;
-        stableRef.current.lastStableChildIds = null;
     }
     
     const parentEntity = relDefSimple.parent.name;
@@ -89,7 +98,7 @@ export const useStableRelationships = (
     const { selectors: joinSelectors } = joinTools;
     
     // Data fetching
-    const parentRecord = useGetOrFetchRecord({ entityName: parentEntity, simpleId: activeParentId });
+    const parentRecord = useGetOrFetchRecord({ entityName: parentEntity, simpleId: parentId });
     const parentMatrxid = parentRecord?.matrxRecordId;
     
     if (DEBUG_PRINTS) {
@@ -140,8 +149,25 @@ export const useStableRelationships = (
     // Update stable records when data stabilizes
     if (!hasChanged && joinRecordsWithTimestamp?.records) {
         stableRef.current.lastStableRecords = joinRecordsWithTimestamp.records;
+        // Mark as stabilized if we haven't changed and we're on the same parent
         if (!stableRef.current.stabilizedAfterParentChange && parentId === stableRef.current.lastParentId) {
             stableRef.current.stabilizedAfterParentChange = true;
+            if (DEBUG_PRINTS) {
+                console.log('Stabilized after parent change');
+            }
+        }
+    }
+    
+    // Fallback: Force stabilization after a reasonable number of renders (prevents infinite loading)
+    // If we've had 5+ renders without parent change and records exist, consider it stable
+    if (!stableRef.current.stabilizedAfterParentChange && 
+        stableRef.current.rendersSinceParentChange >= 5 &&
+        parentId === stableRef.current.lastParentId &&
+        joinRecordsWithTimestamp?.records) {
+        stableRef.current.stabilizedAfterParentChange = true;
+        stableRef.current.lastStableRecords = joinRecordsWithTimestamp.records;
+        if (DEBUG_PRINTS) {
+            console.log('Force stabilized after 5 renders');
         }
     }
     
@@ -191,7 +217,7 @@ export const useStableRelationships = (
     // Single consolidated loading state that respects the initial state and parent changes
     const isJoinLoading = useDebounce(
         parentId ? isParentLoading || isRawJoinLoading || !stableRef.current.stabilizedAfterParentChange : false, 
-        200
+        100
     );
     
     const childSelectors = childTools.selectors;
@@ -202,7 +228,7 @@ export const useStableRelationships = (
         console.log('isChildLoading', isChildLoading);
     }
     
-    const shouldProcess = useDebounce(!isJoinLoading && !isChildLoading, 200);
+    const shouldProcess = useDebounce(!isJoinLoading && !isChildLoading, 100);
     
     if (DEBUG_PRINTS) {
         console.log('shouldProcess', shouldProcess);
@@ -218,7 +244,7 @@ export const useStableRelationships = (
         console.log('currentChildRecords', currentChildRecords);
     }
     
-    const unprocessedChildRecords = useDebounce(currentChildRecords, 300);
+    const unprocessedChildRecords = useDebounce(currentChildRecords, 200);
     
     if (DEBUG_PRINTS) {
         console.log('unprocessedChildRecords', unprocessedChildRecords);

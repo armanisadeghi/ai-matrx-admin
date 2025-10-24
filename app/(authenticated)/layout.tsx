@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
-import { LayoutWithSidebar } from "@/components/layout/MatrxLayout";
+import { adminIds } from "@/components/layout";
 import { appSidebarLinks, adminSidebarLinks } from "@/constants";
 import { generateClientGlobalCache, initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
 import { InitialReduxState } from "@/types/reduxTypes";
@@ -19,28 +19,6 @@ import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferenc
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
 
-async function fetchTestDirectories() {
-    try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/test-directories.json`);
-        if (!response.ok) {
-            console.error(`Failed to fetch test directories: ${response.status} ${response.statusText}`);
-            return [];
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching test directories:", error);
-        return [];
-    }
-}
-
-const adminIds = [
-    "4cf62e4e-2679-484f-b652-034e697418df",
-    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
-    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
-  ];
-
-  const newLayout = false;
-
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
     const headersList = await headers();
@@ -51,7 +29,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-        return redirect("/login");
+        return redirect(`/login?redirectTo=${encodeURIComponent("/dashboard")}`);
     }
 
     const session = await supabase.auth.getSession();
@@ -74,18 +52,16 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     // Handle user preferences - create defaults for new users
     let userPreferences;
     const { data: preferences, error } = await supabase.from("user_preferences").select("preferences").eq("user_id", userData.id).single();
-    
-    if (error && error.code === 'PGRST116') {
+
+    if (error && error.code === "PGRST116") {
         // No preferences found - create default preferences for new user
         const defaultPreferences = defaultUserPreferences;
 
         // Create the preferences record in the database
-        const { error: insertError } = await supabase
-            .from("user_preferences")
-            .insert({
-                user_id: userData.id,
-                preferences: defaultPreferences
-            });
+        const { error: insertError } = await supabase.from("user_preferences").insert({
+            user_id: userData.id,
+            preferences: defaultPreferences,
+        });
 
         if (insertError) {
             console.error("Error creating default preferences:", insertError);
@@ -113,19 +89,11 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     return (
         <Providers initialReduxState={initialReduxState}>
             <SocketInitializer />
-            {newLayout ? (
-                <ResponsiveLayout {...layoutProps}>
-                    <NavigationLoader />
-                    {children}
-                    <AdminIndicatorWrapper />
-                </ResponsiveLayout>
-            ) : (
-                <LayoutWithSidebar {...layoutProps}>
-                    <NavigationLoader />
-                    {children}
-                    <AdminIndicatorWrapper />
-                </LayoutWithSidebar>
-            )}
+            <ResponsiveLayout {...layoutProps}>
+                <NavigationLoader />
+                {children}
+                <AdminIndicatorWrapper />
+            </ResponsiveLayout>
         </Providers>
     );
 }

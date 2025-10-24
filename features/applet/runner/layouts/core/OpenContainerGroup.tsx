@@ -19,7 +19,7 @@ const OpenContainerGroup: React.FC<ContainerRenderProps> = ({
   containerDescriptionLocation = "container-header",
 }) => {
   return (
-    <div className={`border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}>
+    <div className={`border rounded-lg overflow-hidden bg-textured dark:border-gray-700 ${className}`}>
       <SearchContainerHeader 
         label={label} 
         description={description}

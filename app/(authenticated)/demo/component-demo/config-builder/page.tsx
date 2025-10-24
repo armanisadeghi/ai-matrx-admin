@@ -20,13 +20,13 @@ export default function Page() {
     }
 
     return (
-        <div className={`w-full h-full flex flex-col gap-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 ${inter.className} text-[11px] font-extralight tracking-tight antialiased`}>
+        <div className={`w-full h-full flex flex-col gap-3 bg-textured text-gray-900 dark:text-gray-100 ${inter.className} text-[11px] font-extralight tracking-tight antialiased`}>
             <h1 className="text-base font-light tracking-wide p-4">Config Builder</h1>
             <div className="max-w-4xl p-2">
                 <ConfigBuilder 
                     initialConfig={testConfig} 
                     onConfigChange={handleConfigChange} 
-                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    className="bg-textured text-gray-900 dark:text-gray-100"
                 />
             </div>
         </div>

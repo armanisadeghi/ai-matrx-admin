@@ -33,14 +33,14 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+          className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-textured text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
         >
           Previous
         </button>
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+          className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-textured text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
         >
           Next
         </button>
@@ -304,7 +304,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
   
   if (isLoading || dataLoading) {
     return (
-      <div className="flex items-center justify-center h-full bg-white dark:bg-gray-800">
+      <div className="flex items-center justify-center h-full bg-textured">
         <div className="flex flex-col items-center space-y-2">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
           <div className="text-gray-600 dark:text-gray-300">Loading data...</div>
@@ -315,7 +315,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
   
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 bg-white dark:bg-gray-800">
+      <div className="flex flex-col items-center justify-center h-full p-6 bg-textured">
         <AlertTriangle className="text-amber-500 h-12 w-12 mb-4" />
         <div className="text-red-500 dark:text-red-400 text-lg font-medium mb-2">Error Loading Data</div>
         <div className="text-gray-600 dark:text-gray-300 text-center max-w-md">{error}</div>
@@ -327,7 +327,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
     if (!data) return null;
     
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-gray-800">
+      <div className="h-full flex flex-col bg-textured">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <FileJson className="h-5 w-5 text-blue-500" />
@@ -351,7 +351,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
   const renderTabularData = () => {
     if (!headers.length) {
       return (
-        <div className="flex items-center justify-center h-full p-6 bg-white dark:bg-gray-800">
+        <div className="flex items-center justify-center h-full p-6 bg-textured">
           <div className="text-gray-500 dark:text-gray-400">No data available</div>
         </div>
       );
@@ -360,7 +360,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
     const extension = file.details?.extension?.toLowerCase();
     
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-gray-800">
+      <div className="h-full flex flex-col bg-textured">
         {/* Header with controls */}
         <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -380,7 +380,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
                   <select
                     value={activeSheet}
                     onChange={(e) => handleSheetChange(e.target.value)}
-                    className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md py-1 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="appearance-none bg-textured border border-gray-300 dark:border-gray-600 rounded-md py-1 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     {sheetNames.map(sheet => (
                       <option key={sheet} value={sheet}>{sheet}</option>
@@ -404,7 +404,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1); // Reset to first page on search
                   }}
-                  className="pl-8 pr-3 py-1 w-48 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="pl-8 pr-3 py-1 w-48 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
                 <Search className="h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               </div>
@@ -437,7 +437,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800">
+            <tbody className="bg-textured">
               {displayData.map((row, rowIndex) => (
                 <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   {headers.map((header, cellIndex) => (
@@ -478,7 +478,7 @@ const DataPreview: React.FC<DataPreviewProps> = ({ file, isLoading }) => {
       return renderTabularData();
     default:
       return (
-        <div className="flex items-center justify-center h-full bg-white dark:bg-gray-800">
+        <div className="flex items-center justify-center h-full bg-textured">
           <div className="text-gray-500 dark:text-gray-400">
             Preview not available for this data format
           </div>

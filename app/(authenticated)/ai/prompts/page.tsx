@@ -31,7 +31,7 @@ export default async function PromptsPage() {
         .select("*", { count: "exact", head: true });
 
     return (
-        <Card className="h-full w-full bg-white dark:bg-gray-900 border-none shadow-lg">
+        <Card className="h-full w-full bg-textured border-none shadow-lg">
             <div className="p-8 md:p-12">
                 <div className="flex justify-between items-center mb-8">
                     <div>

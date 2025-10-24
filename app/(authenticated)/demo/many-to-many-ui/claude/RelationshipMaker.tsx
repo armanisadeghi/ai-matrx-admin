@@ -239,7 +239,7 @@ const RelationshipMaker = () => {
 
   return (
     <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col font-sans overflow-hidden text-gray-800 dark:text-gray-200">
-      <header className="p-4 bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-900 z-10">
+      <header className="p-4 bg-textured shadow-sm dark:shadow-gray-900 z-10">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">AI Model endpoints</h1>
         <p className="text-sm text-gray-600 dark:text-gray-400">Drag models to associate them with endpoints</p>
       </header>
@@ -548,7 +548,7 @@ const RelationshipMaker = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
+          <div className="bg-textured p-6 rounded-lg shadow-xl w-96">
             <h3 className="text-lg font-bold mb-4">Add New associatedEndpoints</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               Placeholder for associatedEndpoints creation form

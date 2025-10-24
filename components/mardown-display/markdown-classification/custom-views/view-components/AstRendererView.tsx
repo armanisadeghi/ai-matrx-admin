@@ -62,7 +62,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, anima
     const bullet = (
       <span className="relative flex items-center justify-center w-3 h-3 mr-4 mt-1.5 flex-shrink-0">
         <span className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400 rounded-full opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200" />
-        <span className="relative w-1.5 h-1.5 bg-white dark:bg-gray-900 rounded-full" />
+        <span className="relative w-1.5 h-1.5 bg-textured rounded-full" />
       </span>
     );
     
@@ -243,7 +243,7 @@ const AstRenderer: React.FC<AstRendererProps> = ({
 
   return (
     <article className={`prose prose-gray dark:prose-invert max-w-none ${className}`}>
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-gray-800/20 p-6 md:p-8 space-y-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-textured rounded-xl shadow-lg dark:shadow-gray-800/20 p-6 md:p-8 space-y-6 border border-gray-200 dark:border-gray-700">
         {processedNodes.map((node, index) => (
           <NodeRenderer 
             key={index} 

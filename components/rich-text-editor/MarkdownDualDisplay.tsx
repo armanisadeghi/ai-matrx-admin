@@ -2,14 +2,41 @@
 
 "use client";
 
-import React, { useState, useCallback } from 'react';
-import { Remirror, useRemirror, EditorComponent } from '@remirror/react';
+import React, { useState, useCallback, useRef } from 'react';
+import 'remirror/styles/all.css';
+import './remirror-editor.css';
+import { Remirror, useRemirror, EditorComponent, useCommands } from '@remirror/react';
 import { MarkdownExtension } from 'remirror/extensions';
 import { motion, MotionStyle } from 'framer-motion';
+import { useTheme } from '@/styles/themes/ThemeProvider';
+import { Type } from 'lucide-react';
+
+const EditorContent: React.FC = () => {
+  const commands = useCommands();
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Focus editor when clicking anywhere in the container
+    commands.focus();
+  }, [commands]);
+
+  return (
+    <div 
+      ref={editorRef}
+      onClick={handleClick}
+      className="remirror-editor remirror-editor-clickable w-full h-full bg-background"
+    >
+      <EditorComponent />
+    </div>
+  );
+};
 
 const MarkdownDualDisplay: React.FC = () => {
   const [markdown, setMarkdown] = useState('');
   const [splitRatio, setSplitRatio] = useState(0.5);
+  const [lineSpacing, setLineSpacing] = useState(1);
+  const [showSpacingMenu, setShowSpacingMenu] = useState(false);
+  const { mode } = useTheme();
   const { manager, state, onChange } = useRemirror({
     extensions: () => [new MarkdownExtension({})],
     content: markdown,
@@ -46,16 +73,57 @@ const MarkdownDualDisplay: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          data-theme={mode}
       >
-        <div className="w-full sm:w-1/2 h-1/2 sm:h-full" style={{ flex: splitRatio }}>
+        <div className="w-full sm:w-1/2 h-1/2 sm:h-full relative" style={{ flex: splitRatio }}>
+          {/* Line Spacing Control */}
+          <div className="absolute top-2 right-2 z-10">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:ring-1 focus:ring-primary/50 transition-colors flex items-center gap-1 shadow-md"
+              onClick={() => setShowSpacingMenu(!showSpacingMenu)}
+            >
+              <Type size={16} />
+              <span className="text-sm">{lineSpacing}x</span>
+            </motion.button>
+            
+            {showSpacingMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute top-full mt-1 right-0 bg-background border border-border rounded-md shadow-lg z-10 min-w-[80px]"
+              >
+                {[1, 1.5, 2].map((spacing) => (
+                  <button
+                    key={spacing}
+                    className={`w-full px-3 py-2 text-sm text-left hover:bg-muted transition-colors ${
+                      lineSpacing === spacing ? 'bg-muted font-semibold' : ''
+                    }`}
+                    onClick={() => {
+                      setLineSpacing(spacing);
+                      setShowSpacingMenu(false);
+                    }}
+                  >
+                    {spacing}x
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </div>
+          
           <Remirror
               manager={manager}
               initialContent={state}
               onChange={handleChange}
               autoFocus
           >
-            <div className="w-full h-full border-r border-border focus-within:ring-1 focus-within:ring-primary/50 transition-shadow overflow-auto">
-              <EditorComponent />
+            <div 
+              className="remirror-editor-wrapper w-full h-full border-r border-border focus-within:ring-1 focus-within:ring-primary/50 transition-shadow overflow-auto bg-background"
+              style={{ '--editor-line-height': lineSpacing } as React.CSSProperties}
+              data-theme={mode}
+            >
+              <EditorContent />
             </div>
           </Remirror>
         </div>

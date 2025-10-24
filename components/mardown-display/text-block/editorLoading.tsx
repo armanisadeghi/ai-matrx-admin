@@ -4,7 +4,7 @@ import React from 'react';
 
 const EditorLoading = () => {
   return (
-    <div className="w-full h-full bg-white dark:bg-gray-900 flex items-center justify-center">
+    <div className="w-full h-full bg-textured flex items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
         {/* Spinner */}
         <div className="relative w-16 h-16">

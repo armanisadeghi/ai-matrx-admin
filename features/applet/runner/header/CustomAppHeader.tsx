@@ -49,7 +49,7 @@ export const CustomAppHeader = ({
   // Use reduced height styling for preview mode
   const headerClasses = `sticky top-0 w-full z-40 ${
     isPreview ? 'h-10' : 'h-14'
-  } ${headerClassName || ''} bg-white dark:bg-gray-900 transition-colors shadow-sm`;
+  } ${headerClassName || ''} bg-textured transition-colors shadow-sm`;
 
   return isMobile ? (
     <div className={headerClasses}>

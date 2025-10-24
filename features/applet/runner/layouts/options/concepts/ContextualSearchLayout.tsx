@@ -51,7 +51,7 @@ const ContextualSearchLayout: React.FC<AppletInputProps> = ({
                         ))}
                     </div>
                 </div>
-                <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90">
+                <div className="max-w-3xl mx-auto bg-textured rounded-xl shadow-2xl p-6 backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90">
                     <h2 className="text-2xl font-medium text-center mb-8">Find the perfect {context}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {appletContainers.map((container) => (

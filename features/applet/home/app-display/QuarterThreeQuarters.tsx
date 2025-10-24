@@ -22,7 +22,7 @@ const QuarterThreeQuarters: React.FC<AppDisplayProps> = ({
         {/* Left column - App info (1/4 width) */}
         <div className="w-1/4 min-w-0">
           {/* App Icon */}
-          <div className="w-24 h-24 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-md flex-shrink-0 flex items-center justify-center mb-4">
+          <div className="w-24 h-24 rounded-xl overflow-hidden bg-textured shadow-md flex-shrink-0 flex items-center justify-center mb-4">
             {appIcon ? (
               getAppIconWithBg({
                 icon: appIcon,

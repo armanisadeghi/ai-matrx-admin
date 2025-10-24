@@ -68,7 +68,7 @@ const ChipSearchUtility: React.FC = () => {
     };
 
     return (
-        <div className="p-4 space-y-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="p-4 space-y-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700">
             {/* Header with Refresh */}
             <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Chip Content Recovery</h2>
@@ -91,7 +91,7 @@ const ChipSearchUtility: React.FC = () => {
                         <select
                             value={selectedEditor}
                             onChange={(e) => handleEditorChange(e.target.value)}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-textured text-gray-900 dark:text-gray-100"
                         >
                             <option value="all">All Editors</option>
                             {globalState.editors.map(editor => (
@@ -138,7 +138,7 @@ const ChipSearchUtility: React.FC = () => {
                             <select
                                 value={selectedBrokerId}
                                 onChange={(e) => setSelectedBrokerId(e.target.value)}
-                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-textured text-gray-900 dark:text-gray-100"
                             >
                                 <option value="">Select a Broker ID</option>
                                 {globalState.brokerIds.map(id => (
@@ -154,7 +154,7 @@ const ChipSearchUtility: React.FC = () => {
                             <select
                                 value={selectedChipId}
                                 onChange={(e) => setSelectedChipId(e.target.value)}
-                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-textured text-gray-900 dark:text-gray-100"
                             >
                                 <option value="">Select a Chip ID</option>
                                 {globalState.chips.map(chip => (
@@ -173,7 +173,7 @@ const ChipSearchUtility: React.FC = () => {
                             type="text"
                             value={manualId}
                             onChange={(e) => setManualId(e.target.value)}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-textured text-gray-900 dark:text-gray-100"
                             placeholder={`Enter ${searchType === 'broker' ? 'broker' : 'chip'} ID`}
                         />
                     </div>
@@ -194,7 +194,7 @@ const ChipSearchUtility: React.FC = () => {
                     <textarea
                         value={brokerContent?.combinedContent || ''}
                         readOnly
-                        className="w-full h-[calc(100%-2rem)] p-3 font-mono text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                        className="w-full h-[calc(100%-2rem)] p-3 font-mono text-sm border border-gray-300 dark:border-gray-600 rounded bg-textured text-gray-900 dark:text-gray-100"
                     />
                 </div>
             </div>

@@ -150,7 +150,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                                 actions.setMetadataField('title', e.target.value);
                                 actions.setMetadataField('metaTitle', e.target.value);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="Enter page title"
                             disabled={!user}
                         />
@@ -175,7 +175,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                                 actions.setMetadataField('description', e.target.value);
                                 actions.setMetadataField('metaDescription', e.target.value);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                             placeholder="Brief description for SEO"
                             rows={3}
                             disabled={!user}
@@ -202,7 +202,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             type="text"
                             value={state.metadata.metaKeywords}
                             onChange={(e) => actions.setMetadataField('metaKeywords', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="keyword1, keyword2, keyword3"
                             disabled={!user}
                         />
@@ -220,7 +220,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             type="url"
                             value={state.metadata.ogImage}
                             onChange={(e) => actions.setMetadataField('ogImage', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="https://example.com/image.jpg"
                             disabled={!user}
                         />
@@ -238,7 +238,7 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                             type="url"
                             value={state.metadata.canonicalUrl}
                             onChange={(e) => actions.setMetadataField('canonicalUrl', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="https://example.com/canonical-page"
                             disabled={!user}
                         />

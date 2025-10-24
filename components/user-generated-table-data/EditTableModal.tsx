@@ -122,7 +122,7 @@ export default function EditTableModal({ isOpen, onClose, onSuccess, tableId, in
               onChange={(e) => setTableName(e.target.value)}
               placeholder="e.g. Customer Data"
               required
-              className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
+              className="bg-textured border-gray-200 dark:border-gray-800"
             />
           </div>
           
@@ -134,7 +134,7 @@ export default function EditTableModal({ isOpen, onClose, onSuccess, tableId, in
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add a description for this table"
               rows={3}
-              className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
+              className="bg-textured border-gray-200 dark:border-gray-800"
             />
           </div>
           

@@ -238,7 +238,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
             </h1>
             
             {/* Entity navigation panel */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+            <div className="bg-textured rounded-lg shadow p-6 mb-6">
                 <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Entity Navigation</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -429,7 +429,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left column - Selector browser */}
                 <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-textured rounded-lg shadow p-6">
                         <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Selector Browser</h2>
                         
                         {/* Selector dropdown */}
@@ -440,7 +440,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                             <select 
                                 value={selectedSelector}
                                 onChange={(e) => setSelectedSelector(e.target.value)}
-                                className="w-full p-3 border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+                                className="w-full p-3 border rounded-md bg-textured text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
                             >
                                 {Object.keys(selectors).map((selector) => (
                                     <option key={selector} value={selector}>
@@ -466,7 +466,7 @@ export default function AppRendererTest({ slug }: { slug: string }) {
                 
                 {/* Right column - Key state panels */}
                 <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div className="bg-textured rounded-lg shadow p-6">
                         <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Key State - Always Visible</h2>
                         
                         <div className="space-y-6">

@@ -188,7 +188,7 @@ const MultiDateField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet
                         className={cn(
                             "w-full justify-start text-left font-normal",
                             selectedDates.length === 0 && "text-gray-500 dark:text-gray-400",
-                            "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
+                            "focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured",
                             (validationError || maxItemsError) && "border-red-500",
                             disabled && "opacity-50 cursor-not-allowed"
                         )}
@@ -204,7 +204,7 @@ const MultiDateField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet
                         )}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                <PopoverContent className="w-auto p-0 bg-textured border-gray-300 dark:border-gray-700">
                     <Calendar
                         mode="multiple"
                         selected={selectedDates}

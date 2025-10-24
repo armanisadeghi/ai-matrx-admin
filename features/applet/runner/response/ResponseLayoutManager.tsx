@@ -114,7 +114,7 @@ export default function ResponseLayoutManager({
                                 taskId={taskId}
                                 type="message"
                                 role="assistant"
-                                className="bg-slate-50 dark:bg-slate-900"
+                                className="bg-textured"
                                 isStreamActive={!isTaskComplete}
                                 hideCopyButton={true}
                             />
@@ -125,7 +125,7 @@ export default function ResponseLayoutManager({
                             <DirectMarkdownRenderer
                                 markdown={textResponse}
                                 coordinatorId={coordinatorId}
-                                className="bg-slate-50 dark:bg-slate-900"
+                                className="bg-textured"
                                 isLoading={!isTaskComplete}
                                 source="applet"
                                 sourceId={appletId}

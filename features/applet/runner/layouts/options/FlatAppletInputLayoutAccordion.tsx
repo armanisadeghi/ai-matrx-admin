@@ -27,7 +27,7 @@ const FlatAppletInputLayoutAccordion: React.FC<AppletInputProps> = ({
     
     return (
         <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
-            <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+            <div className="border rounded-lg bg-textured dark:border-gray-700 overflow-hidden">
                 {/* Accordion Header */}
                 <button
                     className={`w-full flex justify-between items-center p-4 text-left focus:outline-none hover:bg-gray-50 dark:hover:bg-gray-700 ${

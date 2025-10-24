@@ -242,7 +242,7 @@ export function ImagePreviewRow({
           <>
             <button 
               onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full shadow-md p-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-textured rounded-full shadow-md p-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               aria-label="Scroll left"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -252,7 +252,7 @@ export function ImagePreviewRow({
             
             <button 
               onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 rounded-full shadow-md p-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-textured rounded-full shadow-md p-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               aria-label="Scroll right"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -265,7 +265,7 @@ export function ImagePreviewRow({
         <div
           ref={scrollContainerRef}
           className={cn(
-            "flex overflow-x-auto scrollbar-hide px-1 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md",
+            "flex overflow-x-auto scrollbar-hide px-1 py-1 bg-textured border border-gray-200 dark:border-gray-700 rounded-md",
             sizeMap[size].container,
             sizeMap[size].gap
           )}

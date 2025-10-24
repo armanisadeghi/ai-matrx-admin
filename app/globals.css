@@ -20,13 +20,14 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
 @layer base {
     :root {
-        --background: 240, 5%, 96%;
-        --matrx-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.17'/%3E%3C/svg%3E");
-        --matrx-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.15'/%3E%3C/svg%3E");
-        --foreground: 240 10% 3.9%;
-        --card: 0 0% 98%;
+        --background: 240 5% 96%; /* zinc-100 base */
+        --background-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
+        --card-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.04' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
+        --matrx-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.15'/%3E%3C/svg%3E");
+        --foreground: 240 10% 3.9%; /* zinc-950 */
+        --card: 0 0% 100%; /* white for cards on zinc-100 */
         --card-foreground: 240 10% 3.9%;
-        --popover: 0 0% 100%;
+        --popover: 0 0% 100%; /* white for popovers */
         --popover-foreground: 240 10% 3.9%;
 
         --primary: 210 80% 45%;
@@ -34,14 +35,14 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
         --secondary: 275 65% 80%;
         --secondary-foreground: 275 35% 20%;
-        --muted: 240 4.8% 95.9%;
-        --muted-foreground: 240 3.8% 46.1%;
-        --accent: 260 30% 92%; /* Subtle purple-tinted light background for hover states */
-        --accent-foreground: 260 50% 25%; /* Dark purple text for contrast */
+        --muted: 240 5% 92%; /* zinc-200 - subtle muted backgrounds */
+        --muted-foreground: 240 4% 46%; /* zinc-600 - readable muted text */
+        --accent: 240 5% 94%; /* zinc-150 - subtle hover state on zinc base */
+        --accent-foreground: 240 10% 3.9%; /* zinc-950 */
         --destructive: 0 84% 60%; /* Brighter destructive */
         --destructive-foreground: 0 0% 98%;
-        --border: 240 5.9% 90%;
-        --input: 240 8% 94%; /* Slightly lighter and more saturated for differentiation */
+        --border: 240 6% 88%; /* zinc-300 - subtle borders */
+        --input: 0 0% 100%; /* white inputs on zinc background */
         --ring: 240 5% 64.9%;
         --radius: 0.5rem;
         --success: 142 76% 36%;
@@ -70,10 +71,10 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --secondary-active: 275 65% 70%; /* Consistent with secondary purple theme */
         --accent-active: 260 40% 85%; /* Darker than hover for active state */
 
-        /* Elevation colors with slight tint */
-        --elevation-1: 262 20% 98%;
-        --elevation-2: 262 20% 96%;
-        --elevation-3: 262 20% 94%;
+        /* Elevation colors for zinc theme */
+        --elevation-1: 240 5% 98%; /* zinc-50 */
+        --elevation-2: 240 5% 96%; /* zinc-100 */
+        --elevation-3: 240 5% 94%; /* zinc-150 */
 
         /* Enhanced gradients */
         --gradient-1: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
@@ -88,20 +89,20 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --checkerboard: linear-gradient(45deg, hsl(0, 0%, 94%) 25%, transparent 25%),
             linear-gradient(-45deg, hsl(0, 0%, 94%) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, hsl(0, 0%, 85%) 75%),
             linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 85%) 75%);
-        --sidebar-background: 0 0% 98%;
-        --sidebar-foreground: 240 5.3% 26.1%;
+        --sidebar-background: 240 5% 98%; /* zinc-50 */
+        --sidebar-foreground: 240 10% 3.9%; /* zinc-950 */
         --sidebar-primary: 240 5.9% 10%;
         --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 240 4.8% 95.9%;
-        --sidebar-accent-foreground: 240 5.9% 10%;
-        --sidebar-border: 220 13% 91%;
+        --sidebar-accent: 240 5% 94%; /* zinc-150 - subtle hover */
+        --sidebar-accent-foreground: 240 10% 3.9%;
+        --sidebar-border: 240 6% 88%; /* zinc-300 - subtle borders */
         --sidebar-ring: 217.2 91.2% 59.8%;
 
         /* Scrollbar colors for light mode */
-        --scrollbar-track: 240 5% 96%;
-        --scrollbar-thumb: 240 5% 65%;
-        --scrollbar-thumb-hover: 240 8% 45%;
-        --scrollbar-thumb-active: 210 80% 45%;
+        --scrollbar-track: 240 5% 96%; /* zinc-100 */
+        --scrollbar-thumb: 240 5% 84%; /* zinc-300 - subtle and minimal */
+        --scrollbar-thumb-hover: 240 5% 70%; /* zinc-400 - slightly more visible */
+        --scrollbar-thumb-active: 240 6% 60%; /* zinc-500 - active state */
 
         --typography-fontFamily-sans: var(--font-inter), var(--font-opensans), var(--font-roboto), var(--font-montserrat), ui-sans-serif,
             system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
@@ -116,29 +117,29 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     }
 
     .dark {
-        --background: 222, 47%, 11%;
-        --matrix-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='.1'/%3E%3C/svg%3E");
-        --matrx-old-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
+        --background: 240 4% 16%; /* zinc-850 (rgb 39 39 42) */
+        --background-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
+        --card-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23fff' fill-opacity='0.02' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
         --matrx-card-background: url("/dark-turbulence-noise.svg");
-        --foreground: 0 0% 98%;
-        --card: 217, 33%, 17%;
-        --card-foreground: 0 0% 98%;
-        --popover: 222, 47%, 11%;
-        --popover-foreground: 0 0% 98%;
+        --foreground: 240 6% 90%; /* zinc-300 - softer than pure white */
+        --card: 240 5% 20%; /* zinc-800 - elevated from background */
+        --card-foreground: 240 6% 90%;
+        --popover: 240 5% 18%; /* slightly elevated from background */
+        --popover-foreground: 240 6% 90%;
 
-        --primary: 221, 83%, 53%;
-        --primary-foreground: 0, 0%, 100%;
+        --primary: 221 83% 53%;
+        --primary-foreground: 0 0% 100%;
 
         --secondary: 275 60% 30%;
         --secondary-foreground: 275 75% 90%;
-        --muted: 240 3.7% 15.9%;
-        --muted-foreground: 0, 0%, 72%;
-        --accent: 215 20% 25%; /* Slate-tinted dark background for hover states */
-        --accent-foreground: 0 0% 98%;
+        --muted: 240 4% 24%; /* zinc-800 - subtle muted backgrounds */
+        --muted-foreground: 240 5% 65%; /* zinc-400 - readable muted text */
+        --accent: 240 4% 22%; /* zinc-825 - subtle hover state */
+        --accent-foreground: 240 6% 90%; /* zinc-300 */
         --destructive: 0 72% 60%;
         --destructive-foreground: 0 85.7% 97.3%;
-        --border: 240, 5%, 26%;
-        --input: 215 15% 18%; /* Slate-tinted, slightly lighter for differentiation */
+        --border: 240 4% 28%; /* zinc-750 - subtle borders */
+        --input: 240 5% 20%; /* zinc-800 - inputs elevated like cards */
         --ring: 240 4.9% 83.9%;
         --radius: 0.5rem;
         --success: 142 69% 58%;
@@ -167,10 +168,10 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --secondary-active: 275 45% 25%; /* Consistent with secondary purple theme */
         --accent-active: 215 30% 20%; /* Slate-tinted, darker than hover for active */
 
-        /* Elevation colors */
-        --elevation-1: 0 0% 15%;
-        --elevation-2: 0 0% 25%;
-        --elevation-3: 0 0% 35%;
+        /* Elevation colors for zinc theme */
+        --elevation-1: 240 4% 18%; /* zinc-845 */
+        --elevation-2: 240 5% 22%; /* zinc-820 */
+        --elevation-3: 240 5% 26%; /* zinc-790 */
 
         /* Gradients */
         --gradient-1: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
@@ -185,20 +186,20 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --checkerboard: linear-gradient(45deg, hsl(0, 0%, 31%) 25%, transparent 25%),
             linear-gradient(-45deg, hsl(0, 0%, 31%) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, hsl(0, 0%, 24%) 75%),
             linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 24%) 75%);
-        --sidebar-background: 240 5.9% 10%;
-        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-background: 240 4% 16%; /* zinc-850 - matches background */
+        --sidebar-foreground: 240 6% 90%; /* zinc-300 */
         --sidebar-primary: 224.3 76.3% 48%;
         --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 215 15% 20%; /* Slate-tinted for consistency */
-        --sidebar-accent-foreground: 240 4.8% 95.9%;
-        --sidebar-border: 215 10% 22%; /* Slate-tinted, slightly different from sidebar-accent */
+        --sidebar-accent: 240 4% 22%; /* zinc-825 - subtle hover */
+        --sidebar-accent-foreground: 240 6% 90%;
+        --sidebar-border: 240 4% 28%; /* zinc-750 - subtle borders */
         --sidebar-ring: 217.2 91.2% 59.8%;
 
         /* Scrollbar colors for dark mode */
-        --scrollbar-track: 222 47% 11%;
-        --scrollbar-thumb: 240 5% 35%;
-        --scrollbar-thumb-hover: 221 83% 53%;
-        --scrollbar-thumb-active: 275 60% 50%;
+        --scrollbar-track: 240 4% 14%; /* zinc-850 - matches dark background */
+        --scrollbar-thumb: 240 4% 35%; /* zinc-700 - subtle and minimal */
+        --scrollbar-thumb-hover: 240 5% 45%; /* zinc-600 - slightly more visible */
+        --scrollbar-thumb-active: 240 5% 55%; /* zinc-500 - active state */
     }
 }
 
@@ -211,7 +212,8 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         font-size: 16px; /* Base font size */
     }
     body {
-        @apply bg-background text-foreground;;
+        @apply bg-background text-foreground;
+        background-image: var(--background-texture);
         font-synthesis-weight: none;
         text-rendering: optimizeLegibility;
         font-size: 1.0625rem; /* Slightly larger than default, equivalent to 17px */
@@ -246,15 +248,57 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     select {
         font-size: 1.0625rem; /* Match body font size for form elements */
     }
+
+    /* RTL/Arabic font size adjustments - make RTL text slightly larger for better readability */
+    .rtl,
+    [dir="rtl"] {
+        font-size: 1.125rem; /* 18px - slightly larger than base 17px for better Arabic readability */
+        line-height: 1.7; /* Slightly increased line height for RTL text */
+    }
+
+    /* RTL-specific adjustments for different text sizes */
+    .rtl.text-sm,
+    [dir="rtl"].text-sm {
+        font-size: 1rem; /* 16px instead of 14px */
+    }
+
+    .rtl.text-lg,
+    [dir="rtl"].text-lg {
+        font-size: 1.25rem; /* 20px instead of 18px */
+    }
+
+    .rtl.text-xl,
+    [dir="rtl"].text-xl {
+        font-size: 1.375rem; /* 22px instead of 20px */
+    }
+
+    .rtl.text-2xl,
+    [dir="rtl"].text-2xl {
+        font-size: 1.5rem; /* 24px instead of 24px (same, but explicit) */
+    }
 }
 
 @layer components {
     .card {
         @apply bg-card;
+        background-image: var(--card-texture);
     }
 }
 
 @layer utilities {
+    /* Automatically apply textures to backgrounds */
+    .bg-card {
+        background-image: var(--card-texture);
+    }
+    
+    .bg-popover {
+        background-image: var(--card-texture);
+    }
+    
+    .bg-muted {
+        background-image: var(--background-texture);
+    }
+
     .light-mode-shadow {
         box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
@@ -367,6 +411,30 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     
     .scrollbar-none::-webkit-scrollbar {
         display: none;             /* Chrome, Safari and Opera */
+    }
+
+    /* Dynamic Viewport Height utilities - adjusts when keyboard appears */
+    /* Use these instead of h-screen, min-h-screen when you need keyboard-aware heights */
+    .h-dvh {
+        height: 100dvh; /* Dynamic viewport height - adjusts for keyboard */
+    }
+    
+    .min-h-dvh {
+        min-height: 100dvh;
+    }
+    
+    .max-h-dvh {
+        max-height: 100dvh;
+    }
+
+    /* Keyboard-safe bottom spacing utilities */
+    /* Use these for fixed bottom elements to ensure they stay visible when keyboard appears */
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 1rem);
+    }
+    
+    .mb-safe {
+        margin-bottom: env(safe-area-inset-bottom, 1rem);
     }
 }
 

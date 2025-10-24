@@ -570,7 +570,7 @@ export const GroupBuilder = () => {
 
     return (
         <div className="container mx-auto px-4 py-6">
-            <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+            <Card className="border border-gray-200 dark:border-gray-700 bg-textured shadow-lg">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-amber-500 dark:text-amber-400">
                         Broker Group Builder

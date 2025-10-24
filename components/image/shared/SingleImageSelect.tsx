@@ -233,7 +233,7 @@ export function SingleImageSelect({
                     <div className="h-full w-full relative">
                         <Image src={localImage} alt="Selected image" fill sizes={imageSize} className="object-cover" />
                         <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
-                            <div className="px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium">
+                            <div className="px-3 py-1.5 bg-textured text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium">
                                 Change Image
                             </div>
                         </div>

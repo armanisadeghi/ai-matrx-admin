@@ -21,6 +21,7 @@ import {
     selectResponseDataByListenerId,
     selectResponseInfoByListenerId,
     selectResponseErrorsByListenerId,
+    selectResponseToolUpdatesByListenerId,
 } from "@/lib/redux/socket-io";
 
 const INFO = true;
@@ -51,6 +52,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
     const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
     const errorsResponse = useAppSelector(selectResponseErrorsByListenerId(firstListenerId));
+    const toolUpdatesResponse = useAppSelector(selectResponseToolUpdatesByListenerId(firstListenerId));
     const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
 
     const activeMessageStatus = useAppSelector((state: RootState) => chatSelectors.activeMessageStatus(state));
@@ -175,6 +177,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                 {messagesToDisplay.map((message) => (
                     <MessageItem
                         key={message.id}
+                        taskId={taskId}
                         message={message}
                         onScrollToBottom={handleScrollToBottom}
                         isOverlay={isOverlay}
@@ -194,6 +197,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                         settings={settings}
                     />
                 )}
+                {/* ALWAYS render AssistantStream - it handles its own visibility */}
                 <AssistantStream
                     key={streamKey}
                     taskId={taskId}

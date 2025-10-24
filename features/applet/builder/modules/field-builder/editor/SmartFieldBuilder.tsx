@@ -93,7 +93,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     value={component || "textarea"}
                     onValueChange={(value) => dispatch(setComponent({ id: fieldId, component: value as ComponentType }))}
                 >
-                    <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 mt-1">
+                    <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 mt-1">
                         <SelectValue placeholder="Select component type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -120,7 +120,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     name="label"
                     value={label || ""}
                     onChange={(e) => dispatch(setLabel({ id: fieldId, label: e.target.value }))}
-                    className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
             </div>
 
@@ -137,7 +137,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     value={description}
                     onChange={(e) => dispatch(setDescription({ id: fieldId, description: e.target.value }))}
                     rows={3}
-                    className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="resize-none border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
             </div>
 
@@ -154,7 +154,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     value={helpText}
                     onChange={(e) => dispatch(setHelpText({ id: fieldId, helpText: e.target.value }))}
                     rows={3}
-                    className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="resize-none border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
             </div>
 
@@ -170,7 +170,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     name="placeholder"
                     value={placeholder}
                     onChange={(e) => dispatch(setPlaceholder({ id: fieldId, placeholder: e.target.value }))}
-                    className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
             </div>
 
@@ -226,7 +226,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                                     })
                                 )
                             }
-                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                             placeholder="Yes"
                         />
                     </div>
@@ -252,7 +252,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                                     })
                                 )
                             }
-                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                             placeholder="No"
                         />
                     </div>
@@ -284,7 +284,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                                     })
                                 )
                             }
-                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                         />
                     </div>
                     <div>
@@ -310,7 +310,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                                     })
                                 )
                             }
-                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                         />
                     </div>
                     <div>
@@ -336,7 +336,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                                     })
                                 )
                             }
-                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="h-8 mt-1 text-sm border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                         />
                     </div>
                 </div>
@@ -350,7 +350,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                         </Label>
                         <HelpIcon text={fieldHelpTextItems.rows} />
                     </div>
-                    <div className="flex items-center mt-1 border rounded-md border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                    <div className="flex items-center mt-1 border rounded-md border-gray-200 dark:border-gray-700 bg-textured">
                         <button
                             type="button"
                             onClick={() => {
@@ -421,7 +421,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                                     })
                                 )
                             }
-                            className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                         />
                     </div>
                     <div>
@@ -447,7 +447,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                                     })
                                 )
                             }
-                            className="mt-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="mt-1 border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                         />
                     </div>
                 </div>

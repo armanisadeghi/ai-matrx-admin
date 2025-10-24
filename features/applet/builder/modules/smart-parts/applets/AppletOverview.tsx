@@ -70,7 +70,7 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
                     value={appletName || ""}
                     onChange={handleNameChange}
                     placeholder="Enter applet name"
-                    className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                    className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                 />
             </div>
             <div className="space-y-2">
@@ -83,7 +83,7 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
                     value={appletCreator || ""}
                     onChange={handleCreatorChange}
                     placeholder="Enter creator name"
-                    className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                    className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                 />
             </div>
             <div className="space-y-2">
@@ -97,7 +97,7 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
                         value={appletSlug || ""}
                         onChange={handleSlugChange}
                         placeholder="Enter URL slug"
-                        className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 pr-10"
+                        className="border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500 pr-10"
                     />
                     <AppletSlugChecker appletId={appletId} slug={appletSlug || ""} />
                 </div>
@@ -120,7 +120,7 @@ export const AppletOverview: React.FC<AppletOverviewProps> = ({ appletId, isNew 
                     onChange={handleDescriptionChange}
                     placeholder="Enter applet description"
                     rows={5}
-                    className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                    className="resize-none border-gray-200 dark:border-gray-700 bg-textured text-gray-900 dark:text-gray-100 focus:border-rose-500"
                 />
             </div>
         </div>

@@ -76,7 +76,7 @@ export default function MinimalLoadingTest() {
         </button>
       </div>
       
-      <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 w-full max-w-md">
+      <div className="mb-4 p-4 bg-textured rounded-lg border border-gray-200 dark:border-gray-700 w-full max-w-md">
         <div className="text-sm font-semibold mb-2">
           Current Settings:
         </div>
@@ -85,7 +85,7 @@ export default function MinimalLoadingTest() {
         </pre>
       </div>
       
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 w-full max-w-md">
+      <div className="p-6 bg-textured rounded-lg border border-gray-200 dark:border-gray-700 w-full max-w-md">
         <div className="text-sm font-semibold mb-4">Loading Indicator:</div>
         <div className="flex justify-center items-center h-20 bg-gray-100 dark:bg-gray-900 rounded-lg">
           <ControlledLoadingIndicator settings={settings} />

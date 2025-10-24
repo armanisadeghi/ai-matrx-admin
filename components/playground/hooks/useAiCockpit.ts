@@ -15,7 +15,7 @@ import { useCreateRecord } from "@/app/entities/hooks/crud/useDirectCreateRecord
 import { useOrchestrateSave } from "@/hooks/useOrchestrateSave";
 import { RecipeToChatTaskData } from "./recipes/recipe-task-utils";
 
-export function useAiCockpit() {
+export function useAiCockpit(forceRefresh?: boolean) {
     const [compiledRecipe, setCompiledRecipe] = useState<CompiledRecipe | null>(null);
     const [recipeVersion, setRecipeVersion] = useState(1);
     const [taskBrokers, setTaskBrokers] = useState<BrokerValue[]>([]);
@@ -29,7 +29,7 @@ export function useAiCockpit() {
         activeParentId: activeRecipeId,
         firstRelHook,
         secondRelHook,
-    } = useDoubleJoinedActiveParentProcessing("recipeMessage", "aiAgent");
+    } = useDoubleJoinedActiveParentProcessing("recipeMessage", "aiAgent", forceRefresh);
     
     const recipeMessageHook = useProcessedRecipeMessages(firstRelHook);
     const { messages, deleteMessage, addMessage, handleDragDrop, recipeMessageIsLoading, addAssistantResponse } = recipeMessageHook;

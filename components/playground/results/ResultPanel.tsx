@@ -162,7 +162,7 @@ export function ResultPanel({
                                 taskId={taskId}
                                 type="message"
                                 role="assistant"
-                                className="bg-transparent dark:bg-transparent p-4"
+                                className="bg-textured p-4"
                                 isStreamActive={isStreaming}
                                 analysisData={analysisData}
                                 messageId={null}
@@ -177,7 +177,7 @@ export function ResultPanel({
 
     if (isCollapsed) {
         return (
-            <div className="h-6 flex-none border bg-background">
+            <div className="h-6 flex-none border bg-textured">
                 <DraggableToolbar
                     id={id}
                     currentLabel={label}
@@ -197,7 +197,7 @@ export function ResultPanel({
     return (
         <>
             <Panel ref={panelRef} id={id} order={order} defaultSize={previousSize} minSize={10} maxSize={75}>
-                <Card className="h-full p-0 overflow-hidden bg-background">
+                <Card className="h-full p-0 overflow-hidden bg-textured">
                     <div className="h-full flex flex-col">
                         <DraggableToolbar
                             id={id}

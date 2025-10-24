@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useRef, useState, useLayoutEffect, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import PlaygroundHeader from '@/components/playground/header/PlaygroundHeader';
+import { CockpitHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import ModelSettingsPanel from '@/components/playground/settings/ModelSettingsPanel';
 import CockpitPanels from '@/components/playground/CockpitPanels';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
+import { LoadingSpinner } from '@/components/ui/spinner';
 
 
 interface PanelRefs {
@@ -27,15 +29,18 @@ interface PanelRefs {
 
 
 export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) {
+    const router = useRouter();
     const dispatch = useDispatch();
     const { actions, selectors, store } = useEntityTools('recipe');
+    const [isRedirecting, setIsRedirecting] = useState(false);
+    const [forceRefresh, setForceRefresh] = useState(false);
 
     useEffect(() => {
         if (recipeId) {
             dispatch(actions.setActiveRecord(recipeId));
+            setForceRefresh(true);
         }
     }, [recipeId]);
-
 
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
@@ -46,17 +51,22 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
     const [recipeVersion, setRecipeVersion] = useState(1);
     const [showPlayground, setShowPlayground] = useState(false);
 
-    const aiCockpitHook = useAiCockpit();
+    const aiCockpitHook = useAiCockpit(forceRefresh);
 
-    const { activeRecipeId, messages, onPlay, registerComponentSave } = aiCockpitHook;
+    const { activeRecipeId, messages, onPlay, recipeMessageIsLoading, registerComponentSave } = aiCockpitHook;
 
     const [open, setOpen] = useState(false);
 
+    // Handle routing when activeRecipeId differs from current route
     useEffect(() => {
-        if (activeRecipeId && messages.length > 1) {
-            setShowPlayground(true);
+        if (activeRecipeId && !open && activeRecipeId !== recipeId) {
+            setForceRefresh(false);
+            setIsRedirecting(true);
+            router.push(`/ai/cockpit/${activeRecipeId}`);
+        } else if (activeRecipeId === recipeId) {
+            setIsRedirecting(false);
         }
-    }, [activeRecipeId]);
+    }, [activeRecipeId, recipeId, router, open]);
 
     const panelsRef = useRef<PanelRefs>({
         leftPanel: null,
@@ -190,10 +200,21 @@ export default function CockpitRecipeIdPage({ recipeId }: { recipeId: string }) 
     return (
         <div
             ref={containerRef}
-            className={`flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : 'h-full'}`}
+            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-textured overflow-hidden`}
         >
-            <PlaygroundHeader {...playgroundControls} />
-            {activeRecipeId ? (
+            {/* Render cockpit controls in main header */}
+            <CockpitHeader cockpitControls={playgroundControls} />
+            
+            {recipeMessageIsLoading || isRedirecting || (activeRecipeId && activeRecipeId !== recipeId) ? (
+                <div className="flex-1 flex items-center justify-center bg-textured">
+                    <div className="flex flex-col items-center gap-4">
+                        <LoadingSpinner size="xl" />
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Redirecting to recipe...
+                        </p>
+                    </div>
+                </div>
+            ) : activeRecipeId === recipeId ? (
                 <CockpitPanels
                     ref={panelsRef}
                     leftComponent={BrokerSidebar}

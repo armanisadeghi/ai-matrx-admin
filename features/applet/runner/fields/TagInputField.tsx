@@ -135,7 +135,7 @@ const TagInputField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-
                 className={cn(
                     "flex flex-wrap gap-2 px-2 py-1.5 border rounded-md min-h-[38px] cursor-text",
                     "focus-within:ring-2 focus-within:ring-gray-300 dark:focus-within:ring-gray-600 focus-within:outline-none",
-                    "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800",
+                    "border-gray-300 dark:border-gray-700 bg-textured",
                     validationError && "border-red-500",
                     disabled && "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900"
                 )}

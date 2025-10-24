@@ -12,6 +12,11 @@ export async function GET(request: NextRequest) {
     // Use redirectTo instead of next, default to '/dashboard' to match other routes
     const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
+    console.log("Email confirmation attempt:");
+    console.log("  token_hash:", token_hash ? "present" : "missing");
+    console.log("  type:", type);
+    console.log("  redirectTo:", redirectTo);
+
     if (token_hash && type) {
         const supabase = await createClient();
 
@@ -19,9 +24,14 @@ export async function GET(request: NextRequest) {
             type,
             token_hash,
         });
+        
         if (!error) {
-            // redirect user to specified redirect URL
-            redirect(redirectTo);
+            console.log("Email confirmation successful, redirecting to:", redirectTo);
+            // redirect user to specified redirect URL with success message
+            const successUrl = `${redirectTo}${redirectTo.includes('?') ? '&' : '?'}success=${encodeURIComponent('Email confirmed! Welcome to AI Matrx!')}`;
+            redirect(successUrl);
+        } else {
+            console.error("Email confirmation failed:", error);
         }
     }
 

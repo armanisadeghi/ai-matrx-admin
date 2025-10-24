@@ -77,12 +77,33 @@ export interface SocketBrokerObject {
     source_id?: string; // Defaults to listenerId if not provided
 }
 
+export interface McpInputObject {
+    name: string;
+    arguments: Record<string, unknown>;
+}
+
+export interface StepDataObject {
+    type: string;
+    content: Record<string, unknown>;
+}
+
+export interface ToolCallObject {
+    id?: string;
+    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_visible_message";
+    mcp_input?: McpInputObject;
+    mcp_output?: Record<string, unknown>;
+    mcp_error?: string;
+    step_data?: StepDataObject;
+    user_visible_message?: string;
+}
+
 export interface ResponseState {
     text: string;
     textChunks: string[]; // New: for performance optimization
     data: any[];
     info: SocketInfoObject[];
     errors: SocketErrorObject[];
+    toolUpdates: ToolCallObject[]; // New: for tool_update events (MCP tool calls)
     ended: boolean;
     taskId: string;
 }

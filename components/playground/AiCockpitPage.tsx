@@ -1,13 +1,10 @@
 'use client';
 
 import React, { useRef, useState, useLayoutEffect, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import PlaygroundHeader from '@/components/playground/header/PlaygroundHeader';
-import ModelSettingsPanel from '@/components/playground/settings/ModelSettingsPanel';
-import CockpitPanels from '@/components/playground/CockpitPanels';
 import { Button } from '@/components/ui/button';
-import BrokerSidebar from '@/components/playground/brokers/BrokersSidebar';
 import AICockpitIntro from '@/components/playground/components/AICockpitIntro';
 import EntityCreateRecordSheet from '@/app/entities/layout/EntityCreateRecordSheet';
 import AddTemplateMessages from '@/components/playground/messages/AddTemplateMessages';
@@ -16,6 +13,8 @@ import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
+import { CockpitHeader } from '@/components/layout/new-layout/PageSpecificHeader';
+import { LoadingSpinner } from '@/components/ui/spinner';
 
 
 interface PanelRefs {
@@ -27,6 +26,7 @@ interface PanelRefs {
 
 
 export default function AiCockpitPage() {
+    const router = useRouter();
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -45,10 +45,10 @@ export default function AiCockpitPage() {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        if (activeRecipeId && messages.length > 1) {
-            setShowPlayground(true);
+        if (activeRecipeId && !open) {
+            router.push(`/ai/cockpit/${activeRecipeId}`);
         }
-    }, [activeRecipeId]);
+    }, [activeRecipeId, router, open]);
 
     const panelsRef = useRef<PanelRefs>({
         leftPanel: null,
@@ -182,18 +182,20 @@ export default function AiCockpitPage() {
     return (
         <div
             ref={containerRef}
-            className={`flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : 'h-full'}`}
+            className={`h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-textured overflow-hidden`}
         >
-            <PlaygroundHeader {...playgroundControls} />
+            {/* Render cockpit controls in main header */}
+            <CockpitHeader cockpitControls={playgroundControls} />
+            
             {activeRecipeId ? (
-                <CockpitPanels
-                    ref={panelsRef}
-                    leftComponent={BrokerSidebar}
-                    rightComponent={ModelSettingsPanel}
-                    onLeftCollapsedChange={setIsLeftCollapsed}
-                    onRightCollapsedChange={setIsRightCollapsed}
-                    cockpitControls={playgroundControls}
-                />
+                <div className="flex-1 flex items-center justify-center bg-textured">
+                    <div className="flex flex-col items-center gap-4">
+                        <LoadingSpinner size="xl" />
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Redirecting to recipe...
+                        </p>
+                    </div>
+                </div>
             ) : (
                 <AICockpitIntro {...playgroundControls} />
             )}

@@ -546,21 +546,28 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     const isQuizJson = (jsonContent: string): { isQuiz: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
         
-        // Fast check: Must start with exact pattern for quiz
-        // This prevents false positives and doesn't delay normal JSON display
-        if (!trimmed.startsWith('{\n  "multiple_choice"') && !trimmed.startsWith('{"multiple_choice"')) {
+        // Fast check: Must start with quiz_title
+        const hasQuizFormat = trimmed.startsWith('{\n  "quiz_title"') || trimmed.startsWith('{"quiz_title"');
+        
+        if (!hasQuizFormat) {
             return { isQuiz: false, isComplete: false };
         }
         
         // Check if JSON is complete (has closing brace)
         const isComplete = trimmed.endsWith("}");
         
-        // If complete, verify it's valid JSON with multiple_choice array
+        // If complete, verify it's valid JSON with quiz structure
         if (isComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
-                const hasMultipleChoice = parsed && Array.isArray(parsed.multiple_choice);
-                return { isQuiz: hasMultipleChoice, isComplete: true };
+                
+                // Must have quiz_title and multiple_choice array
+                const isValidQuiz = parsed && 
+                    parsed.quiz_title && 
+                    Array.isArray(parsed.multiple_choice) &&
+                    parsed.multiple_choice.length > 0;
+                
+                return { isQuiz: isValidQuiz, isComplete: true };
             } catch (error) {
                 // Parse failed, not a valid quiz
                 return { isQuiz: false, isComplete: false };

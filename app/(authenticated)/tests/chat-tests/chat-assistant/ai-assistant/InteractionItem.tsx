@@ -216,7 +216,7 @@ const InteractionItem: React.FC<InteractionItemProps> = ({
   };
 
   return (
-    <div className="rounded-lg px-3 pt-1 pb-2 shadow-sm transition-all duration-300 transform bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 relative">
+    <div className="rounded-lg px-3 pt-1 pb-2 shadow-sm transition-all duration-300 transform bg-textured border border-gray-100 dark:border-gray-700 relative">
       {/* Header row with timestamp and icons */}
       <div className="flex justify-between items-center mb-1">
         {/* Timestamp - only takes up space when there's a timestamp */}

@@ -19,7 +19,7 @@ const initialState: OverlayState = {
     markdownEditor: { isOpen: false, data: null },
     socketAccordion: { isOpen: false, data: null },
     adminStateAnalyzer: { isOpen: false, data: null },
-    adminIndicator: { isOpen: true, data: null },
+    adminIndicator: { isOpen: false, data: null },
     // ... other overlays
   },
 };

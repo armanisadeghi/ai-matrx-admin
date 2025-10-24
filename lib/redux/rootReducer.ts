@@ -19,8 +19,6 @@ import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
 import uiReducer from "./ui/uiSlice";
 import { entitySliceRegistry, initializeEntitySlices } from "./entity/entitySlice";
 import { fieldReducer } from "@/lib/redux/concepts/fields/fieldSlice";
-import notesReducer from "./notes/notesSlice";
-import tagsReducer from "./notes/tagsSlice";
 import { storageReducer } from "./storage";
 import { createFileSystemSlice } from "./fileSystem/slice";
 import { AvailableBuckets, FileManagement } from "./fileSystem/types";
@@ -47,6 +45,7 @@ import overlaySlice from "./slices/overlaySlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
+import canvasReducer from "./slices/canvasSlice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -107,8 +106,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         adminDebug: adminDebugReducer,
         globalCache: globalCacheSlice.reducer,
         ui: uiReducer,
-        notes: notesReducer,
-        tags: tagsReducer,
         storage: storageReducer,
         conversation: conversationReducer,
         messages: messagesReducer,
@@ -137,6 +134,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         workflows: workflowSlice,
         workflowNodes: workflowNodeSlice,
+
+        canvas: canvasReducer,
 
     });
 };

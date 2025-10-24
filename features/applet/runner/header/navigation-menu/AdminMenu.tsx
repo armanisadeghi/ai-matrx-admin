@@ -64,19 +64,20 @@ export const AdminMenu: React.FC<AdminMenuProps> = ({ isAdmin, itemClassName }) 
             </div>
 
             {/* Admin Indicator Toggle */}
-            <DropdownMenuItem onClick={handleToggleAdminIndicator}>
-                <div className={`flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${itemClassName}`}>
-                    <div className="w-5 h-5 flex items-center justify-center">
-                        {isAdminIndicatorOpen ? (
-                            <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        ) : (
-                            <EyeOff className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                        )}
-                    </div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                        {isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator
-                    </span>
+            <DropdownMenuItem 
+                onClick={handleToggleAdminIndicator}
+                className={`flex items-center gap-3 w-full px-2 py-2 cursor-pointer ${itemClassName}`}
+            >
+                <div className="w-5 h-5 flex items-center justify-center">
+                    {isAdminIndicatorOpen ? (
+                        <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    ) : (
+                        <EyeOff className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    )}
                 </div>
+                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    {isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator
+                </span>
             </DropdownMenuItem>
 
             {/* Group admin links by category */}

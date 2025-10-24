@@ -186,7 +186,7 @@ export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                             placeholder="To extract only a portion of the output object, paste your copied bookmark here"
                                             value={output.bookmark ? JSON.stringify(output.bookmark, null, 2) : ""}
                                             onChange={(e) => updateBookmarkJSON(index, e.target.value)}
-                                            className="w-full text-xs font-mono border rounded-md px-2 py-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 resize-none"
+                                            className="w-full text-xs font-mono border rounded-md px-2 py-1 bg-textured border-gray-300 dark:border-gray-600 resize-none"
                                             rows={8}
                                         />
                                     </div>

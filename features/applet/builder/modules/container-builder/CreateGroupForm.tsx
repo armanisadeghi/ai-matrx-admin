@@ -59,7 +59,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
                 value={newGroup.label || ''}
                 onChange={handleLabelChange}
                 placeholder="Enter group label"
-                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                className="border-gray-200 dark:border-gray-700 bg-textured"
                 disabled={loading}
               />
             </div>
@@ -74,7 +74,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
                 value={newGroup.shortLabel || ''}
                 onChange={handleInputChange}
                 placeholder="Maximum 12 characters"
-                className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                className="border-gray-200 dark:border-gray-700 bg-textured"
                 maxLength={12}
                 disabled={loading}
               />
@@ -91,7 +91,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
               value={newGroup.description || ''}
               onChange={handleInputChange}
               placeholder="Enter group description"
-              className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="resize-none border-gray-200 dark:border-gray-700 bg-textured"
               rows={2}
               disabled={loading}
             />
@@ -120,7 +120,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
               value={newGroup.helpText || ''}
               onChange={handleInputChange}
               placeholder="Enter help text for this group"
-              className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="resize-none border-gray-200 dark:border-gray-700 bg-textured"
               rows={2}
               disabled={loading}
             />
@@ -136,7 +136,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
                 onValueChange={(value) => handleSelectChange('isPublic', value)}
                 disabled={loading}
               >
-                <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-textured">
                   <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,7 +155,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
                 onValueChange={(value) => handleSelectChange('authenticatedRead', value)}
                 disabled={loading}
               >
-                <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-textured">
                   <SelectValue placeholder="Select option" />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,7 +174,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
                 onValueChange={(value) => handleSelectChange('publicRead', value)}
                 disabled={loading}
               >
-                <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <SelectTrigger className="w-full border-gray-200 dark:border-gray-700 bg-textured">
                   <SelectValue placeholder="Select option" />
                 </SelectTrigger>
                 <SelectContent>

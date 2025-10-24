@@ -45,7 +45,7 @@ export const PresentationPublishModal: React.FC<PresentationPublishModalProps> =
             />
             
             {/* Modal */}
-            <div className="fixed inset-4 md:inset-8 lg:inset-16 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="fixed inset-4 md:inset-8 lg:inset-16 bg-textured rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">

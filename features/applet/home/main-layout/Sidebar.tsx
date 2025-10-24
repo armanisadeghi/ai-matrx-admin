@@ -127,7 +127,7 @@ const SidebarMainLayout: React.FC<MainLayoutProps> = ({
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 h-full overflow-auto p-6 bg-white dark:bg-gray-900">
+      <div className="flex-1 h-full overflow-auto p-6 bg-textured">
         {/* Banner Image */}
         {appImageUrl && (
           <div className="w-full aspect-[21/9] rounded-lg overflow-hidden mb-6 shadow-sm">

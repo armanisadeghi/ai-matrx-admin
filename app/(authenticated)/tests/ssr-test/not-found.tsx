@@ -1,6 +1,6 @@
-// app/(authenticated)/tests/ssr-test/[category]/not-found.tsx
+// app/(authenticated)/tests/ssr-test/not-found.tsx
 export default function NotFound() {
-    console.log('Not Found Page Triggered');
+    // Removed console.log to clean up build logs
     return (
         <div>
             <h2>Page Not Found</h2>

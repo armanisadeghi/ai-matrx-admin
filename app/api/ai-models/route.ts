@@ -1,12 +1,12 @@
-import { createClient } from "@/utils/supabase/server";
+import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 import { NextResponse } from "next/server";
 
-// Cache for 12 hours (43200 seconds)
+// Cache for 12 hours (43200 seconds) - this route can be statically generated
 export const revalidate = 43200;
 
 export async function GET() {
     try {
-        const supabase = await createClient();
+        const supabase = getScriptSupabaseClient();
 
         // Fetch all non-deprecated AI models
         const { data: models, error } = await supabase

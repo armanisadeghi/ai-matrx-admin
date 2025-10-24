@@ -7,7 +7,7 @@ import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import ThinkingVisualization from "../blocks/thinking-reasoning/ThinkingVisualization";
 import BasicMarkdownContent from "./BasicMarkdownContent";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
-import ImageBlock from "./ImageBlock";
+import ImageBlock from "@/components/mardown-display/blocks/images/ImageBlock";
 import TranscriptBlock from "@/components/mardown-display/blocks/transcripts/TranscriptBlock";
 import TasksBlock from "@/components/mardown-display/blocks/tasks/TasksBlock";
 import { ContentBlock, splitContentIntoBlocks } from "../markdown-classification/processors/utils/content-splitter";
@@ -51,12 +51,15 @@ import InteractiveDiagramBlock from "../blocks/diagram/InteractiveDiagramBlock";
 import DiagramLoadingVisualization from "../blocks/diagram/DiagramLoadingVisualization";
 import { parseDiagramJSON } from "../blocks/diagram/parseDiagramJSON";
 import ReasoningVisualization from "../blocks/thinking-reasoning/ReasoningVisualization";
+import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
+import { useAppSelector } from "@/lib/redux";
+import { createTaskResponseSelectors } from "@/lib/redux/socket-io";
 
 
 interface ChatMarkdownDisplayProps {
     content: string;
     taskId?: string;
-    type: "flashcard" | "message" | "text" | "image" | "audio" | "video" | "file" | string;
+    type?: "flashcard" | "message" | "text" | "image" | "audio" | "video" | "file" | string;
     role?: "user" | "assistant" | "system" | "tool" | string;
     className?: string;
     isStreamActive?: boolean;
@@ -70,7 +73,7 @@ interface ChatMarkdownDisplayProps {
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     content,
     taskId,
-    type,
+    type = "message",
     role = "assistant",
     className,
     isStreamActive,
@@ -85,6 +88,16 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
 
     // Check if we should show loading state (taskId exists but no content yet)
     const isWaitingForContent = taskId && !content.trim();
+
+    // Get tool updates if taskId is provided
+    const responseSelectors = useMemo(() => 
+        taskId ? createTaskResponseSelectors(taskId) : null, 
+        [taskId]
+    );
+    
+    const toolUpdates = useAppSelector((state) => 
+        responseSelectors ? responseSelectors.selectToolUpdates(state) : []
+    );
 
     // Update internal content when prop changes - but prevent infinite loops
     useEffect(() => {
@@ -272,10 +285,13 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     // Parse the complete quiz JSON
                     try {
                         const quizData = JSON.parse(block.content);
-                        if (quizData.multiple_choice && Array.isArray(quizData.multiple_choice)) {
-                            return <MultipleChoiceQuiz key={index} questions={quizData.multiple_choice} />;
+                        
+                        // Validate quiz structure: { quiz_title, category?, multiple_choice }
+                        if (quizData.quiz_title && Array.isArray(quizData.multiple_choice) && quizData.multiple_choice.length > 0) {
+                            return <MultipleChoiceQuiz key={index} quizData={quizData} />;
                         }
-                        // If parsing failed or no multiple_choice, fall back to code block
+                        
+                        // If not valid quiz structure, fall back to code block
                         return (
                             <CodeBlock
                                 key={index}
@@ -773,13 +789,13 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
             : `block rounded-lg w-full ${
                   role === "user"
                       ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100"
-                      : "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+                      : "bg-textured"
               }`,
         className
     );
 
     // Show loading state if we have a taskId but no content yet
-    if (isWaitingForContent) {
+    if (isWaitingForContent && toolUpdates.length === 0) {
         return (
             <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
                 <div className={containerStyles}>
@@ -798,8 +814,17 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
 
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
+            {/* Tool Call Visualization - show if we have tool updates */}
+            {toolUpdates.length > 0 && (
+                <ToolCallVisualization 
+                    toolUpdates={toolUpdates} 
+                    hasContent={!!content.trim()}
+                    className="mb-3"
+                />
+            )}
+            
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
-            {!hideCopyButton && <InlineCopyButton markdownContent={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true} />}
+            {!hideCopyButton && <InlineCopyButton markdownContent={currentContent} size="xs" position="center-right" isMarkdown={true} />}
 
             {allowFullScreenEditor && (
                 <FullScreenMarkdownEditor

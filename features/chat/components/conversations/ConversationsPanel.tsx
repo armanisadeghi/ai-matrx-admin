@@ -168,7 +168,7 @@ export const ConversationsPanel: React.FC = () => {
             left: `${contextMenuPosition.x}px`,
             zIndex: 50,
           }}
-          className="bg-white dark:bg-gray-900 shadow-lg rounded-md p-1 border border-gray-200 dark:border-gray-700"
+          className="bg-textured shadow-lg rounded-md p-1 border border-gray-200 dark:border-gray-700"
         >
           <button
             onClick={() => contextMenuConversationId && handleEdit(contextMenuConversationId)}

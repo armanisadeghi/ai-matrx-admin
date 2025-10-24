@@ -48,7 +48,7 @@ export default function SearchConsolePage() {
                         {!isAuthenticated && isGoogleLoaded && (
                             <Button
                                 onClick={handleSignIn}
-                                className="bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-gray-700 font-semibold flex items-center gap-2"
+                                className="bg-textured text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-gray-700 font-semibold flex items-center gap-2"
                             >
                                 <LogIn className="w-4 h-4" />
                                 Sign In with Google
@@ -79,7 +79,7 @@ export default function SearchConsolePage() {
 
                 {/* Not Authenticated State */}
                 {isGoogleLoaded && !isAuthenticated && (
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
+                    <div className="bg-textured border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
                         <Search className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                             Sign In Required

@@ -108,7 +108,7 @@ export default function AppletRunner({
               <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Result:
               </div>
-              <pre className="text-xs bg-white dark:bg-gray-900 p-2 rounded overflow-x-auto">
+              <pre className="text-xs bg-textured p-2 rounded overflow-x-auto">
                 {JSON.stringify(result, null, 2)}
               </pre>
             </div>
@@ -125,7 +125,7 @@ export default function AppletRunner({
   };
   
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="bg-textured p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">

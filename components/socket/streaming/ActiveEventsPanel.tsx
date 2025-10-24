@@ -32,7 +32,7 @@ export const ActiveEventsPanel = ({ onSelectEvent, selectedListenerId }: ActiveE
   
   if (listenerIds.length === 0) {
     return (
-      <div className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+      <div className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-textured p-4">
         <div className="flex items-center justify-center h-24 text-gray-500 dark:text-gray-400">
           <p>No active events. Submit a task to generate events.</p>
         </div>
@@ -51,7 +51,7 @@ export const ActiveEventsPanel = ({ onSelectEvent, selectedListenerId }: ActiveE
 };
 
   return (
-    <div className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+    <div className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-textured">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Active Events ({listenerIds.length})

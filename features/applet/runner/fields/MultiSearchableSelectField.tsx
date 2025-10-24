@@ -182,7 +182,7 @@ const MultiSearchableSelectField: React.FC<CommonFieldProps> = ({
                         role="combobox"
                         aria-expanded={open}
                         className={cn(
-                            "w-full min-h-10 h-auto justify-between flex-wrap focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 nodrag",
+                            "w-full min-h-10 h-auto justify-between flex-wrap focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured nodrag",
                             hasMinItemsError || hasMaxItemsError ? "border-red-500" : ""
                         )}
                         disabled={disabled}
@@ -217,7 +217,7 @@ const MultiSearchableSelectField: React.FC<CommonFieldProps> = ({
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-full p-0 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 nodrag"
+                    className="w-full p-0 bg-textured border-gray-300 dark:border-gray-700 nodrag"
                     align="start"
                     sideOffset={5}
                     style={{ zIndex: 9999 }}
@@ -316,7 +316,7 @@ const MultiSearchableSelectField: React.FC<CommonFieldProps> = ({
             {isOtherSelected && (
                 <Input
                     id={`${sourceId}-${id}-other-input`}
-                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 nodrag"
+                    className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-textured nodrag"
                     value={otherText}
                     onChange={(e) => {
                         e.stopPropagation();

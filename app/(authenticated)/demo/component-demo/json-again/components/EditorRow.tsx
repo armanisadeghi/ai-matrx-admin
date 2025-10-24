@@ -66,7 +66,7 @@ export const EditorRow: React.FC<EditorRowProps> = ({
                         placeholder="Enter value..."
                         onChange={(e) => onChange(row.id, "value", e.target.value)}
                         className="border border-gray-200 dark:border-gray-700 rounded px-2 py-1 
-                      bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
+                      bg-textured text-gray-900 dark:text-gray-100
                       placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     />
                 )}

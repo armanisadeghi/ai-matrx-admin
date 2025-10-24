@@ -7,14 +7,14 @@ const LayoutExamples = () => {
     const [selectedLayout, setSelectedLayout] = useState<AppletLayoutOption>("horizontal");
 
     return (
-        <div className="w-full h-full p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <div className="w-full h-full p-4 bg-textured text-gray-900 dark:text-gray-100">
             <h1 className="text-3xl font-bold text-center mb-8">Applet Layout Options</h1>
             
             {/* Select Component Example */}
             <div className="w-full max-w-md mx-auto">
                 <div className="flex items-center gap-3">
                     <select
-                        className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-4 py-2 flex-1 shadow-sm text-gray-900 dark:text-gray-100"
+                        className="w-full bg-textured border border-gray-200 dark:border-gray-700 rounded-md px-4 py-2 flex-1 shadow-sm text-gray-900 dark:text-gray-100"
                         value={selectedLayout}
                         onChange={(e) => setSelectedLayout(e.target.value as AppletLayoutOption)}
                     >
@@ -37,7 +37,7 @@ const LayoutExamples = () => {
                         <Link 
                             key={option.value}
                             href={`/apps/dynamic-layouts/${option.value}`}
-                            className={`block p-4 rounded-lg transition-all duration-200 ease-in-out bg-white dark:bg-gray-800 shadow-lg ${
+                            className={`block p-4 rounded-lg transition-all duration-200 ease-in-out bg-textured shadow-lg ${
                                 selectedLayout === option.value
                                     ? "border-2 border-rose-500 dark:border-rose-500"
                                     : "border border-gray-200 dark:border-gray-700 hover:border-rose-500 dark:hover:border-rose-500"

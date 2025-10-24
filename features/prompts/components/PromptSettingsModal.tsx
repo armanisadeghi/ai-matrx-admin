@@ -85,7 +85,7 @@ export function PromptSettingsModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-900">
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-textured">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                         Prompt Settings
@@ -103,7 +103,7 @@ export function PromptSettingsModal({
                             value={localName}
                             onChange={(e) => setLocalName(e.target.value)}
                             placeholder="Enter prompt name..."
-                            className="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+                            className="w-full bg-textured border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
                         />
                     </div>
 
@@ -117,7 +117,7 @@ export function PromptSettingsModal({
                             value={localDescription}
                             onChange={(e) => setLocalDescription(e.target.value)}
                             placeholder="Describe what this prompt does..."
-                            className="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 min-h-[80px]"
+                            className="w-full bg-textured border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 min-h-[80px]"
                             rows={3}
                         />
                     </div>

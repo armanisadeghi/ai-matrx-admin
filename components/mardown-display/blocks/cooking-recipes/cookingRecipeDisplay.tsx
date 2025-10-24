@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { 
   ChefHat, Clock, Users, CheckCircle2, Circle, 
   Maximize2, Minimize2, Timer, Flame, UtensilsCrossed,
-  AlertCircle, Sparkles, Plus, Minus
+  AlertCircle, Sparkles, Plus, Minus, ExternalLink
 } from 'lucide-react';
+import { useCanvas } from '@/hooks/useCanvas';
 
 interface Ingredient {
   amount: string;
@@ -36,6 +37,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [servingMultiplier, setServingMultiplier] = useState(1);
+  const { open: openCanvas } = useCanvas();
 
   // Calculate progress
   const ingredientProgress = useMemo(() => 
@@ -110,7 +112,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
       )}
 
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-2' : 'py-3'}`}>
-        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-white dark:bg-gray-900 rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
+        <div className={`max-w-6xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}>
           
           {/* Scrollable Content */}
           <div className={isFullScreen ? 'flex-1 overflow-y-auto' : ''}>
@@ -135,18 +137,31 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
 
                   <div className="flex items-center gap-2">
                     {!isFullScreen && (
-                      <button
-                        onClick={() => setIsFullScreen(true)}
-                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500 dark:bg-orange-600 text-white text-xs font-semibold shadow-sm hover:bg-orange-600 dark:hover:bg-orange-700 hover:shadow-md transform hover:scale-105 transition-all"
-                      >
-                        <Maximize2 className="h-3 w-3" />
-                        <span>Cook Mode</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => openCanvas({
+                            type: 'recipe',
+                            data: recipe,
+                            metadata: { title: recipe.title }
+                          })}
+                          className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-xs font-semibold shadow-sm hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-md transform hover:scale-105 transition-all"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Side Panel</span>
+                        </button>
+                        <button
+                          onClick={() => setIsFullScreen(true)}
+                          className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500 dark:bg-orange-600 text-white text-xs font-semibold shadow-sm hover:bg-orange-600 dark:hover:bg-orange-700 hover:shadow-md transform hover:scale-105 transition-all"
+                        >
+                          <Maximize2 className="h-3 w-3" />
+                          <span>Cook Mode</span>
+                        </button>
+                      </>
                     )}
                     {isFullScreen && (
                       <button
                         onClick={() => setIsFullScreen(false)}
-                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
+                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-textured hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all shadow-sm"
                       >
                         <Minimize2 className="h-3 w-3" />
                         <span>Exit</span>
@@ -157,28 +172,28 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-orange-200 dark:border-orange-800/50">
+                  <div className="bg-textured/50 rounded-lg p-2 border border-orange-200 dark:border-orange-800/50">
                     <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 mb-0.5">
                       <Clock className="h-3 w-3" />
                       <span className="text-xs font-medium">Total</span>
                     </div>
                     <div className="text-sm font-bold text-gray-900 dark:text-gray-100">{recipe.totalTime}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-blue-200 dark:border-blue-800/50">
+                  <div className="bg-textured/50 rounded-lg p-2 border border-blue-200 dark:border-blue-800/50">
                     <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 mb-0.5">
                       <UtensilsCrossed className="h-3 w-3" />
                       <span className="text-xs font-medium">Prep</span>
                     </div>
                     <div className="text-sm font-bold text-gray-900 dark:text-gray-100">{recipe.prepTime}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-red-200 dark:border-red-800/50">
+                  <div className="bg-textured/50 rounded-lg p-2 border border-red-200 dark:border-red-800/50">
                     <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 mb-0.5">
                       <Flame className="h-3 w-3" />
                       <span className="text-xs font-medium">Cook</span>
                     </div>
                     <div className="text-sm font-bold text-gray-900 dark:text-gray-100">{recipe.cookTime}</div>
                   </div>
-                  <div className="bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-green-200 dark:border-green-800/50">
+                  <div className="bg-textured/50 rounded-lg p-2 border border-green-200 dark:border-green-800/50">
                     <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 mb-0.5">
                       <Users className="h-3 w-3" />
                       <span className="text-xs font-medium">Progress</span>
@@ -193,7 +208,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
                 
                 {/* Ingredients Section */}
                 <div className="space-y-2">
-                  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700">
+                  <div className="bg-textured rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
@@ -275,7 +290,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipe }) => {
 
                 {/* Instructions Section */}
                 <div className="space-y-2">
-                  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700">
+                  <div className="bg-textured rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         <Timer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
