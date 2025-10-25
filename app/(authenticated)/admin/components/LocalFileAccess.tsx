@@ -10,7 +10,7 @@ import {DirectoryTreeConfig} from "@/components/DirectoryTree/config";
 import {DirectoryTree} from "@/components/DirectoryTree/DirectoryTree";
 import {DirectoryType, fileHelpers} from "@/utils/fileSystemUtil";
 import {FileContentResult, getFileType, loadFileContent} from "@/utils/fileContentHandlers";
-import {FileViewer} from "@/components/FileViewer/FileViewer";
+import {FileViewer} from "@/app/(authenticated)/admin/components/FileViewer";
 import {FileOperationsToolbar} from "@/app/(authenticated)/admin/components/FileOperationsToolbar";
 import {FileDetailsPanel} from "@/app/(authenticated)/admin/components/FileDetailsPanel";
 
