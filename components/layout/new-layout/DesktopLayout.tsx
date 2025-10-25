@@ -12,6 +12,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { QuickActionsMenu } from "@/components/layout/QuickActionsMenu";
+import FeedbackButton from "@/components/layout/FeedbackButton";
 
 interface SidebarLink {
     label: string;
@@ -113,6 +114,7 @@ export default function DesktopLayout({
                     </div>
                     {/* Right side - Actions */}
                     <div className="flex items-center gap-1">
+                        <FeedbackButton className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <NotificationDropdown
                             notifications={notifications}
                             onMarkAsRead={(id) => {

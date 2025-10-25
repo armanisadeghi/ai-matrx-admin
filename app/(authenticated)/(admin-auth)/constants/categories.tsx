@@ -42,7 +42,6 @@ import {
     IconUsers,
 } from "@tabler/icons-react";
 import React from "react";
-import { CiFloppyDisk } from "react-icons/ci";
 import LocalFileAccess from "@/app/(authenticated)/admin/components/LocalFileAccess";
 import CommandTestPage from "@/app/(authenticated)/admin/components/command-testers/CommandTestPage";
 import EntityTestingLab from "@/app/(authenticated)/admin/components/entities/EntityTestingLab";
@@ -50,12 +49,10 @@ import EntityTester from "@/app/(authenticated)/admin/components/entities/Entity
 import EntityMetrics from "@/app/(authenticated)/admin/components/entities/EntityMetrics";
 import EntityBrowser from "@/app/(authenticated)/admin/components/entities/EntityBrowser";
 import EntityLab from "@/app/(authenticated)/admin/components/entities/EntityLab";
-import { Database, DatabaseBackup, DatabaseZap } from "lucide-react";
+import { Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone } from "lucide-react";
 import SchemaVisualizer from "@/app/(authenticated)/admin/components/SchemaVisualizer";
 import { SchemaVisualizerLayout } from "@/app/(authenticated)/admin/components/SchemaVisualizer/SchemaVisualizerLayout";
 import DatabaseAdminDashboard from "@/app/(authenticated)/admin/components/database-admin/DatabaseAdminDashboard";
-import AdminComponentOne from "@/app/(authenticated)/admin/components/AdminComponetOne";
-import MarkdownTester from "@/components/admin/MarkdownTester";
 
 export const adminCategories = [
     {
@@ -218,6 +215,18 @@ export const adminCategories = [
                 description: "Manage MCP tools",
                 icon: <IconTestPipe />,
                 link: "/administration/mcp-tools",
+            },
+        ],
+    },
+    {
+        name: "User Feedback & Announcements",
+        icon: <MessageSquare className="w-6 h-6" />,
+        features: [
+            {
+                title: "Feedback Management",
+                description: "View and manage user feedback, bug reports, and feature requests. Create and manage system announcements.",
+                icon: <MessageSquare />,
+                link: "/administration/feedback",
             },
         ],
     },

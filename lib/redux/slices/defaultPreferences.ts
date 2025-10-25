@@ -95,4 +95,14 @@ export const defaultUserPreferences: UserPreferences = {
         preferredModel: '',
         preferredEndpoint: '',
     },
+    aiModels: {
+        defaultModel: '548126f2-714a-4562-9001-0c31cbeea375', // GPT-4.1 Mini
+        activeModels: [],
+        inactiveModels: [],
+        newModels: [],
+    },
+    system: {
+        viewedAnnouncements: [],
+        feedbackFeatureViewCount: 0,
+    },
 }; 

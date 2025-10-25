@@ -1,6 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { cookies } from "next/headers";
 import { Metadata } from "next";
@@ -60,6 +61,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 <NavigationLoader />
                 {children}
                 <Toaster />
+                <Sonner />
             </body>
         </html>
     );

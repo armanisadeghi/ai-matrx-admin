@@ -120,6 +120,11 @@ export interface AiModelsPreferences {
     newModels: string[];
 }
 
+export interface SystemPreferences {
+    viewedAnnouncements: string[]; // Array of announcement IDs that have been viewed
+    feedbackFeatureViewCount: number; // Number of times user has seen the new feedback feature highlight
+}
+
 // Combine all module preferences into one interface
 export interface UserPreferences {
     display: DisplayPreferences;
@@ -134,6 +139,7 @@ export interface UserPreferences {
     flashcard: FlashcardPreferences;
     playground: PlaygroundPreferences;
     aiModels: AiModelsPreferences;
+    system: SystemPreferences;
 }
 
 // Add state interface for async operations
@@ -256,6 +262,10 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
             inactiveModels: [],
             newModels: [],
         },
+        system: {
+            viewedAnnouncements: [],
+            feedbackFeatureViewCount: 0,
+        },
     };
 
     // Merge with defaults to ensure all properties exist
@@ -272,6 +282,7 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
         flashcard: { ...defaultPreferences.flashcard, ...preferences.flashcard },
         playground: { ...defaultPreferences.playground, ...preferences.playground },
         aiModels: { ...defaultPreferences.aiModels, ...preferences.aiModels },
+        system: { ...defaultPreferences.system, ...preferences.system },
     };
 
     return {

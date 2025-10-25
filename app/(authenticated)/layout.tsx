@@ -15,6 +15,7 @@ import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWra
 import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
+import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -89,6 +90,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     return (
         <Providers initialReduxState={initialReduxState}>
             <SocketInitializer />
+            <AnnouncementProvider />
             <ResponsiveLayout {...layoutProps}>
                 <NavigationLoader />
                 {children}
