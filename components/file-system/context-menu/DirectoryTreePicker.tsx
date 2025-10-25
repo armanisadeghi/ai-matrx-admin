@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { createFileSystemSlice } from '@/lib/redux/fileSystem/slice';
 import { createFileSystemSelectors } from '@/lib/redux/fileSystem/selectors';
@@ -28,8 +28,19 @@ export function DirectoryTreePicker({
   const selectors = createFileSystemSelectors(bucketName);
   const { actions } = slice;
 
-  const rootNodes = useAppSelector(selectors.selectVisibleChildren);
-  const allNodes = useAppSelector(selectors.selectAllNodes);
+  const rootNodes = useAppSelector(selectors.selectRootNodes);
+  const allNodesArray = useAppSelector(selectors.selectAllNodes);
+  
+  // Get the full state to access nodeCache
+  const fileSystemState = useAppSelector(state => state.fileSystem[bucketName]);
+  
+  // Convert array to object for easier lookup
+  const allNodes = useMemo(() => {
+    return allNodesArray.reduce((acc, node) => {
+      acc[node.itemId] = node;
+      return acc;
+    }, {} as Record<string, FileSystemNode>);
+  }, [allNodesArray]);
   
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['ROOT']));
   const [loadingFolders, setLoadingFolders] = useState<Set<string>>(new Set());
@@ -53,12 +64,14 @@ export function DirectoryTreePicker({
       // Expand folder
       setExpandedFolders(prev => new Set(prev).add(folderId));
       
-      // Load contents if not already loaded
-      if (!folder.children || folder.children.length === 0) {
+      // Load contents if not already loaded (check nodeCache)
+      const cache = fileSystemState.nodeCache[folderId];
+      const hasChildren = cache && cache.childNodeIds && cache.childNodeIds.length > 0;
+      
+      if (!hasChildren) {
         setLoadingFolders(prev => new Set(prev).add(folderId));
         try {
           await dispatch(actions.listContents({ 
-            parentId: folderId,
             forceFetch: false 
           })).unwrap();
         } catch (error) {
@@ -72,7 +85,7 @@ export function DirectoryTreePicker({
         }
       }
     }
-  }, [expandedFolders, dispatch, actions]);
+  }, [expandedFolders, dispatch, actions, fileSystemState.nodeCache]);
 
   const handleSelectFolder = useCallback((folder: FileSystemNode) => {
     const path = folder.storagePath || folder.itemId;
@@ -89,10 +102,13 @@ export function DirectoryTreePicker({
     const isSelected = selectedPath === (folder.storagePath || folder.itemId);
     const isExcludedFolder = isExcluded(folder.storagePath || folder.itemId);
     
-    const children = folder.children
-      ?.map(childId => allNodes[childId])
+    // Get children from nodeCache
+    const cache = fileSystemState.nodeCache[folder.itemId];
+    const childIds = cache?.childNodeIds || [];
+    const children = childIds
+      .map(childId => allNodes[childId])
       .filter(child => child && child.contentType === 'FOLDER')
-      .filter(child => !isExcluded(child.storagePath || child.itemId)) || [];
+      .filter(child => !isExcluded(child.storagePath || child.itemId));
 
     return (
       <div key={folder.itemId}>
@@ -145,7 +161,7 @@ export function DirectoryTreePicker({
         )}
       </div>
     );
-  }, [expandedFolders, loadingFolders, selectedPath, allNodes, isExcluded, handleSelectFolder, toggleFolder]);
+  }, [expandedFolders, loadingFolders, selectedPath, allNodes, fileSystemState.nodeCache, isExcluded, handleSelectFolder, toggleFolder]);
 
   // Get only folders from root
   const rootFolders = rootNodes.filter(node => 
