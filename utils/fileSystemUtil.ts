@@ -374,11 +374,11 @@ export const fileHelpers = {
                 }
             );
 
-            if (result.error) {
+            if (result.error || !result.content) {
                 return { content: null, error: result.error };
             }
             return {
-                content: result.content instanceof Buffer ? result.content.toString() : result.content
+                content: result.content instanceof Buffer ? result.content.toString() : result.content as string
             };
         }
     },

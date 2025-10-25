@@ -297,6 +297,46 @@ export const componentList: ComponentEntry[] = [
     tags: ['image', 'crop', 'edit', 'aspect ratio', 'resize', 'media']
   },
   {
+    id: 'multi-file-upload',
+    name: 'Multi File Upload',
+    path: 'components/ui/file-upload/file-upload.tsx',
+    description: 'Beautiful animated file upload component with drag-and-drop support and file preview list',
+    categories: ['inputs', 'media'],
+    tags: ['file', 'upload', 'drag', 'drop', 'multiple', 'preview', 'animated']
+  },
+  {
+    id: 'mini-file-upload',
+    name: 'Mini File Upload',
+    path: 'components/ui/file-upload/file-upload.tsx',
+    description: 'Compact file upload component perfect for forms and smaller spaces',
+    categories: ['inputs', 'media'],
+    tags: ['file', 'upload', 'drag', 'drop', 'compact', 'mini', 'form']
+  },
+  {
+    id: 'file-upload-with-storage',
+    name: 'File Upload with Storage',
+    path: 'components/ui/file-upload/FileUploadWithStorage.tsx',
+    description: 'Full-featured file upload with automatic Supabase storage integration and public URLs',
+    categories: ['inputs', 'media', 'utilities'],
+    tags: ['file', 'upload', 'storage', 'supabase', 'public', 'private', 'progress', 'url']
+  },
+  {
+    id: 'image-upload-field',
+    name: 'Image Upload Field',
+    path: 'components/ui/file-upload/ImageUploadField.tsx',
+    description: 'Specialized image upload field with preview, validation, and Supabase storage integration',
+    categories: ['inputs', 'media'],
+    tags: ['image', 'upload', 'preview', 'validation', 'storage', 'field', 'banner']
+  },
+  {
+    id: 'paste-image-handler',
+    name: 'Paste Image Handler',
+    path: 'components/ui/file-upload/PasteImageHandler.tsx',
+    description: 'Invisible wrapper that enables clipboard paste functionality for instant image uploads',
+    categories: ['inputs', 'media', 'utilities'],
+    tags: ['paste', 'clipboard', 'image', 'upload', 'screenshot', 'quick', 'invisible']
+  },
+  {
     id: 'multi-applet-selector',
     name: 'Multi Applet Selector',
     path: 'features/applet/builder/components/smart-parts/applets/MultiAppletSelector.tsx',

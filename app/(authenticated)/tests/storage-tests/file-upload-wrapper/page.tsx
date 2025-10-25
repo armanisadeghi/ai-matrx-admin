@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import FileChips from "@/features/chat/ui-parts/prompt-input/_dev/FileChips"; // Adjust path
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
+import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPreview";
 
 export default function FileUploadWrapper() {
     const [uploadedFiles, setUploadedFiles] = useState<{ url: string; type: string }[]>([]);
@@ -36,7 +36,7 @@ export default function FileUploadWrapper() {
             {uploadedFiles.length > 0 && (
                 <div>
                     <h2 className="text-lg font-semibold mb-2">Uploaded Files</h2>
-                    <FileChips files={uploadedFiles} onRemoveFile={handleRemoveFile} />
+                    <FileChipsWithPreview files={uploadedFiles} onRemoveFile={handleRemoveFile} />
                 </div>
             )}
         </div>

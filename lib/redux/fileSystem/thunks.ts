@@ -738,29 +738,18 @@ const getPublicUrlOperation = async (
   if (!node) throw new Error("Node not found");
   if (node.contentType !== "FILE") throw new Error("Node is not a file");
 
-  const { data: publicData } = await supabase.storage
-    .from(bucketName)
-    .getPublicUrl(node.storagePath);
-
-  if (publicData?.publicUrl) {
-    return {
-      nodeId,
-      url: publicData.publicUrl,
-      isPublic: true,
-    };
-  }
-
-  const { data: signedData, error } = await supabase.storage
-    .from(bucketName)
-    .createSignedUrl(node.storagePath, expiresIn || 3600);
-
-  if (error) throw error;
-  if (!signedData) throw new Error("Failed to create URL");
+  // Use FileSystemManager's smart URL getter
+  const FileSystemManager = (await import("@/utils/file-operations/FileSystemManager")).default;
+  const fileSystemManager = FileSystemManager.getInstance();
+  
+  const urlResult = await fileSystemManager.getFileUrl(bucketName, node.storagePath, {
+    expiresIn: expiresIn || 3600
+  });
 
   return {
     nodeId,
-    url: signedData.signedUrl,
-    isPublic: false,
+    url: urlResult.url,
+    isPublic: urlResult.isPublic,
   };
 };
 

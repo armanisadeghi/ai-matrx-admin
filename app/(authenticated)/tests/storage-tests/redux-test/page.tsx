@@ -26,23 +26,25 @@ function FileSystemTest() {
   // Get hooks for active bucket
   const hooks = getHooksForBucket(activeBucket);
   const {
-    useFileSystemNavigation,
-    useFileSystemOperations,
+    useTreeTraversal,
+    useFileOperations,
     useSelection,
     useOperationLock,
-    useFileSystemTree
+    useTreeStructure
   } = hooks;
 
-  const navigation = useFileSystemNavigation(currentPath);
+  const navigation = useTreeTraversal();
   const { currentOperation } = useOperationLock();
-  const { selection, handleSelection } = useSelection();
-  const operations = useFileSystemOperations();
-  const { tree, actions: treeActions } = useFileSystemTree();
+  const { selectedNodeIds, selectNode } = useSelection();
+  const operations = useFileOperations();
+  const { rootNodes: tree } = useTreeStructure();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      await navigation.actions.uploadFiles(files);
+      // Upload files using the file operations hook
+      // TODO: Implement batch upload functionality
+      console.log('Upload files:', files);
     }
   };
 
@@ -73,28 +75,31 @@ function FileSystemTest() {
             {/* Debug Controls */}
             <div className="flex space-x-2">
               <Button 
-                onClick={() => navigation.actions.refresh()}
+                onClick={() => navigation.navigateToRoot()}
                 variant="outline"
               >
-                Force Refresh Current Path
+                Navigate to Root
               </Button>
               <Button 
                 onClick={() => {
-                  setCurrentPath("");
-                  navigation.actions.refresh();
+                  if (navigation.activeNode?.parentId) {
+                    navigation.navigateToParent();
+                  }
                 }}
                 variant="outline"
+                disabled={!navigation.canNavigateUp}
               >
-                Fetch Root Content
+                Navigate Up
               </Button>
             </div>
 
             {/* Debug Info */}
             <div className="text-sm space-y-1">
               <div>Active Bucket: {activeBucket}</div>
-              <div>Current Path: {currentPath || "/"}</div>
+              <div>Active Node: {navigation.activeNode?.name || "Root"}</div>
               <div>Is Initialized: {isInitialized ? "Yes" : "No"}</div>
               <div>Is Loading: {isLoading ? "Yes" : "No"}</div>
+              <div>Children Count: {navigation.activeNodeChildren?.length || 0}</div>
               <div>Has Error: {error ? "Yes" : "No"}</div>
               {error && <div className="text-red-500">Error: {error}</div>}
             </div>
@@ -125,26 +130,22 @@ function FileSystemTest() {
           <CardTitle>Navigation and Actions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* ... rest of the component ... */}
-          <div className="flex items-center space-x-2">
-            <Input
-              value={currentPath}
-              onChange={(e) => setCurrentPath(e.target.value)}
-              placeholder="Enter path"
-            />
-            <Button
-              onClick={() => navigation.actions.navigateToPath(currentPath)}
-              variant="outline"
-            >
-              Go
-            </Button>
-          </div>
-
+          {/* Navigation Actions */}
           <div className="flex items-center space-x-2">
             <Button
-              onClick={() => navigation.actions.refresh()}
+              onClick={() => navigation.navigateToRoot()}
               variant="outline"
               size="icon"
+              title="Go to Root"
+            >
+              <FolderTree className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={() => navigation.navigateToParent()}
+              variant="outline"
+              size="icon"
+              disabled={!navigation.canNavigateUp}
+              title="Go Up"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -165,20 +166,9 @@ function FileSystemTest() {
             </Button>
           </div>
 
-          {/* Breadcrumbs */}
-          <div className="flex items-center space-x-2">
-            {navigation.breadcrumbs?.map((crumb, index) => (
-              <Button
-                key={crumb.path}
-                variant="ghost"
-                size="sm"
-                disabled={!crumb.isClickable}
-                onClick={() => navigation.actions.navigateToPath(crumb.path)}
-              >
-                {crumb.name || 'Root'}
-                {index < (navigation.breadcrumbs?.length || 0) - 1 && ' /'}
-              </Button>
-            ))}
+          {/* Current Location */}
+          <div className="text-sm text-muted-foreground">
+            Location: {navigation.activeNode?.storagePath || '/'}
           </div>
         </CardContent>
       </Card>
@@ -191,17 +181,25 @@ function FileSystemTest() {
             <CardTitle>Contents</CardTitle>
           </CardHeader>
           <CardContent className="h-96 overflow-auto">
-            {navigation.isLoading ? (
+            {isLoading ? (
               <div>Loading...</div>
             ) : (
               <div className="space-y-2">
-                {navigation.children.map(node => (
+                {navigation.activeNodeChildren.map(node => (
                   <div
-                    key={node.itemid}
-                    className={`p-2 border rounded ${
-                      selection.selectedNodes.has(node.itemid) ? 'bg-blue-100' : ''
+                    key={node.itemId}
+                    className={`p-2 border rounded cursor-pointer hover:bg-gray-50 ${
+                      selectedNodeIds.includes(node.itemId) ? 'bg-blue-100' : ''
                     }`}
-                    onClick={(e) => handleSelection(node.itemid, e)}
+                    onClick={(e) => {
+                      if (e.ctrlKey || e.metaKey) {
+                        selectNode(node.itemId, e);
+                      } else if (node.contentType === 'FOLDER') {
+                        navigation.navigateToNode(node.itemId);
+                      } else {
+                        selectNode(node.itemId, e);
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <span>{node.name}</span>
@@ -210,7 +208,7 @@ function FileSystemTest() {
                       </span>
                     </div>
                     <div className="text-xs text-gray-400">
-                      ID: {node.itemid}
+                      ID: {node.itemId}
                     </div>
                   </div>
                 ))}
@@ -233,10 +231,14 @@ function FileSystemTest() {
                 error,
                 currentOperation,
                 navigation: {
-                  currentPath: navigation.currentPath,
-                  children: navigation.children,
-                  isLoading: navigation.isLoading,
-                  isStale: navigation.isStale
+                  activeNode: navigation.activeNode?.name,
+                  childrenCount: navigation.activeNodeChildren?.length,
+                  canNavigateUp: navigation.canNavigateUp,
+                  canNavigateInto: navigation.canNavigateInto
+                },
+                selection: {
+                  count: selectedNodeIds.length,
+                  nodeIds: selectedNodeIds
                 }
               }, null, 2)}
             </pre>

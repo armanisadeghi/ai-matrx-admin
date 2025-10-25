@@ -371,7 +371,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
       
       if (acquireLock('getPublicFile', [nodeId])) {
         try {
-          const result = await dispatch(actions.getPublicUrl({
+          const result = await dispatch(actions.getPublicFile({
             nodeId,
             expiresIn: options?.expiresIn
           })).unwrap();
@@ -765,7 +765,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
             selectedNodes.map(async (node) => {
               if (node.publicUrl) return node.publicUrl;
               
-              const result = await dispatch(actions.getPublicUrl({
+              const result = await dispatch(actions.getPublicFile({
                 nodeId: node.itemId
               })).unwrap();
               

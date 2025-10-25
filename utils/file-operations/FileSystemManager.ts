@@ -745,11 +745,11 @@ class FileSystemManager {
         }
     }
 
-    async getSignedUrl(bucketName: string, filePath: string): Promise<string> {
+    async getSignedUrl(bucketName: string, filePath: string, expiresIn: number = 900): Promise<string> {
         try {
             const {data} = await this.supabase.storage
                 .from(bucketName)
-                .createSignedUrl(filePath, 900);
+                .createSignedUrl(filePath, expiresIn);
 
             this.debugger.logOperation('getSignedUrl',
                 {bucketName, filePath},
@@ -760,6 +760,83 @@ class FileSystemManager {
             console.error('Error getting signed URL:', error);
             this.debugger.logOperation('getSignedUrl', {bucketName, filePath}, {error});
             return '';
+        }
+    }
+
+    /**
+     * Smart URL getter - automatically determines the best URL type to use
+     * - Checks if bucket is public or private
+     * - Uses public URL for public buckets
+     * - Uses signed URL for private buckets
+     * - Handles authentication and permissions automatically
+     */
+    async getFileUrl(
+        bucketName: string, 
+        filePath: string, 
+        options?: {
+            expiresIn?: number; // Expiry time in seconds (default: 3600 = 1 hour)
+            forcePublic?: boolean; // Force public URL attempt
+            forceSigned?: boolean; // Force signed URL
+        }
+    ): Promise<{
+        url: string;
+        isPublic: boolean;
+        expiresAt?: Date;
+    }> {
+        const expiresIn = options?.expiresIn || 3600;
+
+        try {
+            // If forced to use signed URL, skip public URL check
+            if (options?.forceSigned) {
+                const signedUrl = await this.getSignedUrl(bucketName, filePath, expiresIn);
+                return {
+                    url: signedUrl,
+                    isPublic: false,
+                    expiresAt: new Date(Date.now() + expiresIn * 1000)
+                };
+            }
+
+            // Try public URL first (lightweight operation)
+            if (!options?.forceSigned) {
+                const publicUrl = await this.getPublicUrl(bucketName, filePath);
+                
+                // Test if the public URL actually works by making a HEAD request
+                try {
+                    const response = await fetch(publicUrl, { method: 'HEAD' });
+                    if (response.ok) {
+                        this.debugger.logOperation('getFileUrl',
+                            {bucketName, filePath, method: 'public'},
+                            {success: true, url: publicUrl}
+                        );
+                        return {
+                            url: publicUrl,
+                            isPublic: true
+                        };
+                    }
+                } catch (fetchError) {
+                    // Public URL doesn't work, fall through to signed URL
+                    console.log('Public URL not accessible, falling back to signed URL');
+                }
+            }
+
+            // Fall back to signed URL (works for both public and private)
+            const signedUrl = await this.getSignedUrl(bucketName, filePath, expiresIn);
+            
+            this.debugger.logOperation('getFileUrl',
+                {bucketName, filePath, method: 'signed'},
+                {success: true, url: signedUrl}
+            );
+
+            return {
+                url: signedUrl,
+                isPublic: false,
+                expiresAt: new Date(Date.now() + expiresIn * 1000)
+            };
+
+        } catch (error) {
+            console.error('Error getting file URL:', error);
+            this.debugger.logOperation('getFileUrl', {bucketName, filePath}, {error});
+            throw error;
         }
     }
 

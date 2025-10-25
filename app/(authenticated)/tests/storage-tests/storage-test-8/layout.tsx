@@ -16,6 +16,7 @@ import BasicFolderTree from "./components/FileExplorer/BasicFolderTree";
 import { Button } from "@/components/ui/button";
 import { PanelLeft, PanelRight } from "lucide-react";
 import TestDialogsPage from "./components/FileExplorer/DialogTester";
+import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 
 const LogPanel = () => (
   <MatrxDynamicPanel
@@ -111,7 +112,7 @@ const FileExplorerLayout = ({ children }: { children: React.ReactNode }) => {
         <PanelResizeHandle />
 
         <Panel>
-          <Card className="h-full p-2 flex flex-col overflow-y-auto bg-background min-w-0">
+          <Card className="h-full p-2 flex flex-col overflow-hidden bg-background min-w-0">
             {children}
           </Card>
         </Panel>
@@ -138,12 +139,19 @@ const FileExplorerLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "Videos", "any-file"] as const;
+
   return (
-    <div className="flex flex-col h-full">
-      <LogPanel />
-      <main className="flex-1">
-        <FileExplorerLayout>{children}</FileExplorerLayout>
-      </main>
-    </div>
+    <FileSystemProvider 
+      initialBucket="Images"
+      allowedBuckets={allowedBuckets}
+    >
+      <div className="flex flex-col h-full">
+        <LogPanel />
+        <main className="flex-1">
+          <FileExplorerLayout>{children}</FileExplorerLayout>
+        </main>
+      </div>
+    </FileSystemProvider>
   );
 }

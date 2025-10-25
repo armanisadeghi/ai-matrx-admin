@@ -1,6 +1,7 @@
 "use client";
 import { TableLoadingComponent } from "@/components/matrx/LoadingComponents";
 import { useFileSystem } from "@/lib/redux/fileSystem/Provider";
+import FilePreviewPanel from "./components/FilePreviewPanel";
 
 export default function FileExplorerPage() {
   const { isInitialized, isLoading, error } = useFileSystem();
@@ -18,11 +19,8 @@ export default function FileExplorerPage() {
   }
 
   return (
-    <>
-      <div className="font-semibold m-2">File Preview</div>
-      <div className="flex-1 flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
-        File Preview Area
-      </div>
-    </>
+    <div className="flex flex-col h-full">
+      <FilePreviewPanel />
+    </div>
   );
 }
