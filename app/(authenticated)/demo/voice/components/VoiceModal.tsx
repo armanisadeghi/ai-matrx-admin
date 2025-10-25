@@ -10,7 +10,7 @@ import {
     CredenzaTitle,
     CredenzaDescription,
     CredenzaBody,
-} from "@/components/ui/added-ui/credenza-modal/credenza";
+} from "@/components/ui/credenza-modal/credenza";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 

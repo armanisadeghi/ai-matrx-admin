@@ -3,7 +3,7 @@
 import React from "react";
 import { getAppIcon, getColorClasses } from "@/features/applet/styles/StyledComponents";
 import { AppletCardProps } from "@/features/applet/home/types";
-import GlassContainer from "@/components/ui/added-my/GlassContainer";
+import GlassContainer from "@/components/ui/GlassContainer";
 
 const GlassAppletCard: React.FC<AppletCardProps> = ({ applet, primaryColor, accentColor, onClick, isMobile }) => {
     const primaryBgColor = getColorClasses("background", primaryColor);

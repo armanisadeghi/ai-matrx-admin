@@ -6,7 +6,7 @@ import {
     CredenzaTitle,
     CredenzaDescription,
     CredenzaBody,
-} from "@/components/ui/added-ui/credenza-modal/credenza";
+} from "@/components/ui/credenza-modal/credenza";
 import { Beaker } from 'lucide-react';
 import TextToSpeechPlayer from './TextToSpeechPlayer';
 import { motion, AnimatePresence } from 'framer-motion';

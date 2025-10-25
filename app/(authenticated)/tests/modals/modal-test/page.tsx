@@ -12,7 +12,7 @@ import {
     CredenzaHeader,
     CredenzaTitle,
     CredenzaTrigger,
-} from "@/components/ui/added-ui/credenza-modal/credenza"
+} from "@/components/ui/credenza-modal/credenza"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"

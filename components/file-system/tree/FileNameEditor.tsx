@@ -88,14 +88,14 @@ export function FileNameEditor({
   };
 
   if (!isEditing) {
-    return <span className={cn("text-sm truncate max-w-[300px] inline-block", className)}>
+    return <span className={cn("truncate block", className)}>
       {name}
     </span>;
   }
 
   return (
     <>
-      <div className="flex items-center gap-1 max-w-[300px] relative">
+      <div className="flex items-center gap-0.5 relative">
         <input
           ref={inputRef}
           type="text"
@@ -107,24 +107,24 @@ export function FileNameEditor({
               onCancel();
             }
           }}
-          className="bg-transparent border-none p-0 text-sm focus:outline-none focus:ring-0 w-full"
+          className={cn("bg-transparent border-none p-0 focus:outline-none focus:ring-0 w-full", className)}
           autoComplete="off"
           data-form-type="other"
           data-lpignore="true"
           data-form-autofill="off"
         />
-        <div className="filename-editor-controls flex gap-1">
+        <div className="filename-editor-controls flex gap-0.5 flex-shrink-0">
           <button
             onClick={validateAndRename}
-            className="p-1 hover:bg-accent rounded-sm"
+            className="p-0.5 hover:bg-accent rounded-sm"
           >
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-3 w-3 text-green-500" />
           </button>
           <button
             onClick={onCancel}
-            className="p-1 hover:bg-accent rounded-sm"
+            className="p-0.5 hover:bg-accent rounded-sm"
           >
-            <X className="h-4 w-4 text-red-500" />
+            <X className="h-3 w-3 text-red-500" />
           </button>
         </div>
       </div>

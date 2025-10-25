@@ -21,6 +21,7 @@ import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
 import { DialogProvider } from "@/providers/dialogs/DialogContext";
 import { FileSystemDialogs } from "@/providers/dialogs/modules/filesystem";
 import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
+import { FilePreviewProvider } from "@/components/file-system/preview";
 import { ChipMenuProvider } from "@/features/rich-text-editor/components/ChipContextMenu";
 import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
 import { EditorProvider } from "@/providers/rich-text-editor/Provider";
@@ -73,9 +74,10 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                         <RefProvider>
                                                             <EditorProvider>
                                                                 <FileSystemProvider initialBucket="Audio" allowedBuckets={allowedBuckets}>
-                                                                    <OldFileSystemProvider>
-                                                                        <FileSystemDialogs />
-                                                                        <HeroUIProvider>
+                                                                    <FilePreviewProvider>
+                                                                        <OldFileSystemProvider>
+                                                                            <FileSystemDialogs />
+                                                                            <HeroUIProvider>
                                                                             <TooltipProvider delayDuration={200}>
                                                                                 <AudioModalProvider>
                                                                                     <ModuleHeaderProvider>
@@ -100,7 +102,8 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                             </TooltipProvider>
                                                                         </HeroUIProvider>
                                                                     </OldFileSystemProvider>
-                                                                </FileSystemProvider>
+                                                                </FilePreviewProvider>
+                                                            </FileSystemProvider>
                                                             </EditorProvider>
                                                         </RefProvider>
                                                     </PreferenceSyncProvider>

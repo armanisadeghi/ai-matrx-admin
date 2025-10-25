@@ -7,7 +7,7 @@ import {Dialog, DialogContent, DialogTrigger} from "@/components/ui/dialog";
 import {CameraIcon} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {CameraProvider, useCamera} from "@/components/matrx/camera/camera-provider";
-import {Carousel, Card} from "@/components/ui/added-ui/cards/apple-cards-carousel";
+import {Carousel, Card} from "@/components/ui/cards/apple-cards-carousel";
 
 function CameraComponent() {
     const [showDialog, setShowDialog] = useState(false);

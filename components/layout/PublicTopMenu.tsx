@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import { StandaloneThemeSwitcher } from "@/styles/themes/StandaloneThemeSwitcher";
 import { LogoHorizontal } from '@/public/MatrixLogo';
+import NavigationButton from "@/components/ui/navigation-button";
 
 const DesktopMenu = () => {
     return (
@@ -16,20 +17,22 @@ const DesktopMenu = () => {
                 <a href="#" className="text-foreground/60 hover:text-foreground">Developers</a>
                 <a href="#" className="text-foreground/60 hover:text-foreground">Pricing</a>
                 <a href="#" className="text-foreground/60 hover:text-foreground">Docs</a>
-                <a href="#" className="text-foreground/60 hover:text-foreground">Blog</a>
+                <Link href="/education" className="text-foreground/60 hover:text-foreground">Education</Link>
             </nav>
             <div className="ml-auto flex items-center space-x-3">
                 <StandaloneThemeSwitcher initialTheme={'dark'}/>
-                <Link href="/dashboard">
-                    <Button className="bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white">
-                        Dashboard
-                    </Button>
-                </Link>
-                <Link href="/sign-up">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white">
-                        Get Started
-                    </Button>
-                </Link>
+                <NavigationButton
+                    href="/dashboard"
+                    className="bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white"
+                >
+                    Dashboard
+                </NavigationButton>
+                <NavigationButton
+                    href="/sign-up"
+                    className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
+                >
+                    Get Started
+                </NavigationButton>
             </div>
         </div>
     );
@@ -42,11 +45,12 @@ const MobileMenu = () => {
                 <LogoHorizontal size="md" />
             </div>
             <div className="ml-auto flex items-center space-x-3">
-                <Link href="/dashboard">
-                    <Button className="bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white">
-                        Dashboard
-                    </Button>
-                </Link>
+                <NavigationButton
+                    href="/dashboard"
+                    className="bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white"
+                >
+                    Dashboard
+                </NavigationButton>
                 <StandaloneThemeSwitcher initialTheme={'dark'}/>
                 <details className="relative">
                     <summary className="list-none">
@@ -63,7 +67,7 @@ const MobileMenu = () => {
                             <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Developers</a>
                             <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Pricing</a>
                             <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Docs</a>
-                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Blog</a>
+                            <Link href="/education" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Education</Link>
                             <Link href="/dashboard" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Dashboard
                             </Link>

@@ -14,6 +14,7 @@ import PDFPreview from "./previews/PDFPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import { formatBytes } from "./utils/formatting";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui";
 
 interface FilePreviewSheetProps {
     isOpen: boolean;
@@ -31,6 +32,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState<boolean>(false);
+    const { toast } = useToast();
 
     // Get file from local storage or use the public URL
     useEffect(() => {
@@ -49,23 +51,31 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                         return;
                     }
                 } catch (err) {
-                    console.warn(`Local file not found, falling back to remote URL: ${err}`);
+                    // Silently fall back to remote URL - this is expected for files not in local storage
                 }
             }
             // If no local file, fetch from remote URL
             try {
                 const response = await fetch(file.url);
                 if (!response.ok) {
-                    throw new Error(`Failed to load file: ${response.status} ${response.statusText}`);
+                    const errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+                    throw new Error(errorMsg);
                 }
                 const blob = await response.blob();
                 setFileBlob(blob);
                 setFileUrl(file.url); // Keep using the original URL
                 setIsLoading(false);
             } catch (err) {
-                console.error(`Error fetching file: ${err}`);
-                setError(`Failed to load file: ${err instanceof Error ? err.message : String(err)}`);
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                setError(errorMessage);
                 setIsLoading(false);
+                
+                // Show user-friendly toast notification
+                toast({
+                    title: "Failed to load file",
+                    description: `Could not load file: ${errorMessage}. The file may be private or inaccessible.`,
+                    variant: "destructive"
+                });
             }
         };
         if (isOpen) {
@@ -77,15 +87,29 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                 URL.revokeObjectURL(fileUrl);
             }
         };
-    }, [isOpen, file.url, file.details?.localId]);
+    }, [isOpen, file.url, file.details?.localId, toast]);
 
     // Determine which preview component to render based on file category and extension
     const renderPreviewComponent = () => {
         if (isLoading) {
-            return <div className="flex items-center justify-center h-full">Loading file...</div>;
+            return (
+                <div className="flex flex-col items-center justify-center h-full gap-3">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                    <p className="text-sm text-muted-foreground">Loading file preview...</p>
+                </div>
+            );
         }
         if (error) {
-            return <div className="flex items-center justify-center h-full text-red-500">{error}</div>;
+            return (
+                <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
+                    <X className="h-12 w-12 text-destructive" />
+                    <div>
+                        <p className="text-sm font-medium text-destructive mb-1">Failed to load file</p>
+                        <p className="text-xs text-muted-foreground">{error}</p>
+                        <p className="text-xs text-muted-foreground mt-2">The file may be private or inaccessible.</p>
+                    </div>
+                </div>
+            );
         }
         const category = file.details?.category || "UNKNOWN";
         const extension = file.details?.extension?.toLowerCase() || "";

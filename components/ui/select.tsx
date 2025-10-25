@@ -8,6 +8,7 @@ import {
   ChevronUpIcon,
 } from "@radix-ui/react-icons"
 import * as SelectPrimitive from "@radix-ui/react-select"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/styles/themes/utils"
 
@@ -17,16 +18,35 @@ const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
 
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between whitespace-nowrap rounded-md border border-border bg-input text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground transition-colors hover:bg-accent hover:border-accent-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+  {
+    variants: {
+      size: {
+        sm: "h-7 px-2 py-1 text-xs",
+        default: "h-9 px-3 py-1",
+        lg: "h-10 px-3 py-2",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+    },
+  }
+)
+
+export interface SelectTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
+    VariantProps<typeof selectTriggerVariants> {
+  hideArrow?: boolean
+}
+
 const SelectTrigger = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & { hideArrow?: boolean }
->(({ className, children, hideArrow = false, ...props }, ref) => (
+  SelectTriggerProps
+>(({ className, children, hideArrow = false, size, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
-    className={cn(
-      "flex h-12 w-full items-center justify-between whitespace-nowrap rounded-md border border-border bg-input p-3 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground transition-colors hover:bg-accent hover:border-accent-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
+    className={cn(selectTriggerVariants({ size, className }))}
     {...props}
   >
     {children}
@@ -93,7 +113,7 @@ const SelectContent = React.forwardRef<
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          "p-1",
+          "p-0.5",
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
@@ -125,7 +145,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}

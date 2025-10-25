@@ -8,7 +8,7 @@ export default function BucketSelector() {
 
   return (
     <div className="flex items-center space-x-2">
-      <label className="text-sm font-medium">Storage Bucket:</label>
+      <label className="text-sm font-medium">Bucket:</label>
       <Select
         value={activeBucket}
         onValueChange={(value: any) => setActiveBucket(value)}

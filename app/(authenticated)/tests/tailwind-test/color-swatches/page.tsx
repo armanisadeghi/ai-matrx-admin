@@ -2,7 +2,7 @@
 
 //import SomeComponent from "@/somewhere/some-component";
 
-import ContrastSettings from "@/components/extras/ContrastColorSwatches";
+import ContrastSettings from "@/components/tailwind-ui/ContrastColorSwatches";
 
 export default function SomePage() {
     return (

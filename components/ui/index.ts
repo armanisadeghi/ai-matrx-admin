@@ -109,8 +109,8 @@ export {Tooltip, TooltipTrigger, TooltipContent, TooltipProvider} from './toolti
 export {CardContainer as CardContainerNew} from './3d-card'; // Assuming CardContainer is in 3d-card
 export {CardBody as CardBodyNew} from './3d-card'; // Assuming CardBody is in 3d-card
 export {CardItem as CardItemNew} from './3d-card'; // Assuming CardItem is in 3d-card
-export {Carousel as CarouselNew} from './added-ui/cards/apple-cards-carousel'; // Assuming Carousel is in apple-cards-carousel
-export {BlurImage as BlurImageNew} from './added-ui/cards/apple-cards-carousel'; // Assuming BlurImage is in apple-cards-carousel
+export {Carousel as CarouselNew} from './cards/apple-cards-carousel'; // Assuming Carousel is in apple-cards-carousel
+export {BlurImage as BlurImageNew} from './cards/apple-cards-carousel'; // Assuming BlurImage is in apple-cards-carousel
 export {HoverEffect as HoverEffectNew} from './card-hover-effect'; // Assuming HoverEffect is in hover-effect
 export {Card as CardNew} from './card-hover-effect'; // Assuming Card is in hover-effect
 export {CardTitle as CardTitleNew} from './card-hover-effect'; // Assuming CardTitle is in hover-effect
@@ -133,7 +133,7 @@ export {TailwindcssButtons} from './tailwindcss-buttons'
 export {TextGenerateEffect} from './text-generate-effect'
 export {WobbleCard} from './wobble-card'
 
-export {Credenza} from './added-ui/credenza-modal/credenza'
+export {Credenza} from './credenza-modal/credenza'
 export {FileUpload} from './file-upload/file-upload'
 export {Spinner, LoadingSpinner} from './spinner'
 export {DatePicker} from './date-picker'

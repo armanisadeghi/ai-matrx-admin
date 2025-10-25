@@ -9,7 +9,7 @@ import {
     CredenzaTitle,
     CredenzaDescription,
     CredenzaBody,
-} from "@/components/ui/added-ui/credenza-modal/credenza";
+} from "@/components/ui/credenza-modal/credenza";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Headphones } from 'lucide-react';
 import TextToSpeechPlayer from '@/components/audio/TextToSpeechPlayer';

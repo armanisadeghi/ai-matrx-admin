@@ -4,7 +4,7 @@ import React from 'react';
 import { getAppIcon } from '@/features/applet/styles/StyledComponents';
 import { AppletCardProps } from '@/features/applet/home/types';
 import Image from 'next/image';
-import GlassContainer from '@/components/ui/added-my/GlassContainer';
+import GlassContainer from '@/components/ui/GlassContainer';
 
 const EnhancedAppletCard: React.FC<AppletCardProps> = ({
   applet,

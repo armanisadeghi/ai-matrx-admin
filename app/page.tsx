@@ -6,6 +6,7 @@ import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-w
 import { SimplePricingWithFourTiers } from "@/components/packs/PricingSection";
 import TopMenu from "@/components/layout/PublicTopMenu";
 import Link from "next/link";
+import NavigationButton from "@/components/ui/navigation-button";
 
 interface FeatureCardProps {
     Icon: LucideIcon;
@@ -70,19 +71,24 @@ const HomePage: React.FC = () => {
                     gap between AI potential and real-world business needs.
                 </p>
                 <div className="flex justify-center gap-4 mb-16">
-                    <Link href="/sign-up">
-                        <button className="p-[3px] relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
-                            <div className="px-8 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white hover:bg-transparent">
-                                Start Free Trial
-                            </div>
-                        </button>
-                    </Link>
-                    <Link href="/sign-up">
-                        <button className="shadow-[0_0_0_3px_#000000_inset] px-6 py-2 bg-transparent border border-black dark:border-white dark:text-white text-black rounded-lg font-bold transform hover:-translate-y-1 transition duration-400">
-                            Request Demo
-                        </button>
-                    </Link>
+                    <div className="p-[3px] relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
+                        <NavigationButton
+                            href="/sign-up"
+                            className="px-8 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white hover:bg-transparent"
+                            loadingText="Starting..."
+                        >
+                            Start Free Trial
+                        </NavigationButton>
+                    </div>
+                    <NavigationButton
+                        href="/sign-up"
+                        variant="outline"
+                        className="shadow-[0_0_0_3px_#000000_inset] px-6 py-2 bg-transparent border border-black dark:border-white dark:text-white text-black rounded-lg font-bold transform hover:-translate-y-1 transition duration-400"
+                        loadingText="Loading..."
+                    >
+                        Request Demo
+                    </NavigationButton>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-left mb-16">
                     <FeatureCard
