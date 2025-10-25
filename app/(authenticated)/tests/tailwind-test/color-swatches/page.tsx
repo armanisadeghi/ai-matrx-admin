@@ -1,8 +1,9 @@
 // File location: @/app/tests/template/hold-hold-page.tsx
 
+import ContrastSettings from "@/components/ui/tailwind-ui/ContrastColorSwatches";
+
 //import SomeComponent from "@/somewhere/some-component";
 
-import ContrastSettings from "@/components/tailwind-ui/ContrastColorSwatches";
 
 export default function SomePage() {
     return (

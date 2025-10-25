@@ -4,16 +4,16 @@
 import WindowManager from "@/components/matrx/windows";
 
 import RegisteredFunctionsList from "@/features/registered-function/components/RegisteredFunctionList";
+import AiCockpitPage from '@/components/playground/AiCockpitPage';
 
 
 import FunctionManagement from "@/features/registered-function/components/FunctionManagement";
 import CameraPage from "@/components/matrx/camera";
-import Playground from "@/components/next-playground/Playground";
 
 const PlaygroundPage = () => {
     return (
         <div className="p-4">
-            <Playground />
+            <AiCockpitPage />
         </div>
     );
 }

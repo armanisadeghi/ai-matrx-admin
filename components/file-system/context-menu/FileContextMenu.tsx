@@ -113,8 +113,8 @@ export function FileContextMenu({
         }));
       });
 
-      // Delete selections
-      await dispatch(actions.deleteActiveNode()).unwrap();
+      // Use deleteFiles for batch deletion (works for single or multiple files)
+      await dispatch(actions.deleteFiles(undefined)).unwrap();
       
       // Refresh folder contents
       await dispatch(actions.listContents({ forceFetch: true })).unwrap();
@@ -129,7 +129,7 @@ export function FileContextMenu({
       console.error('Delete failed:', error);
       toast({
         title: "Error",
-        description: "Failed to delete item(s)",
+        description: error instanceof Error ? error.message : "Failed to delete item(s)",
         variant: "destructive",
       });
     } finally {
@@ -511,6 +511,7 @@ export function FileContextMenu({
       )}
 
       <FileOperationModals
+        bucketName={bucketName}
         deleteModal={{
           isOpen: activeModal === 'delete',
           onClose: () => setActiveModal(null),

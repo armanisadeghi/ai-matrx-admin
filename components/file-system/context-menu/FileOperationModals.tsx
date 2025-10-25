@@ -23,12 +23,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { FileSystemNode } from "@/lib/redux/fileSystem/types";
+import { FileSystemNode, AvailableBuckets } from "@/lib/redux/fileSystem/types";
 import { AlertTriangle, Trash2, Share2, Copy, FolderInput } from 'lucide-react';
 import { Spinner } from '@/components/ui/loaders/Spinner';
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select';
+import { DirectoryTreePicker } from './DirectoryTreePicker';
 
 interface FileOperationModalsProps {
+  bucketName: AvailableBuckets;
   deleteModal: {
     isOpen: boolean;
     onClose: () => void;
@@ -56,6 +58,7 @@ interface FileOperationModalsProps {
 }
 
 export function FileOperationModals({
+  bucketName,
   deleteModal,
   shareModal,
   moveModal,
@@ -232,40 +235,46 @@ export function FileOperationModals({
 
       {/* Move Modal */}
       <Dialog open={moveModal.isOpen} onOpenChange={moveModal.onClose}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FolderInput className="h-5 w-5" />
               Move {moveModal.nodes.length > 1 ? `${moveModal.nodes.length} Items` : moveModal.nodes[0]?.name}
             </DialogTitle>
             <DialogDescription>
-              Enter the destination path for the {moveModal.nodes.length > 1 ? 'items' : 'item'}
+              Select a destination folder for the {moveModal.nodes.length > 1 ? 'items' : 'item'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="destination">Destination Path</Label>
-              <Input
-                id="destination"
-                placeholder="folder/subfolder"
-                value={destinationPath}
-                onChange={(e) => setDestinationPath(e.target.value)}
-              />
-            </div>
             {moveModal.nodes.length > 1 && (
-              <div className="text-xs bg-muted p-2 rounded max-h-24 overflow-y-auto">
-                <div className="font-medium mb-1">Moving:</div>
+              <div className="text-xs bg-muted p-2 rounded max-h-20 overflow-y-auto">
+                <div className="font-medium mb-1">Moving {moveModal.nodes.length} items:</div>
                 {moveModal.nodes.map(node => (
                   <div key={node.itemId} className="truncate">• {node.name}</div>
                 ))}
               </div>
             )}
+            
+            <div className="space-y-2">
+              <Label>Destination Folder</Label>
+              <DirectoryTreePicker
+                bucketName={bucketName}
+                onSelect={setDestinationPath}
+                selectedPath={destinationPath}
+                excludePaths={moveModal.nodes.map(n => n.storagePath || n.itemId)}
+              />
+              {destinationPath && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Selected: <span className="font-mono">{destinationPath || '/ (Root)'}</span>
+                </p>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={moveModal.onClose} disabled={isMoving}>
               Cancel
             </Button>
-            <Button onClick={handleMove} disabled={isMoving || !destinationPath.trim()}>
+            <Button onClick={handleMove} disabled={isMoving}>
               {isMoving ? (
                 <>
                   <Spinner size="xs" className="mr-2" />
@@ -281,40 +290,46 @@ export function FileOperationModals({
 
       {/* Duplicate Modal */}
       <Dialog open={duplicateModal.isOpen} onOpenChange={duplicateModal.onClose}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Copy className="h-5 w-5" />
               Duplicate {duplicateModal.nodes.length > 1 ? `${duplicateModal.nodes.length} Items` : duplicateModal.nodes[0]?.name}
             </DialogTitle>
             <DialogDescription>
-              Enter the destination path for the duplicated {duplicateModal.nodes.length > 1 ? 'items' : 'item'}
+              Select a destination folder for the duplicated {duplicateModal.nodes.length > 1 ? 'items' : 'item'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="duplicate-path">Destination Path</Label>
-              <Input
-                id="duplicate-path"
-                placeholder="folder/subfolder"
-                value={duplicatePath}
-                onChange={(e) => setDuplicatePath(e.target.value)}
-              />
-            </div>
             {duplicateModal.nodes.length > 1 && (
-              <div className="text-xs bg-muted p-2 rounded max-h-24 overflow-y-auto">
-                <div className="font-medium mb-1">Duplicating:</div>
+              <div className="text-xs bg-muted p-2 rounded max-h-20 overflow-y-auto">
+                <div className="font-medium mb-1">Duplicating {duplicateModal.nodes.length} items:</div>
                 {duplicateModal.nodes.map(node => (
                   <div key={node.itemId} className="truncate">• {node.name}</div>
                 ))}
               </div>
             )}
+            
+            <div className="space-y-2">
+              <Label>Destination Folder</Label>
+              <DirectoryTreePicker
+                bucketName={bucketName}
+                onSelect={setDuplicatePath}
+                selectedPath={duplicatePath}
+                excludePaths={[]}
+              />
+              {duplicatePath !== undefined && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Selected: <span className="font-mono">{duplicatePath || '/ (Root)'}</span>
+                </p>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={duplicateModal.onClose} disabled={isDuplicating}>
               Cancel
             </Button>
-            <Button onClick={handleDuplicate} disabled={isDuplicating || !duplicatePath.trim()}>
+            <Button onClick={handleDuplicate} disabled={isDuplicating}>
               {isDuplicating ? (
                 <>
                   <Spinner size="xs" className="mr-2" />
