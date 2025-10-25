@@ -18,8 +18,6 @@ import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
 import { EntityProvider } from "@/providers/entity-context/EntityProvider";
 import { FileSystemProvider as OldFileSystemProvider } from "@/providers/FileSystemProvider";
 import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
-import { DialogProvider } from "@/providers/dialogs/DialogContext";
-import { FileSystemDialogs } from "@/providers/dialogs/modules/filesystem";
 import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 import { FilePreviewProvider } from "@/components/file-system/preview";
 import { ChipMenuProvider } from "@/features/rich-text-editor/components/ChipContextMenu";
@@ -66,7 +64,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                         <ThemeProvider defaultTheme="dark" enableSystem={false}>
                             <PersistentComponentProvider>
                                 <EntityProvider>
-                                    <DialogProvider>
                                         <ContextMenuProvider>
                                             <ChipMenuProvider>
                                                 <ToastProvider>
@@ -76,7 +73,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                 <FileSystemProvider initialBucket="Audio" allowedBuckets={allowedBuckets}>
                                                                     <FilePreviewProvider>
                                                                         <OldFileSystemProvider>
-                                                                            <FileSystemDialogs />
                                                                             <HeroUIProvider>
                                                                             <TooltipProvider delayDuration={200}>
                                                                                 <AudioModalProvider>
@@ -110,7 +106,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                 </ToastProvider>
                                             </ChipMenuProvider>
                                         </ContextMenuProvider>
-                                    </DialogProvider>
                                 </EntityProvider>
                             </PersistentComponentProvider>
                         </ThemeProvider>

@@ -15,7 +15,6 @@ import FileTree from "./components/FileExplorer/FileTree";
 import BasicFolderTree from "./components/FileExplorer/BasicFolderTree";
 import { Button } from "@/components/ui/button";
 import { PanelLeft, PanelRight } from "lucide-react";
-import TestDialogsPage from "./components/FileExplorer/DialogTester";
 import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 
 const LogPanel = () => (
@@ -102,7 +101,6 @@ const FileExplorerLayout = ({ children }: { children: React.ReactNode }) => {
           onCollapse={onLeftPanelChange}
           onExpand={onLeftPanelChange}
         >
-          <TestDialogsPage />
           <Card className="h-full p-2 overflow-y-auto bg-background">
             <div className="font-semibold m-2">File Explorer</div>
             <FileTree />
