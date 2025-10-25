@@ -1,8 +1,7 @@
 // hooks/useStorageExplorer.ts
 import { useState, useEffect } from 'react';
 import { StorageClient } from '@/utils/supabase/bucket-manager';
-import { StorageItem, BucketInfo, FileTypeInfo, StorageResponse } from '@/types/file-operations.types';
-import {formatItemDetails, getFileTypeInfo, processStorageList, validateOperation} from "@/components/file-operations/utils";
+import { StorageItem, BucketInfo } from '@/types/file-operations.types';
 import {FileObject, Bucket} from '@supabase/storage-js';
 
 export type SupabaseFileObject = FileObject;
