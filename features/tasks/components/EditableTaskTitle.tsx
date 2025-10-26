@@ -123,8 +123,11 @@ export default function EditableTaskTitle({
         {title}
       </span>
       <button
-        onClick={() => setIsEditing(true)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsEditing(true);
+        }}
+        className="p-1 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
         title="Edit title"
       >
         <Edit2 size={14} />

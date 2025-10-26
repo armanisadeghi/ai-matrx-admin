@@ -14,7 +14,6 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
     toggleTaskExpand,
     updateTaskTitle,
     deleteTask,
-    addAttachment,
     copyTaskToClipboard
   } = useTaskContext();
 
@@ -118,17 +117,6 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
               title="Copy task"
             >
               <Copy size={14} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                addAttachment(task.projectId, task.id, e);
-              }}
-              disabled={isOperating}
-              className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-              title="Add attachment"
-            >
-              <Paperclip size={14} />
             </button>
             <button
               onClick={(e) => {
