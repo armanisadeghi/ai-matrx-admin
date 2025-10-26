@@ -1,14 +1,16 @@
 // Task Content Component
 'use client';
 
-import React, { JSX, useState } from 'react';
-import { PlusCircle, FolderPlus, Calendar, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { JSX, useState, useEffect } from 'react';
+import { PlusCircle, FolderPlus, Calendar, FileText, ChevronUp, Loader2, Folder } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import TaskHeader from './TaskHeader';
 import TaskList from './TaskList';
+import AllTasksView from './AllTasksView';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function TaskContent(): JSX.Element {
   const { 
@@ -21,16 +23,66 @@ export default function TaskContent(): JSX.Element {
     addTask,
     newProjectName,
     setNewProjectName,
-    addProject
+    addProject,
+    isCreatingTask,
+    isCreatingProject,
+    loading
   } = useTaskContext();
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');
   const [taskDueDate, setTaskDueDate] = useState('');
+  const [selectedProjectForTask, setSelectedProjectForTask] = useState<string | null>(null);
+  
+  // Update selected project when activeProject changes
+  useEffect(() => {
+    if (activeProject) {
+      setSelectedProjectForTask(activeProject);
+    } else if (projects.length > 0) {
+      // Default to first project if no active project
+      setSelectedProjectForTask(projects[0].id);
+    }
+  }, [activeProject, projects]);
 
   const filteredTasks = getFilteredTasks();
   const hasProjects = projects.length > 0;
   const canShowTasks = activeProject || showAllProjects;
+
+  // Show loading state during initial fetch
+  if (loading && projects.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <TaskHeader />
+        <main className="flex-1 overflow-y-auto p-4 bg-textured">
+          <div className="mx-auto max-w-4xl space-y-3 animate-pulse">
+            {/* Add task form skeleton */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+              <div className="space-y-2">
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="flex gap-2">
+                  <div className="h-9 flex-1 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-9 w-9 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Skeleton task items */}
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +98,8 @@ export default function TaskContent(): JSX.Element {
       return;
     }
     
-    await addTask(e as any, taskDescription.trim(), taskDueDate);
+    // Pass the selected project to addTask
+    await addTask(e, taskDescription.trim(), taskDueDate, selectedProjectForTask || undefined);
     
     // Reset all fields
     setTaskDescription('');
@@ -61,6 +114,15 @@ export default function TaskContent(): JSX.Element {
       setShowAdvanced(true);
     }
   };
+  
+  // Get display name for the selected project
+  const getProjectDisplayName = () => {
+    const project = projects.find(p => p.id === selectedProjectForTask);
+    return project?.name || 'Select project';
+  };
+  
+  // Determine if project selector should be shown
+  const shouldShowProjectSelector = showAllProjects || !activeProject;
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -69,25 +131,65 @@ export default function TaskContent(): JSX.Element {
       <main className="flex-1 overflow-y-auto p-4 bg-textured">
         {/* Add Task Form - Show when viewing tasks */}
         {canShowTasks && (
-          <div className="mb-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm">
-            <form onSubmit={handleAddTask} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Input
-                  type="text"
-                  value={newTaskTitle}
-                  onChange={handleTitleChange}
-                  placeholder="Add a new task..."
-                  className="flex-1"
-                />
-                <Button
-                  type="submit"
-                  disabled={!newTaskTitle.trim()}
-                  className="px-4"
-                >
-                  <PlusCircle size={16} className="mr-1.5" />
-                  Add
-                </Button>
-              </div>
+          <div className="mb-3 mx-auto max-w-4xl">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm">
+              <form onSubmit={handleAddTask} className="space-y-2">
+                {/* Input row */}
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="text"
+                    value={newTaskTitle}
+                    onChange={handleTitleChange}
+                    placeholder={`Add a new task${!shouldShowProjectSelector && activeProject ? ` to ${projects.find(p => p.id === activeProject)?.name}` : ''}...`}
+                    disabled={isCreatingTask}
+                    className="flex-1"
+                  />
+                </div>
+                
+                {/* Project selector and add button row */}
+                <div className="flex items-center gap-2">
+                  {shouldShowProjectSelector && projects.length > 0 ? (
+                    <Select
+                      value={selectedProjectForTask || ''}
+                      onValueChange={(value) => setSelectedProjectForTask(value)}
+                    >
+                      <SelectTrigger className="h-9 text-sm flex-1">
+                        <div className="flex items-center gap-2">
+                          <Folder size={14} className="text-gray-500 dark:text-gray-400" />
+                          <span>{getProjectDisplayName()}</span>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            <div className="flex items-center gap-2">
+                              <Folder size={14} />
+                              {project.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 flex-1">
+                      <Folder size={14} />
+                      <span>{projects.find(p => p.id === activeProject)?.name}</span>
+                    </div>
+                  )}
+                  
+                  <Button
+                    type="submit"
+                    disabled={!newTaskTitle.trim() || isCreatingTask || !selectedProjectForTask}
+                    size="sm"
+                    className="h-9 px-3"
+                  >
+                    {isCreatingTask ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <PlusCircle size={16} />
+                    )}
+                  </Button>
+                </div>
               
               {/* Advanced options - Show when user starts typing */}
               {showAdvanced && (
@@ -133,6 +235,7 @@ export default function TaskContent(): JSX.Element {
               )}
             </form>
           </div>
+          </div>
         )}
         
         {/* Empty state - No projects at all */}
@@ -158,16 +261,26 @@ export default function TaskContent(): JSX.Element {
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   placeholder="Project name (e.g., Personal, Work)"
+                  disabled={isCreatingProject}
                   className="w-full"
                 />
                 <Button
                   type="submit"
-                  disabled={!newProjectName.trim()}
+                  disabled={!newProjectName.trim() || isCreatingProject}
                   className="w-full"
                   size="lg"
                 >
-                  <FolderPlus size={20} className="mr-2" />
-                  Create Project
+                  {isCreatingProject ? (
+                    <>
+                      <Loader2 size={20} className="mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <FolderPlus size={20} className="mr-2" />
+                      Create Project
+                    </>
+                  )}
                 </Button>
               </form>
             </div>
@@ -195,8 +308,16 @@ export default function TaskContent(): JSX.Element {
           </div>
         )}
         
-        {/* Tasks List */}
-        {canShowTasks && <TaskList tasks={filteredTasks} />}
+        {/* Tasks Display - Use AllTasksView when showing all projects */}
+        {canShowTasks && (
+          <div className="mx-auto max-w-4xl">
+            {showAllProjects ? (
+              <AllTasksView />
+            ) : (
+              <TaskList tasks={filteredTasks} />
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

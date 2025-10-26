@@ -50,7 +50,7 @@ export async function createTask(input: CreateTaskInput): Promise<DatabaseTask |
         parent_task_id: input.parent_task_id || null,
         due_date: input.due_date || null,
         status: input.status || 'incomplete',
-        user_id: userData.user.id, // ← Using the correct column name
+        user_id: userData.user.id,
         authenticated_read: input.authenticated_read ?? false,
       })
       .select()

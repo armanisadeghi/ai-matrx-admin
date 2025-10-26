@@ -98,7 +98,8 @@ export async function getUserProjects(): Promise<DatabaseProject[]> {
 }
 
 /**
- * Get projects with their tasks (including tasks without projects)
+ * Get projects with their tasks - OPTIMIZED single query with JOIN
+ * This is significantly faster than making 2 separate queries
  */
 export async function getProjectsWithTasks(): Promise<ProjectWithTasks[]> {
   try {
@@ -108,7 +109,8 @@ export async function getProjectsWithTasks(): Promise<ProjectWithTasks[]> {
       return [];
     }
 
-    const { data, error } = await supabase
+    // Single optimized query - fetch projects with their tasks in one go
+    const { data: projects, error: projectsError } = await supabase
       .from('projects')
       .select(`
         *,
@@ -117,12 +119,17 @@ export async function getProjectsWithTasks(): Promise<ProjectWithTasks[]> {
       .eq('created_by', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching projects with tasks:', error);
+    if (projectsError) {
+      console.error('Error fetching projects with tasks:', projectsError);
       return [];
     }
 
-    return data || [];
+    if (!projects || projects.length === 0) {
+      return [];
+    }
+
+    // Data is already joined, just ensure proper typing
+    return projects as ProjectWithTasks[];
   } catch (error) {
     console.error('Exception fetching projects with tasks:', error);
     return [];

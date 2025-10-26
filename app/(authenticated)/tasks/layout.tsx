@@ -1,8 +1,15 @@
 import { Metadata } from 'next';
+import { TaskProviderWrapper } from '@/features/tasks/components/TaskProviderWrapper';
 
 export const metadata: Metadata = {
   title: 'Tasks | AI Matrx',
-  description: 'Manage your tasks and projects',
+  description: 'Manage your tasks and projects efficiently with our powerful task management system',
+  keywords: ['tasks', 'task management', 'projects', 'productivity', 'todo', 'checklist'],
+  openGraph: {
+    title: 'Tasks | AI Matrx',
+    description: 'Manage your tasks and projects efficiently',
+    type: 'website',
+  },
 };
 
 export default function TasksLayout({
@@ -10,6 +17,15 @@ export default function TasksLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <TaskProviderWrapper>
+      <div className="h-[calc(100vh-2.5rem)] flex flex-col bg-textured">
+        {/* Account for the fixed header (h-10 = 2.5rem) */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {children}
+        </div>
+      </div>
+    </TaskProviderWrapper>
+  );
 }
 

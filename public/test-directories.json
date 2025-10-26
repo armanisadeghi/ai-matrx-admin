@@ -28,10 +28,6 @@
     "name": "context-menu"
   },
   {
-    "path": "/tests/crud-operations",
-    "name": "crud-operations"
-  },
-  {
     "path": "/tests/dynamic-entity-test",
     "name": "dynamic-entity-test"
   },

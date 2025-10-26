@@ -28,6 +28,12 @@ export type TaskFilterType = 'all' | 'completed' | 'incomplete' | 'overdue';
 export interface TaskContextType {
   projects: Project[];
   loading: boolean;
+  // Operation states for loading feedback
+  isCreatingProject: boolean;
+  isCreatingTask: boolean;
+  operatingTaskId: string | null;
+  operatingProjectId: string | null;
+  // UI state
   newProjectName: string;
   expandedProjects: string[];
   expandedTasks: string[];
@@ -35,6 +41,7 @@ export interface TaskContextType {
   newTaskTitle: string;
   filter: TaskFilterType;
   showAllProjects: boolean;
+  // Actions
   setNewProjectName: (name: string) => void;
   setNewTaskTitle: (title: string) => void;
   setActiveProject: (projectId: string | null) => void;
@@ -45,7 +52,7 @@ export interface TaskContextType {
   addProject: (e: React.FormEvent) => Promise<void>;
   updateProject: (projectId: string, name: string) => Promise<void>;
   deleteProject: (projectId: string, e: React.MouseEvent) => Promise<void>;
-  addTask: (e: React.FormEvent, description?: string, dueDate?: string) => Promise<void>;
+  addTask: (e: React.FormEvent, description?: string, dueDate?: string, targetProjectId?: string) => Promise<void>;
   toggleTaskComplete: (projectId: string, taskId: string) => Promise<void>;
   updateTaskTitle: (projectId: string, taskId: string, title: string) => Promise<void>;
   updateTaskDescription: (projectId: string, taskId: string, description: string) => Promise<void>;
