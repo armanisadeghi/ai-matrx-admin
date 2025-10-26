@@ -107,9 +107,11 @@ const AdminPage = () => {
 
         return (
             <ErrorBoundary>
-                <div className="min-h-screen py-2 bg-matrx-card w-full">
-                    <div className="w-full">
-                        {selectedFeature?.component}
+                <div className="h-full w-full overflow-auto">
+                    <div className="min-h-screen py-2 bg-matrx-card w-full">
+                        <div className="w-full">
+                            {selectedFeature?.component}
+                        </div>
                     </div>
                 </div>
             </ErrorBoundary>
@@ -118,8 +120,9 @@ const AdminPage = () => {
     if (selectedCategory) {
         const category = adminCategories.find(c => c.name === selectedCategory);
         return (
-            <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
-                <div className="w-full px-4">
+            <div className="h-full w-full overflow-auto">
+                <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
+                    <div className="w-full px-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {category?.features.map((feature, index) => (
                             feature.link ? (
@@ -144,12 +147,14 @@ const AdminPage = () => {
                     </div>
                 </div>
             </div>
+            </div>
         );
     }
 
     return (
-        <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
-            <div className="w-full mx-2">
+        <div className="h-full w-full overflow-auto">
+            <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
+                <div className="w-full mx-2">
                 <h1 className="text-xl font-bold text-center mb-4">Admin Dashboard Home</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {adminCategories.map((category, index) => (
@@ -219,6 +224,7 @@ const AdminPage = () => {
                         </div>
                     ))}
                 </div>
+            </div>
             </div>
         </div>
     );

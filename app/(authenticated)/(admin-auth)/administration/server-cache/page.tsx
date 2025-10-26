@@ -5,7 +5,7 @@ import ServerCacheManager from "@/components/admin/server-cache/ServerCacheManag
 
 export default function ServerCachePage() {
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full overflow-auto">
             <ServerCacheManager />
         </div>
     );

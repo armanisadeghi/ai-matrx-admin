@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { fetchNotes, createNote as createNoteService, updateNote as updateNoteService, deleteNote as deleteNoteService, copyNote as copyNoteService } from '../service/notesService';
 import { findEmptyNewNote, generateUniqueLabel } from '../utils/noteUtils';
 import type { Note, CreateNoteInput, UpdateNoteInput } from '../types';
@@ -27,12 +27,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     const [error, setError] = useState<Error | null>(null);
     const [activeNote, setActiveNote] = useState<Note | null>(null);
     const isRefreshing = useRef(false);
+    const notesRef = useRef<Note[]>([]); // Add ref for notes to avoid callback dependencies
     const activeNoteRef = useRef<Note | null>(null);
 
-    // Keep ref in sync with state
+    // Keep refs in sync with state
     useEffect(() => {
+        notesRef.current = notes;
         activeNoteRef.current = activeNote;
-    }, [activeNote]);
+    }, [notes, activeNote]);
 
     // Fetch notes from database
     const refreshNotes = useCallback(async () => {
@@ -76,8 +78,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
     // Find or create an empty "New Note" - prevents duplicates
     const findOrCreateEmptyNote = useCallback(async (folderName: string = 'Draft'): Promise<Note> => {
+        // Use ref to avoid dependency on notes state
+        const currentNotes = notesRef.current;
+        
         // First, check if we have an empty "New Note" in ANY folder
-        const existingEmptyNote = findEmptyNewNote(notes);
+        const existingEmptyNote = findEmptyNewNote(currentNotes);
         
         if (existingEmptyNote) {
             // If it's in a different folder, move it to the target folder
@@ -93,7 +98,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         }
 
         // No empty note exists, create a new one
-        const uniqueLabel = generateUniqueLabel(notes);
+        const uniqueLabel = generateUniqueLabel(currentNotes);
         const newNote = await createNoteService({
             label: uniqueLabel,
             folder_name: folderName,
@@ -103,7 +108,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         setNotes(prev => [newNote, ...prev]);
         setActiveNote(newNote);
         return newNote;
-    }, [notes]);
+    }, []); // No dependencies now!
 
     // Create a new note (with duplicate checking)
     const createNote = useCallback(async (input: CreateNoteInput): Promise<Note> => {
@@ -115,7 +120,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Creating a note with content, proceed normally
-        const uniqueLabel = input.label || generateUniqueLabel(notes);
+        const currentNotes = notesRef.current;
+        const uniqueLabel = input.label || generateUniqueLabel(currentNotes);
         const newNote = await createNoteService({
             ...input,
             label: uniqueLabel,
@@ -124,7 +130,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         setNotes(prev => [newNote, ...prev]);
         setActiveNote(newNote);
         return newNote;
-    }, [notes, findOrCreateEmptyNote]);
+    }, [findOrCreateEmptyNote]); // Only depend on findOrCreateEmptyNote which is now stable
 
     // Update a note
     const updateNote = useCallback(async (id: string, updates: UpdateNoteInput): Promise<Note> => {
@@ -135,37 +141,37 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
             )
         );
 
-        // Update active note if it's the one being edited
-        if (activeNote?.id === id) {
-            setActiveNote(prev => prev ? { ...prev, ...updates } : null);
-        }
+        // Update active note if it's the one being edited (use functional setState)
+        setActiveNote(prev => prev?.id === id ? { ...prev, ...updates } : prev);
 
         // Persist to database
         const updated = await updateNoteService(id, updates);
         
         // Update with server response
         setNotes(prev => prev.map(n => n.id === updated.id ? updated : n));
-        if (activeNote?.id === id) {
-            setActiveNote(updated);
-        }
+        setActiveNote(prev => prev?.id === id ? updated : prev);
 
         return updated;
-    }, [activeNote]);
+    }, []); // No dependencies!
 
     // Delete a note
     const deleteNote = useCallback(async (id: string): Promise<void> => {
-        // Optimistic delete
-        setNotes(prev => prev.filter(n => n.id !== id));
-
-        // If the deleted note was active, select another one
-        if (activeNote?.id === id) {
-            const remaining = notes.filter(n => n.id !== id);
-            setActiveNote(remaining.length > 0 ? remaining[0] : null);
-        }
+        // Optimistic delete and handle active note in one go
+        setNotes(prev => {
+            const remaining = prev.filter(n => n.id !== id);
+            
+            // If the deleted note was active, select another one
+            const currentActive = activeNoteRef.current;
+            if (currentActive?.id === id) {
+                setActiveNote(remaining.length > 0 ? remaining[0] : null);
+            }
+            
+            return remaining;
+        });
 
         // Persist to database
         await deleteNoteService(id);
-    }, [notes, activeNote]);
+    }, []); // No dependencies!
 
     // Copy a note
     const copyNote = useCallback(async (id: string): Promise<Note> => {
@@ -175,7 +181,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         return copiedNote;
     }, []);
 
-    const value: NotesContextType = {
+    // Memoize context value to prevent unnecessary re-renders
+    const value: NotesContextType = useMemo(() => ({
         notes,
         isLoading,
         error,
@@ -187,7 +194,18 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         copyNote,
         refreshNotes,
         findOrCreateEmptyNote,
-    };
+    }), [
+        notes,
+        isLoading,
+        error,
+        activeNote,
+        createNote,
+        updateNote,
+        deleteNote,
+        copyNote,
+        refreshNotes,
+        findOrCreateEmptyNote,
+    ]);
 
     return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;
 }

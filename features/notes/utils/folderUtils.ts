@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { Note } from '../types';
 import { DEFAULT_FOLDER_NAMES, getDefaultFolder } from '../constants/defaultFolders';
 import { getCategoryIconAndColor } from '../constants/folderCategories';
@@ -40,6 +41,30 @@ export function getAllFolders(notes: Note[]): string[] {
     });
     
     return folderArray;
+}
+
+/**
+ * Hook to get all folders with optimized memoization
+ * Only recalculates when folder names actually change, not when notes array reference changes
+ * 
+ * @param notes - All notes to extract custom folders from
+ * @returns Array of folder names with defaults first, then custom alphabetically
+ */
+export function useAllFolders(notes: Note[]): string[] {
+    // Extract unique folder names and create a stable key
+    const folderNamesKey = useMemo(() => {
+        const uniqueFolders = new Set<string>();
+        notes.forEach(note => {
+            if (note.folder_name) {
+                uniqueFolders.add(note.folder_name);
+            }
+        });
+        // Create a sorted string key to detect actual changes
+        return Array.from(uniqueFolders).sort().join('|');
+    }, [notes]);
+    
+    // Only recalculate folders when the key changes
+    return useMemo(() => getAllFolders(notes), [folderNamesKey, notes]);
 }
 
 /**

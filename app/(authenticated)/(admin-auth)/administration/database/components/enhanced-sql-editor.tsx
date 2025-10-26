@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { 
   Database, 
   Play, 
@@ -17,7 +18,10 @@ import {
   Code, 
   StopCircle,
   RefreshCw,
-  History
+  History,
+  Plus,
+  Trash2,
+  Wand2
 } from 'lucide-react';
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
@@ -25,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryHistoryButton } from "@/components/admin/query-history/query-history-button";
 import { saveQuery } from "@/components/admin/query-history/query-storage";
+import { toast } from "sonner";
 
 // Define SQL queries as constants to avoid JSX parsing issues
 const SQL_LIST_TABLES = "SELECT * FROM information_schema.tables WHERE table_schema = 'public'";
@@ -42,6 +47,12 @@ export interface EnhancedSQLEditorProps {
   queryCache?: Record<string, any>;
 }
 
+interface ReplacementPair {
+  id: string;
+  find: string;
+  replace: string;
+}
+
 export const EnhancedSQLEditor = ({ 
   loading, 
   error, 
@@ -57,6 +68,9 @@ export const EnhancedSQLEditor = ({
   const [activeResultTab, setActiveResultTab] = useState("raw");
   const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [useCache, setUseCache] = useState(true);
+  const [replacementPairs, setReplacementPairs] = useState<ReplacementPair[]>([
+    { id: '1', find: '', replace: '' }
+  ]);
 
   const handleExecuteQuery = async () => {
     if (!sqlQuery.trim()) return;
@@ -96,6 +110,63 @@ export const EnhancedSQLEditor = ({
   };
 
   const isCached = sqlQuery && Object.keys(queryCache).includes(sqlQuery);
+
+  // Template replacement functions
+  const addReplacementPair = () => {
+    const newId = (Math.max(...replacementPairs.map(p => parseInt(p.id)), 0) + 1).toString();
+    setReplacementPairs([...replacementPairs, { id: newId, find: '', replace: '' }]);
+  };
+
+  const removeReplacementPair = (id: string) => {
+    if (replacementPairs.length > 1) {
+      setReplacementPairs(replacementPairs.filter(p => p.id !== id));
+    }
+  };
+
+  const updateReplacementPair = (id: string, field: 'find' | 'replace', value: string) => {
+    setReplacementPairs(replacementPairs.map(p => 
+      p.id === id ? { ...p, [field]: value } : p
+    ));
+  };
+
+  const applyReplacements = () => {
+    let updatedQuery = sqlQuery;
+    let totalReplacements = 0;
+    const replacementDetails: string[] = [];
+
+    replacementPairs.forEach(pair => {
+      if (pair.find && pair.replace) {
+        const count = (sqlQuery.match(new RegExp(pair.find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+        if (count > 0) {
+          totalReplacements += count;
+          replacementDetails.push(`${pair.find} → ${pair.replace} (${count}x)`);
+        }
+        // Global replacement - replace all occurrences
+        updatedQuery = updatedQuery.split(pair.find).join(pair.replace);
+      }
+    });
+
+    setSqlQuery(updatedQuery);
+    
+    if (totalReplacements > 0) {
+      toast.success(`Applied ${totalReplacements} replacement${totalReplacements !== 1 ? 's' : ''}`, {
+        description: replacementDetails.join(', ')
+      });
+    } else {
+      toast.info('No matches found for the specified replacements');
+    }
+  };
+
+  const clearReplacements = () => {
+    setReplacementPairs([{ id: '1', find: '', replace: '' }]);
+    toast.info('Cleared all replacement pairs');
+  };
+
+  // Count how many active replacement pairs we have
+  const activeReplacements = replacementPairs.filter(p => p.find && p.replace).length;
+  const templateVariablesTitle = activeReplacements > 0 
+    ? `Template Variables (${activeReplacements} active)` 
+    : 'Template Variables';
 
   return (
     <Card className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm rounded-xl">
@@ -146,7 +217,7 @@ export const EnhancedSQLEditor = ({
             <textarea
               value={sqlQuery}
               onChange={(e) => setSqlQuery(e.target.value)}
-              className="min-h-[900px] w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+              className="min-h-[200px] h-[300px] w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-y"
               placeholder="Enter your SQL query here..."
             />
             <div className="absolute bottom-4 right-4 flex space-x-2">
@@ -186,6 +257,85 @@ export const EnhancedSQLEditor = ({
             </div>
           </div>
 
+          {/* Template Variable Replacement Section */}
+          <div className="w-full">
+            <AccordionWrapper
+              title={templateVariablesTitle}
+              value="template-variables"
+              className="border border-slate-200 dark:border-slate-700 rounded-lg"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    Define placeholder replacements (e.g., TABLE_NAME → my_table)
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={clearReplacements}
+                      variant="outline"
+                      size="sm"
+                      className="text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      Clear All
+                    </Button>
+                    <Button
+                      onClick={addReplacementPair}
+                      variant="outline"
+                      size="sm"
+                      className="text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {replacementPairs.map((pair, index) => (
+                    <div key={pair.id} className="flex items-center gap-2">
+                      <div className="flex-1 flex items-center gap-2">
+                        <Input
+                          placeholder="Find (e.g., TABLE_NAME)"
+                          value={pair.find}
+                          onChange={(e) => updateReplacementPair(pair.id, 'find', e.target.value)}
+                          className="flex-1 text-sm font-mono bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                        />
+                        <span className="text-slate-500 dark:text-slate-400 text-sm">→</span>
+                        <Input
+                          placeholder="Replace with (e.g., my_table)"
+                          value={pair.replace}
+                          onChange={(e) => updateReplacementPair(pair.id, 'replace', e.target.value)}
+                          className="flex-1 text-sm font-mono bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                        />
+                      </div>
+                      <Button
+                        onClick={() => removeReplacementPair(pair.id)}
+                        variant="ghost"
+                        size="sm"
+                        disabled={replacementPairs.length === 1}
+                        className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 h-9 w-9 p-0"
+                        title="Remove"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                  <Button
+                    onClick={applyReplacements}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-700 dark:hover:bg-purple-800"
+                    disabled={!replacementPairs.some(p => p.find && p.replace)}
+                  >
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Apply Replacements to Query
+                  </Button>
+                </div>
+              </div>
+            </AccordionWrapper>
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-1">
               <AccordionWrapper
@@ -194,7 +344,7 @@ export const EnhancedSQLEditor = ({
                 className="border border-slate-200 dark:border-slate-700 rounded-lg"
               >
                 {queryHistory.length > 0 ? (
-                  <ScrollArea className="h-[200px]">
+                  <ScrollArea className="h-[150px]">
                     <div className="space-y-2">
                       {queryHistory.map((item, index) => (
                         <div
@@ -363,7 +513,7 @@ export const EnhancedSQLEditor = ({
                 </div>
 
                 <TabsContent value="raw" className="m-0">
-                  <ScrollArea className="h-[1200px] w-full">
+                  <ScrollArea className="h-[500px] w-full">
                     <pre className="p-4 text-sm text-slate-800 dark:text-slate-200 font-mono whitespace-pre-wrap">
                       {JSON.stringify(queryResult, null, 2)}
                     </pre>
@@ -371,7 +521,7 @@ export const EnhancedSQLEditor = ({
                 </TabsContent>
 
                 <TabsContent value="explorer" className="m-0">
-                  <div className="h-[1200px] overflow-auto">
+                  <div className="h-[500px] overflow-auto">
                     <RawJsonExplorer pageData={queryResult} />
                   </div>
                 </TabsContent>

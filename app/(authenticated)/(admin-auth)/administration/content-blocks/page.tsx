@@ -5,6 +5,8 @@ import { ContentBlocksManager } from '@/components/admin/ContentBlocksManager';
 
 export default function ContentBlocksAdminPage() {
     return (
-        <ContentBlocksManager />
+        <div className="h-full w-full overflow-auto">
+            <ContentBlocksManager />
+        </div>
     );
 }

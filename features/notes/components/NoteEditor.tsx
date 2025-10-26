@@ -20,7 +20,7 @@ import { TagInput } from './TagInput';
 import type { Note } from '../types';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useAutoLabel } from '../hooks/useAutoLabel';
-import { getAllFolders } from '../utils/folderUtils';
+import { useAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
@@ -55,11 +55,27 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     const [editorMode, setEditorMode] = useState<EditorMode>('plain');
     const tuiEditorRef = useRef<any>(null);
     const toast = useToastManager('notes');
+    
+    // Use refs to avoid callback dependencies
+    const localLabelRef = useRef(localLabel);
+    const localContentRef = useRef(localContent);
+    const localFolderRef = useRef(localFolder);
+    const localTagsRef = useRef(localTags);
+    const editorModeRef = useRef(editorMode);
+    const noteRef = useRef(note);
+    
+    // Keep refs in sync
+    useEffect(() => {
+        localLabelRef.current = localLabel;
+        localContentRef.current = localContent;
+        localFolderRef.current = localFolder;
+        localTagsRef.current = localTags;
+        editorModeRef.current = editorMode;
+        noteRef.current = note;
+    }, [localLabel, localContent, localFolder, localTags, editorMode, note]);
 
-    // Get all folders (default + custom) - single source of truth
-    const availableFolders = useMemo(() => {
-        return getAllFolders(allNotes);
-    }, [allNotes]);
+    // Get all folders (default + custom) - optimized to only recalculate when folder names change
+    const availableFolders = useAllFolders(allNotes);
 
     // Load editor mode from note metadata
     useEffect(() => {
@@ -112,42 +128,45 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         }
     }, [note?.id]); // Only reset when note ID changes
 
-    // Get content from TUI editor when switching modes
+    // Get content from TUI editor when switching modes - optimized with refs
     const syncContentFromEditor = useCallback(() => {
-        if ((editorMode === 'wysiwyg' || editorMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
+        const currentMode = editorModeRef.current;
+        if ((currentMode === 'wysiwyg' || currentMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
             const markdown = tuiEditorRef.current.getCurrentMarkdown();
-            if (markdown !== localContent) {
+            if (markdown !== localContentRef.current) {
                 setLocalContent(markdown);
-                if (note) {
+                const currentNote = noteRef.current;
+                if (currentNote) {
                     updateWithAutoSave({ 
-                        label: localLabel, 
+                        label: localLabelRef.current, 
                         content: markdown, 
-                        folder_name: localFolder, 
-                        tags: localTags,
-                        metadata: { ...note.metadata, lastEditorMode: editorMode }
+                        folder_name: localFolderRef.current, 
+                        tags: localTagsRef.current,
+                        metadata: { ...currentNote.metadata, lastEditorMode: currentMode }
                     });
                 }
             }
         }
-    }, [editorMode, localContent, localLabel, localFolder, localTags, note, updateWithAutoSave]);
+    }, [updateWithAutoSave]); // Only depends on updateWithAutoSave
 
-    // Handle mode change
+    // Handle mode change - optimized with refs
     const handleModeChange = useCallback((newMode: EditorMode) => {
         // Sync content before switching
         syncContentFromEditor();
         setEditorMode(newMode);
         
         // Update metadata immediately
-        if (note) {
+        const currentNote = noteRef.current;
+        if (currentNote) {
             updateWithAutoSave({ 
-                label: localLabel, 
-                content: localContent, 
-                folder_name: localFolder, 
-                tags: localTags,
-                metadata: { ...note.metadata, lastEditorMode: newMode }
+                label: localLabelRef.current, 
+                content: localContentRef.current, 
+                folder_name: localFolderRef.current, 
+                tags: localTagsRef.current,
+                metadata: { ...currentNote.metadata, lastEditorMode: newMode }
             });
         }
-    }, [syncContentFromEditor, note, localLabel, localContent, localFolder, localTags, updateWithAutoSave]);
+    }, [syncContentFromEditor, updateWithAutoSave]); // Minimal dependencies
 
     const handleLabelChange = (value: string) => {
         setLocalLabel(value);
@@ -165,16 +184,17 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
 
     const handleTuiChange = useCallback((value: string) => {
         setLocalContent(value);
-        if (note) {
+        const currentNote = noteRef.current;
+        if (currentNote) {
             updateWithAutoSave({ 
-                label: localLabel, 
+                label: localLabelRef.current, 
                 content: value, 
-                folder_name: localFolder, 
-                tags: localTags,
-                metadata: { ...note.metadata, lastEditorMode: editorMode }
+                folder_name: localFolderRef.current, 
+                tags: localTagsRef.current,
+                metadata: { ...currentNote.metadata, lastEditorMode: editorModeRef.current }
             });
         }
-    }, [note, localLabel, localFolder, localTags, editorMode, updateWithAutoSave]);
+    }, [updateWithAutoSave]); // Only depends on updateWithAutoSave
 
     const handleFolderChange = (value: string) => {
         setLocalFolder(value);

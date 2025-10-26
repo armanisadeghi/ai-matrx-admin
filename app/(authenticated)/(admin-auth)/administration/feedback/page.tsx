@@ -7,6 +7,10 @@ export const metadata = {
 };
 
 export default function FeedbackManagementPage() {
-    return <FeedbackManagementContainer />;
+    return (
+        <div className="h-full w-full overflow-auto">
+            <FeedbackManagementContainer />
+        </div>
+    );
 }
 

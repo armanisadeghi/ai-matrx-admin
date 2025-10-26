@@ -5,6 +5,8 @@ import MarkdownTester from '@/components/admin/MarkdownTester';
 
 export default function Page() {
     return (
-        <MarkdownTester />
+        <div className="h-full w-full">
+            <MarkdownTester />
+        </div>
     );
 }

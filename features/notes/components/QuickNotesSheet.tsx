@@ -4,7 +4,7 @@
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { NoteEditor } from './NoteEditor';
 import { useNotesContext } from '../context/NotesContext';
-import { getAllFolders } from '../utils/folderUtils';
+import { useAllFolders } from '../utils/folderUtils';
 import type { Note } from '../types';
 import { 
     Select, 
@@ -46,9 +46,11 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run once when component mounts
 
+    // Get all folders - optimized to only recalculate when folder names change
+    const allFolders = useAllFolders(notes);
+
     // Group notes by folder for the selector - single source of truth
     const notesByFolder = useMemo(() => {
-        const allFolders = getAllFolders(notes);
         const grouped: Record<string, Note[]> = {};
         
         // Initialize all folders (including defaults)
@@ -64,7 +66,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
         });
         
         return grouped;
-    }, [notes]);
+    }, [notes, allFolders]);
 
     const handleCreateNote = useCallback(async () => {
         try {

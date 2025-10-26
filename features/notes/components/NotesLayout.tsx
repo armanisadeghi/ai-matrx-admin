@@ -1,14 +1,14 @@
 // features/notes/components/NotesLayout.tsx
 "use client";
 
-import React, { useCallback, useState, useMemo, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { NotesSidebar } from './NotesSidebar';
 import { NoteEditor } from './NoteEditor';
 import { NoteToolbar } from './NoteToolbar';
 import { CreateFolderDialog } from './CreateFolderDialog';
 import { ShareNoteDialog } from './ShareNoteDialog';
 import { useNotesContext } from '../context/NotesContext';
-import { getAllFolders } from '../utils/folderUtils';
+import { useAllFolders } from '../utils/folderUtils';
 import type { Note } from '../types';
 import { cn } from '@/lib/utils';
 import { Loader2, Menu } from 'lucide-react';
@@ -40,16 +40,10 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     const [shareNoteId, setShareNoteId] = useState<string | null>(null);
     const toast = useToastManager('notes');
 
-    // Refresh notes when component mounts (handles switching between views)
-    useEffect(() => {
-        refreshNotes();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Only run once on mount
+    // Note: refreshNotes() is already called on mount by NotesContext, no need to call again here
 
-    // Get all folders (default + custom) - single source of truth
-    const existingFolders = useMemo(() => {
-        return getAllFolders(notes);
-    }, [notes]);
+    // Get all folders (default + custom) - optimized to only recalculate when folder names change
+    const existingFolders = useAllFolders(notes);
 
     const handleCreateNote = useCallback(async (folderName?: string) => {
         try {

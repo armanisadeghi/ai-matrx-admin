@@ -5,7 +5,7 @@ import TypeScriptErrorViewer from "@/components/admin/ts-error-analyzer/TypeScri
 
 export default function TypeScriptErrorsPage() {
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full overflow-auto">
             <TypeScriptErrorViewer />
         </div>
     )
