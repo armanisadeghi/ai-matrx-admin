@@ -1,12 +1,21 @@
 // /layout.tsx
 'use client';
 
-import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
-import {DEFAULT_STORAGE_TREE_CONFIG, filteredPages, MODULE_HOME, MODULE_NAME} from '../config';
 import React from "react";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import {DirectoryTree} from "@/components/FileManager/TreeView/concepts/DirectoryTree";
 import DebuggerConsole from '@/components/file-operations/debugger/DebuggerConsole';
+import { DirectoryTreeConfig } from "@/components/DirectoryTree/config";
+
+const DEFAULT_STORAGE_TREE_CONFIG: DirectoryTreeConfig = {
+    excludeFiles: [],
+    excludeDirs: [],
+    hideHiddenFiles: false,
+    showIcons: true,
+    indentSize: 24,
+    sortFoldersFirst: true,
+};
+
 
 export default function Layout({children,}: { children: React.ReactNode; }) {
     return (
