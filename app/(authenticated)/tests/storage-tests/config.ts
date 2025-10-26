@@ -49,12 +49,6 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Supabase Bucket Test 4',
-        path: 'storage-test-4',
-        relative: true,
-        description: ''
-    },
-    {
         title: 'Supabase Bucket Test 3',
         path: 'storage-test-3',
         relative: true,

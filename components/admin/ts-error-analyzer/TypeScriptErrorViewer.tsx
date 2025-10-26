@@ -85,18 +85,30 @@ const TypeScriptErrorViewer: React.FC = () => {
   const refreshErrors = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/type_errors.json', {
-        cache: 'no-store', // Bypass cache for refresh
+      // Call API to regenerate TypeScript errors
+      const regenerateResponse = await fetch('/api/admin/typescript-errors/regenerate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-      if (!response.ok) {
-        throw new Error('Failed to fetch TypeScript errors');
+
+      if (!regenerateResponse.ok) {
+        const errorData = await regenerateResponse.json();
+        throw new Error(errorData.error || 'Failed to regenerate TypeScript errors');
       }
-      const data = await response.json();
-      setAllErrors(data);
+
+      const result = await regenerateResponse.json();
+      
+      // Set the errors from the API response
+      setAllErrors(result.errors);
       setError(null);
+      
+      console.log(`✓ TypeScript errors refreshed: ${result.count} errors found`);
     } catch (err) {
-      setError('Error loading TypeScript errors. Ensure type_errors.json exists in the public directory.');
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(`Error regenerating TypeScript errors: ${errorMessage}`);
+      console.error('Refresh error:', err);
     } finally {
       setLoading(false);
     }
@@ -268,9 +280,18 @@ const TypeScriptErrorViewer: React.FC = () => {
           <h1 className="text-2xl font-bold">TypeScript Errors</h1>
           <button 
             onClick={refreshErrors}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+            disabled={loading}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors 
+                     disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Refresh Errors
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Regenerating...
+              </>
+            ) : (
+              'Regenerate Errors'
+            )}
           </button>
         </div>
 
@@ -393,26 +414,26 @@ const TypeScriptErrorViewer: React.FC = () => {
                 </div>
 
                 {/* Error Table */}
-                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mb-4">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-auto mb-4 max-h-[600px]">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-white dark:bg-slate-800 z-10">
                       <TableRow className="border-b border-slate-200 dark:border-slate-700">
                         <TableHead 
-                          className="text-slate-700 dark:text-slate-300 cursor-pointer"
+                          className="text-slate-700 dark:text-slate-300 cursor-pointer bg-white dark:bg-slate-800"
                           onClick={() => requestSort('file')}
                         >
                           File {getSortIndicator('file')}
                         </TableHead>
-                        <TableHead className="text-slate-700 dark:text-slate-300">
+                        <TableHead className="text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800">
                           Location
                         </TableHead>
                         <TableHead 
-                          className="text-slate-700 dark:text-slate-300 cursor-pointer"
+                          className="text-slate-700 dark:text-slate-300 cursor-pointer bg-white dark:bg-slate-800"
                           onClick={() => requestSort('code')}
                         >
                           Error Code {getSortIndicator('code')}
                         </TableHead>
-                        <TableHead className="text-slate-700 dark:text-slate-300">
+                        <TableHead className="text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800">
                           Message
                         </TableHead>
                       </TableRow>

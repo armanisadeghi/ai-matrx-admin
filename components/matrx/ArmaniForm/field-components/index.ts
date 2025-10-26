@@ -57,8 +57,6 @@ export { default as ImageDisplay } from './image-display';
 import EntityShowSelectedAccordion from './wired/EntityShowSelectedAccordion';
 import EntityFetchByPkAccordion from "./wired/EntityFetchByPkAccordion";
 import EntityFkAccordion from "@/components/matrx/ArmaniForm/field-components/wired/EntityFkAccordion";
-import RelatedEntityAccordion
-    from "@/components/matrx/ArmaniForm/field-components/wired/accordion-modes/RelatedEntityAccordion";
 
 
 export { RelationalInput, RelationalButton } from './EntityRelationshipInput';
@@ -91,7 +89,7 @@ export const ENTITY_FIELD_COMPONENTS = {
     STAR_RATING: EntityStarRating,
     TIME_PICKER: EntityTimePicker,
     ACCORDION_VIEW: EntityFkAccordion,
-    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    // ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
     ACCORDION_SELECTED: EntityShowSelectedAccordion,
 } as const;
 
@@ -126,7 +124,7 @@ export const ENTITY_SMART_COMPONENTS = {
     RELATIONAL_BUTTON: RelationalButton,
 
     ACCORDION_VIEW: EntityFkAccordion,
-    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    // ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
     ACCORDION_SELECTED: EntityShowSelectedAccordion,
 } as const;
 
@@ -160,7 +158,7 @@ export const ENTITY_FK_COMPONENTS = {
     RELATIONAL_BUTTON: RelationalButton,
 
     ACCORDION_VIEW: EntityFkAccordion,
-    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    // ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
     ACCORDION_SELECTED: EntityShowSelectedAccordion,
 } as const;
 
@@ -194,7 +192,7 @@ export const ENTITY_IFK_COMPONENTS = {
     RELATIONAL_BUTTON: RelationalButton,
 
     ACCORDION_VIEW: EntityFkAccordion,
-    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    // ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
     ACCORDION_SELECTED: EntityShowSelectedAccordion,
 } as const;
 
@@ -228,7 +226,7 @@ export const ENTITY_M2M_COMPONENTS = {
     RELATIONAL_BUTTON: RelationalButton,
 
     ACCORDION_VIEW: EntityFkAccordion,
-    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    // ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
     ACCORDION_SELECTED: EntityShowSelectedAccordion,
 } as const;
 

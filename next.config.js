@@ -19,9 +19,9 @@ const nextConfig = {
         },
     },
     // Disable build caching for Vercel deployments
-    generateBuildId: async () => {
-        return `build-${Date.now()}`;
-    },
+    // generateBuildId: async () => {
+    //     return `build-${Date.now()}`;
+    // },
     onDemandEntries: {
         maxInactiveAge: 1,
     },
@@ -103,7 +103,7 @@ const nextConfig = {
         }
 
         // Disable webpack caching to ensure fresh builds
-        config.cache = false;
+        // config.cache = false;
 
         return config;
     },
