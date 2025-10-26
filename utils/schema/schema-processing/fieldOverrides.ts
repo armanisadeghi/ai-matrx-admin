@@ -228,6 +228,18 @@ const bucketStructuresFieldOverrides: AllFieldOverrides = {};
 
 const bucketTreeStructuresFieldOverrides: AllFieldOverrides = {};
 
+const canvasCommentLikesFieldOverrides: AllFieldOverrides = {};
+
+const canvasCommentsFieldOverrides: AllFieldOverrides = {};
+
+const canvasItemsFieldOverrides: AllFieldOverrides = {};
+
+const canvasLikesFieldOverrides: AllFieldOverrides = {};
+
+const canvasScoresFieldOverrides: AllFieldOverrides = {};
+
+const canvasViewsFieldOverrides: AllFieldOverrides = {};
+
 const categoryFieldOverrides: AllFieldOverrides = {};
 
 const categoryConfigsFieldOverrides: AllFieldOverrides = {};
@@ -323,6 +335,8 @@ const microserviceProjectFieldOverrides: AllFieldOverrides = {};
 
 const nodeCategoryFieldOverrides: AllFieldOverrides = {};
 
+const notesFieldOverrides: AllFieldOverrides = {};
+
 const organizationInvitationsFieldOverrides: AllFieldOverrides = {};
 
 const organizationMembersFieldOverrides: AllFieldOverrides = {};
@@ -340,6 +354,8 @@ const projectsFieldOverrides: AllFieldOverrides = {};
 const promptTemplatesFieldOverrides: AllFieldOverrides = {};
 
 const promptsFieldOverrides: AllFieldOverrides = {};
+
+const quizSessionsFieldOverrides: AllFieldOverrides = {};
 
 const recipeFieldOverrides: AllFieldOverrides = {
     tags: {
@@ -434,11 +450,15 @@ const scrapeTaskFieldOverrides: AllFieldOverrides = {};
 
 const scrapeTaskResponseFieldOverrides: AllFieldOverrides = {};
 
+const sharedCanvasItemsFieldOverrides: AllFieldOverrides = {};
+
 const siteMetadataFieldOverrides: AllFieldOverrides = {};
 
 const subcategoryFieldOverrides: AllFieldOverrides = {};
 
 const subcategoryConfigsFieldOverrides: AllFieldOverrides = {};
+
+const systemAnnouncementsFieldOverrides: AllFieldOverrides = {};
 
 const systemFunctionFieldOverrides: AllFieldOverrides = {};
 
@@ -456,13 +476,25 @@ const tasksFieldOverrides: AllFieldOverrides = {};
 
 const toolsFieldOverrides: AllFieldOverrides = {};
 
+const transcriptsFieldOverrides: AllFieldOverrides = {};
+
 const transformerFieldOverrides: AllFieldOverrides = {};
+
+const userAchievementsFieldOverrides: AllFieldOverrides = {};
+
+const userBookmarksFieldOverrides: AllFieldOverrides = {};
+
+const userFeedbackFieldOverrides: AllFieldOverrides = {};
+
+const userFollowsFieldOverrides: AllFieldOverrides = {};
 
 const userListItemsFieldOverrides: AllFieldOverrides = {};
 
 const userListsFieldOverrides: AllFieldOverrides = {};
 
 const userPreferencesFieldOverrides: AllFieldOverrides = {};
+
+const userStatsFieldOverrides: AllFieldOverrides = {};
 
 const userTablesFieldOverrides: AllFieldOverrides = {};
 
@@ -511,6 +543,12 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     brokerValue: brokerValueFieldOverrides,
     bucketStructures: bucketStructuresFieldOverrides,
     bucketTreeStructures: bucketTreeStructuresFieldOverrides,
+    canvasCommentLikes: canvasCommentLikesFieldOverrides,
+    canvasComments: canvasCommentsFieldOverrides,
+    canvasItems: canvasItemsFieldOverrides,
+    canvasLikes: canvasLikesFieldOverrides,
+    canvasScores: canvasScoresFieldOverrides,
+    canvasViews: canvasViewsFieldOverrides,
     category: categoryFieldOverrides,
     categoryConfigs: categoryConfigsFieldOverrides,
     compiledRecipe: compiledRecipeFieldOverrides,
@@ -540,6 +578,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     messageTemplate: messageTemplateFieldOverrides,
     microserviceProject: microserviceProjectFieldOverrides,
     nodeCategory: nodeCategoryFieldOverrides,
+    notes: notesFieldOverrides,
     organizationInvitations: organizationInvitationsFieldOverrides,
     organizationMembers: organizationMembersFieldOverrides,
     organizations: organizationsFieldOverrides,
@@ -549,6 +588,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     projects: projectsFieldOverrides,
     promptTemplates: promptTemplatesFieldOverrides,
     prompts: promptsFieldOverrides,
+    quizSessions: quizSessionsFieldOverrides,
     recipe: recipeFieldOverrides,
     recipeBroker: recipeBrokerFieldOverrides,
     recipeDisplay: recipeDisplayFieldOverrides,
@@ -581,9 +621,11 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     scrapeQuickFailureLog: scrapeQuickFailureLogFieldOverrides,
     scrapeTask: scrapeTaskFieldOverrides,
     scrapeTaskResponse: scrapeTaskResponseFieldOverrides,
+    sharedCanvasItems: sharedCanvasItemsFieldOverrides,
     siteMetadata: siteMetadataFieldOverrides,
     subcategory: subcategoryFieldOverrides,
     subcategoryConfigs: subcategoryConfigsFieldOverrides,
+    systemAnnouncements: systemAnnouncementsFieldOverrides,
     systemFunction: systemFunctionFieldOverrides,
     tableData: tableDataFieldOverrides,
     tableFields: tableFieldsFieldOverrides,
@@ -592,10 +634,16 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     taskComments: taskCommentsFieldOverrides,
     tasks: tasksFieldOverrides,
     tools: toolsFieldOverrides,
+    transcripts: transcriptsFieldOverrides,
     transformer: transformerFieldOverrides,
+    userAchievements: userAchievementsFieldOverrides,
+    userBookmarks: userBookmarksFieldOverrides,
+    userFeedback: userFeedbackFieldOverrides,
+    userFollows: userFollowsFieldOverrides,
     userListItems: userListItemsFieldOverrides,
     userLists: userListsFieldOverrides,
     userPreferences: userPreferencesFieldOverrides,
+    userStats: userStatsFieldOverrides,
     userTables: userTablesFieldOverrides,
     wcClaim: wcClaimFieldOverrides,
     wcImpairmentDefinition: wcImpairmentDefinitionFieldOverrides,

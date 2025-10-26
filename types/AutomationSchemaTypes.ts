@@ -106,6 +106,12 @@ export type AutomationTableName =
     | 'brokerValue'
     | 'bucketStructures'
     | 'bucketTreeStructures'
+    | 'canvasCommentLikes'
+    | 'canvasComments'
+    | 'canvasItems'
+    | 'canvasLikes'
+    | 'canvasScores'
+    | 'canvasViews'
     | 'category'
     | 'categoryConfigs'
     | 'compiledRecipe'
@@ -135,6 +141,7 @@ export type AutomationTableName =
     | 'messageTemplate'
     | 'microserviceProject'
     | 'nodeCategory'
+    | 'notes'
     | 'organizationInvitations'
     | 'organizationMembers'
     | 'organizations'
@@ -144,6 +151,7 @@ export type AutomationTableName =
     | 'projects'
     | 'promptTemplates'
     | 'prompts'
+    | 'quizSessions'
     | 'recipe'
     | 'recipeBroker'
     | 'recipeDisplay'
@@ -176,9 +184,11 @@ export type AutomationTableName =
     | 'scrapeQuickFailureLog'
     | 'scrapeTask'
     | 'scrapeTaskResponse'
+    | 'sharedCanvasItems'
     | 'siteMetadata'
     | 'subcategory'
     | 'subcategoryConfigs'
+    | 'systemAnnouncements'
     | 'systemFunction'
     | 'tableData'
     | 'tableFields'
@@ -187,10 +197,16 @@ export type AutomationTableName =
     | 'taskComments'
     | 'tasks'
     | 'tools'
+    | 'transcripts'
     | 'transformer'
+    | 'userAchievements'
+    | 'userBookmarks'
+    | 'userFeedback'
+    | 'userFollows'
     | 'userListItems'
     | 'userLists'
     | 'userPreferences'
+    | 'userStats'
     | 'userTables'
     | 'wcClaim'
     | 'wcImpairmentDefinition'
@@ -205,7 +221,8 @@ export type AutomationTableName =
     | 'workflowUserInput';
 
 export type AutomationViewName =
-    'viewRegisteredFunction'
+    'recipeComplete'
+    | 'viewRegisteredFunction'
     | 'viewRegisteredFunctionAllRels';
 
 export type AutomationEntityName = AutomationTableName | AutomationViewName;
@@ -413,6 +430,60 @@ export type BucketTreeStructuresProcessed = Expand<ProcessedEntityData<"bucketTr
 export type BucketTreeStructuresData = Expand<EntityDataMixed<"bucketTreeStructures">>;
 export type BucketTreeStructuresState = EntityStateType<"bucketTreeStructures">;
 export type BucketTreeStructuresRecordMap = Record<"bucketTreeStructuresRecordId", BucketTreeStructuresData>;
+
+export type CanvasCommentLikesType = AutomationEntity<"canvasCommentLikes">;
+export type CanvasCommentLikesDataRequired = Expand<EntityData<"canvasCommentLikes">>;
+export type CanvasCommentLikesDataOptional = Expand<EntityDataOptional<"canvasCommentLikes">>;
+export type CanvasCommentLikesRecordWithKey = Expand<EntityDataWithKey<"canvasCommentLikes">>;
+export type CanvasCommentLikesProcessed = Expand<ProcessedEntityData<"canvasCommentLikes">>;
+export type CanvasCommentLikesData = Expand<EntityDataMixed<"canvasCommentLikes">>;
+export type CanvasCommentLikesState = EntityStateType<"canvasCommentLikes">;
+export type CanvasCommentLikesRecordMap = Record<"canvasCommentLikesRecordId", CanvasCommentLikesData>;
+
+export type CanvasCommentsType = AutomationEntity<"canvasComments">;
+export type CanvasCommentsDataRequired = Expand<EntityData<"canvasComments">>;
+export type CanvasCommentsDataOptional = Expand<EntityDataOptional<"canvasComments">>;
+export type CanvasCommentsRecordWithKey = Expand<EntityDataWithKey<"canvasComments">>;
+export type CanvasCommentsProcessed = Expand<ProcessedEntityData<"canvasComments">>;
+export type CanvasCommentsData = Expand<EntityDataMixed<"canvasComments">>;
+export type CanvasCommentsState = EntityStateType<"canvasComments">;
+export type CanvasCommentsRecordMap = Record<"canvasCommentsRecordId", CanvasCommentsData>;
+
+export type CanvasItemsType = AutomationEntity<"canvasItems">;
+export type CanvasItemsDataRequired = Expand<EntityData<"canvasItems">>;
+export type CanvasItemsDataOptional = Expand<EntityDataOptional<"canvasItems">>;
+export type CanvasItemsRecordWithKey = Expand<EntityDataWithKey<"canvasItems">>;
+export type CanvasItemsProcessed = Expand<ProcessedEntityData<"canvasItems">>;
+export type CanvasItemsData = Expand<EntityDataMixed<"canvasItems">>;
+export type CanvasItemsState = EntityStateType<"canvasItems">;
+export type CanvasItemsRecordMap = Record<"canvasItemsRecordId", CanvasItemsData>;
+
+export type CanvasLikesType = AutomationEntity<"canvasLikes">;
+export type CanvasLikesDataRequired = Expand<EntityData<"canvasLikes">>;
+export type CanvasLikesDataOptional = Expand<EntityDataOptional<"canvasLikes">>;
+export type CanvasLikesRecordWithKey = Expand<EntityDataWithKey<"canvasLikes">>;
+export type CanvasLikesProcessed = Expand<ProcessedEntityData<"canvasLikes">>;
+export type CanvasLikesData = Expand<EntityDataMixed<"canvasLikes">>;
+export type CanvasLikesState = EntityStateType<"canvasLikes">;
+export type CanvasLikesRecordMap = Record<"canvasLikesRecordId", CanvasLikesData>;
+
+export type CanvasScoresType = AutomationEntity<"canvasScores">;
+export type CanvasScoresDataRequired = Expand<EntityData<"canvasScores">>;
+export type CanvasScoresDataOptional = Expand<EntityDataOptional<"canvasScores">>;
+export type CanvasScoresRecordWithKey = Expand<EntityDataWithKey<"canvasScores">>;
+export type CanvasScoresProcessed = Expand<ProcessedEntityData<"canvasScores">>;
+export type CanvasScoresData = Expand<EntityDataMixed<"canvasScores">>;
+export type CanvasScoresState = EntityStateType<"canvasScores">;
+export type CanvasScoresRecordMap = Record<"canvasScoresRecordId", CanvasScoresData>;
+
+export type CanvasViewsType = AutomationEntity<"canvasViews">;
+export type CanvasViewsDataRequired = Expand<EntityData<"canvasViews">>;
+export type CanvasViewsDataOptional = Expand<EntityDataOptional<"canvasViews">>;
+export type CanvasViewsRecordWithKey = Expand<EntityDataWithKey<"canvasViews">>;
+export type CanvasViewsProcessed = Expand<ProcessedEntityData<"canvasViews">>;
+export type CanvasViewsData = Expand<EntityDataMixed<"canvasViews">>;
+export type CanvasViewsState = EntityStateType<"canvasViews">;
+export type CanvasViewsRecordMap = Record<"canvasViewsRecordId", CanvasViewsData>;
 
 export type CategoryType = AutomationEntity<"category">;
 export type CategoryDataRequired = Expand<EntityData<"category">>;
@@ -675,6 +746,15 @@ export type NodeCategoryData = Expand<EntityDataMixed<"nodeCategory">>;
 export type NodeCategoryState = EntityStateType<"nodeCategory">;
 export type NodeCategoryRecordMap = Record<"nodeCategoryRecordId", NodeCategoryData>;
 
+export type NotesType = AutomationEntity<"notes">;
+export type NotesDataRequired = Expand<EntityData<"notes">>;
+export type NotesDataOptional = Expand<EntityDataOptional<"notes">>;
+export type NotesRecordWithKey = Expand<EntityDataWithKey<"notes">>;
+export type NotesProcessed = Expand<ProcessedEntityData<"notes">>;
+export type NotesData = Expand<EntityDataMixed<"notes">>;
+export type NotesState = EntityStateType<"notes">;
+export type NotesRecordMap = Record<"notesRecordId", NotesData>;
+
 export type OrganizationInvitationsType = AutomationEntity<"organizationInvitations">;
 export type OrganizationInvitationsDataRequired = Expand<EntityData<"organizationInvitations">>;
 export type OrganizationInvitationsDataOptional = Expand<EntityDataOptional<"organizationInvitations">>;
@@ -755,6 +835,15 @@ export type PromptsProcessed = Expand<ProcessedEntityData<"prompts">>;
 export type PromptsData = Expand<EntityDataMixed<"prompts">>;
 export type PromptsState = EntityStateType<"prompts">;
 export type PromptsRecordMap = Record<"promptsRecordId", PromptsData>;
+
+export type QuizSessionsType = AutomationEntity<"quizSessions">;
+export type QuizSessionsDataRequired = Expand<EntityData<"quizSessions">>;
+export type QuizSessionsDataOptional = Expand<EntityDataOptional<"quizSessions">>;
+export type QuizSessionsRecordWithKey = Expand<EntityDataWithKey<"quizSessions">>;
+export type QuizSessionsProcessed = Expand<ProcessedEntityData<"quizSessions">>;
+export type QuizSessionsData = Expand<EntityDataMixed<"quizSessions">>;
+export type QuizSessionsState = EntityStateType<"quizSessions">;
+export type QuizSessionsRecordMap = Record<"quizSessionsRecordId", QuizSessionsData>;
 
 export type RecipeType = AutomationEntity<"recipe">;
 export type RecipeDataRequired = Expand<EntityData<"recipe">>;
@@ -1044,6 +1133,15 @@ export type ScrapeTaskResponseData = Expand<EntityDataMixed<"scrapeTaskResponse"
 export type ScrapeTaskResponseState = EntityStateType<"scrapeTaskResponse">;
 export type ScrapeTaskResponseRecordMap = Record<"scrapeTaskResponseRecordId", ScrapeTaskResponseData>;
 
+export type SharedCanvasItemsType = AutomationEntity<"sharedCanvasItems">;
+export type SharedCanvasItemsDataRequired = Expand<EntityData<"sharedCanvasItems">>;
+export type SharedCanvasItemsDataOptional = Expand<EntityDataOptional<"sharedCanvasItems">>;
+export type SharedCanvasItemsRecordWithKey = Expand<EntityDataWithKey<"sharedCanvasItems">>;
+export type SharedCanvasItemsProcessed = Expand<ProcessedEntityData<"sharedCanvasItems">>;
+export type SharedCanvasItemsData = Expand<EntityDataMixed<"sharedCanvasItems">>;
+export type SharedCanvasItemsState = EntityStateType<"sharedCanvasItems">;
+export type SharedCanvasItemsRecordMap = Record<"sharedCanvasItemsRecordId", SharedCanvasItemsData>;
+
 export type SiteMetadataType = AutomationEntity<"siteMetadata">;
 export type SiteMetadataDataRequired = Expand<EntityData<"siteMetadata">>;
 export type SiteMetadataDataOptional = Expand<EntityDataOptional<"siteMetadata">>;
@@ -1070,6 +1168,15 @@ export type SubcategoryConfigsProcessed = Expand<ProcessedEntityData<"subcategor
 export type SubcategoryConfigsData = Expand<EntityDataMixed<"subcategoryConfigs">>;
 export type SubcategoryConfigsState = EntityStateType<"subcategoryConfigs">;
 export type SubcategoryConfigsRecordMap = Record<"subcategoryConfigsRecordId", SubcategoryConfigsData>;
+
+export type SystemAnnouncementsType = AutomationEntity<"systemAnnouncements">;
+export type SystemAnnouncementsDataRequired = Expand<EntityData<"systemAnnouncements">>;
+export type SystemAnnouncementsDataOptional = Expand<EntityDataOptional<"systemAnnouncements">>;
+export type SystemAnnouncementsRecordWithKey = Expand<EntityDataWithKey<"systemAnnouncements">>;
+export type SystemAnnouncementsProcessed = Expand<ProcessedEntityData<"systemAnnouncements">>;
+export type SystemAnnouncementsData = Expand<EntityDataMixed<"systemAnnouncements">>;
+export type SystemAnnouncementsState = EntityStateType<"systemAnnouncements">;
+export type SystemAnnouncementsRecordMap = Record<"systemAnnouncementsRecordId", SystemAnnouncementsData>;
 
 export type SystemFunctionType = AutomationEntity<"systemFunction">;
 export type SystemFunctionDataRequired = Expand<EntityData<"systemFunction">>;
@@ -1143,6 +1250,15 @@ export type ToolsData = Expand<EntityDataMixed<"tools">>;
 export type ToolsState = EntityStateType<"tools">;
 export type ToolsRecordMap = Record<"toolsRecordId", ToolsData>;
 
+export type TranscriptsType = AutomationEntity<"transcripts">;
+export type TranscriptsDataRequired = Expand<EntityData<"transcripts">>;
+export type TranscriptsDataOptional = Expand<EntityDataOptional<"transcripts">>;
+export type TranscriptsRecordWithKey = Expand<EntityDataWithKey<"transcripts">>;
+export type TranscriptsProcessed = Expand<ProcessedEntityData<"transcripts">>;
+export type TranscriptsData = Expand<EntityDataMixed<"transcripts">>;
+export type TranscriptsState = EntityStateType<"transcripts">;
+export type TranscriptsRecordMap = Record<"transcriptsRecordId", TranscriptsData>;
+
 export type TransformerType = AutomationEntity<"transformer">;
 export type TransformerDataRequired = Expand<EntityData<"transformer">>;
 export type TransformerDataOptional = Expand<EntityDataOptional<"transformer">>;
@@ -1151,6 +1267,42 @@ export type TransformerProcessed = Expand<ProcessedEntityData<"transformer">>;
 export type TransformerData = Expand<EntityDataMixed<"transformer">>;
 export type TransformerState = EntityStateType<"transformer">;
 export type TransformerRecordMap = Record<"transformerRecordId", TransformerData>;
+
+export type UserAchievementsType = AutomationEntity<"userAchievements">;
+export type UserAchievementsDataRequired = Expand<EntityData<"userAchievements">>;
+export type UserAchievementsDataOptional = Expand<EntityDataOptional<"userAchievements">>;
+export type UserAchievementsRecordWithKey = Expand<EntityDataWithKey<"userAchievements">>;
+export type UserAchievementsProcessed = Expand<ProcessedEntityData<"userAchievements">>;
+export type UserAchievementsData = Expand<EntityDataMixed<"userAchievements">>;
+export type UserAchievementsState = EntityStateType<"userAchievements">;
+export type UserAchievementsRecordMap = Record<"userAchievementsRecordId", UserAchievementsData>;
+
+export type UserBookmarksType = AutomationEntity<"userBookmarks">;
+export type UserBookmarksDataRequired = Expand<EntityData<"userBookmarks">>;
+export type UserBookmarksDataOptional = Expand<EntityDataOptional<"userBookmarks">>;
+export type UserBookmarksRecordWithKey = Expand<EntityDataWithKey<"userBookmarks">>;
+export type UserBookmarksProcessed = Expand<ProcessedEntityData<"userBookmarks">>;
+export type UserBookmarksData = Expand<EntityDataMixed<"userBookmarks">>;
+export type UserBookmarksState = EntityStateType<"userBookmarks">;
+export type UserBookmarksRecordMap = Record<"userBookmarksRecordId", UserBookmarksData>;
+
+export type UserFeedbackType = AutomationEntity<"userFeedback">;
+export type UserFeedbackDataRequired = Expand<EntityData<"userFeedback">>;
+export type UserFeedbackDataOptional = Expand<EntityDataOptional<"userFeedback">>;
+export type UserFeedbackRecordWithKey = Expand<EntityDataWithKey<"userFeedback">>;
+export type UserFeedbackProcessed = Expand<ProcessedEntityData<"userFeedback">>;
+export type UserFeedbackData = Expand<EntityDataMixed<"userFeedback">>;
+export type UserFeedbackState = EntityStateType<"userFeedback">;
+export type UserFeedbackRecordMap = Record<"userFeedbackRecordId", UserFeedbackData>;
+
+export type UserFollowsType = AutomationEntity<"userFollows">;
+export type UserFollowsDataRequired = Expand<EntityData<"userFollows">>;
+export type UserFollowsDataOptional = Expand<EntityDataOptional<"userFollows">>;
+export type UserFollowsRecordWithKey = Expand<EntityDataWithKey<"userFollows">>;
+export type UserFollowsProcessed = Expand<ProcessedEntityData<"userFollows">>;
+export type UserFollowsData = Expand<EntityDataMixed<"userFollows">>;
+export type UserFollowsState = EntityStateType<"userFollows">;
+export type UserFollowsRecordMap = Record<"userFollowsRecordId", UserFollowsData>;
 
 export type UserListItemsType = AutomationEntity<"userListItems">;
 export type UserListItemsDataRequired = Expand<EntityData<"userListItems">>;
@@ -1178,6 +1330,15 @@ export type UserPreferencesProcessed = Expand<ProcessedEntityData<"userPreferenc
 export type UserPreferencesData = Expand<EntityDataMixed<"userPreferences">>;
 export type UserPreferencesState = EntityStateType<"userPreferences">;
 export type UserPreferencesRecordMap = Record<"userPreferencesRecordId", UserPreferencesData>;
+
+export type UserStatsType = AutomationEntity<"userStats">;
+export type UserStatsDataRequired = Expand<EntityData<"userStats">>;
+export type UserStatsDataOptional = Expand<EntityDataOptional<"userStats">>;
+export type UserStatsRecordWithKey = Expand<EntityDataWithKey<"userStats">>;
+export type UserStatsProcessed = Expand<ProcessedEntityData<"userStats">>;
+export type UserStatsData = Expand<EntityDataMixed<"userStats">>;
+export type UserStatsState = EntityStateType<"userStats">;
+export type UserStatsRecordMap = Record<"userStatsRecordId", UserStatsData>;
 
 export type UserTablesType = AutomationEntity<"userTables">;
 export type UserTablesDataRequired = Expand<EntityData<"userTables">>;

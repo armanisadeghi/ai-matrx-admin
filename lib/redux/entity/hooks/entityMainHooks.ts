@@ -21,6 +21,12 @@ import {
     BrokerValueData,
     BucketStructuresData,
     BucketTreeStructuresData,
+    CanvasCommentLikesData,
+    CanvasCommentsData,
+    CanvasItemsData,
+    CanvasLikesData,
+    CanvasScoresData,
+    CanvasViewsData,
     CategoryConfigsData,
     CategoryData,
     CompiledRecipeData,
@@ -50,6 +56,7 @@ import {
     MessageTemplateData,
     MicroserviceProjectData,
     NodeCategoryData,
+    NotesData,
     OrganizationInvitationsData,
     OrganizationMembersData,
     OrganizationsData,
@@ -59,6 +66,7 @@ import {
     ProjectsData,
     PromptTemplatesData,
     PromptsData,
+    QuizSessionsData,
     RecipeBrokerData,
     RecipeData,
     RecipeDisplayData,
@@ -91,9 +99,11 @@ import {
     ScrapeQuickFailureLogData,
     ScrapeTaskData,
     ScrapeTaskResponseData,
+    SharedCanvasItemsData,
     SiteMetadataData,
     SubcategoryConfigsData,
     SubcategoryData,
+    SystemAnnouncementsData,
     SystemFunctionData,
     TableDataData,
     TableFieldsData,
@@ -102,10 +112,16 @@ import {
     TaskCommentsData,
     TasksData,
     ToolsData,
+    TranscriptsData,
     TransformerData,
+    UserAchievementsData,
+    UserBookmarksData,
+    UserFeedbackData,
+    UserFollowsData,
     UserListItemsData,
     UserListsData,
     UserPreferencesData,
+    UserStatsData,
     UserTablesData,
     WcClaimData,
     WcImpairmentDefinitionData,
@@ -2073,6 +2089,564 @@ export const useBucketTreeStructuresWithFetch = (): UseBucketTreeStructuresWithF
         fetchBucketTreeStructuresOneWithFkIfk,
         fetchBucketTreeStructuresAll,
         fetchBucketTreeStructuresPaginated,
+    };
+};
+
+
+
+type UseCanvasCommentLikesWithFetchReturn = {
+    canvasCommentLikesSelectors: EntitySelectors<"canvasCommentLikes">;
+    canvasCommentLikesActions: EntityActions<"canvasCommentLikes">;
+    canvasCommentLikesRecords: Record<MatrxRecordId, CanvasCommentLikesData>;
+    canvasCommentLikesRecordsById: Record<string, CanvasCommentLikesData>;
+    canvasCommentLikesUnsavedRecords: Record<MatrxRecordId, Partial<CanvasCommentLikesData>>;
+    canvasCommentLikesSelectedRecordIds: MatrxRecordId[];
+    canvasCommentLikesIsLoading: boolean;
+    canvasCommentLikesIsError: boolean;
+    canvasCommentLikesQuickRefRecords: QuickReferenceRecord[];
+    addCanvasCommentLikesMatrxId: (recordId: MatrxRecordId) => void;
+    addCanvasCommentLikesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCanvasCommentLikesMatrxId: (recordId: MatrxRecordId) => void;
+    removeCanvasCommentLikesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCanvasCommentLikesPkValue: (pkValue: string) => void;
+    addCanvasCommentLikesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCanvasCommentLikesPkValue: (pkValue: string) => void;
+    removeCanvasCommentLikesPkValues: (pkValues: Record<string, unknown>) => void;
+    isCanvasCommentLikesMissingRecords: boolean;
+    setCanvasCommentLikesShouldFetch: (shouldFetch: boolean) => void;
+    setCanvasCommentLikesFetchMode: (fetchMode: FetchMode) => void;
+    fetchCanvasCommentLikesQuickRefs: () => void;
+    fetchCanvasCommentLikesOne: (recordId: MatrxRecordId) => void;
+    fetchCanvasCommentLikesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCanvasCommentLikesAll: () => void;
+    fetchCanvasCommentLikesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useCanvasCommentLikesWithFetch = (): UseCanvasCommentLikesWithFetchReturn => {
+    const {
+        selectors: canvasCommentLikesSelectors,
+        actions: canvasCommentLikesActions,
+        allRecords: canvasCommentLikesRecords,
+        recordsById: canvasCommentLikesRecordsById,
+        unsavedRecords: canvasCommentLikesUnsavedRecords,
+        selectedRecordIds: canvasCommentLikesSelectedRecordIds,
+        isLoading: canvasCommentLikesIsLoading,
+        isError: canvasCommentLikesIsError,
+        quickRefRecords: canvasCommentLikesQuickRefRecords,
+        addMatrxId: addCanvasCommentLikesMatrxId,
+        addMatrxIds: addCanvasCommentLikesMatrxIds,
+        removeMatrxId: removeCanvasCommentLikesMatrxId,
+        removeMatrxIds: removeCanvasCommentLikesMatrxIds,
+        addPkValue: addCanvasCommentLikesPkValue,
+        addPkValues: addCanvasCommentLikesPkValues,
+        removePkValue: removeCanvasCommentLikesPkValue,
+        removePkValues: removeCanvasCommentLikesPkValues,
+        isMissingRecords: isCanvasCommentLikesMissingRecords,
+        setShouldFetch: setCanvasCommentLikesShouldFetch,
+        setFetchMode: setCanvasCommentLikesFetchMode,
+        fetchQuickRefs: fetchCanvasCommentLikesQuickRefs,
+        fetchOne: fetchCanvasCommentLikesOne,
+        fetchOneWithFkIfk: fetchCanvasCommentLikesOneWithFkIfk,
+        fetchAll: fetchCanvasCommentLikesAll,
+        fetchPaginated: fetchCanvasCommentLikesPaginated,
+
+    } = useEntityWithFetch("canvasCommentLikes");
+
+    return {
+        canvasCommentLikesSelectors,
+        canvasCommentLikesActions,
+        canvasCommentLikesRecords,
+        canvasCommentLikesRecordsById,
+        canvasCommentLikesUnsavedRecords,
+        canvasCommentLikesSelectedRecordIds,
+        canvasCommentLikesIsLoading,
+        canvasCommentLikesIsError,
+        canvasCommentLikesQuickRefRecords,
+        addCanvasCommentLikesMatrxId,
+        addCanvasCommentLikesMatrxIds,
+        removeCanvasCommentLikesMatrxId,
+        removeCanvasCommentLikesMatrxIds,
+        addCanvasCommentLikesPkValue,
+        addCanvasCommentLikesPkValues,
+        removeCanvasCommentLikesPkValue,
+        removeCanvasCommentLikesPkValues,
+        isCanvasCommentLikesMissingRecords,
+        setCanvasCommentLikesShouldFetch,
+        setCanvasCommentLikesFetchMode,
+        fetchCanvasCommentLikesQuickRefs,
+        fetchCanvasCommentLikesOne,
+        fetchCanvasCommentLikesOneWithFkIfk,
+        fetchCanvasCommentLikesAll,
+        fetchCanvasCommentLikesPaginated,
+    };
+};
+
+
+
+type UseCanvasCommentsWithFetchReturn = {
+    canvasCommentsSelectors: EntitySelectors<"canvasComments">;
+    canvasCommentsActions: EntityActions<"canvasComments">;
+    canvasCommentsRecords: Record<MatrxRecordId, CanvasCommentsData>;
+    canvasCommentsRecordsById: Record<string, CanvasCommentsData>;
+    canvasCommentsUnsavedRecords: Record<MatrxRecordId, Partial<CanvasCommentsData>>;
+    canvasCommentsSelectedRecordIds: MatrxRecordId[];
+    canvasCommentsIsLoading: boolean;
+    canvasCommentsIsError: boolean;
+    canvasCommentsQuickRefRecords: QuickReferenceRecord[];
+    addCanvasCommentsMatrxId: (recordId: MatrxRecordId) => void;
+    addCanvasCommentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCanvasCommentsMatrxId: (recordId: MatrxRecordId) => void;
+    removeCanvasCommentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCanvasCommentsPkValue: (pkValue: string) => void;
+    addCanvasCommentsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCanvasCommentsPkValue: (pkValue: string) => void;
+    removeCanvasCommentsPkValues: (pkValues: Record<string, unknown>) => void;
+    isCanvasCommentsMissingRecords: boolean;
+    setCanvasCommentsShouldFetch: (shouldFetch: boolean) => void;
+    setCanvasCommentsFetchMode: (fetchMode: FetchMode) => void;
+    fetchCanvasCommentsQuickRefs: () => void;
+    fetchCanvasCommentsOne: (recordId: MatrxRecordId) => void;
+    fetchCanvasCommentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCanvasCommentsAll: () => void;
+    fetchCanvasCommentsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useCanvasCommentsWithFetch = (): UseCanvasCommentsWithFetchReturn => {
+    const {
+        selectors: canvasCommentsSelectors,
+        actions: canvasCommentsActions,
+        allRecords: canvasCommentsRecords,
+        recordsById: canvasCommentsRecordsById,
+        unsavedRecords: canvasCommentsUnsavedRecords,
+        selectedRecordIds: canvasCommentsSelectedRecordIds,
+        isLoading: canvasCommentsIsLoading,
+        isError: canvasCommentsIsError,
+        quickRefRecords: canvasCommentsQuickRefRecords,
+        addMatrxId: addCanvasCommentsMatrxId,
+        addMatrxIds: addCanvasCommentsMatrxIds,
+        removeMatrxId: removeCanvasCommentsMatrxId,
+        removeMatrxIds: removeCanvasCommentsMatrxIds,
+        addPkValue: addCanvasCommentsPkValue,
+        addPkValues: addCanvasCommentsPkValues,
+        removePkValue: removeCanvasCommentsPkValue,
+        removePkValues: removeCanvasCommentsPkValues,
+        isMissingRecords: isCanvasCommentsMissingRecords,
+        setShouldFetch: setCanvasCommentsShouldFetch,
+        setFetchMode: setCanvasCommentsFetchMode,
+        fetchQuickRefs: fetchCanvasCommentsQuickRefs,
+        fetchOne: fetchCanvasCommentsOne,
+        fetchOneWithFkIfk: fetchCanvasCommentsOneWithFkIfk,
+        fetchAll: fetchCanvasCommentsAll,
+        fetchPaginated: fetchCanvasCommentsPaginated,
+
+    } = useEntityWithFetch("canvasComments");
+
+    return {
+        canvasCommentsSelectors,
+        canvasCommentsActions,
+        canvasCommentsRecords,
+        canvasCommentsRecordsById,
+        canvasCommentsUnsavedRecords,
+        canvasCommentsSelectedRecordIds,
+        canvasCommentsIsLoading,
+        canvasCommentsIsError,
+        canvasCommentsQuickRefRecords,
+        addCanvasCommentsMatrxId,
+        addCanvasCommentsMatrxIds,
+        removeCanvasCommentsMatrxId,
+        removeCanvasCommentsMatrxIds,
+        addCanvasCommentsPkValue,
+        addCanvasCommentsPkValues,
+        removeCanvasCommentsPkValue,
+        removeCanvasCommentsPkValues,
+        isCanvasCommentsMissingRecords,
+        setCanvasCommentsShouldFetch,
+        setCanvasCommentsFetchMode,
+        fetchCanvasCommentsQuickRefs,
+        fetchCanvasCommentsOne,
+        fetchCanvasCommentsOneWithFkIfk,
+        fetchCanvasCommentsAll,
+        fetchCanvasCommentsPaginated,
+    };
+};
+
+
+
+type UseCanvasItemsWithFetchReturn = {
+    canvasItemsSelectors: EntitySelectors<"canvasItems">;
+    canvasItemsActions: EntityActions<"canvasItems">;
+    canvasItemsRecords: Record<MatrxRecordId, CanvasItemsData>;
+    canvasItemsRecordsById: Record<string, CanvasItemsData>;
+    canvasItemsUnsavedRecords: Record<MatrxRecordId, Partial<CanvasItemsData>>;
+    canvasItemsSelectedRecordIds: MatrxRecordId[];
+    canvasItemsIsLoading: boolean;
+    canvasItemsIsError: boolean;
+    canvasItemsQuickRefRecords: QuickReferenceRecord[];
+    addCanvasItemsMatrxId: (recordId: MatrxRecordId) => void;
+    addCanvasItemsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCanvasItemsMatrxId: (recordId: MatrxRecordId) => void;
+    removeCanvasItemsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCanvasItemsPkValue: (pkValue: string) => void;
+    addCanvasItemsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCanvasItemsPkValue: (pkValue: string) => void;
+    removeCanvasItemsPkValues: (pkValues: Record<string, unknown>) => void;
+    isCanvasItemsMissingRecords: boolean;
+    setCanvasItemsShouldFetch: (shouldFetch: boolean) => void;
+    setCanvasItemsFetchMode: (fetchMode: FetchMode) => void;
+    fetchCanvasItemsQuickRefs: () => void;
+    fetchCanvasItemsOne: (recordId: MatrxRecordId) => void;
+    fetchCanvasItemsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCanvasItemsAll: () => void;
+    fetchCanvasItemsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useCanvasItemsWithFetch = (): UseCanvasItemsWithFetchReturn => {
+    const {
+        selectors: canvasItemsSelectors,
+        actions: canvasItemsActions,
+        allRecords: canvasItemsRecords,
+        recordsById: canvasItemsRecordsById,
+        unsavedRecords: canvasItemsUnsavedRecords,
+        selectedRecordIds: canvasItemsSelectedRecordIds,
+        isLoading: canvasItemsIsLoading,
+        isError: canvasItemsIsError,
+        quickRefRecords: canvasItemsQuickRefRecords,
+        addMatrxId: addCanvasItemsMatrxId,
+        addMatrxIds: addCanvasItemsMatrxIds,
+        removeMatrxId: removeCanvasItemsMatrxId,
+        removeMatrxIds: removeCanvasItemsMatrxIds,
+        addPkValue: addCanvasItemsPkValue,
+        addPkValues: addCanvasItemsPkValues,
+        removePkValue: removeCanvasItemsPkValue,
+        removePkValues: removeCanvasItemsPkValues,
+        isMissingRecords: isCanvasItemsMissingRecords,
+        setShouldFetch: setCanvasItemsShouldFetch,
+        setFetchMode: setCanvasItemsFetchMode,
+        fetchQuickRefs: fetchCanvasItemsQuickRefs,
+        fetchOne: fetchCanvasItemsOne,
+        fetchOneWithFkIfk: fetchCanvasItemsOneWithFkIfk,
+        fetchAll: fetchCanvasItemsAll,
+        fetchPaginated: fetchCanvasItemsPaginated,
+
+    } = useEntityWithFetch("canvasItems");
+
+    return {
+        canvasItemsSelectors,
+        canvasItemsActions,
+        canvasItemsRecords,
+        canvasItemsRecordsById,
+        canvasItemsUnsavedRecords,
+        canvasItemsSelectedRecordIds,
+        canvasItemsIsLoading,
+        canvasItemsIsError,
+        canvasItemsQuickRefRecords,
+        addCanvasItemsMatrxId,
+        addCanvasItemsMatrxIds,
+        removeCanvasItemsMatrxId,
+        removeCanvasItemsMatrxIds,
+        addCanvasItemsPkValue,
+        addCanvasItemsPkValues,
+        removeCanvasItemsPkValue,
+        removeCanvasItemsPkValues,
+        isCanvasItemsMissingRecords,
+        setCanvasItemsShouldFetch,
+        setCanvasItemsFetchMode,
+        fetchCanvasItemsQuickRefs,
+        fetchCanvasItemsOne,
+        fetchCanvasItemsOneWithFkIfk,
+        fetchCanvasItemsAll,
+        fetchCanvasItemsPaginated,
+    };
+};
+
+
+
+type UseCanvasLikesWithFetchReturn = {
+    canvasLikesSelectors: EntitySelectors<"canvasLikes">;
+    canvasLikesActions: EntityActions<"canvasLikes">;
+    canvasLikesRecords: Record<MatrxRecordId, CanvasLikesData>;
+    canvasLikesRecordsById: Record<string, CanvasLikesData>;
+    canvasLikesUnsavedRecords: Record<MatrxRecordId, Partial<CanvasLikesData>>;
+    canvasLikesSelectedRecordIds: MatrxRecordId[];
+    canvasLikesIsLoading: boolean;
+    canvasLikesIsError: boolean;
+    canvasLikesQuickRefRecords: QuickReferenceRecord[];
+    addCanvasLikesMatrxId: (recordId: MatrxRecordId) => void;
+    addCanvasLikesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCanvasLikesMatrxId: (recordId: MatrxRecordId) => void;
+    removeCanvasLikesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCanvasLikesPkValue: (pkValue: string) => void;
+    addCanvasLikesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCanvasLikesPkValue: (pkValue: string) => void;
+    removeCanvasLikesPkValues: (pkValues: Record<string, unknown>) => void;
+    isCanvasLikesMissingRecords: boolean;
+    setCanvasLikesShouldFetch: (shouldFetch: boolean) => void;
+    setCanvasLikesFetchMode: (fetchMode: FetchMode) => void;
+    fetchCanvasLikesQuickRefs: () => void;
+    fetchCanvasLikesOne: (recordId: MatrxRecordId) => void;
+    fetchCanvasLikesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCanvasLikesAll: () => void;
+    fetchCanvasLikesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useCanvasLikesWithFetch = (): UseCanvasLikesWithFetchReturn => {
+    const {
+        selectors: canvasLikesSelectors,
+        actions: canvasLikesActions,
+        allRecords: canvasLikesRecords,
+        recordsById: canvasLikesRecordsById,
+        unsavedRecords: canvasLikesUnsavedRecords,
+        selectedRecordIds: canvasLikesSelectedRecordIds,
+        isLoading: canvasLikesIsLoading,
+        isError: canvasLikesIsError,
+        quickRefRecords: canvasLikesQuickRefRecords,
+        addMatrxId: addCanvasLikesMatrxId,
+        addMatrxIds: addCanvasLikesMatrxIds,
+        removeMatrxId: removeCanvasLikesMatrxId,
+        removeMatrxIds: removeCanvasLikesMatrxIds,
+        addPkValue: addCanvasLikesPkValue,
+        addPkValues: addCanvasLikesPkValues,
+        removePkValue: removeCanvasLikesPkValue,
+        removePkValues: removeCanvasLikesPkValues,
+        isMissingRecords: isCanvasLikesMissingRecords,
+        setShouldFetch: setCanvasLikesShouldFetch,
+        setFetchMode: setCanvasLikesFetchMode,
+        fetchQuickRefs: fetchCanvasLikesQuickRefs,
+        fetchOne: fetchCanvasLikesOne,
+        fetchOneWithFkIfk: fetchCanvasLikesOneWithFkIfk,
+        fetchAll: fetchCanvasLikesAll,
+        fetchPaginated: fetchCanvasLikesPaginated,
+
+    } = useEntityWithFetch("canvasLikes");
+
+    return {
+        canvasLikesSelectors,
+        canvasLikesActions,
+        canvasLikesRecords,
+        canvasLikesRecordsById,
+        canvasLikesUnsavedRecords,
+        canvasLikesSelectedRecordIds,
+        canvasLikesIsLoading,
+        canvasLikesIsError,
+        canvasLikesQuickRefRecords,
+        addCanvasLikesMatrxId,
+        addCanvasLikesMatrxIds,
+        removeCanvasLikesMatrxId,
+        removeCanvasLikesMatrxIds,
+        addCanvasLikesPkValue,
+        addCanvasLikesPkValues,
+        removeCanvasLikesPkValue,
+        removeCanvasLikesPkValues,
+        isCanvasLikesMissingRecords,
+        setCanvasLikesShouldFetch,
+        setCanvasLikesFetchMode,
+        fetchCanvasLikesQuickRefs,
+        fetchCanvasLikesOne,
+        fetchCanvasLikesOneWithFkIfk,
+        fetchCanvasLikesAll,
+        fetchCanvasLikesPaginated,
+    };
+};
+
+
+
+type UseCanvasScoresWithFetchReturn = {
+    canvasScoresSelectors: EntitySelectors<"canvasScores">;
+    canvasScoresActions: EntityActions<"canvasScores">;
+    canvasScoresRecords: Record<MatrxRecordId, CanvasScoresData>;
+    canvasScoresRecordsById: Record<string, CanvasScoresData>;
+    canvasScoresUnsavedRecords: Record<MatrxRecordId, Partial<CanvasScoresData>>;
+    canvasScoresSelectedRecordIds: MatrxRecordId[];
+    canvasScoresIsLoading: boolean;
+    canvasScoresIsError: boolean;
+    canvasScoresQuickRefRecords: QuickReferenceRecord[];
+    addCanvasScoresMatrxId: (recordId: MatrxRecordId) => void;
+    addCanvasScoresMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCanvasScoresMatrxId: (recordId: MatrxRecordId) => void;
+    removeCanvasScoresMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCanvasScoresPkValue: (pkValue: string) => void;
+    addCanvasScoresPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCanvasScoresPkValue: (pkValue: string) => void;
+    removeCanvasScoresPkValues: (pkValues: Record<string, unknown>) => void;
+    isCanvasScoresMissingRecords: boolean;
+    setCanvasScoresShouldFetch: (shouldFetch: boolean) => void;
+    setCanvasScoresFetchMode: (fetchMode: FetchMode) => void;
+    fetchCanvasScoresQuickRefs: () => void;
+    fetchCanvasScoresOne: (recordId: MatrxRecordId) => void;
+    fetchCanvasScoresOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCanvasScoresAll: () => void;
+    fetchCanvasScoresPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useCanvasScoresWithFetch = (): UseCanvasScoresWithFetchReturn => {
+    const {
+        selectors: canvasScoresSelectors,
+        actions: canvasScoresActions,
+        allRecords: canvasScoresRecords,
+        recordsById: canvasScoresRecordsById,
+        unsavedRecords: canvasScoresUnsavedRecords,
+        selectedRecordIds: canvasScoresSelectedRecordIds,
+        isLoading: canvasScoresIsLoading,
+        isError: canvasScoresIsError,
+        quickRefRecords: canvasScoresQuickRefRecords,
+        addMatrxId: addCanvasScoresMatrxId,
+        addMatrxIds: addCanvasScoresMatrxIds,
+        removeMatrxId: removeCanvasScoresMatrxId,
+        removeMatrxIds: removeCanvasScoresMatrxIds,
+        addPkValue: addCanvasScoresPkValue,
+        addPkValues: addCanvasScoresPkValues,
+        removePkValue: removeCanvasScoresPkValue,
+        removePkValues: removeCanvasScoresPkValues,
+        isMissingRecords: isCanvasScoresMissingRecords,
+        setShouldFetch: setCanvasScoresShouldFetch,
+        setFetchMode: setCanvasScoresFetchMode,
+        fetchQuickRefs: fetchCanvasScoresQuickRefs,
+        fetchOne: fetchCanvasScoresOne,
+        fetchOneWithFkIfk: fetchCanvasScoresOneWithFkIfk,
+        fetchAll: fetchCanvasScoresAll,
+        fetchPaginated: fetchCanvasScoresPaginated,
+
+    } = useEntityWithFetch("canvasScores");
+
+    return {
+        canvasScoresSelectors,
+        canvasScoresActions,
+        canvasScoresRecords,
+        canvasScoresRecordsById,
+        canvasScoresUnsavedRecords,
+        canvasScoresSelectedRecordIds,
+        canvasScoresIsLoading,
+        canvasScoresIsError,
+        canvasScoresQuickRefRecords,
+        addCanvasScoresMatrxId,
+        addCanvasScoresMatrxIds,
+        removeCanvasScoresMatrxId,
+        removeCanvasScoresMatrxIds,
+        addCanvasScoresPkValue,
+        addCanvasScoresPkValues,
+        removeCanvasScoresPkValue,
+        removeCanvasScoresPkValues,
+        isCanvasScoresMissingRecords,
+        setCanvasScoresShouldFetch,
+        setCanvasScoresFetchMode,
+        fetchCanvasScoresQuickRefs,
+        fetchCanvasScoresOne,
+        fetchCanvasScoresOneWithFkIfk,
+        fetchCanvasScoresAll,
+        fetchCanvasScoresPaginated,
+    };
+};
+
+
+
+type UseCanvasViewsWithFetchReturn = {
+    canvasViewsSelectors: EntitySelectors<"canvasViews">;
+    canvasViewsActions: EntityActions<"canvasViews">;
+    canvasViewsRecords: Record<MatrxRecordId, CanvasViewsData>;
+    canvasViewsRecordsById: Record<string, CanvasViewsData>;
+    canvasViewsUnsavedRecords: Record<MatrxRecordId, Partial<CanvasViewsData>>;
+    canvasViewsSelectedRecordIds: MatrxRecordId[];
+    canvasViewsIsLoading: boolean;
+    canvasViewsIsError: boolean;
+    canvasViewsQuickRefRecords: QuickReferenceRecord[];
+    addCanvasViewsMatrxId: (recordId: MatrxRecordId) => void;
+    addCanvasViewsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCanvasViewsMatrxId: (recordId: MatrxRecordId) => void;
+    removeCanvasViewsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCanvasViewsPkValue: (pkValue: string) => void;
+    addCanvasViewsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCanvasViewsPkValue: (pkValue: string) => void;
+    removeCanvasViewsPkValues: (pkValues: Record<string, unknown>) => void;
+    isCanvasViewsMissingRecords: boolean;
+    setCanvasViewsShouldFetch: (shouldFetch: boolean) => void;
+    setCanvasViewsFetchMode: (fetchMode: FetchMode) => void;
+    fetchCanvasViewsQuickRefs: () => void;
+    fetchCanvasViewsOne: (recordId: MatrxRecordId) => void;
+    fetchCanvasViewsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCanvasViewsAll: () => void;
+    fetchCanvasViewsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useCanvasViewsWithFetch = (): UseCanvasViewsWithFetchReturn => {
+    const {
+        selectors: canvasViewsSelectors,
+        actions: canvasViewsActions,
+        allRecords: canvasViewsRecords,
+        recordsById: canvasViewsRecordsById,
+        unsavedRecords: canvasViewsUnsavedRecords,
+        selectedRecordIds: canvasViewsSelectedRecordIds,
+        isLoading: canvasViewsIsLoading,
+        isError: canvasViewsIsError,
+        quickRefRecords: canvasViewsQuickRefRecords,
+        addMatrxId: addCanvasViewsMatrxId,
+        addMatrxIds: addCanvasViewsMatrxIds,
+        removeMatrxId: removeCanvasViewsMatrxId,
+        removeMatrxIds: removeCanvasViewsMatrxIds,
+        addPkValue: addCanvasViewsPkValue,
+        addPkValues: addCanvasViewsPkValues,
+        removePkValue: removeCanvasViewsPkValue,
+        removePkValues: removeCanvasViewsPkValues,
+        isMissingRecords: isCanvasViewsMissingRecords,
+        setShouldFetch: setCanvasViewsShouldFetch,
+        setFetchMode: setCanvasViewsFetchMode,
+        fetchQuickRefs: fetchCanvasViewsQuickRefs,
+        fetchOne: fetchCanvasViewsOne,
+        fetchOneWithFkIfk: fetchCanvasViewsOneWithFkIfk,
+        fetchAll: fetchCanvasViewsAll,
+        fetchPaginated: fetchCanvasViewsPaginated,
+
+    } = useEntityWithFetch("canvasViews");
+
+    return {
+        canvasViewsSelectors,
+        canvasViewsActions,
+        canvasViewsRecords,
+        canvasViewsRecordsById,
+        canvasViewsUnsavedRecords,
+        canvasViewsSelectedRecordIds,
+        canvasViewsIsLoading,
+        canvasViewsIsError,
+        canvasViewsQuickRefRecords,
+        addCanvasViewsMatrxId,
+        addCanvasViewsMatrxIds,
+        removeCanvasViewsMatrxId,
+        removeCanvasViewsMatrxIds,
+        addCanvasViewsPkValue,
+        addCanvasViewsPkValues,
+        removeCanvasViewsPkValue,
+        removeCanvasViewsPkValues,
+        isCanvasViewsMissingRecords,
+        setCanvasViewsShouldFetch,
+        setCanvasViewsFetchMode,
+        fetchCanvasViewsQuickRefs,
+        fetchCanvasViewsOne,
+        fetchCanvasViewsOneWithFkIfk,
+        fetchCanvasViewsAll,
+        fetchCanvasViewsPaginated,
     };
 };
 
@@ -4775,6 +5349,99 @@ export const useNodeCategoryWithFetch = (): UseNodeCategoryWithFetchReturn => {
 
 
 
+type UseNotesWithFetchReturn = {
+    notesSelectors: EntitySelectors<"notes">;
+    notesActions: EntityActions<"notes">;
+    notesRecords: Record<MatrxRecordId, NotesData>;
+    notesRecordsById: Record<string, NotesData>;
+    notesUnsavedRecords: Record<MatrxRecordId, Partial<NotesData>>;
+    notesSelectedRecordIds: MatrxRecordId[];
+    notesIsLoading: boolean;
+    notesIsError: boolean;
+    notesQuickRefRecords: QuickReferenceRecord[];
+    addNotesMatrxId: (recordId: MatrxRecordId) => void;
+    addNotesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeNotesMatrxId: (recordId: MatrxRecordId) => void;
+    removeNotesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addNotesPkValue: (pkValue: string) => void;
+    addNotesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeNotesPkValue: (pkValue: string) => void;
+    removeNotesPkValues: (pkValues: Record<string, unknown>) => void;
+    isNotesMissingRecords: boolean;
+    setNotesShouldFetch: (shouldFetch: boolean) => void;
+    setNotesFetchMode: (fetchMode: FetchMode) => void;
+    fetchNotesQuickRefs: () => void;
+    fetchNotesOne: (recordId: MatrxRecordId) => void;
+    fetchNotesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchNotesAll: () => void;
+    fetchNotesPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useNotesWithFetch = (): UseNotesWithFetchReturn => {
+    const {
+        selectors: notesSelectors,
+        actions: notesActions,
+        allRecords: notesRecords,
+        recordsById: notesRecordsById,
+        unsavedRecords: notesUnsavedRecords,
+        selectedRecordIds: notesSelectedRecordIds,
+        isLoading: notesIsLoading,
+        isError: notesIsError,
+        quickRefRecords: notesQuickRefRecords,
+        addMatrxId: addNotesMatrxId,
+        addMatrxIds: addNotesMatrxIds,
+        removeMatrxId: removeNotesMatrxId,
+        removeMatrxIds: removeNotesMatrxIds,
+        addPkValue: addNotesPkValue,
+        addPkValues: addNotesPkValues,
+        removePkValue: removeNotesPkValue,
+        removePkValues: removeNotesPkValues,
+        isMissingRecords: isNotesMissingRecords,
+        setShouldFetch: setNotesShouldFetch,
+        setFetchMode: setNotesFetchMode,
+        fetchQuickRefs: fetchNotesQuickRefs,
+        fetchOne: fetchNotesOne,
+        fetchOneWithFkIfk: fetchNotesOneWithFkIfk,
+        fetchAll: fetchNotesAll,
+        fetchPaginated: fetchNotesPaginated,
+
+    } = useEntityWithFetch("notes");
+
+    return {
+        notesSelectors,
+        notesActions,
+        notesRecords,
+        notesRecordsById,
+        notesUnsavedRecords,
+        notesSelectedRecordIds,
+        notesIsLoading,
+        notesIsError,
+        notesQuickRefRecords,
+        addNotesMatrxId,
+        addNotesMatrxIds,
+        removeNotesMatrxId,
+        removeNotesMatrxIds,
+        addNotesPkValue,
+        addNotesPkValues,
+        removeNotesPkValue,
+        removeNotesPkValues,
+        isNotesMissingRecords,
+        setNotesShouldFetch,
+        setNotesFetchMode,
+        fetchNotesQuickRefs,
+        fetchNotesOne,
+        fetchNotesOneWithFkIfk,
+        fetchNotesAll,
+        fetchNotesPaginated,
+    };
+};
+
+
+
 type UseOrganizationInvitationsWithFetchReturn = {
     organizationInvitationsSelectors: EntitySelectors<"organizationInvitations">;
     organizationInvitationsActions: EntityActions<"organizationInvitations">;
@@ -5607,6 +6274,99 @@ export const usePromptsWithFetch = (): UsePromptsWithFetchReturn => {
         fetchPromptsOneWithFkIfk,
         fetchPromptsAll,
         fetchPromptsPaginated,
+    };
+};
+
+
+
+type UseQuizSessionsWithFetchReturn = {
+    quizSessionsSelectors: EntitySelectors<"quizSessions">;
+    quizSessionsActions: EntityActions<"quizSessions">;
+    quizSessionsRecords: Record<MatrxRecordId, QuizSessionsData>;
+    quizSessionsRecordsById: Record<string, QuizSessionsData>;
+    quizSessionsUnsavedRecords: Record<MatrxRecordId, Partial<QuizSessionsData>>;
+    quizSessionsSelectedRecordIds: MatrxRecordId[];
+    quizSessionsIsLoading: boolean;
+    quizSessionsIsError: boolean;
+    quizSessionsQuickRefRecords: QuickReferenceRecord[];
+    addQuizSessionsMatrxId: (recordId: MatrxRecordId) => void;
+    addQuizSessionsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeQuizSessionsMatrxId: (recordId: MatrxRecordId) => void;
+    removeQuizSessionsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addQuizSessionsPkValue: (pkValue: string) => void;
+    addQuizSessionsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeQuizSessionsPkValue: (pkValue: string) => void;
+    removeQuizSessionsPkValues: (pkValues: Record<string, unknown>) => void;
+    isQuizSessionsMissingRecords: boolean;
+    setQuizSessionsShouldFetch: (shouldFetch: boolean) => void;
+    setQuizSessionsFetchMode: (fetchMode: FetchMode) => void;
+    fetchQuizSessionsQuickRefs: () => void;
+    fetchQuizSessionsOne: (recordId: MatrxRecordId) => void;
+    fetchQuizSessionsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchQuizSessionsAll: () => void;
+    fetchQuizSessionsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useQuizSessionsWithFetch = (): UseQuizSessionsWithFetchReturn => {
+    const {
+        selectors: quizSessionsSelectors,
+        actions: quizSessionsActions,
+        allRecords: quizSessionsRecords,
+        recordsById: quizSessionsRecordsById,
+        unsavedRecords: quizSessionsUnsavedRecords,
+        selectedRecordIds: quizSessionsSelectedRecordIds,
+        isLoading: quizSessionsIsLoading,
+        isError: quizSessionsIsError,
+        quickRefRecords: quizSessionsQuickRefRecords,
+        addMatrxId: addQuizSessionsMatrxId,
+        addMatrxIds: addQuizSessionsMatrxIds,
+        removeMatrxId: removeQuizSessionsMatrxId,
+        removeMatrxIds: removeQuizSessionsMatrxIds,
+        addPkValue: addQuizSessionsPkValue,
+        addPkValues: addQuizSessionsPkValues,
+        removePkValue: removeQuizSessionsPkValue,
+        removePkValues: removeQuizSessionsPkValues,
+        isMissingRecords: isQuizSessionsMissingRecords,
+        setShouldFetch: setQuizSessionsShouldFetch,
+        setFetchMode: setQuizSessionsFetchMode,
+        fetchQuickRefs: fetchQuizSessionsQuickRefs,
+        fetchOne: fetchQuizSessionsOne,
+        fetchOneWithFkIfk: fetchQuizSessionsOneWithFkIfk,
+        fetchAll: fetchQuizSessionsAll,
+        fetchPaginated: fetchQuizSessionsPaginated,
+
+    } = useEntityWithFetch("quizSessions");
+
+    return {
+        quizSessionsSelectors,
+        quizSessionsActions,
+        quizSessionsRecords,
+        quizSessionsRecordsById,
+        quizSessionsUnsavedRecords,
+        quizSessionsSelectedRecordIds,
+        quizSessionsIsLoading,
+        quizSessionsIsError,
+        quizSessionsQuickRefRecords,
+        addQuizSessionsMatrxId,
+        addQuizSessionsMatrxIds,
+        removeQuizSessionsMatrxId,
+        removeQuizSessionsMatrxIds,
+        addQuizSessionsPkValue,
+        addQuizSessionsPkValues,
+        removeQuizSessionsPkValue,
+        removeQuizSessionsPkValues,
+        isQuizSessionsMissingRecords,
+        setQuizSessionsShouldFetch,
+        setQuizSessionsFetchMode,
+        fetchQuizSessionsQuickRefs,
+        fetchQuizSessionsOne,
+        fetchQuizSessionsOneWithFkIfk,
+        fetchQuizSessionsAll,
+        fetchQuizSessionsPaginated,
     };
 };
 
@@ -8588,6 +9348,99 @@ export const useScrapeTaskResponseWithFetch = (): UseScrapeTaskResponseWithFetch
 
 
 
+type UseSharedCanvasItemsWithFetchReturn = {
+    sharedCanvasItemsSelectors: EntitySelectors<"sharedCanvasItems">;
+    sharedCanvasItemsActions: EntityActions<"sharedCanvasItems">;
+    sharedCanvasItemsRecords: Record<MatrxRecordId, SharedCanvasItemsData>;
+    sharedCanvasItemsRecordsById: Record<string, SharedCanvasItemsData>;
+    sharedCanvasItemsUnsavedRecords: Record<MatrxRecordId, Partial<SharedCanvasItemsData>>;
+    sharedCanvasItemsSelectedRecordIds: MatrxRecordId[];
+    sharedCanvasItemsIsLoading: boolean;
+    sharedCanvasItemsIsError: boolean;
+    sharedCanvasItemsQuickRefRecords: QuickReferenceRecord[];
+    addSharedCanvasItemsMatrxId: (recordId: MatrxRecordId) => void;
+    addSharedCanvasItemsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeSharedCanvasItemsMatrxId: (recordId: MatrxRecordId) => void;
+    removeSharedCanvasItemsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addSharedCanvasItemsPkValue: (pkValue: string) => void;
+    addSharedCanvasItemsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeSharedCanvasItemsPkValue: (pkValue: string) => void;
+    removeSharedCanvasItemsPkValues: (pkValues: Record<string, unknown>) => void;
+    isSharedCanvasItemsMissingRecords: boolean;
+    setSharedCanvasItemsShouldFetch: (shouldFetch: boolean) => void;
+    setSharedCanvasItemsFetchMode: (fetchMode: FetchMode) => void;
+    fetchSharedCanvasItemsQuickRefs: () => void;
+    fetchSharedCanvasItemsOne: (recordId: MatrxRecordId) => void;
+    fetchSharedCanvasItemsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchSharedCanvasItemsAll: () => void;
+    fetchSharedCanvasItemsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useSharedCanvasItemsWithFetch = (): UseSharedCanvasItemsWithFetchReturn => {
+    const {
+        selectors: sharedCanvasItemsSelectors,
+        actions: sharedCanvasItemsActions,
+        allRecords: sharedCanvasItemsRecords,
+        recordsById: sharedCanvasItemsRecordsById,
+        unsavedRecords: sharedCanvasItemsUnsavedRecords,
+        selectedRecordIds: sharedCanvasItemsSelectedRecordIds,
+        isLoading: sharedCanvasItemsIsLoading,
+        isError: sharedCanvasItemsIsError,
+        quickRefRecords: sharedCanvasItemsQuickRefRecords,
+        addMatrxId: addSharedCanvasItemsMatrxId,
+        addMatrxIds: addSharedCanvasItemsMatrxIds,
+        removeMatrxId: removeSharedCanvasItemsMatrxId,
+        removeMatrxIds: removeSharedCanvasItemsMatrxIds,
+        addPkValue: addSharedCanvasItemsPkValue,
+        addPkValues: addSharedCanvasItemsPkValues,
+        removePkValue: removeSharedCanvasItemsPkValue,
+        removePkValues: removeSharedCanvasItemsPkValues,
+        isMissingRecords: isSharedCanvasItemsMissingRecords,
+        setShouldFetch: setSharedCanvasItemsShouldFetch,
+        setFetchMode: setSharedCanvasItemsFetchMode,
+        fetchQuickRefs: fetchSharedCanvasItemsQuickRefs,
+        fetchOne: fetchSharedCanvasItemsOne,
+        fetchOneWithFkIfk: fetchSharedCanvasItemsOneWithFkIfk,
+        fetchAll: fetchSharedCanvasItemsAll,
+        fetchPaginated: fetchSharedCanvasItemsPaginated,
+
+    } = useEntityWithFetch("sharedCanvasItems");
+
+    return {
+        sharedCanvasItemsSelectors,
+        sharedCanvasItemsActions,
+        sharedCanvasItemsRecords,
+        sharedCanvasItemsRecordsById,
+        sharedCanvasItemsUnsavedRecords,
+        sharedCanvasItemsSelectedRecordIds,
+        sharedCanvasItemsIsLoading,
+        sharedCanvasItemsIsError,
+        sharedCanvasItemsQuickRefRecords,
+        addSharedCanvasItemsMatrxId,
+        addSharedCanvasItemsMatrxIds,
+        removeSharedCanvasItemsMatrxId,
+        removeSharedCanvasItemsMatrxIds,
+        addSharedCanvasItemsPkValue,
+        addSharedCanvasItemsPkValues,
+        removeSharedCanvasItemsPkValue,
+        removeSharedCanvasItemsPkValues,
+        isSharedCanvasItemsMissingRecords,
+        setSharedCanvasItemsShouldFetch,
+        setSharedCanvasItemsFetchMode,
+        fetchSharedCanvasItemsQuickRefs,
+        fetchSharedCanvasItemsOne,
+        fetchSharedCanvasItemsOneWithFkIfk,
+        fetchSharedCanvasItemsAll,
+        fetchSharedCanvasItemsPaginated,
+    };
+};
+
+
+
 type UseSiteMetadataWithFetchReturn = {
     siteMetadataSelectors: EntitySelectors<"siteMetadata">;
     siteMetadataActions: EntityActions<"siteMetadata">;
@@ -8862,6 +9715,99 @@ export const useSubcategoryConfigsWithFetch = (): UseSubcategoryConfigsWithFetch
         fetchSubcategoryConfigsOneWithFkIfk,
         fetchSubcategoryConfigsAll,
         fetchSubcategoryConfigsPaginated,
+    };
+};
+
+
+
+type UseSystemAnnouncementsWithFetchReturn = {
+    systemAnnouncementsSelectors: EntitySelectors<"systemAnnouncements">;
+    systemAnnouncementsActions: EntityActions<"systemAnnouncements">;
+    systemAnnouncementsRecords: Record<MatrxRecordId, SystemAnnouncementsData>;
+    systemAnnouncementsRecordsById: Record<string, SystemAnnouncementsData>;
+    systemAnnouncementsUnsavedRecords: Record<MatrxRecordId, Partial<SystemAnnouncementsData>>;
+    systemAnnouncementsSelectedRecordIds: MatrxRecordId[];
+    systemAnnouncementsIsLoading: boolean;
+    systemAnnouncementsIsError: boolean;
+    systemAnnouncementsQuickRefRecords: QuickReferenceRecord[];
+    addSystemAnnouncementsMatrxId: (recordId: MatrxRecordId) => void;
+    addSystemAnnouncementsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeSystemAnnouncementsMatrxId: (recordId: MatrxRecordId) => void;
+    removeSystemAnnouncementsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addSystemAnnouncementsPkValue: (pkValue: string) => void;
+    addSystemAnnouncementsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeSystemAnnouncementsPkValue: (pkValue: string) => void;
+    removeSystemAnnouncementsPkValues: (pkValues: Record<string, unknown>) => void;
+    isSystemAnnouncementsMissingRecords: boolean;
+    setSystemAnnouncementsShouldFetch: (shouldFetch: boolean) => void;
+    setSystemAnnouncementsFetchMode: (fetchMode: FetchMode) => void;
+    fetchSystemAnnouncementsQuickRefs: () => void;
+    fetchSystemAnnouncementsOne: (recordId: MatrxRecordId) => void;
+    fetchSystemAnnouncementsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchSystemAnnouncementsAll: () => void;
+    fetchSystemAnnouncementsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useSystemAnnouncementsWithFetch = (): UseSystemAnnouncementsWithFetchReturn => {
+    const {
+        selectors: systemAnnouncementsSelectors,
+        actions: systemAnnouncementsActions,
+        allRecords: systemAnnouncementsRecords,
+        recordsById: systemAnnouncementsRecordsById,
+        unsavedRecords: systemAnnouncementsUnsavedRecords,
+        selectedRecordIds: systemAnnouncementsSelectedRecordIds,
+        isLoading: systemAnnouncementsIsLoading,
+        isError: systemAnnouncementsIsError,
+        quickRefRecords: systemAnnouncementsQuickRefRecords,
+        addMatrxId: addSystemAnnouncementsMatrxId,
+        addMatrxIds: addSystemAnnouncementsMatrxIds,
+        removeMatrxId: removeSystemAnnouncementsMatrxId,
+        removeMatrxIds: removeSystemAnnouncementsMatrxIds,
+        addPkValue: addSystemAnnouncementsPkValue,
+        addPkValues: addSystemAnnouncementsPkValues,
+        removePkValue: removeSystemAnnouncementsPkValue,
+        removePkValues: removeSystemAnnouncementsPkValues,
+        isMissingRecords: isSystemAnnouncementsMissingRecords,
+        setShouldFetch: setSystemAnnouncementsShouldFetch,
+        setFetchMode: setSystemAnnouncementsFetchMode,
+        fetchQuickRefs: fetchSystemAnnouncementsQuickRefs,
+        fetchOne: fetchSystemAnnouncementsOne,
+        fetchOneWithFkIfk: fetchSystemAnnouncementsOneWithFkIfk,
+        fetchAll: fetchSystemAnnouncementsAll,
+        fetchPaginated: fetchSystemAnnouncementsPaginated,
+
+    } = useEntityWithFetch("systemAnnouncements");
+
+    return {
+        systemAnnouncementsSelectors,
+        systemAnnouncementsActions,
+        systemAnnouncementsRecords,
+        systemAnnouncementsRecordsById,
+        systemAnnouncementsUnsavedRecords,
+        systemAnnouncementsSelectedRecordIds,
+        systemAnnouncementsIsLoading,
+        systemAnnouncementsIsError,
+        systemAnnouncementsQuickRefRecords,
+        addSystemAnnouncementsMatrxId,
+        addSystemAnnouncementsMatrxIds,
+        removeSystemAnnouncementsMatrxId,
+        removeSystemAnnouncementsMatrxIds,
+        addSystemAnnouncementsPkValue,
+        addSystemAnnouncementsPkValues,
+        removeSystemAnnouncementsPkValue,
+        removeSystemAnnouncementsPkValues,
+        isSystemAnnouncementsMissingRecords,
+        setSystemAnnouncementsShouldFetch,
+        setSystemAnnouncementsFetchMode,
+        fetchSystemAnnouncementsQuickRefs,
+        fetchSystemAnnouncementsOne,
+        fetchSystemAnnouncementsOneWithFkIfk,
+        fetchSystemAnnouncementsAll,
+        fetchSystemAnnouncementsPaginated,
     };
 };
 
@@ -9611,6 +10557,99 @@ export const useToolsWithFetch = (): UseToolsWithFetchReturn => {
 
 
 
+type UseTranscriptsWithFetchReturn = {
+    transcriptsSelectors: EntitySelectors<"transcripts">;
+    transcriptsActions: EntityActions<"transcripts">;
+    transcriptsRecords: Record<MatrxRecordId, TranscriptsData>;
+    transcriptsRecordsById: Record<string, TranscriptsData>;
+    transcriptsUnsavedRecords: Record<MatrxRecordId, Partial<TranscriptsData>>;
+    transcriptsSelectedRecordIds: MatrxRecordId[];
+    transcriptsIsLoading: boolean;
+    transcriptsIsError: boolean;
+    transcriptsQuickRefRecords: QuickReferenceRecord[];
+    addTranscriptsMatrxId: (recordId: MatrxRecordId) => void;
+    addTranscriptsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTranscriptsMatrxId: (recordId: MatrxRecordId) => void;
+    removeTranscriptsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTranscriptsPkValue: (pkValue: string) => void;
+    addTranscriptsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTranscriptsPkValue: (pkValue: string) => void;
+    removeTranscriptsPkValues: (pkValues: Record<string, unknown>) => void;
+    isTranscriptsMissingRecords: boolean;
+    setTranscriptsShouldFetch: (shouldFetch: boolean) => void;
+    setTranscriptsFetchMode: (fetchMode: FetchMode) => void;
+    fetchTranscriptsQuickRefs: () => void;
+    fetchTranscriptsOne: (recordId: MatrxRecordId) => void;
+    fetchTranscriptsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTranscriptsAll: () => void;
+    fetchTranscriptsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useTranscriptsWithFetch = (): UseTranscriptsWithFetchReturn => {
+    const {
+        selectors: transcriptsSelectors,
+        actions: transcriptsActions,
+        allRecords: transcriptsRecords,
+        recordsById: transcriptsRecordsById,
+        unsavedRecords: transcriptsUnsavedRecords,
+        selectedRecordIds: transcriptsSelectedRecordIds,
+        isLoading: transcriptsIsLoading,
+        isError: transcriptsIsError,
+        quickRefRecords: transcriptsQuickRefRecords,
+        addMatrxId: addTranscriptsMatrxId,
+        addMatrxIds: addTranscriptsMatrxIds,
+        removeMatrxId: removeTranscriptsMatrxId,
+        removeMatrxIds: removeTranscriptsMatrxIds,
+        addPkValue: addTranscriptsPkValue,
+        addPkValues: addTranscriptsPkValues,
+        removePkValue: removeTranscriptsPkValue,
+        removePkValues: removeTranscriptsPkValues,
+        isMissingRecords: isTranscriptsMissingRecords,
+        setShouldFetch: setTranscriptsShouldFetch,
+        setFetchMode: setTranscriptsFetchMode,
+        fetchQuickRefs: fetchTranscriptsQuickRefs,
+        fetchOne: fetchTranscriptsOne,
+        fetchOneWithFkIfk: fetchTranscriptsOneWithFkIfk,
+        fetchAll: fetchTranscriptsAll,
+        fetchPaginated: fetchTranscriptsPaginated,
+
+    } = useEntityWithFetch("transcripts");
+
+    return {
+        transcriptsSelectors,
+        transcriptsActions,
+        transcriptsRecords,
+        transcriptsRecordsById,
+        transcriptsUnsavedRecords,
+        transcriptsSelectedRecordIds,
+        transcriptsIsLoading,
+        transcriptsIsError,
+        transcriptsQuickRefRecords,
+        addTranscriptsMatrxId,
+        addTranscriptsMatrxIds,
+        removeTranscriptsMatrxId,
+        removeTranscriptsMatrxIds,
+        addTranscriptsPkValue,
+        addTranscriptsPkValues,
+        removeTranscriptsPkValue,
+        removeTranscriptsPkValues,
+        isTranscriptsMissingRecords,
+        setTranscriptsShouldFetch,
+        setTranscriptsFetchMode,
+        fetchTranscriptsQuickRefs,
+        fetchTranscriptsOne,
+        fetchTranscriptsOneWithFkIfk,
+        fetchTranscriptsAll,
+        fetchTranscriptsPaginated,
+    };
+};
+
+
+
 type UseTransformerWithFetchReturn = {
     transformerSelectors: EntitySelectors<"transformer">;
     transformerActions: EntityActions<"transformer">;
@@ -9699,6 +10738,378 @@ export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
         fetchTransformerOneWithFkIfk,
         fetchTransformerAll,
         fetchTransformerPaginated,
+    };
+};
+
+
+
+type UseUserAchievementsWithFetchReturn = {
+    userAchievementsSelectors: EntitySelectors<"userAchievements">;
+    userAchievementsActions: EntityActions<"userAchievements">;
+    userAchievementsRecords: Record<MatrxRecordId, UserAchievementsData>;
+    userAchievementsRecordsById: Record<string, UserAchievementsData>;
+    userAchievementsUnsavedRecords: Record<MatrxRecordId, Partial<UserAchievementsData>>;
+    userAchievementsSelectedRecordIds: MatrxRecordId[];
+    userAchievementsIsLoading: boolean;
+    userAchievementsIsError: boolean;
+    userAchievementsQuickRefRecords: QuickReferenceRecord[];
+    addUserAchievementsMatrxId: (recordId: MatrxRecordId) => void;
+    addUserAchievementsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserAchievementsMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserAchievementsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserAchievementsPkValue: (pkValue: string) => void;
+    addUserAchievementsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserAchievementsPkValue: (pkValue: string) => void;
+    removeUserAchievementsPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserAchievementsMissingRecords: boolean;
+    setUserAchievementsShouldFetch: (shouldFetch: boolean) => void;
+    setUserAchievementsFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserAchievementsQuickRefs: () => void;
+    fetchUserAchievementsOne: (recordId: MatrxRecordId) => void;
+    fetchUserAchievementsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserAchievementsAll: () => void;
+    fetchUserAchievementsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useUserAchievementsWithFetch = (): UseUserAchievementsWithFetchReturn => {
+    const {
+        selectors: userAchievementsSelectors,
+        actions: userAchievementsActions,
+        allRecords: userAchievementsRecords,
+        recordsById: userAchievementsRecordsById,
+        unsavedRecords: userAchievementsUnsavedRecords,
+        selectedRecordIds: userAchievementsSelectedRecordIds,
+        isLoading: userAchievementsIsLoading,
+        isError: userAchievementsIsError,
+        quickRefRecords: userAchievementsQuickRefRecords,
+        addMatrxId: addUserAchievementsMatrxId,
+        addMatrxIds: addUserAchievementsMatrxIds,
+        removeMatrxId: removeUserAchievementsMatrxId,
+        removeMatrxIds: removeUserAchievementsMatrxIds,
+        addPkValue: addUserAchievementsPkValue,
+        addPkValues: addUserAchievementsPkValues,
+        removePkValue: removeUserAchievementsPkValue,
+        removePkValues: removeUserAchievementsPkValues,
+        isMissingRecords: isUserAchievementsMissingRecords,
+        setShouldFetch: setUserAchievementsShouldFetch,
+        setFetchMode: setUserAchievementsFetchMode,
+        fetchQuickRefs: fetchUserAchievementsQuickRefs,
+        fetchOne: fetchUserAchievementsOne,
+        fetchOneWithFkIfk: fetchUserAchievementsOneWithFkIfk,
+        fetchAll: fetchUserAchievementsAll,
+        fetchPaginated: fetchUserAchievementsPaginated,
+
+    } = useEntityWithFetch("userAchievements");
+
+    return {
+        userAchievementsSelectors,
+        userAchievementsActions,
+        userAchievementsRecords,
+        userAchievementsRecordsById,
+        userAchievementsUnsavedRecords,
+        userAchievementsSelectedRecordIds,
+        userAchievementsIsLoading,
+        userAchievementsIsError,
+        userAchievementsQuickRefRecords,
+        addUserAchievementsMatrxId,
+        addUserAchievementsMatrxIds,
+        removeUserAchievementsMatrxId,
+        removeUserAchievementsMatrxIds,
+        addUserAchievementsPkValue,
+        addUserAchievementsPkValues,
+        removeUserAchievementsPkValue,
+        removeUserAchievementsPkValues,
+        isUserAchievementsMissingRecords,
+        setUserAchievementsShouldFetch,
+        setUserAchievementsFetchMode,
+        fetchUserAchievementsQuickRefs,
+        fetchUserAchievementsOne,
+        fetchUserAchievementsOneWithFkIfk,
+        fetchUserAchievementsAll,
+        fetchUserAchievementsPaginated,
+    };
+};
+
+
+
+type UseUserBookmarksWithFetchReturn = {
+    userBookmarksSelectors: EntitySelectors<"userBookmarks">;
+    userBookmarksActions: EntityActions<"userBookmarks">;
+    userBookmarksRecords: Record<MatrxRecordId, UserBookmarksData>;
+    userBookmarksRecordsById: Record<string, UserBookmarksData>;
+    userBookmarksUnsavedRecords: Record<MatrxRecordId, Partial<UserBookmarksData>>;
+    userBookmarksSelectedRecordIds: MatrxRecordId[];
+    userBookmarksIsLoading: boolean;
+    userBookmarksIsError: boolean;
+    userBookmarksQuickRefRecords: QuickReferenceRecord[];
+    addUserBookmarksMatrxId: (recordId: MatrxRecordId) => void;
+    addUserBookmarksMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserBookmarksMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserBookmarksMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserBookmarksPkValue: (pkValue: string) => void;
+    addUserBookmarksPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserBookmarksPkValue: (pkValue: string) => void;
+    removeUserBookmarksPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserBookmarksMissingRecords: boolean;
+    setUserBookmarksShouldFetch: (shouldFetch: boolean) => void;
+    setUserBookmarksFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserBookmarksQuickRefs: () => void;
+    fetchUserBookmarksOne: (recordId: MatrxRecordId) => void;
+    fetchUserBookmarksOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserBookmarksAll: () => void;
+    fetchUserBookmarksPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useUserBookmarksWithFetch = (): UseUserBookmarksWithFetchReturn => {
+    const {
+        selectors: userBookmarksSelectors,
+        actions: userBookmarksActions,
+        allRecords: userBookmarksRecords,
+        recordsById: userBookmarksRecordsById,
+        unsavedRecords: userBookmarksUnsavedRecords,
+        selectedRecordIds: userBookmarksSelectedRecordIds,
+        isLoading: userBookmarksIsLoading,
+        isError: userBookmarksIsError,
+        quickRefRecords: userBookmarksQuickRefRecords,
+        addMatrxId: addUserBookmarksMatrxId,
+        addMatrxIds: addUserBookmarksMatrxIds,
+        removeMatrxId: removeUserBookmarksMatrxId,
+        removeMatrxIds: removeUserBookmarksMatrxIds,
+        addPkValue: addUserBookmarksPkValue,
+        addPkValues: addUserBookmarksPkValues,
+        removePkValue: removeUserBookmarksPkValue,
+        removePkValues: removeUserBookmarksPkValues,
+        isMissingRecords: isUserBookmarksMissingRecords,
+        setShouldFetch: setUserBookmarksShouldFetch,
+        setFetchMode: setUserBookmarksFetchMode,
+        fetchQuickRefs: fetchUserBookmarksQuickRefs,
+        fetchOne: fetchUserBookmarksOne,
+        fetchOneWithFkIfk: fetchUserBookmarksOneWithFkIfk,
+        fetchAll: fetchUserBookmarksAll,
+        fetchPaginated: fetchUserBookmarksPaginated,
+
+    } = useEntityWithFetch("userBookmarks");
+
+    return {
+        userBookmarksSelectors,
+        userBookmarksActions,
+        userBookmarksRecords,
+        userBookmarksRecordsById,
+        userBookmarksUnsavedRecords,
+        userBookmarksSelectedRecordIds,
+        userBookmarksIsLoading,
+        userBookmarksIsError,
+        userBookmarksQuickRefRecords,
+        addUserBookmarksMatrxId,
+        addUserBookmarksMatrxIds,
+        removeUserBookmarksMatrxId,
+        removeUserBookmarksMatrxIds,
+        addUserBookmarksPkValue,
+        addUserBookmarksPkValues,
+        removeUserBookmarksPkValue,
+        removeUserBookmarksPkValues,
+        isUserBookmarksMissingRecords,
+        setUserBookmarksShouldFetch,
+        setUserBookmarksFetchMode,
+        fetchUserBookmarksQuickRefs,
+        fetchUserBookmarksOne,
+        fetchUserBookmarksOneWithFkIfk,
+        fetchUserBookmarksAll,
+        fetchUserBookmarksPaginated,
+    };
+};
+
+
+
+type UseUserFeedbackWithFetchReturn = {
+    userFeedbackSelectors: EntitySelectors<"userFeedback">;
+    userFeedbackActions: EntityActions<"userFeedback">;
+    userFeedbackRecords: Record<MatrxRecordId, UserFeedbackData>;
+    userFeedbackRecordsById: Record<string, UserFeedbackData>;
+    userFeedbackUnsavedRecords: Record<MatrxRecordId, Partial<UserFeedbackData>>;
+    userFeedbackSelectedRecordIds: MatrxRecordId[];
+    userFeedbackIsLoading: boolean;
+    userFeedbackIsError: boolean;
+    userFeedbackQuickRefRecords: QuickReferenceRecord[];
+    addUserFeedbackMatrxId: (recordId: MatrxRecordId) => void;
+    addUserFeedbackMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserFeedbackMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserFeedbackMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserFeedbackPkValue: (pkValue: string) => void;
+    addUserFeedbackPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserFeedbackPkValue: (pkValue: string) => void;
+    removeUserFeedbackPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserFeedbackMissingRecords: boolean;
+    setUserFeedbackShouldFetch: (shouldFetch: boolean) => void;
+    setUserFeedbackFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserFeedbackQuickRefs: () => void;
+    fetchUserFeedbackOne: (recordId: MatrxRecordId) => void;
+    fetchUserFeedbackOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserFeedbackAll: () => void;
+    fetchUserFeedbackPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useUserFeedbackWithFetch = (): UseUserFeedbackWithFetchReturn => {
+    const {
+        selectors: userFeedbackSelectors,
+        actions: userFeedbackActions,
+        allRecords: userFeedbackRecords,
+        recordsById: userFeedbackRecordsById,
+        unsavedRecords: userFeedbackUnsavedRecords,
+        selectedRecordIds: userFeedbackSelectedRecordIds,
+        isLoading: userFeedbackIsLoading,
+        isError: userFeedbackIsError,
+        quickRefRecords: userFeedbackQuickRefRecords,
+        addMatrxId: addUserFeedbackMatrxId,
+        addMatrxIds: addUserFeedbackMatrxIds,
+        removeMatrxId: removeUserFeedbackMatrxId,
+        removeMatrxIds: removeUserFeedbackMatrxIds,
+        addPkValue: addUserFeedbackPkValue,
+        addPkValues: addUserFeedbackPkValues,
+        removePkValue: removeUserFeedbackPkValue,
+        removePkValues: removeUserFeedbackPkValues,
+        isMissingRecords: isUserFeedbackMissingRecords,
+        setShouldFetch: setUserFeedbackShouldFetch,
+        setFetchMode: setUserFeedbackFetchMode,
+        fetchQuickRefs: fetchUserFeedbackQuickRefs,
+        fetchOne: fetchUserFeedbackOne,
+        fetchOneWithFkIfk: fetchUserFeedbackOneWithFkIfk,
+        fetchAll: fetchUserFeedbackAll,
+        fetchPaginated: fetchUserFeedbackPaginated,
+
+    } = useEntityWithFetch("userFeedback");
+
+    return {
+        userFeedbackSelectors,
+        userFeedbackActions,
+        userFeedbackRecords,
+        userFeedbackRecordsById,
+        userFeedbackUnsavedRecords,
+        userFeedbackSelectedRecordIds,
+        userFeedbackIsLoading,
+        userFeedbackIsError,
+        userFeedbackQuickRefRecords,
+        addUserFeedbackMatrxId,
+        addUserFeedbackMatrxIds,
+        removeUserFeedbackMatrxId,
+        removeUserFeedbackMatrxIds,
+        addUserFeedbackPkValue,
+        addUserFeedbackPkValues,
+        removeUserFeedbackPkValue,
+        removeUserFeedbackPkValues,
+        isUserFeedbackMissingRecords,
+        setUserFeedbackShouldFetch,
+        setUserFeedbackFetchMode,
+        fetchUserFeedbackQuickRefs,
+        fetchUserFeedbackOne,
+        fetchUserFeedbackOneWithFkIfk,
+        fetchUserFeedbackAll,
+        fetchUserFeedbackPaginated,
+    };
+};
+
+
+
+type UseUserFollowsWithFetchReturn = {
+    userFollowsSelectors: EntitySelectors<"userFollows">;
+    userFollowsActions: EntityActions<"userFollows">;
+    userFollowsRecords: Record<MatrxRecordId, UserFollowsData>;
+    userFollowsRecordsById: Record<string, UserFollowsData>;
+    userFollowsUnsavedRecords: Record<MatrxRecordId, Partial<UserFollowsData>>;
+    userFollowsSelectedRecordIds: MatrxRecordId[];
+    userFollowsIsLoading: boolean;
+    userFollowsIsError: boolean;
+    userFollowsQuickRefRecords: QuickReferenceRecord[];
+    addUserFollowsMatrxId: (recordId: MatrxRecordId) => void;
+    addUserFollowsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserFollowsMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserFollowsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserFollowsPkValue: (pkValue: string) => void;
+    addUserFollowsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserFollowsPkValue: (pkValue: string) => void;
+    removeUserFollowsPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserFollowsMissingRecords: boolean;
+    setUserFollowsShouldFetch: (shouldFetch: boolean) => void;
+    setUserFollowsFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserFollowsQuickRefs: () => void;
+    fetchUserFollowsOne: (recordId: MatrxRecordId) => void;
+    fetchUserFollowsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserFollowsAll: () => void;
+    fetchUserFollowsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useUserFollowsWithFetch = (): UseUserFollowsWithFetchReturn => {
+    const {
+        selectors: userFollowsSelectors,
+        actions: userFollowsActions,
+        allRecords: userFollowsRecords,
+        recordsById: userFollowsRecordsById,
+        unsavedRecords: userFollowsUnsavedRecords,
+        selectedRecordIds: userFollowsSelectedRecordIds,
+        isLoading: userFollowsIsLoading,
+        isError: userFollowsIsError,
+        quickRefRecords: userFollowsQuickRefRecords,
+        addMatrxId: addUserFollowsMatrxId,
+        addMatrxIds: addUserFollowsMatrxIds,
+        removeMatrxId: removeUserFollowsMatrxId,
+        removeMatrxIds: removeUserFollowsMatrxIds,
+        addPkValue: addUserFollowsPkValue,
+        addPkValues: addUserFollowsPkValues,
+        removePkValue: removeUserFollowsPkValue,
+        removePkValues: removeUserFollowsPkValues,
+        isMissingRecords: isUserFollowsMissingRecords,
+        setShouldFetch: setUserFollowsShouldFetch,
+        setFetchMode: setUserFollowsFetchMode,
+        fetchQuickRefs: fetchUserFollowsQuickRefs,
+        fetchOne: fetchUserFollowsOne,
+        fetchOneWithFkIfk: fetchUserFollowsOneWithFkIfk,
+        fetchAll: fetchUserFollowsAll,
+        fetchPaginated: fetchUserFollowsPaginated,
+
+    } = useEntityWithFetch("userFollows");
+
+    return {
+        userFollowsSelectors,
+        userFollowsActions,
+        userFollowsRecords,
+        userFollowsRecordsById,
+        userFollowsUnsavedRecords,
+        userFollowsSelectedRecordIds,
+        userFollowsIsLoading,
+        userFollowsIsError,
+        userFollowsQuickRefRecords,
+        addUserFollowsMatrxId,
+        addUserFollowsMatrxIds,
+        removeUserFollowsMatrxId,
+        removeUserFollowsMatrxIds,
+        addUserFollowsPkValue,
+        addUserFollowsPkValues,
+        removeUserFollowsPkValue,
+        removeUserFollowsPkValues,
+        isUserFollowsMissingRecords,
+        setUserFollowsShouldFetch,
+        setUserFollowsFetchMode,
+        fetchUserFollowsQuickRefs,
+        fetchUserFollowsOne,
+        fetchUserFollowsOneWithFkIfk,
+        fetchUserFollowsAll,
+        fetchUserFollowsPaginated,
     };
 };
 
@@ -9978,6 +11389,99 @@ export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn
         fetchUserPreferencesOneWithFkIfk,
         fetchUserPreferencesAll,
         fetchUserPreferencesPaginated,
+    };
+};
+
+
+
+type UseUserStatsWithFetchReturn = {
+    userStatsSelectors: EntitySelectors<"userStats">;
+    userStatsActions: EntityActions<"userStats">;
+    userStatsRecords: Record<MatrxRecordId, UserStatsData>;
+    userStatsRecordsById: Record<string, UserStatsData>;
+    userStatsUnsavedRecords: Record<MatrxRecordId, Partial<UserStatsData>>;
+    userStatsSelectedRecordIds: MatrxRecordId[];
+    userStatsIsLoading: boolean;
+    userStatsIsError: boolean;
+    userStatsQuickRefRecords: QuickReferenceRecord[];
+    addUserStatsMatrxId: (recordId: MatrxRecordId) => void;
+    addUserStatsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserStatsMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserStatsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserStatsPkValue: (pkValue: string) => void;
+    addUserStatsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserStatsPkValue: (pkValue: string) => void;
+    removeUserStatsPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserStatsMissingRecords: boolean;
+    setUserStatsShouldFetch: (shouldFetch: boolean) => void;
+    setUserStatsFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserStatsQuickRefs: () => void;
+    fetchUserStatsOne: (recordId: MatrxRecordId) => void;
+    fetchUserStatsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserStatsAll: () => void;
+    fetchUserStatsPaginated: (page: number, pageSize: number, options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    }) => void
+};
+
+export const useUserStatsWithFetch = (): UseUserStatsWithFetchReturn => {
+    const {
+        selectors: userStatsSelectors,
+        actions: userStatsActions,
+        allRecords: userStatsRecords,
+        recordsById: userStatsRecordsById,
+        unsavedRecords: userStatsUnsavedRecords,
+        selectedRecordIds: userStatsSelectedRecordIds,
+        isLoading: userStatsIsLoading,
+        isError: userStatsIsError,
+        quickRefRecords: userStatsQuickRefRecords,
+        addMatrxId: addUserStatsMatrxId,
+        addMatrxIds: addUserStatsMatrxIds,
+        removeMatrxId: removeUserStatsMatrxId,
+        removeMatrxIds: removeUserStatsMatrxIds,
+        addPkValue: addUserStatsPkValue,
+        addPkValues: addUserStatsPkValues,
+        removePkValue: removeUserStatsPkValue,
+        removePkValues: removeUserStatsPkValues,
+        isMissingRecords: isUserStatsMissingRecords,
+        setShouldFetch: setUserStatsShouldFetch,
+        setFetchMode: setUserStatsFetchMode,
+        fetchQuickRefs: fetchUserStatsQuickRefs,
+        fetchOne: fetchUserStatsOne,
+        fetchOneWithFkIfk: fetchUserStatsOneWithFkIfk,
+        fetchAll: fetchUserStatsAll,
+        fetchPaginated: fetchUserStatsPaginated,
+
+    } = useEntityWithFetch("userStats");
+
+    return {
+        userStatsSelectors,
+        userStatsActions,
+        userStatsRecords,
+        userStatsRecordsById,
+        userStatsUnsavedRecords,
+        userStatsSelectedRecordIds,
+        userStatsIsLoading,
+        userStatsIsError,
+        userStatsQuickRefRecords,
+        addUserStatsMatrxId,
+        addUserStatsMatrxIds,
+        removeUserStatsMatrxId,
+        removeUserStatsMatrxIds,
+        addUserStatsPkValue,
+        addUserStatsPkValues,
+        removeUserStatsPkValue,
+        removeUserStatsPkValues,
+        isUserStatsMissingRecords,
+        setUserStatsShouldFetch,
+        setUserStatsFetchMode,
+        fetchUserStatsQuickRefs,
+        fetchUserStatsOne,
+        fetchUserStatsOneWithFkIfk,
+        fetchUserStatsAll,
+        fetchUserStatsPaginated,
     };
 };
 

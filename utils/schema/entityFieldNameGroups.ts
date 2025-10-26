@@ -34,9 +34,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["name", "provider", "description", "additionalCost", "costDetails", "params"]
 },
   aiModel: {
-  nativeFields: ["id", "name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider", "isDeprecated", "isPrimary", "isPremium"],
+  nativeFields: ["id", "name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider", "isDeprecated", "isPrimary", "isPremium", "apiClass"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider", "isDeprecated", "isPrimary", "isPremium"]
+  nativeFieldsNoPk: ["name", "commonName", "modelClass", "provider", "endpoints", "contextWindow", "maxTokens", "capabilities", "controls", "modelProvider", "isDeprecated", "isPrimary", "isPremium", "apiClass"]
 },
   aiModelEndpoint: {
   nativeFields: ["id", "aiModelId", "aiEndpointId", "available", "endpointPriority", "configuration", "notes", "createdAt"],
@@ -117,6 +117,36 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["bucketId", "treeStructure", "lastUpdated"],
   primaryKeyFields: ["bucketId"],
   nativeFieldsNoPk: ["treeStructure", "lastUpdated"]
+},
+  canvasCommentLikes: {
+  nativeFields: ["id", "commentId", "userId", "createdAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["commentId", "userId", "createdAt"]
+},
+  canvasComments: {
+  nativeFields: ["id", "canvasId", "userId", "username", "displayName", "avatarUrl", "content", "parentCommentId", "likeCount", "replyCount", "createdAt", "updatedAt", "edited", "deleted", "flagged", "flagCount"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["canvasId", "userId", "username", "displayName", "avatarUrl", "content", "parentCommentId", "likeCount", "replyCount", "createdAt", "updatedAt", "edited", "deleted", "flagged", "flagCount"]
+},
+  canvasItems: {
+  nativeFields: ["id", "userId", "type", "content", "title", "description", "isFavorited", "isArchived", "tags", "sessionId", "sourceMessageId", "taskId", "isPublic", "shareToken", "createdAt", "updatedAt", "lastAccessedAt", "contentHash"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["userId", "type", "content", "title", "description", "isFavorited", "isArchived", "tags", "sessionId", "sourceMessageId", "taskId", "isPublic", "shareToken", "createdAt", "updatedAt", "lastAccessedAt", "contentHash"]
+},
+  canvasLikes: {
+  nativeFields: ["id", "canvasId", "userId", "createdAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["canvasId", "userId", "createdAt"]
+},
+  canvasScores: {
+  nativeFields: ["id", "canvasId", "userId", "username", "displayName", "score", "maxScore", "percentage", "timeTaken", "completed", "attemptNumber", "createdAt", "data"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["canvasId", "userId", "username", "displayName", "score", "maxScore", "percentage", "timeTaken", "completed", "attemptNumber", "createdAt", "data"]
+},
+  canvasViews: {
+  nativeFields: ["id", "canvasId", "userId", "viewedAt", "sessionId", "referrer", "userAgent", "timeSpent", "completed", "interacted"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["canvasId", "userId", "viewedAt", "sessionId", "referrer", "userAgent", "timeSpent", "completed", "interacted"]
 },
   category: {
   nativeFields: ["id", "name", "description", "slug", "icon", "createdAt"],
@@ -263,6 +293,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "label", "icon", "color", "description"]
 },
+  notes: {
+  nativeFields: ["id", "userId", "label", "content", "folderName", "tags", "metadata", "sharedWith", "isDeleted", "position", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["userId", "label", "content", "folderName", "tags", "metadata", "sharedWith", "isDeleted", "position", "createdAt", "updatedAt"]
+},
   organizationInvitations: {
   nativeFields: ["id", "organizationId", "email", "token", "role", "invitedAt", "invitedBy", "expiresAt"],
   primaryKeyFields: ["id"],
@@ -304,9 +339,14 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "description", "category", "messages", "variableDefaults", "tools", "settings", "isFeatured", "useCount", "createdByUserId"]
 },
   prompts: {
-  nativeFields: ["id", "createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings", "description"],
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "userId", "settings", "description"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "authenticatedRead", "isPublic", "userId", "publicRead", "settings", "description"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "messages", "variableDefaults", "tools", "userId", "settings", "description"]
+},
+  quizSessions: {
+  nativeFields: ["id", "userId", "title", "state", "isCompleted", "createdAt", "updatedAt", "completedAt", "quizContentHash", "quizMetadata", "category"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["userId", "title", "state", "isCompleted", "createdAt", "updatedAt", "completedAt", "quizContentHash", "quizMetadata", "category"]
 },
   recipe: {
   nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId", "metadata"],
@@ -468,6 +508,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["scrapeTaskId", "failureReason", "statusCode", "contentPath", "contentSize", "contentType", "responseHeaders", "responseUrl", "errorLog", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
+  sharedCanvasItems: {
+  nativeFields: ["id", "shareToken", "title", "description", "canvasType", "canvasData", "thumbnailUrl", "createdBy", "creatorUsername", "creatorDisplayName", "originalId", "forkedFrom", "versionNumber", "forkCount", "viewCount", "likeCount", "shareCount", "commentCount", "playCount", "completionRate", "hasScoring", "highScore", "highScoreUser", "averageScore", "totalAttempts", "visibility", "allowRemixes", "requireAttribution", "featured", "tags", "categories", "createdAt", "updatedAt", "publishedAt", "lastPlayedAt", "trendingScore", "searchVector"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["shareToken", "title", "description", "canvasType", "canvasData", "thumbnailUrl", "createdBy", "creatorUsername", "creatorDisplayName", "originalId", "forkedFrom", "versionNumber", "forkCount", "viewCount", "likeCount", "shareCount", "commentCount", "playCount", "completionRate", "hasScoring", "highScore", "highScoreUser", "averageScore", "totalAttempts", "visibility", "allowRemixes", "requireAttribution", "featured", "tags", "categories", "createdAt", "updatedAt", "publishedAt", "lastPlayedAt", "trendingScore", "searchVector"]
+},
   siteMetadata: {
   nativeFields: ["id", "siteKey", "siteName", "siteUrl", "organizationType", "logoUrl", "logoWidth", "logoHeight", "defaultShareImageUrl", "defaultShareImageWidth", "defaultShareImageHeight", "twitterHandle", "facebookPageUrl", "contactEmail", "copyrightHolder", "defaultAuthorName", "defaultAuthorType", "defaultLanguage", "googleAnalyticsId", "googleTagManagerId", "gscPropertyUrl", "createdAt", "updatedAt", "isActive"],
   primaryKeyFields: ["id"],
@@ -482,6 +527,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "categoryId", "subcategoryId", "label", "iconName", "sortOrder", "isActive", "createdAt", "updatedAt"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["categoryId", "subcategoryId", "label", "iconName", "sortOrder", "isActive", "createdAt", "updatedAt"]
+},
+  systemAnnouncements: {
+  nativeFields: ["id", "title", "message", "announcementType", "isActive", "createdAt", "updatedAt", "createdBy", "minDisplaySeconds"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["title", "message", "announcementType", "isActive", "createdAt", "updatedAt", "createdBy", "minDisplaySeconds"]
 },
   systemFunction: {
   nativeFields: ["id", "name", "description", "sample", "inputParams", "outputOptions", "rfId"],
@@ -514,19 +564,44 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["taskId", "userId", "content", "createdAt", "updatedAt"]
 },
   tasks: {
-  nativeFields: ["id", "title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "userId", "authenticatedRead"],
+  nativeFields: ["id", "title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "userId", "authenticatedRead", "parentTaskId"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "userId", "authenticatedRead"]
+  nativeFieldsNoPk: ["title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "userId", "authenticatedRead", "parentTaskId"]
 },
   tools: {
   nativeFields: ["id", "name", "description", "parameters", "outputSchema", "annotations", "functionPath", "category", "tags", "icon", "isActive", "version", "createdAt", "updatedAt"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "description", "parameters", "outputSchema", "annotations", "functionPath", "category", "tags", "icon", "isActive", "version", "createdAt", "updatedAt"]
 },
+  transcripts: {
+  nativeFields: ["id", "userId", "title", "description", "segments", "metadata", "audioFilePath", "videoFilePath", "sourceType", "tags", "folderName", "isDeleted", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["userId", "title", "description", "segments", "metadata", "audioFilePath", "videoFilePath", "sourceType", "tags", "folderName", "isDeleted", "createdAt", "updatedAt"]
+},
   transformer: {
   nativeFields: ["id", "name", "inputParams", "outputParams"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "inputParams", "outputParams"]
+},
+  userAchievements: {
+  nativeFields: ["id", "userId", "achievementType", "achievementData", "unlockedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["userId", "achievementType", "achievementData", "unlockedAt"]
+},
+  userBookmarks: {
+  nativeFields: ["id", "userId", "canvasId", "createdAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["userId", "canvasId", "createdAt"]
+},
+  userFeedback: {
+  nativeFields: ["id", "userId", "username", "feedbackType", "route", "description", "status", "adminNotes", "createdAt", "updatedAt", "resolvedAt", "resolvedBy"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["userId", "username", "feedbackType", "route", "description", "status", "adminNotes", "createdAt", "updatedAt", "resolvedAt", "resolvedBy"]
+},
+  userFollows: {
+  nativeFields: ["id", "followerId", "followingId", "createdAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["followerId", "followingId", "createdAt"]
 },
   userListItems: {
   nativeFields: ["id", "createdAt", "updatedAt", "label", "description", "helpText", "groupName", "userId", "isPublic", "authenticatedRead", "publicRead", "listId", "iconName"],
@@ -542,6 +617,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["userId", "preferences", "createdAt", "updatedAt"],
   primaryKeyFields: ["userId"],
   nativeFieldsNoPk: ["preferences", "createdAt", "updatedAt"]
+},
+  userStats: {
+  nativeFields: ["userId", "totalCreated", "totalLikesReceived", "totalViewsReceived", "totalForksReceived", "totalPlays", "totalLikesGiven", "totalComments", "averageScore", "totalHighScores", "bestScore", "followerCount", "followingCount", "totalXp", "level", "streakDays", "lastActiveDate", "longestStreak", "updatedAt"],
+  primaryKeyFields: ["userId"],
+  nativeFieldsNoPk: ["totalCreated", "totalLikesReceived", "totalViewsReceived", "totalForksReceived", "totalPlays", "totalLikesGiven", "totalComments", "averageScore", "totalHighScores", "bestScore", "followerCount", "followingCount", "totalXp", "level", "streakDays", "lastActiveDate", "longestStreak", "updatedAt"]
 },
   userTables: {
   nativeFields: ["id", "tableName", "description", "version", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt", "rowOrderingConfig"],

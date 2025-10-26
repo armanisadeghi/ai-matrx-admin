@@ -46,6 +46,7 @@ export type AiModel = {
     isDeprecated?: boolean;
     isPrimary?: boolean;
     isPremium?: boolean;
+    apiClass?: string;
 }
 
 export type AiModelEndpoint = {
@@ -240,6 +241,89 @@ export type BucketTreeStructures = {
     lastUpdated?: Date;
 }
 
+export type CanvasCommentLikes = {
+    id: string;
+    commentId: string;
+    userId: string;
+    createdAt?: Date;
+}
+
+export type CanvasComments = {
+    id: string;
+    canvasId: string;
+    userId?: string;
+    username: string;
+    displayName?: string;
+    avatarUrl?: string;
+    content: string;
+    parentCommentId?: string;
+    likeCount?: number;
+    replyCount?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+    edited?: boolean;
+    deleted?: boolean;
+    flagged?: boolean;
+    flagCount?: number;
+}
+
+export type CanvasItems = {
+    id: string;
+    userId: string;
+    type: string;
+    content: Record<string, unknown>;
+    title?: string;
+    description?: string;
+    isFavorited?: boolean;
+    isArchived?: boolean;
+    tags?: string[];
+    sessionId?: string;
+    sourceMessageId?: string;
+    taskId?: string;
+    isPublic?: boolean;
+    shareToken?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    lastAccessedAt?: Date;
+    contentHash?: string;
+}
+
+export type CanvasLikes = {
+    id: string;
+    canvasId: string;
+    userId: string;
+    createdAt?: Date;
+}
+
+export type CanvasScores = {
+    id: string;
+    canvasId: string;
+    userId?: string;
+    username?: string;
+    displayName?: string;
+    score: number;
+    maxScore: number;
+    percentage?: number;
+    timeTaken?: number;
+    completed?: boolean;
+    attemptNumber?: number;
+    createdAt?: Date;
+    data?: Record<string, unknown>;
+}
+
+export type CanvasViews = {
+    id: string;
+    canvasId: string;
+    userId?: string;
+    viewedAt?: Date;
+    sessionId?: string;
+    referrer?: string;
+    userAgent?: string;
+    timeSpent?: number;
+    completed?: boolean;
+    interacted?: boolean;
+}
+
 export type Category = {
     id: string;
     name: string;
@@ -253,8 +337,8 @@ export type CategoryConfigs = {
     id: string;
     categoryId: string;
     label: string;
-    iconName: string;
-    color: string;
+    iconName?: string;
+    color?: string;
     sortOrder?: number;
     isActive?: boolean;
     createdAt?: Date;
@@ -643,6 +727,21 @@ export type NodeCategory = {
     description?: string;
 }
 
+export type Notes = {
+    id: string;
+    userId: string;
+    label: string;
+    content?: string;
+    folderName?: string;
+    tags?: string[];
+    metadata?: Record<string, unknown>;
+    sharedWith?: Record<string, unknown>;
+    isDeleted?: boolean;
+    position?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export type OrganizationInvitations = {
     id: string;
     organizationId: string;
@@ -679,12 +778,12 @@ export type Organizations = {
 
 export type Permissions = {
     id: string;
-    resourceType: "applet" | "broker_value" | "conversation" | "document" | "message" | "organization" | "recipe" | "scrape_domain" | "workflow" | undefined;
+    resourceType: string;
     resourceId: string;
     grantedToUserId?: string;
     grantedToOrganizationId?: string;
     isPublic?: boolean;
-    permissionLevel: "admin" | "editor" | "viewer" | "viwwer" | undefined;
+    permissionLevel: "admin" | "editor" | "viewer" | undefined;
     createdAt?: Date;
     createdBy?: string;
 }
@@ -738,12 +837,23 @@ export type Prompts = {
     messages?: Record<string, unknown>;
     variableDefaults?: Record<string, unknown>;
     tools?: Record<string, unknown>;
-    authenticatedRead?: boolean;
-    isPublic?: boolean;
     userId?: string;
-    publicRead?: boolean;
     settings?: Record<string, unknown>;
     description?: string;
+}
+
+export type QuizSessions = {
+    id: string;
+    userId: string;
+    title?: string;
+    state: Record<string, unknown>;
+    isCompleted?: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    completedAt?: Date;
+    quizContentHash?: string;
+    quizMetadata?: Record<string, unknown>;
+    category?: string;
 }
 
 export type Recipe = {
@@ -1147,6 +1257,46 @@ export type ScrapeTaskResponse = {
     authenticatedRead?: boolean;
 }
 
+export type SharedCanvasItems = {
+    id: string;
+    shareToken: string;
+    title: string;
+    description?: string;
+    canvasType: string;
+    canvasData: Record<string, unknown>;
+    thumbnailUrl?: string;
+    createdBy?: string;
+    creatorUsername?: string;
+    creatorDisplayName?: string;
+    originalId?: string;
+    forkedFrom?: string;
+    versionNumber?: number;
+    forkCount?: number;
+    viewCount?: number;
+    likeCount?: number;
+    shareCount?: number;
+    commentCount?: number;
+    playCount?: number;
+    completionRate?: number;
+    hasScoring?: boolean;
+    highScore?: number;
+    highScoreUser?: string;
+    averageScore?: number;
+    totalAttempts?: number;
+    visibility?: string;
+    allowRemixes?: boolean;
+    requireAttribution?: boolean;
+    featured?: boolean;
+    tags?: string[];
+    categories?: string[];
+    createdAt?: Date;
+    updatedAt?: Date;
+    publishedAt?: Date;
+    lastPlayedAt?: Date;
+    trendingScore?: number;
+    searchVector?: string;
+}
+
 export type SiteMetadata = {
     id: string;
     siteKey: string;
@@ -1195,6 +1345,18 @@ export type SubcategoryConfigs = {
     isActive?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
+}
+
+export type SystemAnnouncements = {
+    id: string;
+    title: string;
+    message: string;
+    announcementType: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy?: string;
+    minDisplaySeconds?: number;
 }
 
 export type SystemFunction = {
@@ -1274,6 +1436,7 @@ export type Tasks = {
     updatedAt?: Date;
     userId?: string;
     authenticatedRead?: boolean;
+    parentTaskId?: string;
 }
 
 export type Tools = {
@@ -1293,11 +1456,65 @@ export type Tools = {
     updatedAt?: Date;
 }
 
+export type Transcripts = {
+    id: string;
+    userId: string;
+    title: string;
+    description?: string;
+    segments: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+    audioFilePath?: string;
+    videoFilePath?: string;
+    sourceType?: string;
+    tags?: string[];
+    folderName?: string;
+    isDeleted?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export type Transformer = {
     id: string;
     name?: string;
     inputParams?: Record<string, unknown>;
     outputParams?: Record<string, unknown>;
+}
+
+export type UserAchievements = {
+    id: string;
+    userId: string;
+    achievementType: string;
+    achievementData?: Record<string, unknown>;
+    unlockedAt?: Date;
+}
+
+export type UserBookmarks = {
+    id: string;
+    userId: string;
+    canvasId: string;
+    createdAt?: Date;
+}
+
+export type UserFeedback = {
+    id: string;
+    userId: string;
+    username?: string;
+    feedbackType: string;
+    route: string;
+    description: string;
+    status: string;
+    adminNotes?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    resolvedAt?: Date;
+    resolvedBy?: string;
+}
+
+export type UserFollows = {
+    id: string;
+    followerId: string;
+    followingId: string;
+    createdAt?: Date;
 }
 
 export type UserListItems = {
@@ -1333,6 +1550,28 @@ export type UserPreferences = {
     preferences: Record<string, unknown>;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export type UserStats = {
+    userId: string;
+    totalCreated?: number;
+    totalLikesReceived?: number;
+    totalViewsReceived?: number;
+    totalForksReceived?: number;
+    totalPlays?: number;
+    totalLikesGiven?: number;
+    totalComments?: number;
+    averageScore?: number;
+    totalHighScores?: number;
+    bestScore?: number;
+    followerCount?: number;
+    followingCount?: number;
+    totalXp?: number;
+    level?: number;
+    streakDays?: number;
+    lastActiveDate?: Date;
+    longestStreak?: number;
+    updatedAt?: Date;
 }
 
 export type UserTables = {

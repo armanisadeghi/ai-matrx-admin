@@ -84,6 +84,30 @@ export const primaryKeys = {
     frontendFields: ['bucket_id'],
     databaseColumns: ['bucketId'],
   },
+  canvasCommentLikes: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  canvasComments: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  canvasItems: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  canvasLikes: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  canvasScores: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  canvasViews: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   category: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -200,6 +224,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  notes: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   organizationInvitations: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -233,6 +261,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   prompts: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  quizSessions: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -364,6 +396,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  sharedCanvasItems: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   siteMetadata: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -373,6 +409,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   subcategoryConfigs: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  systemAnnouncements: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -408,7 +448,27 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  transcripts: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   transformer: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  userAchievements: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  userBookmarks: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  userFeedback: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  userFollows: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -421,6 +481,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   userPreferences: {
+    frontendFields: ['user_id'],
+    databaseColumns: ['userId'],
+  },
+  userStats: {
     frontendFields: ['user_id'],
     databaseColumns: ['userId'],
   },

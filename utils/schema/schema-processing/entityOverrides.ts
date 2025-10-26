@@ -361,6 +361,108 @@ const bucketTreeStructuresEntityOverrides: EntityOverrides<'bucketTreeStructures
 
 
 
+const canvasCommentLikesEntityOverrides: EntityOverrides<'canvasCommentLikes'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const canvasCommentsEntityOverrides: EntityOverrides<'canvasComments'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const canvasItemsEntityOverrides: EntityOverrides<'canvasItems'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const canvasLikesEntityOverrides: EntityOverrides<'canvasLikes'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const canvasScoresEntityOverrides: EntityOverrides<'canvasScores'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const canvasViewsEntityOverrides: EntityOverrides<'canvasViews'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const categoryEntityOverrides: EntityOverrides<'category'> = {
     schemaType: null,
     entityName: null,
@@ -854,6 +956,23 @@ const nodeCategoryEntityOverrides: EntityOverrides<'nodeCategory'> = {
 
 
 
+const notesEntityOverrides: EntityOverrides<'notes'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const organizationInvitationsEntityOverrides: EntityOverrides<'organizationInvitations'> = {
     schemaType: null,
     entityName: null,
@@ -991,6 +1110,23 @@ const promptTemplatesEntityOverrides: EntityOverrides<'promptTemplates'> = {
 
 
 const promptsEntityOverrides: EntityOverrides<'prompts'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const quizSessionsEntityOverrides: EntityOverrides<'quizSessions'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1551,6 +1687,23 @@ const scrapeTaskResponseEntityOverrides: EntityOverrides<'scrapeTaskResponse'> =
 
 
 
+const sharedCanvasItemsEntityOverrides: EntityOverrides<'sharedCanvasItems'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const siteMetadataEntityOverrides: EntityOverrides<'siteMetadata'> = {
     schemaType: null,
     entityName: null,
@@ -1586,6 +1739,23 @@ const subcategoryEntityOverrides: EntityOverrides<'subcategory'> = {
 
 
 const subcategoryConfigsEntityOverrides: EntityOverrides<'subcategoryConfigs'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const systemAnnouncementsEntityOverrides: EntityOverrides<'systemAnnouncements'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1738,7 +1908,92 @@ const toolsEntityOverrides: EntityOverrides<'tools'> = {
 
 
 
+const transcriptsEntityOverrides: EntityOverrides<'transcripts'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const transformerEntityOverrides: EntityOverrides<'transformer'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const userAchievementsEntityOverrides: EntityOverrides<'userAchievements'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const userBookmarksEntityOverrides: EntityOverrides<'userBookmarks'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const userFeedbackEntityOverrides: EntityOverrides<'userFeedback'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const userFollowsEntityOverrides: EntityOverrides<'userFollows'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1790,6 +2045,23 @@ const userListsEntityOverrides: EntityOverrides<'userLists'> = {
 
 
 const userPreferencesEntityOverrides: EntityOverrides<'userPreferences'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const userStatsEntityOverrides: EntityOverrides<'userStats'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -2031,6 +2303,12 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     brokerValue: brokerValueEntityOverrides,
     bucketStructures: bucketStructuresEntityOverrides,
     bucketTreeStructures: bucketTreeStructuresEntityOverrides,
+    canvasCommentLikes: canvasCommentLikesEntityOverrides,
+    canvasComments: canvasCommentsEntityOverrides,
+    canvasItems: canvasItemsEntityOverrides,
+    canvasLikes: canvasLikesEntityOverrides,
+    canvasScores: canvasScoresEntityOverrides,
+    canvasViews: canvasViewsEntityOverrides,
     category: categoryEntityOverrides,
     categoryConfigs: categoryConfigsEntityOverrides,
     compiledRecipe: compiledRecipeEntityOverrides,
@@ -2060,6 +2338,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     messageTemplate: messageTemplateEntityOverrides,
     microserviceProject: microserviceProjectEntityOverrides,
     nodeCategory: nodeCategoryEntityOverrides,
+    notes: notesEntityOverrides,
     organizationInvitations: organizationInvitationsEntityOverrides,
     organizationMembers: organizationMembersEntityOverrides,
     organizations: organizationsEntityOverrides,
@@ -2069,6 +2348,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     projects: projectsEntityOverrides,
     promptTemplates: promptTemplatesEntityOverrides,
     prompts: promptsEntityOverrides,
+    quizSessions: quizSessionsEntityOverrides,
     recipe: recipeEntityOverrides,
     recipeBroker: recipeBrokerEntityOverrides,
     recipeDisplay: recipeDisplayEntityOverrides,
@@ -2101,9 +2381,11 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     scrapeQuickFailureLog: scrapeQuickFailureLogEntityOverrides,
     scrapeTask: scrapeTaskEntityOverrides,
     scrapeTaskResponse: scrapeTaskResponseEntityOverrides,
+    sharedCanvasItems: sharedCanvasItemsEntityOverrides,
     siteMetadata: siteMetadataEntityOverrides,
     subcategory: subcategoryEntityOverrides,
     subcategoryConfigs: subcategoryConfigsEntityOverrides,
+    systemAnnouncements: systemAnnouncementsEntityOverrides,
     systemFunction: systemFunctionEntityOverrides,
     tableData: tableDataEntityOverrides,
     tableFields: tableFieldsEntityOverrides,
@@ -2112,10 +2394,16 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     taskComments: taskCommentsEntityOverrides,
     tasks: tasksEntityOverrides,
     tools: toolsEntityOverrides,
+    transcripts: transcriptsEntityOverrides,
     transformer: transformerEntityOverrides,
+    userAchievements: userAchievementsEntityOverrides,
+    userBookmarks: userBookmarksEntityOverrides,
+    userFeedback: userFeedbackEntityOverrides,
+    userFollows: userFollowsEntityOverrides,
     userListItems: userListItemsEntityOverrides,
     userLists: userListsEntityOverrides,
     userPreferences: userPreferencesEntityOverrides,
+    userStats: userStatsEntityOverrides,
     userTables: userTablesEntityOverrides,
     wcClaim: wcClaimEntityOverrides,
     wcImpairmentDefinition: wcImpairmentDefinitionEntityOverrides,
