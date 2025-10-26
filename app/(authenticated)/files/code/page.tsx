@@ -1,10 +1,7 @@
+'use client';
+
 import { FilteredFileView } from '../components/FilteredFileView';
 import { FILE_ROUTES } from '../file-routes.config';
-
-export const metadata = {
-  title: 'Code | File Manager',
-  description: 'Browse all your code files',
-};
 
 export default function CodePage() {
   const route = FILE_ROUTES.CODE;

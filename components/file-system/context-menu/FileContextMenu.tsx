@@ -104,11 +104,14 @@ export function FileContextMenu({
     try {
       setIsLoading(true);
       
-      // Select the nodes first
-      operatingNodes.forEach(n => {
+      // Clear selection first to ensure clean state
+      dispatch(actions.clearSelection());
+      
+      // Select the nodes we want to delete (first without multi-select, rest with multi-select)
+      operatingNodes.forEach((n, index) => {
         dispatch(actions.selectNode({
           nodeId: n.itemId,
-          isMultiSelect: true,
+          isMultiSelect: index > 0, // First node: false, rest: true
           isRangeSelect: false
         }));
       });
@@ -142,11 +145,14 @@ export function FileContextMenu({
     try {
       setIsLoading(true);
       
-      // Select the nodes
-      operatingNodes.forEach(n => {
+      // Clear selection first to ensure clean state
+      dispatch(actions.clearSelection());
+      
+      // Select the nodes we want to duplicate (first without multi-select, rest with multi-select)
+      operatingNodes.forEach((n, index) => {
         dispatch(actions.selectNode({
           nodeId: n.itemId,
-          isMultiSelect: true,
+          isMultiSelect: index > 0, // First node: false, rest: true
           isRangeSelect: false
         }));
       });
@@ -177,11 +183,14 @@ export function FileContextMenu({
     try {
       setIsLoading(true);
       
-      // Select the nodes
-      operatingNodes.forEach(n => {
+      // Clear selection first to ensure clean state
+      dispatch(actions.clearSelection());
+      
+      // Select the nodes we want to move (first without multi-select, rest with multi-select)
+      operatingNodes.forEach((n, index) => {
         dispatch(actions.selectNode({
           nodeId: n.itemId,
-          isMultiSelect: true,
+          isMultiSelect: index > 0, // First node: false, rest: true
           isRangeSelect: false
         }));
       });

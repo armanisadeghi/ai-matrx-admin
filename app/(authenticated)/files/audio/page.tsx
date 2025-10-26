@@ -1,10 +1,7 @@
+'use client';
+
 import { FilteredFileView } from '../components/FilteredFileView';
 import { FILE_ROUTES } from '../file-routes.config';
-
-export const metadata = {
-  title: 'Audio | File Manager',
-  description: 'Browse all your audio files',
-};
 
 export default function AudioPage() {
   const route = FILE_ROUTES.AUDIO;

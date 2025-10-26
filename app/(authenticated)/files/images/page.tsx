@@ -1,10 +1,7 @@
+'use client';
+
 import { FilteredFileView } from '../components/FilteredFileView';
 import { FILE_ROUTES } from '../file-routes.config';
-
-export const metadata = {
-  title: 'Images | File Manager',
-  description: 'Browse all your image files',
-};
 
 export default function ImagesPage() {
   const route = FILE_ROUTES.IMAGES;
