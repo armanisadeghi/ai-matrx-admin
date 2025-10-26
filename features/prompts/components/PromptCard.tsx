@@ -5,6 +5,9 @@ import IconButton from "@/components/official/IconButton";
 import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare } from "lucide-react";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { ShareButton } from "@/features/sharing";
+import { createClient } from "@/utils/supabase/client";
+import { useState, useEffect } from "react";
 
 interface PromptCardProps {
     id: string;
@@ -30,6 +33,34 @@ export function PromptCard({
     isAnyNavigating
 }: PromptCardProps) {
     const isSystemAdmin = useAppSelector((state: RootState) => selectIsAdmin(state));
+    const [isOwner, setIsOwner] = useState(true); // Will be properly checked in useEffect
+    const supabase = createClient();
+
+    useEffect(() => {
+        const checkOwnership = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    setIsOwner(false);
+                    return;
+                }
+
+                // Fetch the prompt to check ownership
+                const { data: prompt } = await supabase
+                    .from('prompts')
+                    .select('user_id')
+                    .eq('id', id)
+                    .single();
+
+                setIsOwner(prompt?.user_id === user.id);
+            } catch (error) {
+                console.error('Error checking prompt ownership:', error);
+                setIsOwner(false);
+            }
+        };
+
+        checkOwnership();
+    }, [id, supabase]);
 
     const handleView = () => {
         if (onNavigate && !isAnyNavigating) {
@@ -144,6 +175,17 @@ export function PromptCard({
                         disabled={isDuplicating || isDisabled}
                         iconClassName={isDuplicating ? "animate-spin" : ""}
                     />
+                    {/* Share Button */}
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <ShareButton
+                            resourceType="prompt"
+                            resourceId={id}
+                            resourceName={name}
+                            isOwner={isOwner}
+                            variant="ghost"
+                            size="icon"
+                        />
+                    </div>
                     <IconButton
                         icon={isDeleting ? Loader2 : Trash2}
                         tooltip={isDeleting ? "Deleting..." : isDisabled ? "Please wait..." : "Delete"}

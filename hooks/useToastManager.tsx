@@ -1,8 +1,6 @@
 // hooks/useToastManager.ts
 'use client';
 
-// https://claude.ai/chat/758e7f75-87cd-423c-9cb4-fecc7627095c
-
 import { useContext } from "react";
 import { toast } from "@/lib/toast-service";
 import { ToastContext } from "@/providers";
