@@ -9,12 +9,14 @@ interface VideoPreviewProps {
 }
 
 export const VideoPreview: React.FC<VideoPreviewProps> = ({ file }) => {
-    const { getPublicUrl } = useFileSystem();
+    const { getPublicUrlSync, currentBucket } = useFileSystem();
+
+    const videoUrl = currentBucket ? getPublicUrlSync(currentBucket, file.path) : '';
 
     return (
         <div className="h-full flex items-center justify-center bg-black">
             <ReactPlayer
-                url={getPublicUrl(file.path)}
+                url={videoUrl}
                 controls
                 width="100%"
                 height="100%"

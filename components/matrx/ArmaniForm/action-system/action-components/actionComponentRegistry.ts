@@ -4,7 +4,6 @@ import RecordSelector
 import {
     JsonEditor
 } from "./JsonEditor";
-import {QuickReferenceSidebar} from "@/app/(authenticated)/tests/crud-operations/components/QuickReferenceSidebar";
 import EntityShowSelectedAccordion from "@/components/matrx/Entity/prewired-components/EntityShowSelectedAccordion";
 import EntityQuickListAction from "./EntityQuickListAction";
 import {ACTION_TYPES, ActionRegistryEntry} from "@/components/matrx/ArmaniForm/action-system/types";

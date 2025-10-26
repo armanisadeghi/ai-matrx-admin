@@ -525,7 +525,19 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
 
 
-    const downloadFile = async () => {
+    // Download file from storage (for preview/reading)
+    const downloadFile = async (bucketName: string, filePath: string): Promise<Blob | null> => {
+        try {
+            const blob = await fileSystemManager.downloadFile(bucketName, filePath);
+            return blob;
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            return null;
+        }
+    };
+
+    // Download current file and save to user's computer
+    const downloadCurrentFile = async (): Promise<boolean> => {
         try {
             const blob = await withLoadingAndToast(
                 () => fileSystemManager.downloadFile(currentBucket!, currentPath.join('/')),
@@ -557,7 +569,18 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
 
 
-    const getPublicUrl = async () => {
+    // Get public URL for a specific file
+    const getPublicUrl = async (bucketName: string, filePath: string): Promise<string | null> => {
+        try {
+            return await fileSystemManager.getPublicUrl(bucketName, filePath);
+        } catch (error) {
+            console.error('Error getting public URL:', error);
+            return null;
+        }
+    };
+
+    // Get public URL for current file
+    const getCurrentPublicUrl = async (): Promise<string | null> => {
         try {
             return await fileSystemManager.getPublicUrl(currentBucket!, currentPath.join('/'));
         } catch (error) {
@@ -568,7 +591,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const openInNewTab = async () => {
         try {
-            const url = await getPublicUrl();
+            const url = await getCurrentPublicUrl();
             if (url) {
                 window.open(url);
                 return true;
@@ -913,6 +936,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setCurrentBucket: handleSetCurrentBucket,
         uploadFile,
         downloadFile,
+        downloadCurrentFile,
         deleteFile,
         createFolder,
         copyFile,
@@ -922,6 +946,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         refreshBucketStructure,
         refreshFolderContents,
         getPublicUrl,
+        getCurrentPublicUrl,
         getBucketStructure,
         getAllBucketStructures,
         getBuckets,

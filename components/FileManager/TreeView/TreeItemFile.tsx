@@ -30,7 +30,7 @@ const TreeItemFile: React.FC<BaseTreeItemProps> = ({
     extension,
     bucketName
 }) => {
-    const { downloadFile, navigateToPath, setCurrentBucket, setCurrentPath } = useFileSystem();
+    const { downloadCurrentFile, navigateToPath, setCurrentBucket, setCurrentPath } = useFileSystem();
     const [menuOpen, setMenuOpen] = React.useState(false);
 
     const details = getFileDetails(extension);
@@ -40,7 +40,7 @@ const TreeItemFile: React.FC<BaseTreeItemProps> = ({
         e.stopPropagation();
         const pathParts = path.split('/');
         navigateToPath(pathParts.slice(0, -1));
-        await downloadFile();
+        await downloadCurrentFile();
     };
 
     // Update current file context when opening menu

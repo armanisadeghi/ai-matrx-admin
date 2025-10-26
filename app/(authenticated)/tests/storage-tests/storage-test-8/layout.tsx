@@ -15,7 +15,6 @@ import FileTree from "./components/FileExplorer/FileTree";
 import BasicFolderTree from "./components/FileExplorer/BasicFolderTree";
 import { Button } from "@/components/ui/button";
 import { PanelLeft, PanelRight } from "lucide-react";
-import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 
 const LogPanel = () => (
   <MatrxDynamicPanel
@@ -140,16 +139,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "Videos", "any-file"] as const;
 
   return (
-    <FileSystemProvider 
-      initialBucket="Images"
-      allowedBuckets={allowedBuckets}
-    >
       <div className="flex flex-col h-full">
         <LogPanel />
         <main className="flex-1">
           <FileExplorerLayout>{children}</FileExplorerLayout>
         </main>
       </div>
-    </FileSystemProvider>
   );
 }

@@ -25,7 +25,7 @@ const FileMenuItem: React.FC<{
     item: MenuItem;
     onComplete: () => void;
 }> = ({ item, onComplete }) => {
-    const { downloadFile, openInNewTab } = useFileSystem();
+    const { downloadCurrentFile, openInNewTab } = useFileSystem();
     const { openDialog } = useFileSystemDialog();
 
     const handleClick = async () => {
@@ -33,7 +33,7 @@ const FileMenuItem: React.FC<{
 
         switch (item.action) {
             case 'download':
-                success = await downloadFile();
+                success = await downloadCurrentFile();
                 break;
             case 'openTab':
                 success = await openInNewTab();

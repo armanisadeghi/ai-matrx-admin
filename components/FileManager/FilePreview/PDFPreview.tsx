@@ -16,10 +16,12 @@ interface PDFPreviewProps {
 }
 
 export const PDFPreview: React.FC<PDFPreviewProps> = ({ file }) => {
-    const { getPublicUrl } = useFileSystem();
+    const { getPublicUrlSync, currentBucket } = useFileSystem();
     const [numPages, setNumPages] = React.useState<number>(0);
     const [pageNumber, setPageNumber] = React.useState(1);
     const [scale, setScale] = React.useState(1.0);
+
+    const pdfUrl = currentBucket ? getPublicUrlSync(currentBucket, file.path) : '';
 
     const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumPages(numPages);
@@ -71,7 +73,7 @@ export const PDFPreview: React.FC<PDFPreviewProps> = ({ file }) => {
             </div>
             <div className="flex-1 overflow-auto flex justify-center p-4">
                 <Document
-                    file={getPublicUrl(file.path)}
+                    file={pdfUrl}
                     onLoadSuccess={onDocumentLoadSuccess}
                     loading={
                         <div className="flex items-center justify-center h-full">

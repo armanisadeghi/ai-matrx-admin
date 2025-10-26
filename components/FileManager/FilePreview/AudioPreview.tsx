@@ -11,13 +11,15 @@ interface AudioPreviewProps {
 }
 
 export const AudioPreview: React.FC<AudioPreviewProps> = ({ file }) => {
-    const { getPublicUrl } = useFileSystem();
+    const { getPublicUrlSync, currentBucket } = useFileSystem();
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
+
+    const audioUrl = currentBucket ? getPublicUrlSync(currentBucket, file.path) : '';
 
     const togglePlay = () => {
         if (audioRef.current) {
@@ -73,7 +75,7 @@ export const AudioPreview: React.FC<AudioPreviewProps> = ({ file }) => {
         <div className="p-4 flex flex-col space-y-4">
             <audio
                 ref={audioRef}
-                src={getPublicUrl(file.path)}
+                src={audioUrl}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={() => setIsPlaying(false)}

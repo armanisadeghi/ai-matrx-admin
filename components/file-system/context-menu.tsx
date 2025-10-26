@@ -59,7 +59,7 @@ interface UnifiedMenuItemProps {
 
 const UnifiedMenuItem: React.FC<UnifiedMenuItemProps> = ({ item, onComplete, currentBucket }) => {
     const { 
-        downloadFile, 
+        downloadCurrentFile, 
         openInNewTab, 
         uploadFilesToCurrentFolder, 
         refreshCurrentFolder,
@@ -73,7 +73,7 @@ const UnifiedMenuItem: React.FC<UnifiedMenuItemProps> = ({ item, onComplete, cur
 
         switch (item.action) {
             case 'download':
-                success = await downloadFile();
+                success = await downloadCurrentFile();
                 break;
             case 'openTab':
                 success = await openInNewTab();

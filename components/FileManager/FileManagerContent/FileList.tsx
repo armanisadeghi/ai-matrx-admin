@@ -22,7 +22,7 @@ export const FileList: React.FC<FileListProps> = ({
     selectedFile,
 }) => {
     const [previewDialogFile, setPreviewDialogFile] = useState<NodeStructure | null>(null);
-    const { currentBucket, navigateToPath, downloadFile } = useFileSystem();
+    const { currentBucket, navigateToPath, downloadCurrentFile } = useFileSystem();
 
     const enhancedItems = useMemo(() => items.map(item => ({
         ...item,
@@ -44,7 +44,7 @@ export const FileList: React.FC<FileListProps> = ({
 
     const handleDownload = async (item: NodeStructure) => {
         try {
-            await downloadFile();
+            await downloadCurrentFile();
         } catch (error) {
             console.error('Error downloading file:', error);
         }

@@ -10,7 +10,7 @@ interface ImagePreviewProps {
 }
 
 export const ImagePreview: React.FC<ImagePreviewProps> = ({ file }) => {
-    const { getPublicUrl } = useFileSystem();
+    const { getPublicUrlSync, currentBucket } = useFileSystem();
     const [isLoading, setIsLoading] = useState(true);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
@@ -18,6 +18,8 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ file }) => {
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.25));
     const handleRotate = () => setRotation(prev => (prev + 90) % 360);
+
+    const imageUrl = currentBucket ? getPublicUrlSync(currentBucket, file.path) : '';
 
     return (
         <div className="h-full flex flex-col">
@@ -37,7 +39,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ file }) => {
                     <Loader2 className="h-8 w-8 animate-spin" />
                 )}
                 <img
-                    src={getPublicUrl(file.path)}
+                    src={imageUrl}
                     alt={file.name}
                     style={{
                         transform: `scale(${zoom}) rotate(${rotation}deg)`,
