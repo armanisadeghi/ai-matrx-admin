@@ -33,6 +33,7 @@ export async function POST(
         }
 
         // Create a duplicate
+        // Note: Permissions are handled separately via the permissions system
         const { data: newPrompt, error: insertError } = await supabase
             .from("prompts")
             .insert({
@@ -40,11 +41,9 @@ export async function POST(
                 messages: originalPrompt.messages,
                 variable_defaults: originalPrompt.variable_defaults,
                 tools: originalPrompt.tools,
-                authenticated_read: originalPrompt.authenticated_read,
-                is_public: false, // Don't copy public status
                 user_id: user.id,
-                public_read: originalPrompt.public_read,
                 settings: originalPrompt.settings,
+                description: originalPrompt.description,
             })
             .select()
             .single();
