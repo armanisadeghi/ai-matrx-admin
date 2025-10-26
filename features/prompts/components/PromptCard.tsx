@@ -2,10 +2,10 @@
 
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
-import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare } from "lucide-react";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2 } from "lucide-react";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { ShareButton } from "@/features/sharing";
+import { ShareModal } from "@/features/sharing";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 
@@ -21,19 +21,20 @@ interface PromptCardProps {
     isAnyNavigating?: boolean;
 }
 
-export function PromptCard({ 
-    id, 
-    name, 
-    onDelete, 
-    onDuplicate, 
+export function PromptCard({
+    id,
+    name,
+    onDelete,
+    onDuplicate,
     onNavigate,
-    isDeleting, 
+    isDeleting,
     isDuplicating,
     isNavigating,
     isAnyNavigating
 }: PromptCardProps) {
     const isSystemAdmin = useAppSelector((state: RootState) => selectIsAdmin(state));
-    const [isOwner, setIsOwner] = useState(true); // Will be properly checked in useEffect
+    const [isOwner, setIsOwner] = useState(true);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -89,6 +90,13 @@ export function PromptCard({
     const handleDelete = () => {
         if (onDelete) {
             onDelete(id);
+        }
+    };
+
+    const handleShareClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isDisabled) {
+            setIsShareModalOpen(true);
         }
     };
 
@@ -175,17 +183,16 @@ export function PromptCard({
                         disabled={isDuplicating || isDisabled}
                         iconClassName={isDuplicating ? "animate-spin" : ""}
                     />
-                    {/* Share Button */}
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <ShareButton
-                            resourceType="prompt"
-                            resourceId={id}
-                            resourceName={name}
-                            isOwner={isOwner}
-                            variant="ghost"
-                            size="icon"
-                        />
-                    </div>
+                    <IconButton
+                        icon={Share2}
+                        tooltip="Share"
+                        size="sm"
+                        variant="ghost"
+                        tooltipSide="top"
+                        tooltipAlign="center"
+                        onClick={handleShareClick}
+                        disabled={isDisabled}
+                    />
                     <IconButton
                         icon={isDeleting ? Loader2 : Trash2}
                         tooltip={isDeleting ? "Deleting..." : isDisabled ? "Please wait..." : "Delete"}
@@ -199,6 +206,15 @@ export function PromptCard({
                     />
                 </div>
             </div>
+
+            <ShareModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                resourceType="prompt"
+                resourceId={id}
+                resourceName={name}
+                isOwner={isOwner}
+            />
         </Card>
     );
 }

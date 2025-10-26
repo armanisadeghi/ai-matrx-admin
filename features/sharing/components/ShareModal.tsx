@@ -117,8 +117,8 @@ export function ShareModal({
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto mt-4 min-h-[400px]">
-            <TabsContent value="users" className="mt-0 space-y-4">
+          <div className="flex-1 mt-4 h-[450px]">
+            <TabsContent value="users" className="mt-0 space-y-4 h-full overflow-y-auto">
               {/* Current user permissions */}
               <div>
                 <h3 className="text-sm font-medium mb-3">Current Access</h3>
@@ -141,7 +141,7 @@ export function ShareModal({
               )}
             </TabsContent>
 
-            <TabsContent value="organizations" className="mt-0 space-y-4">
+            <TabsContent value="organizations" className="mt-0 space-y-4 h-full overflow-y-auto">
               {/* Current org permissions */}
               <div>
                 <h3 className="text-sm font-medium mb-3">Current Access</h3>
@@ -164,7 +164,7 @@ export function ShareModal({
               )}
             </TabsContent>
 
-            <TabsContent value="public" className="mt-0">
+            <TabsContent value="public" className="mt-0 h-full overflow-y-auto">
               <PublicAccessTab
                 publicPermission={publicPermission}
                 isOwner={isOwner}

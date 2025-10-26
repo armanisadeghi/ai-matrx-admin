@@ -91,20 +91,19 @@ export function ShareWithOrgTab({
 
   if (shareableOrgs.length === 0) {
     return (
-      <div className="p-6 text-center space-y-3 bg-muted/30 rounded-lg border min-h-[300px] flex flex-col items-center justify-center">
+      <div className="p-6 text-center space-y-3 bg-muted/30 rounded-lg border flex flex-col items-center justify-center">
         <Building2 className="w-12 h-12 mx-auto text-muted-foreground opacity-20" />
         <div>
-          <h4 className="text-sm font-medium mb-1">No Organizations Yet</h4>
+          <h4 className="text-sm font-medium mb-1">Organization Management Coming Soon</h4>
           <p className="text-xs text-muted-foreground mb-4">
-            You need to be a member of an organization to share with it
+            The organization management system is still being built
           </p>
           <p className="text-xs text-muted-foreground mb-3">
-            Organization management UI is coming soon. For now, you can:
+            In the meantime, you can:
           </p>
           <ul className="text-xs text-left text-muted-foreground space-y-1 max-w-xs mx-auto">
             <li>• Share with specific users instead</li>
-            <li>• Make resources public</li>
-            <li>• Wait for org management feature</li>
+            <li>• Make resources public for everyone</li>
           </ul>
         </div>
       </div>
