@@ -681,17 +681,25 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 <PromptBuilderLeftPanel
                     models={models}
                     model={model}
-                    onModelChange={(value) => {
-                        // value is always the model ID (UUID)
-                        const newModel = models.find(m => m.id === value);
-                        console.log('Model changed to:', value, newModel?.common_name);
-                        setModel(value);
-                        // Update config to match the new model's defaults
-                        if (newModel) {
-                            setModelConfig(getModelDefaults(newModel));
-                        }
-                        setIsDirty(true);
-                    }}
+                onModelChange={(value) => {
+                    // value is always the model ID (UUID)
+                    const newModel = models.find(m => m.id === value);
+                    console.log('Model changed to:', value, newModel?.common_name);
+                    setModel(value);
+                    // Update config with new model's defaults while preserving user selections
+                    if (newModel) {
+                        setModelConfig(prev => {
+                            const defaults = getModelDefaults(newModel);
+                            // Preserve user-selected tools and merge with new defaults
+                            // Defaults take precedence for model-specific settings, but tools are preserved
+                            return {
+                                ...defaults,
+                                tools: prev.tools || [] // Always preserve existing tools selection
+                            };
+                        });
+                    }
+                    setIsDirty(true);
+                }}
                     modelConfig={modelConfig}
                     onSettingsClick={() => setIsSettingsOpen(true)}
                     variableDefaults={variableDefaults}
