@@ -14,7 +14,14 @@ import {
     ChevronDown,
     ChevronRight,
     FolderPlus,
+    Edit3,
+    FolderInput,
+    Copy,
+    Download,
+    Share2,
+    XCircle,
 } from 'lucide-react';
+import AdvancedMenu, { MenuItem } from '@/components/official/AdvancedMenu';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -61,6 +68,9 @@ export function NotesSidebar({
     const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
     const [draggedNote, setDraggedNote] = useState<Note | null>(null);
     const [dropTargetFolder, setDropTargetFolder] = useState<string | null>(null);
+    const [contextMenuOpen, setContextMenuOpen] = useState(false);
+    const [contextMenuType, setContextMenuType] = useState<'folder' | 'note' | null>(null);
+    const [contextMenuTarget, setContextMenuTarget] = useState<string | null>(null);
 
     // Filter and sort notes
     const processedNotes = useMemo(() => {
@@ -137,6 +147,128 @@ export function NotesSidebar({
         setDraggedNote(null);
     };
 
+    // Folder context menu items
+    const getFolderContextMenuItems = (folderName: string, notesCount: number): MenuItem[] => [
+        {
+            key: 'new-note',
+            icon: Plus,
+            label: 'New Note',
+            description: `Create a note in ${folderName}`,
+            action: () => onCreateNote(folderName),
+            category: 'Actions',
+        },
+        {
+            key: 'rename',
+            icon: Edit3,
+            label: 'Rename Folder',
+            description: 'Change folder name',
+            action: () => {
+                // TODO: Implement folder rename
+                console.log('Rename folder:', folderName);
+            },
+            disabled: true, // Will be enabled when rename is implemented
+            category: 'Actions',
+        },
+        {
+            key: 'collapse',
+            icon: ChevronRight,
+            label: collapsedFolders.has(folderName) ? 'Expand Folder' : 'Collapse Folder',
+            description: collapsedFolders.has(folderName) ? 'Show notes' : 'Hide notes',
+            action: () => toggleFolder(folderName),
+            disabled: notesCount === 0,
+            category: 'Actions',
+        },
+        {
+            key: 'delete-all',
+            icon: Trash2,
+            label: 'Delete All Notes',
+            description: `Delete all ${notesCount} note${notesCount !== 1 ? 's' : ''} in this folder`,
+            action: () => {
+                // TODO: Implement bulk delete with confirmation
+                console.log('Delete all notes in:', folderName);
+            },
+            disabled: notesCount === 0,
+            iconColor: 'text-red-500',
+            category: 'Danger',
+        },
+    ];
+
+    // Note context menu items
+    const getNoteContextMenuItems = (note: Note): MenuItem[] => [
+        {
+            key: 'open',
+            icon: FileText,
+            label: 'Open Note',
+            description: 'Open in editor',
+            action: () => onSelectNote(note),
+            category: 'Actions',
+        },
+        {
+            key: 'duplicate',
+            icon: Copy,
+            label: 'Duplicate Note',
+            description: 'Create a copy of this note',
+            action: () => {
+                // TODO: Implement note duplication from sidebar
+                console.log('Duplicate note:', note.id);
+            },
+            category: 'Actions',
+        },
+        {
+            key: 'move',
+            icon: FolderInput,
+            label: 'Move to Folder',
+            description: 'Move to another folder',
+            action: () => {
+                // TODO: Implement move with folder picker
+                console.log('Move note:', note.id);
+            },
+            category: 'Actions',
+        },
+        {
+            key: 'download',
+            icon: Download,
+            label: 'Export Note',
+            description: 'Download as markdown',
+            action: async () => {
+                const blob = new Blob([note.content], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${note.label}.md`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+            category: 'Actions',
+        },
+        {
+            key: 'delete',
+            icon: Trash2,
+            label: 'Delete Note',
+            description: 'Permanently delete this note',
+            action: () => onDeleteNote(note.id),
+            iconColor: 'text-red-500',
+            category: 'Danger',
+        },
+    ];
+
+    // Handle context menu
+    const handleFolderContextMenu = (e: React.MouseEvent, folderName: string, notesCount: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenuType('folder');
+        setContextMenuTarget(folderName);
+        setContextMenuOpen(true);
+    };
+
+    const handleNoteContextMenu = (e: React.MouseEvent, note: Note) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenuType('note');
+        setContextMenuTarget(note.id);
+        setContextMenuOpen(true);
+    };
+
     return (
         <div className={cn("flex flex-col h-full bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800", className)}>
             {/* Compact Search Header - VS Code Style */}
@@ -175,6 +307,7 @@ export function NotesSidebar({
                                         onDragOver={handleDragOver(group.folder_name)}
                                         onDragLeave={handleDragLeave}
                                         onDrop={handleDrop(group.folder_name)}
+                                        onContextMenu={(e) => handleFolderContextMenu(e, group.folder_name, group.count)}
                                     >
                                         <Button
                                             variant="ghost"
@@ -240,6 +373,7 @@ export function NotesSidebar({
                                                         draggable
                                                         onDragStart={handleDragStart(note)}
                                                         onDragEnd={handleDragEnd}
+                                                        onContextMenu={(e) => handleNoteContextMenu(e, note)}
                                                     >
                                                         <Button
                                                             variant="ghost"
@@ -280,6 +414,47 @@ export function NotesSidebar({
                     )}
                 </div>
             </ScrollArea>
+
+            {/* Context Menu */}
+            {contextMenuOpen && contextMenuType === 'folder' && contextMenuTarget && (
+                <AdvancedMenu
+                    isOpen={contextMenuOpen}
+                    onClose={() => {
+                        setContextMenuOpen(false);
+                        setContextMenuType(null);
+                        setContextMenuTarget(null);
+                    }}
+                    items={getFolderContextMenuItems(
+                        contextMenuTarget,
+                        folderGroups.find(g => g.folder_name === contextMenuTarget)?.count || 0
+                    )}
+                    title={`Folder: ${contextMenuTarget}`}
+                    position="center"
+                    width="280px"
+                    closeOnAction={true}
+                    categorizeItems={true}
+                />
+            )}
+
+            {contextMenuOpen && contextMenuType === 'note' && contextMenuTarget && (
+                <AdvancedMenu
+                    isOpen={contextMenuOpen}
+                    onClose={() => {
+                        setContextMenuOpen(false);
+                        setContextMenuType(null);
+                        setContextMenuTarget(null);
+                    }}
+                    items={getNoteContextMenuItems(
+                        notes.find(n => n.id === contextMenuTarget)!
+                    )}
+                    title="Note Actions"
+                    description={notes.find(n => n.id === contextMenuTarget)?.label}
+                    position="center"
+                    width="280px"
+                    closeOnAction={true}
+                    categorizeItems={true}
+                />
+            )}
         </div>
     );
 }

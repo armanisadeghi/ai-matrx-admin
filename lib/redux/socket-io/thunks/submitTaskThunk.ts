@@ -229,9 +229,9 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
 
 export const createAndSubmitTask = createAsyncThunk<
     { taskId: string; submitResult: string[] }, // Return taskId and submitTask result
-    { service: string; taskName: string; taskData: Record<string, any>; connectionId?: string },
+    { service: string; taskName: string; taskData: Record<string, any>; connectionId?: string; customTaskId?: string },
     { state: RootState }
->("socketTasks/createAndSubmitTask", async ({ service, taskName, taskData, connectionId }, { dispatch, getState }) => {
+>("socketTasks/createAndSubmitTask", async ({ service, taskName, taskData, connectionId, customTaskId }, { dispatch, getState }) => {
     const state = getState();
     const resolvedConnectionId = connectionId || selectPrimaryConnection(state)?.connectionId;
 
@@ -239,7 +239,8 @@ export const createAndSubmitTask = createAsyncThunk<
         throw new Error("No primary connection available and no connectionId provided");
     }
 
-    const taskId = uuidv4();
+    // Use custom taskId if provided, otherwise generate a new one
+    const taskId = customTaskId || uuidv4();
     dispatch(
         initializeTask({
             taskId,

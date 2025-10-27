@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
@@ -15,6 +15,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { useCanvas } from "@/hooks/useCanvas";
+import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
+import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
+import { calculateTaskCost } from "@/features/ai-runs/utils/cost-calculator";
+import { v4 as uuidv4 } from "uuid";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -135,6 +139,11 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Track if conversation has started (for showing/hiding variables)
     const [conversationStarted, setConversationStarted] = useState(false);
     
+    // AI Runs tracking
+    const { run, createRun, createTask, updateTask, completeTask, addMessage } = useAiRun();
+    const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
+    const updateTaskTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
     // Ref for auto-scrolling
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -210,9 +219,33 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         }
     }, [streamingText, isTestingPrompt]);
     
+    // Debounced task update during streaming
+    useEffect(() => {
+        if (pendingTaskId && streamingText && isTestingPrompt) {
+            // Clear any existing timeout
+            if (updateTaskTimeoutRef.current) {
+                clearTimeout(updateTaskTimeoutRef.current);
+            }
+            
+            // Set new timeout to update after 500ms of no changes
+            updateTaskTimeoutRef.current = setTimeout(() => {
+                updateTask(pendingTaskId, {
+                    response_text: streamingText,
+                    status: 'streaming'
+                }).catch(err => console.error('Error updating task:', err));
+            }, 500);
+        }
+        
+        return () => {
+            if (updateTaskTimeoutRef.current) {
+                clearTimeout(updateTaskTimeoutRef.current);
+            }
+        };
+    }, [streamingText, pendingTaskId, isTestingPrompt, updateTask]);
+    
     // Handle response completion
     useEffect(() => {
-        if (currentTaskId && isResponseEnded && isTestingPrompt && messageStartTime) {
+        if (currentTaskId && isResponseEnded && isTestingPrompt && messageStartTime && pendingTaskId) {
             // Calculate final stats
             const totalTime = Math.round(performance.now() - messageStartTime);
             const tokenCount = Math.round(streamingText.length / 4);
@@ -241,14 +274,41 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 ...prev,
                 { role: "assistant", content: streamingText }
             ]);
+            
+            // Complete the task in AI runs system
+            const selectedModel = models.find(m => m.id === modelId);
+            const cost = selectedModel?.model_name ? calculateTaskCost(selectedModel.model_name, 0, tokenCount) : 0;
+            
+            completeTask(pendingTaskId, {
+                response_text: streamingText,
+                tokens_total: tokenCount,
+                time_to_first_token: timeToFirstTokenRef.current,
+                total_time: totalTime,
+                cost,
+            }).catch(err => console.error('Error completing task:', err));
+            
+            // Add assistant message to run
+            if (run) {
+                addMessage({
+                    role: 'assistant',
+                    content: streamingText,
+                    taskId: pendingTaskId,
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        ...finalStats,
+                        cost,
+                    }
+                }).catch(err => console.error('Error adding message to run:', err));
+            }
 
             // Reset state
             setCurrentTaskId(null);
             setIsTestingPrompt(false);
             setMessageStartTime(null);
+            setPendingTaskId(null);
             timeToFirstTokenRef.current = undefined;
         }
-    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText]);
+    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText, pendingTaskId, run, models, modelId, completeTask, addMessage]);
     
     // Handler to send message
     const handleSendTestMessage = async () => {
@@ -307,6 +367,23 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         timeToFirstTokenRef.current = undefined;
 
         try {
+            // Create AI run on first message
+            if (isFirstMessage && !run) {
+                const runName = generateRunNameFromMessage(displayUserMessage);
+                const variableValues: Record<string, string> = {};
+                variableDefaults.forEach(v => {
+                    variableValues[v.name] = v.defaultValue;
+                });
+                
+                await createRun({
+                    source_type: 'prompt',
+                    source_id: promptData.id,
+                    name: runName,
+                    settings: settings,
+                    variable_values: variableValues,
+                });
+            }
+            
             let messagesToSend: PromptMessage[];
 
             if (isFirstMessage) {
@@ -344,14 +421,42 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 stream: true,
                 ...modelConfig,
             };
+            
+            // Generate taskId for socket.io
+            const taskId = uuidv4();
+            
+            // Create task in AI runs system BEFORE submitting to socket
+            if (run) {
+                const selectedModel = models.find(m => m.id === modelId);
+                await createTask({
+                    task_id: taskId,
+                    service: 'chat_service',
+                    task_name: 'direct_chat',
+                    provider: selectedModel?.provider || 'unknown',
+                    endpoint: selectedModel?.endpoint,
+                    model: selectedModel?.model_name,
+                    model_id: selectedModel?.id,
+                    request_data: chatConfig,
+                });
+                
+                setPendingTaskId(taskId);
+                
+                // Add user message to run
+                await addMessage({
+                    role: 'user',
+                    content: displayMessageWithReplacedVariables,
+                    timestamp: new Date().toISOString(),
+                });
+            }
 
-            // Submit the task using socket
+            // Submit the task using socket with the same taskId
             const result = await dispatch(createAndSubmitTask({
                 service: "chat_service",
                 taskName: "direct_chat",
                 taskData: {
                     chat_config: chatConfig
-                }
+                },
+                customTaskId: taskId, // Pass our taskId to socket
             })).unwrap();
 
             // Store the taskId for streaming

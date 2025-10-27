@@ -73,14 +73,14 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     // Get all folders (default + custom) - optimized to only recalculate when folder names change
     const availableFolders = useAllFolders(allNotes);
 
-    // Load editor mode from note metadata
+    // Load editor mode from note metadata - update when metadata changes
     useEffect(() => {
         if (note?.metadata?.lastEditorMode) {
             setEditorMode(note.metadata.lastEditorMode as EditorMode);
         } else {
             setEditorMode('plain');
         }
-    }, [note?.id]); // Only change when note ID changes
+    }, [note?.id, note?.metadata?.lastEditorMode]); // Update when note ID or mode changes
 
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
         noteId: note?.id || null,
@@ -235,98 +235,11 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
                         />
                     </div>
 
-                    {/* Status indicators */}
-                    <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                        {isSaving && (
-                            <div className="flex items-center gap-1">
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                                <span>Saving...</span>
-                            </div>
-                        )}
-                        {!isSaving && isDirty && (
-                            <div className="flex items-center gap-1">
-                                <Save className="h-3 w-3" />
-                                <span>Unsaved</span>
-                            </div>
-                        )}
-                        {!isSaving && !isDirty && lastSaved && (
-                            <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                <span>Saved</span>
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
 
-            {/* Editor Area with Floating Mode Buttons */}
+            {/* Editor Area */}
             <div className="flex-1 relative overflow-hidden bg-textured">
-                {/* Floating Mode Switcher */}
-                <div className="absolute top-2 right-2 z-10 flex items-center gap-0 p-1">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant={editorMode === 'plain' ? 'outline' : 'ghost'}
-                                    size="icon"
-                                    className="h-7 w-7 p-0"
-                                    onClick={() => handleModeChange('plain')}
-                                >
-                                    <FileText className="h-3.5 w-3.5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Plain Text</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant={editorMode === 'wysiwyg' ? 'outline' : 'ghost'}
-                                    size="icon"
-                                    className="h-7 w-7 p-0"
-                                    onClick={() => handleModeChange('wysiwyg')}
-                                >
-                                    <PilcrowRight className="h-3.5 w-3.5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Rich Editor (WYSIWYG)</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant={editorMode === 'markdown' ? 'outline' : 'ghost'}
-                                    size="icon"
-                                    className="h-7 w-7 p-0"
-                                    onClick={() => handleModeChange('markdown')}
-                                >
-                                    <SplitSquareHorizontal className="h-3.5 w-3.5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Markdown Split View</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant={editorMode === 'preview' ? 'outline' : 'ghost'}
-                                    size="icon"
-                                    className="h-7 w-7 p-0"
-                                    onClick={() => handleModeChange('preview')}
-                                >
-                                    <Eye className="h-3.5 w-3.5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Preview</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
 
                 {/* Editor Content */}
                 {editorMode === 'plain' && (
