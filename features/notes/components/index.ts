@@ -5,6 +5,7 @@ export { NotesLayout } from './NotesLayout';
 export { NotesSidebar } from './NotesSidebar';
 export { NoteEditor } from './NoteEditor';
 export { NoteToolbar } from './NoteToolbar';
+export { NoteTabs } from './NoteTabs';
 export { CreateFolderDialog } from './CreateFolderDialog';
 export { ShareNoteDialog } from './ShareNoteDialog';
 export { TagInput } from './TagInput';

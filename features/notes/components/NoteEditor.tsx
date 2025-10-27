@@ -19,7 +19,6 @@ import {
 import { TagInput } from './TagInput';
 import type { Note } from '../types';
 import { useAutoSave } from '../hooks/useAutoSave';
-import { useAutoLabel } from '../hooks/useAutoLabel';
 import { useAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
@@ -48,7 +47,6 @@ interface NoteEditorProps {
 }
 
 export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEditorProps) {
-    const [localLabel, setLocalLabel] = useState(note?.label || '');
     const [localContent, setLocalContent] = useState(note?.content || '');
     const [localFolder, setLocalFolder] = useState(note?.folder_name || 'Draft');
     const [localTags, setLocalTags] = useState<string[]>(note?.tags || []);
@@ -57,7 +55,6 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     const toast = useToastManager('notes');
     
     // Use refs to avoid callback dependencies
-    const localLabelRef = useRef(localLabel);
     const localContentRef = useRef(localContent);
     const localFolderRef = useRef(localFolder);
     const localTagsRef = useRef(localTags);
@@ -66,13 +63,12 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     
     // Keep refs in sync
     useEffect(() => {
-        localLabelRef.current = localLabel;
         localContentRef.current = localContent;
         localFolderRef.current = localFolder;
         localTagsRef.current = localTags;
         editorModeRef.current = editorMode;
         noteRef.current = note;
-    }, [localLabel, localContent, localFolder, localTags, editorMode, note]);
+    }, [localContent, localFolder, localTags, editorMode, note]);
 
     // Get all folders (default + custom) - optimized to only recalculate when folder names change
     const availableFolders = useAllFolders(allNotes);
@@ -93,7 +89,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
             // Notify parent with all updated fields + editor mode
             if (note) {
                 onUpdate?.(note.id, { 
-                    label: localLabel, 
+                    label: note.label, 
                     content: localContent, 
                     folder_name: localFolder, 
                     tags: localTags,
@@ -106,22 +102,9 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         },
     });
 
-    // Auto-label hook
-    useAutoLabel({
-        content: localContent,
-        currentLabel: localLabel,
-        onLabelChange: (newLabel) => {
-            setLocalLabel(newLabel);
-            if (note) {
-                updateWithAutoSave({ label: newLabel, content: localContent, folder_name: localFolder, tags: localTags });
-            }
-        },
-    });
-
     // Sync local state when note changes
     useEffect(() => {
         if (note) {
-            setLocalLabel(note.label);
             setLocalContent(note.content);
             setLocalFolder(note.folder_name || 'Draft');
             setLocalTags(note.tags || []);
@@ -138,7 +121,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
                 const currentNote = noteRef.current;
                 if (currentNote) {
                     updateWithAutoSave({ 
-                        label: localLabelRef.current, 
+                        label: currentNote.label, 
                         content: markdown, 
                         folder_name: localFolderRef.current, 
                         tags: localTagsRef.current,
@@ -159,7 +142,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         const currentNote = noteRef.current;
         if (currentNote) {
             updateWithAutoSave({ 
-                label: localLabelRef.current, 
+                label: currentNote.label, 
                 content: localContentRef.current, 
                 folder_name: localFolderRef.current, 
                 tags: localTagsRef.current,
@@ -168,17 +151,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         }
     }, [syncContentFromEditor, updateWithAutoSave]); // Minimal dependencies
 
-    const handleLabelChange = (value: string) => {
-        setLocalLabel(value);
-        if (note) {
-            updateWithAutoSave({ label: value, content: localContent, folder_name: localFolder, tags: localTags });
-        }
-    };
-
     const handleContentChange = (value: string) => {
         setLocalContent(value);
         if (note) {
-            updateWithAutoSave({ label: localLabel, content: value, folder_name: localFolder, tags: localTags });
+            updateWithAutoSave({ label: note.label, content: value, folder_name: localFolder, tags: localTags });
         }
     };
 
@@ -187,7 +163,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         const currentNote = noteRef.current;
         if (currentNote) {
             updateWithAutoSave({ 
-                label: localLabelRef.current, 
+                label: currentNote.label, 
                 content: value, 
                 folder_name: localFolderRef.current, 
                 tags: localTagsRef.current,
@@ -199,7 +175,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     const handleFolderChange = (value: string) => {
         setLocalFolder(value);
         if (note) {
-            updateWithAutoSave({ label: localLabel, content: localContent, folder_name: value, tags: localTags });
+            updateWithAutoSave({ label: note.label, content: localContent, folder_name: value, tags: localTags });
             // Immediate update to parent for sidebar refresh
             onUpdate?.(note.id, { folder_name: value });
         }
@@ -208,7 +184,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     const handleTagsChange = (tags: string[]) => {
         setLocalTags(tags);
         if (note) {
-            updateWithAutoSave({ label: localLabel, content: localContent, folder_name: localFolder, tags });
+            updateWithAutoSave({ label: note.label, content: localContent, folder_name: localFolder, tags });
             // Immediate update to parent
             onUpdate?.(note.id, { tags });
         }
@@ -231,21 +207,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
 
     return (
         <div className={cn("flex flex-col h-full bg-textured", className)}>
-            {/* Header - 2 rows for compact layout */}
+            {/* Header - Metadata only (title is now in tabs) */}
             <div className="flex-none border-b border-zinc-200 dark:border-zinc-800 bg-textured">
-                {/* Row 1: Title */}
-                <div className="px-3 pt-2 pb-1">
-                    <Input
-                        type="text"
-                        value={localLabel}
-                        onChange={(e) => handleLabelChange(e.target.value)}
-                        className="text-lg font-semibold border-0 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        placeholder="Note title..."
-                    />
-                </div>
-
-                {/* Row 2: Folder, Tags, Status */}
-                <div className="flex items-center gap-2 px-3 pb-2">
+                {/* Folder, Tags, Status */}
+                <div className="flex items-center gap-2 px-3 py-2">
                     {/* Folder Selector */}
                     <Select value={localFolder} onValueChange={handleFolderChange}>
                         <SelectTrigger className="w-[140px] h-7 text-xs">

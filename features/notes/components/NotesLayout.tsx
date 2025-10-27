@@ -1,10 +1,11 @@
 // features/notes/components/NotesLayout.tsx
 "use client";
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { NotesSidebar } from './NotesSidebar';
 import { NoteEditor } from './NoteEditor';
 import { NoteToolbar } from './NoteToolbar';
+import { NoteTabs } from './NoteTabs';
 import { CreateFolderDialog } from './CreateFolderDialog';
 import { ShareNoteDialog } from './ShareNoteDialog';
 import { useNotesContext } from '../context/NotesContext';
@@ -32,6 +33,9 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         copyNote,
         refreshNotes,
         findOrCreateEmptyNote,
+        openNoteInTab,
+        openTabs,
+        closeTab,
     } = useNotesContext();
 
     const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -45,20 +49,50 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     // Get all folders (default + custom) - optimized to only recalculate when folder names change
     const existingFolders = useAllFolders(notes);
 
+    // Keyboard shortcuts for tab management
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ctrl+W or Cmd+W to close current tab
+            if ((e.ctrlKey || e.metaKey) && e.key === 'w' && activeNote) {
+                e.preventDefault();
+                closeTab(activeNote.id);
+            }
+            
+            // Ctrl+Tab to cycle through tabs
+            if (e.ctrlKey && e.key === 'Tab' && openTabs.length > 1) {
+                e.preventDefault();
+                const currentIndex = openTabs.indexOf(activeNote?.id || '');
+                const nextIndex = (currentIndex + 1) % openTabs.length;
+                const nextNoteId = openTabs[nextIndex];
+                if (nextNoteId) {
+                    openNoteInTab(nextNoteId);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [activeNote, openTabs, closeTab, openNoteInTab]);
+
     const handleCreateNote = useCallback(async (folderName?: string) => {
         try {
             const targetFolder = folderName || 'Draft';
             
             // Use the context method which handles duplicate checking
             const note = await findOrCreateEmptyNote(targetFolder);
-            setIsMobileSidebarOpen(false);
             
+            // Open the new note in a tab
+            if (note) {
+                openNoteInTab(note.id);
+            }
+            
+            setIsMobileSidebarOpen(false);
             toast.success('Note ready');
         } catch (error) {
             console.error('Error creating note:', error);
             toast.error(error);
         }
-    }, [findOrCreateEmptyNote, toast]);
+    }, [findOrCreateEmptyNote, openNoteInTab, toast]);
 
     const handleCreateFolder = useCallback(() => {
         setIsCreateFolderOpen(true);
@@ -144,9 +178,10 @@ export function NotesLayout({ className }: NotesLayoutProps) {
 
 
     const handleSelectNote = useCallback((note: Note) => {
-        setActiveNote(note);
+        // Open note in tab (or switch to it if already open)
+        openNoteInTab(note.id);
         setIsMobileSidebarOpen(false); // Close mobile sidebar after selecting note
-    }, [setActiveNote]);
+    }, [openNoteInTab]);
 
     if (isLoading) {
         return (
@@ -166,7 +201,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 <NotesSidebar
                     notes={notes}
                     activeNote={activeNote}
-                    onSelectNote={setActiveNote}
+                    onSelectNote={handleSelectNote}
                     onCreateNote={handleCreateNote}
                     onDeleteNote={handleDeleteNote}
                     onCreateFolder={handleCreateFolder}
@@ -198,15 +233,13 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                     </Sheet>
                 </div>
 
-                <NoteToolbar
-                    activeNote={activeNote}
+                {/* Note Tabs - Desktop only (toolbar integrated) */}
+                <NoteTabs 
                     onCreateNote={handleCreateNote}
-                    onSave={handleSaveNote}
+                    onDeleteNote={handleDeleteNote}
                     onCopyNote={handleCopyNote}
                     onShareNote={handleShareNote}
-                    onDeleteNote={handleDeleteNote}
-                    onRefresh={refreshNotes}
-                    className="hidden md:flex"
+                    onUpdateNote={handleUpdateNote}
                 />
                 
                 <NoteEditor

@@ -17,6 +17,11 @@ interface NotesContextType {
     copyNote: (id: string) => Promise<Note>;
     refreshNotes: () => Promise<void>;
     findOrCreateEmptyNote: (folderName?: string) => Promise<Note>;
+    // Tab management
+    openTabs: string[];
+    openNoteInTab: (noteId: string) => void;
+    closeTab: (noteId: string) => void;
+    closeAllTabs: () => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
@@ -26,6 +31,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [activeNote, setActiveNote] = useState<Note | null>(null);
+    const [openTabs, setOpenTabs] = useState<string[]>([]);
     const isRefreshing = useRef(false);
     const notesRef = useRef<Note[]>([]); // Add ref for notes to avoid callback dependencies
     const activeNoteRef = useRef<Note | null>(null);
@@ -181,6 +187,75 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         return copiedNote;
     }, []);
 
+    // Tab Management Functions
+    
+    // Open a note in a tab (or switch to it if already open)
+    const openNoteInTab = useCallback((noteId: string) => {
+        setOpenTabs(prev => {
+            // Check if note is already in a tab
+            const existingIndex = prev.indexOf(noteId);
+            
+            if (existingIndex !== -1) {
+                // Note already open - just switch to it
+                const note = notesRef.current.find(n => n.id === noteId);
+                if (note) {
+                    setActiveNote(note);
+                }
+                return prev; // No change to tabs
+            }
+            
+            // Add new tab
+            return [...prev, noteId];
+        });
+        
+        // Set as active note
+        const note = notesRef.current.find(n => n.id === noteId);
+        if (note) {
+            setActiveNote(note);
+        }
+    }, []);
+
+    // Close a tab
+    const closeTab = useCallback((noteId: string) => {
+        setOpenTabs(prev => {
+            const index = prev.indexOf(noteId);
+            if (index === -1) return prev; // Not in tabs
+            
+            const newTabs = prev.filter(id => id !== noteId);
+            
+            // If closing the active note, switch to adjacent tab
+            const currentActive = activeNoteRef.current;
+            if (currentActive?.id === noteId && newTabs.length > 0) {
+                // Switch to the tab at the same index (or previous if last)
+                const nextIndex = index >= newTabs.length ? newTabs.length - 1 : index;
+                const nextNoteId = newTabs[nextIndex];
+                const nextNote = notesRef.current.find(n => n.id === nextNoteId);
+                if (nextNote) {
+                    setActiveNote(nextNote);
+                }
+            } else if (currentActive?.id === noteId && newTabs.length === 0) {
+                // No more tabs, clear active note
+                setActiveNote(null);
+            }
+            
+            return newTabs;
+        });
+    }, []);
+
+    // Close all tabs
+    const closeAllTabs = useCallback(() => {
+        setOpenTabs([]);
+        setActiveNote(null);
+    }, []);
+
+    // Cleanup: Remove deleted notes from tabs
+    useEffect(() => {
+        setOpenTabs(prev => {
+            const validNoteIds = new Set(notes.map(n => n.id));
+            return prev.filter(id => validNoteIds.has(id));
+        });
+    }, [notes]);
+
     // Memoize context value to prevent unnecessary re-renders
     const value: NotesContextType = useMemo(() => ({
         notes,
@@ -194,6 +269,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         copyNote,
         refreshNotes,
         findOrCreateEmptyNote,
+        openTabs,
+        openNoteInTab,
+        closeTab,
+        closeAllTabs,
     }), [
         notes,
         isLoading,
@@ -205,6 +284,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         copyNote,
         refreshNotes,
         findOrCreateEmptyNote,
+        openTabs,
+        openNoteInTab,
+        closeTab,
+        closeAllTabs,
     ]);
 
     return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;
