@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
@@ -14,6 +15,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { useCanvas } from "@/hooks/useCanvas";
+
+// Dynamically import CanvasRenderer to avoid SSR issues
+const CanvasRenderer = dynamic(
+    () => import("@/components/layout/adaptive-layout/CanvasRenderer").then(mod => ({ default: mod.CanvasRenderer })),
+    { ssr: false }
+);
 
 // Variable definition structure
 export interface PromptVariable {
@@ -35,7 +42,55 @@ interface PromptRunnerProps {
 export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas } = useCanvas();
+    const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
+    
+    // Mobile detection
+    const [isMobile, setIsMobile] = useState(false);
+    const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
+    
+    useEffect(() => {
+        const checkMobile = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            // Auto-close canvas mobile view when resizing to desktop
+            if (!mobile && showCanvasOnMobile) {
+                setShowCanvasOnMobile(false);
+            }
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, [showCanvasOnMobile]);
+    
+    // Handle canvas toggle for mobile
+    const handleCanvasToggle = () => {
+        if (isMobile) {
+            if (isCanvasOpen) {
+                // If canvas is open, toggle the mobile view
+                setShowCanvasOnMobile(!showCanvasOnMobile);
+            } else {
+                // Open canvas and show it on mobile
+                openCanvas({ 
+                    type: 'html', 
+                    data: '<div class="p-6"><p class="text-gray-500">Canvas panel - content will appear here</p></div>',
+                    metadata: { title: 'Canvas' }
+                });
+                setShowCanvasOnMobile(true);
+            }
+        } else {
+            // Desktop behavior - toggle canvas panel
+            if (isCanvasOpen) {
+                closeCanvas();
+            } else {
+                openCanvas({ 
+                    type: 'html', 
+                    data: '<div class="p-6"><p class="text-gray-500">Canvas panel - content will appear here</p></div>',
+                    metadata: { title: 'Canvas' }
+                });
+            }
+        }
+    };
     
     // Extract data from promptData
     const { messages: templateMessages, variableDefaults: initialVariableDefaults, settings } = promptData;
@@ -300,24 +355,24 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         <>
             {/* Minimal Header in the top nav area */}
             <PageSpecificHeader>
-                <div className="flex items-center justify-between w-full h-full px-4">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between w-full h-full px-2 sm:px-4">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => router.push('/ai/prompts')}
-                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 flex-shrink-0"
                         >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back
+                            <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Back</span>
                         </Button>
-                        <div className="h-6 w-px bg-gray-300 dark:bg-gray-700" />
-                        <h1 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                        <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 flex-shrink-0" />
+                        <h1 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                             {promptData.name || "Untitled Prompt"}
                         </h1>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {displayMessages.length > 0 && (
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                        {displayMessages.length > 0 && !isMobile && (
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -331,15 +386,13 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => isCanvasOpen ? closeCanvas() : openCanvas({ 
-                                type: 'html', 
-                                data: '<div class="p-6"><p class="text-gray-500">Canvas panel - content will appear here</p></div>',
-                                metadata: { title: 'Canvas' }
-                            })}
+                            onClick={handleCanvasToggle}
                             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-                            title={isCanvasOpen ? "Close canvas" : "Open canvas"}
+                            title={isMobile && showCanvasOnMobile ? "Back to conversation" : isCanvasOpen ? "Close canvas" : "Open canvas"}
                         >
-                            {isCanvasOpen ? (
+                            {isMobile && showCanvasOnMobile ? (
+                                <ArrowLeft className="w-4 h-4" />
+                            ) : isCanvasOpen ? (
                                 <PanelRightClose className="w-4 h-4" />
                             ) : (
                                 <PanelRightOpen className="w-4 h-4" />
@@ -349,11 +402,18 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 </div>
             </PageSpecificHeader>
 
-            {/* Main Layout with AdaptiveLayout */}
-            <AdaptiveLayout
-                className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
-                rightPanel={
-                    <div className="h-full flex flex-col relative">
+            {/* Mobile Canvas Full Screen View */}
+            {isMobile && showCanvasOnMobile && isCanvasOpen ? (
+                <div className="h-[calc(100vh-3rem)] bg-textured overflow-hidden">
+                    <CanvasRenderer content={canvasContent} />
+                </div>
+            ) : (
+                /* Main Layout with AdaptiveLayout */
+                <AdaptiveLayout
+                    className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
+                    disableAutoCanvas={isMobile} // Disable auto canvas on mobile
+                    rightPanel={
+                        <div className="h-full flex flex-col relative">
                         {/* Messages Area - Scrollable */}
                         <div 
                             className="flex-1 overflow-y-auto pb-64 scrollbar-hide" 
@@ -421,6 +481,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                     </div>
                 }
             />
+            )}
         </>
     );
 }

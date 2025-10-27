@@ -188,52 +188,52 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
         <ChatCollapsibleWrapper
             icon={<BookOpen className="h-4 w-4 text-primary" />}
             title={
-                <div className="flex items-center justify-between w-full">
-                    <span>
-                        Flashcards
-                        {!isComplete && (
-                            <span className="ml-2 text-xs text-muted-foreground">
-                                ({completeCount} ready{partialCard ? ', 1 loading...' : ''})
-                            </span>
-                        )}
-                        {isComplete && (
-                            <span className="ml-2 text-xs text-muted-foreground">
-                                ({completeCount} {completeCount === 1 ? 'card' : 'cards'})
-                            </span>
-                        )}
-                    </span>
-                    <div className="flex items-center gap-1">
-                        <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openCanvas({
-                                    type: 'flashcards',
-                                    data: content,
-                                    metadata: { title: 'Flashcards' }
-                                });
-                            }}
-                            title="Open in side panel"
-                        >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsFullscreen(true);
-                            }}
-                            title="Fullscreen mode"
-                        >
-                            <Maximize2 className="h-3.5 w-3.5" />
-                        </Button>
-                    </div>
-                </div>
+                <span>
+                    Flashcards
+                    {!isComplete && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                            ({completeCount} ready{partialCard ? ', 1 loading...' : ''})
+                        </span>
+                    )}
+                    {isComplete && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                            ({completeCount} {completeCount === 1 ? 'card' : 'cards'})
+                        </span>
+                    )}
+                </span>
+            }
+            controls={
+                <>
+                    <LayoutToggle layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openCanvas({
+                                type: 'flashcards',
+                                data: content,
+                                metadata: { title: 'Flashcards' }
+                            });
+                        }}
+                        title="Open in side panel"
+                    >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsFullscreen(true);
+                        }}
+                        title="Fullscreen mode"
+                    >
+                        <Maximize2 className="h-3.5 w-3.5" />
+                    </Button>
+                </>
             }
             initialOpen={true}
         >
