@@ -16,7 +16,7 @@ export default async function PromptsPage() {
     // Fetch user's prompts
     const { data: prompts, error } = await supabase
         .from("prompts")
-        .select("id, name")
+        .select("id, name, description")
         .eq("user_id", user!.id)
         .order("updated_at", { ascending: false });
 
@@ -31,7 +31,7 @@ export default async function PromptsPage() {
         .select("*", { count: "exact", head: true });
 
     return (
-        <Card className="h-full w-full bg-textured border-none shadow-lg">
+        <div className="h-full w-full bg-textured">
             <div className="p-8 md:p-12">
                 <div className="flex justify-between items-center mb-8">
                     <div>
@@ -93,7 +93,7 @@ export default async function PromptsPage() {
 
                 <PromptsGrid prompts={prompts || []} />
             </div>
-        </Card>
+        </div>
     );
 }
 

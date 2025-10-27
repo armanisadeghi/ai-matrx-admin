@@ -2,8 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { PromptCard } from "./PromptCard";
+import { PromptSearchDialog } from "./PromptSearchDialog";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -18,6 +21,7 @@ import {
 interface Prompt {
     id: string;
     name: string;
+    description?: string;
 }
 
 interface PromptsGridProps {
@@ -32,6 +36,7 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
     const [duplicatingIds, setDuplicatingIds] = useState<Set<string>>(new Set());
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [promptToDelete, setPromptToDelete] = useState<{ id: string; name: string } | null>(null);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     const handleDeleteClick = (id: string, name: string) => {
         setPromptToDelete({ id, name });
@@ -120,12 +125,27 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
 
     return (
         <>
+            {/* Search Button - Only show if there are prompts */}
+            {prompts.length > 0 && (
+                <div className="mb-6 flex justify-end">
+                    <Button
+                        onClick={() => setIsSearchOpen(true)}
+                        variant="outline"
+                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                        <Search className="h-4 w-4 mr-2" />
+                        Search Prompts
+                    </Button>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {prompts.map((prompt) => (
                     <PromptCard
                         key={prompt.id}
                         id={prompt.id}
                         name={prompt.name}
+                        description={prompt.description}
                         onDelete={(id) => {
                             const prompt = prompts.find(p => p.id === id);
                             if (prompt) {
@@ -141,6 +161,12 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                     />
                 ))}
             </div>
+
+            <PromptSearchDialog
+                isOpen={isSearchOpen}
+                onClose={() => setIsSearchOpen(false)}
+                prompts={prompts}
+            />
 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>

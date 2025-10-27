@@ -138,11 +138,12 @@ export function useAiRun(initialRunId?: string): UseAiRunReturn {
   }, [runId]);
 
   // Add message to run
-  const addMessage = useCallback(async (message: RunMessage): Promise<AiRun> => {
-    if (!runId) throw new Error('No run ID set');
+  const addMessage = useCallback(async (message: RunMessage, overrideRunId?: string): Promise<AiRun> => {
+    const effectiveRunId = overrideRunId || runId;
+    if (!effectiveRunId) throw new Error('No run ID set');
     
     try {
-      const updated = await aiRunsService.addMessage(runId, message);
+      const updated = await aiRunsService.addMessage(effectiveRunId, message);
       setRun(updated);
       return updated;
     } catch (err) {
@@ -152,13 +153,14 @@ export function useAiRun(initialRunId?: string): UseAiRunReturn {
   }, [runId]);
 
   // Create task (run_id is added automatically)
-  const createTask = useCallback(async (input: CreateTaskInput): Promise<AiTask> => {
-    if (!runId) throw new Error('No run ID set');
+  const createTask = useCallback(async (input: CreateTaskInput, overrideRunId?: string): Promise<AiTask> => {
+    const effectiveRunId = overrideRunId || runId;
+    if (!effectiveRunId) throw new Error('No run ID set');
     
     try {
       const task = await aiTasksService.create({
         ...input,
-        run_id: runId,
+        run_id: effectiveRunId,
       });
       
       // Add to local tasks array

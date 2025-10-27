@@ -271,10 +271,10 @@ export interface UseAiRunReturn {
   updateRun: (input: UpdateAiRunInput) => Promise<AiRun>;
   deleteRun: () => Promise<void>;
   toggleStar: () => Promise<void>;
-  addMessage: (message: RunMessage) => Promise<AiRun>;
+  addMessage: (message: RunMessage, overrideRunId?: string) => Promise<AiRun>;
   
   // Task actions (run_id is added automatically by the hook)
-  createTask: (input: CreateTaskInput) => Promise<AiTask>;
+  createTask: (input: CreateTaskInput, overrideRunId?: string) => Promise<AiTask>;
   updateTask: (taskId: string, input: UpdateAiTaskInput) => Promise<AiTask>;
   completeTask: (taskId: string, input: CompleteAiTaskInput) => Promise<AiTask>;
 }

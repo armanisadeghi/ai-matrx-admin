@@ -2,16 +2,19 @@
 
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
-import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2 } from "lucide-react";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, Sparkles } from "lucide-react";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
+import { PromptActionModal } from "./PromptActionModal";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
+import { toast } from "@/lib/toast-service";
 
 interface PromptCardProps {
     id: string;
     name: string;
+    description?: string;
     onDelete?: (id: string) => void;
     onDuplicate?: (id: string) => void;
     onNavigate?: (id: string, path: string) => void;
@@ -24,6 +27,7 @@ interface PromptCardProps {
 export function PromptCard({
     id,
     name,
+    description,
     onDelete,
     onDuplicate,
     onNavigate,
@@ -35,6 +39,8 @@ export function PromptCard({
     const isSystemAdmin = useAppSelector((state: RootState) => selectIsAdmin(state));
     const [isOwner, setIsOwner] = useState(true);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+    const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -93,15 +99,48 @@ export function PromptCard({
         }
     };
 
-    const handleShareClick = (e: React.MouseEvent) => {
+    const handleShareClick = () => {
+        setIsShareModalOpen(true);
+    };
+
+    const handleShareClickInline = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!isDisabled) {
             setIsShareModalOpen(true);
         }
     };
 
+    const handleConvertToTemplate = async () => {
+        if (!isSystemAdmin || isConvertingToTemplate) return;
+        
+        setIsConvertingToTemplate(true);
+        try {
+            const response = await fetch(`/api/prompts/${id}/convert-to-template`, {
+                method: "POST",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to convert prompt to template");
+            }
+
+            const data = await response.json();
+            toast.success(`Successfully converted "${name}" to a template!`);
+        } catch (error) {
+            console.error("Error converting prompt to template:", error);
+            toast.error("Failed to convert prompt to template. Please try again.");
+        } finally {
+            setIsConvertingToTemplate(false);
+        }
+    };
+
+    const handleCardClick = () => {
+        if (!isDisabled) {
+            setIsActionModalOpen(true);
+        }
+    };
+
     // Disable all interactions when navigating or when any card is navigating
-    const isDisabled = isNavigating || isAnyNavigating;
+    const isDisabled = isNavigating || isAnyNavigating || isConvertingToTemplate;
 
     return (
         <Card 
@@ -110,8 +149,8 @@ export function PromptCard({
                     ? 'opacity-60 cursor-not-allowed' 
                     : 'hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer hover:scale-[1.02] group'
             }`}
-            onClick={isDisabled ? undefined : handleEdit}
-            title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : "Click to edit prompt"}
+            onClick={isDisabled ? undefined : handleCardClick}
+            title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : "Click to choose action"}
         >
             {/* Loading Overlay */}
             {isNavigating && (
@@ -143,13 +182,13 @@ export function PromptCard({
             <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-100 dark:bg-slate-900 rounded-b-lg">
                 <div className="flex gap-2 justify-center" onClick={(e) => e.stopPropagation()}>
                     <IconButton
-                        icon={Eye}
-                        tooltip={isDisabled ? "Please wait..." : "View"}
+                        icon={Play}
+                        tooltip={isDisabled ? "Please wait..." : "Run"}
                         size="sm"
                         variant="ghost"
                         tooltipSide="top"
                         tooltipAlign="center"
-                        onClick={handleView}
+                        onClick={handleRun}
                         disabled={isDisabled}
                     />
                     <IconButton
@@ -163,13 +202,13 @@ export function PromptCard({
                         disabled={isDisabled}
                     />
                     <IconButton
-                        icon={Play}
-                        tooltip={isDisabled ? "Please wait..." : "Run"}
+                        icon={Eye}
+                        tooltip={isDisabled ? "Please wait..." : "View"}
                         size="sm"
                         variant="ghost"
                         tooltipSide="top"
                         tooltipAlign="center"
-                        onClick={handleRun}
+                        onClick={handleView}
                         disabled={isDisabled}
                     />
                     <IconButton
@@ -190,9 +229,22 @@ export function PromptCard({
                         variant="ghost"
                         tooltipSide="top"
                         tooltipAlign="center"
-                        onClick={handleShareClick}
+                        onClick={handleShareClickInline}
                         disabled={isDisabled}
                     />
+                    {isSystemAdmin && (
+                        <IconButton
+                            icon={isConvertingToTemplate ? Loader2 : Sparkles}
+                            tooltip={isConvertingToTemplate ? "Converting..." : isDisabled ? "Please wait..." : "Convert to Template"}
+                            size="sm"
+                            variant="ghost"
+                            tooltipSide="top"
+                            tooltipAlign="center"
+                            onClick={handleConvertToTemplate}
+                            disabled={isConvertingToTemplate || isDisabled}
+                            iconClassName={isConvertingToTemplate ? "animate-spin" : ""}
+                        />
+                    )}
                     <IconButton
                         icon={isDeleting ? Loader2 : Trash2}
                         tooltip={isDeleting ? "Deleting..." : isDisabled ? "Please wait..." : "Delete"}
@@ -206,6 +258,21 @@ export function PromptCard({
                     />
                 </div>
             </div>
+
+            <PromptActionModal
+                isOpen={isActionModalOpen}
+                onClose={() => setIsActionModalOpen(false)}
+                promptName={name}
+                promptDescription={description}
+                onRun={handleRun}
+                onEdit={handleEdit}
+                onView={handleView}
+                onDuplicate={handleDuplicate}
+                onShare={handleShareClick}
+                onDelete={handleDelete}
+                isDeleting={isDeleting}
+                isDuplicating={isDuplicating}
+            />
 
             <ShareModal
                 isOpen={isShareModalOpen}

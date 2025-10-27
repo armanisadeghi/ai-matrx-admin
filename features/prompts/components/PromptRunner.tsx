@@ -18,6 +18,7 @@ import { useCanvas } from "@/hooks/useCanvas";
 import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
 import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
 import { calculateTaskCost } from "@/features/ai-runs/utils/cost-calculator";
+import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { v4 as uuidv4 } from "uuid";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
@@ -279,27 +280,44 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
             const selectedModel = models.find(m => m.id === modelId);
             const cost = selectedModel?.model_name ? calculateTaskCost(selectedModel.model_name, 0, tokenCount) : 0;
             
-            completeTask(pendingTaskId, {
-                response_text: streamingText,
-                tokens_total: tokenCount,
-                time_to_first_token: timeToFirstTokenRef.current,
-                total_time: totalTime,
-                cost,
-            }).catch(err => console.error('Error completing task:', err));
-            
-            // Add assistant message to run
-            if (run) {
-                addMessage({
-                    role: 'assistant',
-                    content: streamingText,
-                    taskId: pendingTaskId,
-                    timestamp: new Date().toISOString(),
-                    metadata: {
-                        ...finalStats,
+            // Complete task and add assistant message
+            (async () => {
+                try {
+                    await completeTask(pendingTaskId, {
+                        response_text: streamingText,
+                        tokens_total: tokenCount,
+                        time_to_first_token: timeToFirstTokenRef.current,
+                        total_time: totalTime,
                         cost,
+                    });
+                    
+                    console.log('✅ Task completed:', pendingTaskId);
+                } catch (err) {
+                    console.error('❌ Error completing task:', err);
+                }
+                
+                // Add assistant message to run
+                if (run) {
+                    try {
+                        await addMessage({
+                            role: 'assistant',
+                            content: streamingText,
+                            taskId: pendingTaskId,
+                            timestamp: new Date().toISOString(),
+                            metadata: {
+                                ...finalStats,
+                                cost,
+                            }
+                        });
+                        
+                        console.log('✅ Assistant message added to run');
+                    } catch (err) {
+                        console.error('❌ Error adding assistant message:', err);
                     }
-                }).catch(err => console.error('Error adding message to run:', err));
-            }
+                } else {
+                    console.warn('⚠️ No run available to add assistant message');
+                }
+            })();
 
             // Reset state
             setCurrentTaskId(null);
@@ -368,6 +386,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
 
         try {
             // Create AI run on first message
+            let currentRun = run;
             if (isFirstMessage && !run) {
                 const runName = generateRunNameFromMessage(displayUserMessage);
                 const variableValues: Record<string, string> = {};
@@ -375,13 +394,15 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                     variableValues[v.name] = v.defaultValue;
                 });
                 
-                await createRun({
+                currentRun = await createRun({
                     source_type: 'prompt',
                     source_id: promptData.id,
                     name: runName,
                     settings: settings,
                     variable_values: variableValues,
                 });
+                
+                console.log('✅ Run created:', currentRun.id, '-', runName);
             }
             
             let messagesToSend: PromptMessage[];
@@ -426,27 +447,37 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
             const taskId = uuidv4();
             
             // Create task in AI runs system BEFORE submitting to socket
-            if (run) {
+            if (currentRun) {
                 const selectedModel = models.find(m => m.id === modelId);
-                await createTask({
-                    task_id: taskId,
-                    service: 'chat_service',
-                    task_name: 'direct_chat',
-                    provider: selectedModel?.provider || 'unknown',
-                    endpoint: selectedModel?.endpoint,
-                    model: selectedModel?.model_name,
-                    model_id: selectedModel?.id,
-                    request_data: chatConfig,
-                });
                 
-                setPendingTaskId(taskId);
-                
-                // Add user message to run
-                await addMessage({
-                    role: 'user',
-                    content: displayMessageWithReplacedVariables,
-                    timestamp: new Date().toISOString(),
-                });
+                try {
+                    await createTask({
+                        task_id: taskId,
+                        service: 'chat_service',
+                        task_name: 'direct_chat',
+                        provider: selectedModel?.provider || 'unknown',
+                        endpoint: selectedModel?.endpoint,
+                        model: selectedModel?.model_name,
+                        model_id: selectedModel?.id,
+                        request_data: chatConfig,
+                    }, currentRun.id); // Pass run ID directly
+                    
+                    console.log('✅ Task created:', taskId);
+                    setPendingTaskId(taskId);
+                    
+                    // Add user message to run
+                    await addMessage({
+                        role: 'user',
+                        content: displayMessageWithReplacedVariables,
+                        timestamp: new Date().toISOString(),
+                    }, currentRun.id); // Pass run ID directly
+                    
+                    console.log('✅ User message added to run');
+                } catch (err) {
+                    console.error('❌ Error creating task or adding message:', err);
+                }
+            } else {
+                console.warn('No run available to create task');
             }
 
             // Submit the task using socket with the same taskId
@@ -547,6 +578,17 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 <AdaptiveLayout
                     className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
                     disableAutoCanvas={isMobile} // Disable auto canvas on mobile
+                    leftPanel={
+                        <PromptRunsSidebar
+                            promptId={promptData.id}
+                            promptName={promptData.name}
+                            currentRunId={run?.id}
+                            onRunSelect={(runId) => {
+                                // TODO: Load and resume the selected run
+                                console.log('Selected run:', runId);
+                            }}
+                        />
+                    }
                     rightPanel={
                         <div className="h-full flex flex-col relative">
                         {/* Messages Area - Scrollable */}
