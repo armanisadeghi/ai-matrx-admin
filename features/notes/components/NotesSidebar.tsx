@@ -139,89 +139,39 @@ export function NotesSidebar({
 
     return (
         <div className={cn("flex flex-col h-full bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800", className)}>
-            {/* Header */}
-            <div className="flex items-center gap-2 p-2 border-b border-zinc-200 dark:border-zinc-800">
+            {/* Compact Search Header - VS Code Style */}
+            <div className="flex items-center gap-1 p-1.5 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                    <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
                     <Input
                         type="text"
-                        placeholder="Search notes..."
+                        placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 h-8 text-sm bg-white dark:bg-zinc-800"
+                        className="pl-6 h-6 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
                     />
                 </div>
-                
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => onCreateNote()}
-                            >
-                                <Plus className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Create Note</TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-
-                <DropdownMenu>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        {sortConfig.order === 'asc' ? (
-                                            <SortAsc className="h-4 w-4" />
-                                        ) : (
-                                            <SortDesc className="h-4 w-4" />
-                                        )}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent>Sort Options</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Sort By</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => setSortConfig({ field: 'label', order: sortConfig.order })}>
-                            Name
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ field: 'updated_at', order: sortConfig.order })}>
-                            Last Modified
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ field: 'created_at', order: sortConfig.order })}>
-                            Date Created
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={toggleSortOrder}>
-                            {sortConfig.order === 'asc' ? 'Ascending' : 'Descending'}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
             </div>
 
-            {/* Folder/File Tree */}
+            {/* Folder/File Tree - VS Code Compact Style */}
             <ScrollArea className="flex-1">
-                <div className="p-1.5">
+                <div className="p-0.5">
                     {folderGroups.length === 0 ? (
-                        <div className="text-center text-sm text-zinc-500 dark:text-zinc-400 py-4">
+                        <div className="text-center text-xs text-zinc-500 dark:text-zinc-400 py-3">
                             No notes found
                         </div>
                     ) : (
                         folderGroups.map((group) => {
                             const isCollapsed = collapsedFolders.has(group.folder_name);
                             const isDropTarget = dropTargetFolder === group.folder_name;
+                            const hasNotes = group.count > 0;
                             const { icon: FolderIcon, color: iconColor } = getFolderIconAndColor(group.folder_name);
                             
                             return (
-                                <div key={group.folder_name} className="mb-1">
-                                    {/* Folder Header - Drop Zone */}
+                                <div key={group.folder_name} className="mb-0.5">
+                                    {/* Folder Header - Drop Zone - Fixed Layout */}
                                     <div 
-                                        className="flex items-center gap-1 mb-0.5"
+                                        className="group flex items-center gap-0.5 mb-0.5"
                                         onDragOver={handleDragOver(group.folder_name)}
                                         onDragLeave={handleDragLeave}
                                         onDrop={handleDrop(group.folder_name)}
@@ -230,43 +180,55 @@ export function NotesSidebar({
                                             variant="ghost"
                                             size="sm"
                                             className={cn(
-                                                "h-7 px-2 flex-1 justify-start text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800",
+                                                "h-5 px-1 justify-start text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800",
+                                                "flex-1 min-w-0",
                                                 isDropTarget && "bg-blue-100 dark:bg-blue-900/30 border-2 border-dashed border-blue-500"
                                             )}
-                                            onClick={() => toggleFolder(group.folder_name)}
+                                            onClick={() => hasNotes && toggleFolder(group.folder_name)}
                                         >
-                                            {isCollapsed ? (
-                                                <ChevronRight className="h-3 w-3 mr-1" />
-                                            ) : (
-                                                <ChevronDown className="h-3 w-3 mr-1" />
+                                            {/* Chevron - only show if folder has notes */}
+                                            {hasNotes && (
+                                                isCollapsed ? (
+                                                    <ChevronRight className="h-2.5 w-2.5 mr-0.5 shrink-0" />
+                                                ) : (
+                                                    <ChevronDown className="h-2.5 w-2.5 mr-0.5 shrink-0" />
+                                                )
                                             )}
-                                            <FolderIcon className={cn("h-3 w-3 mr-1.5", iconColor)} />
-                                            <span className="truncate flex-1 text-left">{group.folder_name}</span>
-                                            <span className="text-zinc-400 dark:text-zinc-500 ml-1">
-                                                {group.count}
-                                            </span>
+                                            {!hasNotes && <div className="w-2.5 mr-0.5 shrink-0" />}
+                                            
+                                            <FolderIcon className={cn("h-2.5 w-2.5 mr-1 shrink-0", iconColor)} />
+                                            <span className="truncate flex-1 text-left min-w-0">{group.folder_name}</span>
                                         </Button>
                                         
+                                        {/* Count - Fixed width to prevent layout shift */}
+                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 w-3 text-right shrink-0">
+                                            {group.count}
+                                        </span>
+                                        
+                                        {/* Add button - always visible with fixed width */}
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-7 w-7"
-                                                        onClick={() => onCreateNote(group.folder_name)}
+                                                        className="h-5 w-5 p-0 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onCreateNote(group.folder_name);
+                                                        }}
                                                     >
-                                                        <Plus className="h-3 w-3" />
+                                                        <Plus className="h-2.5 w-2.5" />
                                                     </Button>
                                                 </TooltipTrigger>
-                                                <TooltipContent>New Note in Folder</TooltipContent>
+                                                <TooltipContent side="right">New Note in Folder</TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
                                     </div>
 
-                                    {/* Notes in Folder */}
-                                    {!isCollapsed && (
-                                        <div className="ml-3 space-y-0.5">
+                                    {/* Notes in Folder - Compact, only show if not collapsed and has notes */}
+                                    {!isCollapsed && hasNotes && (
+                                        <div className="ml-2 space-y-0.5">
                                             {group.notes.map((note) => {
                                                 const isActive = activeNote?.id === note.id;
                                                 const isDragging = draggedNote?.id === note.id;
@@ -274,7 +236,7 @@ export function NotesSidebar({
                                                 return (
                                                     <div
                                                         key={note.id}
-                                                        className="group flex items-center gap-1 min-w-0"
+                                                        className="group flex items-center gap-0.5 min-w-0"
                                                         draggable
                                                         onDragStart={handleDragStart(note)}
                                                         onDragEnd={handleDragEnd}
@@ -283,13 +245,14 @@ export function NotesSidebar({
                                                             variant="ghost"
                                                             size="sm"
                                                             className={cn(
-                                                                "h-7 px-2 flex-1 justify-start text-xs hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-move min-w-0",
-                                                                isActive && "bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 font-medium border-l-2 border-blue-500",
+                                                                "h-5 px-1 flex-1 justify-start text-xs rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-move min-w-0 font-normal",
+                                                                isActive && "bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 font-medium border-b border-blue-500",
                                                                 isDragging && "opacity-50"
                                                             )}
                                                             onClick={() => onSelectNote(note)}
                                                         >
-                                                            <FileText className="h-3 w-3 mr-1.5 shrink-0" />
+                                                            {/* Tiny subtle icon */}
+                                                            <div className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-500 mr-1.5 shrink-0" />
                                                             <span className="truncate flex-1 text-left min-w-0">
                                                                 {note.label}
                                                             </span>
@@ -298,13 +261,13 @@ export function NotesSidebar({
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            className="h-5 w-5 p-0 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 onDeleteNote(note.id);
                                                             }}
                                                         >
-                                                            <Trash2 className="h-3 w-3 text-red-500" />
+                                                            <Trash2 className="h-2.5 w-2.5 text-red-500" />
                                                         </Button>
                                                     </div>
                                                 );
@@ -315,19 +278,6 @@ export function NotesSidebar({
                             );
                         })
                     )}
-                    
-                    {/* New Folder Button */}
-                    <div className="mt-3">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full h-7 text-xs justify-start"
-                            onClick={onCreateFolder}
-                        >
-                            <FolderPlus className="h-3 w-3 mr-1.5" />
-                            Add Folder
-                        </Button>
-                    </div>
                 </div>
             </ScrollArea>
         </div>

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
-import { toast } from "@/components/ui/use-toast";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { NotesAPI } from "@/features/notes";
 import { QuickSaveModal } from "@/features/notes";

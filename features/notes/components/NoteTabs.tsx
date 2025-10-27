@@ -111,21 +111,6 @@ export function NoteTabs({
         <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 hidden md:block">
             <ScrollArea className="w-full">
                 <div className="flex items-center px-2 py-1 gap-1">
-                    {/* New Note Button */}
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    onClick={onCreateNote}
-                                    className="flex items-center justify-center h-7 w-7 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors flex-shrink-0"
-                                >
-                                    <Plus className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>New Note</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
                     {/* Tabs */}
                     {openTabs.map((noteId) => {
                         const note = notes.find(n => n.id === noteId);

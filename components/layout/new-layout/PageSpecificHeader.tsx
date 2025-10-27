@@ -128,6 +128,41 @@ export function ChatHeader({ baseRoute = "/chat" }: ChatHeaderProps) {
   );
 }
 
+interface NotesHeaderProps {
+  onCreateNote: () => void;
+  onCreateFolder: () => void;
+  sortConfig: { field: string; order: 'asc' | 'desc' };
+  onSortChange: (field: string, order: 'asc' | 'desc') => void;
+}
+
+export function NotesHeader(props: NotesHeaderProps) {
+  const pathname = usePathname();
+  
+  // Only render on notes pages
+  if (!pathname?.includes('/notes')) {
+    return null;
+  }
+
+  // Dynamically import the component to avoid SSR issues
+  const [NotesHeaderCompact, setNotesHeaderCompact] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/features/notes/components/NotesHeaderCompact').then((module) => {
+      setNotesHeaderCompact(() => module.NotesHeaderCompact);
+    });
+  }, []);
+
+  if (!NotesHeaderCompact) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <NotesHeaderCompact {...props} />
+    </PageSpecificHeader>
+  );
+}
+
 interface AppletHeaderProps {
   appId?: string;
   isDemo?: boolean;

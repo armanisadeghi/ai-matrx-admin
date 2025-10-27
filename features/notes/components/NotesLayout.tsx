@@ -4,10 +4,10 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { NotesSidebar } from './NotesSidebar';
 import { NoteEditor } from './NoteEditor';
-import { NoteToolbar } from './NoteToolbar';
 import { NoteTabs } from './NoteTabs';
 import { CreateFolderDialog } from './CreateFolderDialog';
 import { ShareNoteDialog } from './ShareNoteDialog';
+import { NotesHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import { useNotesContext } from '../context/NotesContext';
 import { useAllFolders } from '../utils/folderUtils';
 import type { Note } from '../types';
@@ -45,6 +45,10 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [originalLabel, setOriginalLabel] = useState<string>('');
+    const [sortConfig, setSortConfig] = useState<{ field: string; order: 'asc' | 'desc' }>({
+        field: 'updated_at',
+        order: 'desc',
+    });
     const toast = useToastManager('notes');
 
     // Track when label changes
@@ -208,6 +212,10 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         setIsMobileSidebarOpen(false); // Close mobile sidebar after selecting note
     }, [openNoteInTab]);
 
+    const handleSortChange = useCallback((field: string, order: 'asc' | 'desc') => {
+        setSortConfig({ field, order });
+    }, []);
+
     if (isLoading) {
         return (
             <div className={cn("flex items-center justify-center h-full", className)}>
@@ -217,46 +225,62 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     }
 
     return (
-        <div className={cn("flex h-full overflow-hidden", className)}>
-            {/* Desktop Sidebar */}
-            <div
-                style={{ width: `${sidebarWidth}px` }}
-                className="shrink-0 hidden md:block"
-            >
-                <NotesSidebar
-                    notes={notes}
-                    activeNote={activeNote}
-                    onSelectNote={handleSelectNote}
-                    onCreateNote={handleCreateNote}
-                    onDeleteNote={handleDeleteNote}
-                    onCreateFolder={handleCreateFolder}
-                    onMoveNote={handleMoveNote}
-                />
-            </div>
-
-            {/* Main Editor */}
-            <div className="flex-1 flex flex-col min-w-0">
-                {/* Mobile: Show menu button in toolbar */}
-                <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800 bg-textured md:hidden">
-                    <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 m-1.5">
-                                <Menu className="h-4 w-4" />
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="p-0 w-[280px]">
-                            <NotesSidebar
-                                notes={notes}
-                                activeNote={activeNote}
-                                onSelectNote={handleSelectNote}
-                                onCreateNote={handleCreateNote}
-                                onDeleteNote={handleDeleteNote}
-                                onCreateFolder={handleCreateFolder}
-                                onMoveNote={handleMoveNote}
-                            />
-                        </SheetContent>
-                    </Sheet>
+        <>
+            {/* Page Header - Inject into main layout header */}
+            <NotesHeader
+                onCreateNote={() => handleCreateNote()}
+                onCreateFolder={handleCreateFolder}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+            />
+            
+            <div className={cn("flex h-full overflow-hidden", className)}>
+                {/* Desktop Sidebar - Compact */}
+                <div
+                    style={{ width: `${sidebarWidth}px` }}
+                    className="shrink-0 hidden md:block"
+                >
+                    <NotesSidebar
+                        notes={notes}
+                        activeNote={activeNote}
+                        onSelectNote={handleSelectNote}
+                        onCreateNote={handleCreateNote}
+                        onDeleteNote={handleDeleteNote}
+                        onCreateFolder={handleCreateFolder}
+                        onMoveNote={handleMoveNote}
+                    />
                 </div>
+
+                {/* Main Editor */}
+                <div className="flex-1 flex flex-col min-w-0">
+                    {/* Mobile: Show menu button */}
+                    <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800 bg-textured md:hidden h-9">
+                        <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 m-1">
+                                    <Menu className="h-3.5 w-3.5" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0 w-[280px]">
+                                <NotesSidebar
+                                    notes={notes}
+                                    activeNote={activeNote}
+                                    onSelectNote={handleSelectNote}
+                                    onCreateNote={handleCreateNote}
+                                    onDeleteNote={handleDeleteNote}
+                                    onCreateFolder={handleCreateFolder}
+                                    onMoveNote={handleMoveNote}
+                                />
+                            </SheetContent>
+                        </Sheet>
+                        
+                        {/* Mobile - Show active note title */}
+                        {activeNote && (
+                            <div className="flex-1 px-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                                {activeNote.label}
+                            </div>
+                        )}
+                    </div>
 
                 {/* Note Tabs - Desktop only (toolbar integrated) */}
                 <NoteTabs 
@@ -295,7 +319,8 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                     noteLabel={notes.find(n => n.id === shareNoteId)?.label || 'Note'}
                 />
             )}
-        </div>
+            </div>
+        </>
     );
 }
 
