@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/lib/redux";
-import { selectCanvasIsOpen, selectCanvasContent } from "@/lib/redux/slices/canvasSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { selectCanvasIsOpen, selectCanvasContent, setCanvasAvailable } from "@/lib/redux/slices/canvasSlice";
 import { CanvasRenderer } from "./CanvasRenderer";
 
 interface AdaptiveLayoutProps {
@@ -41,6 +41,7 @@ export function AdaptiveLayout({
     leftPanelMaxWidth = 640,
     disableAutoCanvas = false,
 }: AdaptiveLayoutProps) {
+    const dispatch = useAppDispatch();
     const [isResizing, setIsResizing] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [canvasWidth, setCanvasWidth] = useState(1000); // Local state for canvas width
@@ -52,6 +53,16 @@ export function AdaptiveLayout({
     // Get canvas state from Redux
     const isCanvasOpen = useAppSelector(selectCanvasIsOpen);
     const canvasContent = useAppSelector(selectCanvasContent);
+    
+    // Set canvas availability based on disableAutoCanvas prop
+    useEffect(() => {
+        dispatch(setCanvasAvailable(!disableAutoCanvas));
+        
+        // Clean up: disable canvas when component unmounts
+        return () => {
+            dispatch(setCanvasAvailable(false));
+        };
+    }, [disableAutoCanvas, dispatch]);
 
     // Determine which canvas to show: explicit prop or Redux canvas
     const effectiveCanvasPanel = canvasPanel || 

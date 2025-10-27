@@ -1,6 +1,9 @@
   import React, { useState, useEffect, useMemo } from 'react';
 import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink } from 'lucide-react';
 import { useCanvas } from '@/hooks/useCanvas';
+import { useAppSelector } from '@/lib/redux';
+import { selectCanvasIsAvailable } from '@/lib/redux/slices/canvasSlice';
+import IconButton from '@/components/official/IconButton';
 import type { OriginalQuestion, QuizState } from './quiz-types';
 import {
   initializeQuizState,
@@ -24,6 +27,7 @@ interface MultipleChoiceQuizProps {
   sessionId?: string; // Load existing quiz session from database
   enableAutoSave?: boolean; // Enable automatic saving to database (default: true)
   autoSaveInterval?: number; // Auto-save interval in milliseconds (default: 10000)
+  showCanvasButton?: boolean; // Show the "Open in Canvas" button (default: true)
 }
 
 // Component for expandable question text
@@ -109,10 +113,12 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   quizData,
   sessionId,
   enableAutoSave = true,
-  autoSaveInterval = 10000
+  autoSaveInterval = 10000,
+  showCanvasButton = true
 }) => {
   // Canvas integration
   const { open: openCanvas } = useCanvas();
+  const isCanvasAvailable = useAppSelector(selectCanvasIsAvailable);
   
   // Parse quiz data and extract metadata
   const [parsedQuiz, setParsedQuiz] = useState<{
@@ -178,6 +184,18 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     }
   }, [loadedSession]);
 
+  // ESC key handler to exit fullscreen
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullScreen) {
+        setIsFullScreen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isFullScreen]);
+
   // Calculate results (always call this hook)
   const results = useMemo(() => {
     if (!quizState) return null;
@@ -187,15 +205,13 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     return quizState.results;
   }, [showResults, quizState]);
 
-  // Show loading if quiz not parsed yet OR if checking for duplicates (after all hooks)
-  if (!parsedQuiz || !quizState || isLoadingSession) {
+  // Show loading only if quiz data not parsed yet (never block for saves/duplicate checks)
+  if (!parsedQuiz || !quizState) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {isLoadingSession ? 'Checking for saved progress...' : 'Loading quiz...'}
-          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Loading quiz...</p>
         </div>
       </div>
     );
@@ -514,7 +530,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       
       <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-2' : 'py-3'}`}>
         <div 
-          className={`max-w-4xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden' : ''}`}
+          className={`max-w-4xl mx-auto ${isFullScreen ? 'bg-textured rounded-xl shadow-2xl h-full max-h-[98vh] w-full flex flex-col overflow-hidden relative' : ''}`}
           onClick={(e) => {
             // Prevent click from bubbling to backdrop
             if (isFullScreen) {
@@ -522,6 +538,18 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
             }
           }}
         >
+          {/* Close button in top-right corner when in fullscreen */}
+          {isFullScreen && (
+            <div className="absolute top-3 right-3 z-10">
+              <IconButton
+                icon={X}
+                tooltip="Exit focus mode (ESC)"
+                onClick={() => setIsFullScreen(false)}
+                size="md"
+                className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 shadow-lg"
+              />
+            </div>
+          )}
           
           {/* Scrollable content area */}
           <div className={isFullScreen ? 'flex-1 overflow-y-auto p-3' : 'p-3'}>
@@ -596,63 +624,67 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
 
                 {/* Manual Save Button (when auto-save enabled) */}
                 {enableAutoSave && (
-                  <button
+                  <IconButton
+                    icon={Save}
+                    tooltip="Save now"
                     onClick={saveNow}
                     disabled={isSaving}
-                    className="p-2 rounded-md bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Save now"
-                  >
-                    <Save className="h-4 w-4" />
-                  </button>
+                    size="md"
+                    className="bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700"
+                  />
                 )}
 
-                <button
+                <IconButton
+                  icon={Download}
+                  tooltip="Download quiz as file"
                   onClick={handleDownloadQuiz}
-                  className="p-2 rounded-md bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700 transition-all shadow-sm"
-                  title="Download quiz as file"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
-                <button
+                  size="md"
+                  className="bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
+                />
+                
+                <IconButton
+                  icon={Upload}
+                  tooltip="Import quiz from file"
                   onClick={handleUploadQuiz}
-                  className="p-2 rounded-md bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700 transition-all shadow-sm"
-                  title="Import quiz from file"
-                >
-                  <Upload className="h-4 w-4" />
-                </button>
+                  size="md"
+                  className="bg-gray-500 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-700"
+                />
+
                 {!isFullScreen && (
                   <>
-                    <button
-                      onClick={() => openCanvas({
-                        type: 'quiz',
-                        data: quizData,
-                        metadata: {
-                          title: parsedQuiz.title,
-                          sourceMessageId: sessionId
-                        }
-                      })}
-                      className="p-2 rounded-md bg-purple-500 dark:bg-purple-600 text-white hover:bg-purple-600 dark:hover:bg-purple-700 transition-all shadow-sm"
-                      title="Open in side panel"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </button>
-                    <button
+                    {showCanvasButton && isCanvasAvailable && (
+                      <IconButton
+                        icon={ExternalLink}
+                        tooltip="Open in Canvas"
+                        onClick={() => openCanvas({
+                          type: 'quiz',
+                          data: quizData,
+                          metadata: {
+                            title: parsedQuiz.title,
+                            sourceMessageId: sessionId
+                          }
+                        })}
+                        size="md"
+                        className="bg-purple-500 dark:bg-purple-600 text-white hover:bg-purple-600 dark:hover:bg-purple-700"
+                      />
+                    )}
+                    <IconButton
+                      icon={Maximize2}
+                      tooltip="Enter focus mode"
                       onClick={() => setIsFullScreen(true)}
-                      className="p-2 rounded-md bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-sm"
-                      title="Enter focus mode"
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                    </button>
+                      size="md"
+                      className="bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700"
+                    />
                   </>
                 )}
                 {isFullScreen && (
-                  <button
+                  <IconButton
+                    icon={Minimize2}
+                    tooltip="Exit focus mode"
                     onClick={() => setIsFullScreen(false)}
-                    className="p-2 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all"
-                    title="Exit focus mode"
-                  >
-                    <Minimize2 className="h-4 w-4" />
-                  </button>
+                    size="md"
+                    className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  />
                 )}
               </div>
             </div>

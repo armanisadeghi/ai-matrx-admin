@@ -42,7 +42,27 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
     const [shareNoteId, setShareNoteId] = useState<string | null>(null);
+    const [isDirty, setIsDirty] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [originalLabel, setOriginalLabel] = useState<string>('');
     const toast = useToastManager('notes');
+
+    // Track when label changes
+    useEffect(() => {
+        if (activeNote) {
+            setOriginalLabel(activeNote.label);
+            setIsDirty(false);
+        }
+    }, [activeNote?.id]);
+
+    // Update dirty state when note label changes
+    useEffect(() => {
+        if (activeNote && originalLabel && activeNote.label !== originalLabel) {
+            setIsDirty(true);
+        } else {
+            setIsDirty(false);
+        }
+    }, [activeNote?.label, originalLabel]);
 
     // Note: refreshNotes() is already called on mount by NotesContext, no need to call again here
 
@@ -143,6 +163,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         if (!activeNote) return;
         
         try {
+            setIsSaving(true);
             // Force save by triggering an update with current data
             await updateNote(activeNote.id, {
                 label: activeNote.label,
@@ -150,10 +171,14 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 folder_name: activeNote.folder_name,
                 tags: activeNote.tags,
             });
+            setOriginalLabel(activeNote.label); // Update original label after save
+            setIsDirty(false);
             toast.success('Note saved');
         } catch (error) {
             console.error('Error saving note:', error);
             toast.error(error);
+        } finally {
+            setIsSaving(false);
         }
     }, [activeNote, updateNote, toast]);
 
@@ -240,6 +265,9 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                     onCopyNote={handleCopyNote}
                     onShareNote={handleShareNote}
                     onUpdateNote={handleUpdateNote}
+                    onSaveNote={handleSaveNote}
+                    isDirty={isDirty}
+                    isSaving={isSaving}
                 />
                 
                 <NoteEditor

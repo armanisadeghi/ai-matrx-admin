@@ -135,6 +135,10 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Track if conversation has started (for showing/hiding variables)
     const [conversationStarted, setConversationStarted] = useState(false);
     
+    // Ref for auto-scrolling
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
+    
     // Get streaming response from socket
     const streamingText = useAppSelector((state) => 
         currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ""
@@ -179,6 +183,32 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         }
         return conversationMessages;
     }, [conversationMessages, currentTaskId, streamingText]);
+    
+    // Helper function to scroll to bottom
+    const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+        messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+    };
+    
+    // Auto-scroll when messages change
+    useEffect(() => {
+        if (displayMessages.length > 0) {
+            scrollToBottom('smooth');
+        }
+    }, [displayMessages.length]);
+    
+    // Auto-scroll during streaming (less frequently to avoid janky scrolling)
+    useEffect(() => {
+        if (isTestingPrompt && streamingText) {
+            // Only scroll if user is near the bottom already
+            const container = messagesContainerRef.current;
+            if (container) {
+                const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 300;
+                if (isNearBottom) {
+                    scrollToBottom('auto'); // Use 'auto' for instant scroll during streaming
+                }
+            }
+        }
+    }, [streamingText, isTestingPrompt]);
     
     // Handle response completion
     useEffect(() => {
@@ -416,6 +446,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         <div className="h-full flex flex-col relative">
                         {/* Messages Area - Scrollable */}
                         <div 
+                            ref={messagesContainerRef}
                             className="flex-1 overflow-y-auto pb-64 scrollbar-hide" 
                             style={{ 
                                 scrollbarWidth: 'none',
@@ -457,6 +488,8 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                             </div>
                                         );
                                     })}
+                                    {/* Invisible div for auto-scrolling */}
+                                    <div ref={messagesEndRef} className="h-4" />
                                 </div>
                             )}
                         </div>

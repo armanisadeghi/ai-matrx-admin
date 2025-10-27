@@ -111,50 +111,36 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         }
     }, [note?.id]); // Only reset when note ID changes
 
-    // Get content from TUI editor when switching modes - optimized with refs
-    const syncContentFromEditor = useCallback(() => {
+    // REMOVED - No longer needed since handleModeChange handles content sync directly
+
+    // Handle mode change - INSTANT, no database interaction
+    const handleModeChange = useCallback((newMode: EditorMode) => {
+        // Sync content before switching (but don't trigger save)
         const currentMode = editorModeRef.current;
         if ((currentMode === 'wysiwyg' || currentMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
             const markdown = tuiEditorRef.current.getCurrentMarkdown();
             if (markdown !== localContentRef.current) {
                 setLocalContent(markdown);
-                const currentNote = noteRef.current;
-                if (currentNote) {
-                    updateWithAutoSave({ 
-                        label: currentNote.label, 
-                        content: markdown, 
-                        folder_name: localFolderRef.current, 
-                        tags: localTagsRef.current,
-                        metadata: { ...currentNote.metadata, lastEditorMode: currentMode }
-                    });
-                }
             }
         }
-    }, [updateWithAutoSave]); // Only depends on updateWithAutoSave
-
-    // Handle mode change - optimized with refs
-    const handleModeChange = useCallback((newMode: EditorMode) => {
-        // Sync content before switching
-        syncContentFromEditor();
+        
+        // Simply update the editor mode - that's it!
         setEditorMode(newMode);
         
-        // Update metadata immediately
-        const currentNote = noteRef.current;
-        if (currentNote) {
-            updateWithAutoSave({ 
-                label: currentNote.label, 
-                content: localContentRef.current, 
-                folder_name: localFolderRef.current, 
-                tags: localTagsRef.current,
-                metadata: { ...currentNote.metadata, lastEditorMode: newMode }
-            });
-        }
-    }, [syncContentFromEditor, updateWithAutoSave]); // Minimal dependencies
+        // Note: The editor mode will be saved automatically when the note is next saved
+        // for other reasons (content, folder, tags). No need to trigger a save just for view mode.
+    }, []); // No dependencies - stable function
 
     const handleContentChange = (value: string) => {
         setLocalContent(value);
         if (note) {
-            updateWithAutoSave({ label: note.label, content: value, folder_name: localFolder, tags: localTags });
+            updateWithAutoSave({ 
+                label: note.label, 
+                content: value, 
+                folder_name: localFolder, 
+                tags: localTags,
+                metadata: { ...note.metadata, lastEditorMode: editorMode } // Include mode in actual content saves
+            });
         }
     };
 
@@ -175,7 +161,13 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     const handleFolderChange = (value: string) => {
         setLocalFolder(value);
         if (note) {
-            updateWithAutoSave({ label: note.label, content: localContent, folder_name: value, tags: localTags });
+            updateWithAutoSave({ 
+                label: note.label, 
+                content: localContent, 
+                folder_name: value, 
+                tags: localTags,
+                metadata: { ...note.metadata, lastEditorMode: editorMode } // Include mode
+            });
             // Immediate update to parent for sidebar refresh
             onUpdate?.(note.id, { folder_name: value });
         }
@@ -184,7 +176,13 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
     const handleTagsChange = (tags: string[]) => {
         setLocalTags(tags);
         if (note) {
-            updateWithAutoSave({ label: note.label, content: localContent, folder_name: localFolder, tags });
+            updateWithAutoSave({ 
+                label: note.label, 
+                content: localContent, 
+                folder_name: localFolder, 
+                tags,
+                metadata: { ...note.metadata, lastEditorMode: editorMode } // Include mode
+            });
             // Immediate update to parent
             onUpdate?.(note.id, { tags });
         }

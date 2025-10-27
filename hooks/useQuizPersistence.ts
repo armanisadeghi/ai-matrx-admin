@@ -36,12 +36,13 @@ export function useQuizPersistence(
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(!!initialSessionId);
+  const [isLoading, setIsLoading] = useState(false); // Never block UI for background operations
   const [loadedSession, setLoadedSession] = useState<QuizSession | null>(null);
   const [hasCheckedDuplicate, setHasCheckedDuplicate] = useState(false);
 
   const lastSaveAttempt = useRef<number>(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousStateRef = useRef<string | null>(null); // Track actual state changes
 
   /**
    * Save the current quiz state to database
@@ -88,10 +89,10 @@ export function useQuizPersistence(
   }, [sessionId, title, category, contentHash, metadata]);
 
   /**
-   * Load a quiz session from database
+   * Load a quiz session from database (background operation)
    */
   const loadQuizSession = useCallback(async (id: string) => {
-    setIsLoading(true);
+    // Don't block UI - this is a background operation
     setSaveError(null);
 
     try {
@@ -108,8 +109,6 @@ export function useQuizPersistence(
       console.error('Error loading quiz:', error);
       setSaveError('Unexpected error loading quiz');
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -121,19 +120,36 @@ export function useQuizPersistence(
   }, [quizState, saveQuizState]);
 
   /**
-   * Auto-save effect
+   * Auto-save effect - only save when state actually changes
    */
   useEffect(() => {
     if (!autoSave) return;
+
+    // Serialize state to detect actual changes (ignore functions/refs)
+    const currentStateSerialized = JSON.stringify({
+      progress: quizState.progress,
+      results: quizState.results,
+      mode: quizState.mode
+    });
+
+    // Skip if state hasn't actually changed
+    if (previousStateRef.current === currentStateSerialized) {
+      return;
+    }
+
+    previousStateRef.current = currentStateSerialized;
 
     // Clear any existing timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    // Schedule next auto-save
+    // Schedule save with debounce - don't save too frequently
     saveTimeoutRef.current = setTimeout(() => {
-      saveQuizState(quizState);
+      // Fire and forget - truly background save
+      saveQuizState(quizState).catch(err => {
+        console.error('Background save failed:', err);
+      });
     }, autoSaveInterval);
 
     return () => {
@@ -155,6 +171,7 @@ export function useQuizPersistence(
 
   /**
    * Check for duplicate quiz on initialization (BEFORE user starts answering)
+   * This runs in the background without blocking the UI
    */
   useEffect(() => {
     const checkForDuplicate = async () => {
@@ -164,31 +181,34 @@ export function useQuizPersistence(
       }
 
       setHasCheckedDuplicate(true);
-      setIsLoading(true);
+      // Don't set isLoading - this is a background operation
 
       try {
         const result = await findExistingQuizByHash(contentHash);
         if (result.success && result.data) {
-          // Found existing session - load it immediately
+          // Found existing session - load it in background
           setLoadedSession(result.data);
           setSessionId(result.data.id);
         }
       } catch (error) {
         console.error('Error checking for duplicate:', error);
-      } finally {
-        setIsLoading(false);
       }
+      // No finally block - we don't need to update loading state
     };
 
     checkForDuplicate();
   }, [contentHash, initialSessionId, hasCheckedDuplicate]);
 
   /**
-   * Load initial session if provided
+   * Load initial session if provided (only for explicit sessionId, not duplicates)
+   * This happens in the background
    */
   useEffect(() => {
     if (initialSessionId && !loadedSession) {
-      loadQuizSession(initialSessionId);
+      // Load in background without blocking
+      loadQuizSession(initialSessionId).catch(err => {
+        console.error('Failed to load quiz session:', err);
+      });
     }
   }, [initialSessionId, loadedSession, loadQuizSession]);
 

@@ -22,6 +22,7 @@ interface NotesContextType {
     openNoteInTab: (noteId: string) => void;
     closeTab: (noteId: string) => void;
     closeAllTabs: () => void;
+    reorderTabs: (newOrder: string[]) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
@@ -271,6 +272,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         setActiveNote(null);
     }, []);
 
+    // Reorder tabs (for drag and drop)
+    const reorderTabs = useCallback((newOrder: string[]) => {
+        setOpenTabs(newOrder);
+    }, []);
+
     // Cleanup: Remove deleted notes from tabs
     useEffect(() => {
         setOpenTabs(prev => {
@@ -296,6 +302,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         openNoteInTab,
         closeTab,
         closeAllTabs,
+        reorderTabs,
     }), [
         notes,
         isLoading,
@@ -311,6 +318,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         openNoteInTab,
         closeTab,
         closeAllTabs,
+        reorderTabs,
     ]);
 
     return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;

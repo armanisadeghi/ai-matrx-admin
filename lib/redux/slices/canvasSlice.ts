@@ -43,12 +43,14 @@ interface CanvasState {
   isOpen: boolean;
   items: CanvasItem[]; // List of all canvas items in current session
   currentItemId: string | null; // Currently active item
+  isAvailable: boolean; // Whether canvas is available in current context/layout
 }
 
 const initialState: CanvasState = {
   isOpen: false,
   items: [],
   currentItemId: null,
+  isAvailable: false, // Default to false, layouts enable it
 };
 
 export const canvasSlice = createSlice({
@@ -162,6 +164,11 @@ export const canvasSlice = createSlice({
         item.isSynced = false;
       }
     },
+    
+    // Set canvas availability (called by layouts that support canvas)
+    setCanvasAvailable: (state, action: PayloadAction<boolean>) => {
+      state.isAvailable = action.payload;
+    },
   },
 });
 
@@ -175,12 +182,14 @@ export const {
   updateCanvasContent,
   markItemSynced,
   markItemUnsynced,
+  setCanvasAvailable,
 } = canvasSlice.actions;
 
 // Selectors
 export const selectCanvasIsOpen = (state: RootState) => state.canvas.isOpen;
 export const selectCanvasItems = (state: RootState) => state.canvas.items;
 export const selectCurrentItemId = (state: RootState) => state.canvas.currentItemId;
+export const selectCanvasIsAvailable = (state: RootState) => state.canvas.isAvailable;
 
 // Get the currently active canvas item
 export const selectCurrentCanvasItem = (state: RootState): CanvasItem | null => {
