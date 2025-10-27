@@ -60,13 +60,36 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
                 const updatedActiveNote = fetchedNotes.find(n => n.id === currentActive.id);
                 if (updatedActiveNote) {
                     setActiveNote(updatedActiveNote);
+                    // Ensure active note is in tabs
+                    setOpenTabs(prev => {
+                        if (!prev.includes(updatedActiveNote.id)) {
+                            return [...prev, updatedActiveNote.id];
+                        }
+                        return prev;
+                    });
                 } else {
                     // Active note was deleted, select another or null
-                    setActiveNote(fetchedNotes.length > 0 ? fetchedNotes[0] : null);
+                    const nextNote = fetchedNotes.length > 0 ? fetchedNotes[0] : null;
+                    setActiveNote(nextNote);
+                    if (nextNote) {
+                        setOpenTabs(prev => {
+                            if (!prev.includes(nextNote.id)) {
+                                return [...prev, nextNote.id];
+                            }
+                            return prev;
+                        });
+                    }
                 }
             } else if (fetchedNotes.length > 0) {
-                // No active note but we have notes, select the first one
-                setActiveNote(fetchedNotes[0]);
+                // No active note but we have notes, select the first one and open in tab
+                const firstNote = fetchedNotes[0];
+                setActiveNote(firstNote);
+                setOpenTabs(prev => {
+                    if (!prev.includes(firstNote.id)) {
+                        return [firstNote.id];
+                    }
+                    return prev;
+                });
             }
         } catch (err) {
             setError(err as Error);

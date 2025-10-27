@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
@@ -8,9 +9,11 @@ import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { PromptRunnerInput } from "./PromptRunnerInput";
 import { PromptUserMessage } from "./PromptUserMessage";
 import { PromptAssistantMessage } from "./PromptAssistantMessage";
-import { PromptStats } from "./PromptStats";
+import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { Button } from "@/components/ui/button";
-import { Trash2, MessageSquare } from "lucide-react";
+import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw } from "lucide-react";
+import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
+import { useCanvas } from "@/hooks/useCanvas";
 
 // Variable definition structure
 export interface PromptVariable {
@@ -31,6 +34,8 @@ interface PromptRunnerProps {
 
 export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
+    const router = useRouter();
+    const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas } = useCanvas();
     
     // Extract data from promptData
     const { messages: templateMessages, variableDefaults: initialVariableDefaults, settings } = promptData;
@@ -292,98 +297,131 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     };
     
     return (
-        <div className="h-full w-full flex flex-col bg-textured">
-            {/* Header with prompt name */}
-            <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900 px-6 py-4">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {promptData.name || "Untitled Prompt"}
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Run this prompt with your own inputs
-                </p>
-            </div>
-            
-            {/* Conversation Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-6" style={{ scrollbarGutter: "stable" }}>
-                <div className="max-w-4xl mx-auto">
-                    {displayMessages.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-gray-400 dark:text-gray-600">
-                            <MessageSquare className="w-16 h-16 mb-4" />
-                            <p className="text-lg font-medium">Ready to run your prompt</p>
-                            <p className="text-sm mt-2">
-                                {variableDefaults.length > 0 
-                                    ? "Fill in the variables below and send your message"
-                                    : "Type your message below to get started"}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {displayMessages.map((msg, idx) => {
-                                const isLastMessage = idx === displayMessages.length - 1;
-                                const isStreaming = isLastMessage && msg.role === "assistant" && isTestingPrompt;
-                                
-                                return (
-                                    <div key={idx}>
-                                        {msg.role === "user" ? (
-                                            <PromptUserMessage
-                                                content={msg.content}
-                                                messageIndex={idx}
-                                            />
-                                        ) : (
-                                            <PromptAssistantMessage
-                                                content={msg.content}
-                                                taskId={msg.taskId}
-                                                messageIndex={idx}
-                                                isStreamActive={isStreaming}
-                                                metadata={msg.metadata}
-                                            />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            </div>
-            
-            {/* Stats and Clear Button */}
-            {displayMessages.length > 0 && (
-                <div className="flex-shrink-0 px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900">
-                    <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
+        <>
+            {/* Minimal Header in the top nav area */}
+            <PageSpecificHeader>
+                <div className="flex items-center justify-between w-full h-full px-4">
+                    <div className="flex items-center gap-3">
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={handleClearConversation}
-                            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            onClick={() => router.push('/ai/prompts')}
+                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                         >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Clear conversation
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back
                         </Button>
-                        <PromptStats 
-                            timeToFirstToken={liveStats?.timeToFirstToken || lastMessageStats?.timeToFirstToken}
-                            totalTime={liveStats?.totalTime || lastMessageStats?.totalTime}
-                            tokens={liveStats?.tokens || lastMessageStats?.tokens}
-                        />
+                        <div className="h-6 w-px bg-gray-300 dark:bg-gray-700" />
+                        <h1 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                            {promptData.name || "Untitled Prompt"}
+                        </h1>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {displayMessages.length > 0 && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleClearConversation}
+                                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                title="Reset conversation"
+                            >
+                                <RotateCcw className="w-4 h-4" />
+                            </Button>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => isCanvasOpen ? closeCanvas() : openCanvas({ 
+                                type: 'html', 
+                                data: '<div class="p-6"><p class="text-gray-500">Canvas panel - content will appear here</p></div>',
+                                metadata: { title: 'Canvas' }
+                            })}
+                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                            title={isCanvasOpen ? "Close canvas" : "Open canvas"}
+                        >
+                            {isCanvasOpen ? (
+                                <PanelRightClose className="w-4 h-4" />
+                            ) : (
+                                <PanelRightOpen className="w-4 h-4" />
+                            )}
+                        </Button>
                     </div>
                 </div>
-            )}
-            
-            {/* Input Area */}
-            <div className="flex-shrink-0 px-6 py-6 bg-textured">
-                <PromptRunnerInput
-                    variableDefaults={variableDefaults}
-                    onVariableValueChange={handleVariableValueChange}
-                    expandedVariable={expandedVariable}
-                    onExpandedVariableChange={setExpandedVariable}
-                    chatInput={chatInput}
-                    onChatInputChange={setChatInput}
-                    onSendMessage={handleSendTestMessage}
-                    isTestingPrompt={isTestingPrompt}
-                    showVariables={!conversationStarted}
-                    messages={conversationTemplate}
-                />
-            </div>
-        </div>
+            </PageSpecificHeader>
+
+            {/* Main Layout with AdaptiveLayout */}
+            <AdaptiveLayout
+                className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
+                rightPanel={
+                    <div className="h-full flex flex-col relative">
+                        {/* Messages Area - Scrollable */}
+                        <div 
+                            className="flex-1 overflow-y-auto pb-64 scrollbar-hide" 
+                            style={{ 
+                                scrollbarWidth: 'none',
+                                msOverflowStyle: 'none',
+                            }}
+                        >
+                            {displayMessages.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-gray-400 dark:text-gray-600">
+                                    <MessageSquare className="w-16 h-16 mb-4" />
+                                    <p className="text-lg font-medium">Ready to run your prompt</p>
+                                    <p className="text-sm mt-2 text-center px-6">
+                                        {variableDefaults.length > 0 
+                                            ? "Fill in the variables below and send your message"
+                                            : "Type your message below to get started"}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6 px-6 pt-6">
+                                    {displayMessages.map((msg, idx) => {
+                                        const isLastMessage = idx === displayMessages.length - 1;
+                                        const isStreaming = isLastMessage && msg.role === "assistant" && isTestingPrompt;
+                                        
+                                        return (
+                                            <div key={idx}>
+                                                {msg.role === "user" ? (
+                                                    <PromptUserMessage
+                                                        content={msg.content}
+                                                        messageIndex={idx}
+                                                    />
+                                                ) : (
+                                                    <PromptAssistantMessage
+                                                        content={msg.content}
+                                                        taskId={msg.taskId}
+                                                        messageIndex={idx}
+                                                        isStreamActive={isStreaming}
+                                                        metadata={msg.metadata}
+                                                    />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Input Area - Fixed at Bottom, within the content wrapper */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-textured pt-6 pb-4 px-6 pointer-events-none">
+                            <div className="pointer-events-auto max-w-[800px] mx-auto rounded-xl">
+                                <PromptRunnerInput
+                                    variableDefaults={variableDefaults}
+                                    onVariableValueChange={handleVariableValueChange}
+                                    expandedVariable={expandedVariable}
+                                    onExpandedVariableChange={setExpandedVariable}
+                                    chatInput={chatInput}
+                                    onChatInputChange={setChatInput}
+                                    onSendMessage={handleSendTestMessage}
+                                    isTestingPrompt={isTestingPrompt}
+                                    showVariables={!conversationStarted}
+                                    messages={conversationTemplate}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                }
+            />
+        </>
     );
 }
 

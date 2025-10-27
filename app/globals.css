@@ -330,6 +330,15 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         @apply absolute -inset-4 shadow-xl rounded-xl border;
     }
 
+    /* Hide scrollbar utility */
+    .scrollbar-hide {
+        -ms-overflow-style: none; /* Internet Explorer 10+ */
+        scrollbar-width: none; /* Firefox */
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
+    }
+
     /* GLOBAL THIN SCROLLBAR WITH PROPER LIGHT/DARK MODE SUPPORT */
     * {
         scrollbar-width: thin; /* For Firefox */

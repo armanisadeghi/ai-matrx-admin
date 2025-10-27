@@ -114,65 +114,72 @@ export function NoteTabs({
                                     </span>
                                 )}
 
-                                {/* Action buttons - visible on hover or when active */}
-                                <div className={cn(
-                                    "flex items-center gap-0.5",
-                                    isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"
-                                )}>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onCopyNote(noteId);
-                                                    }}
-                                                    className="flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
-                                                >
-                                                    <Copy className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Duplicate</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
+                                {/* Action buttons area */}
+                                <div className="flex items-center gap-0.5">
+                                    {/* Full actions - ONLY on active tab */}
+                                    {isActive && (
+                                        <>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onCopyNote(noteId);
+                                                            }}
+                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                                                        >
+                                                            <Copy className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Duplicate</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onShareNote(noteId);
-                                                    }}
-                                                    className="flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
-                                                >
-                                                    <Share2 className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Share</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onShareNote(noteId);
+                                                            }}
+                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                                                        >
+                                                            <Share2 className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Share</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onDeleteNote(noteId);
-                                                    }}
-                                                    className="flex items-center justify-center h-5 w-5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
-                                                >
-                                                    <Trash2 className="h-3 w-3 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400" />
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Delete</TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onDeleteNote(noteId);
+                                                            }}
+                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+                                                        >
+                                                            <Trash2 className="h-3 w-3 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400" />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Delete</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </>
+                                    )}
 
+                                    {/* Close button - visible on hover for inactive, always visible for active */}
                                     <div
                                         onClick={(e) => handleCloseTab(e, noteId)}
-                                        className="flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors cursor-pointer ml-0.5"
+                                        className={cn(
+                                            "flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-all cursor-pointer",
+                                            isActive ? "ml-0.5" : "",
+                                            isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                                        )}
                                         title="Close tab"
                                     >
                                         <X className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
