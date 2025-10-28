@@ -8,6 +8,8 @@ export interface CreateTaskInput {
   project_id?: string | null;
   parent_task_id?: string | null;
   due_date?: string | null;
+  priority?: 'low' | 'medium' | 'high' | null;
+  assignee_id?: string | null;
   status?: 'incomplete' | 'completed';
   user_id?: string | null;
   authenticated_read?: boolean | null;
@@ -19,6 +21,8 @@ export interface UpdateTaskInput {
   project_id?: string | null;
   parent_task_id?: string | null;
   due_date?: string | null;
+  priority?: 'low' | 'medium' | 'high' | null;
+  assignee_id?: string | null;
   status?: 'incomplete' | 'completed';
   user_id?: string | null;
   authenticated_read?: boolean | null;
@@ -49,6 +53,8 @@ export async function createTask(input: CreateTaskInput): Promise<DatabaseTask |
         project_id: input.project_id || null,
         parent_task_id: input.parent_task_id || null,
         due_date: input.due_date || null,
+        priority: input.priority || null,
+        assignee_id: input.assignee_id || null,
         status: input.status || 'incomplete',
         user_id: userData.user.id,
         authenticated_read: input.authenticated_read ?? false,

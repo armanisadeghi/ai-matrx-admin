@@ -8,6 +8,9 @@ export interface Task {
   description: string;
   attachments: string[];
   dueDate: string;
+  priority?: 'low' | 'medium' | 'high' | null;
+  assigneeId?: string | null;
+  assigneeName?: string | null;
   parentTaskId?: string | null;
   subtasks?: Task[];
 }
