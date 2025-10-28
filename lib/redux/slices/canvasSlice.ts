@@ -18,7 +18,8 @@ export type CanvasContentType =
   | 'flashcards'
   | 'recipe'
   | 'resources'
-  | 'progress';
+  | 'progress'
+  | 'math_problem';
 
 export interface CanvasContent {
   type: CanvasContentType;

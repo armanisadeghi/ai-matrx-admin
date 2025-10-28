@@ -712,11 +712,21 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             return { isMathProblem: false, isComplete: false };
         }
         
-        // Check if JSON is complete (has closing brace)
-        const isComplete = trimmed.endsWith("}");
+        // More resilient completion check - look for closing braces that suggest completion
+        // Count opening and closing braces to determine if JSON might be complete
+        const openBraces = (trimmed.match(/\{/g) || []).length;
+        const closeBraces = (trimmed.match(/\}/g) || []).length;
         
-        // If complete, verify it's valid JSON with math_problem object
-        if (isComplete) {
+        // If we have more open than close braces, definitely streaming
+        if (openBraces > closeBraces) {
+            return { isMathProblem: true, isComplete: false };
+        }
+        
+        // If braces are balanced and ends with }, likely complete
+        const isLikelyComplete = trimmed.endsWith("}") && openBraces === closeBraces;
+        
+        // Only validate if we're confident it's complete
+        if (isLikelyComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
                 const hasMathProblem = parsed && parsed.math_problem && 
@@ -725,12 +735,13 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                                       Array.isArray(parsed.math_problem.solutions);
                 return { isMathProblem: hasMathProblem, isComplete: true };
             } catch (error) {
-                // Parse failed, not a valid math problem
-                return { isMathProblem: false, isComplete: false };
+                // Parse failed but has correct start pattern - keep streaming
+                // This handles cases where JSON is malformed during streaming
+                return { isMathProblem: true, isComplete: false };
             }
         }
         
-        // Not complete but has the correct structure start - it's streaming
+        // Not complete but has the correct structure start - keep streaming
         return { isMathProblem: true, isComplete: false };
     };
 

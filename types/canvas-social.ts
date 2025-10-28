@@ -17,6 +17,7 @@ export type CanvasType =
     | 'presentation'
     | 'resources'
     | 'recipe'
+    | 'math_problem'
     | 'iframe'
     | 'html'
     | 'code'

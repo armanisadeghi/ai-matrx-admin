@@ -33,6 +33,7 @@ import DecisionTreeBlock from "@/components/mardown-display/blocks/decision-tree
 import InteractiveDiagramBlock from "@/components/mardown-display/blocks/diagram/InteractiveDiagramBlock";
 import FlashcardsBlock from "@/components/mardown-display/blocks/flashcards/FlashcardsBlock";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
+import MathProblem from "@/features/math/components/MathProblem";
 
 interface CanvasRendererProps {
   // Props are now optional - component gets data from Redux
@@ -199,6 +200,7 @@ function getDefaultTitle(type: string): string {
     recipe: 'Recipe',
     resources: 'Resources',
     progress: 'Progress Tracker',
+    math_problem: 'Math Problem',
   };
   return titles[type] || 'Canvas View';
 }
@@ -212,6 +214,7 @@ function getSubtitle(type: string): string | undefined {
     presentation: 'Slideshow presentation',
     code: 'Code snippet',
     diagram: 'Interactive diagram',
+    math_problem: 'Step-by-step solution',
   };
   return subtitles[type];
 }
@@ -311,6 +314,16 @@ function renderContent(content: CanvasContent): React.ReactNode {
       return (
         <div className="h-full p-4">
           <FlashcardsBlock content={data} />
+        </div>
+      );
+
+    case 'math_problem':
+      return (
+        <div className="h-full p-4">
+          <MathProblem 
+            id="canvas-preview"
+            {...data.math_problem}
+          />
         </div>
       );
 
