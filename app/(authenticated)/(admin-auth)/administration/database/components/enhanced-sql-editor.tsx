@@ -21,7 +21,8 @@ import {
   History,
   Plus,
   Trash2,
-  Wand2
+  Wand2,
+  FolderOpen
 } from 'lucide-react';
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
@@ -30,6 +31,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { QueryHistoryButton } from "@/components/admin/query-history/query-history-button";
 import { saveQuery } from "@/components/admin/query-history/query-storage";
 import { toast } from "sonner";
+import { CategoryNotesModal } from "@/features/notes";
+import type { Note } from "@/features/notes";
 
 // Define SQL queries as constants to avoid JSX parsing issues
 const SQL_LIST_TABLES = "SELECT * FROM information_schema.tables WHERE table_schema = 'public'";
@@ -71,6 +74,7 @@ export const EnhancedSQLEditor = ({
   const [replacementPairs, setReplacementPairs] = useState<ReplacementPair[]>([
     { id: '1', find: '', replace: '' }
   ]);
+  const [templatesModalOpen, setTemplatesModalOpen] = useState(false);
 
   const handleExecuteQuery = async () => {
     if (!sqlQuery.trim()) return;
@@ -177,6 +181,24 @@ export const EnhancedSQLEditor = ({
             SQL Query Editor
           </CardTitle>
           <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setTemplatesModalOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    <FolderOpen className="h-4 w-4 mr-1" /> Templates
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Manage SQL templates</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
             <QueryHistoryButton onSelectQuery={handleSelectHistoryQuery} />
             
             <TooltipProvider>
@@ -532,6 +554,22 @@ export const EnhancedSQLEditor = ({
           )}
         </div>
       </CardContent>
+
+      {/* SQL Templates Modal */}
+      <CategoryNotesModal
+        open={templatesModalOpen}
+        onOpenChange={setTemplatesModalOpen}
+        categoryName="SQL Templates"
+        selectButtonLabel="Use Template"
+        onSelectNote={(note: Note) => {
+          setSqlQuery(note.content);
+          setTemplatesModalOpen(false);
+          toast.success(`Template loaded: ${note.label}`);
+        }}
+        allowCreate={true}
+        allowEdit={true}
+        allowDelete={true}
+      />
     </Card>
   );
 }; 

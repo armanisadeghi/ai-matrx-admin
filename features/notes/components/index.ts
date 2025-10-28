@@ -17,4 +17,5 @@ export { SaveToScratchButton } from './SaveToScratchButton';
 export { SaveSelectionButton } from './SaveSelectionButton';
 export { QuickSaveModal } from './QuickSaveModal';
 export { QuickCaptureButton } from './QuickCaptureButton';
+export { CategoryNotesModal } from './CategoryNotesModal';
 

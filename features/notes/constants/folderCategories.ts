@@ -29,6 +29,7 @@ import {
     Trash2,
     Download,
     Share2,
+    Database,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -54,6 +55,13 @@ export const FOLDER_CATEGORIES: FolderCategory[] = [
         icon: Code2,
         description: 'Code snippets and development notes',
         color: 'text-emerald-500 dark:text-emerald-400'
+    },
+    {
+        id: 'sql-templates',
+        label: 'SQL Templates',
+        icon: Database,
+        description: 'Reusable SQL query templates',
+        color: 'text-blue-600 dark:text-blue-400'
     },
     {
         id: 'study',
