@@ -108,7 +108,7 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
             {/* Project Header */}
             <button
               onClick={() => toggleProjectCollapse(project.id)}
-              className="w-full px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+              className="w-full px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               {isCollapsed ? (
                 <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
