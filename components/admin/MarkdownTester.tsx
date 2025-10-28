@@ -4,8 +4,10 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
 import { 
   CheckCircle2, 
   Copy, 
@@ -32,6 +34,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isAutoMode, setIsAutoMode] = useState(false); // Default to Manual mode
   const [isUpdating, setIsUpdating] = useState(false);
+  const [activeTab, setActiveTab] = useState('enhanced-markdown');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const getTextarea = useCallback(() => textareaRef.current, []);
@@ -221,19 +224,36 @@ Right-click for content block templates!"
                     {isAutoMode ? 'Real-time' : 'On-demand'}
                   </Badge>
                 </div>
-                
-                <div className="flex-1 border rounded-lg overflow-auto bg-textured border-gray-200 dark:border-gray-700 min-h-0">
-                  <div className="p-4">
-                    <EnhancedChatMarkdown
-                      content={renderedContent}
-                      className="bg-textured"
-                      type="message"
-                      role="assistant"
-                      isStreamActive={false}
-                      hideCopyButton={true}
-                      allowFullScreenEditor={true}
-                    />
-                  </div>
+
+                <div className="flex-1 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 min-h-0">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-2 mx-4 mt-4">
+                      <TabsTrigger value="enhanced-markdown" className="text-xs">
+                        EnhancedMarkdown
+                      </TabsTrigger>
+                      <TabsTrigger value="speech-text" className="text-xs">
+                        Speech Text
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="enhanced-markdown" className="flex-1 overflow-auto m-0 p-4">
+                      <EnhancedChatMarkdown
+                        content={renderedContent}
+                        className="bg-textured"
+                        type="message"
+                        role="assistant"
+                        isStreamActive={false}
+                        hideCopyButton={true}
+                        allowFullScreenEditor={true}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="speech-text" className="flex-1 overflow-auto m-0 p-4">
+                      <div className="font-mono text-sm whitespace-pre-wrap break-words bg-textured text-gray-900 dark:text-gray-100">
+                        {parseMarkdownToText(renderedContent)}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </div>
             </>

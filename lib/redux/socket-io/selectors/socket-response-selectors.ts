@@ -6,7 +6,7 @@ import { ResponsesState, ResponseState } from "@/lib/redux/socket-io/socket.type
 import { selectTaskListenerIds, selectTaskById } from "./socket-task-selectors";
 
 // Shared constants to avoid creating new array references
-const EMPTY_ARRAY: any[] = [];
+export const EMPTY_ARRAY: any[] = [];
 const EMPTY_RESPONSE_STATE = { text: "", data: EMPTY_ARRAY, info: EMPTY_ARRAY, errors: EMPTY_ARRAY, toolUpdates: EMPTY_ARRAY, ended: false };
 
 // ==================== Base Response Selectors ====================
@@ -287,11 +287,11 @@ export const createTaskResponseSelectors = (taskId: string) => {
             }
             return response.text || "";
         }),
-        selectTextChunks: createSelector([baseSelector], (response) => response?.textChunks || []),
-        selectData: createSelector([baseSelector], (response) => response?.data || []),
-        selectInfo: createSelector([baseSelector], (response) => response?.info || []),
-        selectErrors: createSelector([baseSelector], (response) => response?.errors || []),
-        selectToolUpdates: createSelector([baseSelector], (response) => response?.toolUpdates || []),
+        selectTextChunks: createSelector([baseSelector], (response) => response?.textChunks || EMPTY_ARRAY),
+        selectData: createSelector([baseSelector], (response) => response?.data || EMPTY_ARRAY),
+        selectInfo: createSelector([baseSelector], (response) => response?.info || EMPTY_ARRAY),
+        selectErrors: createSelector([baseSelector], (response) => response?.errors || EMPTY_ARRAY),
+        selectToolUpdates: createSelector([baseSelector], (response) => response?.toolUpdates || EMPTY_ARRAY),
         selectEnded: createSelector([baseSelector], (response) => response?.ended || false),
         selectHasErrors: createSelector([baseSelector], (response) => (response?.errors?.length || 0) > 0),
         selectHasToolUpdates: createSelector([baseSelector], (response) => (response?.toolUpdates?.length || 0) > 0),

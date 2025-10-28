@@ -95,6 +95,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         [taskId]
     );
     
+
+    // Replace with selectPrimaryResponseToolUpdatesByTaskId selector
     const toolUpdates = useAppSelector((state) => 
         responseSelectors ? responseSelectors.selectToolUpdates(state) : []
     );
