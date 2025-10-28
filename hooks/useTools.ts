@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toolsService, DatabaseTool } from '@/utils/supabase/tools-service';
-import { mapIcon } from '@/utils/icon-mapper';
-import { formatText } from '@/utils/text-case-converter';
+import { mapIcon } from '@/utils/icons/icon-mapper';
+import { formatText } from '@/utils/text/text-case-converter';
 
 export interface Tool {
   id: string;           // The actual tool identifier used for tool calls (from database 'name' field)

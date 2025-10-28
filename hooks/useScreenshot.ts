@@ -9,7 +9,7 @@ import type {
     ProcessedScreenshotData,
     ImageDataForAPI
 } from '@/types/screenshot';
-import { compressImage, generateThumbnail } from '@/utils/imageCompression';
+import { compressImage, generateThumbnail } from '@/utils/image/imageCompression';
 
 export const useScreenshot = (options: UseScreenshotOptions = {}): UseScreenshotReturn => {
     const {

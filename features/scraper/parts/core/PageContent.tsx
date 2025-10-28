@@ -17,7 +17,7 @@ import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer
 import ActionButtons from "../ActionButtons";
 import FancyJsonExplorer from "../FancyJsonExplorer";
 import BookmarkViewer from "../BookmarkViewer";
-import { formatJson } from "@/utils/json-cleaner-utility";
+import { formatJson } from "@/utils/json/json-cleaner-utility";
 import SEOAnalysisPage from "@/features/scraper/parts/SEOAnalysisPage";
 import HeaderAnalysis from "../HeaderAnalysis";
 import FactChecker from "../recipes/FactChecker";

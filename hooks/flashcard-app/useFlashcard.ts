@@ -20,7 +20,7 @@ import {
     selectCurrentIndex,
 } from '@/lib/redux/selectors/flashcardSelectors';
 import {introOutroText} from '@/app/(authenticated)/flashcard/app-data';
-import { showAudioModal } from '@/utils/audioModal';
+import { showAudioModal } from '@/utils/audio/audioModal';
 import {useSwipeable} from "react-swipeable";
 import { useLongPress } from '@uidotdev/usehooks';
 

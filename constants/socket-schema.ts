@@ -1,5 +1,5 @@
 // File Location: constants/socket-schema.ts
-import { flexibleJsonParse } from '@/utils/json-utils';
+import { flexibleJsonParse } from '@/utils/json/json-utils';
 
 export interface SchemaField {
     REQUIRED: boolean;

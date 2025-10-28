@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { acceptInvitation, type OrganizationInvitationWithOrg } from '@/utils/organizations';
+import { acceptInvitation, type OrganizationInvitationWithOrg } from '@/features/organizations';
 import { createClient } from '@/utils/supabase/client';
 
 /**

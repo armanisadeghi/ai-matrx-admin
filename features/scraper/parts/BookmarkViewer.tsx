@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { formatJson } from "@/utils/json-cleaner-utility";
+import { formatJson } from "@/utils/json/json-cleaner-utility";
 import { getValueByBookmark, importBookmarks } from "../utils/json-path-navigation-util";
 
 /**

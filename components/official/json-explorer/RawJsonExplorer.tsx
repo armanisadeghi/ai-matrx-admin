@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { formatJson } from "@/utils/json-cleaner-utility";
+import { formatJson } from "@/utils/json/json-cleaner-utility";
 import { copyToClipboard } from "@/features/scraper/utils/scraper-utils";
 import {
     createPathBookmark,

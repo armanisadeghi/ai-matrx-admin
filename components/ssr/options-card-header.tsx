@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
 import { OptionCardData } from './types';
-import { getDynamicIconSelection } from "@/utils/getDynamicIcons";
+import { getDynamicIconSelection } from "@/utils/icons/getDynamicIcons";
 import { cn } from '@/utils/cn';
 import { resolveStyle } from './utils';
 

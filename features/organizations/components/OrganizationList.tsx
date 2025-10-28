@@ -5,7 +5,7 @@ import { Building2, Plus, Search, Users, Crown, Shield, User as UserIcon, Loader
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useUserOrganizations } from '@/utils/organizations';
+import { useUserOrganizations } from '@/features/organizations';
 import { OrganizationCard } from './OrganizationCard';
 import { CreateOrgModal } from './CreateOrgModal';
 

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
-import type { OrganizationWithRole } from '@/utils/organizations';
+import type { OrganizationWithRole } from '@/features/organizations';
 import { cn } from '@/lib/utils';
 
 interface OrganizationCardProps {

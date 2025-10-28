@@ -33,8 +33,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTools } from "@/hooks/useTools";
-import { mapIcon } from "@/utils/icon-mapper";
-import { formatText } from "@/utils/text-case-converter";
+import { mapIcon } from "@/utils/icons/icon-mapper";
+import { formatText } from "@/utils/text/text-case-converter";
 
 interface Tool {
     id: string;

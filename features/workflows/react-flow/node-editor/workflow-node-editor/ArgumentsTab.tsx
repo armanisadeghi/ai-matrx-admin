@@ -22,8 +22,8 @@ import {
     getBrokerMappingsForArg,
     hasFunctionArguments,
 } from "./utils/arg-utils";
-import { flexibleJsonParse, formatJson, valueToString, hasContent } from "@/utils/json-utils";
-import { cleanJson } from "@/utils/json-cleaner-utility";
+import { flexibleJsonParse, formatJson, valueToString, hasContent } from "@/utils/json/json-utils";
+import { cleanJson } from "@/utils/json/json-cleaner-utility";
 
 const ArgumentsTab: React.FC<TabComponentProps> = ({ nodeData, onNodeUpdate }) => {
     const functionData = getFunctionData(nodeData.function_id);

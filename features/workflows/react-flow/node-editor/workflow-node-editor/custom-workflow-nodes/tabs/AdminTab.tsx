@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Copy, RefreshCw } from "lucide-react";
-import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json-utils';
+import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json/json-utils';
 import { toast } from 'sonner';
 import { DbFunctionNode } from '@/features/workflows/types';
 import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';

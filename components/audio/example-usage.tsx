@@ -37,7 +37,7 @@ function YourComponent() {
 
 
 // 3. Using it in a regular function (after provider is mounted)
-import { showAudioModal } from '@/utils/audioModal';
+import { showAudioModal } from '@/utils/audio/audioModal';
 
 function regularFunction() {
     showAudioModal({

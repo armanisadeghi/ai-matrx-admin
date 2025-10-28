@@ -20,8 +20,8 @@ import {
     removeBrokerMapping,
     getBrokerMappingsForArg
 } from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
-import { flexibleJsonParse, formatJson, valueToString, hasContent } from "@/utils/json-utils";
-import { cleanJson } from "@/utils/json-cleaner-utility";
+import { flexibleJsonParse, formatJson, valueToString, hasContent } from "@/utils/json/json-utils";
+import { cleanJson } from "@/utils/json/json-cleaner-utility";
 import { EnrichedBroker } from '@/features/workflows/utils/data-flow-manager';
 
 interface ArgumentsTabProps {

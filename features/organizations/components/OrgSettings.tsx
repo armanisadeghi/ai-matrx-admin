@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Settings, Users, Mail, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import type { Organization, OrgRole } from '@/utils/organizations';
+import type { Organization, OrgRole } from '@/features/organizations';
 import { GeneralSettings } from './GeneralSettings';
 import { MemberManagement } from './MemberManagement';
 import { InvitationManager } from './InvitationManager';

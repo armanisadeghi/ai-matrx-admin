@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { memo } from "react";
-import { formatJson } from "@/utils/json-cleaner-utility";
+import { formatJson } from "@/utils/json/json-cleaner-utility";
 import { selectResponseDataByListenerId } from '@/lib/redux/socket-io/selectors';
 
 // Individual component for Data array - only rerenders when data changes

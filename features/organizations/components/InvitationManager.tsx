@@ -29,7 +29,7 @@ import {
   useInvitationOperations,
   validateEmail,
   type OrgRole,
-} from '@/utils/organizations';
+} from '@/features/organizations';
 import { formatDistanceToNow } from 'date-fns';
 
 interface InvitationManagerProps {

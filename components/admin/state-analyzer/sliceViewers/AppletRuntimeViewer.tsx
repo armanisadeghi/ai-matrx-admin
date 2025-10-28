@@ -4,7 +4,7 @@ import React from "react";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import JsonTree from "@/components/admin/state-analyzer/components/JsonTree";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatJson } from "@/utils/json-cleaner-utility";
+import { formatJson } from "@/utils/json/json-cleaner-utility";
 
 const AppletRuntimeViewer = ({ sliceKey, state }) => {
     const applets = state?.applets || {};

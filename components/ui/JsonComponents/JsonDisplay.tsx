@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { cleanJson } from '@/utils/json-cleaner-utility';
+import { cleanJson } from '@/utils/json/json-cleaner-utility';
 import { cn } from '@/lib/utils';
 
 interface JsonDisplayProps {

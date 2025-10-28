@@ -22,7 +22,7 @@ import {
   validateOrgName,
   validateOrgSlug,
   useSlugAvailability,
-} from '@/utils/organizations';
+} from '@/features/organizations';
 
 interface CreateOrgModalProps {
   isOpen: boolean;

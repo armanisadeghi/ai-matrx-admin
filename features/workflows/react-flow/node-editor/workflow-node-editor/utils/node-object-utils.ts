@@ -1,5 +1,5 @@
 import { DbFunctionNode, FunctionNode } from '@/features/workflows/types';
-import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json-utils';
+import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json/json-utils';
 import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 import { toast } from 'sonner';
 

@@ -4,7 +4,7 @@ import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import { getAvailableServices } from "@/constants/socket-schema";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { formatText } from "@/utils/text-case-converter";
+import { formatText } from "@/utils/text/text-case-converter";
 
 interface ServiceSelectorProps {
   onServiceChange?: (service: string) => void;

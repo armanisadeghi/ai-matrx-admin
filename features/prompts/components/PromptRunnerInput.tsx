@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptVariable } from "./PromptBuilder";
-import { formatText } from "@/utils/text-case-converter";
+import { formatText } from "@/utils/text/text-case-converter";
 
 interface PromptRunnerInputProps {
     variableDefaults: PromptVariable[];

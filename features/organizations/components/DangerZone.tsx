@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { deleteOrganization, type Organization } from '@/utils/organizations';
+import { deleteOrganization, type Organization } from '@/features/organizations';
 
 interface DangerZoneProps {
   organization: Organization;

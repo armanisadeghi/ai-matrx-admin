@@ -1,5 +1,5 @@
 import { SchemaField, SOCKET_TASKS } from "../../../constants/socket-schema";
-import { flexibleJsonParse } from "@/utils/json-utils";
+import { flexibleJsonParse } from "@/utils/json/json-utils";
 import { RootState } from "@/lib/redux/store";
 import { BrokerValues } from "@/types/socket-schema-types";
 

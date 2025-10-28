@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useOrganization, useUserRole } from '@/utils/organizations';
+import { useOrganization, useUserRole } from '@/features/organizations';
 import { OrgSettings } from '@/features/organizations/components/OrgSettings';
 
 /**

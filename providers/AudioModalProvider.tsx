@@ -5,7 +5,7 @@ import React, { createContext, useContext, useCallback, useState, useEffect } fr
 import { createPortal } from 'react-dom';
 import AudioModal from '@/components/audio/AudioModal';
 import type { AudioModalOptions, AudioModalContextType } from '@/types/audio';
-import { registerAudioModal } from '@/utils/audioModal';
+import { registerAudioModal } from '@/utils/audio/audioModal';
 
 const AudioModalContext = createContext<AudioModalContextType | null>(null);
 

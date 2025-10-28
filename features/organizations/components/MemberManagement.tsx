@@ -28,7 +28,7 @@ import {
   useMemberOperations,
   useUserRole,
   type OrgRole,
-} from '@/utils/organizations';
+} from '@/features/organizations';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUser } from '@/lib/redux/selectors/userSelectors';
 

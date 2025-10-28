@@ -1,6 +1,6 @@
 import { cloneDeep } from "lodash";
 import { ArgumentOverride } from "@/features/workflows/types";
-import { flexibleJsonParse } from "@/utils/json-utils";
+import { flexibleJsonParse } from "@/utils/json/json-utils";
 import { registeredFunctions } from "@/features/workflows/constants";
 import { getStore } from "@/lib/redux/store";
 

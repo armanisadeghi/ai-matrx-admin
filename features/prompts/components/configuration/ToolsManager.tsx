@@ -2,8 +2,8 @@ import React from "react";
 import { Plus, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { formatText } from "@/utils/text-case-converter";
-import { mapIcon } from "@/utils/icon-mapper";
+import { formatText } from "@/utils/text/text-case-converter";
+import { mapIcon } from "@/utils/icons/icon-mapper";
 
 interface ToolsManagerProps {
     selectedTools: string[];

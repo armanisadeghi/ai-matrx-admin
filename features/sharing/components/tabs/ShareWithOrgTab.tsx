@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2, Building2 } from 'lucide-react';
 import { PermissionLevel, ResourceType } from '@/utils/permissions';
-import { useUserOrganizations } from '@/utils/organizations';
+import { useUserOrganizations } from '@/features/organizations';
 import { PermissionLevelDescription } from '../PermissionBadge';
 import { useToast } from '@/components/ui/use-toast';
 

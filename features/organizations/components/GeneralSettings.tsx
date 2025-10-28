@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { updateOrganization, validateOrgName, type Organization, type OrgRole } from '@/utils/organizations';
+import { updateOrganization, validateOrgName, type Organization, type OrgRole } from '@/features/organizations';
 import { format } from 'date-fns';
 
 interface GeneralSettingsProps {

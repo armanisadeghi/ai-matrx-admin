@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useScreenshot } from './useScreenshot';
-import { compressImage, generateThumbnail } from '@/utils/imageCompression';
+import { compressImage, generateThumbnail } from '@/utils/image/imageCompression';
 import type {
   AIHelpContext,
   PageElementContext,
