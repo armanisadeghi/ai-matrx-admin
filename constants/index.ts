@@ -35,4 +35,5 @@ export const meetingAvatarImages = [
     '/images/avatar-5.png',
 ];
 
-export * from './appSidebarLinks';
+// Export all navigation links from the unified navigation-links file
+export * from './navigation-links';

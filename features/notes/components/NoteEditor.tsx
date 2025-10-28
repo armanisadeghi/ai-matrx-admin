@@ -209,6 +209,56 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
             <div className="flex-none border-b border-zinc-200 dark:border-zinc-800 bg-textured">
                 {/* Folder, Tags, Status */}
                 <div className="flex items-center gap-2 px-3 py-2">
+                    {/* View Mode Selector */}
+                    <Select value={editorMode} onValueChange={(value) => handleModeChange(value as EditorMode)}>
+                        <SelectTrigger className="w-[36px] h-7 p-0 border-zinc-300 dark:border-zinc-700">
+                            <div className="flex items-center justify-center w-full">
+                                {editorMode === 'plain' && <FileText className="h-3.5 w-3.5" />}
+                                {editorMode === 'wysiwyg' && <PilcrowRight className="h-3.5 w-3.5" />}
+                                {editorMode === 'markdown' && <SplitSquareHorizontal className="h-3.5 w-3.5" />}
+                                {editorMode === 'preview' && <Eye className="h-3.5 w-3.5" />}
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="plain" className="text-xs">
+                                <div className="flex items-center gap-2">
+                                    <FileText className="h-3.5 w-3.5" />
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Plain Text</span>
+                                        <span className="text-[10px] text-zinc-500">Simple editor</span>
+                                    </div>
+                                </div>
+                            </SelectItem>
+                            <SelectItem value="wysiwyg" className="text-xs">
+                                <div className="flex items-center gap-2">
+                                    <PilcrowRight className="h-3.5 w-3.5" />
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Rich Editor</span>
+                                        <span className="text-[10px] text-zinc-500">WYSIWYG</span>
+                                    </div>
+                                </div>
+                            </SelectItem>
+                            <SelectItem value="markdown" className="text-xs">
+                                <div className="flex items-center gap-2">
+                                    <SplitSquareHorizontal className="h-3.5 w-3.5" />
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Split View</span>
+                                        <span className="text-[10px] text-zinc-500">Markdown + Preview</span>
+                                    </div>
+                                </div>
+                            </SelectItem>
+                            <SelectItem value="preview" className="text-xs">
+                                <div className="flex items-center gap-2">
+                                    <Eye className="h-3.5 w-3.5" />
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">Preview</span>
+                                        <span className="text-[10px] text-zinc-500">Read-only</span>
+                                    </div>
+                                </div>
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+
                     {/* Folder Selector */}
                     <Select value={localFolder} onValueChange={handleFolderChange}>
                         <SelectTrigger className="w-[140px] h-7 text-xs">

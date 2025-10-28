@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import { Plus, Search, SortAsc, SortDesc, FolderPlus } from "lucide-react";
+import { Plus, SortAsc, SortDesc, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
     DropdownMenu, 
