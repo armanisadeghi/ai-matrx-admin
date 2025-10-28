@@ -72,7 +72,7 @@ export function CreateFolderDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
+            <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Create New Folder</DialogTitle>
                     <DialogDescription>
@@ -80,7 +80,7 @@ export function CreateFolderDialog({
                     </DialogDescription>
                 </DialogHeader>
                 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4 flex-1 overflow-hidden">
                     <div className="grid gap-2">
                         <Label htmlFor="folder-name">Folder Name</Label>
                         <Input
@@ -101,9 +101,9 @@ export function CreateFolderDialog({
                         )}
                     </div>
 
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 flex-1 overflow-hidden">
                         <Label>Or Choose a Category</Label>
-                        <ScrollArea className="h-[300px] pr-4">
+                        <ScrollArea className="flex-1 pr-4">
                             <div className="grid grid-cols-2 gap-2">
                                 {FOLDER_CATEGORIES.map((category) => {
                                     const Icon = category.icon;
