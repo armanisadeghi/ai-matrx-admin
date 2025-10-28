@@ -91,7 +91,21 @@ export async function createOrganization(
       .select()
       .single();
 
-    if (orgError) throw orgError;
+    if (orgError) {
+      console.error('Error creating organization:', orgError.message);
+      return {
+        success: false,
+        error: orgError.message || 'Failed to create organization',
+      };
+    }
+
+    if (!org) {
+      console.error('Organization created but no data returned');
+      return {
+        success: false,
+        error: 'Organization created but no data returned',
+      };
+    }
 
     // Add creator as owner
     const { error: memberError } = await supabase
@@ -102,7 +116,13 @@ export async function createOrganization(
         role: 'owner',
       });
 
-    if (memberError) throw memberError;
+    if (memberError) {
+      console.error('Error adding member:', memberError.message);
+      return {
+        success: false,
+        error: memberError.message || 'Failed to add you as organization owner',
+      };
+    }
 
     return {
       success: true,
@@ -113,7 +133,7 @@ export async function createOrganization(
     console.error('Error creating organization:', error);
     return {
       success: false,
-      error: error.message || 'Failed to create organization',
+      error: error?.message || 'Failed to create organization',
     };
   }
 }
@@ -255,17 +275,28 @@ export async function getUserOrganizations(): Promise<OrganizationWithRole[]> {
       )
       .eq('user_id', currentUser.id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching user organizations:', error.message);
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
 
     const orgs: OrganizationWithRole[] = await Promise.all(
       (data || []).map(async (item: any) => {
         const org = transformOrganizationFromDb(item.organizations);
         
         // Get member count
-        const { count } = await supabase
+        const { count, error: countError } = await supabase
           .from('organization_members')
           .select('*', { count: 'exact', head: true })
           .eq('organization_id', org.id);
+
+        if (countError) {
+          console.error('Error fetching member count:', countError.message);
+        }
 
         return {
           ...org,
@@ -284,10 +315,9 @@ export async function getUserOrganizations(): Promise<OrganizationWithRole[]> {
   } catch (error: any) {
     // Silently handle if organizations table doesn't exist yet
     if (error?.code === '42P01' || error?.message?.includes('relation') || error?.message?.includes('does not exist')) {
-      // Table doesn't exist - that's OK, just return empty array
       return [];
     }
-    console.error('Error fetching user organizations:', error);
+    console.error('Error in getUserOrganizations:', error);
     return [];
   }
 }

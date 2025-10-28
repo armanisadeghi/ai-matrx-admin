@@ -16,6 +16,7 @@ import {
     FileText,
     Workflow,
     Scissors,
+    Building2,
 } from "lucide-react";
 import { Grid, CardProps, HorizontalCardProps, List } from "@/components/official/card-and-grid";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -171,6 +172,13 @@ const DashboardPage = () => {
             icon: <Settings />,
             color: "orange",
             path: "/dashboard/preferences",
+        },
+        {
+            title: "Organizations",
+            description: "Manage your organizations and team collaboration",
+            icon: <Building2 />,
+            color: "blue",
+            path: "/organizations",
         },
     ];
 

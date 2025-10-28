@@ -47,12 +47,37 @@ export async function executeSqlQuery(query: string) {
                 query
             })
 
-        if (error) throw error
+        if (error) {
+            console.error('Error executing query:', error)
+            // Preserve the full error details for admin debugging
+            const errorMessage = typeof error === 'object' && error !== null && 'message' in error
+                ? (error as any).message
+                : JSON.stringify(error, null, 2)
+            const errorDetails = typeof error === 'object' && error !== null && 'details' in error
+                ? `\n\nDetails: ${(error as any).details}`
+                : ''
+            const errorHint = typeof error === 'object' && error !== null && 'hint' in error
+                ? `\n\nHint: ${(error as any).hint}`
+                : ''
+            const errorCode = typeof error === 'object' && error !== null && 'code' in error
+                ? `\n\nError Code: ${(error as any).code}`
+                : ''
+            
+            throw new Error(`SQL Query Error: ${errorMessage}${errorDetails}${errorHint}${errorCode}`)
+        }
 
         return data
     } catch (error) {
         console.error('Error executing query:', error)
-        throw new Error('Failed to execute SQL query')
+        // If it's already an Error object with our formatted message, just re-throw it
+        if (error instanceof Error) {
+            throw error
+        }
+        // Otherwise, try to preserve as much information as possible
+        const errorMessage = typeof error === 'object' && error !== null
+            ? JSON.stringify(error, null, 2)
+            : String(error)
+        throw new Error(`Failed to execute SQL query: ${errorMessage}`)
     }
 }
 

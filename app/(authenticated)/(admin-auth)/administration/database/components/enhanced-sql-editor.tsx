@@ -217,7 +217,7 @@ export const EnhancedSQLEditor = ({
             <textarea
               value={sqlQuery}
               onChange={(e) => setSqlQuery(e.target.value)}
-              className="min-h-[200px] h-[300px] w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-y"
+              className="min-h-[150px] h-[200px] w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-y"
               placeholder="Enter your SQL query here..."
             />
             <div className="absolute bottom-4 right-4 flex space-x-2">
@@ -290,7 +290,7 @@ export const EnhancedSQLEditor = ({
                   </div>
                 </div>
 
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
                   {replacementPairs.map((pair, index) => (
                     <div key={pair.id} className="flex items-center gap-2">
                       <div className="flex-1 flex items-center gap-2">
@@ -344,7 +344,7 @@ export const EnhancedSQLEditor = ({
                 className="border border-slate-200 dark:border-slate-700 rounded-lg"
               >
                 {queryHistory.length > 0 ? (
-                  <ScrollArea className="h-[150px]">
+                  <ScrollArea className="h-[120px]">
                     <div className="space-y-2">
                       {queryHistory.map((item, index) => (
                         <div
@@ -451,7 +451,9 @@ export const EnhancedSQLEditor = ({
           {error && (
             <Alert variant="destructive" className="border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20">
               <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-              <AlertDescription className="text-red-600 dark:text-red-400">{error}</AlertDescription>
+              <AlertDescription className="text-red-600 dark:text-red-400">
+                <pre className="whitespace-pre-wrap font-mono text-sm">{error}</pre>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -513,7 +515,7 @@ export const EnhancedSQLEditor = ({
                 </div>
 
                 <TabsContent value="raw" className="m-0">
-                  <ScrollArea className="h-[500px] w-full">
+                  <ScrollArea className="h-[400px] w-full">
                     <pre className="p-4 text-sm text-slate-800 dark:text-slate-200 font-mono whitespace-pre-wrap">
                       {JSON.stringify(queryResult, null, 2)}
                     </pre>
@@ -521,7 +523,7 @@ export const EnhancedSQLEditor = ({
                 </TabsContent>
 
                 <TabsContent value="explorer" className="m-0">
-                  <div className="h-[500px] overflow-auto">
+                  <div className="h-[400px] overflow-auto">
                     <RawJsonExplorer pageData={queryResult} />
                   </div>
                 </TabsContent>

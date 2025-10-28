@@ -22,8 +22,8 @@ export default async function SQLFunctionsPage() {
   }
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="w-full bg-slate-100 dark:bg-slate-800 py-2">
+    <div className="h-full w-full overflow-auto bg-slate-100 dark:bg-slate-800">
+      <div className="w-full py-2">
         {errorMessage ? (
           <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-800 dark:text-red-200">
             {errorMessage}

@@ -8,9 +8,9 @@ export const metadata = {
 
 export default function SQLQueriesPage() {
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="w-full bg-slate-100 dark:bg-slate-800 py-6 px-6">
-        <div className="w-full">
+    <div className="h-full w-full overflow-hidden bg-slate-100 dark:bg-slate-800 flex flex-col">
+      <div className="flex-1 overflow-auto">
+        <div className="w-full py-6 px-6">
           <DatabaseClient />
         </div>
       </div>
