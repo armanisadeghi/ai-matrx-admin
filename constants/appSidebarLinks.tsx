@@ -49,6 +49,9 @@ import { TbRelationManyToMany } from "react-icons/tb";
 import { AiFillAudio } from "react-icons/ai";
 import { SiMagic, SiSocketdotio } from "react-icons/si";
 import { SiCodemagic } from "react-icons/si";
+import { LuNotepadText } from "react-icons/lu";
+import { IoChatboxOutline } from "react-icons/io5";
+import { FaIndent } from "react-icons/fa6";
 
 //brokers/component-editor
 
@@ -73,17 +76,17 @@ export const primaryLinks = [
     {
         label: "Prompt Builder",
         href: "/ai/prompts",
-        icon: <ClipboardType className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        icon: <FaIndent className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Chat",
         href: "/chat",
-        icon: <BsChatRight className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        icon: <IoChatboxOutline className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Notes",
         href: "/notes",
-        icon: <StickyNote className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        icon: <LuNotepadText className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Tasks",
@@ -106,12 +109,12 @@ export const primaryLinks = [
         href: "/demo/voice/voice-manager",
     },
     {
-        label: "Image Gallery",
+        label: "Image Search",
         href: "/image-editing/public-image-search", // https://lucide.dev/icons/
         icon: <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
-        label: "Scrape & Analyze",
+        label: "Webscraper",
         href: "/scraper",
         icon: <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },

@@ -391,6 +391,14 @@ export const componentList: ComponentEntry[] = [
     description: 'Tools for capturing page screenshots and collecting page context for AI assistance',
     categories: ['ai-helpers', 'utilities', 'feedback'],
     tags: ['screenshot', 'capture', 'image', 'context', 'help', 'support', 'ai']
+  },
+  {
+    id: 'category-notes-modal',
+    name: 'Category Notes Modal',
+    path: 'features/notes/components/CategoryNotesModal.tsx',
+    description: 'Reusable modal for managing notes within a specific category. Full CRUD operations, search, and category-specific icons',
+    categories: ['modals', 'data-display', 'utilities'],
+    tags: ['notes', 'modal', 'category', 'crud', 'search', 'templates', 'snippets', 'content']
   }
 ]; 
 
