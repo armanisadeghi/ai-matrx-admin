@@ -7,11 +7,11 @@ import { BlockMath } from 'react-katex';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Problem } from '../types/algebraGuideTypes';
+import { Problem, Solution } from '../../../../../features/math/types/algebraGuideTypes';
 import ControlPanel from './ControlPanel';
-import { BackgroundGradient } from "@/components/ui";
 
 const MathProblem: React.FC<Problem> = ({
+                                            id,
                                             title,
                                             courseName,
                                             topicName,
@@ -24,10 +24,13 @@ const MathProblem: React.FC<Problem> = ({
                                         }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [currentSolutionIndex, setCurrentSolutionIndex] = useState(0);
+    const [currentStepIndex, setCurrentStepIndex] = useState(-1);
+    const [isNewSolution, setIsNewSolution] = useState(true);
+    const [isFinalSolution, setIsFinalSolution] = useState(false);
+    const [isFinalStep, setIsFinalStep] = useState(false);
     const [stage, setStage] = useState<'overview' | 'intro' | 'solution'>('overview');
-    const [subStage, setSubStage] = useState<'steps' | 'finalAnswer' | 'transition' | 'finalStatement'>('steps');
-    const [currentSolution, setCurrentSolution] = useState(0);
-    const [currentStep, setCurrentStep] = useState(-1);
+    const [subStage, setSubStage] = useState<'steps' | 'solutionAnswer' | 'transition' | 'finalStatement'>('steps');
     const [displayedContent, setDisplayedContent] = useState<JSX.Element[]>([]);
     const [showCongratulations, setShowCongratulations] = useState(false);
 
@@ -41,10 +44,13 @@ const MathProblem: React.FC<Problem> = ({
 
         setStage(savedStage as any);
         setSubStage(savedSubStage as any);
-        setCurrentSolution(savedSolution);
-        setCurrentStep(savedStep);
+        setCurrentSolutionIndex(savedSolution);
+        setCurrentStepIndex(savedStep);
+        setIsNewSolution(savedStage === 'solution' && savedSubStage === 'steps' && savedStep === 0);
+        setIsFinalSolution(isLastSolution(savedSolution));
+        setIsFinalStep(isLastStep(savedSolution, savedStep));
 
-        rebuildContent(savedStage as any, savedSubStage as any, savedSolution, savedStep);
+        rebuildContent();
     }, []);
 
     useEffect(() => {
@@ -57,19 +63,25 @@ const MathProblem: React.FC<Problem> = ({
         const params = new URLSearchParams();
         params.set('stage', stage);
         params.set('subStage', subStage);
-        params.set('solution', currentSolution.toString());
-        params.set('step', currentStep.toString());
+        params.set('solution', currentSolutionIndex.toString());
+        params.set('step', currentStepIndex.toString());
         router.push(`?${params.toString()}`, { scroll: false });
-    }, [stage, subStage, currentSolution, currentStep]);
+    }, [stage, subStage, currentSolutionIndex, currentStepIndex]);
+
+    const isLastSolution = (index: number = currentSolutionIndex) => index === solutions.length - 1;
+    const isLastStep = (solutionIndex: number = currentSolutionIndex, stepIndex: number = currentStepIndex) =>
+        stepIndex === solutions[solutionIndex].steps.length - 1;
+    const hasTransitionText = (solutionIndex: number = currentSolutionIndex) =>
+        !!solutions[solutionIndex].transitionText;
 
     const addContent = (content: JSX.Element) => {
         setDisplayedContent(prev => [...prev, content]);
     };
 
-    const rebuildContent = (currentStage: string, currentSubStage: string, solutionIndex: number, stepIndex: number) => {
+    const rebuildContent = () => {
         setDisplayedContent([]);
 
-        if (currentStage === 'overview') {
+        if (stage === 'overview') {
             addContent(
                 <div key="overview" className="space-y-2">
                     <h2 className="text-2xl font-bold mb-4">{title}</h2>
@@ -82,11 +94,11 @@ const MathProblem: React.FC<Problem> = ({
             return;
         }
 
-        if (currentStage === 'intro') {
-            addContent(<p key="intro" className="text-base mb-4">{introText}</p>);
-        }
+        if (stage === 'intro' || stage === 'solution') {
+            if (stage === 'intro') {
+                addContent(<p key="intro" className="text-base mb-4">{introText}</p>);
+            }
 
-        if (currentStage === 'intro' || currentStage === 'solution') {
             addContent(
                 <div key="problem-statement" className="space-y-2 mb-4">
                     <p className="text-base">{problemStatement.text}</p>
@@ -96,30 +108,31 @@ const MathProblem: React.FC<Problem> = ({
             );
         }
 
-        if (currentStage === 'solution') {
-            const solution = solutions[solutionIndex];
-            addContent(<p key={`task-${solutionIndex}`} className="text-base mb-4">{solution.task}</p>);
+        if (stage === 'solution') {
+            const currentSolution = solutions[currentSolutionIndex];
+            addContent(<p key={`task-${currentSolutionIndex}`} className="text-base mb-4">{currentSolution.task}</p>);
 
-            if (currentSubStage === 'steps' && stepIndex >= 0) {
-                solution.steps.slice(0, stepIndex + 1).forEach((step, i) => {
+            if (subStage === 'steps') {
+                for (let i = 0; i <= currentStepIndex; i++) {
+                    const step = currentSolution.steps[i];
                     addContent(
-                        <div key={`step-${solutionIndex}-${i}`} className="mb-4">
+                        <div key={`step-${currentSolutionIndex}-${i}`} className="mb-4">
                             <h4 className="font-semibold text-lg">{step.title}</h4>
                             <BlockMath math={step.equation} />
                             {step.explanation && <p className="text-base">{step.explanation}</p>}
                         </div>
                     );
-                });
-            } else if (currentSubStage === 'finalAnswer') {
+                }
+            } else if (subStage === 'solutionAnswer') {
                 addContent(
-                    <div key={`final-answer-${solutionIndex}`} className="space-y-2 mt-4">
+                    <div key={`final-answer-${currentSolutionIndex}`} className="space-y-2 mt-4">
                         <h3 className="text-xl font-semibold">Final Answer</h3>
-                        <BlockMath math={solution.solutionAnswer} />
+                        <BlockMath math={currentSolution.solutionAnswer} />
                     </div>
                 );
-            } else if (currentSubStage === 'transition' && solution.transitionText) {
-                addContent(<p key={`transition-${solutionIndex}`} className="text-base">{solution.transitionText}</p>);
-            } else if (currentSubStage === 'finalStatement') {
+            } else if (subStage === 'transition' && currentSolution.transitionText) {
+                addContent(<p key={`transition-${currentSolutionIndex}`} className="text-base">{currentSolution.transitionText}</p>);
+            } else if (subStage === 'finalStatement') {
                 addContent(<p key="final-statement" className="text-base">{finalStatement}</p>);
             }
         }
@@ -131,84 +144,96 @@ const MathProblem: React.FC<Problem> = ({
         } else if (stage === 'intro') {
             setStage('solution');
             setSubStage('steps');
-            setCurrentStep(0);
+            setCurrentStepIndex(0);
+            setIsNewSolution(true);
+            setIsFinalSolution(isLastSolution());
+            setIsFinalStep(isLastStep());
         } else if (stage === 'solution') {
-            handleSolutionForwardTransition();
+            if (isNewSolution) {
+                setIsNewSolution(false);
+            } else if (subStage === 'steps') {
+                if (!isFinalStep) {
+                    setCurrentStepIndex(currentStepIndex + 1);
+                    setIsFinalStep(isLastStep(currentSolutionIndex, currentStepIndex + 1));
+                } else {
+                    setSubStage('solutionAnswer');
+                }
+            } else if (subStage === 'solutionAnswer') {
+                if (hasTransitionText()) {
+                    setSubStage('transition');
+                } else if (!isFinalSolution) {
+                    setCurrentSolutionIndex(currentSolutionIndex + 1);
+                    setCurrentStepIndex(0);
+                    setIsNewSolution(true);
+                    setIsFinalSolution(isLastSolution(currentSolutionIndex + 1));
+                    setIsFinalStep(false);
+                    setSubStage('steps');
+                } else {
+                    setSubStage('finalStatement');
+                }
+            } else if (subStage === 'transition') {
+                if (!isFinalSolution) {
+                    setCurrentSolutionIndex(currentSolutionIndex + 1);
+                    setCurrentStepIndex(0);
+                    setIsNewSolution(true);
+                    setIsFinalSolution(isLastSolution(currentSolutionIndex + 1));
+                    setIsFinalStep(false);
+                    setSubStage('steps');
+                } else {
+                    setSubStage('finalStatement');
+                }
+            } else if (subStage === 'finalStatement') {
+                setShowCongratulations(true);
+            }
         }
 
-        rebuildContent(stage, subStage, currentSolution, currentStep);
-    };
-
-    const handleSolutionForwardTransition = () => {
-        const solution = solutions[currentSolution];
-
-        if (subStage === 'steps') {
-            if (currentStep < solution.steps.length - 1) {
-                setCurrentStep(currentStep + 1);
-            } else {
-                setSubStage('finalAnswer');
-            }
-        } else if (subStage === 'finalAnswer') {
-            if (solution.transitionText) {
-                setSubStage('transition');
-            } else if (currentSolution < solutions.length - 1) {
-                setCurrentSolution(currentSolution + 1);
-                setSubStage('steps');
-                setCurrentStep(0);
-            } else {
-                setSubStage('finalStatement');
-            }
-        } else if (subStage === 'transition') {
-            if (currentSolution < solutions.length - 1) {
-                setCurrentSolution(currentSolution + 1);
-                setSubStage('steps');
-                setCurrentStep(0);
-            } else {
-                setSubStage('finalStatement');
-            }
-        } else if (subStage === 'finalStatement') {
-            setShowCongratulations(true);
-        }
+        rebuildContent();
     };
 
     const previousStep = () => {
         if (stage === 'intro') {
             setStage('overview');
         } else if (stage === 'solution') {
-            handleSolutionBackwardTransition();
+            if (subStage === 'steps') {
+                if (currentStepIndex > 0) {
+                    setCurrentStepIndex(currentStepIndex - 1);
+                    setIsFinalStep(false);
+                } else {
+                    setStage('intro');
+                    setCurrentSolutionIndex(0);
+                    setCurrentStepIndex(-1);
+                    setIsNewSolution(true);
+                    setIsFinalSolution(false);
+                    setIsFinalStep(false);
+                }
+            } else if (subStage === 'solutionAnswer') {
+                setSubStage('steps');
+                setCurrentStepIndex(solutions[currentSolutionIndex].steps.length - 1);
+                setIsFinalStep(true);
+            } else if (subStage === 'transition') {
+                setSubStage('solutionAnswer');
+            } else if (subStage === 'finalStatement') {
+                if (hasTransitionText()) {
+                    setSubStage('transition');
+                } else {
+                    setSubStage('solutionAnswer');
+                }
+            }
         }
 
-        rebuildContent(stage, subStage, currentSolution, currentStep);
-    };
-
-    const handleSolutionBackwardTransition = () => {
-        if (subStage === 'steps') {
-            if (currentStep > 0) {
-                setCurrentStep(currentStep - 1);
-            } else {
-                setStage('intro');
-            }
-        } else if (subStage === 'finalAnswer') {
-            setSubStage('steps');
-            setCurrentStep(solutions[currentSolution].steps.length - 1);
-        } else if (subStage === 'transition') {
-            setSubStage('finalAnswer');
-        } else if (subStage === 'finalStatement') {
-            if (solutions[currentSolution].transitionText) {
-                setSubStage('transition');
-            } else {
-                setSubStage('finalAnswer');
-            }
-        }
+        rebuildContent();
     };
 
     const reset = () => {
         setStage('overview');
         setSubStage('steps');
-        setCurrentSolution(0);
-        setCurrentStep(-1);
+        setCurrentSolutionIndex(0);
+        setCurrentStepIndex(-1);
+        setIsNewSolution(true);
+        setIsFinalSolution(false);
+        setIsFinalStep(false);
         setShowCongratulations(false);
-        rebuildContent('overview', 'steps', 0, -1);
+        rebuildContent();
     };
 
     if (showCongratulations) {
@@ -241,21 +266,7 @@ const MathProblem: React.FC<Problem> = ({
                     </div>
                 </CardContent>
             </Card>
-            <div className="flex justify-center">
-                <BackgroundGradient className="w-full max-w-lg p-4 sm:p-10 bg-white dark:bg-zinc-900 rounded-[22px]">
-                    <Card>
-                        <CardContent className="p-1">
-                            <h3 className="text-xl font-semibold mb-2">Debug Information</h3>
-                            <p><strong>Stage:</strong> {stage}</p>
-                            <p><strong>Sub-Stage:</strong> {subStage}</p>
-                            <p><strong>Current Solution:</strong> {currentSolution}</p>
-                            <p><strong>Current Step:</strong> {currentStep}</p>
-                            <p><strong>Displayed Content Count:</strong> {displayedContent.length}</p>
-                            <p><strong>Show Congratulations:</strong> {showCongratulations ? 'Yes' : 'No'}</p>
-                        </CardContent>
-                    </Card>
-                </BackgroundGradient>
-            </div>
+
             <ControlPanel
                 onReset={reset}
                 onBack={previousStep}

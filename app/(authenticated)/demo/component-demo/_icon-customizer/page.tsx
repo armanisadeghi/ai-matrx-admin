@@ -5,7 +5,7 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {availableIcons} from './icons';
 import {Check, ClipboardCopy} from 'lucide-react';
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
-import IconSearchCard from "@/app/(authenticated)/demo/component-demo/icon-customizer/icon-search/IconSearchCard";
+import IconSearchCard from "@/app/(authenticated)/demo/component-demo/_icon-customizer/icon-search/IconSearchCard";
 import { Checkbox } from '@/components/ui/checkbox';
 
 const IconCustomizer = () => {

@@ -6,7 +6,7 @@ import 'katex/dist/katex.min.css';
 import {BlockMath} from 'react-katex';
 import {motion} from 'framer-motion';
 import {Card, CardContent} from '@/components/ui/card';
-import {Problem} from '../types/algebraGuideTypes';
+import {Problem} from '../../../../../features/math/types/algebraGuideTypes';
 import ControlPanel from './ControlPanel';
 import {BackgroundGradient} from "@/components/ui";
 

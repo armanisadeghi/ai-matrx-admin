@@ -1,4 +1,4 @@
-import {ProblemsData, ProblemStatement, Solution} from "@/app/(authenticated)/tests/math/types/algebraGuideTypes";
+import {ProblemsData, ProblemStatement, Solution} from "@/features/math/types/algebraGuideTypes";
 
 
 export const problemsData: ProblemsData = [
