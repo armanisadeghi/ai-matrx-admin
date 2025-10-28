@@ -54,6 +54,8 @@ import ReasoningVisualization from "../blocks/thinking-reasoning/ReasoningVisual
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
 import { useAppSelector } from "@/lib/redux";
 import { createTaskResponseSelectors } from "@/lib/redux/socket-io";
+import MathProblemBlock from "../blocks/math/MathProblemBlock";
+import MathProblemLoadingVisualization from "../blocks/math/MathProblemLoadingVisualization";
 
 
 interface ChatMarkdownDisplayProps {
@@ -726,6 +728,47 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         );
                     } catch (error) {
                         console.error("Failed to parse diagram JSON:", error);
+                        // Fall back to showing as code block if parsing fails
+                        return (
+                            <CodeBlock
+                                key={index}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
+                                isStreamActive={isStreamActive}
+                            />
+                        );
+                    }
+
+                case "math_problem":
+                    // Check if math problem is complete
+                    const isMathProblemComplete = block.metadata?.isComplete !== false;
+                    
+                    if (!isMathProblemComplete) {
+                        // Show loading state while math problem is streaming
+                        return <MathProblemLoadingVisualization key={index} />;
+                    }
+                    
+                    // Parse the complete math problem JSON
+                    try {
+                        const mathProblemData = JSON.parse(block.content);
+                        if (mathProblemData && mathProblemData.math_problem) {
+                            return <MathProblemBlock key={index} problemData={mathProblemData} />;
+                        }
+                        // If parsing failed, fall back to code block
+                        return (
+                            <CodeBlock
+                                key={index}
+                                code={block.content}
+                                language="json"
+                                fontSize={16}
+                                className="my-3"
+                                isStreamActive={isStreamActive}
+                            />
+                        );
+                    } catch (error) {
+                        console.error("Failed to parse math problem JSON:", error);
                         // Fall back to showing as code block if parsing fails
                         return (
                             <CodeBlock

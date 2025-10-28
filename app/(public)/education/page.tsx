@@ -21,17 +21,68 @@ export default function EducationPage() {
 
                 {/* Subheading */}
                 <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-                    Coming Soon
+                    Free Learning Resources for Everyone
                 </p>
 
                 {/* Description */}
                 <p className="text-base md:text-lg text-muted-foreground/80 max-w-2xl mx-auto">
-                    We&apos;re preparing comprehensive educational content, tutorials, and resources to help you make the most of AI Matrx. 
-                    Check back soon for guides, best practices, and learning materials.
+                    Access comprehensive educational content, tutorials, and interactive learning experiences.
+                    Start your learning journey with our step-by-step guides and practice problems.
                 </p>
 
+                {/* Available Courses */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto pt-8">
+                    <Link href="/education/math">
+                        <div className="group border rounded-lg p-6 hover:shadow-lg transition-all cursor-pointer hover:-translate-y-1 bg-card">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="rounded-full bg-primary/10 p-3">
+                                    <BookOpen className="w-6 h-6 text-primary" />
+                                </div>
+                                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                                    Mathematics
+                                </h3>
+                            </div>
+                            <p className="text-muted-foreground mb-4">
+                                Interactive algebra lessons with step-by-step problem solving. Master mathematical concepts through detailed explanations.
+                            </p>
+                            <div className="flex items-center text-primary text-sm font-medium">
+                                Start Learning
+                                <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                            </div>
+                        </div>
+                    </Link>
+
+                    <div className="border rounded-lg p-6 bg-card opacity-60">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="rounded-full bg-muted p-3">
+                                <BookOpen className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-muted-foreground">
+                                Coming Soon
+                            </h3>
+                        </div>
+                        <p className="text-muted-foreground/80 mb-4">
+                            More educational content and courses are being developed. Check back soon for updates!
+                        </p>
+                    </div>
+
+                    <div className="border rounded-lg p-6 bg-card opacity-60">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="rounded-full bg-muted p-3">
+                                <BookOpen className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-muted-foreground">
+                                Coming Soon
+                            </h3>
+                        </div>
+                        <p className="text-muted-foreground/80 mb-4">
+                            Additional learning resources and interactive tutorials are in development.
+                        </p>
+                    </div>
+                </div>
+
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
                     <Link href="/">
                         <Button
                             variant="outline"
@@ -41,9 +92,10 @@ export default function EducationPage() {
                             Back to Home
                         </Button>
                     </Link>
-                    <Link href="/dashboard">
+                    <Link href="/education/math">
                         <Button className="flex items-center gap-2">
-                            Go to Dashboard
+                            <BookOpen className="w-4 h-4" />
+                            Explore Math Lessons
                         </Button>
                     </Link>
                 </div>

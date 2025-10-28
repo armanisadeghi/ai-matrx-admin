@@ -1,7 +1,7 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | "cooking_recipe" | "timeline" | "progress_tracker" | "comparison_table" | "troubleshooting" | "resources" | "decision_tree" | "research" | "diagram" | string;
+    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | "cooking_recipe" | "timeline" | "progress_tracker" | "comparison_table" | "troubleshooting" | "resources" | "decision_tree" | "research" | "diagram" | "math_problem" | string;
     content: string;
     language?: string;
     src?: string;
@@ -703,6 +703,37 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         return { isDiagram: true, isComplete: false };
     };
 
+    // Function to detect if JSON content is a math problem
+    const isMathProblemJson = (jsonContent: string): { isMathProblem: boolean; isComplete: boolean } => {
+        const trimmed = jsonContent.trim();
+        
+        // Fast check: Must start with exact pattern for math_problem
+        if (!trimmed.startsWith('{\n  "math_problem"') && !trimmed.startsWith('{"math_problem"')) {
+            return { isMathProblem: false, isComplete: false };
+        }
+        
+        // Check if JSON is complete (has closing brace)
+        const isComplete = trimmed.endsWith("}");
+        
+        // If complete, verify it's valid JSON with math_problem object
+        if (isComplete) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                const hasMathProblem = parsed && parsed.math_problem && 
+                                      parsed.math_problem.title && 
+                                      parsed.math_problem.problem_statement &&
+                                      Array.isArray(parsed.math_problem.solutions);
+                return { isMathProblem: hasMathProblem, isComplete: true };
+            } catch (error) {
+                // Parse failed, not a valid math problem
+                return { isMathProblem: false, isComplete: false };
+            }
+        }
+        
+        // Not complete but has the correct structure start - it's streaming
+        return { isMathProblem: true, isComplete: false };
+    };
+
     // Function to remove MATRX_PATTERN matches from a string
     const removeMatrxPattern = (text: string): string => {
         return text.replace(MATRX_PATTERN, "").trim() === "" ? "" : text.replace(MATRX_PATTERN, "");
@@ -905,12 +936,25 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                                         }
                                     });
                                 } else {
-                                    // Regular JSON code block
-                                    blocks.push({
-                                        type: "code",
-                                        content: contentString,
-                                        language: languageOrType,
-                                    });
+                                    // Check if this JSON is a math problem
+                                    const mathProblemCheck = isMathProblemJson(contentString);
+                                    if (mathProblemCheck.isMathProblem) {
+                                        blocks.push({
+                                            type: "math_problem",
+                                            content: contentString,
+                                            language: "json",
+                                            metadata: {
+                                                isComplete: mathProblemCheck.isComplete
+                                            }
+                                        });
+                                    } else {
+                                        // Regular JSON code block
+                                        blocks.push({
+                                            type: "code",
+                                            content: contentString,
+                                            language: languageOrType,
+                                        });
+                                    }
                                 }
                             }
                         }
