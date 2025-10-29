@@ -7,8 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, isToday, setMonth, startOfMonth, startOfWeek } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { MatrxSelect, MatrxSelectContent, MatrxSelectItem, MatrxSelectTrigger, MatrxSelectValue } from './select'
-import { MatrxButton } from './button'
-import {Locale} from "moment";
+import { MatrxButton } from './button';
 
 type DateValue = Date | undefined
 
@@ -21,7 +20,6 @@ interface CalendarProps {
     highlightedDates?: Date[]
     mode?: 'single' | 'multiple' | 'range'
     weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6
-    locale?: Locale
     formatDate?: (date: Date) => string
     formatMonth?: (date: Date) => string
     formatYear?: (date: Date) => string
@@ -77,7 +75,6 @@ const MatrxCalendar = React.forwardRef<HTMLDivElement, CalendarProps>(
          highlightedDates,
          mode = 'single',
          weekStartsOn = 0,
-         locale,
          formatDate = (date: Date) => format(date, 'PP'),
          formatMonth = (date: Date) => format(date, 'MMMM'),
          formatYear = (date: Date) => format(date, 'yyyy'),

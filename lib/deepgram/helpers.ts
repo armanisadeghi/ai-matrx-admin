@@ -1,6 +1,4 @@
 import { LiveTranscriptionEvent } from "@deepgram/sdk";
-import { Message } from "ai/react";
-import moment from "moment";
 import { greetings } from "./constants";
 
 /**
@@ -18,7 +16,7 @@ const utteranceText = (event: LiveTranscriptionEvent) => {
  * @param {any[]} messages
  * @returns {any[]}
  */
-const getUserMessages = (messages: Message[]) => {
+const getUserMessages = (messages: any[]) => {
   return messages.filter((message) => message.role === "user");
 };
 
@@ -27,7 +25,7 @@ const getUserMessages = (messages: Message[]) => {
  * @param {any[]} messages
  * @returns {any[]}
  */
-const getConversationMessages = (messages: Message[]) => {
+const getConversationMessages = (messages: any[]) => {
   return messages.filter((message) => message.role !== "system");
 };
 
@@ -63,7 +61,7 @@ function contextualGreeting(): string {
  * @returns {string}
  */
 function contextualHello(): string {
-  const hour = moment().hour();
+  const hour = new Date().getHours();
 
   if (hour > 3 && hour <= 12) {
     return "Good morning";
