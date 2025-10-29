@@ -4,6 +4,8 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
+const DEBUG = process.env.DEBUG_MARKDOWN === 'true';
+
 // Cache the content to avoid re-reading on every request
 let cachedContent: {
   readme: string;
@@ -15,14 +17,16 @@ let cachedContent: {
 export async function getMarkdownContent() {
   // Return cached content if available
   if (cachedContent) {
-    console.log('✅ Returning cached markdown content');
+    if (DEBUG) console.log('✅ Returning cached markdown content');
     return cachedContent;
   }
 
-  console.log('🔍 Debug Info:');
-  console.log('  - process.cwd():', process.cwd());
-  console.log('  - __dirname equivalent:', path.resolve('.'));
-  console.log('  - NODE_ENV:', process.env.NODE_ENV);
+  if (DEBUG) {
+    console.log('🔍 Debug Info:');
+    console.log('  - process.cwd():', process.cwd());
+    console.log('  - __dirname equivalent:', path.resolve('.'));
+    console.log('  - NODE_ENV:', process.env.NODE_ENV);
+  }
 
   // Use path.resolve('.') instead of process.cwd() because process.cwd() 
   // returns '/' in this Next.js environment, while path.resolve('.') correctly
@@ -36,24 +40,26 @@ export async function getMarkdownContent() {
     'documentation'
   );
 
-  console.log('  - Constructed docsPath:', docsPath);
+  if (DEBUG) console.log('  - Constructed docsPath:', docsPath);
 
-  // Check each file individually
-  const files = ['README.md', 'SYSTEM_ANALYSIS.md', 'QUICK_START_GUIDE.md', 'DEVELOPMENT_ROADMAP.md'];
-  
-  console.log('\n🔍 Checking file existence:');
-  for (const file of files) {
-    const fullPath = path.join(docsPath, file);
-    try {
-      await fs.access(fullPath);
-      console.log(`  ✅ ${file} exists at: ${fullPath}`);
-    } catch {
-      console.log(`  ❌ ${file} NOT FOUND at: ${fullPath}`);
+  // Check each file individually (only in debug mode)
+  if (DEBUG) {
+    const files = ['README.md', 'SYSTEM_ANALYSIS.md', 'QUICK_START_GUIDE.md', 'DEVELOPMENT_ROADMAP.md'];
+    
+    console.log('\n🔍 Checking file existence:');
+    for (const file of files) {
+      const fullPath = path.join(docsPath, file);
+      try {
+        await fs.access(fullPath);
+        console.log(`  ✅ ${file} exists at: ${fullPath}`);
+      } catch {
+        console.log(`  ❌ ${file} NOT FOUND at: ${fullPath}`);
+      }
     }
+    console.log('\n📖 Attempting to read all markdown files...');
   }
 
   try {
-    console.log('\n📖 Attempting to read all markdown files...');
     
     const [readme, systemAnalysis, quickStart, roadmap] = await Promise.all([
       fs.readFile(path.join(docsPath, 'README.md'), 'utf8'),
@@ -62,7 +68,7 @@ export async function getMarkdownContent() {
       fs.readFile(path.join(docsPath, 'DEVELOPMENT_ROADMAP.md'), 'utf8'),
     ]);
 
-    console.log('✅ Successfully read all markdown files');
+    if (DEBUG) console.log('✅ Successfully read all markdown files');
 
     cachedContent = {
       readme,

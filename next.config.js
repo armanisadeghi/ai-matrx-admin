@@ -13,9 +13,46 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // Build performance optimizations
+    swcMinify: true,
+    productionBrowserSourceMaps: false,
+    
+    compiler: {
+        removeConsole: process.env.NODE_ENV === 'production' ? {
+            exclude: ['error', 'warn'],
+        } : false,
+    },
+    
+    optimizePackageImports: [
+        '@radix-ui/react-dialog',
+        '@radix-ui/react-dropdown-menu',
+        '@radix-ui/react-popover',
+        '@radix-ui/react-select',
+        '@radix-ui/react-tabs',
+        '@radix-ui/react-tooltip',
+        '@radix-ui/react-accordion',
+        '@radix-ui/react-scroll-area',
+        'lucide-react',
+        '@tabler/icons-react',
+        'lodash',
+        'date-fns',
+        'recharts',
+        'framer-motion',
+    ],
+    
     experimental: {
         serverActions: {
             bodySizeLimit: "10mb",
+        },
+        optimizeCss: true,
+        outputFileTracingExcludes: {
+            '*': [
+                'node_modules/@swc/**/*',
+                'node_modules/@esbuild/**/*',
+                '.git/**/*',
+                '**/*.md',
+                '**/*.map',
+            ],
         },
     },
     // Disable build caching for Vercel deployments
@@ -54,6 +91,16 @@ const nextConfig = {
     webpack: (config, { isServer, dev }) => {
         // First apply your existing webpack config
         config = configureWebpack(config, { isServer });
+
+        // Optimize webpack for production builds
+        if (!dev) {
+            config.cache = {
+                type: 'filesystem',
+                maxAge: 604800000, // 1 week
+                maxMemoryGenerations: 1,
+            };
+            config.output.hashFunction = 'xxhash64';
+        }
 
         // Add rule to prevent bundling of .onnx files
         config.module.rules.push({
