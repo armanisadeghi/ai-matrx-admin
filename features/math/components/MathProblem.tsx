@@ -7,6 +7,7 @@ import { BlockMath } from "react-katex";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PartyPopper } from "lucide-react";
 import { MathProblemProps, Solution } from "../types";
 import ControlPanel from "./ControlPanel";
 import InlineMathText from "./InlineMathText";
@@ -35,16 +36,29 @@ const MathProblem: React.FC<MathProblemProps> = ({
     const [showCongratulations, setShowCongratulations] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
+    const lastContentRef = useRef<HTMLDivElement>(null);
 
     // Initial content load
     useEffect(() => {
         rebuildContent();
     }, []);
 
-    // Auto-scroll to bottom when content changes
+    // Auto-scroll to bottom when content changes, accounting for control panel
     useEffect(() => {
-        if (contentRef.current) {
-            contentRef.current.scrollTop = contentRef.current.scrollHeight;
+        if (lastContentRef.current) {
+            // Scroll the element into view with extra space at the bottom
+            lastContentRef.current.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'end'
+            });
+            // Add extra scroll to account for the control panel height
+            if (contentRef.current) {
+                setTimeout(() => {
+                    if (contentRef.current) {
+                        contentRef.current.scrollTop += 20; // Extra space buffer
+                    }
+                }, 100);
+            }
         }
     }, [displayedContent]);
 
@@ -62,23 +76,30 @@ const MathProblem: React.FC<MathProblemProps> = ({
 
         if (stage === "overview") {
             addContent(
-                <div key="overview" className="space-y-4">
-                    <div className="border-l-4 border-primary pl-4">
-                        <h2 className="text-2xl font-bold mb-2"><InlineMathText text={title} /></h2>
-                        {description && <p className="text-muted-foreground"><InlineMathText text={description} /></p>}
+                <div key="overview" className="space-y-3">
+                    <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-800">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-purple-500 rounded-l-xl" />
+                        <h2 className="text-lg font-bold mb-1 text-blue-900 dark:text-blue-100 ml-2.5">
+                            <InlineMathText text={title} />
+                        </h2>
+                        {description && (
+                            <p className="text-sm text-blue-700 dark:text-blue-300 ml-2.5">
+                                <InlineMathText text={description} />
+                            </p>
+                        )}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="bg-card rounded-lg p-3 border">
-                            <div className="text-xs text-muted-foreground mb-1">Course</div>
-                            <div className="font-semibold text-sm">{course_name}</div>
+                    <div className="grid grid-cols-3 gap-2">
+                        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-lg p-2 border border-emerald-200 dark:border-emerald-800">
+                            <div className="text-[10px] uppercase font-semibold text-emerald-600 dark:text-emerald-400 mb-0.5">Course</div>
+                            <div className="font-semibold text-xs text-emerald-900 dark:text-emerald-100">{course_name}</div>
                         </div>
-                        <div className="bg-card rounded-lg p-3 border">
-                            <div className="text-xs text-muted-foreground mb-1">Topic</div>
-                            <div className="font-semibold text-sm">{topic_name}</div>
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg p-2 border border-blue-200 dark:border-blue-800">
+                            <div className="text-[10px] uppercase font-semibold text-blue-600 dark:text-blue-400 mb-0.5">Topic</div>
+                            <div className="font-semibold text-xs text-blue-900 dark:text-blue-100">{topic_name}</div>
                         </div>
-                        <div className="bg-card rounded-lg p-3 border">
-                            <div className="text-xs text-muted-foreground mb-1">Module</div>
-                            <div className="font-semibold text-sm">{module_name}</div>
+                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg p-2 border border-purple-200 dark:border-purple-800">
+                            <div className="text-[10px] uppercase font-semibold text-purple-600 dark:text-purple-400 mb-0.5">Module</div>
+                            <div className="font-semibold text-xs text-purple-900 dark:text-purple-100">{module_name}</div>
                         </div>
                     </div>
                 </div>
@@ -89,17 +110,26 @@ const MathProblem: React.FC<MathProblemProps> = ({
         if (stage === "intro" || stage === "solution") {
             if (stage === "intro") {
                 addContent(
-                    <p key="intro" className="text-base mb-4">
-                        <InlineMathText text={intro_text} />
-                    </p>
+                    <div key="intro" className="bg-blue-50/50 dark:bg-blue-950/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                        <p className="text-sm text-blue-900 dark:text-blue-100 leading-relaxed">
+                            <InlineMathText text={intro_text} />
+                        </p>
+                    </div>
                 );
             }
 
             addContent(
-                <div key="problem-statement" className="space-y-2 mb-4">
-                    <p className="text-base"><InlineMathText text={problem_statement.text} /></p>
-                    <BlockMath math={problem_statement.equation} />
-                    <p className="text-base"><InlineMathText text={problem_statement.instruction} /></p>
+                <div key="problem-statement" className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg p-3 border-2 border-amber-300 dark:border-amber-700">
+                    <div className="text-xs uppercase font-bold text-amber-700 dark:text-amber-400 mb-2">Problem</div>
+                    <p className="text-sm text-amber-900 dark:text-amber-100 mb-2">
+                        <InlineMathText text={problem_statement.text} />
+                    </p>
+                    <div className="bg-white/70 dark:bg-gray-900/70 rounded-lg p-2 mb-2 overflow-x-auto">
+                        <BlockMath math={problem_statement.equation} />
+                    </div>
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                        <InlineMathText text={problem_statement.instruction} />
+                    </p>
                 </div>
             );
         }
@@ -107,9 +137,12 @@ const MathProblem: React.FC<MathProblemProps> = ({
         if (stage === "solution") {
             const currentSolution = solutions[currentSolutionIndex];
             addContent(
-                <p key={`task-${currentSolutionIndex}`} className="text-base mb-4">
-                    <InlineMathText text={currentSolution.task} />
-                </p>
+                <div key={`task-${currentSolutionIndex}`} className="bg-indigo-50/50 dark:bg-indigo-950/20 rounded-lg p-3 border border-indigo-200 dark:border-indigo-800">
+                    <div className="text-xs uppercase font-bold text-indigo-700 dark:text-indigo-400 mb-1">Approach</div>
+                    <p className="text-sm text-indigo-900 dark:text-indigo-100">
+                        <InlineMathText text={currentSolution.task} />
+                    </p>
+                </div>
             );
 
             if (subStage === "steps") {
@@ -118,33 +151,88 @@ const MathProblem: React.FC<MathProblemProps> = ({
                 for (let i = 0; i <= maxStepIndex; i++) {
                     const step = currentSolution.steps[i];
                     if (step) {
+                        const stepColor = i % 3 === 0 ? 'emerald' : i % 3 === 1 ? 'blue' : 'purple';
+                        const colorClasses = {
+                            emerald: {
+                                bg: 'from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20',
+                                border: 'border-emerald-300 dark:border-emerald-700',
+                                text: 'text-emerald-700 dark:text-emerald-400',
+                                titleText: 'text-emerald-900 dark:text-emerald-100',
+                                accent: 'from-emerald-500 to-teal-500'
+                            },
+                            blue: {
+                                bg: 'from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20',
+                                border: 'border-blue-300 dark:border-blue-700',
+                                text: 'text-blue-700 dark:text-blue-400',
+                                titleText: 'text-blue-900 dark:text-blue-100',
+                                accent: 'from-blue-500 to-cyan-500'
+                            },
+                            purple: {
+                                bg: 'from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20',
+                                border: 'border-purple-300 dark:border-purple-700',
+                                text: 'text-purple-700 dark:text-purple-400',
+                                titleText: 'text-purple-900 dark:text-purple-100',
+                                accent: 'from-purple-500 to-pink-500'
+                            }
+                        }[stepColor];
+                        
                         addContent(
-                            <div key={`step-${currentSolutionIndex}-${i}`} className="mb-4">
-                                <h4 className="font-semibold text-lg"><InlineMathText text={step.title} /></h4>
-                                <BlockMath math={step.equation} />
-                                {step.explanation && <p className="text-base"><InlineMathText text={step.explanation} /></p>}
+                            <div key={`step-${currentSolutionIndex}-${i}`} className="relative">
+                                {/* Step separator line */}
+                                {i > 0 && (
+                                    <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent mb-2" />
+                                )}
+                                <div className={`relative bg-gradient-to-br ${colorClasses.bg} rounded-lg p-3 border-2 ${colorClasses.border}`}>
+                                    <div className={`absolute top-0 left-0 w-1 h-full bg-gradient-to-b ${colorClasses.accent} rounded-l-lg`} />
+                                    <div className="ml-2">
+                                        <h4 className={`font-bold text-sm mb-1.5 ${colorClasses.titleText}`}>
+                                            <InlineMathText text={step.title} />
+                                        </h4>
+                                        <div className="bg-white/70 dark:bg-gray-900/70 rounded-lg p-2 mb-1.5 overflow-x-auto">
+                                            <BlockMath math={step.equation} />
+                                        </div>
+                                        {step.explanation && (
+                                            <p className={`text-xs leading-relaxed ${colorClasses.text}`}>
+                                                <InlineMathText text={step.explanation} />
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         );
                     }
                 }
             } else if (subStage === "solutionAnswer") {
                 addContent(
-                    <div key={`final-answer-${currentSolutionIndex}`} className="space-y-2 mt-4">
-                        <h3 className="text-xl font-semibold">Final Answer</h3>
-                        <BlockMath math={currentSolution.solutionAnswer} />
+                    <div key={`final-answer-${currentSolutionIndex}`} className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-4 border-2 border-green-300 dark:border-green-700">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-1.5 h-6 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full" />
+                            <h3 className="text-sm font-bold text-green-900 dark:text-green-100">Final Answer</h3>
+                        </div>
+                        <div className="bg-white/80 dark:bg-gray-900/80 rounded-lg p-3 border border-green-200 dark:border-green-800 overflow-x-auto">
+                            <BlockMath math={currentSolution.solutionAnswer} />
+                        </div>
                     </div>
                 );
             } else if (subStage === "transition" && currentSolution.transitionText) {
                 addContent(
-                    <p key={`transition-${currentSolutionIndex}`} className="text-base">
-                        <InlineMathText text={currentSolution.transitionText} />
-                    </p>
+                    <div key={`transition-${currentSolutionIndex}`} className="bg-violet-50/50 dark:bg-violet-950/20 rounded-lg p-3 border border-violet-200 dark:border-violet-800">
+                        <p className="text-sm text-violet-900 dark:text-violet-100 italic">
+                            <InlineMathText text={currentSolution.transitionText} />
+                        </p>
+                    </div>
                 );
             } else if (subStage === "finalStatement") {
                 addContent(
-                    <p key="final-statement" className="text-base">
-                        <InlineMathText text={final_statement} />
-                    </p>
+                    <div key="final-statement" className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl p-4 border-2 border-teal-300 dark:border-teal-700">
+                        <div className="flex items-center gap-2 mb-2">
+                            <PartyPopper className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                            <h3 className="text-sm font-bold text-teal-900 dark:text-teal-100">Great Job!</h3>
+                        </div>
+                        <p className="text-sm text-teal-900 dark:text-teal-100 leading-relaxed">
+                            <InlineMathText text={final_statement} />
+                        </p>
+                    </div>
                 );
             }
         }
@@ -278,12 +366,13 @@ const MathProblem: React.FC<MathProblemProps> = ({
 
     return (
         <div className="flex flex-col h-full">
-            <Card className="flex-grow overflow-y-auto" ref={contentRef}>
-                <CardContent className="p-4">
-                    <div className="space-y-4">
+            <Card className="flex-grow overflow-y-auto overflow-x-hidden" ref={contentRef}>
+                <CardContent className="p-2 sm:p-3 pb-20">
+                    <div className="space-y-2 max-w-4xl mx-auto">
                         {displayedContent.map((content, index) => (
                             <motion.div
                                 key={index}
+                                ref={index === displayedContent.length - 1 ? lastContentRef : null}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3 }}

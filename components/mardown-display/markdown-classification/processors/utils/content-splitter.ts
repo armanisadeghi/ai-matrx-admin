@@ -712,6 +712,17 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             return { isMathProblem: false, isComplete: false };
         }
         
+        // Check for obvious placeholder text that indicates malformed JSON
+        // Common patterns: "array of s...", "[description]", etc.
+        const hasPlaceholderText = /\[(array|object|string|number|description|example|etc)[^\]]*\]/i.test(trimmed) ||
+                                   /:\s*array of/i.test(trimmed) ||
+                                   /:\s*object with/i.test(trimmed);
+        
+        if (hasPlaceholderText) {
+            // This is not valid JSON - it's a template or example with placeholders
+            return { isMathProblem: false, isComplete: false };
+        }
+        
         // More resilient completion check - look for closing braces that suggest completion
         // Count opening and closing braces to determine if JSON might be complete
         const openBraces = (trimmed.match(/\{/g) || []).length;
@@ -722,6 +733,12 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             return { isMathProblem: true, isComplete: false };
         }
         
+        // If we have more close than open, something is wrong - treat as complete to stop loading
+        if (closeBraces > openBraces) {
+            console.warn('[Math Problem Detection] Mismatched braces - treating as complete');
+            return { isMathProblem: true, isComplete: true };
+        }
+        
         // If braces are balanced and ends with }, likely complete
         const isLikelyComplete = trimmed.endsWith("}") && openBraces === closeBraces;
         
@@ -729,15 +746,28 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         if (isLikelyComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
-                const hasMathProblem = parsed && parsed.math_problem && 
-                                      parsed.math_problem.title && 
-                                      parsed.math_problem.problem_statement &&
-                                      Array.isArray(parsed.math_problem.solutions);
-                return { isMathProblem: hasMathProblem, isComplete: true };
+                // More lenient validation - just check for math_problem key and basic structure
+                const hasMathProblem = parsed && parsed.math_problem && typeof parsed.math_problem === 'object';
+                
+                if (hasMathProblem) {
+                    // Validate minimum required fields
+                    const problem = parsed.math_problem;
+                    const hasMinimumFields = problem.title && problem.problem_statement;
+                    
+                    if (!hasMinimumFields) {
+                        console.warn('[Math Problem Detection] Missing required fields, but JSON is valid - treating as complete');
+                    }
+                    
+                    return { isMathProblem: true, isComplete: true };
+                } else {
+                    // Has math_problem structure but invalid - treat as complete to avoid infinite loading
+                    console.warn('[Math Problem Detection] Invalid math_problem structure - treating as complete');
+                    return { isMathProblem: true, isComplete: true };
+                }
             } catch (error) {
-                // Parse failed but has correct start pattern - keep streaming
-                // This handles cases where JSON is malformed during streaming
-                return { isMathProblem: true, isComplete: false };
+                // Parse failed - if braces are balanced, treat as complete to stop infinite loading
+                console.warn('[Math Problem Detection] JSON parse failed with balanced braces - treating as complete', error);
+                return { isMathProblem: true, isComplete: true };
             }
         }
         

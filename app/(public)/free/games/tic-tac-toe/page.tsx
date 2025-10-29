@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { PartyPopper, Handshake } from 'lucide-react';
 
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -229,13 +230,15 @@ const TicTacToe = () => {
             </div>
           )}
           {gameStatus === 'won' && (
-            <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent animate-bounce">
-              🎉 Player {winner} Wins! 🎉
+            <div className="flex items-center justify-center gap-2 animate-bounce">
+              <PartyPopper className="w-8 h-8 text-yellow-400" />
+              <span className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">Player {winner} Wins!</span>
+              <PartyPopper className="w-8 h-8 text-orange-400" />
             </div>
           )}
           {gameStatus === 'draw' && (
-            <div className="text-3xl font-bold text-gray-300 animate-pulse">
-              It's a Draw! 🤝
+            <div className="flex items-center justify-center gap-2 text-3xl font-bold text-gray-300 animate-pulse">
+              It's a Draw! <Handshake className="w-8 h-8 text-gray-300" />
             </div>
           )}
         </div>

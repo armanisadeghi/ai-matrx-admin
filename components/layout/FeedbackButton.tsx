@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Send, X, Check } from 'lucide-react';
+import { MessageSquare, Send, X, Check, PartyPopper } from 'lucide-react';
 import { submitFeedback } from '@/actions/feedback.actions';
 import { FeedbackType } from '@/types/feedback.types';
 import { usePathname } from 'next/navigation';
@@ -142,7 +142,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                             {/* Tooltip */}
                             <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-50">
                                 <div className="bg-blue-600 text-white text-xs font-medium px-3 py-2 pr-8 rounded-lg shadow-lg whitespace-nowrap animate-bounce relative">
-                                    🎉 NEW! Report bugs & issues
+                                    <PartyPopper className="w-4 h-4 inline mr-1" /> NEW! Report bugs & issues
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

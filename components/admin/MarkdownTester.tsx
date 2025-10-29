@@ -96,52 +96,52 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
       
       <div className={containerClasses} style={{ height: availableHeight }}>
         {/* Fixed Header Section */}
-        <div className="flex-shrink-0 bg-textured border-b border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex-shrink-0 bg-textured border-b border-gray-200 dark:border-gray-700 px-4 py-2">
           {/* Title and Main Controls */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl font-semibold flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Markdown Content Tester
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-base font-semibold flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Markdown Content Tester
+            </h1>
+            <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowPreview(!showPreview)}
+                className="h-7 px-2"
               >
-                {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                {showPreview ? 'Hide Preview' : 'Show Preview'}
+                {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                <span className="ml-1.5 text-xs">{showPreview ? 'Hide' : 'Show'}</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFullScreen(!isFullScreen)}
+                className="h-7 px-2"
               >
-                {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                {isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+                <span className="ml-1.5 text-xs">{isFullScreen ? 'Exit' : 'Fullscreen'}</span>
               </Button>
             </div>
           </div>
 
           {/* Action Controls */}
-          <div className="flex items-center gap-2 flex-wrap mb-4">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {/* Update Mode Toggle */}
             <Button
               variant={isAutoMode ? "default" : "outline"}
               size="sm"
               onClick={toggleUpdateMode}
-              className="flex items-center gap-2"
+              className="h-7 px-2.5 text-xs"
             >
               {isAutoMode ? (
                 <>
-                  <Zap className="h-4 w-4" />
+                  <Zap className="h-3.5 w-3.5 mr-1.5" />
                   Auto
                 </>
               ) : (
                 <>
-                  <Hand className="h-4 w-4" />
+                  <Hand className="h-3.5 w-3.5 mr-1.5" />
                   Manual
                 </>
               )}
@@ -152,27 +152,28 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
               <Button
                 onClick={handleManualUpdate}
                 disabled={isUpdating}
-                className="flex items-center gap-2"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
               >
-                <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
-                {isUpdating ? 'Updating...' : 'Update Preview'}
+                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isUpdating ? 'animate-spin' : ''}`} />
+                {isUpdating ? 'Updating...' : 'Update'}
               </Button>
             )}
             
-            <Button variant="outline" size="sm" onClick={handleCopyInput}>
-              <Copy className="h-4 w-4 mr-2" />
-              Copy Input
+            <Button variant="outline" size="sm" onClick={handleCopyInput} className="h-7 px-2.5 text-xs">
+              <Copy className="h-3.5 w-3.5 mr-1.5" />
+              Copy
             </Button>
             
-            <Button variant="outline" size="sm" onClick={handleClear}>
+            <Button variant="outline" size="sm" onClick={handleClear} className="h-7 px-2.5 text-xs">
               Clear
             </Button>
 
-            <div className="ml-auto flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
+            <div className="ml-auto flex items-center gap-1.5">
+              <Badge variant="secondary" className="text-xs h-6">
                 {inputContent.length} chars
               </Badge>
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs h-6">
                 {inputContent.split('\n').length} lines
               </Badge>
             </div>
@@ -180,30 +181,29 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
         </div>
 
         {/* Main Content Area with Independent Scrolling */}
-        <div className={`flex-1 flex gap-4 p-4 min-h-0 ${showPreview ? '' : 'justify-center'}`}>
+        <div className={`flex-1 flex gap-3 p-3 min-h-0 ${showPreview ? '' : 'justify-center'}`}>
           {/* Input Column */}
-          <div className={`flex flex-col ${showPreview ? 'w-1/2' : 'w-full max-w-4xl'}`}>
-            <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+          <div className={`flex flex-col min-h-0 ${showPreview ? 'w-1/2' : 'w-full max-w-4xl'}`}>
+            <div className="flex items-center gap-2 mb-2 flex-shrink-0">
               <h3 className="text-sm font-medium">Input Content</h3>
               <Badge variant="outline" className="text-xs">Markdown/JSON</Badge>
             </div>
             
-            <div className="flex-1 min-h-0 overflow-auto border rounded-lg bg-textured border-gray-200 dark:border-gray-700">
+            <div className="flex-1 min-h-0 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 overflow-hidden">
               <PromptEditorContextMenu
                 getTextarea={getTextarea}
                 onContentInserted={handleContentInserted}
-                className="block min-h-full"
+                className="h-full"
               >
                 <textarea
                   ref={textareaRef}
                   value={inputContent}
                   onChange={(e) => setInputContent(e.target.value)}
-                  className="w-full min-h-full p-4 font-mono text-sm resize-none focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 border-0"
+                  className="w-full h-full p-3 font-mono text-sm resize-none focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 border-0"
                   placeholder="Enter your markdown, JSON, or mixed content here...
                   
 Right-click for content block templates!"
                   spellCheck={false}
-                  rows={Math.max(20, inputContent.split('\n').length + 5)}
                 />
               </PromptEditorContextMenu>
             </div>
@@ -213,11 +213,11 @@ Right-click for content block templates!"
           {showPreview && (
             <>
               <Separator orientation="vertical" className="self-stretch" />
-              <div className="flex flex-col w-1/2">
-                <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+              <div className="flex flex-col min-h-0 w-1/2">
+                <div className="flex items-center gap-2 mb-2 flex-shrink-0">
                   <h3 className="text-sm font-medium">Rendered Output</h3>
                   <Badge variant="outline" className="text-xs">
-                    {isAutoMode ? 'Auto Preview' : 'Manual Preview'}
+                    {isAutoMode ? 'Auto' : 'Manual'}
                   </Badge>
                   <Badge variant="secondary" className="text-xs">
                     <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -225,9 +225,9 @@ Right-click for content block templates!"
                   </Badge>
                 </div>
 
-                <div className="flex-1 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 min-h-0">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-2 mx-4 mt-4">
+                <div className="flex-1 border rounded-lg bg-textured border-gray-200 dark:border-gray-700 min-h-0 flex flex-col overflow-hidden">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+                    <TabsList className="grid w-full grid-cols-2 mx-3 mt-2 mb-0 flex-shrink-0">
                       <TabsTrigger value="enhanced-markdown" className="text-xs">
                         EnhancedMarkdown
                       </TabsTrigger>
@@ -236,7 +236,7 @@ Right-click for content block templates!"
                       </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="enhanced-markdown" className="flex-1 overflow-auto m-0 p-4">
+                    <TabsContent value="enhanced-markdown" className="flex-1 overflow-auto m-0 p-3 mt-0">
                       <EnhancedChatMarkdown
                         content={renderedContent}
                         className="bg-textured"
@@ -248,7 +248,7 @@ Right-click for content block templates!"
                       />
                     </TabsContent>
 
-                    <TabsContent value="speech-text" className="flex-1 overflow-auto m-0 p-4">
+                    <TabsContent value="speech-text" className="flex-1 overflow-auto m-0 p-3 mt-0">
                       <div className="font-mono text-sm whitespace-pre-wrap break-words bg-textured text-gray-900 dark:text-gray-100">
                         {parseMarkdownToText(renderedContent)}
                       </div>

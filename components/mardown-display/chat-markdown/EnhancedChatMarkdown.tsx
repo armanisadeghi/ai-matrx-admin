@@ -53,7 +53,7 @@ import { parseDiagramJSON } from "../blocks/diagram/parseDiagramJSON";
 import ReasoningVisualization from "../blocks/thinking-reasoning/ReasoningVisualization";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
 import { useAppSelector } from "@/lib/redux";
-import { createTaskResponseSelectors } from "@/lib/redux/socket-io";
+import { createTaskResponseSelectors, selectPrimaryResponseToolUpdatesByTaskId } from "@/lib/redux/socket-io";
 import MathProblemBlock from "../blocks/math/MathProblemBlock";
 import MathProblemLoadingVisualization from "../blocks/math/MathProblemLoadingVisualization";
 
@@ -91,17 +91,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     // Check if we should show loading state (taskId exists but no content yet)
     const isWaitingForContent = taskId && !content.trim();
 
-    // Get tool updates if taskId is provided
-    const responseSelectors = useMemo(() => 
-        taskId ? createTaskResponseSelectors(taskId) : null, 
-        [taskId]
-    );
-    
-
-    // Replace with selectPrimaryResponseToolUpdatesByTaskId selector
-    const toolUpdates = useAppSelector((state) => 
-        responseSelectors ? responseSelectors.selectToolUpdates(state) : []
-    );
+    const toolUpdates = useAppSelector(selectPrimaryResponseToolUpdatesByTaskId(taskId));
 
     // Update internal content when prop changes - but prevent infinite loops
     useEffect(() => {
@@ -756,7 +746,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         if (mathProblemData && mathProblemData.math_problem) {
                             return <MathProblemBlock key={index} problemData={mathProblemData} />;
                         }
-                        // If parsing failed, fall back to code block
+                        // If parsing succeeded but structure is wrong, fall back to code block
                         return (
                             <CodeBlock
                                 key={index}
@@ -768,7 +758,13 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                             />
                         );
                     } catch (error) {
-                        console.error("Failed to parse math problem JSON:", error);
+                        // Only log in development mode - this is expected for malformed JSON during streaming
+                        if (process.env.NODE_ENV === 'development') {
+                            console.warn("Math problem JSON parsing failed (displaying as code block):", {
+                                error: error instanceof Error ? error.message : String(error),
+                                contentPreview: block.content.substring(0, 100) + '...'
+                            });
+                        }
                         // Fall back to showing as code block if parsing fails
                         return (
                             <CodeBlock
