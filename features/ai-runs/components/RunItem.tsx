@@ -51,35 +51,16 @@ export function RunItem({ run, isActive, onClick, onStar, compact = false }: Run
           : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-850"
       )}
     >
-      {/* Single line layout */}
-      <div className="flex items-start gap-1.5">
-        {/* Star button */}
-        {onStar && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onStar();
-            }}
-            className={cn(
-              "flex-shrink-0 p-0.5 rounded transition-colors mt-0.5",
-              run.is_starred
-                ? "text-yellow-500 hover:text-yellow-600"
-                : "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100"
-            )}
-          >
-            <Star className={cn("w-3 h-3", run.is_starred && "fill-current")} />
-          </button>
-        )}
+      {/* Content - full width */}
+      <div className="flex flex-col gap-0.5">
+        {/* Variables display - primary identifier */}
+        <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate pr-1">
+          {variableDisplay}
+        </div>
         
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Variables display - primary identifier */}
-          <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
-            {variableDisplay}
-          </div>
-          
-          {/* Time and message count - secondary info */}
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        {/* Time, message count, and star - secondary info */}
+        <div className="flex items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <span className="truncate">{timeAgo}</span>
             <span className="text-gray-300 dark:text-gray-700">•</span>
             <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -87,6 +68,24 @@ export function RunItem({ run, isActive, onClick, onStar, compact = false }: Run
               <span>{run.message_count}</span>
             </div>
           </div>
+          
+          {/* Star button - right aligned */}
+          {onStar && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onStar();
+              }}
+              className={cn(
+                "flex-shrink-0 p-0.5 rounded transition-colors",
+                run.is_starred
+                  ? "text-yellow-500 hover:text-yellow-600"
+                  : "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100"
+              )}
+            >
+              <Star className={cn("w-3 h-3", run.is_starred && "fill-current")} />
+            </button>
+          )}
         </div>
       </div>
 

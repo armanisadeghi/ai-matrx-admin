@@ -11,6 +11,7 @@ import { PartyPopper } from "lucide-react";
 import { MathProblemProps, Solution } from "../types";
 import ControlPanel from "./ControlPanel";
 import InlineMathText from "./InlineMathText";
+import SolutionAnswer from "./SolutionAnswer";
 
 const MathProblem: React.FC<MathProblemProps> = ({
     id,
@@ -43,23 +44,55 @@ const MathProblem: React.FC<MathProblemProps> = ({
         rebuildContent();
     }, []);
 
-    // Auto-scroll to bottom when content changes, accounting for control panel
-    useEffect(() => {
-        if (lastContentRef.current) {
-            // Scroll the element into view with extra space at the bottom
-            lastContentRef.current.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'end'
-            });
-            // Add extra scroll to account for the control panel height
-            if (contentRef.current) {
-                setTimeout(() => {
-                    if (contentRef.current) {
-                        contentRef.current.scrollTop += 20; // Extra space buffer
-                    }
-                }, 100);
+    // Helper: Find the actual scrollable container (could be Card or a parent)
+    const findScrollContainer = (): HTMLElement | null => {
+        let element: HTMLElement | null = contentRef.current;
+        
+        // Check up to 5 levels of parents
+        for (let i = 0; i < 5 && element; i++) {
+            const { overflowY, overflowX, overflow } = window.getComputedStyle(element);
+            const hasScroll = 
+                overflowY === 'auto' || overflowY === 'scroll' ||
+                overflowX === 'auto' || overflowX === 'scroll' ||
+                overflow === 'auto' || overflow === 'scroll';
+            
+            if (hasScroll && element.scrollHeight > element.clientHeight) {
+                return element;
             }
+            element = element.parentElement;
         }
+        
+        return contentRef.current;
+    };
+
+    // Auto-scroll when content changes - wait for animation to complete
+    useEffect(() => {
+        if (!lastContentRef.current) return;
+
+        setTimeout(() => {
+            const scrollContainer = findScrollContainer();
+            if (!scrollContainer || !lastContentRef.current) return;
+
+            // Get absolute positions
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const lastElementRect = lastContentRef.current.getBoundingClientRect();
+            
+            // Calculate how much to scroll to position new content in lower 3/4 of viewport
+            const viewportHeight = containerRect.height;
+            const targetPosition = viewportHeight * 0.25; // Position at 25% from top
+            
+            // Distance from top of container to last element
+            const elementOffsetFromContainerTop = lastElementRect.top - containerRect.top + scrollContainer.scrollTop;
+            
+            // Calculate target scroll position
+            const targetScroll = elementOffsetFromContainerTop - targetPosition;
+            
+            // Smooth scroll to position
+            scrollContainer.scrollTo({
+                top: Math.max(0, targetScroll),
+                behavior: 'smooth'
+            });
+        }, 350); // Wait for framer-motion animation to complete
     }, [displayedContent]);
 
     const isLastSolution = (index: number = currentSolutionIndex) => index === solutions.length - 1;
@@ -210,7 +243,7 @@ const MathProblem: React.FC<MathProblemProps> = ({
                             <h3 className="text-sm font-bold text-green-900 dark:text-green-100">Final Answer</h3>
                         </div>
                         <div className="bg-white/80 dark:bg-gray-900/80 rounded-lg p-3 border border-green-200 dark:border-green-800 overflow-x-auto">
-                            <BlockMath math={currentSolution.solutionAnswer} />
+                            <SolutionAnswer answer={currentSolution.solutionAnswer} />
                         </div>
                     </div>
                 );

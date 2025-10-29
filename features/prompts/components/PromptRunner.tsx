@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
@@ -47,7 +47,11 @@ interface PromptRunnerProps {
 export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
+    
+    // Get runId from URL query parameter
+    const urlRunId = searchParams.get('runId');
     
     // Mobile detection
     const [isMobile, setIsMobile] = useState(false);
@@ -142,10 +146,11 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Track if conversation has started (for showing/hiding variables)
     const [conversationStarted, setConversationStarted] = useState(false);
     
-    // AI Runs tracking
-    const { run, createRun, createTask, updateTask, completeTask, addMessage } = useAiRun();
+    // AI Runs tracking - pass urlRunId to load existing run
+    const { run, createRun, createTask, updateTask, completeTask, addMessage, isLoading: isLoadingRun } = useAiRun(urlRunId || undefined);
     const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
     const updateTaskTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [hasLoadedRun, setHasLoadedRun] = useState(false);
     
     // Ref for auto-scrolling
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -158,6 +163,51 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     const isResponseEnded = useAppSelector((state) =>
         currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
     );
+    
+    // Load run messages when a run is loaded
+    useEffect(() => {
+        if (run && !hasLoadedRun && run.messages && run.messages.length > 0) {
+            console.log('📥 Loading run:', run.id, 'with', run.messages.length, 'messages');
+            
+            // Load the messages into the conversation
+            const loadedMessages = run.messages.map(msg => ({
+                role: msg.role,
+                content: msg.content,
+                taskId: msg.taskId,
+                metadata: msg.metadata,
+            }));
+            
+            setConversationMessages(loadedMessages);
+            
+            // Build API conversation history (exclude system messages for API)
+            const apiHistory = run.messages
+                .filter(msg => msg.role !== 'system')
+                .map(msg => ({
+                    role: msg.role,
+                    content: msg.content,
+                }));
+            setApiConversationHistory(apiHistory);
+            
+            // Load variable values from the run
+            if (run.variable_values && Object.keys(run.variable_values).length > 0) {
+                setVariableDefaults(prev => 
+                    prev.map(v => ({
+                        ...v,
+                        defaultValue: run.variable_values[v.name] || v.defaultValue
+                    }))
+                );
+            }
+            
+            // Mark conversation as started
+            setConversationStarted(true);
+            setHasLoadedRun(true);
+        }
+    }, [run, hasLoadedRun]);
+    
+    // Reset hasLoadedRun when urlRunId changes
+    useEffect(() => {
+        setHasLoadedRun(false);
+    }, [urlRunId]);
     
     // Helper function to replace variables in content
     const replaceVariables = (content: string): string => {
@@ -405,6 +455,11 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 });
                 
                 console.log('✅ Run created:', currentRun.id, '-', runName);
+                
+                // Update URL with the new runId
+                const url = new URL(window.location.href);
+                url.searchParams.set('runId', currentRun.id);
+                router.replace(url.pathname + url.search);
             }
             
             let messagesToSend: PromptMessage[];
@@ -517,7 +572,31 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         setApiConversationHistory([]);
         setLastMessageStats(null);
         setConversationStarted(false);
+        setHasLoadedRun(false);
+        
+        // Clear the runId from URL to start fresh
+        const url = new URL(window.location.href);
+        url.searchParams.delete('runId');
+        router.replace(url.pathname + url.search);
     };
+    
+    // Handle run selection from sidebar
+    const handleRunSelect = useCallback((runId: string) => {
+        console.log('🔄 Switching to run:', runId);
+        
+        // Update URL with the selected runId
+        const url = new URL(window.location.href);
+        url.searchParams.set('runId', runId);
+        router.push(url.pathname + url.search);
+        
+        // Reset states for new run
+        setHasLoadedRun(false);
+        setConversationMessages([]);
+        setApiConversationHistory([]);
+        setCurrentTaskId(null);
+        setIsTestingPrompt(false);
+        setLastMessageStats(null);
+    }, [router]);
     
     return (
         <>
@@ -599,8 +678,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         promptName={promptData.name}
                         currentRunId={run?.id}
                         onRunSelect={(runId) => {
-                            // TODO: Load and resume the selected run
-                            console.log('Selected run:', runId);
+                            handleRunSelect(runId);
                             // Close sidebar on mobile after selection
                             setShowSidebarOnMobile(false);
                         }}
@@ -618,10 +696,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                 promptId={promptData.id}
                                 promptName={promptData.name}
                                 currentRunId={run?.id}
-                                onRunSelect={(runId) => {
-                                    // TODO: Load and resume the selected run
-                                    console.log('Selected run:', runId);
-                                }}
+                                onRunSelect={handleRunSelect}
                             />
                         ) : undefined
                     }
@@ -636,7 +711,12 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                 msOverflowStyle: 'none',
                             }}
                         >
-                            {displayMessages.length === 0 ? (
+                            {isLoadingRun ? (
+                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-gray-400 dark:text-gray-600">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                                    <p className="text-lg font-medium">Loading run...</p>
+                                </div>
+                            ) : displayMessages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-gray-400 dark:text-gray-600">
                                     <MessageSquare className="w-16 h-16 mb-4" />
                                     <p className="text-lg font-medium">Ready to run your prompt</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { History, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,8 @@ import {
 import { RunsList } from "./RunsList";
 import { aiRunsService } from "../services/ai-runs-service";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 interface PromptRunsSidebarProps {
   promptId: string;
@@ -20,7 +22,11 @@ interface PromptRunsSidebarProps {
   onRunSelect?: (runId: string) => void;
 }
 
-type ViewMode = 'current-prompt' | 'all-prompts';
+interface PromptListItem {
+  id: string;
+  name: string;
+  description: string | null;
+}
 
 export function PromptRunsSidebar({
   promptId,
@@ -28,11 +34,36 @@ export function PromptRunsSidebar({
   currentRunId,
   onRunSelect,
 }: PromptRunsSidebarProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('current-prompt');
+  const router = useRouter();
+  const [prompts, setPrompts] = useState<PromptListItem[]>([]);
+  const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
 
-  const filters = viewMode === 'current-prompt'
-    ? { source_type: 'prompt' as const, source_id: promptId, limit: 20 }
-    : { source_type: 'prompt' as const, limit: 50 };
+  // Fetch all prompts for the dropdown
+  useEffect(() => {
+    const fetchPrompts = async () => {
+      setIsLoadingPrompts(true);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('prompts')
+          .select('id, name, description')
+          .order('name', { ascending: true });
+        
+        if (error) throw error;
+        
+        setPrompts(data || []);
+      } catch (error) {
+        console.error('Error fetching prompts:', error);
+      } finally {
+        setIsLoadingPrompts(false);
+      }
+    };
+    
+    fetchPrompts();
+  }, []);
+
+  // Always show runs for current prompt
+  const filters = { source_type: 'prompt' as const, source_id: promptId, limit: 20 };
 
   const handleRunStar = async (runId: string) => {
     try {
@@ -41,6 +72,11 @@ export function PromptRunsSidebar({
     } catch (error) {
       console.error('Error toggling star:', error);
     }
+  };
+
+  const handlePromptChange = (newPromptId: string) => {
+    // Navigate to the new prompt's run page
+    router.push(`/ai/prompts/run/${newPromptId}`);
   };
 
   return (
@@ -54,37 +90,49 @@ export function PromptRunsSidebar({
           </h2>
         </div>
 
-        {/* View mode selector - compact */}
+        {/* Prompt selector - shows current prompt with dropdown to switch */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
               size="sm"
               className="w-full justify-between text-xs h-7 px-2"
+              disabled={isLoadingPrompts}
             >
               <span className="truncate">
-                {viewMode === 'current-prompt' ? 'This Prompt' : 'All Prompts'}
+                {promptName}
               </span>
               <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[200px]">
-            <DropdownMenuItem onClick={() => setViewMode('current-prompt')}>
-              <div className="flex flex-col">
-                <span className="font-medium text-xs">This Prompt</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {promptName}
-                </span>
+          <DropdownMenuContent align="start" className="w-[240px] max-h-[300px] overflow-y-auto">
+            {prompts.length === 0 ? (
+              <div className="px-2 py-1.5 text-xs text-gray-500 dark:text-gray-400">
+                {isLoadingPrompts ? 'Loading...' : 'No prompts found'}
               </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setViewMode('all-prompts')}>
-              <div className="flex flex-col">
-                <span className="font-medium text-xs">All Prompts</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  View all your runs
-                </span>
-              </div>
-            </DropdownMenuItem>
+            ) : (
+              prompts.map((prompt) => (
+                <DropdownMenuItem
+                  key={prompt.id}
+                  onClick={() => handlePromptChange(prompt.id)}
+                  disabled={prompt.id === promptId}
+                  className={cn(
+                    prompt.id === promptId && "bg-blue-50 dark:bg-blue-950/30"
+                  )}
+                >
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="font-medium text-xs truncate">
+                      {prompt.name}
+                    </span>
+                    {prompt.description && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {prompt.description}
+                      </span>
+                    )}
+                  </div>
+                </DropdownMenuItem>
+              ))
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -97,16 +145,8 @@ export function PromptRunsSidebar({
           onRunClick={onRunSelect}
           onRunStar={handleRunStar}
           compact
-          emptyMessage={
-            viewMode === 'current-prompt' 
-              ? "No runs yet" 
-              : "No runs"
-          }
-          emptySubmessage={
-            viewMode === 'current-prompt'
-              ? "Start a conversation"
-              : "Run a prompt to see history"
-          }
+          emptyMessage="No runs yet"
+          emptySubmessage="Start a conversation"
         />
       </div>
     </div>

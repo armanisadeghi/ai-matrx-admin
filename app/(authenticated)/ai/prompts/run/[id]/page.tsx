@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { PromptRunner } from "@/features/prompts/components/PromptRunner";
+import { Suspense } from "react";
 
 // Cache AI models data for 12 hours
 export const revalidate = 43200;
@@ -94,6 +95,17 @@ export default async function RunPromptPage({
         settings: prompt.settings || {},
     };
 
-    return <PromptRunner models={aiModels} promptData={promptData} />;
+    return (
+        <Suspense fallback={
+            <div className="h-[calc(100vh-3rem)] flex items-center justify-center bg-textured">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Loading prompt runner...</p>
+                </div>
+            </div>
+        }>
+            <PromptRunner models={aiModels} promptData={promptData} />
+        </Suspense>
+    );
 }
 

@@ -6,9 +6,10 @@ import 'katex/dist/katex.min.css';
 import {BlockMath} from 'react-katex';
 import {motion} from 'framer-motion';
 import {Card, CardContent} from '@/components/ui/card';
-import {Problem} from '../../../../../features/math/types/algebraGuideTypes';
 import ControlPanel from './ControlPanel';
 import {BackgroundGradient} from "@/components/ui";
+import SolutionAnswer from "./SolutionAnswer";
+import { MathProblemProps } from '../types';
 
 type FlowPosition = {
     stage: 'overview' | 'intro' | 'problem' | 'task' | 'step' | 'solutionAnswer' | 'transition' | 'finalStatement' | 'congratulations';
@@ -17,16 +18,16 @@ type FlowPosition = {
     partIndex?: number; // For parts within a step
 };
 
-const MathProblem: React.FC<Problem> = (
+const MathProblem: React.FC<MathProblemProps> = (
     {
         title,
-        courseName,
-        topicName,
-        moduleName,
+        course_name,
+        topic_name,
+        module_name,
         description,
-        introText,
-        finalStatement,
-        problemStatement,
+        intro_text,
+        final_statement,
+        problem_statement,
         solutions,
     }) => {
     const router = useRouter();
@@ -185,24 +186,24 @@ const MathProblem: React.FC<Problem> = (
             content.push(<h2 key="title" className="text-2xl font-bold mb-4">{title}</h2>);
             content.push(
                 <div key="overview" className="space-y-2 mb-4">
-                    <p className="text-base">Course: {courseName}</p>
-                    <p className="text-base">Topic: {topicName}</p>
-                    <p className="text-base">Module: {moduleName}</p>
+                    <p className="text-base">Course: {course_name}</p>
+                    <p className="text-base">Topic: {topic_name}</p>
+                    <p className="text-base">Module: {module_name}</p>
                     <p className="text-base">{description}</p>
                 </div>
             );
         }
 
         if (position.stage === 'intro' || position.stage !== 'overview') {
-            content.push(<p key="introText" className="text-base">{introText}</p>);
+            content.push(<p key="introText" className="text-base">{intro_text}</p>);
         }
 
         if (position.stage === 'problem' || ['task', 'step', 'solutionAnswer', 'transition', 'finalStatement', 'congratulations'].includes(position.stage)) {
             content.push(
                 <div key="problemStatement" className="space-y-2">
-                    <p className="text-base">{problemStatement.text}</p>
-                    <BlockMath math={problemStatement.equation}/>
-                    <p className="text-base">{problemStatement.instruction}</p>
+                    <p className="text-base">{problem_statement.text}</p>
+                    <BlockMath math={problem_statement.equation}/>
+                    <p className="text-base">{problem_statement.instruction}</p>
                 </div>
             );
         }
@@ -240,7 +241,7 @@ const MathProblem: React.FC<Problem> = (
             content.push(
                 <div key={`solutionAnswer-${solutionIndex}`} className="space-y-2 mt-4">
                     <h3 className="text-xl font-semibold">Final Answer</h3>
-                    <BlockMath math={solutions[solutionIndex].solutionAnswer}/>
+                    <SolutionAnswer answer={solutions[solutionIndex].solutionAnswer} />
                 </div>
             );
         }
@@ -254,7 +255,7 @@ const MathProblem: React.FC<Problem> = (
         }
 
         if (position.stage === 'finalStatement') {
-            content.push(<p key="finalStatement" className="mt-4 text-base">{finalStatement}</p>);
+            content.push(<p key="finalStatement" className="mt-4 text-base">{final_statement}</p>);
         }
 
         if (position.stage === 'congratulations') {

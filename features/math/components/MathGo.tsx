@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { MathProblemProps } from "../types";
 import ControlPanel from "./ControlPanel";
 import { BackgroundGradient } from "@/components/ui";
+import SolutionAnswer from "./SolutionAnswer";
 
 const MathProblem: React.FC<MathProblemProps> = ({
     id,
@@ -123,7 +124,7 @@ const MathProblem: React.FC<MathProblemProps> = ({
                 addContent(
                     <div key={`final-answer-${solutionIndex}`} className="space-y-2 mt-4">
                         <h3 className="text-xl font-semibold">Final Answer</h3>
-                        <BlockMath math={solution.solutionAnswer} />
+                        <SolutionAnswer answer={solution.solutionAnswer} />
                     </div>
                 );
             } else if (currentSubStage === "transition" && solution.transitionText) {
