@@ -44,7 +44,7 @@ export function RunsList({
   return (
     <div className="h-full flex flex-col">
       {/* Runs list - scrollable */}
-      <div className="flex-1 overflow-y-auto space-y-2 px-3 py-2">
+      <div className="flex-1 overflow-y-auto space-y-1 px-2 py-2">
         {runs.map((run) => (
           <RunItem
             key={run.id}
@@ -59,17 +59,17 @@ export function RunsList({
 
       {/* Load more button */}
       {hasMore && (
-        <div className="border-t border-gray-200 dark:border-gray-800 p-3">
+        <div className="border-t border-gray-200 dark:border-gray-800 px-2 py-2">
           <Button
             onClick={loadMore}
             disabled={isLoading}
             variant="outline"
-            className="w-full"
+            className="w-full text-xs h-7"
             size="sm"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
                 Loading...
               </>
             ) : (

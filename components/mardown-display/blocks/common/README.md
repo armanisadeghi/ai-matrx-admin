@@ -1,119 +1,192 @@
-# Common Content Block Components
+# ContentBlockWrapper
 
-## ContentBlockWrapper
+A reusable wrapper component that provides consistent UI and functionality for all content blocks (quizzes, math problems, presentations, etc.) in the markdown display system.
 
-A reusable wrapper component for content blocks (quizzes, presentations, math problems, etc.) that provides consistent functionality across all content types.
+## What It Provides
 
-### Features
-
-- **Fullscreen Mode**: Toggle between inline and fullscreen display
+- **Fullscreen Mode**: Toggle focus mode with ESC key support
 - **Canvas Integration**: Open content in the Canvas workspace
-- **Download/Upload**: Save and load content as JSON files
-- **Save Management**: Display save status and manual save button
-- **Custom Actions**: Add block-specific actions with custom icons
-- **Responsive**: Adapts to different screen sizes
-- **Keyboard Support**: ESC to exit fullscreen
+- **File Operations**: Download/upload content as JSON
+- **Action Buttons**: Consistent action bar with custom actions support
+- **Save Management**: Visual save status indicators
+- **Responsive**: Adapts to all screen sizes
+- **Dark Mode**: Full theme support
 
-### Basic Usage
+## Basic Usage
 
 ```tsx
-import { ContentBlockWrapper } from '@/components/mardown-display/blocks/common';
+import ContentBlockWrapper from "@/components/mardown-display/blocks/common/ContentBlockWrapper";
 
 <ContentBlockWrapper
-    title="My Content Title"
-    subtitle="Category or Module"
-    onDownload={() => downloadMyContent()}
-    onUpload={async () => await uploadMyContent()}
+    title="My Content"
+    subtitle="Category"
+    canvasType="my_type"
+    canvasData={data}
+    onDownload={handleDownload}
+    onUpload={handleUpload}
     allowFullscreen={true}
 >
     <YourContentComponent />
 </ContentBlockWrapper>
 ```
 
-### Props
+## Key Props
 
-#### Content
-- `children`: ReactNode - The main content to display
-- `title`: string (optional) - Title shown in header
-- `subtitle`: string (optional) - Subtitle/category badge
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | ReactNode | Your content component |
+| `title` | string | Header title |
+| `subtitle` | string | Category badge |
+| `canvasType` | CanvasContentType | Type for canvas integration |
+| `canvasData` | any | Data to pass to canvas |
+| `onDownload` | () => void | Download handler |
+| `onUpload` | () => Promise<void> | Upload handler |
+| `onSave` | () => Promise<void> | Save handler |
+| `customActions` | ContentBlockAction[] | Additional action buttons |
+| `allowFullscreen` | boolean | Enable fullscreen toggle |
 
-#### Canvas Integration
-- `enableCanvas`: boolean (default: true) - Show canvas button
-- `canvasType`: string - Type identifier for canvas
-- `canvasData`: any - Data to pass to canvas
-- `canvasMetadata`: Record<string, any> - Additional metadata
+See `ContentBlockWrapper.tsx` for complete prop list.
 
-#### Save/Download
-- `onDownload`: () => void - Download handler
-- `onUpload`: () => Promise<void> - Upload handler
-- `onSave`: () => Promise<void> - Manual save handler
-- `isSaving`: boolean - Save in progress indicator
-- `lastSaved`: Date | null - Last save timestamp
-- `saveError`: string | null - Save error message
+## Adding a New Content Block
 
-#### Fullscreen
-- `defaultFullscreen`: boolean - Start in fullscreen
-- `allowFullscreen`: boolean (default: true) - Enable fullscreen toggle
-- `closeOnEscape`: boolean (default: true) - ESC closes fullscreen
+### 1. Define the Type
 
-#### Custom Actions
-- `customActions`: ContentBlockAction[] - Additional action buttons
-
-```ts
-{
-    icon: LucideIcon,
-    tooltip: string,
-    onClick: () => void,
-    disabled?: boolean,
-    className?: string,
-    hidden?: boolean
-}
+Add to `CanvasContentType` in `lib/redux/slices/canvasSlice.ts`:
+```typescript
+export type CanvasContentType = 'quiz' | 'your_type' | ...
 ```
 
-#### Styling
-- `className`: string - Wrapper classes
-- `contentClassName`: string - Content area classes
-- `fullscreenClassName`: string - Fullscreen mode classes
+### 2. Add JSON Detection
 
-#### Other
-- `headerContent`: ReactNode - Custom content in header
+In `content-splitter.ts` (~line 700), add detection function:
+```typescript
+const isYourTypeJson = (jsonContent: string): { isYourType: boolean; isComplete: boolean } => {
+    const trimmed = jsonContent.trim();
+    
+    // Fast check
+    if (!trimmed.startsWith('{\n  "your_type"')) {
+        return { isYourType: false, isComplete: false };
+    }
+    
+    // Brace counting for streaming
+    const openBraces = (trimmed.match(/\{/g) || []).length;
+    const closeBraces = (trimmed.match(/\}/g) || []).length;
+    
+    if (openBraces > closeBraces) {
+        return { isYourType: true, isComplete: false };
+    }
+    
+    // Validate when complete
+    if (trimmed.endsWith("}") && openBraces === closeBraces) {
+        try {
+            const parsed = JSON.parse(trimmed);
+            return { isYourType: !!parsed?.your_type, isComplete: true };
+        } catch {
+            return { isYourType: true, isComplete: false };
+        }
+    }
+    
+    return { isYourType: true, isComplete: false };
+};
+```
 
-### Example: Math Problem Block
+Add to `ContentBlock` type and processing loop.
+
+### 3. Create Your Component
 
 ```tsx
-<ContentBlockWrapper
-    title={problem.title}
-    subtitle={`${problem.topic_name} • ${problem.module_name}`}
-    enableCanvas={true}
-    canvasType="math_problem"
-    canvasData={problemData}
-    canvasMetadata={{
-        title: problem.title,
-        course: problem.course_name
-    }}
-    onDownload={handleDownload}
-    onUpload={handleUpload}
-    customActions={[
-        {
-            icon: Database,
-            tooltip: "Save to database",
-            onClick: handleSaveToDb,
-            className: "bg-indigo-500 text-white"
-        }
-    ]}
-    allowFullscreen={true}
->
-    <MathProblem {...problem} />
+// blocks/your-type/YourTypeBlock.tsx
+"use client";
+
+import ContentBlockWrapper from "../common/ContentBlockWrapper";
+
+interface YourTypeBlockProps {
+    yourData: { your_type: { /* structure */ } };
+}
+
+const YourTypeBlock: React.FC<YourTypeBlockProps> = ({ yourData }) => {
+    const handleDownload = () => {
+        const json = JSON.stringify(yourData, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'content.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+    
+    return (
+        <ContentBlockWrapper
+            title={yourData.your_type.title}
+            canvasType="your_type"
+            canvasData={yourData}
+            onDownload={handleDownload}
+            allowFullscreen={true}
+        >
+            {/* Your content here */}
+        </ContentBlockWrapper>
+    );
+};
+
+export default YourTypeBlock;
+```
+
+### 4. Add to EnhancedChatMarkdown
+
+In `EnhancedChatMarkdown.tsx`, import and add render case:
+```typescript
+import YourTypeBlock from "../blocks/your-type/YourTypeBlock";
+
+// In renderBlock():
+case "your_type":
+    if (!block.complete) {
+        return <LoadingVisualization key={index} />;
+    }
+    try {
+        const parsed = JSON.parse(block.content);
+        return <YourTypeBlock key={index} yourData={parsed} />;
+    } catch (error) {
+        return <ErrorDisplay key={index} />;
+    }
+```
+
+### 5. Add Canvas Support
+
+In `CanvasRenderer.tsx`:
+- Import your component
+- Add to `getDefaultTitle()` and `getSubtitle()` helpers
+- Add render case in `renderContent()`
+
+## Custom Actions
+
+Add block-specific buttons:
+```tsx
+const customActions = [
+    {
+        icon: YourIcon,
+        tooltip: "Custom action",
+        onClick: handleAction,
+        className: "bg-blue-500 text-white hover:bg-blue-600"
+    }
+];
+
+<ContentBlockWrapper customActions={customActions}>
+    ...
 </ContentBlockWrapper>
 ```
 
-### Migrating Existing Blocks
+## Key Files to Modify
 
-1. Import the wrapper
-2. Wrap your content component
-3. Move action buttons to props
-4. Remove custom fullscreen logic
-5. Add canvas/save integration
+1. `lib/redux/slices/canvasSlice.ts` - Add type definition
+2. `content-splitter.ts` - Add JSON detection
+3. `EnhancedChatMarkdown.tsx` - Add rendering
+4. `CanvasRenderer.tsx` - Add canvas support
+5. Create your block component
 
-The wrapper handles all common functionality while allowing blocks to maintain their custom logic and appearance.
+## Notes
 
+- **Streaming Resilience**: Use brace counting, not just `endsWith("}")`
+- **Type Safety**: Always validate JSON structure before accessing fields
+- **Error Handling**: Wrap JSON parsing in try-catch blocks
+- **Testing**: Test with streaming JSON, complete JSON, and malformed input

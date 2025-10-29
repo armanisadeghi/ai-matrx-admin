@@ -12,7 +12,7 @@ import { PromptUserMessage } from "./PromptUserMessage";
 import { PromptAssistantMessage } from "./PromptAssistantMessage";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw } from "lucide-react";
+import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { useCanvas } from "@/hooks/useCanvas";
 import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
@@ -52,21 +52,23 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Mobile detection
     const [isMobile, setIsMobile] = useState(false);
     const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
+    const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(false);
     
     useEffect(() => {
         const checkMobile = () => {
             const mobile = window.innerWidth < 768;
             setIsMobile(mobile);
-            // Auto-close canvas mobile view when resizing to desktop
-            if (!mobile && showCanvasOnMobile) {
-                setShowCanvasOnMobile(false);
+            // Auto-close canvas/sidebar mobile views when resizing to desktop
+            if (!mobile) {
+                if (showCanvasOnMobile) setShowCanvasOnMobile(false);
+                if (showSidebarOnMobile) setShowSidebarOnMobile(false);
             }
         };
         
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
-    }, [showCanvasOnMobile]);
+    }, [showCanvasOnMobile, showSidebarOnMobile]);
     
     // Handle canvas toggle for mobile
     const handleCanvasToggle = () => {
@@ -538,6 +540,22 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         </h1>
                     </div>
                     <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                        {/* Mobile sidebar toggle */}
+                        {isMobile && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowSidebarOnMobile(!showSidebarOnMobile)}
+                                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                title={showSidebarOnMobile ? "Close runs" : "Show runs"}
+                            >
+                                {showSidebarOnMobile ? (
+                                    <PanelLeftClose className="w-4 h-4" />
+                                ) : (
+                                    <PanelLeftOpen className="w-4 h-4" />
+                                )}
+                            </Button>
+                        )}
                         {displayMessages.length > 0 && !isMobile && (
                             <Button
                                 variant="ghost"
@@ -573,21 +591,39 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 <div className="h-[calc(100vh-3rem)] bg-textured overflow-hidden">
                     <CanvasRenderer content={canvasContent} />
                 </div>
+            ) : isMobile && showSidebarOnMobile ? (
+                /* Mobile Sidebar Full Screen View */
+                <div className="h-[calc(100vh-3rem)] bg-white dark:bg-zinc-900">
+                    <PromptRunsSidebar
+                        promptId={promptData.id}
+                        promptName={promptData.name}
+                        currentRunId={run?.id}
+                        onRunSelect={(runId) => {
+                            // TODO: Load and resume the selected run
+                            console.log('Selected run:', runId);
+                            // Close sidebar on mobile after selection
+                            setShowSidebarOnMobile(false);
+                        }}
+                    />
+                </div>
             ) : (
                 /* Main Layout with AdaptiveLayout */
                 <AdaptiveLayout
                     className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
                     disableAutoCanvas={isMobile} // Disable auto canvas on mobile
+                    leftPanelMaxWidth={280} // Compact sidebar for runs list
                     leftPanel={
-                        <PromptRunsSidebar
-                            promptId={promptData.id}
-                            promptName={promptData.name}
-                            currentRunId={run?.id}
-                            onRunSelect={(runId) => {
-                                // TODO: Load and resume the selected run
-                                console.log('Selected run:', runId);
-                            }}
-                        />
+                        !isMobile ? (
+                            <PromptRunsSidebar
+                                promptId={promptData.id}
+                                promptName={promptData.name}
+                                currentRunId={run?.id}
+                                onRunSelect={(runId) => {
+                                    // TODO: Load and resume the selected run
+                                    console.log('Selected run:', runId);
+                                }}
+                            />
+                        ) : undefined
                     }
                     rightPanel={
                         <div className="h-full flex flex-col relative">
