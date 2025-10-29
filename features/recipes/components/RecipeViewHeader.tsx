@@ -29,12 +29,12 @@ export function RecipeViewHeader({ recipeId, recipeName, selectedVersionId, onVe
 
     const handleEdit = () => {
         setIsNavigating(true);
-        router.push(`/ai/cockpit/recipes/${recipeId}/edit`);
+        router.push(`/ai/recipes/${recipeId}/edit`);
     };
 
     const handleBack = () => {
         setIsNavigating(true);
-        router.push('/ai/cockpit/recipes');
+        router.push('/ai/recipes');
     };
 
     if (!mounted || !targetElement) {

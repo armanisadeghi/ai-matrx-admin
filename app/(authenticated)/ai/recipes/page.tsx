@@ -25,16 +25,6 @@ export default async function RecipesPage() {
         throw new Error("Failed to fetch recipes");
     }
 
-    // Debug logging
-    console.log("📋 Recipes fetched:", {
-        count: recipes?.length || 0,
-        sample: recipes?.[0] ? {
-            id: recipes[0].id,
-            id_type: typeof recipes[0].id,
-            name: recipes[0].name
-        } : null
-    });
-
     return (
         <div className="h-full w-full overflow-auto">
             <div className="container mx-auto px-6 py-6 max-w-[1800px]">
@@ -54,7 +44,7 @@ export default async function RecipesPage() {
                                 </p>
                             </div>
                         </div>
-                        <Link href="/ai/cockpit/recipes/new">
+                        <Link href="/ai/recipes/new">
                             <Button className="bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white">
                                 <Plus className="h-4 w-4 mr-2" />
                                 New Recipe
@@ -63,10 +53,8 @@ export default async function RecipesPage() {
                     </div>
                 </div>
 
-
                 <RecipesGrid recipes={recipes || []} />
             </div>
         </div>
     );
 }
-

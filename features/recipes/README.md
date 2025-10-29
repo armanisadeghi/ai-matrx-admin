@@ -42,7 +42,7 @@ Dialog component for selecting and converting recipe versions to prompts.
 
 ## Routes
 
-### `/ai/cockpit/recipes`
+### `/ai/recipes`
 Main recipes listing page
 
 **Features:**

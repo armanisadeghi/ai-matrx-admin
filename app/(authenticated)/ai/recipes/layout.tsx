@@ -5,7 +5,7 @@ import { ModuleHeader } from '@/components/layout/new-layout/PageSpecificHeader'
 const pages = [
     { 
         title: 'All Recipes', 
-        path: '/ai/cockpit/recipes',
+        path: '/ai/recipes',
         relative: false,
         description: 'Manage your AI recipes'
     },
@@ -23,7 +23,7 @@ export default function RecipesLayout({
             <ModuleHeader
                 pages={pages}
                 currentPath={currentPath}
-                moduleHome="/ai/cockpit/recipes"
+                moduleHome="/ai/recipes"
                 moduleName="Recipes"
             />
             <main className="w-full flex-1 min-h-0 bg-textured overflow-hidden">
@@ -32,4 +32,3 @@ export default function RecipesLayout({
         </div>
     );
 }
-

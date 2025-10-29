@@ -3,7 +3,7 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { RecipeEditContent } from "@/features/recipes/components/RecipeEditContent";
+import { RecipeViewContent } from "@/features/recipes/components/RecipeViewContent";
 
 export async function generateMetadata({
     params,
@@ -19,8 +19,8 @@ export async function generateMetadata({
         .eq("id", id)
         .single();
 
-    const title = recipe?.name ? `Edit ${recipe.name}` : "Edit Recipe";
-    const description = recipe?.description || "Edit and customize your recipe";
+    const title = recipe?.name || "View Recipe";
+    const description = recipe?.description || "View your recipe details and configuration";
 
     return {
         title,
@@ -28,7 +28,7 @@ export async function generateMetadata({
     };
 }
 
-export default async function EditRecipePage({
+export default async function ViewRecipePage({
     params,
 }: {
     params: Promise<{ id: string }>;
@@ -75,7 +75,7 @@ export default async function EditRecipePage({
                             ? "This recipe either doesn't exist or you don't have permission to access it."
                             : "No compiled versions found for this recipe."}
                     </p>
-                    <Link href="/ai/cockpit/recipes">
+                    <Link href="/ai/recipes">
                         <Button className="bg-purple-500 hover:bg-purple-600 text-white">
                             Back to Recipes
                         </Button>
@@ -86,11 +86,10 @@ export default async function EditRecipePage({
     }
 
     return (
-        <RecipeEditContent
+        <RecipeViewContent
             recipeId={id}
             recipeName={recipe.name}
             compiledVersions={compiledVersions}
-            userId={user!.id}
         />
     );
 }

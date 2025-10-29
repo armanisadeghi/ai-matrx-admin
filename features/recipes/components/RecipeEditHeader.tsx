@@ -43,12 +43,12 @@ export function RecipeEditHeader({
 
     const handleView = () => {
         setIsNavigating(true);
-        router.push(`/ai/cockpit/recipes/${recipeId}`);
+        router.push(`/ai/recipes/${recipeId}`);
     };
 
     const handleBack = () => {
         setIsNavigating(true);
-        router.push('/ai/cockpit/recipes');
+        router.push('/ai/recipes');
     };
 
     if (!mounted || !targetElement) {

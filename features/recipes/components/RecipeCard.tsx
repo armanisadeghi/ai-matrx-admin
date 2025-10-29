@@ -35,13 +35,13 @@ export function RecipeCard({
 
     const handleView = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/cockpit/recipes/${id}`);
+            onNavigate(id, `/ai/recipes/${id}`);
         }
     };
 
     const handleEdit = () => {
         if (onNavigate && !isAnyNavigating) {
-            onNavigate(id, `/ai/cockpit/recipes/${id}/edit`);
+            onNavigate(id, `/ai/recipes/${id}/edit`);
         }
     };
 
