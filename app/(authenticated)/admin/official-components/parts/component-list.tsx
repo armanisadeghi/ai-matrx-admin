@@ -399,6 +399,14 @@ export const componentList: ComponentEntry[] = [
     description: 'Reusable modal for managing notes within a specific category. Full CRUD operations, search, and category-specific icons',
     categories: ['modals', 'data-display', 'utilities'],
     tags: ['notes', 'modal', 'category', 'crud', 'search', 'templates', 'snippets', 'content']
+  },
+  {
+    id: 'content-editor',
+    name: 'Content Editor',
+    path: 'components/content-editor/index.ts',
+    description: 'Powerful multi-mode content editor with plain text, WYSIWYG, markdown, and preview modes. Built-in copy, export, HTML preview, and Notes integration',
+    categories: ['editor', 'inputs', 'interactive'],
+    tags: ['editor', 'markdown', 'wysiwyg', 'content', 'text', 'copy', 'export', 'html', 'collapsible', 'notes', 'tui']
   }
 ]; 
 

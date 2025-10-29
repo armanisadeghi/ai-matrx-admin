@@ -4,10 +4,7 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Save, Clock, Loader2, FolderOpen, FileText, PilcrowRight, Eye, SplitSquareHorizontal } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/ButtonMine';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
     Select, 
