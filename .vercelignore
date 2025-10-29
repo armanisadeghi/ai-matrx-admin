@@ -1,0 +1,31 @@
+# Webpack cache pack files (exceed Vercel's 1.5GB limit)
+.next/cache/webpack/**/*.pack
+
+# Large cache files
+.next/cache/**/*.log
+node_modules/.cache
+
+# Turbo cache (if using turbo)
+.turbo
+
+# Source maps (generated during build)
+**/*.map
+
+# Test coverage
+coverage
+
+# Development files
+.vscode
+.idea
+*.sw
+
+p
+.DS_Store
+
+# Documentation that doesn't need to be cached
+**/*.md
+
+# Temporary files
+*.tmp
+*.temp
+
