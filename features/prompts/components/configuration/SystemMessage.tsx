@@ -1,11 +1,12 @@
-import React, { RefObject, useRef, useEffect } from "react";
-import { Maximize2, Plus, Edit2 } from "lucide-react";
+import React, { RefObject, useRef, useEffect, useState } from "react";
+import { Maximize2, Plus, Edit2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { HighlightedText } from "../HighlightedText";
 import { PromptVariable } from "../PromptBuilder";
+import { SystemPromptOptimizer } from "../SystemPromptOptimizer";
 
 interface SystemMessageProps {
     developerMessage: string;
@@ -44,11 +45,18 @@ export function SystemMessage({
     // Track if context menu is open to prevent blur from closing edit mode
     const contextMenuOpenRef = useRef(false);
     
+    // Optimizer state
+    const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
+    
     // Check if variable insertion is enabled
     const hasVariableSupport = variableDefaults.length > 0 && onInsertVariable && onVariablePopoverOpenChange && textareaRefs && onCursorPositionChange;
     
     // Derive variable names from variableDefaults
     const variableNames = variableDefaults.map(v => v.name);
+    
+    const handleOptimizedAccept = (optimizedText: string) => {
+        onDeveloperMessageChange(optimizedText);
+    };
     
     return (
         <div className="space-y-3">
@@ -123,6 +131,15 @@ export function SystemMessage({
                                 </PopoverContent>
                             </Popover>
                         )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-purple-400 hover:text-purple-300"
+                            onClick={() => setIsOptimizerOpen(true)}
+                            title="Optimize with AI"
+                        >
+                            <Wand2 className="w-3.5 h-3.5" />
+                        </Button>
                         {onOpenFullScreenEditor && (
                             <Button
                                 variant="ghost"
@@ -248,6 +265,14 @@ export function SystemMessage({
                     )}
                 </div>
             </div>
+            
+            {/* System Prompt Optimizer Dialog */}
+            <SystemPromptOptimizer
+                isOpen={isOptimizerOpen}
+                onClose={() => setIsOptimizerOpen(false)}
+                currentSystemMessage={developerMessage}
+                onAccept={handleOptimizedAccept}
+            />
         </div>
     );
 }

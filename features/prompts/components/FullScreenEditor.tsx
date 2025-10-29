@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, FileText, MessageSquare, Plus } from 'lucide-react';
+import { X, FileText, MessageSquare, Plus, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { PromptEditorContextMenu } from './PromptEditorContextMenu';
+import { SystemPromptOptimizer } from './SystemPromptOptimizer';
 
 interface PromptMessage {
     role: string;
@@ -40,6 +41,7 @@ export function FullScreenEditor({
 }: FullScreenEditorProps) {
     const [selectedItem, setSelectedItem] = useState<MessageItem>({ type: 'system', index: -1 });
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
 
     // Update selected item when initialSelection changes
     useEffect(() => {
@@ -97,6 +99,10 @@ export function FullScreenEditor({
             default:
                 return 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300';
         }
+    };
+
+    const handleOptimizedAccept = (optimizedText: string) => {
+        onDeveloperMessageChange(optimizedText);
     };
 
     return (
@@ -223,8 +229,21 @@ export function FullScreenEditor({
                                         </div>
                                     )}
                                 </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Right-click for content blocks
+                                <div className="flex items-center gap-3">
+                                    {selectedItem.type === 'system' && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setIsOptimizerOpen(true)}
+                                            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
+                                        >
+                                            <Wand2 className="h-4 w-4 mr-2" />
+                                            Optimize with AI
+                                        </Button>
+                                    )}
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                        Right-click for content blocks
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -251,6 +270,14 @@ export function FullScreenEditor({
                     </div>
                 </div>
             </DialogContent>
+            
+            {/* System Prompt Optimizer Dialog */}
+            <SystemPromptOptimizer
+                isOpen={isOptimizerOpen}
+                onClose={() => setIsOptimizerOpen(false)}
+                currentSystemMessage={developerMessage}
+                onAccept={handleOptimizedAccept}
+            />
         </Dialog>
     );
 }
