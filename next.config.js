@@ -37,7 +37,6 @@ const nextConfig = {
         serverActions: {
             bodySizeLimit: "10mb",
         },
-        optimizeCss: true,
         optimizePackageImports: [
             '@radix-ui/react-dialog',
             '@radix-ui/react-dropdown-menu',
