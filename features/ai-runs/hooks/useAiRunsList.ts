@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { aiRunsService } from "../services/ai-runs-service";
 import type {
   AiRun,
@@ -11,9 +11,14 @@ import type {
 /**
  * Hook for listing and filtering AI runs
  * 
+ * Features:
+ * - Auto-refresh every 10 seconds to pick up new/updated runs
+ * - Manual refresh capability
+ * - Pagination support
+ * 
  * Usage:
  * ```tsx
- * const { runs, loadMore, setFilters } = useAiRunsList({
+ * const { runs, loadMore, setFilters, refresh } = useAiRunsList({
  *   source_type: 'prompt',
  *   source_id: promptId,
  *   limit: 20
@@ -28,6 +33,7 @@ export function useAiRunsList(initialFilters: AiRunsListFilters = {}): UseAiRuns
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load runs
   const loadRuns = useCallback(async (
@@ -63,6 +69,27 @@ export function useAiRunsList(initialFilters: AiRunsListFilters = {}): UseAiRuns
   useEffect(() => {
     setOffset(0);
     loadRuns(filters, 0, false);
+  }, [filters, loadRuns]);
+
+  // Set up auto-refresh polling (every 10 seconds)
+  useEffect(() => {
+    // Clear any existing interval
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+    }
+
+    // Set up new interval for auto-refresh
+    refreshIntervalRef.current = setInterval(() => {
+      // Silent refresh - don't reset offset, just reload current page
+      loadRuns(filters, 0, false);
+    }, 10000); // 10 seconds
+
+    // Cleanup on unmount
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
   }, [filters, loadRuns]);
 
   // Load more (pagination)

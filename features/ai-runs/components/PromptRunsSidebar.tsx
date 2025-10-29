@@ -14,6 +14,7 @@ import { aiRunsService } from "../services/ai-runs-service";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 
 interface PromptRunsSidebarProps {
   promptId: string;
@@ -37,6 +38,7 @@ export function PromptRunsSidebar({
   const router = useRouter();
   const [prompts, setPrompts] = useState<PromptListItem[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Fetch all prompts for the dropdown
   useEffect(() => {
@@ -68,7 +70,8 @@ export function PromptRunsSidebar({
   const handleRunStar = async (runId: string) => {
     try {
       await aiRunsService.toggleStar(runId);
-      // The list will auto-refresh via the hook
+      // Trigger immediate refresh by changing the key
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error toggling star:', error);
     }
@@ -138,7 +141,7 @@ export function PromptRunsSidebar({
       </div>
 
       {/* Runs list */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden" key={refreshTrigger}>
         <RunsList
           filters={filters}
           activeRunId={currentRunId}

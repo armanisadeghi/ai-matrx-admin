@@ -72,16 +72,8 @@
     "name": "links"
   },
   {
-    "path": "/tests/maps",
-    "name": "maps"
-  },
-  {
     "path": "/tests/markdown-tests",
     "name": "markdown-tests"
-  },
-  {
-    "path": "/tests/math",
-    "name": "math"
   },
   {
     "path": "/tests/matrx-local",
@@ -170,5 +162,9 @@
   {
     "path": "/tests/workflow-source-config",
     "name": "workflow-source-config"
+  },
+  {
+    "path": "/tests/_maps",
+    "name": "_maps"
   }
 ]

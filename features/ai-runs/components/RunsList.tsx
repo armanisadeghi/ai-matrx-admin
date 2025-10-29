@@ -27,7 +27,19 @@ export function RunsList({
   emptyMessage,
   emptySubmessage,
 }: RunsListProps) {
-  const { runs, isLoading, hasMore, loadMore } = useAiRunsList(filters || {});
+  const { runs, isLoading, hasMore, loadMore, refresh } = useAiRunsList(filters || {});
+
+  // Refresh list when activeRunId changes (new run created or selected)
+  React.useEffect(() => {
+    if (activeRunId) {
+      // Slight delay to ensure the run is saved to the database
+      const timer = setTimeout(() => {
+        refresh();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [activeRunId, refresh]);
 
   if (isLoading && runs.length === 0) {
     return (
