@@ -20,6 +20,17 @@ export type {
   PromptExecutionData
 } from './types/execution';
 
+// Data Source Types
+export type {
+  TableBookmark,
+  TableBookmarkType,
+  FullTableBookmark,
+  TableRowBookmark,
+  TableColumnBookmark,
+  TableCellBookmark,
+  VariableDataSource
+} from './types/data-sources';
+
 // Services
 export { PromptExecutionService, promptExecutionService, executePrompt } from './services/prompt-execution-service';
 
@@ -36,9 +47,11 @@ export {
 } from './utils/variable-resolver';
 
 // Hooks
-export { usePromptExecution, usePrompt } from './hooks/usePromptExecution';
+export { usePromptExecution } from './hooks/usePromptExecution';
+export { usePromptModal, openPromptModal } from './hooks/usePromptModal';
 
 // Components
 export { PromptExecutionButton, PromptExecutionIconButton } from './components/PromptExecutionButton';
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
+export { PromptExecutionModal } from './components/PromptExecutionModal';
 

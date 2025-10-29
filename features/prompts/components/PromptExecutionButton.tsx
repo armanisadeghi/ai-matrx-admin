@@ -37,7 +37,7 @@ export function PromptExecutionButton({
   onExecutionStart,
   onExecutionComplete
 }: PromptExecutionButtonProps) {
-  const { execute, isExecuting, progress } = usePromptExecution();
+  const { execute, isExecuting } = usePromptExecution();
   const [isPending, startTransition] = useTransition();
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -88,7 +88,7 @@ export function PromptExecutionButton({
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {progress?.message || 'Executing...'}
+            Executing...
           </>
         ) : (
           <>

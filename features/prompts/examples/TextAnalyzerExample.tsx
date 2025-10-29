@@ -15,44 +15,22 @@ import { usePromptExecution, createHardcodedMap } from '@/features/prompts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2 } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 
 export function TextAnalyzerExample() {
   const [text, setText] = useState('');
   const [analysis, setAnalysis] = useState('');
-  const { execute, isExecuting, progress } = usePromptExecution();
+  const { execute, isExecuting, streamingText } = usePromptExecution();
 
   const handleAnalyze = async () => {
     setAnalysis('');
-    
-    const result = await execute({
+    await execute({
       promptId: 'text-analysis',
       variables: {
         text: { type: 'hardcoded', value: text },
         analysisType: { type: 'hardcoded', value: 'comprehensive' }
-      },
-      output: {
-        type: 'plain-text',
-        onComplete: (result) => {
-          setAnalysis(result);
-        }
       }
     });
-  };
-
-  const getProgressPercentage = () => {
-    if (!progress) return 0;
-    switch (progress.status) {
-      case 'initializing': return 10;
-      case 'resolving-variables': return 25;
-      case 'executing': return 40;
-      case 'streaming': return 75;
-      case 'processing-output': return 90;
-      case 'complete': return 100;
-      default: return 0;
-    }
   };
 
   return (
@@ -93,19 +71,16 @@ export function TextAnalyzerExample() {
           )}
         </Button>
 
-        {isExecuting && progress && (
+        {streamingText && (
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">
-                {progress.message || progress.status}
-              </span>
-              <Badge variant="outline">{getProgressPercentage()}%</Badge>
+            <label className="text-sm font-medium">Analysis Result (Streaming)</label>
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
+              <p className="text-sm whitespace-pre-wrap">{streamingText}</p>
             </div>
-            <Progress value={getProgressPercentage()} />
           </div>
         )}
 
-        {analysis && (
+        {!isExecuting && analysis && (
           <div className="space-y-2">
             <label className="text-sm font-medium">Analysis Result</label>
             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">

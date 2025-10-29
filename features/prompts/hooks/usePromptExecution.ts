@@ -1,156 +1,142 @@
 /**
  * usePromptExecution Hook
  * 
- * React hook for executing prompts programmatically with state management
+ * Simple hook for executing prompts programmatically using Socket.IO
+ * Pattern matches PromptRunner - dispatch task, watch selectors
  */
 
 "use client";
 
-import { useState, useCallback, useRef } from 'react';
-import { useAppSelector } from '@/lib/redux';
-import {
-  PromptExecutionConfig,
-  ExecutionResult,
-  ExecutionProgress,
-  ExecutionError,
-  UsePromptExecutionReturn
-} from '../types/execution';
-import { PromptExecutionService } from '../services/prompt-execution-service';
+import { useState, useCallback, useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThunk';
+import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
+import { createClient } from '@/utils/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
+import { PromptExecutionConfig, ExecutionResult } from '../types/execution';
 
-/**
- * Hook for executing prompts programmatically
- */
-export function usePromptExecution(): UsePromptExecutionReturn {
+export function usePromptExecution() {
+  const dispatch = useAppDispatch();
   const [isExecuting, setIsExecuting] = useState(false);
-  const [progress, setProgress] = useState<ExecutionProgress | null>(null);
-  const [result, setResult] = useState<ExecutionResult | null>(null);
-  const [error, setError] = useState<ExecutionError | null>(null);
-  
-  const serviceRef = useRef<PromptExecutionService>(new PromptExecutionService());
-  
-  // Get Redux state for potential use in variable resolution
-  const reduxState = useAppSelector(state => state);
-  
-  // Get broker values for potential use in variable resolution
-  const brokerValues = useAppSelector(state => state.broker?.brokers || {});
+  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Execute a prompt with the given configuration
-   */
+  // Watch streaming text for current task
+  const streamingText = useAppSelector(state => 
+    currentTaskId ? selectPrimaryResponseTextByTaskId(currentTaskId)(state) : ''
+  );
+  
+  const isResponseEnded = useAppSelector(state =>
+    currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
+  );
+
+
+  // Reset when response ends
+  useEffect(() => {
+    if (isResponseEnded && isExecuting) {
+      setIsExecuting(false);
+    }
+  }, [isResponseEnded, isExecuting]);
+
   const execute = useCallback(async (config: PromptExecutionConfig): Promise<ExecutionResult> => {
-    // Reset state
     setIsExecuting(true);
-    setProgress(null);
     setError(null);
-    setResult(null);
 
     try {
-      // Enhance context with Redux state and broker values
-      const enhancedConfig: PromptExecutionConfig = {
-        ...config,
-        context: {
-          ...config.context,
-          reduxState,
-          brokerValues
-        }
-      };
+      // 1. Fetch prompt data
+      const supabase = createClient();
+      const { data: prompt, error: promptError } = await supabase
+        .from('prompts')
+        .select('*')
+        .eq('id', config.promptId)
+        .single();
 
-      // Execute with progress tracking
-      const executionResult = await serviceRef.current.execute(
-        enhancedConfig,
-        (progressUpdate) => {
-          setProgress(progressUpdate);
-          config.onProgress?.(progressUpdate);
-        }
-      );
-
-      setResult(executionResult);
-      
-      if (!executionResult.success && executionResult.error) {
-        setError(executionResult.error);
+      if (promptError || !prompt) {
+        throw new Error('Prompt not found');
       }
 
-      return executionResult;
+      // 2. Replace variables in messages
+      const messages = prompt.messages.map((msg: any) => {
+        let content = msg.content;
+        
+        // Replace variables
+        if (config.variables) {
+          Object.entries(config.variables).forEach(([key, source]) => {
+            const value = source.type === 'hardcoded' ? source.value : '';
+            content = content.replace(new RegExp(`{{${key}}}`, 'g'), value);
+          });
+        }
+        
+        return {
+          role: msg.role,
+          content
+        };
+      });
 
-    } catch (err) {
-      const executionError: ExecutionError = {
-        stage: 'execution',
-        message: err instanceof Error ? err.message : 'Unknown error',
-        details: err
+      // 3. Build chat config
+      const modelId = prompt.settings?.model_id || config.modelConfig?.modelId;
+      if (!modelId) {
+        throw new Error('No model specified');
+      }
+
+      const chatConfig = {
+        model_id: modelId,
+        messages,
+        stream: true,
+        ...prompt.settings,
+        ...config.modelConfig
       };
-      
-      setError(executionError);
-      config.onError?.(executionError);
 
+      // 4. Submit task via Socket.IO (exactly like PromptRunner)
+      const taskId = uuidv4();
+      setCurrentTaskId(taskId);
+
+      const result = await dispatch(createAndSubmitTask({
+        service: 'chat_service',
+        taskName: 'direct_chat',
+        taskData: { chat_config: chatConfig },
+        customTaskId: taskId
+      })).unwrap();
+
+      // Return immediately - streaming will happen via selectors
+      // The component will watch streamingText via the selector
       return {
-        success: false,
-        text: '',
+        success: true,
+        text: '', // Will be populated via streaming
         metadata: {
           promptId: config.promptId,
-          promptName: '',
-          taskId: '',
+          promptName: prompt.name,
+          taskId,
           duration: 0
         },
-        error: executionError,
         resolvedVariables: {}
       };
 
-    } finally {
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMsg);
       setIsExecuting(false);
+      config.onError?.({ stage: 'execution', message: errorMsg, details: err });
+      
+      return {
+        success: false,
+        text: '',
+        metadata: { promptId: config.promptId, promptName: '', taskId: '', duration: 0 },
+        error: { stage: 'execution', message: errorMsg, details: err },
+        resolvedVariables: {}
+      };
     }
-  }, [reduxState, brokerValues]);
-
-  /**
-   * Cancel current execution
-   */
-  const cancel = useCallback(() => {
-    serviceRef.current?.cancel();
-    setIsExecuting(false);
-    setProgress(null);
-  }, []);
-
-  /**
-   * Reset state
-   */
-  const reset = useCallback(() => {
-    setIsExecuting(false);
-    setProgress(null);
-    setResult(null);
-    setError(null);
-  }, []);
+  }, [dispatch]);
 
   return {
     execute,
     isExecuting,
-    progress,
-    result,
+    streamingText,
     error,
-    reset,
-    cancel
+    reset: () => {
+      setIsExecuting(false);
+      setCurrentTaskId(null);
+      setError(null);
+    }
   };
 }
-
-/**
- * Hook for executing a specific prompt with pre-configured settings
- */
-export function usePrompt(promptId: string, baseConfig?: Partial<PromptExecutionConfig>) {
-  const { execute, ...rest } = usePromptExecution();
-
-  const executePrompt = useCallback(
-    async (overrides?: Partial<PromptExecutionConfig>) => {
-      const config: PromptExecutionConfig = {
-        promptId,
-        ...baseConfig,
-        ...overrides
-      };
-      return execute(config);
-    },
-    [promptId, baseConfig, execute]
-  );
-
-  return {
-    execute: executePrompt,
-    ...rest
-  };
-}
-

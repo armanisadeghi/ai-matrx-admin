@@ -3,6 +3,8 @@
  * 
  * Core service for programmatically executing prompts from anywhere in the application.
  * Handles variable resolution, execution, and output processing.
+ * 
+ * Uses Socket.IO for execution (same as PromptRunner)
  */
 
 import { createClient } from '@/utils/supabase/client';
@@ -21,15 +23,27 @@ import {
   extractVariablesFromMessages
 } from '../utils/variable-resolver';
 import { generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
+import type { AppDispatch, RootState } from '@/lib/redux/store';
 
 /**
  * PromptExecutionService
  * 
  * Provides methods to execute prompts programmatically with flexible
  * input sources and output handlers.
+ * 
+ * IMPORTANT: This needs Redux dispatch and uses Socket.IO for execution
  */
 export class PromptExecutionService {
-  private abortController: AbortController | null = null;
+  private dispatch: AppDispatch | null = null;
+  private getState: (() => RootState) | null = null;
+
+  /**
+   * Initialize with Redux store access
+   */
+  setStore(dispatch: AppDispatch, getState: () => RootState) {
+    this.dispatch = dispatch;
+    this.getState = getState;
+  }
 
   /**
    * Execute a prompt with the given configuration
@@ -38,7 +52,10 @@ export class PromptExecutionService {
     config: PromptExecutionConfig,
     onProgress?: (progress: ExecutionProgress) => void
   ): Promise<ExecutionResult> {
-    this.abortController = new AbortController();
+    if (!this.dispatch || !this.getState) {
+      throw new Error('PromptExecutionService not initialized with Redux store');
+    }
+
     const startTime = performance.now();
     let taskId = '';
     let runId: string | undefined;
@@ -66,13 +83,13 @@ export class PromptExecutionService {
       // 3. Build messages with replaced variables
       const messages = this.buildMessages(promptData, resolvedVariables, userInput);
 
-      // 4. Execute via direct API call (simpler than socket.io for programmatic use)
+      // 4. Execute via Socket.IO (same as PromptRunner)
       onProgress?.({
         status: 'executing',
         message: 'Sending request...'
       });
 
-      const { text, metadata } = await this.executePrompt(
+      const { text, metadata } = await this.executePromptViaSocket(
         messages,
         config,
         promptData,
@@ -136,10 +153,11 @@ export class PromptExecutionService {
   }
 
   /**
-   * Cancel current execution
+   * Cancel current execution - not yet implemented for Socket.IO
    */
   cancel(): void {
-    this.abortController?.abort();
+    // TODO: Implement socket cancellation if needed
+    console.warn('Cancel not yet implemented for Socket.IO execution');
   }
 
   /**
@@ -237,14 +255,17 @@ export class PromptExecutionService {
   }
 
   /**
-   * Execute the prompt and return streaming response
+   * Execute the prompt via Socket.IO (same as PromptRunner)
    */
-  private async executePrompt(
+  private async executePromptViaSocket(
     messages: any[],
     config: PromptExecutionConfig,
     promptData: PromptExecutionData,
     onProgress?: (progress: ExecutionProgress) => void
   ): Promise<{ text: string; metadata: any }> {
+    const { createAndSubmitTask } = await import('@/lib/redux/socket-io/thunks/submitTaskThunk');
+    const { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } = await import('@/lib/redux/socket-io/selectors/socket-response-selectors');
+    
     const taskId = uuidv4();
     
     // Merge settings with config overrides
@@ -258,75 +279,77 @@ export class PromptExecutionService {
       throw new Error('No model ID specified');
     }
 
-    // Build request body
-    const requestBody = {
+    const { model_id, ...modelConfig } = settings;
+
+    // Build chat_config for direct_chat task (same as PromptRunner)
+    const chatConfig: Record<string, any> = {
+      model_id: modelId,
       messages,
-      model: modelId,
       stream: true,
-      ...settings
+      ...modelConfig,
     };
 
-    // Make streaming request to API
-    const response = await fetch('/api/prompts/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody),
-      signal: this.abortController?.signal
+    // Submit task via Socket.IO
+    await this.dispatch!(createAndSubmitTask({
+      service: 'chat_service',
+      taskName: 'direct_chat',
+      taskData: { chat_config: chatConfig },
+      customTaskId: taskId
+    }));
+
+    // Wait for streaming to complete
+    return new Promise((resolve, reject) => {
+      const streamStartTime = performance.now();
+      let timeToFirstToken: number | undefined;
+      let firstChunk = true;
+
+      const checkInterval = setInterval(() => {
+        const state = this.getState!();
+        // These selectors return a selector function, so call them with taskId then with state
+        const streamingText = selectPrimaryResponseTextByTaskId(taskId)(state);
+        const isResponseEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
+
+        if (streamingText) {
+          if (firstChunk) {
+            timeToFirstToken = Math.round(performance.now() - streamStartTime);
+            firstChunk = false;
+            
+            onProgress?.({
+              status: 'streaming',
+              message: 'Receiving response...',
+              streamedText: streamingText
+            });
+          } else {
+            onProgress?.({
+              status: 'streaming',
+              streamedText: streamingText
+            });
+          }
+        }
+
+        if (isResponseEnded) {
+          clearInterval(checkInterval);
+          
+          const finalText = streamingText || '';
+          
+          resolve({
+            text: finalText,
+            metadata: {
+              taskId,
+              model: modelId,
+              timeToFirstToken,
+              tokens: Math.round(finalText.length / 4) // Rough estimate
+            }
+          });
+        }
+      }, 100); // Check every 100ms
+
+      // Timeout after 2 minutes
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        reject(new Error('Execution timeout'));
+      }, 120000);
     });
-
-    if (!response.ok) {
-      throw new Error(`Execution failed: ${response.statusText}`);
-    }
-
-    if (!response.body) {
-      throw new Error('No response body');
-    }
-
-    // Process streaming response
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullText = '';
-    let firstChunk = true;
-    const streamStartTime = performance.now();
-    let timeToFirstToken: number | undefined;
-
-    while (true) {
-      const { done, value } = await reader.read();
-      
-      if (done) break;
-      
-      const chunk = decoder.decode(value, { stream: true });
-      
-      if (firstChunk) {
-        timeToFirstToken = Math.round(performance.now() - streamStartTime);
-        firstChunk = false;
-        
-        onProgress?.({
-          status: 'streaming',
-          message: 'Receiving response...',
-          streamedText: chunk
-        });
-      }
-      
-      fullText += chunk;
-      
-      onProgress?.({
-        status: 'streaming',
-        streamedText: fullText
-      });
-    }
-
-    return {
-      text: fullText,
-      metadata: {
-        taskId,
-        model: modelId,
-        timeToFirstToken,
-        tokens: Math.round(fullText.length / 4) // Rough estimate
-      }
-    };
   }
 
   /**
