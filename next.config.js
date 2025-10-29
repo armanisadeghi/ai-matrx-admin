@@ -14,7 +14,6 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     // Build performance optimizations
-    swcMinify: true,
     productionBrowserSourceMaps: false,
     
     compiler: {
@@ -23,37 +22,38 @@ const nextConfig = {
         } : false,
     },
     
-    optimizePackageImports: [
-        '@radix-ui/react-dialog',
-        '@radix-ui/react-dropdown-menu',
-        '@radix-ui/react-popover',
-        '@radix-ui/react-select',
-        '@radix-ui/react-tabs',
-        '@radix-ui/react-tooltip',
-        '@radix-ui/react-accordion',
-        '@radix-ui/react-scroll-area',
-        'lucide-react',
-        '@tabler/icons-react',
-        'lodash',
-        'date-fns',
-        'recharts',
-        'framer-motion',
-    ],
+    // Moved from experimental (Next.js 15+)
+    outputFileTracingExcludes: {
+        '*': [
+            'node_modules/@swc/**/*',
+            'node_modules/@esbuild/**/*',
+            '.git/**/*',
+            '**/*.md',
+            '**/*.map',
+        ],
+    },
     
     experimental: {
         serverActions: {
             bodySizeLimit: "10mb",
         },
         optimizeCss: true,
-        outputFileTracingExcludes: {
-            '*': [
-                'node_modules/@swc/**/*',
-                'node_modules/@esbuild/**/*',
-                '.git/**/*',
-                '**/*.md',
-                '**/*.map',
-            ],
-        },
+        optimizePackageImports: [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-scroll-area',
+            'lucide-react',
+            '@tabler/icons-react',
+            'lodash',
+            'date-fns',
+            'recharts',
+            'framer-motion',
+        ],
     },
     // Disable build caching for Vercel deployments
     // generateBuildId: async () => {
