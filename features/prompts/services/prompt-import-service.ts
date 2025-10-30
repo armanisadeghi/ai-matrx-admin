@@ -10,9 +10,10 @@ import type { PromptJSON, PromptImportResult, PromptBatchJSON, PromptBatchImport
 
 /**
  * Extract variable names from messages
+ * Also normalizes variable syntax by removing spaces
  */
 function extractVariablesFromMessages(messages: any[]): string[] {
-  const variablePattern = /\{\{([^}]+)\}\}/g;
+  const variablePattern = /\{\{\s*([^}]+?)\s*\}\}/g;
   const variables = new Set<string>();
 
   messages.forEach(msg => {
@@ -23,6 +24,14 @@ function extractVariablesFromMessages(messages: any[]): string[] {
   });
 
   return Array.from(variables);
+}
+
+/**
+ * Normalize variable syntax in message content
+ * Converts {{ variable }} to {{variable}}
+ */
+function normalizeVariableSyntax(content: string): string {
+  return content.replace(/\{\{\s*([^}]+?)\s*\}\}/g, '{{$1}}');
 }
 
 /**
@@ -82,8 +91,14 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
     // Generate ID if not provided
     const promptId = promptJSON.id || uuidv4();
 
-    // Extract variables from messages
-    const extractedVariables = extractVariablesFromMessages(promptJSON.messages);
+    // Normalize variable syntax in all messages (remove spaces from {{ var }})
+    const normalizedMessages = promptJSON.messages.map(msg => ({
+      ...msg,
+      content: normalizeVariableSyntax(msg.content)
+    }));
+
+    // Extract variables from normalized messages
+    const extractedVariables = extractVariablesFromMessages(normalizedMessages);
     
     // Build variable defaults array
     const variableDefaults = extractedVariables.map(varName => {
@@ -100,7 +115,7 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
       user_id: user.id,
       name: promptJSON.name,
       description: promptJSON.description || null,
-      messages: promptJSON.messages,
+      messages: normalizedMessages, // Use normalized messages
       variable_defaults: variableDefaults,
       settings: promptJSON.settings || {},
       created_at: new Date().toISOString(),

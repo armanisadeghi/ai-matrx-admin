@@ -19,7 +19,6 @@ Navigate to `/demo/prompt-execution` and click **"Import Demo Prompts"**
 
 ```json
 {
-  "id": "my-prompt-id",
   "name": "My Prompt",
   "description": "What this prompt does",
   "messages": [

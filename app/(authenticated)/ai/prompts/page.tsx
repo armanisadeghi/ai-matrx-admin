@@ -4,6 +4,7 @@ import { Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { PromptsGrid } from "@/features/prompts/components/PromptsGrid";
+import { ImportPromptButton } from "./components/ImportPromptButton";
 
 export default async function PromptsPage() {
     const supabase = await createClient();
@@ -43,6 +44,7 @@ export default async function PromptsPage() {
                         </p>
                     </div>
                     <div className="flex gap-3">
+                        <ImportPromptButton />
                         <Link href="/ai/prompts/templates">
                             <Button
                                 variant="outline"

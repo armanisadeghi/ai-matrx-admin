@@ -28,7 +28,6 @@ const nextConfig = {
             'node_modules/@swc/**/*',
             'node_modules/@esbuild/**/*',
             '.git/**/*',
-            '**/*.md',
             '**/*.map',
         ],
     },

@@ -1,7 +1,6 @@
 {
   "prompts": [
     {
-      "id": "text-analyzer",
       "name": "Text Analyzer",
       "description": "Analyzes text for sentiment, tone, and key themes",
       "messages": [
@@ -11,7 +10,7 @@
         },
         {
           "role": "user",
-          "content": "Analyze this text:\n\n{{ text }}"
+          "content": "Analyze this text:\n\n{{text}}"
         }
       ],
       "variables": [
@@ -26,7 +25,6 @@
       }
     },
     {
-      "id": "demo-prompt",
       "name": "Demo Multi-Variable",
       "description": "Flexible demo prompt for testing variable detection",
       "messages": [
@@ -36,7 +34,7 @@
         },
         {
           "role": "user",
-          "content": "Create content about: {{ topic }}\n\nStyle: {{ style }}\nDetail level: {{ detail_level }}"
+          "content": "Create content about: {{topic}}\n\nStyle: {{style}}\nDetail level: {{detail_level}}"
         }
       ],
       "variables": [

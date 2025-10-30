@@ -9,7 +9,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea, CopyTextarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -130,8 +130,8 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileJson className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Import Prompts from JSON
@@ -142,46 +142,41 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
         </DialogHeader>
 
         {!showResults ? (
-          <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+          <div className="flex-1 flex flex-col gap-2 overflow-hidden min-h-0">
             {/* Example/Help Card */}
-            <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-blue-900 dark:text-blue-100 mb-1">
-                      JSON Format
-                    </div>
-                    <p className="text-xs text-blue-800 dark:text-blue-200">
-                      Single prompt or batch import <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{ prompts: [...] }'}</code>
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyExample}
-                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    <Copy className="h-3.5 w-3.5 mr-1.5" />
-                    Copy Example
-                  </Button>
+            <div className="flex-shrink-0 flex items-center justify-between gap-3 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="text-xs text-blue-800 dark:text-blue-200">
+                  Format: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{ prompts: [...] }'}</code>
+                  • Variables: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{{variable}}'}</code>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyExample}
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex-shrink-0 h-7 px-2"
+              >
+                <Copy className="h-3 w-3 mr-1" />
+                Example
+              </Button>
+            </div>
 
-            {/* JSON Input */}
-            <div className="flex-1 flex flex-col min-h-0">
-              <label className="text-sm font-medium mb-2">Prompt JSON</label>
-              <Textarea
+            {/* JSON Input - Takes up most of the space */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <label className="text-sm font-medium mb-1.5 flex-shrink-0">Prompt JSON</label>
+              <CopyTextarea
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
                 placeholder={JSON.stringify(exampleJSON, null, 2)}
-                className="flex-1 font-mono text-xs resize-none"
+                className="flex-1 font-mono text-xs resize-none min-h-0 h-full"
+                style={{ minHeight: '400px' }}
                 disabled={isImporting}
               />
             </div>
 
             {/* Import Button */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {jsonInput.trim() && (
                   <span className="flex items-center gap-1">
