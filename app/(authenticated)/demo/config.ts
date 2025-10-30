@@ -46,6 +46,12 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
+        title: 'Prompt Execution System',
+        path: 'prompt-execution',
+        relative: true,
+        description: 'Live examples of the programmatic AI prompt execution system with streaming responses'
+    },
+    {
         title: 'Component Demo',
         path: 'component-demo',
         relative: true,

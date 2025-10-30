@@ -17,44 +17,23 @@ export function PromptModalExample() {
 
   // Example 1: Simple text analysis
   const textAnalysisModal = usePromptModal({
-    promptId: 'analyze-text',
-    promptName: 'Analyze Text',
+    promptId: 'text-analyzer',
+    promptName: 'Text Analyzer',
     onResult: (text) => {
       setResult(text);
       console.log('Analysis complete:', text);
     }
   });
 
-  // Example 2: With default values
-  const summarizeModal = usePromptModal({
-    promptId: 'summarize-content',
-    promptName: 'Summarize',
+  // Example 2: With default values (uses demo-prompt)
+  const demoModal = usePromptModal({
+    promptId: 'demo-prompt',
+    promptName: 'Demo Multi-Variable',
     defaultValues: {
-      style: 'concise',
-      format: 'bullet points'
+      topic: 'Artificial Intelligence',
+      style: 'professional',
+      detail_level: 'comprehensive'
     },
-    onResult: (text) => {
-      setResult(text);
-    }
-  });
-
-  // Example 3: No user input field
-  const translateModal = usePromptModal({
-    promptId: 'translate-text',
-    promptName: 'Translate',
-    hideUserInput: true,
-    defaultValues: {
-      target_language: 'Spanish'
-    },
-    onResult: (text) => {
-      setResult(text);
-    }
-  });
-
-  // Example 4: Data analysis with table bookmark
-  const dataAnalysisModal = usePromptModal({
-    promptId: 'analyze-data',
-    promptName: 'Analyze Dataset',
     onResult: (text) => {
       setResult(text);
     }
@@ -74,22 +53,12 @@ export function PromptModalExample() {
           <div className="grid grid-cols-2 gap-4">
             <Button onClick={textAnalysisModal.open} variant="outline">
               <FileText className="h-4 w-4 mr-2" />
-              Analyze Text
+              Text Analyzer
             </Button>
 
-            <Button onClick={summarizeModal.open} variant="outline">
+            <Button onClick={demoModal.open} variant="outline">
               <Sparkles className="h-4 w-4 mr-2" />
-              Summarize (with defaults)
-            </Button>
-
-            <Button onClick={translateModal.open} variant="outline">
-              <LinkIcon className="h-4 w-4 mr-2" />
-              Translate (no user input)
-            </Button>
-
-            <Button onClick={dataAnalysisModal.open} variant="outline">
-              <Database className="h-4 w-4 mr-2" />
-              Analyze Dataset
+              Demo (with defaults)
             </Button>
           </div>
 
@@ -107,9 +76,7 @@ export function PromptModalExample() {
 
       {/* Modals */}
       <PromptExecutionModal {...textAnalysisModal.modalProps} />
-      <PromptExecutionModal {...summarizeModal.modalProps} />
-      <PromptExecutionModal {...translateModal.modalProps} />
-      <PromptExecutionModal {...dataAnalysisModal.modalProps} />
+      <PromptExecutionModal {...demoModal.modalProps} />
     </div>
   );
 }

@@ -25,10 +25,9 @@ export function TextAnalyzerExample() {
   const handleAnalyze = async () => {
     setAnalysis('');
     await execute({
-      promptId: 'text-analysis',
+      promptId: 'text-analyzer',
       variables: {
-        text: { type: 'hardcoded', value: text },
-        analysisType: { type: 'hardcoded', value: 'comprehensive' }
+        text: { type: 'hardcoded', value: text }
       }
     });
   };
