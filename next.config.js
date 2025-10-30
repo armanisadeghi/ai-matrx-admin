@@ -1,5 +1,6 @@
 // next.config.js
 
+const path = require("path");
 const { getHeaders } = require("./utils/next-config/headers");
 // const { remotePatterns } = require("./utils/next-config/imageConfig");
 const { configureWebpack } = require("./utils/next-config/webpackConfig");
@@ -15,9 +16,6 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 const nextConfig = {
     // Build performance optimizations
     productionBrowserSourceMaps: false,
-    
-    // Use SWC for faster minification (default in Next.js 15 but explicitly set)
-    swcMinify: true,
     
     compiler: {
         removeConsole: process.env.NODE_ENV === 'production' ? {
@@ -103,8 +101,6 @@ const nextConfig = {
                 maxAge: 259200000, // 3 days instead of 1 week (reduces cache size)
                 maxMemoryGenerations: 1,
                 compression: 'gzip', // Compress cache to reduce size
-                // Limit cache size
-                cacheDirectory: '.next/cache/webpack',
                 buildDependencies: {
                     config: [__filename],
                 },
