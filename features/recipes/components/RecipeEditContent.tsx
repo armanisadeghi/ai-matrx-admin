@@ -126,7 +126,7 @@ export function RecipeEditContent({ recipeId, recipeName, compiledVersions, user
     }
 
     return (
-        <>
+        <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
             {/* Compact header in portal */}
             <RecipeEditHeader
                 recipeId={recipeId}
@@ -137,10 +137,10 @@ export function RecipeEditContent({ recipeId, recipeName, compiledVersions, user
                 nextVersion={(compiledVersions[0]?.version || 0) + 1}
             />
 
-            <div className="flex h-full overflow-hidden">
-                {/* Left Sidebar - Version Selector, Brokers, and Settings */}
+            <div className="flex flex-1 min-h-0 overflow-hidden">
+                {/* Left Sidebar - Single scroll area for all content */}
                 <div className="w-52 border-r flex flex-col flex-shrink-0 overflow-hidden">
-                    {/* Version Selector - Fixed height */}
+                    {/* Version Selector - Fixed at top */}
                     <div className="p-2 border-b flex-shrink-0">
                         <Select value={selectedVersionId} onValueChange={setSelectedVersionId}>
                             <SelectTrigger className="h-8 text-xs">
@@ -156,39 +156,40 @@ export function RecipeEditContent({ recipeId, recipeName, compiledVersions, user
                         </Select>
                     </div>
 
-                    {/* Brokers - Flexible height with scroll */}
-                    <div className="p-2 border-b flex-1 min-h-0 flex flex-col">
-                        <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5 flex-shrink-0">
-                            Brokers ({brokers.length})
-                        </div>
-                        <ScrollArea className="flex-1 min-h-0">
-                            <div className="space-y-1 pr-3">
-                                {brokers.map((broker, i) => (
-                                    <div key={i} className="text-xs px-1.5 py-1 bg-muted rounded truncate">
-                                        {broker.name}
-                                    </div>
-                                ))}
-                                {brokers.length === 0 && (
-                                    <div className="text-xs text-muted-foreground italic">No brokers</div>
-                                )}
+                    {/* Scrollable area for Brokers and Settings */}
+                    <ScrollArea className="flex-1">
+                        <div className="flex flex-col">
+                            {/* Brokers */}
+                            <div className="p-2 border-b">
+                                <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5">
+                                    Brokers ({brokers.length})
+                                </div>
+                                <div className="space-y-1">
+                                    {brokers.map((broker, i) => (
+                                        <div key={i} className="text-xs px-1.5 py-1 bg-muted rounded truncate">
+                                            {broker.name}
+                                        </div>
+                                    ))}
+                                    {brokers.length === 0 && (
+                                        <div className="text-xs text-muted-foreground italic">No brokers</div>
+                                    )}
+                                </div>
                             </div>
-                        </ScrollArea>
-                    </div>
 
-                    {/* Settings - Flexible height with scroll */}
-                    <div className="p-2 flex-1 min-h-0 flex flex-col">
-                        <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5 flex-shrink-0">
-                            Settings
+                            {/* Settings */}
+                            <div className="p-2">
+                                <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5">
+                                    Settings
+                                </div>
+                                <pre className="text-[9px] leading-tight whitespace-pre-wrap break-words">
+                                    {JSON.stringify(settings, null, 1)}
+                                </pre>
+                            </div>
                         </div>
-                        <ScrollArea className="flex-1 min-h-0">
-                            <pre className="text-[9px] leading-tight whitespace-pre-wrap break-words pr-3">
-                                {JSON.stringify(settings, null, 1)}
-                            </pre>
-                        </ScrollArea>
-                    </div>
+                    </ScrollArea>
                 </div>
 
-                {/* Main Content - Messages with independent scroll */}
+                {/* Main Content - Independent scroll area */}
                 <div className="flex-1 overflow-hidden">
                     <ScrollArea className="h-full">
                         <div className="p-3">
@@ -231,6 +232,6 @@ export function RecipeEditContent({ recipeId, recipeName, compiledVersions, user
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </>
+        </div>
     );
 }

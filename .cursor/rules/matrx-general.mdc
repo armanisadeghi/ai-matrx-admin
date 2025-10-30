@@ -57,6 +57,8 @@ Design modern, professional, elegant interfaces:
 - Optimize space efficiency - minimize padding/gaps while maintaining readability
 - Design desktop-first, then ensure mobile responsiveness
 - Use loading components from the component library (no plain text loading states)
+- For most routes, you will need to ensure a proper Layout.tsx or page wrapper of some sort
+- eg. <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
 
 ### Navigation & Interactions
 

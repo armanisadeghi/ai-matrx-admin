@@ -325,7 +325,7 @@ export function ContentEditor({
             
             {/* Editor Area - Hidden when collapsed */}
             {!isCollapsed && (
-            <div className="bg-textured rounded-none">
+            <div className="bg-textured rounded-none overflow-visible">
                 {/* Plain Text Mode */}
                 {currentMode === 'plain' && (
                     <Textarea
@@ -335,9 +335,10 @@ export function ContentEditor({
                         className="w-full min-h-[300px] border-none rounded-none resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3"
                         style={{ 
                             height: 'auto',
-                            minHeight: '300px'
+                            minHeight: '300px',
+                            maxHeight: 'none'
                         }}
-                        rows={Math.max(12, localContent.split('\n').length)}
+                        rows={Math.max(12, Math.ceil(localContent.length / 80) + localContent.split('\n').length + 2)}
                     />
                 )}
                 
@@ -371,9 +372,11 @@ export function ContentEditor({
                 
                 {/* Preview Mode */}
                 {currentMode === 'preview' && (
-                    <div className="w-full p-6 bg-textured">
+                    <div className="w-full p-6 bg-textured overflow-visible">
                         {localContent.trim() ? (
-                            <EnhancedChatMarkdown content={localContent} />
+                            <div className="overflow-visible">
+                                <EnhancedChatMarkdown content={localContent} />
+                            </div>
                         ) : (
                             <div className="text-center py-12 text-zinc-400 dark:text-zinc-500">
                                 No content to preview
