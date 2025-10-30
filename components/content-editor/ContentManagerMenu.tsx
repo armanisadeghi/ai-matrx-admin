@@ -2,12 +2,16 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MoreVertical, Copy, FileText, Brain, Eye, Globe, Save, BookText, Briefcase, FileCode } from 'lucide-react';
+import { MoreVertical, Copy, FileText, Brain, Eye, Globe, Save, BookText, Briefcase, FileCode, Code2 } from 'lucide-react';
 import { copyToClipboard } from '@/components/matrx/buttons/markdown-copy-utils';
 import { loadWordPressCSS } from '@/features/html-pages/css/wordpress-styles';
 import AdvancedMenu, { MenuItem } from '@/components/official/AdvancedMenu';
 import { NotesAPI } from '@/features/notes';
 import { QuickSaveModal } from '@/features/notes';
+import HtmlPreviewFullScreenEditor from '@/features/html-pages/components/HtmlPreviewFullScreenEditor';
+import { useHtmlPreviewState } from '@/features/html-pages/hooks/useHtmlPreviewState';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectUser } from '@/lib/redux/selectors/userSelectors';
 
 interface ContentManagerMenuProps {
   content: string;
@@ -22,6 +26,21 @@ export function ContentManagerMenu({
 }: ContentManagerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isHtmlEditorOpen, setIsHtmlEditorOpen] = useState(false);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const user = useAppSelector(selectUser);
+
+  // HTML Preview Editor state
+  const htmlPreviewState = useHtmlPreviewState({
+    isOpen: isHtmlEditorOpen,
+    markdownContent: content,
+    user,
+    publishedPageId: null,
+    onPageIdChange: (pageId) => {
+      // Optional: track published page ID if needed
+      console.log('Published page ID:', pageId);
+    },
+  });
 
   // Notes handlers
   const handleSaveToScratch = async () => {
@@ -89,6 +108,10 @@ export function ContentManagerMenu({
     });
   };
 
+  const handleOpenHtmlEditor = () => {
+    setIsHtmlEditorOpen(true);
+  };
+
   const handleCopyCompleteHTML = async () => {
     await copyToClipboard(content, {
       isMarkdown: true,
@@ -131,6 +154,19 @@ ${cssContent}
 
   // Build menu items
   const menuItems: MenuItem[] = [
+    // Publishing & HTML
+    { 
+      key: 'html-editor',
+      icon: Code2, 
+      iconColor: "text-violet-600 dark:text-violet-400", 
+      label: "HTML Publisher", 
+      description: "Edit, publish & generate SEO content",
+      action: handleOpenHtmlEditor,
+      category: "Publishing",
+      successMessage: "Opening HTML Publisher...",
+      errorMessage: "Failed to open HTML Publisher",
+      showToast: false
+    },
     // Copy Options
     { 
       key: 'copy-plain',
@@ -250,6 +286,7 @@ ${cssContent}
   return (
     <>
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(true)}
         className={`flex items-center justify-center p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors ${className}`}
         title="Content options"
@@ -264,6 +301,7 @@ ${cssContent}
         title="Content Options"
         description="Copy, export, or save this content"
         position="bottom-left"
+        anchorElement={buttonRef.current}
       />
       
       <QuickSaveModal
@@ -275,6 +313,14 @@ ${cssContent}
           setIsSaveModalOpen(false);
           setIsOpen(false);
         }}
+      />
+
+      <HtmlPreviewFullScreenEditor
+        isOpen={isHtmlEditorOpen}
+        onClose={() => setIsHtmlEditorOpen(false)}
+        htmlPreviewState={htmlPreviewState}
+        title="HTML Content Publisher"
+        description="Edit markdown, manage SEO, and publish your content"
       />
     </>
   );

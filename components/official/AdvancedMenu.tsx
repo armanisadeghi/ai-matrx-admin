@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useEffect, useState, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { LucideIcon, Check, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -90,6 +91,88 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
   const [adjustedPosition, setAdjustedPosition] = useState<"bottom-left" | "bottom-right" | "top-left" | "top-right" | "center">(position);
   const hasAdjustedRef = useRef(false); // Track if we've already adjusted position
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+
+  // Track if component is mounted for portal rendering
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Calculate menu position based on anchor element when menu opens
+  useEffect(() => {
+    if (!isOpen || !anchorElement) {
+      setMenuPosition(null);
+      return;
+    }
+
+    const rect = anchorElement.getBoundingClientRect();
+    const menuWidth = parseInt(width) || 280;
+    const menuHeight = 500; // Approximate max height
+    const padding = 8; // Gap from trigger
+    const viewportPadding = 16; // Padding from viewport edges
+
+    let top = 0;
+    let left = 0;
+
+    // Calculate initial position based on preference
+    switch (position) {
+      case "bottom-left":
+        top = rect.bottom + padding;
+        left = rect.left;
+        break;
+      case "bottom-right":
+        top = rect.bottom + padding;
+        left = rect.right - menuWidth;
+        break;
+      case "top-left":
+        top = rect.top - menuHeight - padding;
+        left = rect.left;
+        break;
+      case "top-right":
+        top = rect.top - menuHeight - padding;
+        left = rect.right - menuWidth;
+        break;
+      case "center":
+        top = (window.innerHeight - menuHeight) / 2;
+        left = (window.innerWidth - menuWidth) / 2;
+        setMenuPosition({ top: Math.max(viewportPadding, top), left: Math.max(viewportPadding, left) });
+        return;
+    }
+
+    // Check if menu would go off screen and adjust
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Adjust horizontal position if going off screen
+    if (left + menuWidth > viewportWidth - viewportPadding) {
+      // Menu would go off right side, align to right edge
+      left = viewportWidth - menuWidth - viewportPadding;
+    }
+    if (left < viewportPadding) {
+      // Menu would go off left side, align to left edge
+      left = viewportPadding;
+    }
+
+    // Adjust vertical position if going off screen
+    if (top + menuHeight > viewportHeight - viewportPadding) {
+      // Would go off bottom, try putting it above the trigger
+      const topPosition = rect.top - menuHeight - padding;
+      if (topPosition >= viewportPadding) {
+        top = topPosition;
+      } else {
+        // Can't fit above or below, center it vertically
+        top = Math.max(viewportPadding, (viewportHeight - menuHeight) / 2);
+      }
+    }
+    if (top < viewportPadding) {
+      // Would go off top, align to top edge
+      top = viewportPadding;
+    }
+
+    setMenuPosition({ top, left });
+  }, [isOpen, anchorElement, position, width]);
 
   // Reset adjusted position when menu closes or position prop changes
   useEffect(() => {
@@ -286,6 +369,11 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
       return "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)]";
     }
 
+    // For portaled menus with anchor element, use fixed positioning
+    if (anchorElement && menuPosition) {
+      return "fixed";
+    }
+
     // Desktop positioning - uses adjusted position to prevent overflow
     const positionToUse = adjustedPosition;
     
@@ -309,12 +397,28 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  // Get inline styles for positioning when using portal with anchor
+  const getPositionStyles = () => {
+    if (!anchorElement || !menuPosition) return {};
+    
+    if (position === "center") {
+      return {
+        transform: "translate(-50%, -50%)"
+      };
+    }
+    
+    return {
+      top: `${menuPosition.top}px`,
+      left: `${menuPosition.left}px`
+    };
+  };
+
+  if (!isOpen || !mounted) return null;
 
   // Calculate max height to prevent overflow
   const maxMenuHeight = isMobile ? "70vh" : "calc(100vh - 32px)";
 
-  return (
+  const menuContent = (
     <>
       {/* Backdrop Overlay */}
       {showBackdrop && (
@@ -333,7 +437,8 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
         style={{ 
           minWidth: width, 
           maxWidth,
-          maxHeight: maxMenuHeight
+          maxHeight: maxMenuHeight,
+          ...getPositionStyles()
         }}
         className={cn(
           getPositionClasses(),
@@ -463,6 +568,9 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
       </div>
     </>
   );
+
+  // Render menu in a portal to avoid overflow-hidden issues
+  return createPortal(menuContent, document.body);
 };
 
 export default AdvancedMenu;

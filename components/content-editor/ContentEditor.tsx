@@ -19,6 +19,7 @@ import type { ContentEditorProps, EditorMode, EditorModeConfig } from './types';
 import type { TuiEditorContentRef } from '@/components/mardown-display/chat-markdown/tui/TuiEditorContent';
 import { CopyDropdownButton } from './CopyDropdownButton';
 import { ContentManagerMenu } from './ContentManagerMenu';
+import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
 
 // Dynamic import for TUI editor
 const TuiEditorContent = dynamic(
@@ -91,6 +92,7 @@ export function ContentEditor({
     
     // Refs - properly typed
     const tuiEditorRef = useRef<TuiEditorContentRef>(null);
+    const plainTextareaRef = useRef<HTMLTextAreaElement>(null);
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const localContentRef = useRef(localContent);
     const modeRef = useRef(internalMode);
@@ -328,18 +330,29 @@ export function ContentEditor({
             <div className="bg-textured rounded-none overflow-visible">
                 {/* Plain Text Mode */}
                 {currentMode === 'plain' && (
-                    <Textarea
-                        value={localContent}
-                        onChange={(e) => handleContentChange(e.target.value)}
-                        placeholder={placeholder}
-                        className="w-full min-h-[300px] border-none rounded-none resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3"
-                        style={{ 
-                            height: 'auto',
-                            minHeight: '300px',
-                            maxHeight: 'none'
+                    <PromptEditorContextMenu
+                        getTextarea={() => plainTextareaRef.current}
+                        onContentInserted={() => {
+                            // Trigger a re-render after insertion
+                            if (plainTextareaRef.current) {
+                                handleContentChange(plainTextareaRef.current.value);
+                            }
                         }}
-                        rows={Math.max(12, Math.ceil(localContent.length / 80) + localContent.split('\n').length + 2)}
-                    />
+                    >
+                        <Textarea
+                            ref={plainTextareaRef}
+                            value={localContent}
+                            onChange={(e) => handleContentChange(e.target.value)}
+                            placeholder={placeholder}
+                            className="w-full min-h-[300px] border-none rounded-none resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3"
+                            style={{ 
+                                height: 'auto',
+                                minHeight: '300px',
+                                maxHeight: 'none'
+                            }}
+                            rows={Math.max(12, Math.ceil(localContent.length / 80) + localContent.split('\n').length + 2)}
+                        />
+                    </PromptEditorContextMenu>
                 )}
                 
                 {/* WYSIWYG Mode */}
