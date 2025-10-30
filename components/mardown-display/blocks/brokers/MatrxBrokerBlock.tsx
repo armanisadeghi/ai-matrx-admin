@@ -90,6 +90,9 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
     const elevationStyles = "border border-gray-200 dark:border-gray-600 shadow-sm";
     const { fetchDataBrokerAll, dataBrokerActions, dataBrokerRecordsById } = useDataBrokerWithFetch();
 
+    // Look up the actual broker data from the store
+    const brokerData = metadata.id ? dataBrokerRecordsById[metadata.id] : undefined;
+
     const updateBroker = useCallback((brokerId: string, updatedData: Partial<DataBrokerData>) => {
         dataBrokerActions.directUpdateRecord({matrxRecordId: `id:${brokerId}`, data: updatedData});
     }, [dataBrokerActions]);
@@ -132,10 +135,13 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
 
     const isBroken = !metadata.id;
 
+    // Display broker name from fetched data, fallback to metadata, then "Unknown Broker"
+    const displayName = brokerData?.name || metadata.name || "Unknown Broker";
+
     return (
         <ChatCollapsibleWrapper
             icon={<LuVariable className="h-6 w-6 text-blue-500 dark:text-blue-400" />}
-            title={"Broker: " + metadata.name || "Unknown Broker"}
+            title={`Broker: ${displayName}`}
             className={cn("group relative", isBroken && "border-red-300 dark:border-red-700")}
             initialOpen={false}
         >
@@ -157,7 +163,7 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                     <label className="text-sm text-muted-foreground w-24 flex-shrink-0">Name:</label>
                     <div className="flex-1">
                         <FancyInput
-                            value={editedMetadata.name || ""}
+                            value={brokerData?.name || editedMetadata.name || ""}
                             onChange={(e) => setEditedMetadata({ ...editedMetadata, name: e.target.value })}
                             className={cn("text-sm w-full", elevationStyles)}
                         />
@@ -168,7 +174,7 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                 <div className="flex items-center gap-4 mb-4">
                     <label className="text-sm text-muted-foreground w-24 flex-shrink-0">Component:</label>
                     <Select
-                        value={editedMetadata.defaultComponent || "none"}
+                        value={brokerData?.inputComponent || editedMetadata.defaultComponent || "none"}
                         onValueChange={(value) =>
                             setEditedMetadata({ ...editedMetadata, defaultComponent: value === "none" ? undefined : value })
                         }
@@ -191,7 +197,7 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                 <div className="flex items-center gap-4 mb-4">
                     <label className="text-sm text-muted-foreground w-24 flex-shrink-0">Data Type:</label>
                     <Select
-                        value={editedMetadata.dataType || "none"}
+                        value={brokerData?.dataType || editedMetadata.dataType || "none"}
                         onValueChange={(value) => setEditedMetadata({ ...editedMetadata, dataType: value === "none" ? undefined : value })}
                     >
                         <SelectTrigger className={cn("w-full", elevationStyles)}>
@@ -213,7 +219,7 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                     <label className="pl-2 mt-2 text-sm text-muted-foreground block mb-2">Default Value:</label>
                     <FancyTextarea
                         className={cn("min-h-[100px] font-mono text-sm w-full resize-y", elevationStyles)}
-                        value={editedMetadata.defaultValue || ""}
+                        value={brokerData?.defaultValue || editedMetadata.defaultValue || ""}
                         onChange={(e) => setEditedMetadata({ ...editedMetadata, defaultValue: e.target.value })}
                         placeholder="Enter default value"
                     />

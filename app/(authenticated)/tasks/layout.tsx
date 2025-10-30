@@ -1,16 +1,19 @@
 import { Metadata } from 'next';
 import { TaskProviderWrapper } from '@/features/tasks/components/TaskProviderWrapper';
+import { createRouteMetadata } from '@/utils/route-metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createRouteMetadata('/tasks', {
   title: 'Tasks | AI Matrx',
   description: 'Manage your tasks and projects efficiently with our powerful task management system',
-  keywords: ['tasks', 'task management', 'projects', 'productivity', 'todo', 'checklist'],
-  openGraph: {
-    title: 'Tasks | AI Matrx',
-    description: 'Manage your tasks and projects efficiently',
-    type: 'website',
+  additionalMetadata: {
+    keywords: ['tasks', 'task management', 'projects', 'productivity', 'todo', 'checklist'],
+    openGraph: {
+      title: 'Tasks | AI Matrx',
+      description: 'Manage your tasks and projects efficiently',
+      type: 'website',
+    },
   },
-};
+});
 
 export default function TasksLayout({
   children,

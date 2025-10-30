@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast-service";
 import { ContentEditorStack } from "@/components/content-editor/ContentEditorStack";
-import { RecipeEditHeader } from "./RecipeEditHeader";
+import { RecipeEditHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 
 interface CompiledVersion {
     id: string;
@@ -126,21 +127,34 @@ export function RecipeEditContent({ recipeId, recipeName, compiledVersions, user
 
     return (
         <>
+            {/* Compact header in portal */}
             <RecipeEditHeader
                 recipeId={recipeId}
-                recipeName={recipeName}
-                selectedVersionId={selectedVersionId}
-                onVersionChange={setSelectedVersionId}
-                versions={compiledVersions.map(v => ({ id: v.id, version: v.version }))}
                 isDirty={isDirty}
                 isSaving={isSaving}
                 onSave={handleSave}
                 onSettingsClick={() => setIsSettingsOpen(true)}
+                nextVersion={(compiledVersions[0]?.version || 0) + 1}
             />
 
             <div className="flex h-full overflow-hidden">
                 {/* Left Sidebar - Compact */}
                 <div className="w-52 border-r flex flex-col flex-shrink-0 overflow-hidden">
+                    {/* Version Selector */}
+                    <div className="p-2 border-b">
+                        <Select value={selectedVersionId} onValueChange={setSelectedVersionId}>
+                            <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {compiledVersions.map((v) => (
+                                    <SelectItem key={v.id} value={v.id} className="text-xs">
+                                        v{v.version || "N/A"}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
 
                     {/* Brokers */}
                     <div className="p-2 border-b">

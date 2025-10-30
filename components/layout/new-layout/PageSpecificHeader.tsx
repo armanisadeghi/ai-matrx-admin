@@ -128,6 +128,73 @@ export function ChatHeader({ baseRoute = "/chat" }: ChatHeaderProps) {
   );
 }
 
+interface RecipeViewHeaderProps {
+  recipeId: string;
+}
+
+export function RecipeViewHeader(props: RecipeViewHeaderProps) {
+  const pathname = usePathname();
+  
+  // Only render on recipe view pages (not edit)
+  if (!pathname?.includes('/ai/recipes/') || pathname?.includes('/edit')) {
+    return null;
+  }
+
+  const [RecipeViewHeaderCompact, setRecipeViewHeaderCompact] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/features/recipes/components/RecipeViewHeaderCompact').then((module) => {
+      setRecipeViewHeaderCompact(() => module.RecipeViewHeaderCompact);
+    });
+  }, []);
+
+  if (!RecipeViewHeaderCompact) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <RecipeViewHeaderCompact {...props} />
+    </PageSpecificHeader>
+  );
+}
+
+interface RecipeEditHeaderProps {
+  recipeId: string;
+  isDirty: boolean;
+  isSaving: boolean;
+  onSave: () => void;
+  onSettingsClick: () => void;
+  nextVersion: number;
+}
+
+export function RecipeEditHeader(props: RecipeEditHeaderProps) {
+  const pathname = usePathname();
+  
+  // Only render on recipe edit pages
+  if (!pathname?.includes('/ai/recipes/') || !pathname?.includes('/edit')) {
+    return null;
+  }
+
+  const [RecipeEditHeaderCompact, setRecipeEditHeaderCompact] = useState<any>(null);
+
+  useEffect(() => {
+    import('@/features/recipes/components/RecipeEditHeaderCompact').then((module) => {
+      setRecipeEditHeaderCompact(() => module.RecipeEditHeaderCompact);
+    });
+  }, []);
+
+  if (!RecipeEditHeaderCompact) {
+    return null;
+  }
+
+  return (
+    <PageSpecificHeader>
+      <RecipeEditHeaderCompact {...props} />
+    </PageSpecificHeader>
+  );
+}
+
 interface NotesHeaderProps {
   onCreateNote: () => void;
   onCreateFolder: () => void;
@@ -176,7 +243,7 @@ interface AppletHeaderProps {
 export function AppletHeader(props: AppletHeaderProps) {
   const pathname = usePathname();
   
-  // Only render on custom app pages
+  // Only render on applet pages
   if (!pathname?.includes('/apps/custom/')) {
     return null;
   }
@@ -185,9 +252,8 @@ export function AppletHeader(props: AppletHeaderProps) {
   const [AppletHeaderCompact, setAppletHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
-    import('@/features/applet/runner/header/AppletHeaderCompact').then((module) => {
-      setAppletHeaderCompact(() => module.AppletHeaderCompact);
-    });
+    // Applet header doesn't exist yet, skip
+    setAppletHeaderCompact(() => null);
   }, []);
 
   if (!AppletHeaderCompact) {

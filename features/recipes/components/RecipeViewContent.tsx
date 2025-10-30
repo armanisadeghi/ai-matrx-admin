@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ContentEditorStack } from "@/components/content-editor/ContentEditorStack";
-import { RecipeViewHeader } from "./RecipeViewHeader";
+import { RecipeViewHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 
 interface CompiledVersion {
     id: string;
@@ -43,17 +43,27 @@ export function RecipeViewContent({ recipeId, recipeName, compiledVersions }: Re
 
     return (
         <>
-            <RecipeViewHeader
-                recipeId={recipeId}
-                recipeName={recipeName}
-                selectedVersionId={selectedVersionId}
-                onVersionChange={setSelectedVersionId}
-                versions={compiledVersions.map(v => ({ id: v.id, version: v.version }))}
-            />
+            {/* Compact header in portal */}
+            <RecipeViewHeader recipeId={recipeId} />
             
             <div className="flex h-full overflow-hidden">
-                {/* Sidebar */}
+                {/* Version Selector - Top of sidebar */}
                 <div className="w-60 border-r flex flex-col flex-shrink-0 overflow-hidden">
+                    <div className="p-2 border-b">
+                        <Select value={selectedVersionId} onValueChange={setSelectedVersionId}>
+                            <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {compiledVersions.map((v) => (
+                                    <SelectItem key={v.id} value={v.id} className="text-xs">
+                                        v{v.version || "N/A"}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     {/* Brokers */}
                     <div className="p-2 border-b">
                         <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5">

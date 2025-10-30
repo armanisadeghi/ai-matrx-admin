@@ -34,6 +34,12 @@ import { IoChatboxOutline } from "react-icons/io5";
 import { FaIndent } from "react-icons/fa6";
 import { IconNewSection } from "@tabler/icons-react";
 
+export interface FaviconConfig {
+    color: string; // Primary color for the favicon
+    letter?: string; // Letter/symbol to display (1-2 chars)
+    emoji?: string; // Optional emoji as alternative to letter
+}
+
 export interface NavigationLink {
     label: string;
     href: string;
@@ -42,6 +48,7 @@ export interface NavigationLink {
     category?: string; // For grouping admin links
     profileMenu?: boolean; // Show in profile dropdown menu
     dashboard?: boolean; // Show on dashboard
+    favicon?: FaviconConfig; // Unique favicon configuration for this route
 }
 
 // All navigation links in the application
@@ -54,12 +61,23 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#8b5cf6", letter: "AI" }, // Purple
+    },
+    {
+        label: "AI Recipes",
+        href: "/ai/recipes",
+        icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        favicon: { color: "#d946ef", letter: "R" }, // Fuchsia
     },
     {
         label: "Prompt Builder",
         href: "/ai/prompts",
         icon: <FaIndent className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
+        favicon: { color: "#a855f7", letter: "P" }, // Light Purple
     },
     {
         label: "Chat",
@@ -68,6 +86,7 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#3b82f6", letter: "C" }, // Blue
     },
     {
         label: "Notes",
@@ -76,6 +95,7 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#f59e0b", letter: "N" }, // Amber
     },
     {
         label: "Tasks",
@@ -84,6 +104,7 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#10b981", letter: "T" }, // Green
     },
     {
         label: "Tables",
@@ -92,6 +113,7 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#06b6d4", letter: "D" }, // Cyan
     },
     {
         label: "Applets",
@@ -100,6 +122,7 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#ec4899", letter: "A" }, // Pink
     },
     {
         label: "Voices",
@@ -108,6 +131,7 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#f97316", letter: "V" }, // Orange
     },
     {
         label: "Image Search",
@@ -116,18 +140,21 @@ export const allNavigationLinks: NavigationLink[] = [
         section: "primary",
         profileMenu: true,
         dashboard: true,
+        favicon: { color: "#14b8a6", letter: "I" }, // Teal
     },
     {
         label: "Webscraper",
         href: "/scraper",
         icon: <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
+        favicon: { color: "#6366f1", letter: "W" }, // Indigo
     },
     {
         label: "Workflows",
         href: "/workflows",
         icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "primary",
+        favicon: { color: "#8b5cf6", letter: "WF" }, // Purple
     },
     {
         label: "App Builder",
@@ -136,6 +163,7 @@ export const allNavigationLinks: NavigationLink[] = [
             <SiCodemagic className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
         ),
         section: "primary",
+        favicon: { color: "#ef4444", letter: "AB" }, // Red
     },
 
     // Admin Navigation Links

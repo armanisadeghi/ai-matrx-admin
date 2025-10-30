@@ -1,6 +1,13 @@
 // File: app/(authenticated)/data/layout.tsx
 
 import React from 'react';
+import { createRouteMetadata } from '@/utils/route-metadata';
+
+// Generate metadata with automatic favicon for the Data/Tables route
+export const metadata = createRouteMetadata('/data', {
+  title: 'Tables',
+  description: 'Manage your data tables',
+});
 
 export default function DataLayout({
   children,
