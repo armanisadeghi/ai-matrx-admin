@@ -47,9 +47,10 @@ export function RecipeViewContent({ recipeId, recipeName, compiledVersions }: Re
             <RecipeViewHeader recipeId={recipeId} />
             
             <div className="flex h-full overflow-hidden">
-                {/* Version Selector - Top of sidebar */}
+                {/* Left Sidebar - Version Selector, Brokers, and Settings */}
                 <div className="w-60 border-r flex flex-col flex-shrink-0 overflow-hidden">
-                    <div className="p-2 border-b">
+                    {/* Version Selector - Fixed height */}
+                    <div className="p-2 border-b flex-shrink-0">
                         <Select value={selectedVersionId} onValueChange={setSelectedVersionId}>
                             <SelectTrigger className="h-8 text-xs">
                                 <SelectValue />
@@ -64,13 +65,13 @@ export function RecipeViewContent({ recipeId, recipeName, compiledVersions }: Re
                         </Select>
                     </div>
 
-                    {/* Brokers */}
-                    <div className="p-2 border-b">
-                        <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5">
+                    {/* Brokers - Flexible height with scroll */}
+                    <div className="p-2 border-b flex-1 min-h-0 flex flex-col">
+                        <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5 flex-shrink-0">
                             Brokers ({brokers.length})
                         </div>
-                        <ScrollArea className="h-32">
-                            <div className="space-y-1">
+                        <ScrollArea className="flex-1 min-h-0">
+                            <div className="space-y-1 pr-3">
                                 {brokers.map((broker: any, i: number) => (
                                     <div key={i} className="text-xs px-1.5 py-1 bg-muted rounded truncate">
                                         {broker.name}
@@ -83,20 +84,20 @@ export function RecipeViewContent({ recipeId, recipeName, compiledVersions }: Re
                         </ScrollArea>
                     </div>
 
-                    {/* Settings */}
+                    {/* Settings - Flexible height with scroll */}
                     <div className="p-2 flex-1 min-h-0 flex flex-col">
-                        <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5">
+                        <div className="text-xs font-medium text-muted-foreground uppercase mb-1.5 flex-shrink-0">
                             Settings
                         </div>
-                        <ScrollArea className="flex-1">
-                            <pre className="text-[9px] leading-tight whitespace-pre-wrap break-words">
+                        <ScrollArea className="flex-1 min-h-0">
+                            <pre className="text-[9px] leading-tight whitespace-pre-wrap break-words pr-3">
                                 {JSON.stringify(settings, null, 1)}
                             </pre>
                         </ScrollArea>
                     </div>
                 </div>
 
-                {/* Main Content - Messages */}
+                {/* Main Content - Messages with independent scroll */}
                 <div className="flex-1 overflow-hidden">
                     <ScrollArea className="h-full">
                         <div className="p-3">

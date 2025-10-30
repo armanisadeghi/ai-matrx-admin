@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from '@/features/tasks/components/Sidebar';
-import TaskContent from '@/features/tasks/components/TaskContent';
+import TaskContentNew from '@/features/tasks/components/TaskContentNew';
 import { TaskProvider, useTaskContext } from '@/features/tasks/context/TaskContext';
 
 export default function TaskApp() {
@@ -8,7 +8,7 @@ export default function TaskApp() {
     <TaskProvider>
       <div className="flex h-full w-full bg-textured text-gray-900 dark:bg-gray-900 dark:text-white">
         <Sidebar />
-        <TaskContent />
+        <TaskContentNew />
       </div>
     </TaskProvider>
   );

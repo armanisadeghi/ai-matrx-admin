@@ -253,9 +253,9 @@ export function TaskProvider({ children }: TaskProviderProps) {
   };
 
   // Add new task with OPTIMISTIC update
-  const addTask = async (e: React.FormEvent, description?: string, dueDate?: string, targetProjectId?: string) => {
+  const addTask = async (e: React.FormEvent, description?: string, dueDate?: string, targetProjectId?: string): Promise<string | null> => {
     e.preventDefault();
-    if (!newTaskTitle.trim() || isCreatingTask) return;
+    if (!newTaskTitle.trim() || isCreatingTask) return null;
     
     const projectId = targetProjectId || activeProject || null;
     
@@ -269,6 +269,8 @@ export function TaskProvider({ children }: TaskProviderProps) {
       project_id: projectId,
       parent_task_id: null,
       status: 'incomplete',
+      priority: null,
+      assignee_id: null,
       user_id: '', // Will be set by server
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -309,6 +311,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
         );
         toast.success('Task added');
         setNewTaskTitle('');
+        return newTask.id; // Return the created task ID
       } else {
         // FAILURE: Remove optimistic task
         setDbProjectsWithTasks(prev => 
@@ -318,6 +321,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
           }))
         );
         toast.error('Failed to add task');
+        return null;
       }
     } catch (error) {
       // ERROR: Remove optimistic task
@@ -329,6 +333,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
       );
       console.error('Error adding task:', error);
       toast.error('Failed to add task');
+      return null;
     } finally {
       setIsCreatingTask(false);
     }

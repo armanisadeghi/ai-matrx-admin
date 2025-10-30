@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Calendar, Flag, User, Paperclip, MessageSquare, 
-  CheckSquare, Loader2, Plus, Send 
+  CheckSquare, Loader2, Plus, Send, Save 
 } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useDebounce } from '../hooks/useDebounce';
 
 interface TaskDetailsPanelProps {
   task: any;
@@ -23,47 +22,65 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     updateTaskDescription,
     updateTaskDueDate,
     projects,
+    refresh,
   } = useTaskContext();
 
   const [description, setDescription] = useState(task.description || '');
   const [dueDate, setDueDate] = useState(task.dueDate || '');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | null>(task.priority || null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [subtasks, setSubtasks] = useState<any[]>(task.subtasks || []);
   const [newSubtask, setNewSubtask] = useState('');
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
 
-  const debouncedDescription = useDebounce(description, 1500);
-
-  // Update local state when task changes
+  // Update local state when task changes from context
   useEffect(() => {
     setDescription(task.description || '');
     setDueDate(task.dueDate || '');
     setPriority(task.priority || null);
     setSubtasks(task.subtasks || []);
-  }, [task.id]);
+    setIsDirty(false); // Reset dirty state when task updates
+  }, [task.id, task.description, task.dueDate, task.priority, task.subtasks]);
 
-  // Auto-save description
-  useEffect(() => {
-    if (debouncedDescription !== task.description) {
-      setIsSaving(true);
-      updateTaskDescription(task.projectId, task.id, debouncedDescription)
-        .finally(() => setIsSaving(false));
-    }
-  }, [debouncedDescription]);
-
-  const handleDueDateChange = async (newDate: string) => {
-    setDueDate(newDate);
-    setIsSaving(true);
-    await updateTaskDueDate(task.projectId, task.id, newDate);
-    setIsSaving(false);
+  const handleDescriptionChange = (newDescription: string) => {
+    setDescription(newDescription);
+    setIsDirty(true);
   };
 
-  const handlePriorityChange = async (newPriority: 'low' | 'medium' | 'high') => {
+  const handleDueDateChange = (newDate: string) => {
+    setDueDate(newDate);
+    setIsDirty(true);
+  };
+
+  const handlePriorityChange = (newPriority: 'low' | 'medium' | 'high') => {
     setPriority(newPriority);
-    // TODO: Implement priority update in context
-    console.log('Update priority:', newPriority);
+    setIsDirty(true);
+  };
+
+  const handleSave = async () => {
+    if (!isDirty || isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      // Save all changes
+      if (description !== task.description) {
+        await updateTaskDescription(task.projectId, task.id, description);
+      }
+      if (dueDate !== task.dueDate) {
+        await updateTaskDueDate(task.projectId, task.id, dueDate);
+      }
+      // TODO: Save priority when implemented in context
+      
+      // Refresh to get updated data
+      await refresh();
+      setIsDirty(false);
+    } catch (error) {
+      console.error('Error saving task:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAddSubtask = () => {
@@ -120,37 +137,44 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
   const totalSubtasks = subtasks.length;
 
   return (
-    <>
-      {/* Mobile Backdrop */}
-      <div 
-        className="md:hidden fixed inset-0 bg-black/50 z-30"
-        onClick={onClose}
-      />
-      
-      {/* Panel */}
-      <div className="fixed md:relative right-0 top-0 bottom-0 w-full md:w-96 h-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden z-40 shadow-2xl md:shadow-none">
+      <div className="h-full flex flex-col overflow-hidden">
         {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-start justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex-1 pr-2">
             {task.title}
           </h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="flex-shrink-0 h-8 w-8"
-          >
-            <X size={18} />
-          </Button>
-        </div>
-
-        {isSaving && (
-          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <Loader2 size={12} className="animate-spin" />
-            Saving...
+          <div className="flex items-center gap-2">
+            {isDirty && (
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                size="sm"
+                className="h-8 px-3"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin mr-1" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={14} className="mr-1" />
+                    Save
+                  </>
+                )}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="flex-shrink-0 h-8 w-8"
+            >
+              <X size={18} />
+            </Button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Scrollable Content */}
@@ -235,7 +259,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
           </label>
           <Textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Implement the /api/v1/auth/login endpoint using JWT for token generation. Include password hashing with bcrypt."
             className="text-sm resize-none min-h-[100px]"
           />
@@ -327,7 +351,6 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
         </div>
       </div>
     </div>
-    </>
   );
 }
 

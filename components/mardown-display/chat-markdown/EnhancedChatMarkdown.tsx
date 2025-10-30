@@ -53,7 +53,7 @@ import { parseDiagramJSON } from "../blocks/diagram/parseDiagramJSON";
 import ReasoningVisualization from "../blocks/thinking-reasoning/ReasoningVisualization";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
 import { useAppSelector } from "@/lib/redux";
-import { createTaskResponseSelectors, selectPrimaryResponseToolUpdatesByTaskId } from "@/lib/redux/socket-io";
+import { selectPrimaryResponseToolUpdatesByTaskId } from "@/lib/redux/socket-io";
 import MathProblemBlock from "../blocks/math/MathProblemBlock";
 import MathProblemLoadingVisualization from "../blocks/math/MathProblemLoadingVisualization";
 

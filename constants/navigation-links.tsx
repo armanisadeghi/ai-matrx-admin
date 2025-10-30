@@ -173,6 +173,7 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <ShieldEllipsis className="text-rose-500 dark:text-rose-600 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "primary",
+        favicon: { color: "#ef4444", letter: "AD" }, // Red
     },
     {
         label: "Official Components",
@@ -225,6 +226,7 @@ export const allNavigationLinks: NavigationLink[] = [
             <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
         ),
         section: "admin",
+        category: "Applets",
     },
     {
         label: "Dynamic Layout Demo",
@@ -251,13 +253,14 @@ export const allNavigationLinks: NavigationLink[] = [
             <SiMagic className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />
         ),
         section: "admin",
-        category: "App Builder",
+        category: "Applets",
     },
     {
         label: "Markdown Tests",
         href: "/tests/markdown-tests",
         icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
+        category: "Concepts",
     },
     {
         label: "Socket Admin",
@@ -271,14 +274,14 @@ export const allNavigationLinks: NavigationLink[] = [
         href: "/demo/many-to-many-ui/claude",
         icon: <TbRelationManyToMany className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
-        category: "AI Integrations",
+        category: "Automation",
     },
     {
         label: "Workflows",
         href: "/demo/workflows",
         icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
-        category: "Workflows",
+        category: "Automation",
     },
     {
         label: "Tailwind Test",
@@ -348,6 +351,7 @@ export const allNavigationLinks: NavigationLink[] = [
         href: "/entity-crud",
         icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
+        category: "Entities",
     },
 ];
 

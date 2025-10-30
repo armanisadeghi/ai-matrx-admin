@@ -134,12 +134,14 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         // This handles cases where content follows a list without proper spacing
         
         // First, handle nested/indented list items (most specific case)
-        processed = processed.replace(/(^|\n)(\s+[*-] .+)\n([^\n\s\-#*\d][^\n]*)/gm, '$1$2\n\n$3');
+        // Use negative lookahead to exclude actual list markers (* or -) but allow bold text (**)
+        processed = processed.replace(/(^|\n)(\s+[*-] .+)\n(?!\s*[*-]\s)([^\n\s\-#\d][^\n]*)/gm, '$1$2\n\n$3');
         
         // Then handle regular list items
-        processed = processed.replace(/(^|\n)(- .+)\n([^\n\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
-        processed = processed.replace(/(^|\n)(\d+\. .+)\n([^\n\d\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
-        processed = processed.replace(/(^|\n)(\d+\) .+)\n([^\n\d\-#*\s][^\n]*)/gm, '$1$2\n\n$3');
+        // Use negative lookahead to exclude actual list markers but allow bold text
+        processed = processed.replace(/(^|\n)(- .+)\n(?!\s*[*-]\s)([^\n\s\-#\d][^\n]*)/gm, '$1$2\n\n$3');
+        processed = processed.replace(/(^|\n)(\d+\. .+)\n(?!\s*\d+[.)]\s)([^\n\s\-#\d][^\n]*)/gm, '$1$2\n\n$3');
+        processed = processed.replace(/(^|\n)(\d+\) .+)\n(?!\s*\d+[.)]\s)([^\n\s\-#\d][^\n]*)/gm, '$1$2\n\n$3');
         
         // Clean up any excessive line breaks (more than 2 consecutive newlines)
         processed = processed.replace(/\n{3,}/g, '\n\n');

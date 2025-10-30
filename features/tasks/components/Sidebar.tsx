@@ -146,14 +146,14 @@ export default function Sidebar(): JSX.Element {
                       <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
                     </div>
                   )}
-                  <button
+                  <div
                     onClick={() => {
                       if (!isOperating) {
                         setActiveProject(project.id);
                         setShowAllProjects(false);
                       }
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors group ${
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors group cursor-pointer ${
                       isActive
                         ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -178,7 +178,7 @@ export default function Sidebar(): JSX.Element {
                     >
                       <X size={14} />
                     </button>
-                  </button>
+                  </div>
                 </div>
               );
             })}

@@ -1,7 +1,32 @@
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "reasoning" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | "questionnaire" | "flashcards" | "quiz" | "presentation" | "cooking_recipe" | "timeline" | "progress_tracker" | "comparison_table" | "troubleshooting" | "resources" | "decision_tree" | "research" | "diagram" | "math_problem" | string;
+    type:
+        | "text"
+        | "code"
+        | "table"
+        | "thinking"
+        | "reasoning"
+        | "image"
+        | "tasks"
+        | "transcript"
+        | "structured_info"
+        | "matrxBroker"
+        | "questionnaire"
+        | "flashcards"
+        | "quiz"
+        | "presentation"
+        | "cooking_recipe"
+        | "timeline"
+        | "progress_tracker"
+        | "comparison_table"
+        | "troubleshooting"
+        | "resources"
+        | "decision_tree"
+        | "research"
+        | "diagram"
+        | "math_problem"
+        | string;
     content: string;
     language?: string;
     src?: string;
@@ -58,13 +83,29 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     let currentText = "";
     let insideMarkdownBlock = false;
     let currentIndex = 0;
-    
+
     // Table streaming buffer
     let potentialTableLines: string[] = [];
     let inPotentialTable = false;
 
     // List of special tags to handle
-    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool", "questionnaire", "flashcards", "cooking_recipe", "timeline", "progress_tracker", "troubleshooting", "resources", "research"];
+    const specialTags = [
+        "info",
+        "task",
+        "database",
+        "private",
+        "plan",
+        "event",
+        "tool",
+        "questionnaire",
+        "flashcards",
+        "cooking_recipe",
+        "timeline",
+        "progress_tracker",
+        "troubleshooting",
+        "resources",
+        "research",
+    ];
 
     // Helper function to check if a line looks like a table row
     const looksLikeTableRow = (line: string): boolean => {
@@ -81,44 +122,41 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Helper function to process potential table buffer
     const processPotentialTable = (): boolean => {
         if (potentialTableLines.length < 2) return false;
-        
+
         // Check if we have header + separator pattern
-        const hasValidSeparator = potentialTableLines.length >= 2 && 
-                                 isTableSeparator(potentialTableLines[1]);
-        
+        const hasValidSeparator = potentialTableLines.length >= 2 && isTableSeparator(potentialTableLines[1]);
+
         if (hasValidSeparator) {
             // This is a confirmed table, process it with controlled release
             const tableState = analyzeTableCompletion(potentialTableLines);
-            
+
             // Create a stable cache key based on table header structure, not row count
-            const headerHash = potentialTableLines.slice(0, 2).join('|').replace(/\s+/g, '');
+            const headerHash = potentialTableLines.slice(0, 2).join("|").replace(/\s+/g, "");
             const cacheKey = `table-${headerHash}`;
-            
+
             // Check if we should release new content
             const cached = tableCache.get(cacheKey);
             let contentToRelease = "";
             let shouldUpdate = false;
-            
+
             if (tableState.isComplete || tableState.completeRowCount > 0) {
                 // Build content with header, separator, and complete rows only
                 const headerAndSeparator = potentialTableLines.slice(0, 2);
                 const completeRowsContent = tableState.completeRows;
                 contentToRelease = [...headerAndSeparator, ...completeRowsContent].join("\n");
-                
+
                 // Check if we have new complete rows (compare row count, not content)
                 shouldUpdate = !cached || cached.metadata?.completeRowCount !== tableState.completeRowCount;
             } else {
                 // No complete rows yet, don't create a table block
                 return true; // Keep buffering
             }
-            
+
             // Update cache if content changed
             if (shouldUpdate) {
                 // Remove any existing table block with the same cache key
-                const existingBlockIndex = blocks.findIndex(block => 
-                    block.type === "table" && block.metadata?.cacheKey === cacheKey
-                );
-                
+                const existingBlockIndex = blocks.findIndex((block) => block.type === "table" && block.metadata?.cacheKey === cacheKey);
+
                 if (existingBlockIndex !== -1) {
                     // Update existing block instead of creating new one
                     blocks[existingBlockIndex] = {
@@ -129,8 +167,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                             isComplete: tableState.isComplete,
                             completeRowCount: tableState.completeRowCount,
                             totalRows: tableState.totalRows,
-                            hasPartialContent: tableState.bufferRow.length > 0
-                        }
+                            hasPartialContent: tableState.bufferRow.length > 0,
+                        },
                     };
                 } else {
                     // Create new table block
@@ -142,11 +180,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                             isComplete: tableState.isComplete,
                             completeRowCount: tableState.completeRowCount,
                             totalRows: tableState.totalRows,
-                            hasPartialContent: tableState.bufferRow.length > 0
-                        }
+                            hasPartialContent: tableState.bufferRow.length > 0,
+                        },
                     });
                 }
-                
+
                 // Update cache
                 tableCache.set(cacheKey, {
                     content: contentToRelease,
@@ -156,11 +194,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                         isComplete: tableState.isComplete,
                         completeRowCount: tableState.completeRowCount,
                         totalRows: tableState.totalRows,
-                        hasPartialContent: tableState.bufferRow.length > 0
-                    }
+                        hasPartialContent: tableState.bufferRow.length > 0,
+                    },
                 });
             }
-            
+
             return true; // Table processed
         } else {
             // Not a table, flush buffer to text
@@ -184,13 +222,13 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         for (let i = 0; i < dataLines.length; i++) {
             const line = dataLines[i];
             const trimmedLine = removeMatrxPattern(line).trim();
-            
+
             if (trimmedLine.startsWith("|") && trimmedLine.includes("|", 1)) {
                 totalRows++;
-                
+
                 // Check if this looks like a complete row
                 const isCompleteRow = trimmedLine.endsWith("|") || i < dataLines.length - 1;
-                
+
                 if (isCompleteRow) {
                     completeRows.push(line);
                 } else {
@@ -208,83 +246,84 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             completeRows,
             bufferRow,
             totalRows,
-            completeRowCount: completeRows.length
+            completeRowCount: completeRows.length,
         };
     };
 
     // Function to analyze questionnaire completion state
     const analyzeQuestionnaireCompletion = (content: string): QuestionnaireState => {
-        const lines = content.split('\n');
+        const lines = content.split("\n");
         const completeQuestions: string[] = [];
         let currentQuestion: string[] = [];
         let totalQuestions = 0;
         let isComplete = false;
-        
+
         // Check if questionnaire is fully complete (has closing tag)
-        isComplete = content.includes('</questionnaire>');
-        
+        isComplete = content.includes("</questionnaire>");
+
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            
+
             // Detect start of new question
             if (line.match(/^###\s+\*\*Q\d+:/) || line.match(/^###\s+Q\d+:/) || line.match(/^\*\*Q\d+:/)) {
                 totalQuestions++;
-                
+
                 // Save previous question if it was complete
                 if (currentQuestion.length > 0) {
-                    completeQuestions.push(currentQuestion.join('\n'));
+                    completeQuestions.push(currentQuestion.join("\n"));
                 }
                 currentQuestion = [lines[i]];
-            } 
+            }
             // Detect question separator (end of current question)
-            else if (line === '---') {
+            else if (line === "---") {
                 currentQuestion.push(lines[i]);
-                if (currentQuestion.length > 1) { // Must have more than just the separator
-                    completeQuestions.push(currentQuestion.join('\n'));
+                if (currentQuestion.length > 1) {
+                    // Must have more than just the separator
+                    completeQuestions.push(currentQuestion.join("\n"));
                 }
                 currentQuestion = [];
-            } 
+            }
             // Accumulate question content
             else if (currentQuestion.length > 0 || line.length > 0) {
                 currentQuestion.push(lines[i]);
             }
         }
-        
+
         // If questionnaire is complete, include the final question even without separator
         if (isComplete && currentQuestion.length > 0) {
-            completeQuestions.push(currentQuestion.join('\n'));
+            completeQuestions.push(currentQuestion.join("\n"));
         }
-        
+
         return {
             isComplete,
             completeQuestions,
-            bufferContent: isComplete ? '' : currentQuestion.join('\n'),
+            bufferContent: isComplete ? "" : currentQuestion.join("\n"),
             totalQuestions,
-            completeQuestionCount: completeQuestions.length
+            completeQuestionCount: completeQuestions.length,
         };
     };
 
     // Function to analyze flashcard completion state
     const analyzeFlashcardCompletion = (content: string): FlashcardState => {
-        const lines = content.split('\n');
+        const lines = content.split("\n");
         const completeCards: string[] = [];
         let currentCard: string[] = [];
         let totalCards = 0;
         let isComplete = false;
         let hasFront = false;
         let hasBack = false;
-        
+
         // Check if flashcard block is fully complete (has closing tag)
-        isComplete = content.includes('</flashcards>');
-        
+        isComplete = content.includes("</flashcards>");
+
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            
+
             // Detect start of new flashcard (Front: or Question:)
             if (line.match(/^(?:Front|Question):/i)) {
                 // Save previous card if it was complete
                 if (currentCard.length > 0 && hasFront && hasBack) {
-                    completeCards.push(currentCard.join('\n'));
+                    completeCards.push(currentCard.join("\n"));
                 }
                 currentCard = [lines[i]];
                 hasFront = true;
@@ -297,9 +336,9 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 hasBack = true;
             }
             // Detect card separator (end of current card)
-            else if (line === '---') {
+            else if (line === "---") {
                 if (currentCard.length > 0 && hasFront && hasBack) {
-                    completeCards.push(currentCard.join('\n'));
+                    completeCards.push(currentCard.join("\n"));
                 }
                 currentCard = [];
                 hasFront = false;
@@ -310,18 +349,18 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 currentCard.push(lines[i]);
             }
         }
-        
+
         // If flashcard block is complete, include the final card even without separator
         if (isComplete && currentCard.length > 0 && hasFront && hasBack) {
-            completeCards.push(currentCard.join('\n'));
+            completeCards.push(currentCard.join("\n"));
         }
-        
+
         return {
             isComplete,
             completeCards,
-            bufferContent: isComplete ? '' : currentCard.join('\n'),
+            bufferContent: isComplete ? "" : currentCard.join("\n"),
             totalCards,
-            completeCardCount: completeCards.length
+            completeCardCount: completeCards.length,
         };
     };
 
@@ -330,7 +369,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         const hasTitle = /^###\s+.+$/m.test(content);
         const hasIngredients = /####\s*Ingredients?:/i.test(content);
         const hasInstructions = /####\s*Instructions?:/i.test(content);
-        const isComplete = content.includes('</cooking_recipe>');
+        const isComplete = content.includes("</cooking_recipe>");
         const contentLength = content.length;
 
         return {
@@ -338,7 +377,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             hasTitle,
             hasIngredients,
             hasInstructions,
-            contentLength
+            contentLength,
         };
     };
 
@@ -361,35 +400,35 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         const fullContent = content.join("\n");
-        
+
         // Special handling for questionnaire tags
         if (tag === "questionnaire") {
             const questionnaireState = analyzeQuestionnaireCompletion(fullContent);
-            
+
             // Override isComplete based on whether we found the closing tag
             const actuallyComplete = foundClosingTag;
-            
+
             // Create a unique cache key based on the content hash
             const contentHash = `${questionnaireState.completeQuestionCount}-${actuallyComplete}`;
             const cacheKey = `questionnaire-${contentHash}`;
-            
+
             // Check if we should release new content
             const cached = questionnaireCache.get(cacheKey);
             let contentToRelease = "";
             let shouldUpdate = false;
-            
+
             if (actuallyComplete) {
                 // If questionnaire is complete, release all content
                 contentToRelease = fullContent;
                 shouldUpdate = true;
             } else {
                 // Only release complete questions
-                contentToRelease = questionnaireState.completeQuestions.join('\n\n---\n\n');
-                
+                contentToRelease = questionnaireState.completeQuestions.join("\n\n---\n\n");
+
                 // Check if we have new complete questions
                 shouldUpdate = !cached || cached.content !== contentToRelease;
             }
-            
+
             // Update cache if content changed
             if (shouldUpdate) {
                 questionnaireCache.set(cacheKey, {
@@ -399,11 +438,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                         isComplete: actuallyComplete,
                         completeQuestionCount: questionnaireState.completeQuestionCount,
                         totalQuestions: questionnaireState.totalQuestions,
-                        hasPartialContent: !actuallyComplete && questionnaireState.bufferContent.length > 0
-                    }
+                        hasPartialContent: !actuallyComplete && questionnaireState.bufferContent.length > 0,
+                    },
                 });
             }
-            
+
             // Return cached content if no update needed
             const finalCache = questionnaireCache.get(cacheKey);
             return {
@@ -413,39 +452,39 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     isComplete: actuallyComplete,
                     completeQuestionCount: questionnaireState.completeQuestionCount,
                     totalQuestions: questionnaireState.totalQuestions,
-                    hasPartialContent: !actuallyComplete && questionnaireState.bufferContent.length > 0
-                }
+                    hasPartialContent: !actuallyComplete && questionnaireState.bufferContent.length > 0,
+                },
             };
         }
 
         // Special handling for flashcard tags
         if (tag === "flashcards") {
             const flashcardState = analyzeFlashcardCompletion(fullContent);
-            
+
             // Override isComplete based on whether we found the closing tag
             const actuallyComplete = foundClosingTag;
-            
+
             // Create a unique cache key based on the content hash
             const contentHash = `${flashcardState.completeCardCount}-${actuallyComplete}`;
             const cacheKey = `flashcards-${contentHash}`;
-            
+
             // Check if we should release new content
             const cached = flashcardCache.get(cacheKey);
             let contentToRelease = "";
             let shouldUpdate = false;
-            
+
             if (actuallyComplete) {
                 // If flashcard block is complete, release all content
                 contentToRelease = fullContent;
                 shouldUpdate = true;
             } else {
                 // Only release complete flashcards
-                contentToRelease = flashcardState.completeCards.join('\n\n---\n\n');
-                
+                contentToRelease = flashcardState.completeCards.join("\n\n---\n\n");
+
                 // Check if we have new complete flashcards
                 shouldUpdate = !cached || cached.content !== contentToRelease;
             }
-            
+
             // Update cache if content changed
             if (shouldUpdate) {
                 flashcardCache.set(cacheKey, {
@@ -455,11 +494,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                         isComplete: actuallyComplete,
                         completeCardCount: flashcardState.completeCardCount,
                         totalCards: flashcardState.totalCards,
-                        hasPartialContent: !actuallyComplete && flashcardState.bufferContent.length > 0
-                    }
+                        hasPartialContent: !actuallyComplete && flashcardState.bufferContent.length > 0,
+                    },
                 });
             }
-            
+
             // Return cached content if no update needed
             const finalCache = flashcardCache.get(cacheKey);
             return {
@@ -469,27 +508,27 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     isComplete: actuallyComplete,
                     completeCardCount: flashcardState.completeCardCount,
                     totalCards: flashcardState.totalCards,
-                    hasPartialContent: !actuallyComplete && flashcardState.bufferContent.length > 0
-                }
+                    hasPartialContent: !actuallyComplete && flashcardState.bufferContent.length > 0,
+                },
             };
         }
 
         // Special handling for cooking_recipe tags
         if (tag === "cooking_recipe") {
             const recipeState = analyzeRecipeCompletion(fullContent);
-            
+
             // Override isComplete based on whether we found the closing tag
             const actuallyComplete = foundClosingTag;
-            
+
             // Create a unique cache key based on the content state
             const contentHash = `${recipeState.contentLength}-${actuallyComplete}-${recipeState.hasTitle}-${recipeState.hasIngredients}-${recipeState.hasInstructions}`;
             const cacheKey = `cooking_recipe-${contentHash}`;
-            
+
             // Check if we should release new content
             const cached = recipeCache.get(cacheKey);
             let contentToRelease = "";
             let shouldUpdate = false;
-            
+
             if (actuallyComplete) {
                 // If recipe block is complete, release all content
                 contentToRelease = fullContent;
@@ -501,11 +540,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 } else {
                     contentToRelease = ""; // Don't show incomplete structure
                 }
-                
+
                 // Check if content changed
                 shouldUpdate = !cached || cached.content !== contentToRelease;
             }
-            
+
             // Update cache if content changed
             if (shouldUpdate) {
                 recipeCache.set(cacheKey, {
@@ -516,11 +555,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                         hasTitle: recipeState.hasTitle,
                         hasIngredients: recipeState.hasIngredients,
                         hasInstructions: recipeState.hasInstructions,
-                        hasPartialContent: !actuallyComplete && recipeState.contentLength > 0
-                    }
+                        hasPartialContent: !actuallyComplete && recipeState.contentLength > 0,
+                    },
                 });
             }
-            
+
             // Return cached content if no update needed
             const finalCache = recipeCache.get(cacheKey);
             return {
@@ -531,8 +570,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     hasTitle: recipeState.hasTitle,
                     hasIngredients: recipeState.hasIngredients,
                     hasInstructions: recipeState.hasInstructions,
-                    hasPartialContent: !actuallyComplete && recipeState.contentLength > 0
-                }
+                    hasPartialContent: !actuallyComplete && recipeState.contentLength > 0,
+                },
             };
         }
 
@@ -545,35 +584,33 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Function to detect if JSON content is a quiz
     const isQuizJson = (jsonContent: string): { isQuiz: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
-        
+
         // Fast check: Must start with quiz_title
         const hasQuizFormat = trimmed.startsWith('{\n  "quiz_title"') || trimmed.startsWith('{"quiz_title"');
-        
+
         if (!hasQuizFormat) {
             return { isQuiz: false, isComplete: false };
         }
-        
+
         // Check if JSON is complete (has closing brace)
         const isComplete = trimmed.endsWith("}");
-        
+
         // If complete, verify it's valid JSON with quiz structure
         if (isComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
-                
+
                 // Must have quiz_title and multiple_choice array
-                const isValidQuiz = parsed && 
-                    parsed.quiz_title && 
-                    Array.isArray(parsed.multiple_choice) &&
-                    parsed.multiple_choice.length > 0;
-                
+                const isValidQuiz =
+                    parsed && parsed.quiz_title && Array.isArray(parsed.multiple_choice) && parsed.multiple_choice.length > 0;
+
                 return { isQuiz: isValidQuiz, isComplete: true };
             } catch (error) {
                 // Parse failed, not a valid quiz
                 return { isQuiz: false, isComplete: false };
             }
         }
-        
+
         // Not complete but has the correct structure start - it's streaming
         return { isQuiz: true, isComplete: false };
     };
@@ -581,30 +618,29 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Function to detect if JSON content is a presentation
     const isPresentationJson = (jsonContent: string): { isPresentation: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
-        
+
         // Fast check: Must start with exact pattern for presentation
         // This prevents false positives and doesn't delay normal JSON display
         if (!trimmed.startsWith('{\n  "presentation"') && !trimmed.startsWith('{"presentation"')) {
             return { isPresentation: false, isComplete: false };
         }
-        
+
         // Check if JSON is complete (has closing brace)
         const isComplete = trimmed.endsWith("}");
-        
+
         // If complete, verify it's valid JSON with presentation object
         if (isComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
-                const hasPresentation = parsed && parsed.presentation && 
-                                       parsed.presentation.slides && 
-                                       Array.isArray(parsed.presentation.slides);
+                const hasPresentation =
+                    parsed && parsed.presentation && parsed.presentation.slides && Array.isArray(parsed.presentation.slides);
                 return { isPresentation: hasPresentation, isComplete: true };
             } catch (error) {
                 // Parse failed, not a valid presentation
                 return { isPresentation: false, isComplete: false };
             }
         }
-        
+
         // Not complete but has the correct structure start - it's streaming
         return { isPresentation: true, isComplete: false };
     };
@@ -612,30 +648,28 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Function to detect if JSON content is a decision tree
     const isDecisionTreeJson = (jsonContent: string): { isDecisionTree: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
-        
+
         // Fast check: Must start with exact pattern for decision tree
         // This prevents false positives and doesn't delay normal JSON display
         if (!trimmed.startsWith('{\n  "decision_tree"') && !trimmed.startsWith('{"decision_tree"')) {
             return { isDecisionTree: false, isComplete: false };
         }
-        
+
         // Check if JSON is complete (has closing brace)
         const isComplete = trimmed.endsWith("}");
-        
+
         // If complete, verify it's valid JSON with decision_tree object
         if (isComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
-                const hasDecisionTree = parsed && parsed.decision_tree && 
-                                       parsed.decision_tree.title && 
-                                       parsed.decision_tree.root;
+                const hasDecisionTree = parsed && parsed.decision_tree && parsed.decision_tree.title && parsed.decision_tree.root;
                 return { isDecisionTree: hasDecisionTree, isComplete: true };
             } catch (error) {
                 // Parse failed, not a valid decision tree
                 return { isDecisionTree: false, isComplete: false };
             }
         }
-        
+
         // Not complete but has the correct structure start - it's streaming
         return { isDecisionTree: true, isComplete: false };
     };
@@ -643,31 +677,33 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Function to detect if JSON content is a comparison table
     const isComparisonTableJson = (jsonContent: string): { isComparisonTable: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
-        
+
         // Fast check: Must start with exact pattern for comparison table
         // This prevents false positives and doesn't delay normal JSON display
         if (!trimmed.startsWith('{\n  "comparison"') && !trimmed.startsWith('{"comparison"')) {
             return { isComparisonTable: false, isComplete: false };
         }
-        
+
         // Check if JSON is complete (has closing brace)
         const isComplete = trimmed.endsWith("}");
-        
+
         // If complete, verify it's valid JSON with comparison object
         if (isComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
-                const hasComparison = parsed && parsed.comparison && 
-                                     parsed.comparison.title && 
-                                     Array.isArray(parsed.comparison.items) &&
-                                     Array.isArray(parsed.comparison.criteria);
+                const hasComparison =
+                    parsed &&
+                    parsed.comparison &&
+                    parsed.comparison.title &&
+                    Array.isArray(parsed.comparison.items) &&
+                    Array.isArray(parsed.comparison.criteria);
                 return { isComparisonTable: hasComparison, isComplete: true };
             } catch (error) {
                 // Parse failed, not a valid comparison table
                 return { isComparisonTable: false, isComplete: false };
             }
         }
-        
+
         // Not complete but has the correct structure start - it's streaming
         return { isComparisonTable: true, isComplete: false };
     };
@@ -675,30 +711,28 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Function to detect if JSON content is a diagram
     const isDiagramJson = (jsonContent: string): { isDiagram: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
-        
+
         // Fast check: Must start with exact pattern for diagram
         // This prevents false positives and doesn't delay normal JSON display
         if (!trimmed.startsWith('{\n  "diagram"') && !trimmed.startsWith('{"diagram"')) {
             return { isDiagram: false, isComplete: false };
         }
-        
+
         // Check if JSON is complete (has closing brace)
         const isComplete = trimmed.endsWith("}");
-        
+
         // If complete, verify it's valid JSON with diagram object
         if (isComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
-                const hasDiagram = parsed && parsed.diagram && 
-                                 parsed.diagram.title && 
-                                 Array.isArray(parsed.diagram.nodes);
+                const hasDiagram = parsed && parsed.diagram && parsed.diagram.title && Array.isArray(parsed.diagram.nodes);
                 return { isDiagram: hasDiagram, isComplete: true };
             } catch (error) {
                 // Parse failed, not a valid diagram
                 return { isDiagram: false, isComplete: false };
             }
         }
-        
+
         // Not complete but has the correct structure start - it's streaming
         return { isDiagram: true, isComplete: false };
     };
@@ -706,71 +740,72 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     // Function to detect if JSON content is a math problem
     const isMathProblemJson = (jsonContent: string): { isMathProblem: boolean; isComplete: boolean } => {
         const trimmed = jsonContent.trim();
-        
+
         // Fast check: Must start with exact pattern for math_problem
         if (!trimmed.startsWith('{\n  "math_problem"') && !trimmed.startsWith('{"math_problem"')) {
             return { isMathProblem: false, isComplete: false };
         }
-        
+
         // Check for obvious placeholder text that indicates malformed JSON
         // Common patterns: "array of s...", "[description]", etc.
-        const hasPlaceholderText = /\[(array|object|string|number|description|example|etc)[^\]]*\]/i.test(trimmed) ||
-                                   /:\s*array of/i.test(trimmed) ||
-                                   /:\s*object with/i.test(trimmed);
-        
+        const hasPlaceholderText =
+            /\[(array|object|string|number|description|example|etc)[^\]]*\]/i.test(trimmed) ||
+            /:\s*array of/i.test(trimmed) ||
+            /:\s*object with/i.test(trimmed);
+
         if (hasPlaceholderText) {
             // This is not valid JSON - it's a template or example with placeholders
             return { isMathProblem: false, isComplete: false };
         }
-        
+
         // More resilient completion check - look for closing braces that suggest completion
         // Count opening and closing braces to determine if JSON might be complete
         const openBraces = (trimmed.match(/\{/g) || []).length;
         const closeBraces = (trimmed.match(/\}/g) || []).length;
-        
+
         // If we have more open than close braces, definitely streaming
         if (openBraces > closeBraces) {
             return { isMathProblem: true, isComplete: false };
         }
-        
+
         // If we have more close than open, something is wrong - treat as complete to stop loading
         if (closeBraces > openBraces) {
-            console.warn('[Math Problem Detection] Mismatched braces - treating as complete');
+            console.warn("[Math Problem Detection] Mismatched braces - treating as complete");
             return { isMathProblem: true, isComplete: true };
         }
-        
+
         // If braces are balanced and ends with }, likely complete
         const isLikelyComplete = trimmed.endsWith("}") && openBraces === closeBraces;
-        
+
         // Only validate if we're confident it's complete
         if (isLikelyComplete) {
             try {
                 const parsed = JSON.parse(trimmed);
                 // More lenient validation - just check for math_problem key and basic structure
-                const hasMathProblem = parsed && parsed.math_problem && typeof parsed.math_problem === 'object';
-                
+                const hasMathProblem = parsed && parsed.math_problem && typeof parsed.math_problem === "object";
+
                 if (hasMathProblem) {
                     // Validate minimum required fields
                     const problem = parsed.math_problem;
                     const hasMinimumFields = problem.title && problem.problem_statement;
-                    
+
                     if (!hasMinimumFields) {
-                        console.warn('[Math Problem Detection] Missing required fields, but JSON is valid - treating as complete');
+                        console.warn("[Math Problem Detection] Missing required fields, but JSON is valid - treating as complete");
                     }
-                    
+
                     return { isMathProblem: true, isComplete: true };
                 } else {
                     // Has math_problem structure but invalid - treat as complete to avoid infinite loading
-                    console.warn('[Math Problem Detection] Invalid math_problem structure - treating as complete');
+                    console.warn("[Math Problem Detection] Invalid math_problem structure - treating as complete");
                     return { isMathProblem: true, isComplete: true };
                 }
             } catch (error) {
                 // Parse failed - if braces are balanced, treat as complete to stop infinite loading
-                console.warn('[Math Problem Detection] JSON parse failed with balanced braces - treating as complete', error);
+                console.warn("[Math Problem Detection] JSON parse failed with balanced braces - treating as complete", error);
                 return { isMathProblem: true, isComplete: true };
             }
         }
-        
+
         // Not complete but has the correct structure start - keep streaming
         return { isMathProblem: true, isComplete: false };
     };
@@ -925,8 +960,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                         content: contentString,
                         language: "json",
                         metadata: {
-                            isComplete: quizCheck.isComplete
-                        }
+                            isComplete: quizCheck.isComplete,
+                        },
                     });
                 } else {
                     // Check if this JSON is a presentation
@@ -937,8 +972,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                             content: contentString,
                             language: "json",
                             metadata: {
-                                isComplete: presentationCheck.isComplete
-                            }
+                                isComplete: presentationCheck.isComplete,
+                            },
                         });
                     } else {
                         // Check if this JSON is a decision tree
@@ -949,8 +984,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                                 content: contentString,
                                 language: "json",
                                 metadata: {
-                                    isComplete: decisionTreeCheck.isComplete
-                                }
+                                    isComplete: decisionTreeCheck.isComplete,
+                                },
                             });
                         } else {
                             // Check if this JSON is a comparison table
@@ -961,8 +996,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                                     content: contentString,
                                     language: "json",
                                     metadata: {
-                                        isComplete: comparisonTableCheck.isComplete
-                                    }
+                                        isComplete: comparisonTableCheck.isComplete,
+                                    },
                                 });
                             } else {
                                 // Check if this JSON is a diagram
@@ -973,8 +1008,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                                         content: contentString,
                                         language: "json",
                                         metadata: {
-                                            isComplete: diagramCheck.isComplete
-                                        }
+                                            isComplete: diagramCheck.isComplete,
+                                        },
                                     });
                                 } else {
                                     // Check if this JSON is a math problem
@@ -985,8 +1020,8 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                                             content: contentString,
                                             language: "json",
                                             metadata: {
-                                                isComplete: mathProblemCheck.isComplete
-                                            }
+                                                isComplete: mathProblemCheck.isComplete,
+                                            },
                                         });
                                     } else {
                                         // Regular JSON code block
@@ -1154,36 +1189,33 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 inPotentialTable = true;
                 potentialTableLines = [];
             }
-            
+
             // Add to potential table buffer
             potentialTableLines.push(line);
-            
+
             // Try to process the buffer (will return true if table confirmed or keep buffering)
             const processed = processPotentialTable();
-            
+
             if (processed && potentialTableLines.length >= 2 && isTableSeparator(potentialTableLines[1])) {
                 // Table confirmed and processed, continue collecting rows
-                while (
-                    i + 1 < lines.length &&
-                    looksLikeTableRow(lines[i + 1])
-                ) {
+                while (i + 1 < lines.length && looksLikeTableRow(lines[i + 1])) {
                     i++;
                     potentialTableLines.push(lines[i]);
                     processPotentialTable(); // Update table with new row
                 }
-                
+
                 // Reset buffer
                 inPotentialTable = false;
                 potentialTableLines = [];
             }
-            
+
             i++;
             continue;
         } else if (inPotentialTable) {
             // We were in a potential table but this line doesn't look like a table row
             // Process what we have in the buffer
             const processed = processPotentialTable();
-            
+
             if (!processed) {
                 // Buffer was flushed to text, continue with current line as text
                 inPotentialTable = false;

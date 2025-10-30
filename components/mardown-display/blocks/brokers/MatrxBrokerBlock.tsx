@@ -13,11 +13,10 @@ import { MatrxMetadata, MatrxStatus, encodeMatrxMetadata } from "@/features/rich
 import { getAllColorOptions } from "@/features/rich-text-editor/utils/colorUitls";
 import { useDataBrokerWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
 import { DataBrokerData } from "@/types";
-import FieldListTableOverlay from '@/features/applet/builder/modules/field-builder/FieldListTableOverlay';
+import FieldListTableOverlay from "@/features/applet/builder/modules/field-builder/FieldListTableOverlay";
 
 /* TODO:
 
-- Connect this to Entities slice to attempt to fetch the broker by id.
 - If the broker is found, then it's 'connected' and if it's not, then it's 'disconnected'
 - The user also needs the ability to connect this instance of a broker to any broker they already have.
 - We need a way to display a list of available brokers for them to connect to.
@@ -26,11 +25,6 @@ import FieldListTableOverlay from '@/features/applet/builder/modules/field-build
    - There must be a clear separation between the aspect of a broker which are 'local' and those which are going to impact that broker anywhere.
 
 */
-
-
-
-
-
 
 // Define component and data type options
 const COMPONENT_OPTIONS = [
@@ -93,16 +87,16 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
     // Look up the actual broker data from the store
     const brokerData = metadata.id ? dataBrokerRecordsById[metadata.id] : undefined;
 
-    const updateBroker = useCallback((brokerId: string, updatedData: Partial<DataBrokerData>) => {
-        dataBrokerActions.directUpdateRecord({matrxRecordId: `id:${brokerId}`, data: updatedData});
-    }, [dataBrokerActions]);
-
-
+    const updateBroker = useCallback(
+        (brokerId: string, updatedData: Partial<DataBrokerData>) => {
+            dataBrokerActions.directUpdateRecord({ matrxRecordId: `id:${brokerId}`, data: updatedData });
+        },
+        [dataBrokerActions]
+    );
 
     useEffect(() => {
         fetchDataBrokerAll();
     }, []);
-
 
     useEffect(() => {
         setEditedMetadata({ ...metadata });
