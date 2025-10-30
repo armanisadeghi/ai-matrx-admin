@@ -16,6 +16,9 @@ const nextConfig = {
     // Build performance optimizations
     productionBrowserSourceMaps: false,
     
+    // Use SWC for faster minification (default in Next.js 15 but explicitly set)
+    swcMinify: true,
+    
     compiler: {
         removeConsole: process.env.NODE_ENV === 'production' ? {
             exclude: ['error', 'warn'],
@@ -23,12 +26,23 @@ const nextConfig = {
     },
     
     // Moved from experimental (Next.js 15+)
+    // EXPANDED: More exclusions to reduce build cache size
     outputFileTracingExcludes: {
         '*': [
             'node_modules/@swc/**/*',
             'node_modules/@esbuild/**/*',
             '.git/**/*',
             '**/*.map',
+            '**/*.md',
+            '**/*.mdx',
+            '**/tests/**/*',
+            '**/test/**/*',
+            '**/__tests__/**/*',
+            'node_modules/**/README.md',
+            'node_modules/**/LICENSE',
+            'node_modules/**/CHANGELOG.md',
+            'node_modules/**/*.d.ts.map',
+            'node_modules/@types/**/*',
         ],
     },
     
@@ -36,29 +50,20 @@ const nextConfig = {
         serverActions: {
             bodySizeLimit: "10mb",
         },
+        // Enable parallel webpack builds for faster compilation
+        webpackBuildWorker: true,
+        
+        // Optimize specific packages that are commonly used
         optimizePackageImports: [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-scroll-area',
             'lucide-react',
-            '@tabler/icons-react',
-            'lodash',
+            '@radix-ui/react-icons',
             'date-fns',
+            'lodash',
             'recharts',
-            'framer-motion',
         ],
-    },
-    // Disable build caching for Vercel deployments
-    // generateBuildId: async () => {
-    //     return `build-${Date.now()}`;
-    // },
-    onDemandEntries: {
-        maxInactiveAge: 1,
+        
+        // Enable faster CSS processing
+        optimizeCss: true,
     },
     serverExternalPackages: ["@react-pdf/renderer", "canvas", "next-mdx-remote", "vscode-oniguruma", "websocket"],
     typescript: {
@@ -92,12 +97,59 @@ const nextConfig = {
 
         // Optimize webpack for production builds
         if (!dev) {
+            // OPTIMIZED: Reduced cache size and added compression
             config.cache = {
                 type: 'filesystem',
-                maxAge: 604800000, // 1 week
+                maxAge: 259200000, // 3 days instead of 1 week (reduces cache size)
                 maxMemoryGenerations: 1,
+                compression: 'gzip', // Compress cache to reduce size
+                // Limit cache size
+                cacheDirectory: '.next/cache/webpack',
+                buildDependencies: {
+                    config: [__filename],
+                },
             };
             config.output.hashFunction = 'xxhash64';
+            
+            // Optimize chunk splitting to reduce bundle size
+            config.optimization = {
+                ...config.optimization,
+                splitChunks: {
+                    chunks: 'all',
+                    cacheGroups: {
+                        default: false,
+                        vendors: false,
+                        // Group common framework code
+                        framework: {
+                            name: 'framework',
+                            chunks: 'all',
+                            test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+                            priority: 40,
+                            enforce: true,
+                        },
+                        // Group common UI libraries
+                        lib: {
+                            test: /[\\/]node_modules[\\/]/,
+                            name(module) {
+                                const packageName = module.context.match(
+                                    /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+                                )?.[1];
+                                return `npm.${packageName?.replace('@', '')}`;
+                            },
+                            priority: 30,
+                            minChunks: 1,
+                            reuseExistingChunk: true,
+                        },
+                        commons: {
+                            name: 'commons',
+                            minChunks: 2,
+                            priority: 20,
+                        },
+                    },
+                },
+                // Minimize module IDs for smaller bundles
+                moduleIds: 'deterministic',
+            };
         }
 
         // Add rule to prevent bundling of .onnx files
