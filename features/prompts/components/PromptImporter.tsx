@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Textarea, CopyTextarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Upload, 
   CheckCircle2, 
@@ -20,7 +19,9 @@ import {
   Copy, 
   Download,
   FileJson,
-  AlertCircle
+  AlertCircle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { importPrompt, importPromptBatch } from '../services/prompt-import-service';
 import type { PromptJSON, PromptBatchJSON, PromptImportResult } from '../types/prompt-json';
@@ -39,6 +40,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
   const [isImporting, setIsImporting] = useState(false);
   const [results, setResults] = useState<PromptImportResult[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const handleImport = async () => {
     if (!jsonInput.trim()) {
@@ -98,23 +100,23 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
     handleClose();
   };
 
-  const exampleJSON: PromptJSON = {
-    name: "Example Prompt",
-    description: "This is an example prompt",
+  const singlePromptStructure: PromptJSON = {
+    name: "Prompt Name",
+    description: "Brief description",
     messages: [
       {
         role: "system",
-        content: "You are a helpful assistant."
+        content: "System instructions..."
       },
       {
         role: "user",
-        content: "Please help me with {{task}}."
+        content: "Use {{my_variable}} in your message"
       }
     ],
     variables: [
       {
-        name: "task",
-        defaultValue: "writing code"
+        name: "my_variable",
+        defaultValue: "default value"
       }
     ],
     settings: {
@@ -123,9 +125,14 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
     }
   };
 
-  const handleCopyExample = () => {
-    navigator.clipboard.writeText(JSON.stringify(exampleJSON, null, 2));
-    toast.success('Example copied to clipboard');
+  const batchPromptStructure = {
+    prompts: [singlePromptStructure]
+  };
+
+  const handleCopyStructure = (type: 'single' | 'batch') => {
+    const structure = type === 'single' ? singlePromptStructure : batchPromptStructure;
+    navigator.clipboard.writeText(JSON.stringify(structure, null, 2));
+    toast.success(`${type === 'single' ? 'Single' : 'Batch'} structure copied`);
   };
 
   return (
@@ -143,34 +150,92 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
 
         {!showResults ? (
           <div className="flex-1 flex flex-col gap-2 overflow-hidden min-h-0">
-            {/* Example/Help Card */}
-            <div className="flex-shrink-0 flex items-center justify-between gap-3 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="text-xs text-blue-800 dark:text-blue-200">
-                  Format: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{ prompts: [...] }'}</code>
-                  • Variables: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{{variable}}'}</code>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyExample}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex-shrink-0 h-7 px-2"
+            {/* Help Card */}
+            <div className="flex-shrink-0 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md overflow-hidden">
+              {/* Header - Always visible */}
+              <button
+                onClick={() => setShowHelp(!showHelp)}
+                className="w-full flex items-center justify-between gap-3 p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
               >
-                <Copy className="h-3 w-3 mr-1" />
-                Example
-              </Button>
+                <div className="flex items-center gap-2 text-xs text-blue-800 dark:text-blue-200">
+                  <FileJson className="h-3.5 w-3.5" />
+                  <span className="font-medium">JSON Format Guide</span>
+                  <span className="text-blue-600 dark:text-blue-400">•</span>
+                  <span>Variables: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{{var_name}}'}</code> (snake_case)</span>
+                </div>
+                {showHelp ? (
+                  <ChevronUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                )}
+              </button>
+
+              {/* Expandable Content */}
+              {showHelp && (
+                <div className="border-t border-blue-200 dark:border-blue-800 p-3 space-y-3">
+                  {/* Variable Explanation */}
+                  <div className="space-y-1.5">
+                    <div className="text-xs font-semibold text-blue-900 dark:text-blue-100">
+                      How Variables Work:
+                    </div>
+                    <ol className="text-xs text-blue-800 dark:text-blue-200 space-y-1 pl-4 list-decimal">
+                      <li>Use <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{{variable_name}}'}</code> in your message content</li>
+                      <li>Declare each variable in the <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">variables</code> array</li>
+                      <li>Set a <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">defaultValue</code> for each variable</li>
+                    </ol>
+                    <div className="mt-2 text-xs bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 p-2 rounded">
+                      <span className="font-semibold">⚠️ Important:</span> Variable names must be lowercase snake_case
+                      <div className="mt-1 flex gap-3">
+                        <span className="text-green-700 dark:text-green-400">✓ <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">user_name</code></span>
+                        <span className="text-green-700 dark:text-green-400">✓ <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">api_key</code></span>
+                        <span className="text-red-700 dark:text-red-400">✗ <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">userName</code></span>
+                        <span className="text-red-700 dark:text-red-400">✗ <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">UserName</code></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Format Examples */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-blue-900 dark:text-blue-100">
+                      Structure:
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCopyStructure('single')}
+                        className="flex-1 h-8 text-xs bg-white dark:bg-blue-950 border-blue-300 dark:border-blue-700"
+                      >
+                        <Copy className="h-3 w-3 mr-1.5" />
+                        Copy Single Prompt
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCopyStructure('batch')}
+                        className="flex-1 h-8 text-xs bg-white dark:bg-blue-950 border-blue-300 dark:border-blue-700"
+                      >
+                        <Copy className="h-3 w-3 mr-1.5" />
+                        Copy Batch Import
+                      </Button>
+                    </div>
+                    <div className="text-xs text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 p-2 rounded">
+                      <span className="font-medium">Tip:</span> Single prompt = direct object. Batch import = <code className="bg-blue-200 dark:bg-blue-800 px-1 rounded">{'{ prompts: [...] }'}</code>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* JSON Input - Takes up most of the space */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 overflow-auto">
               <label className="text-sm font-medium mb-1.5 flex-shrink-0">Prompt JSON</label>
               <CopyTextarea
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                placeholder={JSON.stringify(exampleJSON, null, 2)}
-                className="flex-1 font-mono text-xs resize-none min-h-0 h-full"
-                style={{ minHeight: '400px' }}
+                placeholder={JSON.stringify(singlePromptStructure, null, 2)}
+                className="font-mono text-xs"
+                autoGrow
                 disabled={isImporting}
               />
             </div>
