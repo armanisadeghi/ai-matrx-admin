@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { 
   TextAnalyzerExample,
-  PromptModalExample
+  PromptModalExample,
+  ContextMenuExample
 } from "@/features/prompts/examples";
 import { PromptImporter } from "@/features/prompts";
 import { Code2, Sparkles, FileText, Upload } from "lucide-react";
@@ -114,7 +115,7 @@ export default function PromptExecutionDemoPage() {
 
           {/* Demo Tabs */}
           <Tabs defaultValue="text-analyzer" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsList className="grid w-full grid-cols-3 max-w-2xl">
               <TabsTrigger value="text-analyzer" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Text Analyzer
@@ -122,6 +123,10 @@ export default function PromptExecutionDemoPage() {
               <TabsTrigger value="modal" className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
                 Modal Demo
+              </TabsTrigger>
+              <TabsTrigger value="context-menu" className="flex items-center gap-2">
+                <Code2 className="h-4 w-4" />
+                Context Menu
               </TabsTrigger>
             </TabsList>
 
@@ -150,6 +155,20 @@ export default function PromptExecutionDemoPage() {
                   </p>
                 </div>
                 <PromptModalExample />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="context-menu" className="mt-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Context Menu Demo</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Right-click on text to see AI prompt options. Demonstrates <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">
+                      TextSelectionPromptMenu
+                    </code> with multiple grouped actions
+                  </p>
+                </div>
+                <ContextMenuExample />
               </div>
             </TabsContent>
           </Tabs>

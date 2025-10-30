@@ -17,7 +17,7 @@ export function PromptModalExample() {
 
   // Example 1: Simple text analysis
   const textAnalysisModal = usePromptModal({
-    promptId: 'text-analyzer',
+    promptId: '176d3595-0d30-4e98-a73e-13de7654a408', // User's text analyzer prompt
     promptName: 'Text Analyzer',
     onResult: (text) => {
       setResult(text);

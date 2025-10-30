@@ -25,7 +25,7 @@ export function TextAnalyzerExample() {
   const handleAnalyze = async () => {
     setAnalysis('');
     await execute({
-      promptId: 'text-analyzer',
+      promptId: '176d3595-0d30-4e98-a73e-13de7654a408', // User's text analyzer prompt
       variables: {
         text: { type: 'hardcoded', value: text }
       }
