@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { AppletContainersConfig } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types";
 import { ComponentGroup, FieldDefinition } from "@/types/customAppTypes";
 import {
     createComponentGroup,
@@ -24,13 +23,14 @@ import { SavedGroupsList } from "./SavedGroupsList";
 import { AddFieldsDialog } from "./AddFieldsDialog";
 import { RefreshFieldsDialog } from "./RefreshFieldsDialog";
 import { ConfirmationDialog } from "../../parts/ConfirmationDialog";
+import { ContainerBuilder } from "@/lib/redux/app-builder/types";
 
 // Helper function to generate ID
 const generateGroupId = (label: string) => {
     return label.toLowerCase().replace(/\s+/g, "-");
 };
 
-export interface SavedGroup extends AppletContainersConfig {
+export interface SavedGroup extends ContainerBuilder {
     id: string;
     createdAt?: string;
     lastModified?: string;
