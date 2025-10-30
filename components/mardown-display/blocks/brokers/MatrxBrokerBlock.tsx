@@ -170,13 +170,36 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                     </div>
                 </div>
 
-                {/* Component selector - now using Select instead of DropdownMenu */}
+                {/* Field Component ID - now using Select instead of DropdownMenu */}
                 <div className="flex items-center gap-4 mb-4">
-                    <label className="text-sm text-muted-foreground w-24 flex-shrink-0">Component:</label>
+                    <label className="text-sm text-muted-foreground w-24 flex-shrink-0">Field Component:</label>
                     <Select
-                        value={brokerData?.inputComponent || editedMetadata.defaultComponent || "none"}
+                        value={brokerData?.fieldComponentId || editedMetadata.defaultComponent || "none"}
                         onValueChange={(value) =>
                             setEditedMetadata({ ...editedMetadata, defaultComponent: value === "none" ? undefined : value })
+                        }
+                    >
+                        <SelectTrigger className={cn("w-full", elevationStyles)}>
+                            <SelectValue placeholder="None" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {COMPONENT_OPTIONS.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Output Component selector */}
+                <div className="flex items-center gap-4 mb-4">
+                    <label className="text-sm text-muted-foreground w-24 flex-shrink-0">Output Component:</label>
+                    <Select
+                        value={brokerData?.outputComponent || editedMetadata.outputComponent || "none"}
+                        onValueChange={(value) =>
+                            setEditedMetadata({ ...editedMetadata, outputComponent: value === "none" ? undefined : value })
                         }
                     >
                         <SelectTrigger className={cn("w-full", elevationStyles)}>

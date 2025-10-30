@@ -21,6 +21,7 @@ export interface MatrxMetadata {
     color?: string;
     status?: MatrxStatus;
     defaultComponent?: string;
+    outputComponent?: string;
     dataType?: string;
     id?: string;
     [key: string]: string | undefined;
