@@ -276,6 +276,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         setVariableDefaults((prev) => 
             prev.map(v => v.name === variableName ? { ...v, defaultValue: value } : v)
         );
+        setIsDirty(true);
     };
 
     // Handler to add a tool - updates modelConfig directly
@@ -850,6 +851,9 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             promptName={promptName}
             promptDescription={promptDescription}
             variableDefaults={variableDefaults}
+            messages={[{ role: "system", content: developerMessage }, ...messages]}
+            settings={{ model_id: model, ...modelConfig }}
+            models={models}
             onUpdate={handleSettingsUpdate}
             onLocalStateUpdate={handleLocalStateUpdate}
         />

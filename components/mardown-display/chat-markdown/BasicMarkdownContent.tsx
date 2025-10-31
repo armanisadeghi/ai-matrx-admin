@@ -3,6 +3,9 @@ import React from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { cn } from "@/styles/themes/utils";
 import { PencilIcon } from "lucide-react";
 import { useState, useMemo, createContext, useContext, useRef } from "react";
@@ -112,6 +115,47 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
     const preprocessContent = (rawContent: string): string => {
         let processed = rawContent;
         
+        // Convert LaTeX-style math delimiters to markdown math notation
+        // \[...\] → $$...$$ (display/block math)
+        // IMPORTANT: Display math needs blank lines before and after for remark-math to recognize it
+        processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (match, mathContent) => {
+            return `\n\n$$${mathContent}$$\n\n`;
+        });
+        // \(...\) → $...$ (inline math)
+        processed = processed.replace(/\\\((.*?)\\\)/g, (match, mathContent) => {
+            return `$${mathContent}$`;
+        });
+        
+        // Support non-standard [...] format for display math (some smaller models use this)
+        // Only convert if: contains LaTeX commands (\), multiline or substantial, NOT a markdown link
+        processed = processed.replace(/\[[\s\n]*([\s\S]*?)[\s\n]*\](?!\()/g, (match, content) => {
+            const trimmedContent = content.trim();
+            
+            // Case 1: Contains LaTeX commands (backslash) - safe to convert if multiline or substantial
+            if (content.includes('\\') && (content.includes('\n') || content.length >= 3)) {
+                return `\n\n$$${content}$$\n\n`;
+            }
+            
+            // Case 2: Pure math expression without LaTeX commands
+            // Only if multiline format (brackets on own lines) and looks like math
+            const isMultilineBrackets = match.startsWith('[\n') || match.startsWith('[ \n');
+            if (isMultilineBrackets && trimmedContent.length >= 3) {
+                // Check for math operators
+                const hasMathOperators = /[+\-=×÷*/]/.test(trimmedContent);
+                // Check it's not prose (doesn't contain common text words)
+                const hasProseWords = /\b(note|step|example|optional|the|is|are|was|were|for|with|this|that)\b/i.test(trimmedContent);
+                // Check that it's mostly math-like (numbers, operators, parentheses, variables)
+                const mathLikeRatio = (trimmedContent.match(/[0-9+\-=×÷*/()xy\s]/g) || []).length / trimmedContent.length;
+                
+                if (hasMathOperators && !hasProseWords && mathLikeRatio > 0.6) {
+                    return `\n\n$$${content}$$\n\n`;
+                }
+            }
+            
+            // Otherwise, leave it as-is (could be regular brackets)
+            return match;
+        });
+        
         // Fix setext-style heading patterns by ensuring there's a blank line before ---
         // This prevents paragraph text from being interpreted as h2 headings
         processed = processed.replace(/([^\n])\n---/g, '$1\n\n---');
@@ -176,6 +220,19 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             return <input type={type} {...props} />;
         },
         p: ({ node, children, ...props }: any) => {
+            // Check if this paragraph only contains math (display math should be centered)
+            // Check if children is a single element with katex class
+            let isMathOnly = false;
+            const childArray = React.Children.toArray(children);
+            
+            if (childArray.length === 1) {
+                const child = childArray[0] as any;
+                // Check if it's a React element with katex className
+                if (child && typeof child === 'object' && child.props && child.props.className) {
+                    isMathOnly = child.props.className.includes('katex');
+                }
+            }
+            
             // Detect direction for this specific paragraph
             // Better text extraction that handles nested React elements
             const extractTextFromChildren = (children: any): string => {
@@ -192,6 +249,18 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             const paragraphText = extractTextFromChildren(children);
             const paragraphDirection = detectTextDirection(paragraphText);
             const paragraphDirClasses = getDirectionClasses(paragraphDirection);
+            
+            // If it's only math, center it and override direction classes
+            if (isMathOnly) {
+                return (
+                    <p 
+                        className="font-sans tracking-wide leading-relaxed text-base mb-4 text-center"
+                        {...props}
+                    >
+                        {children}
+                    </p>
+                );
+            }
             
             return (
                 <p 
@@ -385,6 +454,14 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         br: ({ node, ...props }) => (
             <span className="block h-2 w-full" {...props}></span>
         ),
+        div: ({ node, className, children, ...props }: any) => {
+            // Regular div - no special handling needed
+            return <div className={className} {...props}>{children}</div>;
+        },
+        span: ({ node, className, children, ...props }: any) => {
+            // Regular span - no special handling needed
+            return <span className={className} {...props}>{children}</span>;
+        },
         table: () => null,
         thead: () => null,
         tbody: () => null,
@@ -395,12 +472,31 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
 
     return (
         <div 
-            className={`relative my-2 group ${directionClasses}`}
+            className={`relative my-2 group ${directionClasses} math-content-wrapper`}
             dir={textDirection}
             onMouseEnter={handleMouseEnter} 
             onMouseLeave={handleMouseLeave}
         >
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    /* Center display math that appears after a line break */
+                    .math-content-wrapper p > .block + .katex {
+                        display: block;
+                        text-align: center;
+                        margin: 1em 0;
+                        font-size: 1.5em;
+                    }
+                    /* Increase font size for standalone math paragraphs */
+                    .math-content-wrapper p.text-center .katex {
+                        font-size: 1.5em;
+                    }
+                `
+            }} />
+            <ReactMarkdown 
+                remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]} 
+                rehypePlugins={[rehypeKatex]}
+                components={components}
+            >
                 {processedContent}
             </ReactMarkdown>
             

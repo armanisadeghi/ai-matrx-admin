@@ -89,11 +89,6 @@ export function PromptRunnerModal({
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
     const [messageStartTime, setMessageStartTime] = useState<number | null>(null);
     const timeToFirstTokenRef = useRef<number | undefined>(undefined);
-    const [lastMessageStats, setLastMessageStats] = useState<{
-        timeToFirstToken?: number;
-        totalTime?: number;
-        tokens?: number;
-    } | null>(null);
     
     // Track if conversation has started
     const [conversationStarted, setConversationStarted] = useState(false);
@@ -211,7 +206,6 @@ export function PromptRunnerModal({
                 setPendingTaskId(null);
                 setMessageStartTime(null);
                 timeToFirstTokenRef.current = undefined;
-                setLastMessageStats(null);
                 setExpandedVariable(null);
                 
                 // Clear any pending task update timeouts
@@ -270,23 +264,6 @@ export function PromptRunnerModal({
         return result;
     };
     
-    // Calculate live stats during streaming
-    const liveStats = useMemo(() => {
-        if (!currentTaskId || !messageStartTime || !streamingText) return null;
-        
-        if (timeToFirstTokenRef && !timeToFirstTokenRef.current && streamingText.length > 0) {
-            timeToFirstTokenRef.current = Math.round(performance.now() - messageStartTime);
-        }
-        
-        const currentTime = Math.round(performance.now() - messageStartTime);
-        const tokenCount = Math.round(streamingText.length / 4);
-        
-        return {
-            timeToFirstToken: timeToFirstTokenRef?.current,
-            totalTime: currentTime,
-            tokens: tokenCount
-        };
-    }, [streamingText, currentTaskId, messageStartTime]);
     
     // Build the messages to display
     const displayMessages = useMemo(() => {
@@ -355,7 +332,6 @@ export function PromptRunnerModal({
                 tokens: tokenCount
             };
             
-            setLastMessageStats(finalStats);
             
             setConversationMessages((prev) => [
                 ...prev,
@@ -519,7 +495,6 @@ export function PromptRunnerModal({
         }
 
         setIsTestingPrompt(true);
-        setLastMessageStats(null);
         setMessageStartTime(performance.now());
         timeToFirstTokenRef.current = undefined;
 

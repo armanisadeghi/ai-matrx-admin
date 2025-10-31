@@ -99,7 +99,7 @@ export function PromptBuilderHeaderCompact({
                     type="text"
                     value={promptName}
                     onChange={(e) => onPromptNameChange(e.target.value)}
-                    className="text-sm font-medium bg-transparent border-none outline-none min-w-0 text-gray-900 dark:text-gray-100 px-2 py-1 max-w-[120px] lg:max-w-[180px] xl:max-w-[240px]"
+                    className="text-sm font-medium bg-transparent border border-gray-300 dark:border-gray-700 min-w-0 text-gray-900 dark:text-gray-100 px-2 py-1 max-w-[120px] lg:max-w-[180px] xl:max-w-[240px]"
                     placeholder="Untitled prompt"
                 />
 
