@@ -16,10 +16,8 @@ import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayo
 import { useCanvas } from "@/hooks/useCanvas";
 import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
 import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
-import { calculateTaskCost } from "@/features/ai-runs/utils/cost-calculator";
 import { v4 as uuidv4 } from "uuid";
 import { PromptRunnerModalProps, PromptData } from "../../types/modal";
-import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { AdditionalInfoModal } from "./AdditionalInfoModal";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
@@ -38,7 +36,8 @@ export interface PromptVariable {
  * PromptRunnerModal - A versatile modal for running prompts
  * 
  * Supports multiple execution modes:
- * - auto-run: Automatically executes with pre-filled variables
+ * - auto-run: Automatically executes with pre-filled variables, allows conversation
+ * - auto-run-one-shot: Automatically executes, no follow-up conversation
  * - manual-with-hidden-variables: User adds instructions, variables hidden
  * - manual-with-visible-variables: User can edit variables
  * - manual: Standard prompt runner (default)
@@ -60,7 +59,6 @@ export function PromptRunnerModal({
     
     // Prompt data state
     const [promptData, setPromptData] = useState<PromptData | null>(initialPromptData || null);
-    const [models, setModels] = useState<any[]>([]);
     const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
     const [promptError, setPromptError] = useState<string | null>(null);
     
@@ -93,6 +91,9 @@ export function PromptRunnerModal({
     // Track if conversation has started
     const [conversationStarted, setConversationStarted] = useState(false);
     const [hasAutoExecuted, setHasAutoExecuted] = useState(false);
+    
+    // Force remount key - changes when starting a new run to completely reset component tree
+    const [mountKey, setMountKey] = useState(0);
     
     // Hidden variables mode state
     const [showAdditionalInfoModal, setShowAdditionalInfoModal] = useState(false);
@@ -143,39 +144,34 @@ export function PromptRunnerModal({
             setIsLoadingPrompt(true);
             setPromptError(null);
             
-            Promise.all([
-                fetch(`/api/prompts/${promptId}`).then(res => res.json()),
-                fetchAIModels()
-            ])
-            .then(([promptResponse, aiModels]) => {
-                if (promptResponse.error) {
-                    throw new Error(promptResponse.error);
-                }
-                
-                const normalizedData: PromptData = {
-                    id: promptResponse.id,
-                    name: promptResponse.name,
-                    description: promptResponse.description,
-                    messages: promptResponse.messages,
-                    variableDefaults: promptResponse.variable_defaults || [],
-                    settings: promptResponse.settings || {},
-                };
-                
-                setPromptData(normalizedData);
-                setModels(aiModels);
-            })
-            .catch(err => {
-                console.error('Error loading prompt:', err);
-                setPromptError(err.message || 'Failed to load prompt');
-            })
-            .finally(() => {
-                setIsLoadingPrompt(false);
-            });
+            fetch(`/api/prompts/${promptId}`)
+                .then(res => res.json())
+                .then(promptResponse => {
+                    if (promptResponse.error) {
+                        throw new Error(promptResponse.error);
+                    }
+                    
+                    const normalizedData: PromptData = {
+                        id: promptResponse.id,
+                        name: promptResponse.name,
+                        description: promptResponse.description,
+                        messages: promptResponse.messages,
+                        variableDefaults: promptResponse.variable_defaults || [],
+                        settings: promptResponse.settings || {},
+                    };
+                    
+                    setPromptData(normalizedData);
+                })
+                .catch(err => {
+                    console.error('Error loading prompt:', err);
+                    setPromptError(err.message || 'Failed to load prompt');
+                })
+                .finally(() => {
+                    setIsLoadingPrompt(false);
+                });
         } else if (isOpen && initialPromptData) {
             // Use provided prompt data
             setPromptData(initialPromptData);
-            // Load models
-            fetchAIModels().then(setModels);
         }
     }, [isOpen, promptId, initialPromptData]);
     
@@ -191,6 +187,9 @@ export function PromptRunnerModal({
         if (!isOpen) {
             // Reset after animation
             const timeout = setTimeout(() => {
+                // Force a complete remount by changing the key
+                setMountKey(prev => prev + 1);
+                
                 // Clear conversation state
                 setConversationMessages([]);
                 setApiConversationHistory([]);
@@ -238,13 +237,23 @@ export function PromptRunnerModal({
     // Update variables when prompt loads or initial variables change
     useEffect(() => {
         if (variableDefaultsFromPrompt.length > 0) {
-            const mergedVariables = variableDefaultsFromPrompt.map(v => ({
-                name: v.name,
-                defaultValue: initialVariables?.[v.name] || v.defaultValue || ""
-            }));
+            const mergedVariables = variableDefaultsFromPrompt.map(v => {
+                // For manual mode, don't pre-fill variables - user enters their own
+                if (mode === 'manual') {
+                    return {
+                        name: v.name,
+                        defaultValue: ""
+                    };
+                }
+                // For other modes, use provided variables or defaults
+                return {
+                    name: v.name,
+                    defaultValue: initialVariables?.[v.name] || v.defaultValue || ""
+                };
+            });
             setVariableDefaults(mergedVariables);
         }
-    }, [variableDefaultsFromPrompt, initialVariables]);
+    }, [variableDefaultsFromPrompt, initialVariables, mode]);
     
     // Get streaming response from socket
     const streamingText = useAppSelector((state) => 
@@ -348,9 +357,7 @@ export function PromptRunnerModal({
                 { role: "assistant", content: streamingText }
             ]);
             
-            const selectedModel = models.find(m => m.id === modelId);
-            const cost = selectedModel?.model_name ? calculateTaskCost(selectedModel.model_name, 0, tokenCount) : 0;
-            
+            // Server will calculate cost based on model_id
             (async () => {
                 try {
                     await completeTask(pendingTaskId, {
@@ -358,7 +365,7 @@ export function PromptRunnerModal({
                         tokens_total: tokenCount,
                         time_to_first_token: timeToFirstTokenRef.current,
                         total_time: totalTime,
-                        cost,
+                        cost: 0, // Server will calculate this
                     });
                     
                     if (run) {
@@ -369,7 +376,7 @@ export function PromptRunnerModal({
                             timestamp: new Date().toISOString(),
                             metadata: {
                                 ...finalStats,
-                                cost,
+                                cost: 0, // Server will calculate this
                             }
                         });
                     }
@@ -381,7 +388,7 @@ export function PromptRunnerModal({
                             response: streamingText,
                             metadata: {
                                 tokens: tokenCount,
-                                cost,
+                                cost: 0, // Server will calculate this
                                 timeToFirstToken: timeToFirstTokenRef.current,
                                 totalTime,
                             }
@@ -398,13 +405,13 @@ export function PromptRunnerModal({
             setPendingTaskId(null);
             timeToFirstTokenRef.current = undefined;
         }
-    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText, pendingTaskId, run, models, modelId, completeTask, addMessage, onExecutionComplete]);
+    }, [isResponseEnded, currentTaskId, isTestingPrompt, messageStartTime, streamingText, pendingTaskId, run, modelId, completeTask, addMessage, onExecutionComplete]);
     
-    // Auto-execute for auto-run mode
+    // Auto-execute for auto-run modes
     useEffect(() => {
         if (
             isOpen && 
-            mode === 'auto-run' && 
+            (mode === 'auto-run' || mode === 'auto-run-one-shot') && 
             !hasAutoExecuted && 
             promptData && 
             variableDefaults.length > 0 &&
@@ -474,8 +481,8 @@ export function PromptRunnerModal({
 
             displayUserMessage = userMessageContent;
             
-            // Hide first user message for auto-run and hidden-variables modes
-            if (mode === 'auto-run' || mode === 'manual-with-hidden-variables') {
+            // Hide first user message for auto-run modes and hidden-variables mode
+            if (mode === 'auto-run' || mode === 'auto-run-one-shot' || mode === 'manual-with-hidden-variables') {
                 shouldDisplayUserMessage = false;
             }
         } else {
@@ -550,17 +557,12 @@ export function PromptRunnerModal({
             const taskId = uuidv4();
             
             if (currentRun) {
-                const selectedModel = models.find(m => m.id === modelId);
-                
                 try {
                     await createTask({
                         task_id: taskId,
                         service: 'chat_service',
                         task_name: 'direct_chat',
-                        provider: selectedModel?.provider || 'unknown',
-                        endpoint: selectedModel?.endpoint,
-                        model: selectedModel?.model_name,
-                        model_id: selectedModel?.id,
+                        model_id: modelId,
                         request_data: chatConfig,
                     }, currentRun.id);
                     
@@ -604,9 +606,12 @@ export function PromptRunnerModal({
     };
     
     // Determine if variables should be shown
+    // Hide variables after first message for all modes since they only affect initial prompt
     const shouldShowVariables = 
-        mode === 'manual-with-visible-variables' || 
-        (mode === 'manual' && !conversationStarted);
+        !conversationStarted && (
+            mode === 'manual-with-visible-variables' || 
+            mode === 'manual'
+        );
     
     // Render loading state
     if (isLoadingPrompt) {
@@ -736,7 +741,7 @@ export function PromptRunnerModal({
                                 className="h-full bg-textured"
                                 disableAutoCanvas={isMobile}
                                 rightPanel={
-                                    <div className="h-full w-full overflow-hidden relative">
+                                    <div key={mountKey} className="h-full w-full overflow-hidden relative">
                                         {/* Back Layer: Messages Area - Scrollable */}
                                         <div 
                                             ref={messagesContainerRef}
@@ -751,9 +756,9 @@ export function PromptRunnerModal({
                                                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-gray-400 dark:text-gray-600 px-6">
                                                     <div className="text-center max-w-md">
                                                         <p className="text-lg font-medium mb-2">
-                                                            {mode === 'auto-run' ? 'Starting execution...' : 'Ready to run your prompt'}
+                                                            {(mode === 'auto-run' || mode === 'auto-run-one-shot') ? 'Starting execution...' : 'Ready to run your prompt'}
                                                         </p>
-                                                        {mode === 'auto-run' ? (
+                                                        {(mode === 'auto-run' || mode === 'auto-run-one-shot') ? (
                                                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mt-4"></div>
                                                         ) : (
                                                             <p className="text-sm">
@@ -798,23 +803,25 @@ export function PromptRunnerModal({
                                             )}
                                         </div>
                                         
-                                        {/* Front Layer: Input Area - Always visible, always in same spot */}
-                                        <div className="absolute bottom-0 left-0 right-0 z-10 bg-textured pt-6 pb-4 px-6 pointer-events-none">
-                                            <div className="pointer-events-auto max-w-[800px] mx-auto rounded-xl">
-                                                <PromptRunnerInput
-                                                    variableDefaults={variableDefaults}
-                                                    onVariableValueChange={handleVariableValueChange}
-                                                    expandedVariable={expandedVariable}
-                                                    onExpandedVariableChange={setExpandedVariable}
-                                                    chatInput={chatInput}
-                                                    onChatInputChange={setChatInput}
-                                                    onSendMessage={handleSendTestMessage}
-                                                    isTestingPrompt={isTestingPrompt}
-                                                    showVariables={shouldShowVariables}
-                                                    messages={conversationTemplate}
-                                                />
+                                        {/* Front Layer: Input Area - Hide for one-shot mode after execution */}
+                                        {!(mode === 'auto-run-one-shot' && conversationStarted) && (
+                                            <div className="absolute bottom-0 left-0 right-0 z-10 bg-textured pt-6 pb-4 px-6 pointer-events-none">
+                                                <div className="pointer-events-auto max-w-[800px] mx-auto rounded-xl">
+                                                    <PromptRunnerInput
+                                                        variableDefaults={variableDefaults}
+                                                        onVariableValueChange={handleVariableValueChange}
+                                                        expandedVariable={expandedVariable}
+                                                        onExpandedVariableChange={setExpandedVariable}
+                                                        chatInput={chatInput}
+                                                        onChatInputChange={setChatInput}
+                                                        onSendMessage={handleSendTestMessage}
+                                                        isTestingPrompt={isTestingPrompt}
+                                                        showVariables={shouldShowVariables}
+                                                        messages={conversationTemplate}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 }
                             />

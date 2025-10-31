@@ -17,7 +17,6 @@ import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificH
 import { useCanvas } from "@/hooks/useCanvas";
 import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
 import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
-import { calculateTaskCost } from "@/features/ai-runs/utils/cost-calculator";
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
 import { v4 as uuidv4 } from "uuid";
@@ -147,6 +146,9 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Track if conversation has started (for showing/hiding variables)
     const [conversationStarted, setConversationStarted] = useState(false);
     
+    // Force remount key - changes when starting a new run to completely reset component tree
+    const [mountKey, setMountKey] = useState(0);
+    
     // AI Runs tracking - pass urlRunId to load existing run
     const { run, createRun, createTask, updateTask, completeTask, addMessage, isLoading: isLoadingRun } = useAiRun(urlRunId || undefined);
     const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
@@ -205,9 +207,10 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         }
     }, [run, hasLoadedRun]);
     
-    // Reset hasLoadedRun when urlRunId changes
+    // Reset hasLoadedRun and force remount when urlRunId changes
     useEffect(() => {
         setHasLoadedRun(false);
+        setMountKey(prev => prev + 1);
     }, [urlRunId]);
     
     // Helper function to replace variables in content
@@ -329,11 +332,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 { role: "assistant", content: streamingText }
             ]);
             
-            // Complete the task in AI runs system
-            const selectedModel = models.find(m => m.id === modelId);
-            const cost = selectedModel?.model_name ? calculateTaskCost(selectedModel.model_name, 0, tokenCount) : 0;
-            
-            // Complete task and add assistant message
+            // Complete the task in AI runs system - server will calculate cost
             (async () => {
                 try {
                     await completeTask(pendingTaskId, {
@@ -341,7 +340,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         tokens_total: tokenCount,
                         time_to_first_token: timeToFirstTokenRef.current,
                         total_time: totalTime,
-                        cost,
+                        cost: 0, // Server will calculate this
                     });
                     
                     console.log('✅ Task completed:', pendingTaskId);
@@ -359,7 +358,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                             timestamp: new Date().toISOString(),
                             metadata: {
                                 ...finalStats,
-                                cost,
+                                cost: 0, // Server will calculate this
                             }
                         });
                         
@@ -506,17 +505,12 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
             
             // Create task in AI runs system BEFORE submitting to socket
             if (currentRun) {
-                const selectedModel = models.find(m => m.id === modelId);
-                
                 try {
                     await createTask({
                         task_id: taskId,
                         service: 'chat_service',
                         task_name: 'direct_chat',
-                        provider: selectedModel?.provider || 'unknown',
-                        endpoint: selectedModel?.endpoint,
-                        model: selectedModel?.model_name,
-                        model_id: selectedModel?.id,
+                        model_id: modelId,
                         request_data: chatConfig,
                     }, currentRun.id); // Pass run ID directly
                     
@@ -569,6 +563,9 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     };
     
     const handleClearConversation = () => {
+        // Force a complete remount by changing the key
+        setMountKey(prev => prev + 1);
+        
         // Clear all conversation state
         setConversationMessages([]);
         setApiConversationHistory([]);
@@ -605,6 +602,9 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Handle run selection from sidebar
     const handleRunSelect = useCallback((runId: string) => {
         console.log('🔄 Switching to run:', runId);
+        
+        // Force a complete remount when switching runs
+        setMountKey(prev => prev + 1);
         
         // Update URL with the selected runId
         const url = new URL(window.location.href);
@@ -745,7 +745,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         ) : undefined
                     }
                     rightPanel={
-                        <div className="h-full flex flex-col relative">
+                        <div key={mountKey} className="h-full flex flex-col relative">
                         {/* Messages Area - Scrollable */}
                         <div 
                             ref={messagesContainerRef}

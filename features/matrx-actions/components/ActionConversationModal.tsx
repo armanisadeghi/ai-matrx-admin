@@ -22,7 +22,6 @@ import { ConversationMessages, ConversationMessage } from './conversation/Conver
 import { ConversationInput } from './conversation/ConversationInput';
 import { useAiRun } from '@/features/ai-runs/hooks/useAiRun';
 import { generateRunNameFromMessage } from '@/features/ai-runs/utils/name-generator';
-import { calculateTaskCost } from '@/features/ai-runs/utils/cost-calculator';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
@@ -136,11 +135,8 @@ export function ActionConversationModal({
         { role: "assistant", content: streamingText }
       ]);
       
-      // Complete the task in AI runs system if we have a pending task
+      // Complete the task in AI runs system if we have a pending task - server will calculate cost
       if (pendingTaskId && run && initialPromptConfig) {
-        const selectedModel = models.find(m => m.id === initialPromptConfig.modelId);
-        const cost = selectedModel?.model_name ? calculateTaskCost(selectedModel.model_name, 0, tokenCount) : 0;
-        
         (async () => {
           try {
             await completeTask(pendingTaskId, {
@@ -148,7 +144,7 @@ export function ActionConversationModal({
               tokens_total: tokenCount,
               time_to_first_token: timeToFirstTokenRef.current,
               total_time: totalTime,
-              cost,
+              cost: 0, // Server will calculate this
             });
             
             // Add assistant message to run
@@ -159,7 +155,7 @@ export function ActionConversationModal({
               timestamp: new Date().toISOString(),
               metadata: {
                 ...finalStats,
-                cost,
+                cost: 0, // Server will calculate this
               }
             });
           } catch (err) {
@@ -232,17 +228,12 @@ export function ActionConversationModal({
       
       // Create task in AI runs system BEFORE submitting to socket
       if (currentRun) {
-        const selectedModel = models.find(m => m.id === initialPromptConfig.modelId);
-        
         try {
           await createTask({
             task_id: taskId,
             service: 'chat_service',
             task_name: 'direct_chat',
-            provider: selectedModel?.provider || 'unknown',
-            endpoint: selectedModel?.endpoint,
-            model: selectedModel?.model_name,
-            model_id: selectedModel?.id,
+            model_id: initialPromptConfig.modelId,
             request_data: chatConfig,
           }, currentRun.id);
           

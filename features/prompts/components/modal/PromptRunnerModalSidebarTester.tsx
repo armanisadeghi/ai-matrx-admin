@@ -40,8 +40,8 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
             mode: mode,
         };
         
-        // Add test variables for auto-run and hidden variables modes
-        if (mode === 'auto-run' || mode === 'manual-with-hidden-variables') {
+        // Add test variables for auto-run modes and hidden variables mode
+        if (mode === 'auto-run' || mode === 'auto-run-one-shot' || mode === 'manual-with-hidden-variables') {
             config.variables = getTestVariables();
         }
         
@@ -54,6 +54,12 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
             name: 'Auto-Run',
             icon: Zap,
             color: 'text-purple-600 dark:text-purple-400',
+        },
+        {
+            id: 'auto-run-one-shot' as PromptExecutionMode,
+            name: 'Auto One-Shot',
+            icon: Zap,
+            color: 'text-pink-600 dark:text-pink-400',
         },
         {
             id: 'manual-with-hidden-variables' as PromptExecutionMode,

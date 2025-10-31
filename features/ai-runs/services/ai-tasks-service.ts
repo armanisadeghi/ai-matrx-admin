@@ -32,9 +32,6 @@ export const aiTasksService = {
         task_id: input.task_id, // Must match socket.io taskId
         service: input.service,
         task_name: input.task_name,
-        provider: input.provider,
-        endpoint: input.endpoint,
-        model: input.model,
         model_id: input.model_id,
         request_data: input.request_data,
         status: "pending",

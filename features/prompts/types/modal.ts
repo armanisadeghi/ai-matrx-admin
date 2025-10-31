@@ -13,13 +13,15 @@ import { PromptMessage, PromptVariable } from "@/components/prompt-builder/hooks
 /**
  * Execution mode determines how the modal behaves
  * 
- * - auto-run: Automatically starts execution with pre-filled variables
+ * - auto-run: Automatically starts execution with pre-filled variables, allows conversation
+ * - auto-run-one-shot: Automatically starts execution, no follow-up conversation
  * - manual-with-hidden-variables: User can add instructions, variables are hidden
  * - manual-with-visible-variables: User can edit variables and add instructions
  * - manual: Standard prompt runner behavior, no pre-filled values
  */
 export type PromptExecutionMode = 
   | 'auto-run'
+  | 'auto-run-one-shot'
   | 'manual-with-hidden-variables'
   | 'manual-with-visible-variables'
   | 'manual';

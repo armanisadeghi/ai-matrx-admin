@@ -145,9 +145,6 @@ export interface CreateAiTaskInput {
   task_id: string; // Must match socket.io task ID
   service: string;
   task_name: string;
-  provider?: string;
-  endpoint?: string;
-  model?: string;
   model_id?: string;
   request_data: Record<string, any>;
 }
@@ -157,9 +154,6 @@ export interface CreateTaskInput {
   task_id: string; // Must match socket.io task ID
   service: string;
   task_name: string;
-  provider?: string;
-  endpoint?: string;
-  model?: string;
   model_id?: string;
   request_data: Record<string, any>;
 }

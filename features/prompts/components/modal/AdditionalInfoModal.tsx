@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Info, ArrowRight, SkipForward } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface AdditionalInfoModalProps {
     isOpen: boolean;
@@ -15,8 +13,8 @@ interface AdditionalInfoModalProps {
 }
 
 /**
- * AdditionalInfoModal - Intermediary modal for hidden-variables mode
- * Allows user to optionally add additional instructions before running
+ * AdditionalInfoModal - Quick optional additional instructions before AI runs
+ * Auto-proceeds in 3 seconds if no interaction
  */
 export function AdditionalInfoModal({
     isOpen,
@@ -25,82 +23,105 @@ export function AdditionalInfoModal({
     promptName
 }: AdditionalInfoModalProps) {
     const [additionalInfo, setAdditionalInfo] = useState('');
+    const [countdown, setCountdown] = useState(3);
+    const [hasInteracted, setHasInteracted] = useState(false);
 
-    const handleContinue = () => {
+    const handleContinue = useCallback(() => {
         onContinue(additionalInfo.trim() || undefined);
-        setAdditionalInfo(''); // Reset for next time
+        setAdditionalInfo('');
+        setCountdown(3);
+        setHasInteracted(false);
+    }, [additionalInfo, onContinue]);
+
+    // Reset state when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setCountdown(3);
+            setHasInteracted(false);
+        }
+    }, [isOpen]);
+
+    // Auto-proceed countdown (only if no interaction)
+    useEffect(() => {
+        if (!isOpen || hasInteracted) return;
+
+        if (countdown === 0) {
+            handleContinue();
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setCountdown(prev => prev - 1);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [isOpen, countdown, hasInteracted, handleContinue]);
+
+    // Stop countdown on user interaction
+    const handleInteraction = () => {
+        if (!hasInteracted) {
+            setHasInteracted(true);
+        }
     };
 
-    const handleSkip = () => {
-        onContinue(undefined);
-        setAdditionalInfo(''); // Reset for next time
+    // Handle keyboard shortcuts
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        // Ctrl+Enter = new line (let it pass through naturally)
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            handleInteraction();
+            return; // Allow default behavior (new line)
+        }
+        
+        // Enter = submit
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleContinue();
+        }
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="max-w-[600px] p-0 gap-0">
-                {/* Header */}
-                <div className="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-800">
-                    <div className="flex items-start gap-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-                            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                                Additional Instructions
-                            </h2>
+            <DialogContent className="max-w-[500px] p-6">
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        {!hasInteracted ? (
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Optionally provide additional context or instructions for <span className="font-medium">{promptName}</span>
+                                Proceeding in <span className="font-semibold text-gray-900 dark:text-gray-100">{countdown}s</span>
                             </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Content */}
-                <div className="px-6 py-6 space-y-4">
-                    <div className="space-y-2">
-                        <Label className="text-sm font-medium">
-                            Additional Information (Optional)
-                        </Label>
-                        <Textarea
-                            value={additionalInfo}
-                            onChange={(e) => setAdditionalInfo(e.target.value)}
-                            placeholder="Add any extra context, requirements, or instructions..."
-                            className="min-h-[120px] resize-none"
-                            autoFocus
-                        />
-                        <p className="text-xs text-gray-500 dark:text-gray-600">
-                            This information will be included with your prompt execution
-                        </p>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-900 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3">
-                    <Button
-                        variant="ghost"
-                        onClick={onCancel}
-                        className="text-gray-600 dark:text-gray-400"
-                    >
-                        Cancel
-                    </Button>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={handleSkip}
-                            className="gap-2"
-                        >
-                            <SkipForward className="w-4 h-4" />
-                            Skip
-                        </Button>
-                        <Button
+                        ) : (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Press <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Enter</kbd> to continue
+                            </p>
+                        )}
+                        <button
                             onClick={handleContinue}
-                            className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white gap-2"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                         >
-                            Continue
-                            <ArrowRight className="w-4 h-4" />
-                        </Button>
+                            Continue now
+                            <ArrowRight className="w-3 h-3" />
+                        </button>
                     </div>
+
+                    <Textarea
+                        value={additionalInfo}
+                        onChange={(e) => {
+                            handleInteraction();
+                            setAdditionalInfo(e.target.value);
+                        }}
+                        onClick={handleInteraction}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Add additional instructions (optional)..."
+                        className="min-h-[100px] resize-none text-sm"
+                        autoFocus
+                    />
+
+                    <p className="text-xs text-gray-500 dark:text-gray-600">
+                        {!hasInteracted ? (
+                            <>Press <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Enter</kbd> or wait to continue</>
+                        ) : (
+                            <><kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Ctrl+Enter</kbd> for new line</>
+                        )}
+                    </p>
                 </div>
             </DialogContent>
         </Dialog>

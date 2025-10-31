@@ -1,13 +1,20 @@
 import React from "react";
-import { ArrowUp, Maximize2 } from "lucide-react";
+import { ArrowUp, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptVariable } from "./PromptBuilder";
+import { VariableCustomComponent } from "../types/variable-components";
+import { VariableInputComponent } from "./variable-inputs";
 import { formatText } from "@/utils/text/text-case-converter";
 
+// Extended variable type with optional custom component
+export interface ExtendedPromptVariable extends PromptVariable {
+    customComponent?: VariableCustomComponent;
+}
+
 interface PromptRunnerInputProps {
-    variableDefaults: PromptVariable[];
+    variableDefaults: ExtendedPromptVariable[];
     onVariableValueChange: (variableName: string, value: string) => void;
     expandedVariable: string | null;
     onExpandedVariableChange: (variable: string | null) => void;
@@ -36,6 +43,9 @@ export function PromptRunnerInput({
     const lastPromptMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const isLastMessageUser = lastPromptMessage?.role === "user";
     
+    // Check if all variables already have values (for visible vars mode with pre-filled values)
+    const allVariablesHaveValues = variableDefaults.every(v => v.defaultValue && v.defaultValue.trim() !== '');
+    
     // Determine if the send button should be disabled
     const isSendDisabled = isTestingPrompt || (!isLastMessageUser && !chatInput.trim());
 
@@ -61,10 +71,7 @@ export function PromptRunnerInput({
                                 const shouldShowPopover = hasLineBreaks || expandedVariable === variable.name;
                                 
                                 return (
-                                    <div key={variable.name} className="space-y-1">
-                                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                            {formatText(variable.name)}
-                                        </Label>
+                                    <div key={variable.name}>
                                         {shouldShowPopover ? (
                                             <Popover
                                                 open={expandedVariable === variable.name}
@@ -76,64 +83,63 @@ export function PromptRunnerInput({
                                             >
                                                 <PopoverTrigger asChild>
                                                     <div
-                                                        className="w-full px-2 py-1.5 text-sm text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-md cursor-text focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                                                        className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors group"
                                                         onClick={() => onExpandedVariableChange(variable.name)}
-                                                        onFocus={() => onExpandedVariableChange(variable.name)}
                                                         tabIndex={index + 1}
                                                     >
-                                                        {variable.defaultValue ? (
-                                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis block">
-                                                                {variable.defaultValue.replace(/\n/g, " ↵ ")}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-gray-400 dark:text-gray-600">
-                                                                Enter {formatText(variable.name).toLowerCase()}...
-                                                            </span>
-                                                        )}
+                                                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer">
+                                                            {formatText(variable.name)}
+                                                        </Label>
+                                                        <div className="flex-1 text-sm text-gray-900 dark:text-gray-200 min-w-0">
+                                                            {variable.defaultValue ? (
+                                                                <span className="whitespace-nowrap overflow-hidden text-ellipsis block">
+                                                                    {variable.defaultValue.replace(/\n/g, " ↵ ")}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-gray-400 dark:text-gray-600">
+                                                                    Enter value...
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0 transition-colors" />
                                                     </div>
                                                 </PopoverTrigger>
                                                 <PopoverContent 
-                                                    className="w-[500px] h-[400px] p-0 border-gray-300 dark:border-gray-700" 
+                                                    className="w-[500px] max-h-[500px] p-4 border-gray-300 dark:border-gray-700 overflow-y-auto scrollbar-thin" 
                                                     align="center"
                                                     side="top"
                                                     sideOffset={8}
                                                 >
-                                                    <div className="p-4 flex flex-col h-full gap-3">
-                                                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            {formatText(variable.name)}
-                                                        </Label>
-                                                        <textarea
-                                                            value={variable.defaultValue || ""}
-                                                            onChange={(e) => onVariableValueChange(variable.name, e.target.value)}
-                                                            placeholder={`Enter ${formatText(variable.name).toLowerCase()}...`}
-                                                            autoFocus
-                                                            onFocus={(e) => e.target.select()}
-                                                            className="flex-1 w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 scrollbar-thin"
-                                                            tabIndex={-1}
-                                                        />
-                                                    </div>
+                                                    <VariableInputComponent
+                                                        value={variable.defaultValue || ""}
+                                                        onChange={(value) => onVariableValueChange(variable.name, value)}
+                                                        variableName={variable.name}
+                                                        customComponent={variable.customComponent}
+                                                    />
                                                 </PopoverContent>
                                             </Popover>
                                         ) : (
-                                            <div className="flex items-center gap-1.5">
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-colors focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 group">
+                                                <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap flex-shrink-0 cursor-pointer">
+                                                    {formatText(variable.name)}
+                                                </Label>
                                                 <input
                                                     type="text"
                                                     value={variable.defaultValue || ""}
                                                     onChange={(e) => onVariableValueChange(variable.name, e.target.value)}
-                                                    placeholder={`Enter ${formatText(variable.name).toLowerCase()}...`}
-                                                    className="flex-1 px-2 py-1.5 text-sm bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600"
+                                                    placeholder="Enter value..."
+                                                    className="flex-1 text-sm bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
                                                     tabIndex={index + 1}
                                                 />
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
+                                                <button
+                                                    type="button"
                                                     onClick={() => onExpandedVariableChange(variable.name)}
-                                                    className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+                                                    className="flex-shrink-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                                     tabIndex={-1}
                                                     title="Expand to full editor"
                                                 >
-                                                    <Maximize2 className="w-3.5 h-3.5" />
-                                                </Button>
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -153,7 +159,7 @@ export function PromptRunnerInput({
                     placeholder={showVariables ? "Add optional message..." : "Type your message..."}
                     className="w-full bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none min-h-[60px] max-h-[300px] overflow-y-auto scrollbar-thin"
                     tabIndex={variableDefaults.length + 1}
-                    autoFocus={!showVariables || variableDefaults.length === 0}
+                    autoFocus={!showVariables || variableDefaults.length === 0 || allVariablesHaveValues}
                 />
             </div>
 
