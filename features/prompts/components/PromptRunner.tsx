@@ -12,13 +12,14 @@ import { PromptUserMessage } from "./PromptUserMessage";
 import { PromptAssistantMessage } from "./PromptAssistantMessage";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose, FilePlus } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { useCanvas } from "@/hooks/useCanvas";
 import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
 import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
 import { calculateTaskCost } from "@/features/ai-runs/utils/cost-calculator";
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
+import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
 import { v4 as uuidv4 } from "uuid";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
@@ -568,11 +569,32 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     };
     
     const handleClearConversation = () => {
+        // Clear all conversation state
         setConversationMessages([]);
         setApiConversationHistory([]);
         setLastMessageStats(null);
         setConversationStarted(false);
         setHasLoadedRun(false);
+        
+        // Clear streaming/task state
+        setCurrentTaskId(null);
+        setIsTestingPrompt(false);
+        setPendingTaskId(null);
+        setMessageStartTime(null);
+        timeToFirstTokenRef.current = undefined;
+        
+        // Clear input and UI state
+        setChatInput("");
+        setExpandedVariable(null);
+        
+        // Reset variable defaults to original values
+        setVariableDefaults(initialVariableDefaults || []);
+        
+        // Clear any pending task update timeouts
+        if (updateTaskTimeoutRef.current) {
+            clearTimeout(updateTaskTimeoutRef.current);
+            updateTaskTimeoutRef.current = null;
+        }
         
         // Clear the runId from URL to start fresh
         const url = new URL(window.location.href);
@@ -635,6 +657,17 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                 )}
                             </Button>
                         )}
+                        {/* New Run button */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleClearConversation}
+                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                            title="Start new run"
+                        >
+                            <FilePlus className="w-4 h-4 sm:mr-1.5" />
+                            <span className="hidden sm:inline text-xs">New</span>
+                        </Button>
                         {displayMessages.length > 0 && !isMobile && (
                             <Button
                                 variant="ghost"
@@ -697,6 +730,17 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                 promptName={promptData.name}
                                 currentRunId={run?.id}
                                 onRunSelect={handleRunSelect}
+                                footer={
+                                    <PromptRunnerModalSidebarTester 
+                                        promptData={{
+                                            id: promptData.id,
+                                            name: promptData.name,
+                                            messages: templateMessages,
+                                            variableDefaults: variableDefaults,
+                                            settings: settings,
+                                        }}
+                                    />
+                                }
                             />
                         ) : undefined
                     }

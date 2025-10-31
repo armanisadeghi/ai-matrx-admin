@@ -1,6 +1,46 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
+export async function GET(
+    request: NextRequest,
+    context: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await context.params;
+        const supabase = await createClient();
+
+        // Check if user is authenticated
+        const {
+            data: { user },
+            error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Fetch the prompt (RLS will ensure user has access)
+        const { data, error } = await supabase
+            .from("prompts")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+        if (error) {
+            console.error("Error fetching prompt:", error);
+            if (error.code === 'PGRST116') {
+                return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
+            }
+            return NextResponse.json({ error: "Failed to fetch prompt" }, { status: 500 });
+        }
+
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error("Error in GET handler:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+}
+
 export async function DELETE(
     request: NextRequest,
     context: { params: Promise<{ id: string }> }

@@ -133,6 +133,7 @@ export function usePromptExecution() {
     isExecuting,
     streamingText,
     error,
+    currentTaskId, // Expose taskId for components that need it
     reset: () => {
       setIsExecuting(false);
       setCurrentTaskId(null);

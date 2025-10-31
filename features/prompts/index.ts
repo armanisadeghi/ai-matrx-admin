@@ -42,6 +42,16 @@ export type {
   PromptBatchImportResult
 } from './types/prompt-json';
 
+// Modal Types
+export type {
+  PromptExecutionMode,
+  PromptRunnerModalProps,
+  PromptData,
+  ExecutionResult as ModalExecutionResult,
+  UsePromptRunnerModalReturn,
+  PromptRunnerModalConfig
+} from './types/modal';
+
 // Services
 export { PromptExecutionService, promptExecutionService, executePrompt } from './services/prompt-execution-service';
 export { importPrompt, importPromptBatch, exportPromptAsJSON } from './services/prompt-import-service';
@@ -73,10 +83,14 @@ export {
 // Hooks
 export { usePromptExecution } from './hooks/usePromptExecution';
 export { usePromptModal, openPromptModal } from './hooks/usePromptModal';
+export { usePromptRunnerModal } from './hooks/usePromptRunnerModal';
 
 // Components
 export { PromptExecutionButton, PromptExecutionIconButton } from './components/PromptExecutionButton';
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
 export { PromptExecutionModal } from './components/PromptExecutionModal';
 export { PromptImporter } from './components/PromptImporter';
+export { PromptRunnerModal } from './components/modal/PromptRunnerModal';
+export { PromptRunnerModalTester } from './components/modal/PromptRunnerModalTester';
+export { PromptRunnerModalSidebarTester } from './components/modal/PromptRunnerModalSidebarTester';
 

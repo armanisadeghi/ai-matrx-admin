@@ -21,6 +21,7 @@ interface PromptRunsSidebarProps {
   promptName: string;
   currentRunId?: string;
   onRunSelect?: (runId: string) => void;
+  footer?: React.ReactNode; // Optional footer content for testing/additional features
 }
 
 interface PromptListItem {
@@ -34,6 +35,7 @@ export function PromptRunsSidebar({
   promptName,
   currentRunId,
   onRunSelect,
+  footer,
 }: PromptRunsSidebarProps) {
   const router = useRouter();
   const [prompts, setPrompts] = useState<PromptListItem[]>([]);
@@ -152,6 +154,13 @@ export function PromptRunsSidebar({
           emptySubmessage="Start a conversation"
         />
       </div>
+      
+      {/* Optional footer */}
+      {footer && (
+        <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-800">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,7 +11,8 @@ import {
   ContextMenuExample
 } from "@/features/prompts/examples";
 import { PromptImporter } from "@/features/prompts";
-import { Code2, Sparkles, FileText, Upload } from "lucide-react";
+import { MatrxActionsDemo } from "@/features/matrx-actions/examples/MatrxActionsDemo";
+import { Code2, Sparkles, FileText, Upload, Zap } from "lucide-react";
 import DEMO_PROMPTS from "@/features/prompts/DEMO_PROMPTS.json";
 
 export default function PromptExecutionDemoPage() {
@@ -114,8 +115,12 @@ export default function PromptExecutionDemoPage() {
           </Card>
 
           {/* Demo Tabs */}
-          <Tabs defaultValue="text-analyzer" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+          <Tabs defaultValue="matrx-actions" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+              <TabsTrigger value="matrx-actions" className="flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Matrx Actions
+              </TabsTrigger>
               <TabsTrigger value="text-analyzer" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Text Analyzer
@@ -129,6 +134,19 @@ export default function PromptExecutionDemoPage() {
                 Context Menu
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="matrx-actions" className="mt-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Matrx Actions System (New!)</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Demonstrating the new hierarchical action system with separation of concerns. 
+                    Actions are defined separately from where they appear in menus.
+                  </p>
+                </div>
+                <MatrxActionsDemo />
+              </div>
+            </TabsContent>
 
             <TabsContent value="text-analyzer" className="mt-6">
               <div className="space-y-4">
