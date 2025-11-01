@@ -34,7 +34,7 @@ interface TableRow {
 }
 
 type SelectionType = 'table' | 'row' | 'column' | 'cell';
-type ViewMode = 'tables' | 'selection-type' | 'rows' | 'columns' | 'cell-row' | 'cell-column';
+type ViewMode = 'tables' | 'table-options' | 'rows' | 'columns' | 'cell-row' | 'cell-column';
 
 interface TableReference {
     type: 'full_table' | 'table_row' | 'table_column' | 'table_cell';
@@ -186,25 +186,32 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
         setPreviewTableId(null);
     };
 
-    // Handle table selection
-    const handleTableSelect = async (table: UserTable, type: SelectionType) => {
+    // Handle table selection (navigate to options view)
+    const handleTableSelect = (table: UserTable) => {
         setSelectedTable(table);
-        setSelectionType(type);
+        setViewMode('table-options');
         setSearchQuery('');
+    };
+
+    // Handle selection type choice
+    const handleSelectionTypeSelect = async (type: SelectionType) => {
+        if (!selectedTable) return;
+        
+        setSelectionType(type);
         
         if (type === 'table') {
             // Immediate selection for full table
             onSelect({
                 type: 'full_table',
-                table_id: table.id,
-                table_name: table.table_name,
-                description: `Reference to entire table "${table.table_name}"`
+                table_id: selectedTable.id,
+                table_name: selectedTable.table_name,
+                description: `Reference to entire table "${selectedTable.table_name}"`
             });
             return;
         }
         
         // Load details for other types
-        await loadTableDetails(table);
+        await loadTableDetails(selectedTable);
         
         if (type === 'row') {
             setViewMode('rows');
@@ -258,9 +265,13 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
 
     // Handle back navigation
     const handleBackNavigation = () => {
-        if (viewMode === 'selection-type' || viewMode === 'rows' || viewMode === 'columns' || viewMode === 'cell-row') {
+        if (viewMode === 'table-options') {
             setViewMode('tables');
             setSelectedTable(null);
+            setSelectionType(null);
+            setSearchQuery('');
+        } else if (viewMode === 'rows' || viewMode === 'columns' || viewMode === 'cell-row') {
+            setViewMode('table-options');
             setSelectionType(null);
             setSearchQuery('');
         } else if (viewMode === 'cell-column') {
@@ -275,7 +286,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     // Get header title
     const getHeaderTitle = () => {
         if (viewMode === 'tables') return 'Tables';
-        if (viewMode === 'selection-type') return selectedTable?.table_name || 'Select Type';
+        if (viewMode === 'table-options') return selectedTable?.table_name || 'Select Type';
         if (viewMode === 'rows') return 'Select Row';
         if (viewMode === 'columns') return 'Select Column';
         if (viewMode === 'cell-row') return 'Select Row';
@@ -337,58 +348,105 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
                         ) : (
                             <div className="space-y-0.5">
                                 {filteredTables.map((table) => (
-                                    <div key={table.id} className="group">
-                                        <div className="px-2 py-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <Table2 className="w-4 h-4 flex-shrink-0 text-green-600 dark:text-green-500" />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                        {table.table_name}
-                                                    </div>
-                                                    {table.description && (
-                                                        <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
-                                                            {table.description}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <button
-                                                    onClick={(e) => handlePreviewTable(e, table.id)}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded"
-                                                    title="Preview table data"
-                                                >
-                                                    <Eye className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                                </button>
+                                    <button
+                                        key={table.id}
+                                        onClick={() => handleTableSelect(table)}
+                                        className="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group"
+                                    >
+                                        <Table2 className="w-4 h-4 flex-shrink-0 text-green-600 dark:text-green-500" />
+                                        <div className="flex-1 text-left min-w-0">
+                                            <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                {table.table_name}
                                             </div>
+                                            {table.description && (
+                                                <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                                                    {table.description}
+                                                </div>
+                                            )}
                                         </div>
-                                        {/* Selection type buttons */}
-                                        <div className="grid grid-cols-2 gap-1 px-2 pb-1.5">
-                                            <button
-                                                onClick={() => handleTableSelect(table, 'table')}
-                                                className="text-[10px] px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 transition-colors"
-                                            >
-                                                Full Table
-                                            </button>
-                                            <button
-                                                onClick={() => handleTableSelect(table, 'row')}
-                                                className="text-[10px] px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 transition-colors"
-                                            >
-                                                Single Row
-                                            </button>
-                                            <button
-                                                onClick={() => handleTableSelect(table, 'column')}
-                                                className="text-[10px] px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 transition-colors"
-                                            >
-                                                Full Column
-                                            </button>
-                                            <button
-                                                onClick={() => handleTableSelect(table, 'cell')}
-                                                className="text-[10px] px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 transition-colors"
-                                            >
-                                                Single Cell
-                                            </button>
-                                        </div>
-                                    </div>
+                                        <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" />
+                                    </button>
                                 ))}
+                            </div>
+                        )}
+                    </div>
+                ) : viewMode === 'table-options' ? (
+                    // Show table options
+                    <div className="p-2">
+                        {selectedTable && (
+                            <div className="space-y-1.5">
+                                {/* Preview button */}
+                                <button
+                                    onClick={() => {
+                                        setPreviewTableId(selectedTable.id);
+                                        setShowPreviewModal(true);
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50 hover:border-blue-300 dark:hover:border-blue-700 text-blue-700 dark:text-blue-400 transition-colors"
+                                >
+                                    <Eye className="w-4 h-4 flex-shrink-0" />
+                                    <span className="text-xs font-medium">Preview Table Data</span>
+                                </button>
+
+                                {/* Selection type options */}
+                                <div className="space-y-0.5">
+                                    <div className="text-[10px] font-medium text-gray-600 dark:text-gray-400 px-1 mb-1">
+                                        Select Reference Type:
+                                    </div>
+                                    <button
+                                        onClick={() => handleSelectionTypeSelect('table')}
+                                        disabled={loadingDetails}
+                                        className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                                    >
+                                        <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                            Full Table
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                                            Reference all rows and columns
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => handleSelectionTypeSelect('row')}
+                                        disabled={loadingDetails}
+                                        className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                                    >
+                                        <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                            Single Row
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                                            Reference one specific row
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => handleSelectionTypeSelect('column')}
+                                        disabled={loadingDetails}
+                                        className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                                    >
+                                        <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                            Full Column
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                                            Reference all values in one column
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => handleSelectionTypeSelect('cell')}
+                                        disabled={loadingDetails}
+                                        className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                                    >
+                                        <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                            Single Cell
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                                            Reference one specific cell value
+                                        </div>
+                                    </button>
+                                </div>
+                                
+                                {loadingDetails && (
+                                    <div className="flex items-center justify-center py-4">
+                                        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

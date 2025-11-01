@@ -111,7 +111,7 @@ export function UploadResourcePicker({ onBack, onSelect }: UploadResourcePickerP
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
-                    className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-lg transition-colors ${
+                    className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-2 transition-colors ${
                         isDragging
                             ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
                             : "border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600"
@@ -125,16 +125,16 @@ export function UploadResourcePicker({ onBack, onSelect }: UploadResourcePickerP
                     ) : (
                         <>
                             <div className="flex gap-4 mb-4">
-                                <ImageIcon className="w-12 h-12 text-gray-400" />
-                                <File className="w-12 h-12 text-gray-400" />
+                                <ImageIcon className="w-8 h-8 text-gray-400" />
+                                <File className="w-8 h-8 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                            <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-2">
                                 Drop files here
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
                                 or click the button below to browse
                             </p>
-                            <Button onClick={openFilePicker} className="h-9">
+                            <Button onClick={openFilePicker} className="h-8">
                                 <Upload className="w-4 h-4 mr-2" />
                                 Choose Files
                             </Button>
