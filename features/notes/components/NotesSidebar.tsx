@@ -71,6 +71,7 @@ export function NotesSidebar({
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
     const [contextMenuType, setContextMenuType] = useState<'folder' | 'note' | null>(null);
     const [contextMenuTarget, setContextMenuTarget] = useState<string | null>(null);
+    const [isInitialRender, setIsInitialRender] = useState(true);
 
     // Filter and sort notes
     const processedNotes = useMemo(() => {
@@ -83,6 +84,15 @@ export function NotesSidebar({
     const folderGroups = useMemo(() => {
         return groupNotesByFolder(processedNotes);
     }, [processedNotes]);
+
+    // Initialize all folders as collapsed on first render
+    useEffect(() => {
+        if (isInitialRender && folderGroups.length > 0) {
+            const allFolderNames = new Set(folderGroups.map(group => group.folder_name));
+            setCollapsedFolders(allFolderNames);
+            setIsInitialRender(false);
+        }
+    }, [folderGroups, isInitialRender]);
 
     // Auto-expand folder containing active note
     useEffect(() => {
@@ -319,15 +329,18 @@ export function NotesSidebar({
                                             )}
                                             onClick={() => hasNotes && toggleFolder(group.folder_name)}
                                         >
-                                            {/* Chevron - only show if folder has notes */}
-                                            {hasNotes && (
-                                                isCollapsed ? (
-                                                    <ChevronRight className="h-2.5 w-2.5 mr-0.5 shrink-0" />
-                                                ) : (
-                                                    <ChevronDown className="h-2.5 w-2.5 mr-0.5 shrink-0" />
-                                                )
+                                            {/* Chevron - always show for consistency */}
+                                            {isCollapsed ? (
+                                                <ChevronRight className={cn(
+                                                    "h-2.5 w-2.5 mr-0.5 shrink-0",
+                                                    !hasNotes && "opacity-30"
+                                                )} />
+                                            ) : (
+                                                <ChevronDown className={cn(
+                                                    "h-2.5 w-2.5 mr-0.5 shrink-0",
+                                                    !hasNotes && "opacity-30"
+                                                )} />
                                             )}
-                                            {!hasNotes && <div className="w-2.5 mr-0.5 shrink-0" />}
                                             
                                             <FolderIcon className={cn("h-2.5 w-2.5 mr-1 shrink-0", iconColor)} />
                                             <span className="truncate flex-1 text-left min-w-0">{group.folder_name}</span>
@@ -361,7 +374,7 @@ export function NotesSidebar({
 
                                     {/* Notes in Folder - Compact, only show if not collapsed and has notes */}
                                     {!isCollapsed && hasNotes && (
-                                        <div className="ml-2 space-y-0.5">
+                                        <div className="ml-3 space-y-0.5">
                                             {group.notes.map((note) => {
                                                 const isActive = activeNote?.id === note.id;
                                                 const isDragging = draggedNote?.id === note.id;
@@ -373,6 +386,9 @@ export function NotesSidebar({
                                                         draggable
                                                         onDragStart={handleDragStart(note)}
                                                         onDragEnd={handleDragEnd}
+                                                        onDragOver={handleDragOver(group.folder_name)}
+                                                        onDragLeave={handleDragLeave}
+                                                        onDrop={handleDrop(group.folder_name)}
                                                         onContextMenu={(e) => handleNoteContextMenu(e, note)}
                                                     >
                                                         <Button
@@ -386,7 +402,7 @@ export function NotesSidebar({
                                                             onClick={() => onSelectNote(note)}
                                                         >
                                                             {/* Tiny subtle icon */}
-                                                            <div className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-500 mr-1.5 shrink-0" />
+                                                            <div className="w-2 h-2 rounded-full bg-zinc-400 dark:bg-zinc-500 mr-0 shrink-0" />
                                                             <span className="truncate flex-1 text-left min-w-0">
                                                                 {note.label}
                                                             </span>
