@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { X, StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, FileText, Youtube } from "lucide-react";
+import { X, StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, FileText, Youtube, Image, Mic } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Resource types
@@ -12,7 +12,10 @@ export type Resource =
     | { type: "file"; data: any }
     | { type: "table"; data: any }
     | { type: "webpage"; data: any }
-    | { type: "youtube"; data: any };
+    | { type: "youtube"; data: any }
+    | { type: "image_url"; data: any }
+    | { type: "file_url"; data: any }
+    | { type: "audio"; data: any };
 
 interface ResourceChipsProps {
     resources: Resource[];
@@ -75,6 +78,28 @@ export function ResourceChips({ resources, onRemove, onPreview }: ResourceChipsP
                     color: "text-red-600 dark:text-red-500",
                     bgColor: "bg-red-100 dark:bg-red-950/30",
                 };
+            case "image_url":
+                const imageName = resource.data.url ? new URL(resource.data.url).pathname.split('/').pop() || "Image" : "Image";
+                return {
+                    icon: Image,
+                    label: imageName,
+                    color: "text-blue-600 dark:text-blue-500",
+                    bgColor: "bg-blue-100 dark:bg-blue-950/30",
+                };
+            case "file_url":
+                return {
+                    icon: FileText,
+                    label: resource.data.filename || "File",
+                    color: "text-purple-600 dark:text-purple-500",
+                    bgColor: "bg-purple-100 dark:bg-purple-950/30",
+                };
+            case "audio":
+                return {
+                    icon: Mic,
+                    label: resource.data.filename || "Audio",
+                    color: "text-pink-600 dark:text-pink-500",
+                    bgColor: "bg-pink-100 dark:bg-pink-950/30",
+                };
             default:
                 return {
                     icon: FileText,
@@ -110,7 +135,8 @@ export function ResourceChips({ resources, onRemove, onPreview }: ResourceChipsP
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer transition-all ${display.bgColor} hover:shadow-sm`}
+                        whileHover={{ scale: 1.05 }}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer transition-all ${display.bgColor} hover:shadow-md hover:brightness-105 dark:hover:brightness-110 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10`}
                         onMouseEnter={() => setHoveredIndex(index)}
                         onMouseLeave={() => setHoveredIndex(null)}
                         onClick={() => onPreview?.(resource, index)}

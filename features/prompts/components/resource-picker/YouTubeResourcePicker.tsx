@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 interface YouTubeResourcePickerProps {
     onBack: () => void;
     onSelect: (video: YouTubeVideo) => void;
+    initialUrl?: string;
 }
 
 type YouTubeVideo = {
@@ -68,8 +69,8 @@ async function fetchVideoInfo(videoId: string): Promise<{ title?: string; channe
     }
 }
 
-export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePickerProps) {
-    const [url, setUrl] = useState("");
+export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeResourcePickerProps) {
+    const [url, setUrl] = useState(initialUrl || "");
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [videoPreview, setVideoPreview] = useState<YouTubeVideo | null>(null);
@@ -79,6 +80,13 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
     useEffect(() => {
         inputRef.current?.focus();
     }, []);
+
+    // Auto-validate if initialUrl is provided
+    useEffect(() => {
+        if (initialUrl && initialUrl.trim()) {
+            handleValidate();
+        }
+    }, [initialUrl]);
 
     const handleValidate = async () => {
         setError(null);
@@ -130,8 +138,21 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
         }
     };
 
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        // Get the pasted text from clipboard
+        const pastedText = e.clipboardData.getData('text');
+        
+        // Update the state immediately
+        setUrl(pastedText);
+        
+        // Auto-validate after state has been set
+        setTimeout(() => {
+            handleValidate();
+        }, 150);
+    };
+
     return (
-        <div className="flex flex-col h-[400px]">
+        <div className="flex flex-col h-[450px]">
             {/* Header */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
                 <Button
@@ -149,9 +170,6 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        YouTube URL
-                    </label>
                     <div className="flex gap-2">
                         <Input
                             ref={inputRef}
@@ -159,6 +177,7 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
                             onKeyPress={handleKeyPress}
+                            onPaste={handlePaste}
                             placeholder="https://www.youtube.com/watch?v=..."
                             className="flex-1 text-xs h-8"
                             disabled={isValidating}
@@ -167,12 +186,13 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
                             size="sm"
                             onClick={handleValidate}
                             disabled={isValidating || !url.trim()}
-                            className="h-8 px-3"
+                            className="h-8 w-8 p-0"
+                            variant="ghost"
                         >
                             {isValidating ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             ) : (
-                                "Validate"
+                                <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
                             )}
                         </Button>
                     </div>

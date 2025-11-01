@@ -39,13 +39,15 @@ export interface UserData {
     accessToken: string | null;
 }
 
-const ADMIN_USER_IDS = [
-    "4cf62e4e-2679-484f-b652-034e697418df",
-    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
-    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
-];
-  
-export function mapUserData(user: any, accessToken?: any): UserData {
+/**
+ * Map Supabase user data to application user data
+ * 
+ * @param user - Supabase user object
+ * @param accessToken - Optional access token
+ * @param isAdmin - Optional admin status (if not provided, defaults to false)
+ * @returns Mapped UserData object
+ */
+export function mapUserData(user: any, accessToken?: any, isAdmin?: boolean): UserData {
     const userId = user?.id || null;    
     return {
         id: userId,
@@ -77,7 +79,7 @@ export function mapUserData(user: any, accessToken?: any): UserData {
             sub: identity?.identity_data?.sub || null,
             name: identity?.identity_data?.name || null,
         })) || [],
-        isAdmin: userId ? ADMIN_USER_IDS.includes(userId) : false,
+        isAdmin: isAdmin ?? false, // Use provided value or default to false
         accessToken: accessToken || null,
     };
 }

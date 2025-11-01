@@ -11,7 +11,7 @@ import { Bug } from "lucide-react";
 import { RootState } from "@/lib/redux/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
-import { adminIds } from "@/components/layout";
+import { useUser } from "@/lib/hooks/useUser";
 
 
 export type PositionType = 
@@ -110,10 +110,9 @@ const AppBuilderDebugOverlay: React.FC<AppBuilderDebugOverlayProps> = ({
   const appState = useAppSelector(getAppBuilderState);
   const containerState = useAppSelector(getContainerBuilderState);
   const fieldState = useAppSelector(getFieldBuilderState);
-  const user = useAppSelector((state: RootState) => state.user);
+  const { isAdmin } = useUser();
 
   // Only render for admin users
-  const isAdmin = adminIds.includes(user.id);
   if (!isAdmin) return null;
 
   const handleClose = () => setIsDebugOpen(false);

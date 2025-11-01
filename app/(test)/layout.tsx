@@ -50,7 +50,10 @@ export default async function AuthenticatedLayout(
         return redirect(`/login?redirectTo=${encodeURIComponent(fullPath)}`);
     }
 
-    const userData = mapUserData(user);
+    const session = await supabase.auth.getSession();
+    const accessToken = session.data.session?.access_token;
+    const isAdmin = false; // Test layout doesn't require admin
+    const userData = mapUserData(user, accessToken, isAdmin);
     const testDirectories = await getTestDirectories();
 
     const {data: preferences, error} = await supabase

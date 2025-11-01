@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/utils/supabase/client';
 import TableToolbar from './TableToolbar';
-import { Search, X, Plus, Download, Settings, Pencil, Trash, Loader, Expand, Link, Wand2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Pencil, Trash, Loader, Expand, Link, Wand2 } from 'lucide-react';
 import { TableLoadingComponent } from '@/components/matrx/LoadingComponents';
 import { useRouter } from 'next/navigation';
 import {

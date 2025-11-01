@@ -5,15 +5,12 @@ import React from "react";
 import AdminIndicator from "./AdminIndicator";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
-import { RootState } from "@/lib/redux";
-import { adminIds } from "@/components/layout";
+import { useUser } from "@/lib/hooks/useUser";
 
 
 const AdminIndicatorWrapper = () => {
-    const user = useAppSelector((state: RootState) => state.user);
+    const { isAdmin, user } = useUser();
     const isOverlayOpen = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
-    
-    const isAdmin = adminIds.includes(user.id);
 
     // Only render if user is admin AND the overlay is open
     if (!isAdmin || !isOverlayOpen) return null;

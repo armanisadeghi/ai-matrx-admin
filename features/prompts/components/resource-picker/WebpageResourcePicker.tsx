@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { ChevronLeft, Globe, Loader2, ExternalLink, FileText, CheckCircle2 } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronLeft, Globe, Loader2, ExternalLink, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,15 +18,89 @@ interface WebpageContent {
 interface WebpageResourcePickerProps {
     onBack: () => void;
     onSelect: (content: WebpageContent) => void;
+    onSwitchTo?: (type: 'youtube' | 'image_url' | 'file_url', url: string) => void;
+    initialUrl?: string;
 }
 
-export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePickerProps) {
-    const [url, setUrl] = useState("");
+// Detect URL type
+function detectUrlType(url: string): 'youtube' | 'image' | 'file' | 'webpage' | null {
+    try {
+        const urlObj = new URL(url);
+        
+        // YouTube detection
+        if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+            return 'youtube';
+        }
+        
+        // Image detection
+        const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'];
+        const pathname = urlObj.pathname.toLowerCase();
+        if (imageExtensions.some(ext => pathname.endsWith(ext))) {
+            return 'image';
+        }
+        
+        // File detection
+        const fileExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv', '.json', '.xml', '.zip', '.md'];
+        if (fileExtensions.some(ext => pathname.endsWith(ext))) {
+            return 'file';
+        }
+        
+        // Default to webpage
+        return 'webpage';
+    } catch {
+        return null;
+    }
+}
+
+export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl }: WebpageResourcePickerProps) {
+    const [url, setUrl] = useState(initialUrl || "");
     const [showPreview, setShowPreview] = useState(false);
+    const [suggestedType, setSuggestedType] = useState<'youtube' | 'image_url' | 'file_url' | null>(null);
+    const [editedContent, setEditedContent] = useState<string>("");
     const { scrapeUrl, data, isLoading, hasError, error, reset } = useScraperContent();
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Auto-focus the input on mount
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    // Auto-scrape if initialUrl is provided
+    useEffect(() => {
+        if (initialUrl && initialUrl.trim()) {
+            handleScrape();
+        }
+    }, [initialUrl]);
+
+    // Set edited content when data is loaded
+    useEffect(() => {
+        if (data?.textContent) {
+            setEditedContent(data.textContent);
+        }
+    }, [data]);
 
     const handleScrape = async () => {
         if (!url.trim()) return;
+        
+        // Check URL type
+        const detectedType = detectUrlType(url.trim());
+        
+        if (detectedType === 'youtube') {
+            setSuggestedType('youtube');
+            return;
+        }
+        
+        if (detectedType === 'image') {
+            setSuggestedType('image_url');
+            return;
+        }
+        
+        if (detectedType === 'file') {
+            setSuggestedType('file_url');
+            return;
+        }
+        
+        setSuggestedType(null);
         
         try {
             await scrapeUrl(url.trim());
@@ -39,22 +113,25 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
     const handleConfirm = () => {
         if (!data) return;
         
+        // Use the edited content instead of the original
         onSelect({
             url,
             title: data.overview.page_title || url,
-            textContent: data.textContent,
-            charCount: data.overview.char_count || data.textContent.length,
+            textContent: editedContent, // Use edited content
+            charCount: editedContent.length, // Update character count based on edited content
             scrapedAt: data.scrapedAt
         });
         
         setShowPreview(false);
         reset();
         setUrl("");
+        setEditedContent("");
     };
 
     const handleClosePreview = () => {
         setShowPreview(false);
         reset();
+        setEditedContent("");
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -63,9 +140,22 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
         }
     };
 
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        // Get the pasted text from clipboard
+        const pastedText = e.clipboardData.getData('text');
+        
+        // Update the state immediately
+        setUrl(pastedText);
+        
+        // Auto-scrape after state has been set
+        setTimeout(() => {
+            handleScrape();
+        }, 150);
+    };
+
     return (
         <>
-            <div className="flex flex-col h-[400px]">
+            <div className="flex flex-col h-[450px]">
                 {/* Header */}
                 <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
                     <Button
@@ -77,7 +167,7 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
                     >
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <Globe className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                    <Globe className="w-4 h-4 flex-shrink-0 text-teal-600 dark:text-teal-500" />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1 truncate">
                         Webpage Content
                     </span>
@@ -85,86 +175,84 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
 
                 {/* Content */}
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-4">
-                        <div className="space-y-4">
+                    <div className="flex-1 overflow-y-auto p-3">
+                        <div className="space-y-3">
                         {/* URL Input */}
                         <div className="space-y-2">
-                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                Enter URL
-                            </label>
                             <div className="flex gap-2">
                                 <Input
+                                    ref={inputRef}
                                     type="url"
                                     placeholder="https://example.com"
                                     value={url}
                                     onChange={(e) => setUrl(e.target.value)}
                                     onKeyDown={handleKeyDown}
+                                    onPaste={handlePaste}
                                     disabled={isLoading}
-                                    className="flex-1 h-9 text-sm"
+                                    className="flex-1 text-xs h-8"
                                 />
                                 <Button
                                     onClick={handleScrape}
                                     disabled={!url.trim() || isLoading}
-                                    className="h-9 px-4"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    variant="ghost"
                                 >
                                     {isLoading ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                            Scraping...
-                                        </>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                     ) : (
-                                        <>
-                                            <Globe className="w-4 h-4 mr-2" />
-                                            Scrape
-                                        </>
+                                        <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
                                     )}
                                 </Button>
                             </div>
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                                Paste a webpage URL to extract its text content
+                            </p>
                         </div>
 
-                        {/* Instructions */}
-                        <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
-                            <h4 className="text-xs font-medium text-blue-800 dark:text-blue-200 mb-1">
-                                How it works
-                            </h4>
-                            <ul className="text-[10px] text-blue-600 dark:text-blue-300 space-y-0.5">
-                                <li>• Enter any webpage URL</li>
-                                <li>• We'll extract the text content</li>
-                                <li>• Preview and confirm before adding</li>
-                                <li>• Content will be included in your message</li>
-                            </ul>
-                        </div>
+                        {/* Suggestion to switch type */}
+                        {suggestedType && onSwitchTo && (
+                            <div className="space-y-2">
+                                <div className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded">
+                                    <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                    <p className="text-xs text-blue-700 dark:text-blue-400">
+                                        This appears to be a {suggestedType === 'youtube' ? 'YouTube video' : suggestedType === 'image_url' ? 'image' : 'file'}
+                                    </p>
+                                </div>
+                                <Button
+                                    size="sm"
+                                    className="w-full text-xs h-8 bg-teal-600 hover:bg-teal-700 text-white"
+                                    onClick={() => onSwitchTo(suggestedType, url)}
+                                >
+                                    <Globe className="w-3.5 h-3.5 mr-1.5" />
+                                    Switch to {suggestedType === 'youtube' ? 'YouTube' : suggestedType === 'image_url' ? 'Image URL' : 'File URL'}
+                                </Button>
+                            </div>
+                        )}
 
                         {/* Error Display */}
                         {hasError && (
-                            <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-md">
-                                <p className="text-xs text-red-600 dark:text-red-400">
+                            <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded">
+                                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-red-700 dark:text-red-400">
                                     {error || 'Failed to scrape webpage'}
                                 </p>
                             </div>
                         )}
 
-                        {/* Recent/Example URLs (optional enhancement) */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                Quick Examples
-                            </label>
-                            <div className="flex flex-wrap gap-1">
-                                {[
-                                    'https://example.com',
-                                    'https://wikipedia.org',
-                                ].map((exampleUrl) => (
-                                    <button
-                                        key={exampleUrl}
-                                        onClick={() => setUrl(exampleUrl)}
-                                        disabled={isLoading}
-                                        className="text-[10px] px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 transition-colors disabled:opacity-50"
-                                    >
-                                        {exampleUrl.replace('https://', '')}
-                                    </button>
-                                ))}
+                        {/* Help Text */}
+                        {!isLoading && !hasError && !suggestedType && (
+                            <div className="p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                <p className="text-xs text-blue-700 dark:text-blue-400 mb-1">
+                                    <strong>How it works:</strong>
+                                </p>
+                                <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-0.5 ml-3">
+                                    <li>• Enter any webpage URL</li>
+                                    <li>• We'll extract the text content</li>
+                                    <li>• Preview and confirm before adding</li>
+                                </ul>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Loading state */}
@@ -185,18 +273,55 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
 
             {/* Preview Modal */}
             <Dialog open={showPreview} onOpenChange={handleClosePreview}>
-                <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
+                <DialogContent className="max-w-4xl h-[90vh] overflow-hidden flex flex-col p-0">
+                    <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                         <DialogTitle className="flex items-center gap-2">
                             <FileText className="w-5 h-5 text-green-600 dark:text-green-500" />
                             <span>Webpage Content Preview</span>
                         </DialogTitle>
                     </DialogHeader>
 
+                    {/* Loading State */}
+                    {!data && isLoading && (
+                        <div className="flex-1 flex flex-col items-center justify-center p-8">
+                            <div className="relative">
+                                {/* Animated loader */}
+                                <div className="w-20 h-20 relative">
+                                    {/* Outer ring */}
+                                    <div className="absolute inset-0 border-4 border-teal-200 dark:border-teal-800 rounded-full"></div>
+                                    {/* Spinning ring */}
+                                    <div className="absolute inset-0 border-4 border-transparent border-t-teal-600 dark:border-t-teal-400 rounded-full animate-spin"></div>
+                                    {/* Inner pulsing circle */}
+                                    <div className="absolute inset-3 bg-teal-100 dark:bg-teal-900 rounded-full animate-pulse flex items-center justify-center">
+                                        <Globe className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-8 text-center space-y-3">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    Scraping Webpage...
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
+                                    We're extracting the content from the webpage. This may take a few moments depending on the page size and complexity.
+                                </p>
+                                
+                                {/* Progress indicators */}
+                                <div className="flex items-center justify-center gap-2 pt-4">
+                                    <div className="flex gap-1.5">
+                                        <div className="w-2 h-2 bg-teal-600 dark:bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                        <div className="w-2 h-2 bg-teal-600 dark:bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                        <div className="w-2 h-2 bg-teal-600 dark:bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {data && (
-                        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+                        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
                             {/* Metadata */}
-                            <div className="flex-shrink-0 space-y-2">
+                            <div className="flex-shrink-0 px-6 py-3 border-b border-gray-200 dark:border-gray-800 space-y-2">
                                 <div className="flex items-start gap-2">
                                     <Globe className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500" />
                                     <div className="flex-1 min-w-0">
@@ -217,27 +342,50 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
 
                                 {/* Stats */}
                                 <div className="flex gap-4 text-[10px] text-gray-500 dark:text-gray-400">
-                                    <span>{data.overview.char_count?.toLocaleString() || data.textContent.length.toLocaleString()} characters</span>
-                                    <span>{Math.ceil((data.textContent.length) / 1000)} KB</span>
+                                    <span>{editedContent.length.toLocaleString()} characters</span>
+                                    <span>{Math.ceil((editedContent.length) / 1000)} KB</span>
                                     {data.overview.has_structured_content && (
                                         <span className="text-green-600 dark:text-green-500">✓ Structured</span>
+                                    )}
+                                    {editedContent !== data.textContent && (
+                                        <span className="text-orange-600 dark:text-orange-500">✏️ Edited</span>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Content Preview */}
-                            <div className="flex-1 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-md">
-                                <div className="h-full overflow-y-auto p-4 bg-gray-50 dark:bg-zinc-900">
-                                    <pre className="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono leading-relaxed">
-                                        {data.textContent}
-                                    </pre>
+                            {/* Content Preview - Editable */}
+                            <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+                                <div className="flex items-center justify-between px-6 py-2 bg-gray-100 dark:bg-zinc-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                        Content (Editable)
+                                    </span>
+                                    {editedContent !== data.textContent && (
+                                        <button
+                                            onClick={() => setEditedContent(data.textContent)}
+                                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                        >
+                                            Reset to original
+                                        </button>
+                                    )}
                                 </div>
+                                <textarea
+                                    value={editedContent}
+                                    onChange={(e) => setEditedContent(e.target.value)}
+                                    className="flex-1 px-6 py-4 bg-white dark:bg-zinc-900 text-xs text-gray-900 dark:text-gray-100 font-mono leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-600 min-h-0"
+                                    placeholder="Edit the scraped content here..."
+                                />
                             </div>
 
                             {/* Actions */}
-                            <div className="flex-shrink-0 flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-800">
+                            <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-800">
                                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    Content will be included in your message
+                                    {editedContent !== data.textContent ? (
+                                        <span className="text-orange-600 dark:text-orange-500">
+                                            ✏️ Content has been edited
+                                        </span>
+                                    ) : (
+                                        "Edit content above before adding"
+                                    )}
                                 </div>
                                 <div className="flex gap-2">
                                     <Button
@@ -249,7 +397,8 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
                                     </Button>
                                     <Button
                                         onClick={handleConfirm}
-                                        className="h-8 bg-green-600 hover:bg-green-700 text-white"
+                                        disabled={!editedContent.trim()}
+                                        className="h-8 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                                     >
                                         <CheckCircle2 className="w-4 h-4 mr-2" />
                                         Add Content

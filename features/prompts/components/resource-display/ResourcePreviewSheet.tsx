@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, ExternalLink, Youtube } from "lucide-react";
+import { StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, ExternalLink, Image, FileText, Mic } from "lucide-react";
+import { CiYoutube } from "react-icons/ci";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import type { Resource } from "./ResourceChips";
 import FilePreviewSheet from "@/components/ui/file-preview/FilePreviewSheet";
@@ -128,9 +129,19 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
             case "table":
                 return resource.data.table_name || "Table";
             case "webpage":
-                return resource.data.title || "Webpage";
+                // If title is a URL, show "Webpage Content" instead to avoid duplication
+                if (resource.data.title && !resource.data.title.startsWith('http')) {
+                    return resource.data.title;
+                }
+                return "Webpage Content";
             case "youtube":
                 return resource.data.title || "YouTube Video";
+            case "image_url":
+                return resource.data.url ? new URL(resource.data.url).pathname.split('/').pop() || "Image" : "Image";
+            case "file_url":
+                return resource.data.filename || "File";
+            case "audio":
+                return resource.data.filename || "Audio";
             default:
                 return "Resource";
         }
@@ -149,7 +160,13 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
             case "webpage":
                 return <Globe className="w-5 h-5 text-teal-600 dark:text-teal-500" />;
             case "youtube":
-                return <Youtube className="w-5 h-5 text-red-600 dark:text-red-500" />;
+                return <CiYoutube className="w-5 h-5 text-red-600 dark:text-red-500" />;
+            case "image_url":
+                return <Image className="w-5 h-5 text-blue-600 dark:text-blue-500" />;
+            case "file_url":
+                return <FileText className="w-5 h-5 text-purple-600 dark:text-purple-500" />;
+            case "audio":
+                return <Mic className="w-5 h-5 text-pink-600 dark:text-pink-500" />;
             default:
                 return <File className="w-5 h-5 text-gray-600 dark:text-gray-400" />;
         }
@@ -161,20 +178,18 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
             onClose={onClose}
             position="right"
             width="3xl"
-            height="xl"
             title={
                 <div className="flex items-center gap-2">
                     {getResourceIcon()}
                     <span>{getResourceTitle()}</span>
                 </div>
             }
-            description="Resource Preview"
             showCloseButton={true}
             closeOnBackdropClick={true}
             rounded="lg"
-            contentClassName="p-6"
+            contentClassName="p-0"
         >
-            <div className="space-y-6">
+            <div className="space-y-6 px-6 py-4">
                     {/* Note Preview */}
                     {resource.type === "note" && (
                         <div className="space-y-4">
@@ -352,7 +367,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                                 <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
                                                     <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Row Data</h4>
                                                 </div>
-                                                <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
+                                                <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto">
                                                     {Object.entries(tableData.row.data).map(([fieldName, value]: [string, any]) => (
                                                         <div key={fieldName} className="flex items-start gap-3 p-2 bg-gray-50 dark:bg-zinc-900 rounded">
                                                             <span className="text-xs font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
@@ -392,7 +407,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                                         Column Values ({tableData.rows.length} of {tableData.total || tableData.rows.length} rows)
                                                     </h4>
                                                 </div>
-                                                <div className="max-h-96 overflow-y-auto">
+                                                <div className="max-h-[60vh] overflow-y-auto">
                                                     {tableData.rows.length === 0 ? (
                                                         <div className="p-4 text-center text-xs text-gray-500 dark:text-gray-400">
                                                             No rows found
@@ -490,7 +505,7 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                         {resource.data.charCount?.toLocaleString() || 0} characters
                                     </span>
                                 </div>
-                                <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-800 max-h-96 overflow-y-auto">
+                                <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-800 max-h-[70vh] overflow-y-auto">
                                     <pre className="text-xs text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono">
                                         {resource.data.textContent}
                                     </pre>
@@ -550,6 +565,100 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                         Watch on YouTube
                                         <ExternalLink className="w-3 h-3" />
                                     </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Image URL Preview */}
+                    {resource.type === "image_url" && (
+                        <div className="space-y-4">
+                            {/* Image Display */}
+                            <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                                <div className="relative aspect-video bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                                    <img
+                                        src={resource.data.url}
+                                        alt={getResourceTitle()}
+                                        className="max-w-full max-h-full object-contain"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Image Info */}
+                            <div className="space-y-3">
+                                <div>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">Type: </span>
+                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        {resource.data.type}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <a
+                                        href={resource.data.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 break-all"
+                                    >
+                                        {resource.data.url}
+                                        <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* File URL Preview */}
+                    {resource.type === "file_url" && (
+                        <div className="space-y-4">
+                            {/* File Icon/Info */}
+                            <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                                <div className="p-6 bg-gray-50 dark:bg-zinc-900 flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-lg bg-purple-100 dark:bg-purple-950/30 flex items-center justify-center flex-shrink-0">
+                                        <FileText className="w-8 h-8 text-purple-600 dark:text-purple-500" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-base font-medium text-gray-900 dark:text-gray-100 truncate">
+                                            {resource.data.filename}
+                                        </div>
+                                        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                            <span className="uppercase">{resource.data.extension}</span>
+                                            <span>•</span>
+                                            <span>{resource.data.type}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* File URL */}
+                            <div>
+                                <a
+                                    href={resource.data.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 break-all"
+                                >
+                                    {resource.data.url}
+                                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                                </a>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Audio Preview (Placeholder) */}
+                    {resource.type === "audio" && (
+                        <div className="space-y-4">
+                            <div className="flex flex-col items-center justify-center p-8 text-center bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-800 rounded-lg">
+                                <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-950/50 flex items-center justify-center mb-4">
+                                    <Mic className="w-8 h-8 text-pink-600 dark:text-pink-500" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                        Audio Transcription Coming Soon
+                                    </h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">
+                                        This feature will transcribe audio files and display the transcription here.
+                                    </p>
                                 </div>
                             </div>
                         </div>

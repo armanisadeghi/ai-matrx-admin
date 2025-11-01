@@ -469,26 +469,20 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
 
             {/* Preview Modal */}
             <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
-                <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 gap-0">
-                    <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+                <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 gap-0 flex flex-col">
+                    <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
                         <div className="flex items-center justify-between">
                             <DialogTitle className="text-base font-semibold">Table Preview</DialogTitle>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0"
-                                onClick={closePreviewModal}
-                            >
-                                <X className="w-4 h-4" />
-                            </Button>
                         </div>
                     </DialogHeader>
-                    <div className="flex-1 overflow-auto px-6 py-4">
+                    <div className="flex-1 overflow-auto min-h-0">
                         {previewTableId && (
-                            <UserTableViewer 
-                                tableId={previewTableId}
-                                showTableSelector={false}
-                            />
+                            <div className="h-full px-6 py-4">
+                                <UserTableViewer 
+                                    tableId={previewTableId}
+                                    showTableSelector={false}
+                                />
+                            </div>
                         )}
                     </div>
                 </DialogContent>

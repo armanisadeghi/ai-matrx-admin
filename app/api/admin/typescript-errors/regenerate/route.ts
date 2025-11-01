@@ -3,7 +3,7 @@ import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createClient } from '@/utils/supabase/server';
-import { adminIds } from '@/components/layout';
+import { requireAdmin } from '@/utils/auth/adminUtils';
 
 interface TypeScriptError {
   file: string | null;
@@ -53,23 +53,14 @@ async function regenerateTypeScriptErrors(): Promise<TypeScriptError[]> {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin status
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    try {
+      await requireAdmin(); // Throws if not authenticated or not admin
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Access denied';
+      const status = message.includes('Unauthorized') ? 401 : 403;
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Check if user is admin using the adminIds list
-    const isAdmin = adminIds.includes(user.id);
-
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Forbidden: Admin access required' },
-        { status: 403 }
+        { error: message },
+        { status }
       );
     }
 

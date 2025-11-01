@@ -2,7 +2,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { PredefinedConnection } from "../socket.types";
-import { adminIds } from "@/components/layout";
+import { getAdminUserIds } from "@/config/admin.config";
 
 const DEBUG = false;
 
@@ -17,7 +17,7 @@ export class SocketConnectionManager {
     private connectionDetails: Map<string, { url: string; namespace: string }> = new Map();
     private authenticationStatus: Map<string, boolean> = new Map();
 
-    private readonly adminIds = adminIds;
+    private readonly adminIds = getAdminUserIds();
 
     public static readonly DEFAULT_URL = "https://server.app.matrxserver.com";
     public static readonly GPU_SERVER_URL = "https://gpu.app.matrxserver.com";

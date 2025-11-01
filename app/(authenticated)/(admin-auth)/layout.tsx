@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { mapUserData } from "@/utils/userDataMapper";
-import { adminIds } from "@/components/layout";
+import { isAdminUser } from "@/config/admin.config";
 import { headers } from "next/headers";
 
 // Admin pages require authentication and cannot be statically generated
@@ -27,9 +27,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
     const session = await supabase.auth.getSession();
     const accessToken = session.data.session?.access_token;
-    const userData = mapUserData(user, accessToken);
-
-    const isAdmin = adminIds.includes(userData.id);
+    const isAdmin = isAdminUser(user.id);
 
     if (!isAdmin) {
         return redirect("/dashboard");

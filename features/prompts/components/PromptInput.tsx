@@ -78,7 +78,6 @@ export function PromptInput({
     uploadBucket = "userContent",
     uploadPath = "prompt-attachments",
 }: PromptInputProps) {
-    const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
     const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isDebugMode = useAppSelector(selectIsDebugMode);
@@ -293,98 +292,6 @@ export function PromptInput({
                         onResourceSelected={handleResourceSelected}
                         attachmentCapabilities={attachmentCapabilities}
                     />
-
-                    {/* Attachments Menu */}
-                    {showAttachments && (
-                        <Popover open={isAttachmentMenuOpen} onOpenChange={setIsAttachmentMenuOpen}>
-                            <PopoverTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" tabIndex={-1}>
-                                    <Paperclip className="w-3.5 h-3.5" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-56 p-2" align="start" side="top">
-                                <div className="space-y-1">
-                                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 px-2 py-1">
-                                        Add Attachment
-                                    </div>
-                                    
-                                    {/* Image URLs */}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="w-full justify-start h-8 text-xs"
-                                        disabled={!attachmentCapabilities.supportsImageUrls}
-                                        onClick={() => {
-                                            // TODO: Implement image URL attachment
-                                            console.log("Image URL attachment clicked");
-                                            setIsAttachmentMenuOpen(false);
-                                        }}
-                                    >
-                                        <Image className="w-4 h-4 mr-2" />
-                                        Image URLs
-                                        {!attachmentCapabilities.supportsImageUrls && (
-                                            <span className="ml-auto text-xs text-gray-400">(N/A)</span>
-                                        )}
-                                    </Button>
-
-                                    {/* File URLs */}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="w-full justify-start h-8 text-xs"
-                                        disabled={!attachmentCapabilities.supportsFileUrls}
-                                        onClick={() => {
-                                            // TODO: Implement file URL attachment
-                                            console.log("File URL attachment clicked");
-                                            setIsAttachmentMenuOpen(false);
-                                        }}
-                                    >
-                                        <FileText className="w-4 h-4 mr-2" />
-                                        File URLs
-                                        {!attachmentCapabilities.supportsFileUrls && (
-                                            <span className="ml-auto text-xs text-gray-400">(N/A)</span>
-                                        )}
-                                    </Button>
-
-                                    {/* YouTube Videos */}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="w-full justify-start h-8 text-xs"
-                                        disabled={!attachmentCapabilities.supportsYoutubeVideos}
-                                        onClick={() => {
-                                            // TODO: Implement YouTube video attachment
-                                            console.log("YouTube video attachment clicked");
-                                            setIsAttachmentMenuOpen(false);
-                                        }}
-                                    >
-                                        <FaYoutube className="w-4 h-4 mr-2" />
-                                        YouTube Videos
-                                        {!attachmentCapabilities.supportsYoutubeVideos && (
-                                            <span className="ml-auto text-xs text-gray-400">(soon)</span>
-                                        )}
-                                    </Button>
-
-                                    {/* Audio Upload - Coming Soon */}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="w-full justify-start h-8 text-xs"
-                                        disabled={true}
-                                        onClick={() => {
-                                            // TODO: Implement audio upload
-                                            console.log("Audio upload clicked");
-                                            setIsAttachmentMenuOpen(false);
-                                        }}
-                                    >
-                                        <Mic className="w-4 h-4 mr-2" />
-                                        Audio Upload
-                                        <span className="ml-auto text-xs text-gray-400">(soon)</span>
-                                    </Button>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    )}
 
                     {/* Shift+Enter hint text (alternative to buttons) */}
                     {showShiftEnterHint && (

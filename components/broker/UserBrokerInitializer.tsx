@@ -5,7 +5,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { UserData } from "@/utils/userDataMapper";
 import { useSetGlobalBasics } from "@/hooks/brokers/useSetGlobalBasics";
-import { adminIds } from "@/components/layout";
+import { isAdminUser } from "@/config/admin.config";
 
 interface GlobalBrokersInitializerProps {
     user: UserData;
@@ -54,7 +54,7 @@ export function GlobalBrokersInitializer({ user }: GlobalBrokersInitializerProps
             })
         );
 
-        const isAdmin = adminIds.includes(user.id);
+        const isAdmin = isAdminUser(user.id);
 
         dispatch(
             brokerActions.setValue({

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FileText, StickyNote, CheckSquare, Table2, Globe, Workflow, ChevronLeft, Upload, Youtube } from "lucide-react";
+import { FileText, StickyNote, CheckSquare, Table2, Globe, Workflow, ChevronLeft, Upload, Youtube, Image, File, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotesResourcePicker } from "./NotesResourcePicker";
 import { TasksResourcePicker } from "./TasksResourcePicker";
@@ -10,8 +10,11 @@ import { TablesResourcePicker } from "./TablesResourcePicker";
 import { WebpageResourcePicker } from "./WebpageResourcePicker";
 import { UploadResourcePicker } from "./UploadResourcePicker";
 import { YouTubeResourcePicker } from "./YouTubeResourcePicker";
+import { ImageUrlResourcePicker } from "./ImageUrlResourcePicker";
+import { FileUrlResourcePicker } from "./FileUrlResourcePicker";
+import { AudioResourcePicker } from "./AudioResourcePicker";
 
-type ResourceType = "upload" | "storage" | "notes" | "tasks" | "tables" | "webpage" | "youtube" | "brokers" | null;
+type ResourceType = "upload" | "storage" | "notes" | "tasks" | "tables" | "webpage" | "youtube" | "image_url" | "file_url" | "audio" | "brokers" | null;
 
 interface ResourcePickerMenuProps {
     onResourceSelected: (resource: any) => void;
@@ -20,22 +23,39 @@ interface ResourcePickerMenuProps {
         supportsImageUrls?: boolean;
         supportsFileUrls?: boolean;
         supportsYoutubeVideos?: boolean;
+        supportsAudio?: boolean;
     };
 }
 
 export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapabilities }: ResourcePickerMenuProps) {
     const [activeView, setActiveView] = useState<ResourceType>(null);
+    const [currentUrl, setCurrentUrl] = useState<string>("");
 
-    const resources = [
+    // Helper to switch views and carry over the URL
+    const switchToView = (view: ResourceType, url: string) => {
+        setCurrentUrl(url);
+        setActiveView(view);
+    };
+
+    const allResources = [
         { id: "upload", label: "Upload Files", icon: Upload, description: "Upload images & files", requiresCapability: null },
         { id: "storage", label: "Storage Files", icon: FileText, description: "Browse Supabase storage", requiresCapability: null },
         { id: "notes", label: "Notes", icon: StickyNote, description: "Reference your notes", requiresCapability: null },
         { id: "tasks", label: "Tasks", icon: CheckSquare, description: "Include task data", requiresCapability: null },
         { id: "tables", label: "Tables", icon: Table2, description: "Add table data", requiresCapability: null },
         { id: "webpage", label: "Webpage", icon: Globe, description: "Fetch webpage content", requiresCapability: null },
+        { id: "image_url", label: "Image URL", icon: Image, description: "Add image from URL", requiresCapability: 'supportsImageUrls' as const },
+        { id: "file_url", label: "File URL", icon: File, description: "Add file from URL", requiresCapability: 'supportsFileUrls' as const },
         { id: "youtube", label: "YouTube", icon: Youtube, description: "Add YouTube video", requiresCapability: 'supportsYoutubeVideos' as const },
+        { id: "audio", label: "Audio", icon: Mic, description: "Transcribe audio file", requiresCapability: 'supportsAudio' as const },
         { id: "brokers", label: "Brokers", icon: Workflow, description: "Connect to brokers", requiresCapability: null },
     ];
+
+    // Filter resources based on capabilities
+    const resources = allResources.filter(resource => {
+        if (!resource.requiresCapability) return true;
+        return attachmentCapabilities?.[resource.requiresCapability] === true;
+    });
 
     // Check if a resource is enabled based on capabilities
     const isResourceEnabled = (resource: typeof resources[0]) => {
@@ -110,6 +130,8 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
                         onSelect={(content) => {
                             onResourceSelected({ type: "webpage", data: content });
                         }}
+                        onSwitchTo={(type, url) => switchToView(type, url)}
+                        initialUrl={currentUrl}
                     />
                 );
             }
@@ -120,6 +142,44 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
                         onBack={() => setActiveView(null)}
                         onSelect={(video) => {
                             onResourceSelected({ type: "youtube", data: video });
+                        }}
+                        initialUrl={currentUrl}
+                    />
+                );
+            }
+
+            if (activeView === "image_url") {
+                return (
+                    <ImageUrlResourcePicker 
+                        onBack={() => setActiveView(null)}
+                        onSelect={(imageData) => {
+                            onResourceSelected({ type: "image_url", data: imageData });
+                        }}
+                        onSwitchTo={(type, url) => switchToView(type, url)}
+                        initialUrl={currentUrl}
+                    />
+                );
+            }
+
+            if (activeView === "file_url") {
+                return (
+                    <FileUrlResourcePicker 
+                        onBack={() => setActiveView(null)}
+                        onSelect={(fileData) => {
+                            onResourceSelected({ type: "file_url", data: fileData });
+                        }}
+                        onSwitchTo={(type, url) => switchToView(type, url)}
+                        initialUrl={currentUrl}
+                    />
+                );
+            }
+
+            if (activeView === "audio") {
+                return (
+                    <AudioResourcePicker 
+                        onBack={() => setActiveView(null)}
+                        onSelect={(audioData) => {
+                            onResourceSelected({ type: "audio", data: audioData });
                         }}
                     />
                 );

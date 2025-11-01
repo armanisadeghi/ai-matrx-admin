@@ -10,8 +10,21 @@ export { Logo, LogoIcon } from './MatrixLogo';
 // Other layout components
 export { CollapseToggleButton } from './CollapseToggleButton';
 
-export const adminIds = [
-    "4cf62e4e-2679-484f-b652-034e697418df",
-    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
-    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
-];
+/**
+ * Admin IDs have been moved to a centralized config
+ * 
+ * ❌ Don't import from here
+ * ✅ Use instead:
+ * 
+ * For client components:
+ *   import { useUser } from '@/lib/hooks/useUser';
+ *   const { isAdmin } = useUser();
+ * 
+ * For server components/utilities:
+ *   import { isAdminUser } from '@/config/admin.config';
+ *   const isAdmin = isAdminUser(userId);
+ * 
+ * For server actions:
+ *   import { requireAdmin } from '@/utils/auth/adminUtils';
+ *   await requireAdmin(); // Throws if not admin
+ */

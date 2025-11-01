@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
-import { adminIds } from "@/components/layout";
 import { appSidebarLinks, adminSidebarLinks } from "@/constants";
+import { isAdminUser } from "@/config/admin.config";
 import { generateClientGlobalCache, initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
 import { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
@@ -41,9 +41,8 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
     const session = await supabase.auth.getSession();
     const accessToken = session.data.session?.access_token;
-    const userData = mapUserData(user, accessToken);
-
-    const isAdmin = adminIds.includes(userData.id);
+    const isAdmin = isAdminUser(user.id);
+    const userData = mapUserData(user, accessToken, isAdmin);
 
     const layoutProps = {
         primaryLinks: appSidebarLinks,
