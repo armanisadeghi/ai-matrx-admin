@@ -16,6 +16,7 @@ import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
+import TokenRefreshInitializer from "@/components/auth/TokenRefreshInitializer";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -95,6 +96,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     return (
         <Providers initialReduxState={initialReduxState}>
             <SocketInitializer />
+            <TokenRefreshInitializer />
             <AnnouncementProvider />
             <ResponsiveLayout {...layoutProps}>
                 <NavigationLoader />

@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { PiPathFill } from "react-icons/pi";
 import { usePathname } from "next/navigation";
+import { debugModules } from "@/components/admin/debug/debugModuleRegistry";
+import DebugModulePanel from "@/components/admin/debug/DebugModulePanel";
 import { getAvailableNamespaces } from "@/constants/socket-schema";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
@@ -89,6 +91,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
     const [showServerDropdown, setShowServerDropdown] = useState(false);
     const [showNamespaceDropdown, setShowNamespaceDropdown] = useState(false);
     const [showConnectionDetails, setShowConnectionDetails] = useState(false);
+    const [activeDebugModule, setActiveDebugModule] = useState<string | null>(null);
     const serverButtonRef = useRef<HTMLDivElement>(null);
     const serverDropdownRef = useRef<HTMLDivElement>(null);
     const namespaceButtonRef = useRef<HTMLDivElement>(null);
@@ -462,6 +465,28 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
                 </div>
             </div>
 
+            {/* Debug Modules Row */}
+            {debugModules.length > 0 && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-slate-900/30 border-t border-slate-700/50">
+                    <span className="text-[10px] text-slate-400 mr-1">Debug:</span>
+                    {debugModules.map((module) => {
+                        const Icon = module.icon;
+                        return (
+                            <button
+                                key={module.id}
+                                onClick={() => setActiveDebugModule(module.id)}
+                                className={`p-1 rounded hover:bg-slate-700 transition-colors ${
+                                    activeDebugModule === module.id ? 'bg-slate-700' : ''
+                                } ${module.color || 'text-slate-300'}`}
+                                title={`${module.name}: ${module.description}`}
+                            >
+                                <Icon size={12} />
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
             {/* Main Content */}
             <div className="px-2 py-1 text-xs space-y-1">
                 {/* User Info */}
@@ -617,6 +642,12 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({ user, onDragStart, on
                     ))}
                 </div>
             )}
+
+            {/* Debug Module Panel */}
+            <DebugModulePanel
+                moduleId={activeDebugModule}
+                onClose={() => setActiveDebugModule(null)}
+            />
         </div>
     );
 };

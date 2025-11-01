@@ -35,6 +35,7 @@ interface UserState {
     identities: Identity[];
     isAdmin: boolean;
     accessToken: string | null;
+    tokenExpiresAt: number | null; // Unix timestamp (seconds) when the token expires
 }
 
 const initialState: UserState = {
@@ -57,6 +58,7 @@ const initialState: UserState = {
     identities: [],
     isAdmin: false,
     accessToken: null,
+    tokenExpiresAt: null,
 };
 
 const userSlice = createSlice({
@@ -69,11 +71,14 @@ const userSlice = createSlice({
         setAccessToken: (state, action: PayloadAction<string | null>) => {
             state.accessToken = action.payload;
         },
+        setTokenExpiry: (state, action: PayloadAction<number | null>) => {
+            state.tokenExpiresAt = action.payload;
+        },
         clearUser: () => initialState,
     },
 });
 
-export const { setUser, setAccessToken, clearUser } = userSlice.actions;
+export const { setUser, setAccessToken, setTokenExpiry, clearUser } = userSlice.actions;
 export default userSlice.reducer;
 
 // Selectors

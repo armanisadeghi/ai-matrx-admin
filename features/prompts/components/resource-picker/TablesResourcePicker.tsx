@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Search, Loader2, Table2, CheckSquare } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Loader2, Table2, CheckSquare, Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
 
 // Types
 interface UserTable {
@@ -64,6 +66,10 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     const [selectedRow, setSelectedRow] = useState<TableRow | null>(null);
     const [selectedColumn, setSelectedColumn] = useState<TableField | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
+    
+    // Preview modal state
+    const [previewTableId, setPreviewTableId] = useState<string | null>(null);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
 
     // Load user tables
     useEffect(() => {
@@ -166,6 +172,18 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
         }
         const firstValue = Object.values(row.data).find(val => val !== null && val !== undefined);
         return firstValue ? `${firstValue}` : row.id.substring(0, 8);
+    };
+
+    // Handle table preview
+    const handlePreviewTable = (e: React.MouseEvent, tableId: string) => {
+        e.stopPropagation();
+        setPreviewTableId(tableId);
+        setShowPreviewModal(true);
+    };
+
+    const closePreviewModal = () => {
+        setShowPreviewModal(false);
+        setPreviewTableId(null);
     };
 
     // Handle table selection
@@ -333,6 +351,13 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
                                                         </div>
                                                     )}
                                                 </div>
+                                                <button
+                                                    onClick={(e) => handlePreviewTable(e, table.id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded"
+                                                    title="Preview table data"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
+                                                </button>
                                             </div>
                                         </div>
                                         {/* Selection type buttons */}
@@ -441,6 +466,33 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
                     </div>
                 ) : null}
             </div>
+
+            {/* Preview Modal */}
+            <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+                <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 gap-0">
+                    <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+                        <div className="flex items-center justify-between">
+                            <DialogTitle className="text-base font-semibold">Table Preview</DialogTitle>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                onClick={closePreviewModal}
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-auto px-6 py-4">
+                        {previewTableId && (
+                            <UserTableViewer 
+                                tableId={previewTableId}
+                                showTableSelector={false}
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
