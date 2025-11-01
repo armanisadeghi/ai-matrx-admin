@@ -84,8 +84,9 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 flex flex-col p-4">
-                    <div className="space-y-4">
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-4">
+                        <div className="space-y-4">
                         {/* URL Input */}
                         <div className="space-y-2">
                             <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
@@ -178,6 +179,7 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
                             </p>
                         </div>
                     )}
+                    </div>
                 </div>
             </div>
 
@@ -192,9 +194,9 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
                     </DialogHeader>
 
                     {data && (
-                        <div className="flex flex-col gap-4 overflow-hidden">
+                        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
                             {/* Metadata */}
-                            <div className="space-y-2">
+                            <div className="flex-shrink-0 space-y-2">
                                 <div className="flex items-start gap-2">
                                     <Globe className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500" />
                                     <div className="flex-1 min-w-0">
@@ -233,7 +235,7 @@ export function WebpageResourcePicker({ onBack, onSelect }: WebpageResourcePicke
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-800">
+                            <div className="flex-shrink-0 flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-800">
                                 <div className="text-xs text-gray-500 dark:text-gray-400">
                                     Content will be included in your message
                                 </div>

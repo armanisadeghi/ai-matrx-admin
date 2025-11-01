@@ -95,9 +95,6 @@ export function PromptRunnerModal({
     const [conversationStarted, setConversationStarted] = useState(false);
     const [hasAutoExecuted, setHasAutoExecuted] = useState(false);
     
-    // Force remount key - changes when starting a new run to completely reset component tree
-    const [mountKey, setMountKey] = useState(0);
-    
     // Hidden variables mode state
     const [showAdditionalInfoModal, setShowAdditionalInfoModal] = useState(false);
     const [additionalInfoProvided, setAdditionalInfoProvided] = useState(false);
@@ -190,9 +187,6 @@ export function PromptRunnerModal({
         if (!isOpen) {
             // Reset after animation
             const timeout = setTimeout(() => {
-                // Force a complete remount by changing the key
-                setMountKey(prev => prev + 1);
-                
                 // Clear conversation state
                 setConversationMessages([]);
                 setApiConversationHistory([]);
@@ -744,7 +738,7 @@ export function PromptRunnerModal({
                                 className="h-full bg-textured"
                                 disableAutoCanvas={isMobile}
                                 rightPanel={
-                                    <div key={mountKey} className="h-full w-full overflow-hidden relative">
+                                    <div className="h-full w-full overflow-hidden relative">
                                         {/* Back Layer: Messages Area - Scrollable */}
                                         <div 
                                             ref={messagesContainerRef}

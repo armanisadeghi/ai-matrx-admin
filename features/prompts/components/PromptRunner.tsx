@@ -149,9 +149,6 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Track if conversation has started (for showing/hiding variables)
     const [conversationStarted, setConversationStarted] = useState(false);
     
-    // Force remount key - changes when starting a new run to completely reset component tree
-    const [mountKey, setMountKey] = useState(0);
-    
     // AI Runs tracking - pass urlRunId to load existing run
     const { run, createRun, createTask, updateTask, completeTask, addMessage, isLoading: isLoadingRun } = useAiRun(urlRunId || undefined);
     const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
@@ -210,10 +207,9 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         }
     }, [run, hasLoadedRun]);
     
-    // Reset hasLoadedRun and force remount when urlRunId changes
+    // Reset hasLoadedRun when urlRunId changes
     useEffect(() => {
         setHasLoadedRun(false);
-        setMountKey(prev => prev + 1);
     }, [urlRunId]);
     
     // Helper function to replace variables in content
@@ -566,61 +562,22 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     };
     
     const handleClearConversation = () => {
-        // Force a complete remount by changing the key
-        setMountKey(prev => prev + 1);
-        
-        // Clear all conversation state
-        setConversationMessages([]);
-        setApiConversationHistory([]);
-        setLastMessageStats(null);
-        setConversationStarted(false);
-        setHasLoadedRun(false);
-        
-        // Clear streaming/task state
-        setCurrentTaskId(null);
-        setIsTestingPrompt(false);
-        setPendingTaskId(null);
-        setMessageStartTime(null);
-        timeToFirstTokenRef.current = undefined;
-        
-        // Clear input and UI state
-        setChatInput("");
-        setExpandedVariable(null);
-        
-        // Reset variable defaults to original values
-        setVariableDefaults(initialVariableDefaults || []);
-        
-        // Clear any pending task update timeouts
-        if (updateTaskTimeoutRef.current) {
-            clearTimeout(updateTaskTimeoutRef.current);
-            updateTaskTimeoutRef.current = null;
-        }
-        
-        // Clear the runId from URL to start fresh
+        // Clear the runId from URL
         const url = new URL(window.location.href);
         url.searchParams.delete('runId');
-        router.replace(url.pathname + url.search);
+        
+        // Use native browser reload to force complete remount (Next.js best practice)
+        window.location.href = url.pathname + url.search;
     };
     
     // Handle run selection from sidebar
     const handleRunSelect = useCallback((runId: string) => {
         console.log('🔄 Switching to run:', runId);
         
-        // Force a complete remount when switching runs
-        setMountKey(prev => prev + 1);
-        
-        // Update URL with the selected runId
+        // Update URL with the selected runId (page will naturally reset state via URL change)
         const url = new URL(window.location.href);
         url.searchParams.set('runId', runId);
         router.push(url.pathname + url.search);
-        
-        // Reset states for new run
-        setHasLoadedRun(false);
-        setConversationMessages([]);
-        setApiConversationHistory([]);
-        setCurrentTaskId(null);
-        setIsTestingPrompt(false);
-        setLastMessageStats(null);
     }, [router]);
     
     return (
@@ -748,7 +705,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         ) : undefined
                     }
                     rightPanel={
-                        <div key={mountKey} className="h-full flex flex-col relative">
+                        <div className="h-full flex flex-col relative">
                         {/* Messages Area - Scrollable */}
                         <div 
                             ref={messagesContainerRef}
