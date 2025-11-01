@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FileText, StickyNote, CheckSquare, Table2, Globe, Workflow, ChevronLeft, Upload, Youtube, Image, File, Mic } from "lucide-react";
+import { FileText, StickyNote, CheckSquare, Table2, Globe, Workflow, ChevronLeft, ChevronRight, Upload, Youtube, Image, File, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotesResourcePicker } from "./NotesResourcePicker";
 import { TasksResourcePicker } from "./TasksResourcePicker";
@@ -37,30 +37,52 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
         setActiveView(view);
     };
 
-    const allResources = [
-        { id: "upload", label: "Upload Files", icon: Upload, description: "Upload images & files", requiresCapability: null },
-        { id: "storage", label: "Storage Files", icon: FileText, description: "Browse Supabase storage", requiresCapability: null },
-        { id: "notes", label: "Notes", icon: StickyNote, description: "Reference your notes", requiresCapability: null },
-        { id: "tasks", label: "Tasks", icon: CheckSquare, description: "Include task data", requiresCapability: null },
-        { id: "tables", label: "Tables", icon: Table2, description: "Add table data", requiresCapability: null },
-        { id: "webpage", label: "Webpage", icon: Globe, description: "Fetch webpage content", requiresCapability: null },
-        { id: "image_url", label: "Image URL", icon: Image, description: "Add image from URL", requiresCapability: 'supportsImageUrls' as const },
-        { id: "file_url", label: "File URL", icon: File, description: "Add file from URL", requiresCapability: 'supportsFileUrls' as const },
-        { id: "youtube", label: "YouTube", icon: Youtube, description: "Add YouTube video", requiresCapability: 'supportsYoutubeVideos' as const },
-        { id: "audio", label: "Audio", icon: Mic, description: "Transcribe audio file", requiresCapability: 'supportsAudio' as const },
-        { id: "brokers", label: "Brokers", icon: Workflow, description: "Connect to brokers", requiresCapability: null },
+    const resourceCategories = [
+        {
+            category: "Files",
+            items: [
+                { id: "upload", label: "Upload Files", icon: Upload, requiresCapability: null },
+                { id: "storage", label: "Storage Files", icon: FileText, requiresCapability: null },
+            ]
+        },
+        {
+            category: "Web",
+            items: [
+                { id: "webpage", label: "Webpage", icon: Globe, requiresCapability: null },
+                { id: "image_url", label: "Image URL", icon: Image, requiresCapability: 'supportsImageUrls' as const },
+                { id: "file_url", label: "File URL", icon: File, requiresCapability: 'supportsFileUrls' as const },
+                { id: "youtube", label: "YouTube", icon: Youtube, requiresCapability: 'supportsYoutubeVideos' as const },
+            ]
+        },
+        {
+            category: "Data",
+            items: [
+                { id: "tables", label: "Tables", icon: Table2, requiresCapability: null },
+            ]
+        },
+        {
+            category: "Matrx",
+            items: [
+                { id: "notes", label: "Notes", icon: StickyNote, requiresCapability: null },
+                { id: "tasks", label: "Tasks", icon: CheckSquare, requiresCapability: null },
+                { id: "brokers", label: "Brokers", icon: Workflow, requiresCapability: null },
+            ]
+        },
     ];
 
     // Filter resources based on capabilities
-    const resources = allResources.filter(resource => {
-        if (!resource.requiresCapability) return true;
-        return attachmentCapabilities?.[resource.requiresCapability] === true;
-    });
+    const filteredCategories = resourceCategories.map(category => ({
+        ...category,
+        items: category.items.filter(resource => {
+            if (!resource.requiresCapability) return true;
+            return attachmentCapabilities?.[resource.requiresCapability] === true;
+        })
+    })).filter(category => category.items.length > 0);
 
     // Check if a resource is enabled based on capabilities
-    const isResourceEnabled = (resource: typeof resources[0]) => {
+    const isResourceEnabled = (resource: { requiresCapability: string | null }) => {
         if (!resource.requiresCapability) return true;
-        return attachmentCapabilities?.[resource.requiresCapability] === true;
+        return attachmentCapabilities?.[resource.requiresCapability as keyof typeof attachmentCapabilities] === true;
     };
 
     // Show specific resource picker based on selection
@@ -186,6 +208,10 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
             }
 
             // Add other resource pickers here as they're implemented
+            const currentResource = filteredCategories
+                .flatMap(cat => cat.items)
+                .find(r => r.id === activeView);
+            
             return (
             <div className="p-3">
                 <div className="flex items-center gap-2 mb-3">
@@ -198,7 +224,7 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {resources.find(r => r.id === activeView)?.label}
+                        {currentResource?.label}
                     </span>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-8">
@@ -210,42 +236,40 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
 
     // Main menu view
     return (
-        <div className="p-2">
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 px-2 py-1.5 mb-1">
-                Add Resource
-            </div>
-            <div className="space-y-0.5">
-                {resources.map((resource) => {
-                    const Icon = resource.icon;
-                    const isEnabled = isResourceEnabled(resource);
-                    return (
-                        <Button
-                            key={resource.id}
-                            variant="ghost"
-                            size="sm"
-                            disabled={!isEnabled}
-                            className="w-full justify-start h-9 text-xs px-2 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() => setActiveView(resource.id as ResourceType)}
-                            title={!isEnabled ? "Not supported by current model" : undefined}
-                        >
-                            <Icon className="w-4 h-4 mr-2 flex-shrink-0 text-gray-600 dark:text-gray-400" />
-                            <div className="flex-1 text-left">
-                                <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+        <div className="py-1">
+            {filteredCategories.map((category, categoryIndex) => (
+                <div key={category.category}>
+                    <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-2 py-0.5 mt-1">
+                        {category.category}
+                    </div>
+                    {category.items.map((resource) => {
+                        const Icon = resource.icon;
+                        const isEnabled = isResourceEnabled(resource);
+                        return (
+                            <Button
+                                key={resource.id}
+                                variant="ghost"
+                                size="sm"
+                                disabled={!isEnabled}
+                                className="group w-full justify-start h-6 text-xs px-2 py-0 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-none"
+                                onClick={() => setActiveView(resource.id as ResourceType)}
+                                title={!isEnabled ? "Not supported by current model" : undefined}
+                            >
+                                <Icon className="w-3.5 h-3.5 mr-1.5 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+                                <span className="text-gray-900 dark:text-gray-100 font-normal">
                                     {resource.label}
-                                    {!isEnabled && (
-                                        <span className="text-[9px] px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-400">
-                                            Unavailable
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                                    {resource.description}
-                                </div>
-                            </div>
-                        </Button>
-                    );
-                })}
-            </div>
+                                </span>
+                                {!isEnabled && (
+                                    <span className="ml-2 text-[8px] px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-400">
+                                        N/A
+                                    </span>
+                                )}
+                                <ChevronRight className="w-3 h-3 ml-auto flex-shrink-0 text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors" />
+                            </Button>
+                        );
+                    })}
+                </div>
+            ))}
         </div>
     );
 }
