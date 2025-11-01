@@ -42,9 +42,12 @@ interface ModelConfig {
 }
 
 // Variable definition structure - single source of truth
+import { VariableCustomComponent } from "../types/variable-components";
+
 export interface PromptVariable {
     name: string;
     defaultValue: string;
+    customComponent?: VariableCustomComponent;
 }
 
 interface PromptBuilderProps {
@@ -159,8 +162,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     };
     
     const [variableDefaults, setVariableDefaults] = useState<PromptVariable[]>(getInitialVariableDefaults());
-    const [newVariableName, setNewVariableName] = useState("");
-    const [isAddingVariable, setIsAddingVariable] = useState(false);
     const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
 
     // Tools state - available tools list
@@ -244,24 +245,23 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     }, [submitOnEnter]);
 
     // Handler to add a new variable
-    const handleAddVariable = () => {
-        if (!newVariableName.trim()) return;
-
-        // Sanitize the variable name
-        const sanitized = sanitizeVariableName(newVariableName);
-
-        if (!sanitized) return;
+    const handleAddVariable = (name: string, customComponent?: VariableCustomComponent) => {
+        if (!name) return;
 
         // Don't add duplicates
-        if (variableDefaults.some(v => v.name === sanitized)) {
-            setNewVariableName("");
-            setIsAddingVariable(false);
+        if (variableDefaults.some(v => v.name === name)) {
             return;
         }
 
-        setVariableDefaults((prev) => [...prev, { name: sanitized, defaultValue: "" }]);
-        setNewVariableName("");
-        setIsAddingVariable(false);
+        setVariableDefaults((prev) => [...prev, { name, defaultValue: "", customComponent }]);
+        setIsDirty(true);
+    };
+
+    // Handler to update a variable's custom component
+    const handleUpdateVariable = (name: string, customComponent?: VariableCustomComponent) => {
+        setVariableDefaults((prev) =>
+            prev.map(v => v.name === name ? { ...v, customComponent } : v)
+        );
         setIsDirty(true);
     };
 
@@ -704,11 +704,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     modelConfig={modelConfig}
                     onSettingsClick={() => setIsSettingsOpen(true)}
                     variableDefaults={variableDefaults}
-                    newVariableName={newVariableName}
-                    onNewVariableNameChange={setNewVariableName}
-                    isAddingVariable={isAddingVariable}
-                    onIsAddingVariableChange={setIsAddingVariable}
                     onAddVariable={handleAddVariable}
+                    onUpdateVariable={handleUpdateVariable}
                     onRemoveVariable={handleRemoveVariable}
                     selectedTools={modelConfig.tools || []}
                     availableTools={availableTools}

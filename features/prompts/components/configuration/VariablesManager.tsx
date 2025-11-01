@@ -1,95 +1,99 @@
-import React from "react";
+import React, { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PromptVariable } from "../PromptBuilder";
-import { sanitizeVariableName, shouldShowSanitizationPreview } from "../../utils/variable-utils";
+import { VariableEditorModal } from "./VariableEditorModal";
+import { VariableCustomComponent } from "../../types/variable-components";
+
+// Extended variable type with optional custom component
+export interface ExtendedPromptVariable {
+    name: string;
+    defaultValue: string;
+    customComponent?: VariableCustomComponent;
+}
 
 interface VariablesManagerProps {
-    variableDefaults: PromptVariable[];
-    newVariableName: string;
-    onNewVariableNameChange: (value: string) => void;
-    isAddingVariable: boolean;
-    onIsAddingVariableChange: (value: boolean) => void;
-    onAddVariable: () => void;
+    variableDefaults: ExtendedPromptVariable[];
+    onAddVariable: (name: string, customComponent?: VariableCustomComponent) => void;
+    onUpdateVariable: (oldName: string, customComponent?: VariableCustomComponent) => void;
     onRemoveVariable: (variableName: string) => void;
 }
 
 export function VariablesManager({
     variableDefaults,
-    newVariableName,
-    onNewVariableNameChange,
-    isAddingVariable,
-    onIsAddingVariableChange,
     onAddVariable,
+    onUpdateVariable,
     onRemoveVariable,
 }: VariablesManagerProps) {
-    // Get the sanitized preview of the current input
-    const sanitizedPreview = newVariableName.trim() ? sanitizeVariableName(newVariableName) : "";
-    const showPreview = shouldShowSanitizationPreview(newVariableName);
-    
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+    const [editingVariable, setEditingVariable] = useState<ExtendedPromptVariable | undefined>(undefined);
+
+    const handleAddClick = () => {
+        setModalMode('add');
+        setEditingVariable(undefined);
+        setIsModalOpen(true);
+    };
+
+    const handleEditClick = (variable: ExtendedPromptVariable) => {
+        setModalMode('edit');
+        setEditingVariable(variable);
+        setIsModalOpen(true);
+    };
+
+    const handleSave = (name: string, customComponent?: VariableCustomComponent) => {
+        if (modalMode === 'add') {
+            onAddVariable(name, customComponent);
+        } else if (editingVariable) {
+            onUpdateVariable(editingVariable.name, customComponent);
+        }
+        setIsModalOpen(false);
+    };
+
+    const existingNames = variableDefaults.map(v => v.name);
+
     return (
-        <div className="flex items-center gap-2 flex-wrap">
-            <Label className="text-xs text-gray-600 dark:text-gray-400">Variables</Label>
-            {variableDefaults.map((variable) => (
-                <span
-                    key={variable.name}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700"
-                >
-                    {variable.name}
-                    <X
-                        className="w-3 h-3 cursor-pointer hover:text-red-500 dark:hover:text-red-400"
-                        onClick={() => onRemoveVariable(variable.name)}
-                    />
-                </span>
-            ))}
-            <Popover open={isAddingVariable} onOpenChange={onIsAddingVariableChange}>
-                <PopoverTrigger asChild>
-                    <button
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-                        onClick={() => onIsAddingVariableChange(true)}
+        <>
+            <div className="flex items-center gap-2 flex-wrap">
+                <Label className="text-xs text-gray-600 dark:text-gray-400">Variables</Label>
+                {variableDefaults.map((variable) => (
+                    <div
+                        key={variable.name}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700 group"
                     >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add
-                    </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-3" align="start">
-                    <div className="space-y-2">
-                        <Label className="text-xs text-gray-600 dark:text-gray-400">Variable name</Label>
-                        <input
-                            type="text"
-                            placeholder="e.g. city name"
-                            value={newVariableName}
-                            onChange={(e) => onNewVariableNameChange(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    onAddVariable();
-                                } else if (e.key === "Escape") {
-                                    onIsAddingVariableChange(false);
-                                    onNewVariableNameChange("");
-                                }
-                            }}
-                            autoFocus
-                            className="w-full px-2 py-1.5 text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        {showPreview && (
-                            <div className="px-2 py-1.5 text-xs bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
-                                <span className="text-blue-600 dark:text-blue-400">Will be saved as: </span>
-                                <span className="font-mono text-blue-800 dark:text-blue-300">{sanitizedPreview}</span>
-                            </div>
-                        )}
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Spaces and dashes will become underscores. Only lowercase letters, numbers, and underscores are allowed.
-                        </p>
-                        <Button size="sm" onClick={onAddVariable} className="w-full" disabled={!sanitizedPreview}>
-                            Add
-                        </Button>
+                        <span 
+                            className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            onClick={() => handleEditClick(variable)}
+                            title="Click to edit"
+                        >
+                            {variable.name}
+                        </span>
+                        <button
+                            onClick={() => onRemoveVariable(variable.name)}
+                            title="Remove variable"
+                        >
+                            <X className="w-3 h-3 hover:text-red-500 dark:hover:text-red-400" />
+                        </button>
                     </div>
-                </PopoverContent>
-            </Popover>
-        </div>
+                ))}
+                <button
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                    onClick={handleAddClick}
+                >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add
+                </button>
+            </div>
+
+            <VariableEditorModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={handleSave}
+                existingVariable={editingVariable}
+                existingNames={existingNames}
+                mode={modalMode}
+            />
+        </>
     );
 }
 

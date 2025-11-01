@@ -8,9 +8,12 @@ import { Label } from "@/components/ui/label";
 import { CopyTextarea, Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Check, Info, FileJson, Settings2, WrapText } from "lucide-react";
+import { Copy, Check, Info, FileJson, Settings2, WrapText, Variable, Plus } from "lucide-react";
 import { PromptVariable } from "./PromptBuilder";
 import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
+import { VariablesManager } from "./configuration/VariablesManager";
+import { VariableEditorModal } from "./configuration/VariableEditorModal";
+import { VariableCustomComponent } from "../types/variable-components";
 
 interface PromptSettingsModalProps {
     isOpen: boolean;
@@ -45,6 +48,11 @@ export function PromptSettingsModal({
     const [isSaving, setIsSaving] = useState(false);
     const [copied, setCopied] = useState(false);
     const [wrapJson, setWrapJson] = useState(false);
+    
+    // Variable editor modal state
+    const [isVariableModalOpen, setIsVariableModalOpen] = useState(false);
+    const [variableModalMode, setVariableModalMode] = useState<'add' | 'edit'>('add');
+    const [editingVariable, setEditingVariable] = useState<PromptVariable | undefined>(undefined);
 
     // Reset local state when modal opens or props change
     useEffect(() => {
@@ -71,6 +79,45 @@ export function PromptSettingsModal({
         const updated = [...localVariables];
         updated[index] = { ...updated[index], defaultValue: value };
         setLocalVariables(updated);
+    };
+
+    const handleAddVariable = (name: string, customComponent?: VariableCustomComponent) => {
+        // Don't add duplicates
+        if (localVariables.some(v => v.name === name)) {
+            return;
+        }
+        setLocalVariables([...localVariables, { name, defaultValue: "", customComponent }]);
+    };
+
+    const handleUpdateVariable = (name: string, customComponent?: VariableCustomComponent) => {
+        setLocalVariables(prev =>
+            prev.map(v => v.name === name ? { ...v, customComponent } : v)
+        );
+    };
+
+    const handleRemoveVariable = (name: string) => {
+        setLocalVariables(prev => prev.filter(v => v.name !== name));
+    };
+
+    const handleOpenAddVariable = () => {
+        setVariableModalMode('add');
+        setEditingVariable(undefined);
+        setIsVariableModalOpen(true);
+    };
+
+    const handleOpenEditVariable = (variable: PromptVariable) => {
+        setVariableModalMode('edit');
+        setEditingVariable(variable);
+        setIsVariableModalOpen(true);
+    };
+
+    const handleVariableModalSave = (name: string, customComponent?: VariableCustomComponent) => {
+        if (variableModalMode === 'add') {
+            handleAddVariable(name, customComponent);
+        } else if (editingVariable) {
+            handleUpdateVariable(editingVariable.name, customComponent);
+        }
+        setIsVariableModalOpen(false);
     };
 
     const handleCopyJSON = async () => {
@@ -130,10 +177,14 @@ export function PromptSettingsModal({
                 </DialogHeader>
 
                 <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
-                    <TabsList className="mx-4 mt-3 grid w-auto grid-cols-4 gap-1 bg-gray-100 dark:bg-gray-800">
+                    <TabsList className="mx-4 mt-3 grid w-auto grid-cols-5 gap-1 bg-gray-100 dark:bg-gray-800">
                         <TabsTrigger value="overview" className="text-xs sm:text-sm">
                             <Info className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             Overview
+                        </TabsTrigger>
+                        <TabsTrigger value="variables" className="text-xs sm:text-sm">
+                            <Variable className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            Variables
                         </TabsTrigger>
                         <TabsTrigger value="messages" className="text-xs sm:text-sm">
                             <FileJson className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
@@ -193,29 +244,6 @@ export function PromptSettingsModal({
                                 </div>
                             </Card>
 
-                            {/* Variables */}
-                            {localVariables.length > 0 && (
-                                <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Variables ({localVariables.length})</h3>
-                                    <div className="space-y-2">
-                                        {localVariables.map((variable, index) => (
-                                            <div key={index} className="p-2 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
-                                                <Label className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                                    {variable.name}
-                                                </Label>
-                                                <Textarea
-                                                    value={variable.defaultValue}
-                                                    onChange={(e) => handleVariableDefaultChange(index, e.target.value)}
-                                                    placeholder={`Default value for {{${variable.name}}}...`}
-                                                    className="mt-1 text-xs bg-white dark:bg-gray-800 min-h-[50px] max-h-[200px]"
-                                                    rows={2}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </Card>
-                            )}
-
                             {/* Quick Stats */}
                             <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Quick Stats</h3>
@@ -234,6 +262,96 @@ export function PromptSettingsModal({
                                     </div>
                                 </div>
                             </Card>
+                        </TabsContent>
+
+                        <TabsContent value="variables" className="h-full overflow-y-auto mt-3">
+                            <div className="space-y-4">
+                                {/* Add New Variable Button */}
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Variables</h3>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleOpenAddVariable}
+                                        className="h-7 text-xs"
+                                    >
+                                        <Plus className="w-3.5 h-3.5 mr-1" />
+                                        Add Variable
+                                    </Button>
+                                </div>
+
+                                {/* Variables List */}
+                                {localVariables.length === 0 ? (
+                                    <Card className="p-8 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                        <div className="text-center">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">No variables defined</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">
+                                                Click "Add Variable" to create your first variable
+                                            </p>
+                                        </div>
+                                    </Card>
+                                ) : (
+                                    localVariables.map((variable, index) => (
+                                        <Card key={index} className="p-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                            <div className="space-y-3">
+                                                {/* Name */}
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Name</Label>
+                                                        <button
+                                                            onClick={() => handleRemoveVariable(variable.name)}
+                                                            className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                    <CopyInput
+                                                        value={variable.name}
+                                                        readOnly
+                                                        className="h-8 text-sm bg-gray-50 dark:bg-gray-700 font-mono"
+                                                    />
+                                                </div>
+
+                                                {/* Default Value */}
+                                                <div>
+                                                    <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                                        Default Value
+                                                    </Label>
+                                                    <Textarea
+                                                        value={variable.defaultValue}
+                                                        onChange={(e) => handleVariableDefaultChange(index, e.target.value)}
+                                                        placeholder={`Default value for {{${variable.name}}}...`}
+                                                        className="text-sm bg-gray-50 dark:bg-gray-700 min-h-[60px]"
+                                                        rows={2}
+                                                    />
+                                                </div>
+
+                                                {/* Input Type & Configuration */}
+                                                <div>
+                                                    <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                                        Input Type
+                                                    </Label>
+                                                    <button
+                                                        onClick={() => handleOpenEditVariable(variable)}
+                                                        className="w-full h-8 px-3 text-left text-sm bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-between"
+                                                    >
+                                                        <span>{variable.customComponent?.type || 'textarea'}</span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">Click to configure</span>
+                                                    </button>
+                                                    {variable.customComponent && (
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                            {variable.customComponent.type === 'toggle' && `Values: ${variable.customComponent.toggleValues?.join(' / ') || 'No / Yes'}`}
+                                                            {variable.customComponent.type === 'number' && `Range: ${variable.customComponent.min ?? 'any'} - ${variable.customComponent.max ?? 'any'}`}
+                                                            {(variable.customComponent.type === 'radio' || variable.customComponent.type === 'checkbox' || variable.customComponent.type === 'select') && 
+                                                                `Options: ${variable.customComponent.options?.length || 0} defined${variable.customComponent.allowOther ? ' + Other' : ''}`}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))
+                                )}
+
+                            </div>
                         </TabsContent>
 
                         <TabsContent value="messages" className="h-full overflow-y-auto mt-3 space-y-2">
@@ -352,6 +470,16 @@ export function PromptSettingsModal({
                     </Button>
                 </div>
             </DialogContent>
+
+            {/* Variable Editor Modal */}
+            <VariableEditorModal
+                isOpen={isVariableModalOpen}
+                onClose={() => setIsVariableModalOpen(false)}
+                onSave={handleVariableModalSave}
+                existingVariable={editingVariable}
+                existingNames={localVariables.map(v => v.name)}
+                mode={variableModalMode}
+            />
         </Dialog>
     );
 }

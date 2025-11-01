@@ -39,11 +39,8 @@ interface PromptBuilderLeftPanelProps {
 
     // Variables - single source of truth
     variableDefaults: PromptVariable[];
-    newVariableName: string;
-    onNewVariableNameChange: (value: string) => void;
-    isAddingVariable: boolean;
-    onIsAddingVariableChange: (value: boolean) => void;
-    onAddVariable: () => void;
+    onAddVariable: (name: string, customComponent?: any) => void;
+    onUpdateVariable: (name: string, customComponent?: any) => void;
     onRemoveVariable: (variableName: string) => void;
 
     // Tools
@@ -90,11 +87,8 @@ export function PromptBuilderLeftPanel({
     modelConfig,
     onSettingsClick,
     variableDefaults,
-    newVariableName,
-    onNewVariableNameChange,
-    isAddingVariable,
-    onIsAddingVariableChange,
     onAddVariable,
+    onUpdateVariable,
     onRemoveVariable,
     selectedTools,
     availableTools,
@@ -141,11 +135,8 @@ export function PromptBuilderLeftPanel({
                 {/* Variables */}
                 <VariablesManager
                     variableDefaults={variableDefaults}
-                    newVariableName={newVariableName}
-                    onNewVariableNameChange={onNewVariableNameChange}
-                    isAddingVariable={isAddingVariable}
-                    onIsAddingVariableChange={onIsAddingVariableChange}
                     onAddVariable={onAddVariable}
+                    onUpdateVariable={onUpdateVariable}
                     onRemoveVariable={onRemoveVariable}
                 />
                 {/* Tools */}

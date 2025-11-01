@@ -73,6 +73,7 @@ export function VariableInputComponent({
           onChange={onChange}
           options={customComponent.options}
           variableName={formattedName}
+          allowOther={customComponent.allowOther}
         />
       );
       
@@ -86,6 +87,7 @@ export function VariableInputComponent({
           onChange={onChange}
           options={customComponent.options}
           variableName={formattedName}
+          allowOther={customComponent.allowOther}
         />
       );
       
@@ -99,6 +101,7 @@ export function VariableInputComponent({
           onChange={onChange}
           options={customComponent.options}
           variableName={formattedName}
+          allowOther={customComponent.allowOther}
         />
       );
       

@@ -27,9 +27,12 @@ const CanvasRenderer = dynamic(
 );
 
 // Variable definition structure (reusing from PromptRunner)
+import { VariableCustomComponent } from "../../types/variable-components";
+
 export interface PromptVariable {
     name: string;
     defaultValue: string;
+    customComponent?: VariableCustomComponent;
 }
 
 /**

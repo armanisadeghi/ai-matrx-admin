@@ -23,6 +23,9 @@ export interface VariableCustomComponent {
   /** Options for radio, checkbox, and select components */
   options?: string[];
   
+  /** Allow "Other" option with custom text input (for radio, checkbox, select) */
+  allowOther?: boolean;
+  
   /** Custom labels for toggle [off, on] - defaults to ['No', 'Yes'] */
   toggleValues?: [string, string];
   
