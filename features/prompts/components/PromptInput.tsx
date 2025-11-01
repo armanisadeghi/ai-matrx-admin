@@ -8,6 +8,7 @@ import { formatText } from "@/utils/text/text-case-converter";
 import { FaYoutube } from "react-icons/fa";
 import { VariableInputComponent } from "./variable-inputs";
 import { PromptInputButton } from "./PromptInputButton";
+import { ResourcePickerButton } from "./resource-picker";
 
 interface PromptInputProps {
     variableDefaults: PromptVariable[];
@@ -216,6 +217,14 @@ export function PromptInput({
             {/* Bottom Controls - All buttons in one row */}
             <div className="flex items-center justify-between px-2 pb-1.5">
                 <div className="flex items-center gap-1">
+                    {/* Resource Picker */}
+                    <ResourcePickerButton
+                        onResourceSelected={(resource) => {
+                            // TODO: Handle resource selection
+                            console.log("Resource selected:", resource);
+                        }}
+                    />
+
                     {/* Attachments Menu */}
                     {showAttachments && (
                         <Popover open={isAttachmentMenuOpen} onOpenChange={setIsAttachmentMenuOpen}>

@@ -147,7 +147,16 @@ export default function Page() {
                 <div className="text-center text-gray-500 dark:text-gray-400">
                     <Globe className="w-16 h-16 mx-auto mb-4 opacity-50" />
                     <h2 className="text-xl font-semibold mb-2">Web Scraper</h2>
-                    <p className="text-sm">Enter a URL above to start scraping content</p>
+                    <p className="text-sm mb-4">Enter a URL above to start scraping content</p>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push("/scraper/quick")}
+                        className="mt-2"
+                    >
+                        <Search className="w-4 h-4 mr-2" />
+                        Try Quick Scrape
+                    </Button>
                 </div>
             </div>
         </div>
