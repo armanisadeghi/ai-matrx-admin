@@ -8,6 +8,7 @@ import { PromptTestInput } from "./PromptTestInput";
 import { useAppSelector } from "@/lib/redux";
 import { selectPrimaryResponseTextByTaskId, selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { PromptVariable } from "./PromptBuilder";
+import type { Resource } from "./resource-display";
 
 interface PromptBuilderRightPanelProps {
     conversationMessages: Array<{ 
@@ -75,6 +76,8 @@ export function PromptBuilderRightPanel({
     attachmentCapabilities = { supportsImageUrls: false, supportsFileUrls: false, supportsYoutubeVideos: false },
     onMessageContentChange,
 }: PromptBuilderRightPanelProps) {
+    // Local state for resources
+    const [resources, setResources] = useState<Resource[]>([]);
     
     // Get streaming text from Redux - this doesn't cause parent re-renders
     const streamingText = useAppSelector((state) => 
@@ -188,6 +191,9 @@ export function PromptBuilderRightPanel({
                     onAutoClearChange={onAutoClearChange}
                     messages={messages}
                     attachmentCapabilities={attachmentCapabilities}
+                    resources={resources}
+                    onResourcesChange={setResources}
+                    enablePasteImages={true}
                 />
             </div>
         </div>

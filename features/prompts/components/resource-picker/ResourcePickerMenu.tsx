@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FileText, StickyNote, CheckSquare, Table2, Globe, Workflow, ChevronLeft, Upload } from "lucide-react";
+import { FileText, StickyNote, CheckSquare, Table2, Globe, Workflow, ChevronLeft, Upload, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotesResourcePicker } from "./NotesResourcePicker";
 import { TasksResourcePicker } from "./TasksResourcePicker";
@@ -9,26 +9,39 @@ import { FilesResourcePicker } from "./FilesResourcePicker";
 import { TablesResourcePicker } from "./TablesResourcePicker";
 import { WebpageResourcePicker } from "./WebpageResourcePicker";
 import { UploadResourcePicker } from "./UploadResourcePicker";
+import { YouTubeResourcePicker } from "./YouTubeResourcePicker";
 
-type ResourceType = "upload" | "storage" | "notes" | "tasks" | "tables" | "webpage" | "brokers" | null;
+type ResourceType = "upload" | "storage" | "notes" | "tasks" | "tables" | "webpage" | "youtube" | "brokers" | null;
 
 interface ResourcePickerMenuProps {
     onResourceSelected: (resource: any) => void;
     onClose: () => void;
+    attachmentCapabilities?: {
+        supportsImageUrls?: boolean;
+        supportsFileUrls?: boolean;
+        supportsYoutubeVideos?: boolean;
+    };
 }
 
-export function ResourcePickerMenu({ onResourceSelected, onClose }: ResourcePickerMenuProps) {
+export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapabilities }: ResourcePickerMenuProps) {
     const [activeView, setActiveView] = useState<ResourceType>(null);
 
-    const resources = [
-        { id: "upload", label: "Upload Files", icon: Upload, description: "Upload images & files" },
-        { id: "storage", label: "Storage Files", icon: FileText, description: "Browse Supabase storage" },
-        { id: "notes", label: "Notes", icon: StickyNote, description: "Reference your notes" },
-        { id: "tasks", label: "Tasks", icon: CheckSquare, description: "Include task data" },
-        { id: "tables", label: "Tables", icon: Table2, description: "Add table data" },
-        { id: "webpage", label: "Webpage", icon: Globe, description: "Fetch webpage content" },
-        { id: "brokers", label: "Brokers", icon: Workflow, description: "Connect to brokers" },
+    const allResources = [
+        { id: "upload", label: "Upload Files", icon: Upload, description: "Upload images & files", requiresCapability: null },
+        { id: "storage", label: "Storage Files", icon: FileText, description: "Browse Supabase storage", requiresCapability: null },
+        { id: "notes", label: "Notes", icon: StickyNote, description: "Reference your notes", requiresCapability: null },
+        { id: "tasks", label: "Tasks", icon: CheckSquare, description: "Include task data", requiresCapability: null },
+        { id: "tables", label: "Tables", icon: Table2, description: "Add table data", requiresCapability: null },
+        { id: "webpage", label: "Webpage", icon: Globe, description: "Fetch webpage content", requiresCapability: null },
+        { id: "youtube", label: "YouTube", icon: Youtube, description: "Add YouTube video", requiresCapability: 'supportsYoutubeVideos' as const },
+        { id: "brokers", label: "Brokers", icon: Workflow, description: "Connect to brokers", requiresCapability: null },
     ];
+
+    // Filter resources based on capabilities
+    const resources = allResources.filter(resource => {
+        if (!resource.requiresCapability) return true;
+        return attachmentCapabilities?.[resource.requiresCapability] === true;
+    });
 
     // Show specific resource picker based on selection
     if (activeView) {
@@ -90,19 +103,30 @@ export function ResourcePickerMenu({ onResourceSelected, onClose }: ResourcePick
             );
         }
 
-        if (activeView === "webpage") {
-            return (
-                <WebpageResourcePicker 
-                    onBack={() => setActiveView(null)}
-                    onSelect={(content) => {
-                        onResourceSelected({ type: "webpage", data: content });
-                    }}
-                />
-            );
-        }
+            if (activeView === "webpage") {
+                return (
+                    <WebpageResourcePicker 
+                        onBack={() => setActiveView(null)}
+                        onSelect={(content) => {
+                            onResourceSelected({ type: "webpage", data: content });
+                        }}
+                    />
+                );
+            }
 
-        // Add other resource pickers here as they're implemented
-        return (
+            if (activeView === "youtube") {
+                return (
+                    <YouTubeResourcePicker 
+                        onBack={() => setActiveView(null)}
+                        onSelect={(video) => {
+                            onResourceSelected({ type: "youtube", data: video });
+                        }}
+                    />
+                );
+            }
+
+            // Add other resource pickers here as they're implemented
+            return (
             <div className="p-3">
                 <div className="flex items-center gap-2 mb-3">
                     <Button

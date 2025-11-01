@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Paperclip, RefreshCw, ArrowUp, CornerDownLeft, Image, FileText, Mic, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,11 @@ import { FaYoutube } from "react-icons/fa";
 import { VariableInputComponent } from "./variable-inputs";
 import { PromptInputButton } from "./PromptInputButton";
 import { ResourcePickerButton } from "./resource-picker";
+import { ResourceChips, type Resource, ResourcePreviewSheet, ResourceDebugModal } from "./resource-display";
+import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
+import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
+import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
 
 interface PromptInputProps {
     variableDefaults: PromptVariable[];
@@ -37,6 +42,13 @@ interface PromptInputProps {
     placeholder?: string;
     sendButtonVariant?: 'gray' | 'blue';
     showShiftEnterHint?: boolean;
+    
+    // Resource management
+    resources?: Resource[];
+    onResourcesChange?: (resources: Resource[]) => void;
+    enablePasteImages?: boolean;
+    uploadBucket?: string;
+    uploadPath?: string;
 }
 
 export function PromptInput({
@@ -60,9 +72,57 @@ export function PromptInput({
     placeholder,
     sendButtonVariant = 'gray',
     showShiftEnterHint = false,
+    resources = [],
+    onResourcesChange,
+    enablePasteImages = false,
+    uploadBucket = "userContent",
+    uploadPath = "prompt-attachments",
 }: PromptInputProps) {
     const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
+    const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const isDebugMode = useAppSelector(selectIsDebugMode);
+    
+    // File upload hook for paste support
+    const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);
+
+    // Handle resource selection from picker
+    const handleResourceSelected = useCallback((resource: any) => {
+        if (onResourcesChange) {
+            onResourcesChange([...resources, resource]);
+        }
+    }, [resources, onResourcesChange]);
+
+    // Handle resource removal
+    const handleRemoveResource = useCallback((index: number) => {
+        if (onResourcesChange) {
+            onResourcesChange(resources.filter((_, i) => i !== index));
+        }
+    }, [resources, onResourcesChange]);
+
+    // Handle resource preview
+    const handlePreviewResource = useCallback((resource: Resource, index: number) => {
+        setPreviewResource({ resource, index });
+    }, []);
+
+    // Handle pasted images
+    const handlePasteImage = useCallback(async (file: File) => {
+        try {
+            const results = await uploadMultipleToPrivateUserAssets([file]);
+            if (results && results.length > 0 && onResourcesChange) {
+                onResourcesChange([...resources, { type: "file", data: results[0] }]);
+            }
+        } catch (error) {
+            console.error("Failed to upload pasted image:", error);
+        }
+    }, [resources, onResourcesChange, uploadMultipleToPrivateUserAssets]);
+
+    // Setup clipboard paste
+    useClipboardPaste({
+        textareaRef,
+        onPasteImage: handlePasteImage,
+        disabled: !enablePasteImages
+    });
 
     // Auto-resize textarea based on content
     useEffect(() => {
@@ -198,6 +258,17 @@ export function PromptInput({
                 </div>
             )}
             
+            {/* Resource Chips Display */}
+            {resources.length > 0 && (
+                <div className="border-b border-gray-200 dark:border-gray-800 py-1">
+                    <ResourceChips
+                        resources={resources}
+                        onRemove={handleRemoveResource}
+                        onPreview={handlePreviewResource}
+                    />
+                </div>
+            )}
+            
             {/* Text Area */}
             <div className="px-0.5 pt-1.5">
                 <textarea
@@ -219,10 +290,7 @@ export function PromptInput({
                 <div className="flex items-center gap-1">
                     {/* Resource Picker */}
                     <ResourcePickerButton
-                        onResourceSelected={(resource) => {
-                            // TODO: Handle resource selection
-                            console.log("Resource selected:", resource);
-                        }}
+                        onResourceSelected={handleResourceSelected}
                     />
 
                     {/* Attachments Menu */}
@@ -359,6 +427,21 @@ export function PromptInput({
                     </Button>
                 </div>
             </div>
+            
+            {/* Resource Preview Sheet */}
+            {previewResource && (
+                <ResourcePreviewSheet
+                    isOpen={!!previewResource}
+                    onClose={() => setPreviewResource(null)}
+                    resource={previewResource.resource}
+                />
+            )}
+
+            {/* Debug Modal */}
+            <ResourceDebugModal 
+                resources={resources}
+                isVisible={isDebugMode}
+            />
         </div>
     );
 }

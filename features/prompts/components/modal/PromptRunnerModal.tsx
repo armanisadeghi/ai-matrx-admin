@@ -18,6 +18,7 @@ import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
 import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
 import { v4 as uuidv4 } from "uuid";
 import { PromptRunnerModalProps, PromptData } from "../../types/modal";
+import type { Resource } from "../resource-display";
 import { AdditionalInfoModal } from "./AdditionalInfoModal";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
@@ -75,6 +76,7 @@ export function PromptRunnerModal({
     
     // Conversation state
     const [chatInput, setChatInput] = useState(initialMessage || "");
+    const [resources, setResources] = useState<Resource[]>([]);
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
         role: string; 
         content: string;
@@ -815,6 +817,9 @@ export function PromptRunnerModal({
                                                         isTestingPrompt={isTestingPrompt}
                                                         showVariables={shouldShowVariables}
                                                         messages={conversationTemplate}
+                                                        resources={resources}
+                                                        onResourcesChange={setResources}
+                                                        enablePasteImages={true}
                                                     />
                                                 </div>
                                             </div>

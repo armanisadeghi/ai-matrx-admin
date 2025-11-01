@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { X, StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, FileText } from "lucide-react";
+import { X, StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, FileText, Youtube } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Resource types
@@ -11,7 +11,8 @@ export type Resource =
     | { type: "project"; data: any }
     | { type: "file"; data: any }
     | { type: "table"; data: any }
-    | { type: "webpage"; data: any };
+    | { type: "webpage"; data: any }
+    | { type: "youtube"; data: any };
 
 interface ResourceChipsProps {
     resources: Resource[];
@@ -66,6 +67,13 @@ export function ResourceChips({ resources, onRemove, onPreview }: ResourceChipsP
                     label: resource.data.title || "Webpage",
                     color: "text-teal-600 dark:text-teal-500",
                     bgColor: "bg-teal-100 dark:bg-teal-950/30",
+                };
+            case "youtube":
+                return {
+                    icon: Youtube,
+                    label: resource.data.title || "YouTube Video",
+                    color: "text-red-600 dark:text-red-500",
+                    bgColor: "bg-red-100 dark:bg-red-950/30",
                 };
             default:
                 return {

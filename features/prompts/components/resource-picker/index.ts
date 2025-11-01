@@ -6,4 +6,5 @@ export { FilesResourcePicker } from "./FilesResourcePicker";
 export { TablesResourcePicker } from "./TablesResourcePicker";
 export { WebpageResourcePicker } from "./WebpageResourcePicker";
 export { UploadResourcePicker } from "./UploadResourcePicker";
+export { YouTubeResourcePicker } from "./YouTubeResourcePicker";
 

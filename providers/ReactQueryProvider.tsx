@@ -5,6 +5,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
 
 export function ReactQueryProvider({ children }: { children: React.ReactNode }) {
+    // Toggle this to show/hide the React Query DevTools widget
+    const showDevtools = false;
+    
     // Create a client instance per component mount
     // This ensures no shared state between server and client
     const [queryClient] = useState(() => new QueryClient({
@@ -26,8 +29,8 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
     return (
         <QueryClientProvider client={queryClient}>
             {children}
-            {/* React Query DevTools - only in development */}
-            {process.env.NODE_ENV === 'development' && (
+            {/* React Query DevTools - toggle showDevtools variable to enable/disable */}
+            {showDevtools && process.env.NODE_ENV === 'development' && (
                 <ReactQueryDevtools 
                     initialIsOpen={false}
                 />

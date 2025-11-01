@@ -1,6 +1,7 @@
 import React from "react";
 import { PromptInput } from "./PromptInput";
 import { PromptVariable } from "./PromptBuilder";
+import type { Resource } from "./resource-display";
 
 interface PromptTestInputProps {
     variableDefaults: PromptVariable[];
@@ -22,6 +23,11 @@ interface PromptTestInputProps {
         supportsYoutubeVideos: boolean;
     };
     showVariables?: boolean;
+    
+    // Resource management
+    resources?: Resource[];
+    onResourcesChange?: (resources: Resource[]) => void;
+    enablePasteImages?: boolean;
 }
 
 /**

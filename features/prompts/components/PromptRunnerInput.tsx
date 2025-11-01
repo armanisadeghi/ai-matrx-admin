@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { PromptInput } from "./PromptInput";
 import { PromptVariable } from "./PromptBuilder";
 import { VariableCustomComponent } from "../types/variable-components";
+import type { Resource } from "./resource-display";
 
 // Extended variable type with optional custom component
 export interface ExtendedPromptVariable extends PromptVariable {
@@ -19,6 +20,11 @@ interface PromptRunnerInputProps {
     isTestingPrompt: boolean;
     showVariables: boolean; // Controls whether variables are visible
     messages: Array<{ role: string; content: string }>;
+    
+    // Resource management
+    resources?: Resource[];
+    onResourcesChange?: (resources: Resource[]) => void;
+    enablePasteImages?: boolean;
 }
 
 /**
@@ -37,6 +43,9 @@ export function PromptRunnerInput({
     isTestingPrompt,
     showVariables,
     messages,
+    resources,
+    onResourcesChange,
+    enablePasteImages,
 }: PromptRunnerInputProps) {
     const [submitOnEnter, setSubmitOnEnter] = useState(true);
 
@@ -62,6 +71,9 @@ export function PromptRunnerInput({
             placeholder={placeholder}
             sendButtonVariant="blue"
             showShiftEnterHint={false}
+            resources={resources}
+            onResourcesChange={onResourcesChange}
+            enablePasteImages={enablePasteImages}
         />
     );
 }

@@ -11,6 +11,7 @@ import { PromptRunnerInput } from "./PromptRunnerInput";
 import { PromptUserMessage } from "./PromptUserMessage";
 import { PromptAssistantMessage } from "./PromptAssistantMessage";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
+import type { Resource } from "./resource-display";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageSquare, PanelRightOpen, PanelRightClose, RotateCcw, PanelLeftOpen, PanelLeftClose, FilePlus } from "lucide-react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
@@ -125,6 +126,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     
     // Conversation state
     const [chatInput, setChatInput] = useState("");
+    const [resources, setResources] = useState<Resource[]>([]);
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
         role: string; 
         content: string;
@@ -775,6 +777,9 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                     isTestingPrompt={isTestingPrompt}
                                     showVariables={!conversationStarted}
                                     messages={conversationTemplate}
+                                    resources={resources}
+                                    onResourcesChange={setResources}
+                                    enablePasteImages={true}
                                 />
                             </div>
                         </div>

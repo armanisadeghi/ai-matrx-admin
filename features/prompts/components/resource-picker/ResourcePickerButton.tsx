@@ -8,9 +8,14 @@ import { ResourcePickerMenu } from "./ResourcePickerMenu";
 
 interface ResourcePickerButtonProps {
     onResourceSelected?: (resource: any) => void;
+    attachmentCapabilities?: {
+        supportsImageUrls?: boolean;
+        supportsFileUrls?: boolean;
+        supportsYoutubeVideos?: boolean;
+    };
 }
 
-export function ResourcePickerButton({ onResourceSelected }: ResourcePickerButtonProps) {
+export function ResourcePickerButton({ onResourceSelected, attachmentCapabilities }: ResourcePickerButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -38,6 +43,7 @@ export function ResourcePickerButton({ onResourceSelected }: ResourcePickerButto
                         setIsOpen(false);
                     }}
                     onClose={() => setIsOpen(false)}
+                    attachmentCapabilities={attachmentCapabilities}
                 />
             </PopoverContent>
         </Popover>

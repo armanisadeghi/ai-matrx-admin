@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, ChevronDown, Search, Loader2, Database, Fold
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
+import { getFileDetailsByUrl, type EnhancedFileDetails } from "@/utils/file-operations/constants";
 
 // Types
 type StorageFile = {
@@ -19,11 +20,9 @@ type StorageFile = {
 };
 
 type FileSelection = {
-    bucket: string;
-    path: string;
-    file: StorageFile;
-    url?: string;
-    isPublic: boolean;
+    url: string;
+    type: string;
+    details: EnhancedFileDetails;
 };
 
 interface FilesResourcePickerProps {
@@ -289,12 +288,21 @@ export function FilesResourcePicker({ onBack, onSelect, allowedBuckets }: FilesR
                 fileUrl = signedData.signedUrl;
             }
 
-            onSelect({
+            // Use the existing file operations utility to get complete file details
+            const fileDetails = getFileDetailsByUrl(fileUrl, file.metadata as any);
+            
+            // Enhance with bucket and path info
+            const enhancedDetails: EnhancedFileDetails = {
+                ...fileDetails,
                 bucket: selectedBucket,
-                path,
-                file,
+                path: path,
+            };
+
+            // Build proper structure for FilePreviewSheet
+            onSelect({
                 url: fileUrl,
-                isPublic
+                type: fileDetails.mimetype || 'application/octet-stream',
+                details: enhancedDetails
             });
         } catch (error) {
             console.error('Error getting file URL:', error);
