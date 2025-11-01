@@ -35,7 +35,7 @@ type SelectionType = 'table' | 'row' | 'column' | 'cell';
 type ViewMode = 'tables' | 'selection-type' | 'rows' | 'columns' | 'cell-row' | 'cell-column';
 
 interface TableReference {
-    type: 'full_table' | 'table_row' | 'table_column' | 'table_cell';
+    type: 'full_table' | 'single_row' | 'single_column' | 'single_cell';
     table_id: string;
     table_name: string;
     row_id?: string;
@@ -201,7 +201,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     const handleRowSelect = (row: TableRow) => {
         if (selectionType === 'row') {
             onSelect({
-                type: 'table_row',
+                type: 'single_row',
                 table_id: selectedTable!.id,
                 table_name: selectedTable!.table_name,
                 row_id: row.id,
@@ -218,7 +218,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     const handleColumnSelect = (column: TableField) => {
         if (selectionType === 'column') {
             onSelect({
-                type: 'table_column',
+                type: 'single_column',
                 table_id: selectedTable!.id,
                 table_name: selectedTable!.table_name,
                 column_name: column.field_name,
@@ -227,7 +227,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
             });
         } else if (selectionType === 'cell' && selectedRow) {
             onSelect({
-                type: 'table_cell',
+                type: 'single_cell',
                 table_id: selectedTable!.id,
                 table_name: selectedTable!.table_name,
                 row_id: selectedRow.id,

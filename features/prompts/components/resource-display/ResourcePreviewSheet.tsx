@@ -28,47 +28,88 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
             setTableError(null);
             
             try {
+                const tableId = resource.data.table_id;
                 const tableName = resource.data.table_name;
                 const referenceType = resource.data.type;
                 
                 if (referenceType === 'full_table') {
-                    // Fetch all rows (limit to 100 for preview)
-                    const { data, error } = await supabase
-                        .from(tableName)
-                        .select('*')
-                        .limit(100);
+                    // Fetch all rows using RPC (limit to 100 for preview)
+                    const { data: result, error } = await supabase
+                        .rpc('get_user_table_data_paginated', {
+                            p_table_id: tableId,
+                            p_limit: 100,
+                            p_offset: 0,
+                            p_sort_field: null,
+                            p_sort_direction: 'asc',
+                            p_search_term: null
+                        });
                     
                     if (error) throw error;
-                    setTableData(data);
+                    if (!result.success) throw new Error(result.error || 'Failed to load table data');
+                    
+                    // Transform data: result.data is array of { id, data } objects
+                    const transformedData = result.data.map((row: any) => ({
+                        id: row.id,
+                        ...row.data
+                    }));
+                    setTableData(transformedData);
                 } else if (referenceType === 'single_row') {
-                    // Fetch specific row
-                    const { data, error } = await supabase
-                        .from(tableName)
-                        .select('*')
-                        .eq('id', resource.data.row_id)
-                        .single();
+                    // Fetch specific row using RPC
+                    const { data: result, error } = await supabase
+                        .rpc('get_user_table_row', {
+                            p_table_id: tableId,
+                            p_row_id: resource.data.row_id
+                        });
                     
                     if (error) throw error;
-                    setTableData([data]);
+                    if (!result.success) throw new Error(result.error || 'Failed to load row data');
+                    
+                    // Transform: flatten the data object
+                    const transformedData = [{
+                        id: result.row.id,
+                        ...result.row.data
+                    }];
+                    setTableData(transformedData);
                 } else if (referenceType === 'single_column') {
-                    // Fetch specific column from all rows (limit to 100)
-                    const { data, error } = await supabase
-                        .from(tableName)
-                        .select(`id, ${resource.data.column_name}`)
-                        .limit(100);
+                    // Fetch specific column from all rows
+                    const { data: result, error } = await supabase
+                        .rpc('get_user_table_data_paginated', {
+                            p_table_id: tableId,
+                            p_limit: 100,
+                            p_offset: 0,
+                            p_sort_field: null,
+                            p_sort_direction: 'asc',
+                            p_search_term: null
+                        });
                     
                     if (error) throw error;
-                    setTableData(data);
+                    if (!result.success) throw new Error(result.error || 'Failed to load column data');
+                    
+                    // Extract just the requested column
+                    const columnName = resource.data.column_name;
+                    const transformedData = result.data.map((row: any) => ({
+                        id: row.id,
+                        [columnName]: row.data[columnName]
+                    }));
+                    setTableData(transformedData);
                 } else if (referenceType === 'single_cell') {
                     // Fetch specific cell
-                    const { data, error } = await supabase
-                        .from(tableName)
-                        .select(`id, ${resource.data.column_name}`)
-                        .eq('id', resource.data.row_id)
-                        .single();
+                    const { data: result, error } = await supabase
+                        .rpc('get_user_table_row', {
+                            p_table_id: tableId,
+                            p_row_id: resource.data.row_id
+                        });
                     
                     if (error) throw error;
-                    setTableData([data]);
+                    if (!result.success) throw new Error(result.error || 'Failed to load cell data');
+                    
+                    // Extract just the requested cell
+                    const columnName = resource.data.column_name;
+                    const transformedData = [{
+                        id: result.row.id,
+                        [columnName]: result.row.data[columnName]
+                    }];
+                    setTableData(transformedData);
                 }
             } catch (error) {
                 console.error('Error fetching table data:', error);

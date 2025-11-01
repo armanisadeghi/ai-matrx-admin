@@ -291,6 +291,7 @@ export function PromptInput({
                     {/* Resource Picker */}
                     <ResourcePickerButton
                         onResourceSelected={handleResourceSelected}
+                        attachmentCapabilities={attachmentCapabilities}
                     />
 
                     {/* Attachments Menu */}

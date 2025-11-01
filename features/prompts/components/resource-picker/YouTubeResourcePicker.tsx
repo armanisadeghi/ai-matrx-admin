@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronLeft, Youtube, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +73,12 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [videoPreview, setVideoPreview] = useState<YouTubeVideo | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Auto-focus the input on mount
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
 
     const handleValidate = async () => {
         setError(null);
@@ -148,6 +154,7 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
                     </label>
                     <div className="flex gap-2">
                         <Input
+                            ref={inputRef}
                             type="text"
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
@@ -182,61 +189,49 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
                     </div>
                 )}
 
-                {/* Video Preview */}
+                {/* Video Preview - Compact version */}
                 {videoPreview && (
-                    <div className="space-y-3">
-                        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-                            {/* Thumbnail */}
-                            <div className="relative aspect-video bg-gray-100 dark:bg-gray-900">
-                                <img
-                                    src={videoPreview.thumbnail}
-                                    alt={videoPreview.title}
-                                    className="w-full h-full object-cover"
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center opacity-90">
-                                        <Youtube className="w-8 h-8 text-white ml-1" />
-                                    </div>
+                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                        {/* Thumbnail - Smaller */}
+                        <div className="relative h-32 bg-gray-100 dark:bg-gray-900">
+                            <img
+                                src={videoPreview.thumbnail}
+                                alt={videoPreview.title}
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center opacity-90">
+                                    <Youtube className="w-6 h-6 text-white ml-0.5" />
                                 </div>
-                            </div>
-
-                            {/* Info */}
-                            <div className="p-3 space-y-1.5 bg-white dark:bg-zinc-900">
-                                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
-                                    {videoPreview.title}
-                                </h3>
-                                {videoPreview.channelName && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {videoPreview.channelName}
-                                    </p>
-                                )}
-                                <a
-                                    href={videoPreview.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                                >
-                                    Watch on YouTube
-                                    <ExternalLink className="w-3 h-3" />
-                                </a>
                             </div>
                         </div>
 
-                        {/* Add Button */}
-                        <Button
-                            onClick={handleSelect}
-                            className="w-full"
-                            size="sm"
-                        >
-                            <Youtube className="w-4 h-4 mr-2" />
-                            Add Video
-                        </Button>
+                        {/* Info - Compact */}
+                        <div className="p-2 space-y-1 bg-white dark:bg-zinc-900">
+                            <h3 className="text-xs font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                                {videoPreview.title}
+                            </h3>
+                            {videoPreview.channelName && (
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                                    {videoPreview.channelName}
+                                </p>
+                            )}
+                            <a
+                                href={videoPreview.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                            >
+                                Watch on YouTube
+                                <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                        </div>
                     </div>
                 )}
 
                 {/* Help Text */}
                 {!videoPreview && !error && (
-                    <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <p className="text-xs text-blue-700 dark:text-blue-400">
                             <strong>Supported formats:</strong>
                         </p>
@@ -249,6 +244,20 @@ export function YouTubeResourcePicker({ onBack, onSelect }: YouTubeResourcePicke
                     </div>
                 )}
             </div>
+
+            {/* Footer with Add Button - Fixed at bottom */}
+            {videoPreview && (
+                <div className="border-t border-gray-200 dark:border-gray-800 p-3">
+                    <Button
+                        onClick={handleSelect}
+                        className="w-full"
+                        size="sm"
+                    >
+                        <Youtube className="w-4 h-4 mr-2" />
+                        Add Video
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

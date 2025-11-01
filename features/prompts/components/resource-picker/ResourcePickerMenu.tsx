@@ -26,7 +26,7 @@ interface ResourcePickerMenuProps {
 export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapabilities }: ResourcePickerMenuProps) {
     const [activeView, setActiveView] = useState<ResourceType>(null);
 
-    const allResources = [
+    const resources = [
         { id: "upload", label: "Upload Files", icon: Upload, description: "Upload images & files", requiresCapability: null },
         { id: "storage", label: "Storage Files", icon: FileText, description: "Browse Supabase storage", requiresCapability: null },
         { id: "notes", label: "Notes", icon: StickyNote, description: "Reference your notes", requiresCapability: null },
@@ -37,11 +37,11 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
         { id: "brokers", label: "Brokers", icon: Workflow, description: "Connect to brokers", requiresCapability: null },
     ];
 
-    // Filter resources based on capabilities
-    const resources = allResources.filter(resource => {
+    // Check if a resource is enabled based on capabilities
+    const isResourceEnabled = (resource: typeof resources[0]) => {
         if (!resource.requiresCapability) return true;
         return attachmentCapabilities?.[resource.requiresCapability] === true;
-    });
+    };
 
     // Show specific resource picker based on selection
     if (activeView) {
@@ -157,18 +157,26 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
             <div className="space-y-0.5">
                 {resources.map((resource) => {
                     const Icon = resource.icon;
+                    const isEnabled = isResourceEnabled(resource);
                     return (
                         <Button
                             key={resource.id}
                             variant="ghost"
                             size="sm"
-                            className="w-full justify-start h-9 text-xs px-2 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                            disabled={!isEnabled}
+                            className="w-full justify-start h-9 text-xs px-2 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={() => setActiveView(resource.id as ResourceType)}
+                            title={!isEnabled ? "Not supported by current model" : undefined}
                         >
                             <Icon className="w-4 h-4 mr-2 flex-shrink-0 text-gray-600 dark:text-gray-400" />
                             <div className="flex-1 text-left">
-                                <div className="font-medium text-gray-900 dark:text-gray-100">
+                                <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                                     {resource.label}
+                                    {!isEnabled && (
+                                        <span className="text-[9px] px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-400">
+                                            Unavailable
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
                                     {resource.description}

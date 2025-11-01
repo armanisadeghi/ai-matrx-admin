@@ -138,10 +138,10 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     // Check if the current model supports tools
     const modelSupportsTools = normalizedControls?.tools?.default ?? false;
     
-    // Check attachment capabilities
-    const supportsImageUrls = normalizedControls?.image_urls?.default ?? false;
-    const supportsFileUrls = normalizedControls?.file_urls?.default ?? false;
-    const supportsYoutubeVideos = normalizedControls?.youtube_videos?.default ?? false;
+    // Check attachment capabilities from actual prompt settings (not just model defaults)
+    const supportsImageUrls = modelConfig?.image_urls ?? false;
+    const supportsFileUrls = modelConfig?.file_urls ?? false;
+    const supportsYoutubeVideos = modelConfig?.youtube_videos ?? false;
 
     // Update debug data when model controls or config changes
     useEffect(() => {
