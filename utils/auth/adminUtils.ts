@@ -64,7 +64,7 @@ export async function checkIsAdmin(userId: string): Promise<boolean> {
  * Get all admin user IDs (server-side)
  * @returns Array of admin user IDs
  */
-export function getAdminIds(): readonly string[] {
+export async function getAdminIds(): Promise<readonly string[]> {
   return ADMIN_USER_IDS;
 }
 
