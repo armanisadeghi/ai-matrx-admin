@@ -50,7 +50,7 @@ export default function AcceptInvitationPage() {
 
       if (!user) {
         // Not logged in - redirect to login with return URL
-        router.push(`/sign-in?redirect_to=/invitations/accept/${token}`);
+        router.push(`/login?redirectTo=${encodeURIComponent(`/invitations/accept/${token}`)}`);
         return;
       }
 

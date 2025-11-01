@@ -35,7 +35,7 @@ type SelectionType = 'table' | 'row' | 'column' | 'cell';
 type ViewMode = 'tables' | 'selection-type' | 'rows' | 'columns' | 'cell-row' | 'cell-column';
 
 interface TableReference {
-    type: 'full_table' | 'single_row' | 'single_column' | 'single_cell';
+    type: 'full_table' | 'table_row' | 'table_column' | 'table_cell';
     table_id: string;
     table_name: string;
     row_id?: string;
@@ -201,11 +201,11 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     const handleRowSelect = (row: TableRow) => {
         if (selectionType === 'row') {
             onSelect({
-                type: 'single_row',
+                type: 'table_row',
                 table_id: selectedTable!.id,
                 table_name: selectedTable!.table_name,
                 row_id: row.id,
-                description: `Reference to row in table "${selectedTable!.table_name}"`
+                description: `Reference to row ${row.id} in table "${selectedTable!.table_name}"`
             });
         } else if (selectionType === 'cell') {
             setSelectedRow(row);
@@ -218,7 +218,7 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     const handleColumnSelect = (column: TableField) => {
         if (selectionType === 'column') {
             onSelect({
-                type: 'single_column',
+                type: 'table_column',
                 table_id: selectedTable!.id,
                 table_name: selectedTable!.table_name,
                 column_name: column.field_name,
@@ -227,13 +227,13 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
             });
         } else if (selectionType === 'cell' && selectedRow) {
             onSelect({
-                type: 'single_cell',
+                type: 'table_cell',
                 table_id: selectedTable!.id,
                 table_name: selectedTable!.table_name,
                 row_id: selectedRow.id,
                 column_name: column.field_name,
                 column_display_name: column.display_name,
-                description: `Reference to cell "${column.display_name}" in table "${selectedTable!.table_name}"`
+                description: `Reference to cell "${column.display_name}" in row ${selectedRow.id} of table "${selectedTable!.table_name}"`
             });
         }
     };

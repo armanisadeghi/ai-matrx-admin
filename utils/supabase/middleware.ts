@@ -4,9 +4,14 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // Create a new headers object with the pathname added
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
+  requestHeaders.set('x-search-params', request.nextUrl.search);
+
   let supabaseResponse = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: requestHeaders,
     },
   })
 
@@ -22,7 +27,7 @@ export async function updateSession(request: NextRequest) {
             cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
             supabaseResponse = NextResponse.next({
               request: {
-                headers: request.headers,
+                headers: requestHeaders,
               },
             });
             cookiesToSet.forEach(({ name, value, options }) =>

@@ -42,7 +42,12 @@ export default async function AuthenticatedLayout(
     } = await supabase.auth.getUser();
 
     if (!user) {
-        return redirect("/login");
+        // Get the current path from headers to preserve the intended destination
+        const pathname = headersList.get("x-pathname") || "/dashboard";
+        const searchParams = headersList.get("x-search-params") || "";
+        const fullPath = searchParams ? `${pathname}${searchParams}` : pathname;
+        
+        return redirect(`/login?redirectTo=${encodeURIComponent(fullPath)}`);
     }
 
     const userData = mapUserData(user);

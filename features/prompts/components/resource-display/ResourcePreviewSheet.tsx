@@ -6,6 +6,7 @@ import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import type { Resource } from "./ResourceChips";
 import FilePreviewSheet from "@/components/ui/file-preview/FilePreviewSheet";
 import { createClient } from "@/utils/supabase/client";
+import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
 
 interface ResourcePreviewSheetProps {
     isOpen: boolean;
@@ -28,88 +29,70 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
             setTableError(null);
             
             try {
-                const tableId = resource.data.table_id;
-                const tableName = resource.data.table_name;
                 const referenceType = resource.data.type;
+                const ref = resource.data; // Pass entire reference object
                 
                 if (referenceType === 'full_table') {
-                    // Fetch all rows using RPC (limit to 100 for preview)
-                    const { data: result, error } = await supabase
-                        .rpc('get_user_table_data_paginated', {
-                            p_table_id: tableId,
-                            p_limit: 100,
-                            p_offset: 0,
-                            p_sort_field: null,
-                            p_sort_direction: 'asc',
-                            p_search_term: null
-                        });
+                    // For full table, we'll use the UserTableViewer component directly
+                    // So we don't need to fetch data here
+                    setTableData({ type: 'full_table' });
+                    setTableLoading(false);
+                    return;
+                }
+                
+                if (referenceType === 'table_row') {
+                    // Fetch specific row using new RPC
+                    const { data: row, error } = await supabase
+                        .rpc('get_table_row', { ref });
                     
                     if (error) throw error;
-                    if (!result.success) throw new Error(result.error || 'Failed to load table data');
+                    if (!row) throw new Error('Row not found');
                     
-                    // Transform data: result.data is array of { id, data } objects
-                    const transformedData = result.data.map((row: any) => ({
-                        id: row.id,
-                        ...row.data
-                    }));
-                    setTableData(transformedData);
-                } else if (referenceType === 'single_row') {
-                    // Fetch specific row using RPC
-                    const { data: result, error } = await supabase
-                        .rpc('get_user_table_row', {
-                            p_table_id: tableId,
-                            p_row_id: resource.data.row_id
-                        });
+                    setTableData({
+                        type: 'table_row',
+                        row: row
+                    });
+                } else if (referenceType === 'table_column') {
+                    // Fetch column definition and row values
+                    const [columnResult, rowsResult] = await Promise.all([
+                        supabase.rpc('get_table_column', { ref }),
+                        supabase.rpc('list_table_rows', { 
+                            ref: { 
+                                type: 'full_table', 
+                                table_id: resource.data.table_id 
+                            },
+                            limit_rows: 100,
+                            offset_rows: 0
+                        })
+                    ]);
                     
-                    if (error) throw error;
-                    if (!result.success) throw new Error(result.error || 'Failed to load row data');
+                    if (columnResult.error) throw columnResult.error;
+                    if (rowsResult.error) throw rowsResult.error;
                     
-                    // Transform: flatten the data object
-                    const transformedData = [{
-                        id: result.row.id,
-                        ...result.row.data
-                    }];
-                    setTableData(transformedData);
-                } else if (referenceType === 'single_column') {
-                    // Fetch specific column from all rows
-                    const { data: result, error } = await supabase
-                        .rpc('get_user_table_data_paginated', {
-                            p_table_id: tableId,
-                            p_limit: 100,
-                            p_offset: 0,
-                            p_sort_field: null,
-                            p_sort_direction: 'asc',
-                            p_search_term: null
-                        });
-                    
-                    if (error) throw error;
-                    if (!result.success) throw new Error(result.error || 'Failed to load column data');
-                    
-                    // Extract just the requested column
-                    const columnName = resource.data.column_name;
-                    const transformedData = result.data.map((row: any) => ({
-                        id: row.id,
-                        [columnName]: row.data[columnName]
-                    }));
-                    setTableData(transformedData);
-                } else if (referenceType === 'single_cell') {
-                    // Fetch specific cell
-                    const { data: result, error } = await supabase
-                        .rpc('get_user_table_row', {
-                            p_table_id: tableId,
-                            p_row_id: resource.data.row_id
-                        });
+                    setTableData({
+                        type: 'table_column',
+                        column: columnResult.data,
+                        rows: rowsResult.data?.rows || [],
+                        total: rowsResult.data?.total || 0,
+                        columnName: resource.data.column_name,
+                        columnDisplayName: resource.data.column_display_name
+                    });
+                } else if (referenceType === 'table_cell') {
+                    // Fetch specific cell value using new RPC
+                    const { data: cellData, error } = await supabase
+                        .rpc('get_table_cell', { ref });
                     
                     if (error) throw error;
-                    if (!result.success) throw new Error(result.error || 'Failed to load cell data');
+                    if (!cellData) throw new Error('Cell not found');
                     
-                    // Extract just the requested cell
-                    const columnName = resource.data.column_name;
-                    const transformedData = [{
-                        id: result.row.id,
-                        [columnName]: result.row.data[columnName]
-                    }];
-                    setTableData(transformedData);
+                    setTableData({
+                        type: 'table_cell',
+                        value: cellData.value,
+                        field: cellData.field,
+                        rowId: resource.data.row_id,
+                        columnName: resource.data.column_name,
+                        columnDisplayName: resource.data.column_display_name
+                    });
                 }
             } catch (error) {
                 console.error('Error fetching table data:', error);
@@ -327,18 +310,13 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                     {/* Table Preview */}
                     {resource.type === "table" && (
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-2">
                                 <div>
                                     <span className="text-xs text-gray-500 dark:text-gray-400">Reference Type: </span>
                                     <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
                                         {resource.data.type.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                                     </span>
                                 </div>
-                                {tableData && (
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {tableData.length} row{tableData.length !== 1 ? 's' : ''}
-                                    </span>
-                                )}
                             </div>
 
                             {tableLoading ? (
@@ -350,54 +328,138 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                                 <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
                                     <p className="text-sm text-red-700 dark:text-red-400">{tableError}</p>
                                 </div>
-                            ) : tableData && tableData.length > 0 ? (
-                                <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-                                    <div className="overflow-x-auto max-h-96 overflow-y-auto">
-                                        <table className="w-full text-sm">
-                                            <thead className="bg-gray-50 dark:bg-zinc-900 sticky top-0">
-                                                <tr>
-                                                    {Object.keys(tableData[0]).map(key => (
-                                                        <th
-                                                            key={key}
-                                                            className="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800"
-                                                        >
-                                                            {key}
-                                                        </th>
-                                                    ))}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {tableData.map((row: any, index: number) => (
-                                                    <tr
-                                                        key={index}
-                                                        className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-zinc-900/50"
-                                                    >
-                                                        {Object.entries(row).map(([key, value]) => (
-                                                            <td
-                                                                key={key}
-                                                                className="px-3 py-2 text-xs text-gray-900 dark:text-gray-100"
-                                                            >
+                            ) : tableData ? (
+                                <>
+                                    {/* Full Table Preview */}
+                                    {tableData.type === 'full_table' && (
+                                        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-900">
+                                            <UserTableViewer 
+                                                tableId={resource.data.table_id}
+                                                showTableSelector={false}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Single Row Preview */}
+                                    {tableData.type === 'table_row' && tableData.row && (
+                                        <div className="space-y-2">
+                                            <div className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">
+                                                <p className="text-xs text-blue-700 dark:text-blue-400">
+                                                    <strong>Row ID:</strong> {tableData.row.id}
+                                                </p>
+                                            </div>
+                                            <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                                                <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+                                                    <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Row Data</h4>
+                                                </div>
+                                                <div className="p-3 space-y-2 max-h-96 overflow-y-auto">
+                                                    {Object.entries(tableData.row.data).map(([fieldName, value]: [string, any]) => (
+                                                        <div key={fieldName} className="flex items-start gap-3 p-2 bg-gray-50 dark:bg-zinc-900 rounded">
+                                                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+                                                                {fieldName}:
+                                                            </span>
+                                                            <span className="text-xs text-gray-900 dark:text-gray-100 flex-1">
                                                                 {value !== null && value !== undefined
                                                                     ? typeof value === 'object'
-                                                                        ? JSON.stringify(value)
+                                                                        ? JSON.stringify(value, null, 2)
                                                                         : String(value)
                                                                     : '-'}
-                                                            </td>
-                                                        ))}
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Single Column Preview */}
+                                    {tableData.type === 'table_column' && tableData.rows && (
+                                        <div className="space-y-2">
+                                            <div className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">
+                                                <p className="text-xs text-blue-700 dark:text-blue-400">
+                                                    <strong>Column:</strong> {tableData.columnDisplayName || tableData.columnName}
+                                                    {tableData.column && (
+                                                        <>
+                                                            <br />
+                                                            <strong>Type:</strong> {tableData.column.data_type || 'Unknown'}
+                                                        </>
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                                                <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+                                                    <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                        Column Values ({tableData.rows.length} of {tableData.total || tableData.rows.length} rows)
+                                                    </h4>
+                                                </div>
+                                                <div className="max-h-96 overflow-y-auto">
+                                                    {tableData.rows.length === 0 ? (
+                                                        <div className="p-4 text-center text-xs text-gray-500 dark:text-gray-400">
+                                                            No rows found
+                                                        </div>
+                                                    ) : (
+                                                        tableData.rows.map((row: any) => {
+                                                            const cellValue = row.data[tableData.columnName];
+                                                            return (
+                                                                <div 
+                                                                    key={row.id}
+                                                                    className="p-2 border-b border-gray-200 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-zinc-900/50"
+                                                                >
+                                                                    <div className="text-xs text-gray-900 dark:text-gray-100">
+                                                                        {cellValue !== null && cellValue !== undefined
+                                                                            ? typeof cellValue === 'object'
+                                                                                ? JSON.stringify(cellValue)
+                                                                                : String(cellValue)
+                                                                            : '-'}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {tableData.total > 100 && (
+                                                <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
+                                                    Showing first 100 of {tableData.total} rows
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Single Cell Preview */}
+                                    {tableData.type === 'table_cell' && (
+                                        <div className="space-y-2">
+                                            <div className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">
+                                                <p className="text-xs text-blue-700 dark:text-blue-400">
+                                                    <strong>Column:</strong> {tableData.columnDisplayName || tableData.columnName}<br />
+                                                    <strong>Row ID:</strong> {tableData.rowId}
+                                                </p>
+                                            </div>
+                                            <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                                                <div className="bg-gray-50 dark:bg-zinc-900 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+                                                    <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">Cell Value</h4>
+                                                </div>
+                                                <div className="p-4">
+                                                    <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+                                                        {tableData.value !== null && tableData.value !== undefined
+                                                            ? typeof tableData.value === 'object'
+                                                                ? JSON.stringify(tableData.value, null, 2)
+                                                                : String(tableData.value)
+                                                            : '-'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             ) : (
                                 <div className="p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-800">
                                     <p className="text-sm text-gray-500 dark:text-gray-400 text-center">No data available</p>
                                 </div>
                             )}
 
-                            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                                <p className="text-xs text-blue-700 dark:text-blue-400">
+                            <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                                <p className="text-xs text-green-700 dark:text-green-400">
                                     {resource.data.description}
                                 </p>
                             </div>
@@ -498,4 +560,5 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
 };
 
 export default ResourcePreviewSheet;
+
 
