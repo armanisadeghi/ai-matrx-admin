@@ -42,7 +42,6 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
             category: "Files",
             items: [
                 { id: "upload", label: "Upload Files", icon: Upload, requiresCapability: null },
-                { id: "storage", label: "Storage Files", icon: FileText, requiresCapability: null },
             ]
         },
         {
@@ -55,14 +54,10 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
             ]
         },
         {
-            category: "Data",
-            items: [
-                { id: "tables", label: "Tables", icon: Table2, requiresCapability: null },
-            ]
-        },
-        {
             category: "Matrx",
             items: [
+                { id: "storage", label: "Stored Files", icon: FileText, requiresCapability: null },
+                { id: "tables", label: "Tables", icon: Table2, requiresCapability: null },
                 { id: "notes", label: "Notes", icon: StickyNote, requiresCapability: null },
                 { id: "tasks", label: "Tasks", icon: CheckSquare, requiresCapability: null },
                 { id: "brokers", label: "Brokers", icon: Workflow, requiresCapability: null },

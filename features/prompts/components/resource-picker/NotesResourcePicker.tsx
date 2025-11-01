@@ -18,8 +18,20 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
     const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Get all folders
-    const folders = useMemo(() => getAllFolders(notes), [notes]);
+    // Count notes per folder
+    const folderCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        notes.forEach(note => {
+            counts[note.folder_name] = (counts[note.folder_name] || 0) + 1;
+        });
+        return counts;
+    }, [notes]);
+
+    // Get all folders (excluding empty ones)
+    const folders = useMemo(() => {
+        const allFolders = getAllFolders(notes);
+        return allFolders.filter(folder => folderCounts[folder] > 0);
+    }, [notes, folderCounts]);
 
     // Get notes for selected folder
     const folderNotes = useMemo(() => {
@@ -49,15 +61,6 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
             note.content.toLowerCase().includes(query)
         );
     }, [folderNotes, searchQuery]);
-
-    // Count notes per folder
-    const folderCounts = useMemo(() => {
-        const counts: Record<string, number> = {};
-        notes.forEach(note => {
-            counts[note.folder_name] = (counts[note.folder_name] || 0) + 1;
-        });
-        return counts;
-    }, [notes]);
 
     return (
         <div className="flex flex-col h-[400px]">
