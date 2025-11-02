@@ -22,94 +22,61 @@ const CHAT_PROMPT_ID = '187ba1d7-18cd-4cb8-999a-401c96cfd275';
  */
 export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
     const [chatKey, setChatKey] = useState(0); // Key to force remount for new chat
-    const [isActive, setIsActive] = useState(false);
 
-    // Handle starting/restarting chat
-    const handleStartChat = () => {
-        if (isActive) {
-            // Reset chat
-            setIsActive(false);
-            setTimeout(() => {
-                setChatKey(prev => prev + 1); // Force remount
-                setIsActive(true);
-            }, 300);
-        } else {
-            // First time
-            setIsActive(true);
-        }
+    // Handle new chat
+    const handleNewChat = () => {
+        setChatKey(prev => prev + 1); // Force remount to reset chat
     };
 
     return (
-        <div className={cn("flex flex-col h-full", className)}>
-            {!isActive ? (
-                // Welcome screen before chat is started
-                <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 p-6">
-                    <div className="text-center max-w-md">
-                        <p className="text-lg font-medium mb-3">Ready to chat with AI</p>
-                        <p className="text-sm mb-6">Start a conversation with the AI assistant</p>
-                        <Button onClick={handleStartChat} size="lg">
-                            <MessageSquarePlus className="h-4 w-4 mr-2" />
-                            Start Chat
-                        </Button>
-                    </div>
-                </div>
-            ) : (
-                <>
-                    {/* Compact Header with New Chat and Close Buttons */}
-                    <div className="flex-none flex items-center justify-between p-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 gap-2"
-                                        onClick={handleStartChat}
-                                    >
-                                        <MessageSquarePlus className="h-4 w-4" />
-                                        <span className="text-xs">New Chat</span>
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    Start a new conversation
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+        <div className={cn("relative h-full", className)}>
+            {/* Minimal floating action buttons */}
+            <div className="absolute top-2 right-2 z-50 flex items-center gap-1">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 bg-zinc-100/80 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                onClick={handleNewChat}
+                            >
+                                <MessageSquarePlus className="h-3.5 w-3.5" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>New Chat</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
 
-                        {onClose && (
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 w-8 p-0"
-                                            onClick={onClose}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        Close
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        )}
-                    </div>
+                {onClose && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 bg-zinc-100/80 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                    onClick={onClose}
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Close</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
+            </div>
 
-                    {/* Chat Interface - Embedded PromptRunner */}
-                    <div className="flex-1 overflow-hidden">
-                        <PromptRunner
-                            key={chatKey}
-                            promptId={CHAT_PROMPT_ID}
-                            mode="manual"
-                            isActive={isActive}
-                            onClose={onClose}
-                        />
-                    </div>
-                </>
-            )}
+            {/* Chat Interface - Hide PromptRunner's header */}
+            <div className="h-full [&>*]:h-full [&>*>*:first-child]:hidden">
+                <PromptRunner
+                    key={chatKey}
+                    promptId={CHAT_PROMPT_ID}
+                    mode="manual"
+                    isActive={true}
+                    className="h-full"
+                />
+            </div>
         </div>
     );
 }
-
