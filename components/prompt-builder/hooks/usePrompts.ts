@@ -6,6 +6,7 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { v4 as uuidv4 } from "uuid";
 import { useCallbackManager } from "@/hooks/useCallbackManager";
+import { VariableCustomComponent } from "@/features/prompts/types/variable-components";
 
 export type PromptMessage = {
     role: string;
@@ -16,6 +17,7 @@ export type PromptMessage = {
 export type PromptVariable = {
     name: string;
     defaultValue: string;
+    customComponent?: VariableCustomComponent;
 }
 
 export type PromptsData = {
@@ -29,7 +31,7 @@ export type PromptsData = {
     authenticatedRead?: boolean;
     publicRead?: boolean;
     messages?: PromptMessage[];
-    variableDefaults?: PromptVariable[]; // Array of { name, defaultValue }
+    variableDefaults?: PromptVariable[]; // Array of { name, defaultValue, customComponent? }
 }
 
 

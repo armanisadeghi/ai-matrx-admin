@@ -100,12 +100,13 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
     // Extract variables from normalized messages
     const extractedVariables = extractVariablesFromMessages(normalizedMessages);
     
-    // Build variable defaults array
+    // Build variable defaults array, preserving customComponent
     const variableDefaults = extractedVariables.map(varName => {
       const provided = promptJSON.variables?.find(v => v.name === varName);
       return {
         name: varName,
-        defaultValue: provided?.defaultValue || ''
+        defaultValue: provided?.defaultValue || '',
+        ...(provided?.customComponent && { customComponent: provided.customComponent })
       };
     });
 
@@ -195,6 +196,7 @@ export async function importPromptBatch(batchJSON: PromptBatchJSON): Promise<Pro
 
 /**
  * Export a prompt as JSON
+ * Includes all variable data including customComponent configurations
  */
 export async function exportPromptAsJSON(promptId: string): Promise<PromptJSON | null> {
   try {
@@ -211,12 +213,13 @@ export async function exportPromptAsJSON(promptId: string): Promise<PromptJSON |
       return null;
     }
 
+    // Export all variable data including customComponent configurations
     return {
       id: prompt.id,
       name: prompt.name,
       description: prompt.description,
       messages: prompt.messages,
-      variables: prompt.variable_defaults,
+      variables: prompt.variable_defaults, // Includes name, defaultValue, and customComponent
       settings: prompt.settings
     };
 
