@@ -119,7 +119,7 @@ export function PromptRunner({
     // AI Runs tracking
     const { run, createRun, createTask, updateTask, completeTask, addMessage } = useAiRun(initialRunId || undefined);
     const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
-    const updateTaskTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const updateTaskTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     
     // Refs for auto-scrolling
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -255,13 +255,13 @@ export function PromptRunner({
                 // For manual mode, don't pre-fill variables - user enters their own
                 if (mode === 'manual') {
                     return {
-                        name: v.name,
+                        ...v, // Preserve all properties including customComponent
                         defaultValue: ""
                     };
                 }
                 // For other modes, use provided variables or defaults
                 return {
-                    name: v.name,
+                    ...v, // Preserve all properties including customComponent
                     defaultValue: initialVariables?.[v.name] || v.defaultValue || ""
                 };
             });
