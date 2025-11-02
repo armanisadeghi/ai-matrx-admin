@@ -721,18 +721,23 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
 
 const convertToDatabase = (data: unknown, fieldMap: Record<string, string>): Record<string, unknown> | Record<string, unknown>[] => {
     const isValuePresent = (value: unknown): boolean => {
+        // null and undefined mean "don't include this field"
         if (value === null || value === undefined) {
             return false;
         }
 
+        // Empty strings mean "don't include this field"
         if (typeof value === 'string' && value.trim() === '') {
             return false;
         }
 
-        if (Array.isArray(value) && value.length === 0) {
-            return false;
+        // Empty arrays ARE valid values (e.g., clearing a list)
+        // So we DO include them in the update
+        if (Array.isArray(value)) {
+            return true;
         }
 
+        // Empty objects mean "don't include this field"
         if (value && typeof value === 'object' && Object.keys(value).length === 0) {
             return false;
         }
