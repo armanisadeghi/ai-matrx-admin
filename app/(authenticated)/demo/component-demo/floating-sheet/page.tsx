@@ -58,9 +58,16 @@ const FloatingSheetDemo = () => {
         position: "right",
         footer: customFooter,
       },
+      floating: {
+        title: "Floating Sheet",
+        description: "A sheet with spacing from edges (floating)",
+        width: "md",
+        position: "right",
+        spacing: "4",
+      },
       customStyle: {
         title: "Custom Styled Sheet",
-        description: "A sheet with custom styling",
+        description: "A sheet with custom styling and more spacing",
         width: "md",
         position: "right",
         spacing: "6",

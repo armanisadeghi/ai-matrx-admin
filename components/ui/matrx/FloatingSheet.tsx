@@ -50,7 +50,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     closeOnEsc = true, // Default to true for better accessibility
     width = "md",
     height = "auto",
-    spacing = "4",
+    spacing = "0",
     rounded = "2xl",
     className = "",
     contentClassName = "",
@@ -287,7 +287,19 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             return "";
         }
         
-        // Map rounded values to actual Tailwind classes
+        // When spacing is 0 (flush against edges), only round the corners that don't touch edges
+        if (spacing === "0") {
+            const positionRoundedMap: Record<string, string> = {
+                "right": "rounded-l-2xl",  // Only round left side
+                "left": "rounded-r-2xl",   // Only round right side
+                "top": "rounded-b-2xl",    // Only round bottom
+                "bottom": "rounded-t-2xl", // Only round top
+                "center": "rounded-2xl",   // Center modals get all corners rounded
+            };
+            return positionRoundedMap[position] || "rounded-l-2xl";
+        }
+        
+        // Map rounded values to actual Tailwind classes for floating sheets (with spacing)
         const roundedMap: Record<string, string> = {
             "none": "rounded-none",
             "sm": "rounded-sm",
