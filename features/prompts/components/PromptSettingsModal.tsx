@@ -107,17 +107,17 @@ export function PromptSettingsModal({
         setLocalVariables(updated);
     };
 
-    const handleAddVariable = (name: string, customComponent?: VariableCustomComponent) => {
+    const handleAddVariable = (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => {
         // Don't add duplicates
         if (localVariables.some(v => v.name === name)) {
             return;
         }
-        setLocalVariables([...localVariables, { name, defaultValue: "", customComponent }]);
+        setLocalVariables([...localVariables, { name, defaultValue, customComponent }]);
     };
 
-    const handleUpdateVariable = (name: string, customComponent?: VariableCustomComponent) => {
+    const handleUpdateVariable = (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => {
         setLocalVariables(prev =>
-            prev.map(v => v.name === name ? { ...v, customComponent } : v)
+            prev.map(v => v.name === name ? { ...v, defaultValue, customComponent } : v)
         );
     };
 
@@ -137,11 +137,11 @@ export function PromptSettingsModal({
         setIsVariableModalOpen(true);
     };
 
-    const handleVariableModalSave = (name: string, customComponent?: VariableCustomComponent) => {
+    const handleVariableModalSave = (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => {
         if (variableModalMode === 'add') {
-            handleAddVariable(name, customComponent);
+            handleAddVariable(name, defaultValue, customComponent);
         } else if (editingVariable) {
-            handleUpdateVariable(editingVariable.name, customComponent);
+            handleUpdateVariable(editingVariable.name, defaultValue, customComponent);
         }
         setIsVariableModalOpen(false);
     };

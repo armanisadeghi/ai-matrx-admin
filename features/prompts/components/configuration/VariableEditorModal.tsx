@@ -12,9 +12,10 @@ import { sanitizeVariableName, shouldShowSanitizationPreview } from "../../utils
 interface VariableEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, customComponent?: VariableCustomComponent) => void;
+  onSave: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
   existingVariable?: {
     name: string;
+    defaultValue: string;
     customComponent?: VariableCustomComponent;
   };
   existingNames: string[];
@@ -33,6 +34,7 @@ export function VariableEditorModal({
   mode
 }: VariableEditorModalProps) {
   const [name, setName] = useState("");
+  const [defaultValue, setDefaultValue] = useState("");
   const [componentType, setComponentType] = useState<VariableComponentType>("textarea");
   const [options, setOptions] = useState<string[]>([]);
   const [newOption, setNewOption] = useState("");
@@ -47,6 +49,7 @@ export function VariableEditorModal({
   useEffect(() => {
     if (mode === 'edit' && existingVariable) {
       setName(existingVariable.name);
+      setDefaultValue(existingVariable.defaultValue || "");
       const comp = existingVariable.customComponent;
       
       if (comp) {
@@ -72,6 +75,7 @@ export function VariableEditorModal({
     } else {
       // Reset for add mode
       setName("");
+      setDefaultValue("");
       setComponentType("textarea");
       setOptions([]);
       setNewOption("");
@@ -129,7 +133,7 @@ export function VariableEditorModal({
       }
     }
 
-    onSave(sanitizedName, customComponent);
+    onSave(sanitizedName, defaultValue, customComponent);
     onClose();
   };
 
@@ -171,6 +175,20 @@ export function VariableEditorModal({
             
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Spaces and dashes become underscores. Only lowercase letters, numbers, and underscores allowed.
+            </p>
+          </div>
+
+          {/* Default Value */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Default Value</Label>
+            <Input
+              type="text"
+              placeholder="Optional default value for this variable"
+              value={defaultValue}
+              onChange={(e) => setDefaultValue(e.target.value)}
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              The default value that will be pre-filled when using this prompt
             </p>
           </div>
 

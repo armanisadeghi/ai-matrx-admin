@@ -14,8 +14,8 @@ export interface ExtendedPromptVariable {
 
 interface VariablesManagerProps {
     variableDefaults: ExtendedPromptVariable[];
-    onAddVariable: (name: string, customComponent?: VariableCustomComponent) => void;
-    onUpdateVariable: (oldName: string, customComponent?: VariableCustomComponent) => void;
+    onAddVariable: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
+    onUpdateVariable: (oldName: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
     onRemoveVariable: (variableName: string) => void;
 }
 
@@ -41,11 +41,11 @@ export function VariablesManager({
         setIsModalOpen(true);
     };
 
-    const handleSave = (name: string, customComponent?: VariableCustomComponent) => {
+    const handleSave = (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => {
         if (modalMode === 'add') {
-            onAddVariable(name, customComponent);
+            onAddVariable(name, defaultValue, customComponent);
         } else if (editingVariable) {
-            onUpdateVariable(editingVariable.name, customComponent);
+            onUpdateVariable(editingVariable.name, defaultValue, customComponent);
         }
         setIsModalOpen(false);
     };

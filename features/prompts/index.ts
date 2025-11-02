@@ -52,6 +52,9 @@ export type {
   PromptRunnerModalConfig
 } from './types/modal';
 
+// Component Types
+export type { PromptRunnerProps, PromptVariable } from './components/modal/PromptRunner';
+
 // Services
 export { PromptExecutionService, promptExecutionService, executePrompt } from './services/prompt-execution-service';
 export { importPrompt, importPromptBatch, exportPromptAsJSON } from './services/prompt-import-service';
@@ -90,6 +93,7 @@ export { PromptExecutionButton, PromptExecutionIconButton } from './components/P
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
 export { PromptExecutionModal } from './components/PromptExecutionModal';
 export { PromptImporter } from './components/PromptImporter';
+export { PromptRunner } from './components/modal/PromptRunner';
 export { PromptRunnerModal } from './components/modal/PromptRunnerModal';
 export { PromptRunnerModalTester } from './components/modal/PromptRunnerModalTester';
 export { PromptRunnerModalSidebarTester } from './components/modal/PromptRunnerModalSidebarTester';

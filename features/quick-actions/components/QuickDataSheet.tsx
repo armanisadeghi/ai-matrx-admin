@@ -107,6 +107,9 @@ export function QuickDataSheet({ onClose, className }: QuickDataSheetProps) {
         );
     }
 
+    // Get selected table name for display
+    const selectedTable = tables.find(t => t.id === selectedTableId);
+
     return (
         <div className={cn("flex flex-col h-full", className)}>
             {/* Compact Header with Table Selector */}
@@ -116,15 +119,25 @@ export function QuickDataSheet({ onClose, className }: QuickDataSheetProps) {
                     onValueChange={handleTableChange}
                 >
                     <SelectTrigger className="flex-1 h-8 text-xs">
-                        <SelectValue placeholder="Select a table" />
+                        <SelectValue placeholder="Select a table">
+                            {selectedTable && (
+                                <span className="flex items-center gap-2">
+                                    <span className="font-medium">{selectedTable.table_name}</span>
+                                    <span className="text-zinc-400">•</span>
+                                    <span className="text-zinc-500 dark:text-zinc-400">
+                                        {selectedTable.row_count} rows
+                                    </span>
+                                </span>
+                            )}
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-[400px]">
                         {tables.map((table) => (
                             <SelectItem key={table.id} value={table.id} className="text-xs">
-                                <div className="flex flex-col">
+                                <div className="flex items-center justify-between gap-4 w-full">
                                     <span className="font-medium">{table.table_name}</span>
-                                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                                        {table.row_count} rows • {table.field_count} fields
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
+                                        {table.row_count} rows
                                     </span>
                                 </div>
                             </SelectItem>
@@ -153,6 +166,7 @@ export function QuickDataSheet({ onClose, className }: QuickDataSheetProps) {
             <div className="flex-1 overflow-hidden">
                 {selectedTableId && (
                     <UserTableViewer
+                        key={selectedTableId}
                         tableId={selectedTableId}
                         showTableSelector={false}
                     />

@@ -245,7 +245,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     }, [submitOnEnter]);
 
     // Handler to add a new variable
-    const handleAddVariable = (name: string, customComponent?: VariableCustomComponent) => {
+    const handleAddVariable = (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => {
         if (!name) return;
 
         // Don't add duplicates
@@ -253,14 +253,14 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             return;
         }
 
-        setVariableDefaults((prev) => [...prev, { name, defaultValue: "", customComponent }]);
+        setVariableDefaults((prev) => [...prev, { name, defaultValue, customComponent }]);
         setIsDirty(true);
     };
 
-    // Handler to update a variable's custom component
-    const handleUpdateVariable = (name: string, customComponent?: VariableCustomComponent) => {
+    // Handler to update a variable's custom component and default value
+    const handleUpdateVariable = (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => {
         setVariableDefaults((prev) =>
-            prev.map(v => v.name === name ? { ...v, customComponent } : v)
+            prev.map(v => v.name === name ? { ...v, defaultValue, customComponent } : v)
         );
         setIsDirty(true);
     };
