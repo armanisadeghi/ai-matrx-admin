@@ -119,7 +119,7 @@ export function TemplateCard({
                         size="sm"
                         onClick={handleUseTemplate}
                         disabled={isDisabled}
-                        className="flex-1 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white"
+                        className="flex-1 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
                     >
                         {isUsingTemplate ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />

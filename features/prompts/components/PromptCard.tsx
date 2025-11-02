@@ -120,14 +120,19 @@ export function PromptCard({
             });
 
             if (!response.ok) {
-                throw new Error("Failed to convert prompt to template");
+                const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+                const errorMessage = errorData.details 
+                    ? `${errorData.error}: ${errorData.details}`
+                    : errorData.error || `Failed to convert prompt to template (${response.status})`;
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
             toast.success(`Successfully converted "${name}" to a template!`);
         } catch (error) {
             console.error("Error converting prompt to template:", error);
-            toast.error("Failed to convert prompt to template. Please try again.");
+            const errorMessage = error instanceof Error ? error.message : "Failed to convert prompt to template. Please try again.";
+            toast.error(errorMessage);
         } finally {
             setIsConvertingToTemplate(false);
         }

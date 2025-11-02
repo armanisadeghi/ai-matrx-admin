@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
@@ -60,7 +60,7 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
     }, [prompts, searchTerm, sortBy]);
 
     // Update parent whenever filtered prompts change
-    useMemo(() => {
+    useEffect(() => {
         onFilteredPromptsChange(filteredPrompts);
     }, [filteredPrompts, onFilteredPromptsChange]);
 

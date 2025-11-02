@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminUser } from "@/config/admin.config";
 
 export async function POST(
     request: NextRequest,
@@ -19,14 +20,8 @@ export async function POST(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Check if user is a system admin
-        const { data: adminCheck } = await supabase
-            .from("admins")
-            .select("id")
-            .eq("user_id", user.id)
-            .single();
-
-        if (!adminCheck) {
+        // Check if user is a system admin using the config-based admin check
+        if (!isAdminUser(user.id)) {
             return NextResponse.json(
                 { error: "Forbidden: Admin access required" },
                 { status: 403 }
@@ -69,10 +64,9 @@ export async function POST(
                 tools: originalPrompt.tools,
                 settings: originalPrompt.settings,
                 category: "custom", // Default category
-                tags: ["user-created"],
-                is_public: false, // Admin can make it public later
+                is_featured: false, // Admin can make it featured later
                 use_count: 0,
-                created_by: user.id,
+                created_by_user_id: user.id,
             })
             .select()
             .single();
@@ -80,7 +74,10 @@ export async function POST(
         if (insertError) {
             console.error("Error creating template:", insertError);
             return NextResponse.json(
-                { error: "Failed to create template from prompt" },
+                { 
+                    error: "Failed to create template from prompt",
+                    details: insertError.message || "Database error"
+                },
                 { status: 500 }
             );
         }
