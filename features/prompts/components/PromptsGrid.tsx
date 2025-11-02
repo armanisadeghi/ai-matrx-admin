@@ -2,11 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { PromptCard } from "./PromptCard";
-import { PromptSearchDialog } from "./PromptSearchDialog";
+import { PromptsFilter } from "./PromptsFilter";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -36,7 +34,7 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
     const [duplicatingIds, setDuplicatingIds] = useState<Set<string>>(new Set());
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [promptToDelete, setPromptToDelete] = useState<{ id: string; name: string } | null>(null);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>(prompts);
 
     const handleDeleteClick = (id: string, name: string) => {
         setPromptToDelete({ id, name });
@@ -125,48 +123,43 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
 
     return (
         <>
-            {/* Search Button - Only show if there are prompts */}
-            {prompts.length > 0 && (
-                <div className="mb-6 flex justify-end">
-                    <Button
-                        onClick={() => setIsSearchOpen(true)}
-                        variant="outline"
-                        className="border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                        <Search className="h-4 w-4 mr-2" />
-                        Search Prompts
-                    </Button>
+            {/* Search and Filter */}
+            <PromptsFilter
+                prompts={prompts}
+                onFilteredPromptsChange={setFilteredPrompts}
+            />
+
+            {/* Prompts Grid */}
+            {filteredPrompts.length === 0 ? (
+                <div className="text-center py-12">
+                    <p className="text-gray-600 dark:text-gray-400">
+                        No prompts match your filters. Try adjusting your search or filters.
+                    </p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredPrompts.map((prompt) => (
+                        <PromptCard
+                            key={prompt.id}
+                            id={prompt.id}
+                            name={prompt.name}
+                            description={prompt.description}
+                            onDelete={(id) => {
+                                const prompt = prompts.find(p => p.id === id);
+                                if (prompt) {
+                                    handleDeleteClick(id, prompt.name);
+                                }
+                            }}
+                            onDuplicate={handleDuplicate}
+                            onNavigate={handleNavigate}
+                            isDeleting={deletingIds.has(prompt.id)}
+                            isDuplicating={duplicatingIds.has(prompt.id)}
+                            isNavigating={navigatingId === prompt.id}
+                            isAnyNavigating={navigatingId !== null}
+                        />
+                    ))}
                 </div>
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {prompts.map((prompt) => (
-                    <PromptCard
-                        key={prompt.id}
-                        id={prompt.id}
-                        name={prompt.name}
-                        description={prompt.description}
-                        onDelete={(id) => {
-                            const prompt = prompts.find(p => p.id === id);
-                            if (prompt) {
-                                handleDeleteClick(id, prompt.name);
-                            }
-                        }}
-                        onDuplicate={handleDuplicate}
-                        onNavigate={handleNavigate}
-                        isDeleting={deletingIds.has(prompt.id)}
-                        isDuplicating={duplicatingIds.has(prompt.id)}
-                        isNavigating={navigatingId === prompt.id}
-                        isAnyNavigating={navigatingId !== null}
-                    />
-                ))}
-            </div>
-
-            <PromptSearchDialog
-                isOpen={isSearchOpen}
-                onClose={() => setIsSearchOpen(false)}
-                prompts={prompts}
-            />
 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>

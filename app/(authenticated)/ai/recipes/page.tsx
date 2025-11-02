@@ -30,9 +30,9 @@ export default async function RecipesPage() {
             <div className="container mx-auto px-6 py-6 max-w-[1800px]">
                 {/* Header */}
                 <div className="mb-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex items-start sm:items-center gap-3">
+                            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg flex-shrink-0">
                                 <ChefHat className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div>
@@ -44,8 +44,8 @@ export default async function RecipesPage() {
                                 </p>
                             </div>
                         </div>
-                        <Link href="/ai/recipes/new">
-                            <Button className="bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white">
+                        <Link href="/ai/recipes/new" className="w-full sm:w-auto">
+                            <Button className="w-full sm:w-auto bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white">
                                 <Plus className="h-4 w-4 mr-2" />
                                 New Recipe
                             </Button>

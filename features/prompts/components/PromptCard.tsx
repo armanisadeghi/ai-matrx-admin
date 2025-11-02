@@ -172,8 +172,8 @@ export function PromptCard({
                     }`} />
                 </div>
             </div>
-            <div className="p-6 flex-1 flex items-center justify-center">
-                <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 text-center line-clamp-3 transition-colors duration-200 ${
+            <div className="p-6 pl-12 flex-1 flex items-center justify-center">
+                <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 text-center line-clamp-3 break-words transition-colors duration-200 ${
                     !isDisabled && 'group-hover:text-blue-600 dark:group-hover:text-blue-400'
                 }`}>
                     {name || "Untitled Prompt"}
