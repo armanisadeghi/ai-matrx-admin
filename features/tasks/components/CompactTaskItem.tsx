@@ -9,6 +9,7 @@ interface CompactTaskItemProps {
   isSelected: boolean;
   onSelect: () => void;
   onToggleComplete: () => void;
+  hideProjectName?: boolean; // Hide project name when already shown in context (e.g., AllTasksView)
 }
 
 export default function CompactTaskItem({
@@ -16,8 +17,13 @@ export default function CompactTaskItem({
   isSelected,
   onSelect,
   onToggleComplete,
+  hideProjectName = false,
 }: CompactTaskItemProps) {
-  const isPastDue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+  // Check if task is past due - compare dates consistently
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+  const isPastDue = task.dueDate && task.dueDate < todayStr && !task.completed;
 
   const getPriorityColor = (priority: string | null) => {
     switch (priority) {
@@ -81,7 +87,7 @@ export default function CompactTaskItem({
             )}
 
             {/* Project */}
-            {task.projectName && (
+            {task.projectName && !hideProjectName && (
               <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                 <span className="text-blue-600 dark:text-blue-400">● {task.projectName}</span>
               </div>

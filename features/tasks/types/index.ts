@@ -44,16 +44,19 @@ export interface TaskContextType {
   newTaskTitle: string;
   filter: TaskFilterType;
   showAllProjects: boolean;
+  searchQuery: string;
   // Actions
   setNewProjectName: (name: string) => void;
   setNewTaskTitle: (title: string) => void;
   setActiveProject: (projectId: string | null) => void;
   setFilter: (filter: TaskFilterType) => void;
   setShowAllProjects: (show: boolean) => void;
+  setSearchQuery: (query: string) => void;
   toggleProjectExpand: (projectId: string) => void;
   toggleTaskExpand: (taskId: string) => void;
   addProject: (e: React.FormEvent) => Promise<void>;
   updateProject: (projectId: string, name: string) => Promise<void>;
+  updateTaskProject: (taskId: string, projectId: string | null) => Promise<void>;
   deleteProject: (projectId: string, e: React.MouseEvent) => Promise<void>;
   addTask: (e: React.FormEvent, description?: string, dueDate?: string, targetProjectId?: string) => Promise<string | null>;
   toggleTaskComplete: (projectId: string, taskId: string) => Promise<void>;

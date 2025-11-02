@@ -50,7 +50,10 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
 
   // Filter tasks based on current filter
   const getFilteredTasksForProject = (project: any) => {
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's date at midnight local time for consistent comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
     
     switch (filter) {
       case 'completed':
@@ -59,7 +62,7 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
         return project.tasks.filter((task: any) => !task.completed);
       case 'overdue':
         return project.tasks.filter((task: any) => 
-          !task.completed && task.dueDate && task.dueDate < today
+          !task.completed && task.dueDate && task.dueDate < todayStr
         );
       default:
         return project.tasks;
@@ -147,6 +150,7 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
                     isSelected={selectedTaskId === task.id}
                     onSelect={() => onTaskSelect(task.id)}
                     onToggleComplete={() => onTaskToggle(project.id, task.id)}
+                    hideProjectName={true}
                   />
                 ))}
               </div>

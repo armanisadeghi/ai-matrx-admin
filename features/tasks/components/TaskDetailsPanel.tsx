@@ -21,12 +21,14 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
   const {
     updateTaskDescription,
     updateTaskDueDate,
+    updateTaskProject,
     projects,
     refresh,
   } = useTaskContext();
 
   const [description, setDescription] = useState(task.description || '');
   const [dueDate, setDueDate] = useState(task.dueDate || '');
+  const [projectId, setProjectId] = useState<string | null>(task.projectId || null);
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | null>(task.priority || null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -39,10 +41,11 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
   useEffect(() => {
     setDescription(task.description || '');
     setDueDate(task.dueDate || '');
+    setProjectId(task.projectId || null);
     setPriority(task.priority || null);
     setSubtasks(task.subtasks || []);
     setIsDirty(false); // Reset dirty state when task updates
-  }, [task.id, task.description, task.dueDate, task.priority, task.subtasks]);
+  }, [task.id, task.description, task.dueDate, task.projectId, task.priority, task.subtasks]);
 
   const handleDescriptionChange = (newDescription: string) => {
     setDescription(newDescription);
@@ -51,6 +54,11 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
 
   const handleDueDateChange = (newDate: string) => {
     setDueDate(newDate);
+    setIsDirty(true);
+  };
+
+  const handleProjectChange = (newProjectId: string) => {
+    setProjectId(newProjectId);
     setIsDirty(true);
   };
 
@@ -70,6 +78,9 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
       }
       if (dueDate !== task.dueDate) {
         await updateTaskDueDate(task.projectId, task.id, dueDate);
+      }
+      if (projectId !== task.projectId) {
+        await updateTaskProject(task.id, projectId);
       }
       // TODO: Save priority when implemented in context
       
@@ -117,8 +128,6 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     setNewComment('');
     // TODO: Save to database
   };
-
-  const projectName = projects.find(p => p.id === task.projectId)?.name || 'No Project';
 
   const getPriorityColor = (p: string | null) => {
     switch (p) {
@@ -213,9 +222,23 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
             <CheckSquare size={14} />
             Project
           </label>
-          <div className="text-sm px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-            {projectName}
-          </div>
+          <Select value={projectId || 'none'} onValueChange={(val) => handleProjectChange(val === 'none' ? '' : val)}>
+            <SelectTrigger className="text-sm">
+              <SelectValue placeholder="Select project">
+                {projectId ? projects.find(p => p.id === projectId)?.name : 'No Project'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">
+                <span className="text-gray-500 dark:text-gray-400">No Project</span>
+              </SelectItem>
+              {projects.map(project => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Priority */}

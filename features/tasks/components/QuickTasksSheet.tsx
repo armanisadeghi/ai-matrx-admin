@@ -25,6 +25,8 @@ import {
     CheckCircle,
     AlertCircle,
     FolderPlus,
+    Search,
+    X,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -59,6 +61,8 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
         addTask,
         getFilteredTasks,
         toggleTaskComplete,
+        searchQuery,
+        setSearchQuery,
     } = useTaskContext();
 
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -260,6 +264,28 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                 {!selectedTask ? (
                     /* Task List View */
                     <div className="flex flex-col h-full bg-white dark:bg-gray-800">
+                        {/* Search Bar */}
+                        <div className="p-2 border-b border-zinc-200 dark:border-zinc-800">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={14} />
+                                <Input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search tasks..."
+                                    className="pl-8 pr-8 h-8 text-xs"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
                         {/* Quick Add Task Form */}
                         <div className="p-2 border-b border-zinc-200 dark:border-zinc-800 space-y-2">
                             <form onSubmit={handleAddTask} className="space-y-2">

@@ -40,6 +40,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [filter, setFilter] = useState<TaskFilterType>('all');
   const [showAllProjects, setShowAllProjects] = useState(true); // Default to All Tasks view
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Convert database projects to UI projects with subtasks
   const projects: Project[] = dbProjectsWithTasks.map(dbProject => {
@@ -221,6 +222,25 @@ export function TaskProvider({ children }: TaskProviderProps) {
       toast.error('Failed to update project');
     } finally {
       setOperatingProjectId(null);
+    }
+  };
+
+  // Update task project (move task to different project)
+  const updateTaskProject = async (taskId: string, projectId: string | null) => {
+    setOperatingTaskId(taskId);
+    try {
+      const success = await taskService.updateTask(taskId, { project_id: projectId });
+      if (success) {
+        toast.success('Task project updated');
+        // Real-time subscription will update automatically
+      } else {
+        toast.error('Failed to update task project');
+      }
+    } catch (error) {
+      console.error('Error updating task project:', error);
+      toast.error('Failed to update task project');
+    } finally {
+      setOperatingTaskId(null);
     }
   };
 
@@ -473,13 +493,16 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Get filtered tasks
+  // Get filtered tasks with search
   const getFilteredTasks = (): TaskWithProject[] => {
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's date at midnight local time for consistent comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+    
+    let allTasks: TaskWithProject[] = [];
     
     if (showAllProjects) {
-      let allTasks: TaskWithProject[] = [];
-      
       projects.forEach(project => {
         project.tasks.forEach(task => {
           allTasks.push({
@@ -489,43 +512,46 @@ export function TaskProvider({ children }: TaskProviderProps) {
           });
         });
       });
-      
-      switch (filter) {
-        case 'completed':
-          return allTasks.filter(task => task.completed);
-        case 'incomplete':
-          return allTasks.filter(task => !task.completed);
-        case 'overdue':
-          return allTasks.filter(task => !task.completed && task.dueDate && task.dueDate < today);
-        default:
-          return allTasks;
-      }
     } else if (activeProject !== null) {
       const activeProjectData = projects.find(project => project.id === activeProject);
-      
-      if (!activeProjectData) return [];
-      
-      const mapTask = (task: typeof activeProjectData.tasks[0]) => ({
-        ...task, 
-        projectId: activeProject,
-        projectName: activeProjectData.name
-      });
-      
-      switch (filter) {
-        case 'completed':
-          return activeProjectData.tasks.filter(task => task.completed).map(mapTask);
-        case 'incomplete':
-          return activeProjectData.tasks.filter(task => !task.completed).map(mapTask);
-        case 'overdue':
-          return activeProjectData.tasks.filter(task => 
-            !task.completed && task.dueDate && task.dueDate < today
-          ).map(mapTask);
-        default:
-          return activeProjectData.tasks.map(mapTask);
+      if (activeProjectData) {
+        activeProjectData.tasks.forEach(task => {
+          allTasks.push({
+            ...task,
+            projectId: activeProject,
+            projectName: activeProjectData.name
+          });
+        });
       }
     }
     
-    return [];
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      allTasks = allTasks.filter(task => {
+        return (
+          task.title.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.projectName.toLowerCase().includes(query)
+        );
+      });
+    }
+    
+    // Apply status filter
+    switch (filter) {
+      case 'completed':
+        return allTasks.filter(task => task.completed);
+      case 'incomplete':
+        return allTasks.filter(task => !task.completed);
+      case 'overdue':
+        return allTasks.filter(task => {
+          if (task.completed || !task.dueDate) return false;
+          // Compare dates consistently - both as YYYY-MM-DD strings
+          return task.dueDate < todayStr;
+        });
+      default:
+        return allTasks;
+    }
   };
 
   const value: TaskContextType = {
@@ -542,15 +568,18 @@ export function TaskProvider({ children }: TaskProviderProps) {
     newTaskTitle,
     filter,
     showAllProjects,
+    searchQuery,
     setNewProjectName,
     setNewTaskTitle,
     setActiveProject,
     setFilter,
     setShowAllProjects,
+    setSearchQuery,
     toggleProjectExpand,
     toggleTaskExpand,
     addProject,
     updateProject,
+    updateTaskProject,
     deleteProject,
     addTask,
     toggleTaskComplete,
