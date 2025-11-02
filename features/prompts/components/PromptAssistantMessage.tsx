@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Edit, MoreHorizontal, Copy, Check } from "lucide-react";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
@@ -35,6 +35,7 @@ export function PromptAssistantMessage({
     const [htmlContent, setHtmlContent] = useState<string>('');
     const [htmlTitle, setHtmlTitle] = useState<string>('HTML Preview');
     const [isCopied, setIsCopied] = useState(false);
+    const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
     
     const handleContentChange = (newContent: string) => {
         if (onContentChange) {
@@ -133,23 +134,23 @@ export function PromptAssistantMessage({
                                     <Edit className="w-3.5 h-3.5" />
                                 </Button>
                             )}
-                            <div className="relative">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={toggleOptionsMenu}
-                                    className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
-                                    title="More options"
-                                >
-                                    <MoreHorizontal className="w-3.5 h-3.5" />
-                                </Button>
-                                <MessageOptionsMenu
-                                    isOpen={showOptionsMenu}
-                                    content={content}
-                                    onClose={() => setShowOptionsMenu(false)}
-                                    onShowHtmlPreview={handleShowHtmlPreview}
-                                />
-                            </div>
+                            <Button
+                                ref={moreOptionsButtonRef}
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleOptionsMenu}
+                                className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
+                                title="More options"
+                            >
+                                <MoreHorizontal className="w-3.5 h-3.5" />
+                            </Button>
+                            <MessageOptionsMenu
+                                isOpen={showOptionsMenu}
+                                content={content}
+                                onClose={() => setShowOptionsMenu(false)}
+                                onShowHtmlPreview={handleShowHtmlPreview}
+                                anchorElement={moreOptionsButtonRef.current}
+                            />
                         </div>
                     )}
                 </>

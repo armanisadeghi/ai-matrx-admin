@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, Edit, Share2 } from "lucide-react";
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
@@ -38,7 +38,8 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     const [isAppearing, setIsAppearing] = useState(true);
     const [showHtmlModal, setShowHtmlModal] = useState(false);
     const [htmlContent, setHtmlContent] = useState<string>('');
-    const [htmlTitle, setHtmlTitle] = useState<string>('HTML Preview');    
+    const [htmlTitle, setHtmlTitle] = useState<string>('HTML Preview');
+    const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const content = message.content;
     
     // HTML Preview handlers
@@ -222,21 +223,21 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             <Share2 size={16} />
                         </button>
                         
-                        <div className="relative">
-                            <button
-                                className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"
-                                aria-label="More options"
-                                onClick={toggleOptionsMenu}
-                            >
-                                <MoreHorizontal size={16} />
-                            </button>
-                            <MessageOptionsMenu 
-                                isOpen={showOptions}
-                                content={content} 
-                                onClose={() => setShowOptions(false)}
-                                onShowHtmlPreview={handleShowHtmlPreview}
-                            />
-                        </div>
+                        <button
+                            ref={moreOptionsButtonRef}
+                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                            aria-label="More options"
+                            onClick={toggleOptionsMenu}
+                        >
+                            <MoreHorizontal size={16} />
+                        </button>
+                        <MessageOptionsMenu 
+                            isOpen={showOptions}
+                            content={content} 
+                            onClose={() => setShowOptions(false)}
+                            onShowHtmlPreview={handleShowHtmlPreview}
+                            anchorElement={moreOptionsButtonRef.current}
+                        />
                     </div>
                 )}
             </div>

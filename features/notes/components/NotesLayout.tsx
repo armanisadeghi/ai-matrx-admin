@@ -168,14 +168,22 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         
         try {
             setIsSaving(true);
-            // Force save by triggering an update with current data
-            await updateNote(activeNote.id, {
-                label: activeNote.label,
-                content: activeNote.content,
-                folder_name: activeNote.folder_name,
-                tags: activeNote.tags,
-            });
-            setOriginalLabel(activeNote.label); // Update original label after save
+            
+            // Call the editor's force save which captures ALL current state including unsaved content
+            if ((window as any).__noteEditorForceSave) {
+                (window as any).__noteEditorForceSave();
+            } else {
+                // Fallback: save with current activeNote data
+                await updateNote(activeNote.id, {
+                    label: activeNote.label,
+                    content: activeNote.content,
+                    folder_name: activeNote.folder_name,
+                    tags: activeNote.tags,
+                    metadata: activeNote.metadata,
+                });
+            }
+            
+            setOriginalLabel(activeNote.label);
             setIsDirty(false);
             toast.success('Note saved');
         } catch (error) {
@@ -299,6 +307,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                     onUpdate={handleUpdateNote}
                     allNotes={notes}
                     className="flex-1"
+                    onForceSave={() => {}}
                 />
             </div>
 

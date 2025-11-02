@@ -41,9 +41,10 @@ interface NoteEditorProps {
     onUpdate?: (noteId: string, updates: Partial<Note>) => void;
     allNotes?: Note[];
     className?: string;
+    onForceSave?: () => void;
 }
 
-export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEditorProps) {
+export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSave }: NoteEditorProps) {
     const [localContent, setLocalContent] = useState(note?.content || '');
     const [localFolder, setLocalFolder] = useState(note?.folder_name || 'Draft');
     const [localTags, setLocalTags] = useState<string[]>(note?.tags || []);
@@ -99,6 +100,32 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         },
     });
 
+    // Save current content before switching notes
+    useEffect(() => {
+        return () => {
+            // On cleanup (note changing), ensure latest content is saved
+            const currentNote = noteRef.current;
+            const currentMode = editorModeRef.current;
+            
+            if (currentNote && (currentMode === 'wysiwyg' || currentMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
+                const markdown = tuiEditorRef.current.getCurrentMarkdown();
+                if (markdown !== localContentRef.current) {
+                    // Update content immediately before switch
+                    updateWithAutoSave({
+                        label: currentNote.label,
+                        content: markdown,
+                        folder_name: localFolderRef.current,
+                        tags: localTagsRef.current,
+                        metadata: { ...currentNote.metadata, lastEditorMode: currentMode }
+                    });
+                }
+            }
+            
+            // Force save any pending changes
+            forceSave();
+        };
+    }, [note?.id, updateWithAutoSave, forceSave]);
+
     // Sync local state when note changes
     useEffect(() => {
         if (note) {
@@ -108,7 +135,39 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className }: NoteEdi
         }
     }, [note?.id]); // Only reset when note ID changes
 
-    // REMOVED - No longer needed since handleModeChange handles content sync directly
+    // Expose forceSave to parent (called when user clicks Save button)
+    useEffect(() => {
+        if (onForceSave && note) {
+            // Store the callback so we can call forceSave when user clicks the button
+            const handleForceSave = () => {
+                // Get latest content from TUI editor if it's active
+                let currentContent = localContentRef.current;
+                const currentMode = editorModeRef.current;
+                if ((currentMode === 'wysiwyg' || currentMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
+                    currentContent = tuiEditorRef.current.getCurrentMarkdown();
+                }
+                
+                // Update the auto-save queue with all current data
+                updateWithAutoSave({
+                    label: note.label,
+                    content: currentContent,
+                    folder_name: localFolderRef.current,
+                    tags: localTagsRef.current,
+                    metadata: { ...note.metadata, lastEditorMode: currentMode }
+                });
+                
+                // Force immediate save
+                forceSave();
+            };
+            
+            // Store reference for parent to call
+            (window as any).__noteEditorForceSave = handleForceSave;
+        }
+        
+        return () => {
+            delete (window as any).__noteEditorForceSave;
+        };
+    }, [onForceSave, note, updateWithAutoSave, forceSave]);
 
     // Handle mode change - INSTANT, no database interaction
     const handleModeChange = useCallback((newMode: EditorMode) => {

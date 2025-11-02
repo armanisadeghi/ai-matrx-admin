@@ -11,9 +11,10 @@ interface MessageOptionsMenuProps {
   onClose: () => void;
   onShowHtmlPreview?: (html: string, title?: string) => void;
   isOpen: boolean;
+  anchorElement?: HTMLElement | null;
 }
 
-const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, isOpen }) => {
+const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, isOpen, anchorElement }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
   // Notes handlers
@@ -250,6 +251,7 @@ ${cssContent}
         title="Message Options"
         description="Copy, export, or save this message"
         position="bottom-left"
+        anchorElement={anchorElement}
       />
       
       <QuickSaveModal

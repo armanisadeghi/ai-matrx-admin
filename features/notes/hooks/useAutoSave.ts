@@ -104,15 +104,30 @@ export function useAutoSave({
         saveNow();
     }, [saveNow]);
 
-    // Save on unmount if dirty
+    // Save immediately when noteId changes (tab switch) if there are pending updates
     useEffect(() => {
         return () => {
-            if (isDirty && noteId && Object.keys(pendingUpdatesRef.current).length > 0) {
-                // Force synchronous save on unmount
-                updateNote(noteId, pendingUpdatesRef.current).catch(console.error);
+            // On cleanup (note changing or unmounting), save pending updates immediately
+            const currentNoteId = noteId;
+            const pendingUpdates = { ...pendingUpdatesRef.current };
+            
+            if (currentNoteId && Object.keys(pendingUpdates).length > 0) {
+                // Clear timeout to prevent duplicate save
+                if (saveTimeoutRef.current) {
+                    clearTimeout(saveTimeoutRef.current);
+                    saveTimeoutRef.current = null;
+                }
+                
+                // Synchronous save - we don't await but trigger it immediately
+                updateNote(currentNoteId, pendingUpdates).catch(err => {
+                    console.error('Error saving note on unmount/switch:', err);
+                });
+                
+                // Clear pending updates
+                pendingUpdatesRef.current = {};
             }
         };
-    }, [isDirty, noteId]);
+    }, [noteId]); // Runs when noteId changes
 
     return {
         isDirty,

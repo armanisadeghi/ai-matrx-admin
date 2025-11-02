@@ -1,7 +1,7 @@
 // features/notes/components/NoteTabs.tsx
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { X, FileText, Copy, Share2, Trash2, Plus, Save, PilcrowRight, Eye, SplitSquareHorizontal, XCircle, FolderInput, Edit3, Download } from 'lucide-react';
 import { useNotesContext } from '../context/NotesContext';
 import { cn } from '@/lib/utils';
@@ -40,6 +40,8 @@ export function NoteTabs({
     const [viewMenuOpen, setViewMenuOpen] = useState(false);
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
     const [contextMenuNoteId, setContextMenuNoteId] = useState<string | null>(null);
+    const [localLabels, setLocalLabels] = useState<Record<string, string>>({});
+    const labelSaveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
     // Auto-scroll to active tab when it changes
     useEffect(() => {
@@ -52,6 +54,15 @@ export function NoteTabs({
         }
     }, [activeNote?.id]);
 
+    // Initialize local labels when notes change
+    useEffect(() => {
+        const labels: Record<string, string> = {};
+        notes.forEach(note => {
+            labels[note.id] = note.label;
+        });
+        setLocalLabels(labels);
+    }, [notes]);
+
     const handleTabClick = (noteId: string) => {
         openNoteInTab(noteId);
     };
@@ -61,9 +72,41 @@ export function NoteTabs({
         closeTab(noteId);
     };
 
-    const handleLabelChange = (noteId: string, newLabel: string) => {
-        onUpdateNote(noteId, { label: newLabel });
-    };
+    // Debounced label change - only updates local state immediately, saves after pause
+    const handleLabelChange = useCallback((noteId: string, newLabel: string) => {
+        // Update local state immediately for responsive UI
+        setLocalLabels(prev => ({ ...prev, [noteId]: newLabel }));
+        
+        // Clear existing timeout for this note
+        if (labelSaveTimeoutRef.current[noteId]) {
+            clearTimeout(labelSaveTimeoutRef.current[noteId]);
+        }
+        
+        // Schedule save after 500ms of no typing
+        labelSaveTimeoutRef.current[noteId] = setTimeout(() => {
+            onUpdateNote(noteId, { label: newLabel });
+            delete labelSaveTimeoutRef.current[noteId];
+        }, 500);
+    }, [onUpdateNote]);
+
+    // Save label immediately on blur
+    const handleLabelBlur = useCallback((noteId: string) => {
+        if (labelSaveTimeoutRef.current[noteId]) {
+            clearTimeout(labelSaveTimeoutRef.current[noteId]);
+            delete labelSaveTimeoutRef.current[noteId];
+            const label = localLabels[noteId];
+            if (label !== undefined) {
+                onUpdateNote(noteId, { label });
+            }
+        }
+    }, [localLabels, onUpdateNote]);
+
+    // Cleanup timeouts on unmount
+    useEffect(() => {
+        return () => {
+            Object.values(labelSaveTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
+        };
+    }, []);
 
     const handleInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
         e.stopPropagation();
@@ -337,8 +380,9 @@ export function NoteTabs({
                                 {isActive ? (
                                     <input
                                         type="text"
-                                        value={note.label}
+                                        value={localLabels[noteId] ?? note.label}
                                         onChange={(e) => handleLabelChange(noteId, e.target.value)}
+                                        onBlur={() => handleLabelBlur(noteId)}
                                         onClick={handleInputClick}
                                         className="flex-1 h-6 text-xs bg-transparent px-1 outline-none border-none text-zinc-900 dark:text-zinc-100"
                                         style={{ boxShadow: 'none' }}
@@ -348,7 +392,7 @@ export function NoteTabs({
                                         className="flex-1 text-xs font-medium truncate cursor-pointer text-zinc-600 dark:text-zinc-400"
                                         onClick={() => handleTabClick(noteId)}
                                     >
-                                        {note.label}
+                                        {localLabels[noteId] ?? note.label}
                                     </span>
                                 )}
 
@@ -357,35 +401,39 @@ export function NoteTabs({
                                     {/* Full actions - ONLY on active tab */}
                                     {isActive && (
                                         <>
-                                            {/* Save button - shows when dirty or saving */}
-                                            {(isDirty || isSaving) && (
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    if (!isSaving) onSaveNote();
-                                                                }}
-                                                                className={cn(
-                                                                    "flex items-center justify-center h-5 w-5 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors",
-                                                                    isSaving ? "cursor-wait" : "cursor-pointer"
-                                                                )}
-                                                            >
-                                                                <Save className={cn(
-                                                                    "h-3 w-3",
-                                                                    isSaving 
-                                                                        ? "text-yellow-600 dark:text-yellow-400 animate-pulse" 
-                                                                        : "text-green-600 dark:text-green-500"
-                                                                )} />
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            {isSaving ? 'Saving...' : 'Save changes'}
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            )}
+                                            {/* Save button - ALWAYS visible on active tab */}
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (!isSaving) onSaveNote();
+                                                            }}
+                                                            className={cn(
+                                                                "flex items-center justify-center h-5 w-5 rounded transition-colors",
+                                                                isSaving 
+                                                                    ? "cursor-wait bg-yellow-100 dark:bg-yellow-900/30" 
+                                                                    : isDirty 
+                                                                        ? "cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30" 
+                                                                        : "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                                            )}
+                                                        >
+                                                            <Save className={cn(
+                                                                "h-3 w-3",
+                                                                isSaving 
+                                                                    ? "text-yellow-600 dark:text-yellow-400 animate-pulse" 
+                                                                    : isDirty
+                                                                        ? "text-green-600 dark:text-green-500"
+                                                                        : "text-zinc-500 dark:text-zinc-400"
+                                                            )} />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {isSaving ? 'Saving...' : isDirty ? 'Save changes' : 'Save note'}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
                                             <TooltipProvider>
                                                 <Tooltip>
