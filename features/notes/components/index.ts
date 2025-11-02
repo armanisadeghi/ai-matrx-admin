@@ -7,6 +7,8 @@ export { NoteEditor } from './NoteEditor';
 export { NoteToolbar } from './NoteToolbar';
 export { NoteTabs } from './NoteTabs';
 export { CreateFolderDialog } from './CreateFolderDialog';
+export { RenameFolderDialog } from './RenameFolderDialog';
+export { MoveNoteDialog } from './MoveNoteDialog';
 export { ShareNoteDialog } from './ShareNoteDialog';
 export { TagInput } from './TagInput';
 export { QuickNotesSheet } from './QuickNotesSheet';

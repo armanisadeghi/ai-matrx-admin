@@ -34,10 +34,22 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import type { Note, NoteFilters, NoteSortConfig } from '../types';
 import { filterNotes, sortNotes, groupNotesByFolder } from '../utils/noteUtils';
 import { getFolderIconAndColor } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
+import { RenameFolderDialog } from './RenameFolderDialog';
+import { MoveNoteDialog } from './MoveNoteDialog';
 
 interface NotesSidebarProps {
     notes: Note[];
@@ -47,6 +59,9 @@ interface NotesSidebarProps {
     onDeleteNote: (noteId: string) => void;
     onCreateFolder?: () => void;
     onMoveNote?: (noteId: string, newFolder: string) => void;
+    onRenameFolder?: (oldName: string, newName: string) => void;
+    onDeleteFolderNotes?: (folderName: string) => void;
+    onCopyNote?: (noteId: string) => void;
     className?: string;
 }
 
@@ -58,6 +73,9 @@ export function NotesSidebar({
     onDeleteNote,
     onCreateFolder,
     onMoveNote,
+    onRenameFolder,
+    onDeleteFolderNotes,
+    onCopyNote,
     className,
 }: NotesSidebarProps) {
     const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +90,14 @@ export function NotesSidebar({
     const [contextMenuType, setContextMenuType] = useState<'folder' | 'note' | null>(null);
     const [contextMenuTarget, setContextMenuTarget] = useState<string | null>(null);
     const [isInitialRender, setIsInitialRender] = useState(true);
+    
+    // Dialog states
+    const [renameFolderOpen, setRenameFolderOpen] = useState(false);
+    const [renameFolderName, setRenameFolderName] = useState('');
+    const [moveNoteOpen, setMoveNoteOpen] = useState(false);
+    const [moveNoteData, setMoveNoteData] = useState<Note | null>(null);
+    const [deleteFolderAlertOpen, setDeleteFolderAlertOpen] = useState(false);
+    const [deleteFolderName, setDeleteFolderName] = useState('');
 
     // Filter and sort notes
     const processedNotes = useMemo(() => {
@@ -84,6 +110,11 @@ export function NotesSidebar({
     const folderGroups = useMemo(() => {
         return groupNotesByFolder(processedNotes);
     }, [processedNotes]);
+
+    // Get all unique folder names for move dialog
+    const allFolders = useMemo(() => {
+        return Array.from(new Set(notes.map(n => n.folder_name))).sort();
+    }, [notes]);
 
     // Initialize all folders as collapsed on first render
     useEffect(() => {
@@ -173,10 +204,9 @@ export function NotesSidebar({
             label: 'Rename Folder',
             description: 'Change folder name',
             action: () => {
-                // TODO: Implement folder rename
-                console.log('Rename folder:', folderName);
+                setRenameFolderName(folderName);
+                setRenameFolderOpen(true);
             },
-            disabled: true, // Will be enabled when rename is implemented
             category: 'Actions',
         },
         {
@@ -194,8 +224,8 @@ export function NotesSidebar({
             label: 'Delete All Notes',
             description: `Delete all ${notesCount} note${notesCount !== 1 ? 's' : ''} in this folder`,
             action: () => {
-                // TODO: Implement bulk delete with confirmation
-                console.log('Delete all notes in:', folderName);
+                setDeleteFolderName(folderName);
+                setDeleteFolderAlertOpen(true);
             },
             disabled: notesCount === 0,
             iconColor: 'text-red-500',
@@ -218,10 +248,8 @@ export function NotesSidebar({
             icon: Copy,
             label: 'Duplicate Note',
             description: 'Create a copy of this note',
-            action: () => {
-                // TODO: Implement note duplication from sidebar
-                console.log('Duplicate note:', note.id);
-            },
+            action: () => onCopyNote?.(note.id),
+            disabled: !onCopyNote,
             category: 'Actions',
         },
         {
@@ -230,8 +258,8 @@ export function NotesSidebar({
             label: 'Move to Folder',
             description: 'Move to another folder',
             action: () => {
-                // TODO: Implement move with folder picker
-                console.log('Move note:', note.id);
+                setMoveNoteData(note);
+                setMoveNoteOpen(true);
             },
             category: 'Actions',
         },
@@ -471,6 +499,55 @@ export function NotesSidebar({
                     categorizeItems={true}
                 />
             )}
+
+            {/* Rename Folder Dialog */}
+            <RenameFolderDialog
+                open={renameFolderOpen}
+                onOpenChange={setRenameFolderOpen}
+                currentName={renameFolderName}
+                existingFolders={allFolders}
+                onConfirm={(newName) => {
+                    onRenameFolder?.(renameFolderName, newName);
+                }}
+            />
+
+            {/* Move Note Dialog */}
+            {moveNoteData && (
+                <MoveNoteDialog
+                    open={moveNoteOpen}
+                    onOpenChange={setMoveNoteOpen}
+                    noteName={moveNoteData.label}
+                    currentFolder={moveNoteData.folder_name}
+                    availableFolders={allFolders}
+                    onConfirm={(targetFolder) => {
+                        onMoveNote?.(moveNoteData.id, targetFolder);
+                    }}
+                />
+            )}
+
+            {/* Delete Folder Alert */}
+            <AlertDialog open={deleteFolderAlertOpen} onOpenChange={setDeleteFolderAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete All Notes in Folder?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete all notes in "{deleteFolderName}". This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                onDeleteFolderNotes?.(deleteFolderName);
+                                setDeleteFolderAlertOpen(false);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 dark:bg-red-900 dark:hover:bg-red-800"
+                        >
+                            Delete All
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

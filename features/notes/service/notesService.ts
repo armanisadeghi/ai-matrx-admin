@@ -290,3 +290,47 @@ export async function fetchTags(): Promise<string[]> {
     return uniqueTags.sort();
 }
 
+/**
+ * Rename a folder by updating all notes in that folder
+ */
+export async function renameFolder(oldName: string, newName: string): Promise<void> {
+    const { error } = await supabase
+        .from('notes')
+        .update({ folder_name: newName })
+        .eq('folder_name', oldName)
+        .eq('is_deleted', false);
+
+    if (error) {
+        console.error('Error renaming folder:', error);
+        throw error;
+    }
+}
+
+/**
+ * Bulk delete all notes in a folder (soft delete)
+ */
+export async function deleteFolderNotes(folderName: string): Promise<number> {
+    // First, count how many notes will be deleted
+    const { data: notesToDelete } = await supabase
+        .from('notes')
+        .select('id')
+        .eq('folder_name', folderName)
+        .eq('is_deleted', false);
+
+    const count = notesToDelete?.length || 0;
+
+    // Perform bulk soft delete
+    const { error } = await supabase
+        .from('notes')
+        .update({ is_deleted: true })
+        .eq('folder_name', folderName)
+        .eq('is_deleted', false);
+
+    if (error) {
+        console.error('Error deleting folder notes:', error);
+        throw error;
+    }
+
+    return count;
+}
+

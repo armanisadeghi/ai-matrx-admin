@@ -318,9 +318,11 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                     {/* Folder Selector */}
                     <Select value={localFolder} onValueChange={handleFolderChange}>
                         <SelectTrigger className="w-[140px] h-7 text-xs">
-                            <div className="flex items-center gap-1.5">
-                                <FolderOpen className="h-3 w-3" />
-                                <SelectValue />
+                            <div className="flex items-center gap-1.5 min-w-0 w-full">
+                                <FolderOpen className="h-3 w-3 flex-shrink-0" />
+                                <div className="truncate flex-1 min-w-0">
+                                    <SelectValue />
+                                </div>
                             </div>
                         </SelectTrigger>
                         <SelectContent>

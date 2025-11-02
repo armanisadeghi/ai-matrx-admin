@@ -213,6 +213,32 @@ export function NotesLayout({ className }: NotesLayoutProps) {
         }
     }, [notes, updateNote, toast]);
 
+    const handleRenameFolder = useCallback(async (oldName: string, newName: string) => {
+        try {
+            const { renameFolder } = await import('../service/notesService');
+            await renameFolder(oldName, newName);
+            await refreshNotes();
+            
+            toast.success(`Renamed folder "${oldName}" to "${newName}"`);
+        } catch (error) {
+            console.error('Error renaming folder:', error);
+            toast.error(error);
+        }
+    }, [refreshNotes, toast]);
+
+    const handleDeleteFolderNotes = useCallback(async (folderName: string) => {
+        try {
+            const { deleteFolderNotes } = await import('../service/notesService');
+            const count = await deleteFolderNotes(folderName);
+            await refreshNotes();
+            
+            toast.success(`Deleted ${count} note${count !== 1 ? 's' : ''} from "${folderName}"`);
+        } catch (error) {
+            console.error('Error deleting folder notes:', error);
+            toast.error(error);
+        }
+    }, [refreshNotes, toast]);
+
 
     const handleSelectNote = useCallback((note: Note) => {
         // Open note in tab (or switch to it if already open)
@@ -256,6 +282,9 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                         onDeleteNote={handleDeleteNote}
                         onCreateFolder={handleCreateFolder}
                         onMoveNote={handleMoveNote}
+                        onRenameFolder={handleRenameFolder}
+                        onDeleteFolderNotes={handleDeleteFolderNotes}
+                        onCopyNote={handleCopyNote}
                     />
                 </div>
 
@@ -278,6 +307,9 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                                     onDeleteNote={handleDeleteNote}
                                     onCreateFolder={handleCreateFolder}
                                     onMoveNote={handleMoveNote}
+                                    onRenameFolder={handleRenameFolder}
+                                    onDeleteFolderNotes={handleDeleteFolderNotes}
+                                    onCopyNote={handleCopyNote}
                                 />
                             </SheetContent>
                         </Sheet>
