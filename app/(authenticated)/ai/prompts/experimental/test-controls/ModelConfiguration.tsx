@@ -5,32 +5,14 @@ import { Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PromptModelConfig } from "@/features/prompts/types/core";
 
-interface ModelConfig {
-    output_format?: string;
-    tool_choice?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    tools?: boolean;
-    image_urls?: boolean;
-    file_urls?: boolean;
-    internal_web_search?: boolean;
-    youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-}
 
 interface ModelConfigurationProps {
     model: string;
     models: any[];
     onModelChange: (value: string) => void;
-    modelConfig: ModelConfig;
+    modelConfig: PromptModelConfig;
     onSettingsClick: () => void;
 }
 

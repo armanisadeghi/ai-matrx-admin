@@ -1,6 +1,6 @@
 "use client";
 
-import { PromptMessage } from "../hooks/usePrompts";
+import { PromptMessage } from "../../../features/prompts/hooks/usePrompts";
 import { useState, useEffect, useCallback } from "react";
 import { Settings, Plus, Save, ChevronUp, ChevronDown, Trash2, Variable } from "lucide-react";
 import { Button } from "@/components/ui/ButtonMine";

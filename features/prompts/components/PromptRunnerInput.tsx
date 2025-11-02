@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { PromptInput } from "./PromptInput";
-import { PromptVariable } from "./PromptBuilder";
+import { PromptVariable } from "@/features/prompts/types/variable-components";
 import { VariableCustomComponent } from "../types/variable-components";
 import type { Resource } from "./resource-display";
 

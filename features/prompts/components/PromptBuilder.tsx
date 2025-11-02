@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { usePromptsWithFetch, PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
+import { usePromptsWithFetch, PromptMessage } from "@/features/prompts/hooks/usePrompts";
 import { useRouter, usePathname } from "next/navigation";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
@@ -16,41 +16,10 @@ import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThun
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { FullScreenEditor } from "./FullScreenEditor";
 import { PromptSettingsModal } from "./PromptSettingsModal";
-import { sanitizeVariableName } from "../utils/variable-utils";
 import { toast } from "sonner";
+import { PromptMessageRole, PromptModelConfig } from "../types/core";
+import { PromptVariable, VariableCustomComponent } from "../types/variable-components";
 
-
-type MessageRole = "system" | "user" | "assistant";
-
-// Model configuration using snake_case for Python backend compatibility
-interface ModelConfig {
-    output_format?: string;
-    tool_choice?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    tools?: string[]; // Array of selected tool names
-    image_urls?: boolean;
-    file_urls?: boolean;
-    internal_web_search?: boolean;
-    youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-}
-
-// Variable definition structure - single source of truth
-import { VariableCustomComponent } from "../types/variable-components";
-
-export interface PromptVariable {
-    name: string;
-    defaultValue: string;
-    customComponent?: VariableCustomComponent;
-}
 
 interface PromptBuilderProps {
     models: any[];
@@ -129,7 +98,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const [promptName, setPromptName] = useState(initialData?.name || "");
     const [promptDescription, setPromptDescription] = useState(""); // TODO: Add to initialData when schema supports it
     const [model, setModel] = useState(initialModelId);
-    const [modelConfig, setModelConfig] = useState<ModelConfig>(getInitialModelConfig());
+    const [modelConfig, setModelConfig] = useState<PromptModelConfig>(getInitialModelConfig());
     
     const [developerMessage, setDeveloperMessage] = useState(getInitialDeveloperMessage());
     const [messages, setMessages] = useState<PromptMessage[]>(getInitialMessages());
@@ -333,7 +302,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const addMessage = () => {
         // Determine next role - alternate between user and assistant
         const lastRole = messages.length > 0 ? messages[messages.length - 1].role : "user";
-        const nextRole: MessageRole = lastRole === "user" ? "assistant" : "user";
+        const nextRole: PromptMessageRole = lastRole === "user" ? "assistant" : "user";
         setMessages([...messages, { role: nextRole, content: "" }]);
         setIsDirty(true);
     };
@@ -690,7 +659,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 setModel(model_id);
             }
             if (Object.keys(config).length > 0) {
-                setModelConfig(config as ModelConfig);
+                setModelConfig(config as PromptModelConfig);
             }
         }
         
@@ -701,7 +670,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const fullPromptObject = {
         id: initialData?.id,
         name: promptName,
-        messages: [{ role: "system" as MessageRole, content: developerMessage }, ...messages],
+        messages: [{ role: "system" as PromptMessageRole, content: developerMessage }, ...messages],
         variableDefaults,
         settings: {
             model_id: model,
@@ -749,12 +718,12 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                         setModelConfig({ ...defaults, ...config });
                     } else {
                         // Model not found, just update config
-                        setModelConfig(config as ModelConfig);
+                        setModelConfig(config as PromptModelConfig);
                     }
                 } else {
                     // No model change, just update config
                     if (Object.keys(config).length > 0) {
-                        setModelConfig(config as ModelConfig);
+                        setModelConfig(config as PromptModelConfig);
                     }
                 }
             }

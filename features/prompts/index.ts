@@ -35,7 +35,6 @@ export type {
 export type {
   PromptJSON,
   PromptMessageJSON,
-  PromptVariableJSON,
   PromptSettingsJSON,
   PromptBatchJSON,
   PromptImportResult,

@@ -5,17 +5,11 @@
  * This allows AI assistants to generate prompts that can be imported.
  */
 
-import { VariableCustomComponent } from './variable-components';
+import { PromptVariable } from './variable-components';
 
 export interface PromptMessageJSON {
   role: 'system' | 'user' | 'assistant';
   content: string;
-}
-
-export interface PromptVariableJSON {
-  name: string;
-  defaultValue?: string;
-  customComponent?: VariableCustomComponent;
 }
 
 export interface PromptSettingsJSON {
@@ -57,7 +51,7 @@ export interface PromptJSON {
    * Extracted automatically from {{variable_name}} placeholders
    * You can provide default values here
    */
-  variables?: PromptVariableJSON[];
+  variables?: PromptVariable[];
 
   /**
    * Model settings and configuration

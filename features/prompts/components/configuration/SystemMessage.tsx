@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { HighlightedText } from "../HighlightedText";
-import { PromptVariable } from "../PromptBuilder";
+import { PromptVariable } from "@/features/prompts/types/variable-components";
 import { SystemPromptOptimizer } from "../SystemPromptOptimizer";
 
 interface SystemMessageProps {

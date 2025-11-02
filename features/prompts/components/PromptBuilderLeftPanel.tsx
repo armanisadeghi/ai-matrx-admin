@@ -1,6 +1,6 @@
 import React, { RefObject } from "react";
-import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
-import { PromptVariable } from "./PromptBuilder";
+import { PromptMessage } from "@/features/prompts/hooks/usePrompts";
+import { PromptVariable } from "@/features/prompts/types/variable-components";
 import { ModelConfiguration } from "./configuration/ModelConfiguration";
 import { VariablesManager } from "./configuration/VariablesManager";
 import { ToolsManager } from "./configuration/ToolsManager";

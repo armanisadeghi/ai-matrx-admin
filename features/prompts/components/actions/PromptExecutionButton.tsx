@@ -17,8 +17,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { PromptExecutionButtonProps } from '../types/execution';
-import { usePromptExecution } from '../hooks/usePromptExecution';
+import { PromptExecutionButtonProps } from '@/features/prompts/types/execution';
+import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
 import { toast } from 'sonner';
 
 /**

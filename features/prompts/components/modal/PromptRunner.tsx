@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
+import { PromptMessage } from "@/features/prompts/hooks/usePrompts";
 import { PromptRunnerInput } from "../PromptRunnerInput";
 import { PromptUserMessage } from "../PromptUserMessage";
 import { PromptAssistantMessage } from "../PromptAssistantMessage";

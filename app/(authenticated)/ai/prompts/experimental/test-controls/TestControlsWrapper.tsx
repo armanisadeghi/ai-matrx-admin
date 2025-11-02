@@ -6,26 +6,7 @@ import { ModelSettingsDialog } from "@/features/prompts/components/configuration
 import { useModelControls } from "@/features/prompts/hooks/useModelControls";
 import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { RootState, useAppSelector } from "@/lib/redux";
-
-interface ModelConfig {
-    output_format?: string;
-    tool_choice?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    tools?: string[];
-    image_urls?: boolean;
-    file_urls?: boolean;
-    internal_web_search?: boolean;
-    youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-}
+import { PromptModelConfig } from "@/features/prompts/types/core";
 
 interface TestControlsWrapperProps {
     models: any[];
@@ -36,7 +17,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
 
     const [selectedModelId, setSelectedModelId] = useState(modelPreferences.defaultModel || models[0]?.id || '');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [modelConfig, setModelConfig] = useState<ModelConfig>({
+    const [modelConfig, setModelConfig] = useState<PromptModelConfig>({
         output_format: "text",
         tool_choice: "auto",
         temperature: 0.5,

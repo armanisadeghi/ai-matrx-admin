@@ -4,7 +4,8 @@
  * Helper functions for AI assistants to generate prompt JSON
  */
 
-import type { PromptJSON, PromptMessageJSON, PromptVariableJSON, PromptSettingsJSON } from '../types/prompt-json';
+import type { PromptJSON, PromptMessageJSON, PromptSettingsJSON } from '../types/prompt-json';
+import { PromptVariable } from '../types/variable-components';
 
 /**
  * Create a prompt JSON object
@@ -15,7 +16,7 @@ export function createPromptJSON(
   options?: {
     id?: string;
     description?: string;
-    variables?: PromptVariableJSON[];
+    variables?: PromptVariable[];
     settings?: PromptSettingsJSON;
   }
 ): PromptJSON {
@@ -53,7 +54,7 @@ export function assistantMessage(content: string): PromptMessageJSON {
 /**
  * Create a variable definition
  */
-export function variable(name: string, defaultValue: string = ''): PromptVariableJSON {
+export function variable(name: string, defaultValue: string = ''): PromptVariable {
   return { name, defaultValue };
 }
 
