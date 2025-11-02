@@ -23,8 +23,8 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { importPrompt, importPromptBatch } from '../services/prompt-import-service';
-import type { PromptJSON, PromptBatchJSON, PromptImportResult } from '../types/prompt-json';
+import { importPrompt, importPromptBatch } from '../../services/prompt-import-service';
+import type { PromptJSON, PromptBatchJSON, PromptImportResult } from '../../types/prompt-json';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 

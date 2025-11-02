@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
 import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, Sparkles } from "lucide-react";
+import { FaBars } from "react-icons/fa";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
@@ -172,7 +173,7 @@ export function PromptCard({
                 <div className={`w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded-lg flex items-center justify-center shadow-sm transition-all duration-200 ${
                     !isDisabled && 'group-hover:bg-blue-600 dark:group-hover:bg-blue-700 group-hover:shadow-md group-hover:scale-105'
                 }`}>
-                    <MessageSquare className={`w-4 h-4 text-white transition-transform duration-200 ${
+                    <FaBars className={`w-4 h-4 text-white transition-transform duration-200 ${
                         !isDisabled && 'group-hover:scale-110'
                     }`} />
                 </div>

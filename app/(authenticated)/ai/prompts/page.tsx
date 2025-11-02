@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, LayoutPanelTop, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import { PromptsGrid } from "@/features/prompts/components/PromptsGrid";
-import { ImportPromptButton } from "./components/ImportPromptButton";
+import { PromptsGrid } from "@/features/prompts/components/layouts/PromptsGrid";
+import { ImportPromptButton } from "@/features/prompts/components/common/ImportPromptButton";
+import { FaIndent } from "react-icons/fa6";
 
 export default async function PromptsPage() {
     const supabase = await createClient();
@@ -39,7 +40,7 @@ export default async function PromptsPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-start sm:items-center gap-3">
                             <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
-                                <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                                <FaIndent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -57,8 +58,8 @@ export default async function PromptsPage() {
                                     variant="outline"
                                     className="border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900 text-purple-700 dark:text-purple-300"
                                 >
-                                    <Sparkles className="h-4 w-4 mr-2" />
-                                    <span className="hidden sm:inline">Browse Templates</span>
+                                    <LayoutPanelTop className="h-4 w-4 mr-2" />
+                                    <span className="hidden sm:inline">Templates</span>
                                     <span className="sm:hidden">Templates</span>
                                     {templateCount !== null && templateCount > 0 && (
                                         <span className="ml-2 px-2 py-0.5 bg-purple-200 dark:bg-purple-800 rounded-full text-xs">
@@ -70,7 +71,7 @@ export default async function PromptsPage() {
                             <Link href="/ai/prompts/new">
                                 <Button className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white">
                                     <Plus className="h-4 w-4 mr-2" />
-                                    New Prompt
+                                    New
                                 </Button>
                             </Link>
                         </div>
@@ -82,7 +83,7 @@ export default async function PromptsPage() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-3 sm:gap-4">
                                 <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-800 rounded-lg flex-shrink-0">
-                                    <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-300" />
+                                    <LayoutPanelTop className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-300" />
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">

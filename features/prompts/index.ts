@@ -89,10 +89,10 @@ export { usePromptModal, openPromptModal } from './hooks/usePromptModal';
 export { usePromptRunnerModal } from './hooks/usePromptRunnerModal';
 
 // Components
-export { PromptExecutionButton, PromptExecutionIconButton } from './components/PromptExecutionButton';
+export { PromptExecutionButton, PromptExecutionIconButton } from './components/actions/PromptExecutionButton';
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
-export { PromptExecutionModal } from './components/PromptExecutionModal';
-export { PromptImporter } from './components/PromptImporter';
+export { PromptExecutionModal } from './components/actions/PromptExecutionModal';
+export { PromptImporter } from './components/common/PromptImporter';
 export { PromptRunner } from './components/modal/PromptRunner';
 export { PromptRunnerModal } from './components/modal/PromptRunnerModal';
 export { PromptRunnerModalTester } from './components/modal/PromptRunnerModalTester';

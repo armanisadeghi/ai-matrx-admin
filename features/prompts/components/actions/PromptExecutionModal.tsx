@@ -17,12 +17,12 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, Loader2, Copy, Check, Database, FileText, Link } from 'lucide-react';
-import { usePromptExecution } from '../hooks/usePromptExecution';
+import { usePromptExecution } from '../../hooks/usePromptExecution';
 import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { extractVariablesFromMessages } from '../utils/variable-resolver';
-import type { TableBookmark, VariableDataSource } from '../types/data-sources';
+import { extractVariablesFromMessages } from '../../utils/variable-resolver';
+import type { TableBookmark, VariableDataSource } from '../../types/data-sources';
 
 interface PromptExecutionModalProps {
   isOpen: boolean;
@@ -58,7 +58,7 @@ export function PromptExecutionModal({
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'input' | 'result'>('input');
   
-  const { execute, isExecuting, progress } = usePromptExecution();
+  const { execute, isExecuting } = usePromptExecution();
 
   // Load prompt data when modal opens
   useEffect(() => {
@@ -351,7 +351,7 @@ export function PromptExecutionModal({
                         <div className="flex flex-col items-center justify-center h-full gap-3">
                           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {progress?.message || 'Executing prompt...'}
+                            Executing prompt...
                           </p>
                         </div>
                       )}
@@ -397,8 +397,8 @@ export function PromptExecutionModal({
         {/* Action Buttons */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            {isExecuting && progress && (
-              <span>{progress.message || progress.status}</span>
+            {isExecuting && (
+              <span>Executing prompt...</span>
             )}
           </div>
           <div className="flex items-center gap-2">
