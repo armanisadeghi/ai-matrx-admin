@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ModelConfiguration } from "./ModelConfiguration";
-import ModelSettingsDialog from "./ModelSettingsDialog";
+import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { useModelControls } from "@/features/prompts/hooks/useModelControls";
 import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { RootState, useAppSelector } from "@/lib/redux";
@@ -17,7 +17,7 @@ interface ModelConfig {
     store?: boolean;
     stream?: boolean;
     parallel_tool_calls?: boolean;
-    tools?: boolean;
+    tools?: string[];
     image_urls?: boolean;
     file_urls?: boolean;
     internal_web_search?: boolean;
@@ -43,7 +43,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
         max_tokens: 16000,
         store: false,
         stream: true,
-        tools: false,
+        tools: [],
         parallel_tool_calls: false,
         image_urls: false,
         file_urls: false,

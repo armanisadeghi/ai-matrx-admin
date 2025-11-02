@@ -838,6 +838,81 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
+  // Create subtask with OPTIMISTIC update
+  const createSubtask = async (parentTaskId: string, title: string, description?: string) => {
+    try {
+      const newSubtask = await taskService.createSubtask(parentTaskId, title, description);
+      if (newSubtask) {
+        toast.success('Subtask created');
+        // Refresh to get updated subtasks
+        await loadProjectsWithTasks(true);
+      } else {
+        toast.error('Failed to create subtask');
+      }
+    } catch (error) {
+      console.error('Error creating subtask:', error);
+      toast.error('Failed to create subtask');
+    }
+  };
+
+  // Update subtask status with OPTIMISTIC update  
+  const updateSubtaskStatus = async (subtaskId: string, completed: boolean) => {
+    try {
+      const success = await taskService.updateSubtaskStatus(subtaskId, completed);
+      if (success) {
+        // Refresh to get updated subtasks
+        await loadProjectsWithTasks(true);
+      } else {
+        toast.error('Failed to update subtask');
+      }
+    } catch (error) {
+      console.error('Error updating subtask:', error);
+      toast.error('Failed to update subtask');
+    }
+  };
+
+  // Delete subtask with OPTIMISTIC update
+  const deleteSubtaskFunc = async (subtaskId: string) => {
+    try {
+      const success = await taskService.deleteSubtask(subtaskId);
+      if (success) {
+        toast.success('Subtask deleted');
+        // Refresh to get updated subtasks
+        await loadProjectsWithTasks(true);
+      } else {
+        toast.error('Failed to delete subtask');
+      }
+    } catch (error) {
+      console.error('Error deleting subtask:', error);
+      toast.error('Failed to delete subtask');
+    }
+  };
+
+  // Get task comments
+  const getTaskComments = async (taskId: string): Promise<any[]> => {
+    try {
+      return await taskService.getTaskComments(taskId);
+    } catch (error) {
+      console.error('Error getting task comments:', error);
+      return [];
+    }
+  };
+
+  // Create task comment
+  const createTaskComment = async (taskId: string, content: string) => {
+    try {
+      const newComment = await taskService.createTaskComment(taskId, content);
+      if (newComment) {
+        toast.success('Comment added');
+      } else {
+        toast.error('Failed to add comment');
+      }
+    } catch (error) {
+      console.error('Error creating task comment:', error);
+      toast.error('Failed to add comment');
+    }
+  };
+
   // Get filtered tasks with search and completed visibility
   const getFilteredTasks = (): TaskWithProject[] => {
     // Get today's date at midnight local time for consistent comparison
@@ -941,6 +1016,11 @@ export function TaskProvider({ children }: TaskProviderProps) {
     removeAttachment,
     copyTaskToClipboard,
     getFilteredTasks,
+    createSubtask,
+    updateSubtaskStatus,
+    deleteSubtask: deleteSubtaskFunc,
+    getTaskComments,
+    createTaskComment,
     refresh: loadProjectsWithTasks,
   };
 

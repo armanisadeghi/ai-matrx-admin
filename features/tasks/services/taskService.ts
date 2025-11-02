@@ -226,5 +226,117 @@ export async function createSubtask(
     title,
     description: description || null,
     parent_task_id: parentTaskId,
+    status: 'incomplete',
   });
+}
+
+/**
+ * Update subtask completion status
+ */
+export async function updateSubtaskStatus(
+  subtaskId: string,
+  completed: boolean
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: completed ? 'completed' : 'incomplete' })
+      .eq('id', subtaskId);
+
+    if (error) {
+      console.error('Error updating subtask status:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Exception updating subtask status:', error);
+    return false;
+  }
+}
+
+/**
+ * Delete a subtask
+ */
+export async function deleteSubtask(subtaskId: string): Promise<boolean> {
+  return deleteTask(subtaskId);
+}
+
+/**
+ * Get comments for a task
+ */
+export async function getTaskComments(taskId: string): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('task_comments')
+      .select(`
+        id,
+        content,
+        created_at,
+        updated_at,
+        user_id,
+        users:user_id (
+          id,
+          email
+        )
+      `)
+      .eq('task_id', taskId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching task comments:', error.message);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Exception fetching task comments:', error);
+    return [];
+  }
+}
+
+/**
+ * Create a comment on a task
+ */
+export async function createTaskComment(
+  taskId: string,
+  content: string
+): Promise<any | null> {
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      console.error('User not authenticated:', userError?.message);
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('task_comments')
+      .insert({
+        task_id: taskId,
+        user_id: userData.user.id,
+        content,
+      })
+      .select(`
+        id,
+        content,
+        created_at,
+        updated_at,
+        user_id,
+        users:user_id (
+          id,
+          email
+        )
+      `)
+      .single();
+
+    if (error) {
+      console.error('Error creating task comment:', error.message);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Exception creating task comment:', error);
+    return null;
+  }
 }

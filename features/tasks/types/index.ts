@@ -70,6 +70,13 @@ export interface TaskContextType {
   removeAttachment: (projectId: string, taskId: string, attachmentName: string) => void;
   copyTaskToClipboard: (task: TaskWithProject, e: React.MouseEvent) => Promise<void>;
   getFilteredTasks: () => TaskWithProject[];
+  // Subtask methods
+  createSubtask: (parentTaskId: string, title: string, description?: string) => Promise<void>;
+  updateSubtaskStatus: (subtaskId: string, completed: boolean) => Promise<void>;
+  deleteSubtask: (subtaskId: string) => Promise<void>;
+  // Comment methods
+  getTaskComments: (taskId: string) => Promise<any[]>;
+  createTaskComment: (taskId: string, content: string) => Promise<void>;
   refresh: () => Promise<void>;
 }
 

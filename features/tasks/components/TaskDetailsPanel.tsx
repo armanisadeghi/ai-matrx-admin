@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Calendar, Flag, User, Paperclip, MessageSquare, 
-  CheckSquare, Loader2, Plus, Send, Save 
+  CheckSquare, Loader2, Plus, Send, Save, X as XIcon
 } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,11 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     updateTaskProject,
     projects,
     refresh,
+    createSubtask,
+    updateSubtaskStatus,
+    deleteSubtask,
+    getTaskComments,
+    createTaskComment,
   } = useTaskContext();
 
   const [description, setDescription] = useState(task.description || '');
@@ -32,10 +37,12 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | null>(task.priority || null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const [subtasks, setSubtasks] = useState<any[]>(task.subtasks || []);
   const [newSubtask, setNewSubtask] = useState('');
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+  const [isAddingComment, setIsAddingComment] = useState(false);
 
   // Update local state when task changes from context
   useEffect(() => {
@@ -43,9 +50,20 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     setDueDate(task.dueDate || '');
     setProjectId(task.projectId || null);
     setPriority(task.priority || null);
-    setSubtasks(task.subtasks || []);
     setIsDirty(false); // Reset dirty state when task updates
-  }, [task.id, task.description, task.dueDate, task.projectId, task.priority, task.subtasks]);
+  }, [task.id, task.description, task.dueDate, task.projectId, task.priority]);
+
+  // Load comments when task changes
+  useEffect(() => {
+    const loadComments = async () => {
+      setIsLoadingComments(true);
+      const taskComments = await getTaskComments(task.id);
+      setComments(taskComments);
+      setIsLoadingComments(false);
+    };
+    
+    loadComments();
+  }, [task.id, getTaskComments]);
 
   const handleDescriptionChange = (newDescription: string) => {
     setDescription(newDescription);
@@ -94,39 +112,60 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     }
   };
 
-  const handleAddSubtask = () => {
-    if (!newSubtask.trim()) return;
+  const handleAddSubtask = async () => {
+    if (!newSubtask.trim() || isAddingSubtask) return;
     
-    const subtask = {
-      id: Date.now().toString(),
-      title: newSubtask,
-      completed: false,
-    };
-    
-    setSubtasks([...subtasks, subtask]);
-    setNewSubtask('');
-    // TODO: Save to database
+    setIsAddingSubtask(true);
+    try {
+      await createSubtask(task.id, newSubtask);
+      setNewSubtask('');
+      // Refresh to get updated subtasks
+      await refresh();
+    } catch (error) {
+      console.error('Error adding subtask:', error);
+    } finally {
+      setIsAddingSubtask(false);
+    }
   };
 
-  const handleToggleSubtask = (subtaskId: string) => {
-    setSubtasks(subtasks.map(st => 
-      st.id === subtaskId ? { ...st, completed: !st.completed } : st
-    ));
-    // TODO: Save to database
+  const handleToggleSubtask = async (subtaskId: string) => {
+    const subtask = task.subtasks?.find((st: any) => st.id === subtaskId);
+    if (!subtask) return;
+    
+    try {
+      await updateSubtaskStatus(subtaskId, !subtask.completed);
+      // Refresh to get updated subtasks
+      await refresh();
+    } catch (error) {
+      console.error('Error toggling subtask:', error);
+    }
   };
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    try {
+      await deleteSubtask(subtaskId);
+      // Refresh to get updated subtasks
+      await refresh();
+    } catch (error) {
+      console.error('Error deleting subtask:', error);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || isAddingComment) return;
     
-    const comment = {
-      id: Date.now().toString(),
-      content: newComment,
-      created_at: new Date().toISOString(),
-    };
-    
-    setComments([...comments, comment]);
-    setNewComment('');
-    // TODO: Save to database
+    setIsAddingComment(true);
+    try {
+      await createTaskComment(task.id, newComment);
+      setNewComment('');
+      // Reload comments
+      const updatedComments = await getTaskComments(task.id);
+      setComments(updatedComments);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    } finally {
+      setIsAddingComment(false);
+    }
   };
 
   const getPriorityColor = (p: string | null) => {
@@ -142,7 +181,8 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     }
   };
 
-  const completedSubtasks = subtasks.filter(st => st.completed).length;
+  const subtasks = task.subtasks || [];
+  const completedSubtasks = subtasks.filter((st: any) => st.completed).length;
   const totalSubtasks = subtasks.length;
 
   return (
@@ -291,11 +331,11 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
         {/* Subtasks */}
         <div>
           <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 block">
-            Subtasks
+            Subtasks {totalSubtasks > 0 && `(${completedSubtasks}/${totalSubtasks})`}
           </label>
           <div className="space-y-2">
-            {subtasks.map((subtask) => (
-              <div key={subtask.id} className="flex items-center gap-2">
+            {subtasks.map((subtask: any) => (
+              <div key={subtask.id} className="flex items-center gap-2 group">
                 <Checkbox
                   checked={subtask.completed}
                   onCheckedChange={() => handleToggleSubtask(subtask.id)}
@@ -303,23 +343,37 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                 <span className={`text-sm flex-1 ${subtask.completed ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
                   {subtask.title}
                 </span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleDeleteSubtask(subtask.id)}
+                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X size={14} />
+                </Button>
               </div>
             ))}
             <div className="flex items-center gap-2 mt-2">
               <Input
                 value={newSubtask}
                 onChange={(e) => setNewSubtask(e.target.value)}
-                placeholder="Write unit tests for endpoint"
+                placeholder="Add a subtask..."
+                disabled={isAddingSubtask}
                 className="text-sm flex-1"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddSubtask()}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleAddSubtask()}
               />
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={handleAddSubtask}
+                disabled={isAddingSubtask}
                 className="h-9 w-9"
               >
-                <Plus size={16} />
+                {isAddingSubtask ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Plus size={16} />
+                )}
               </Button>
             </div>
           </div>
@@ -329,46 +383,62 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
         <div>
           <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-2 mb-2">
             <MessageSquare size={14} />
-            Activity
+            Activity {comments.length > 0 && `(${comments.length})`}
           </label>
           
-          {comments.length === 0 && (
+          {isLoadingComments ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 size={20} className="animate-spin text-gray-400" />
+            </div>
+          ) : comments.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
               No comments yet.
             </p>
-          )}
-
-          <div className="space-y-3">
-            {comments.map((comment) => (
-              <div key={comment.id} className="text-sm">
-                <div className="flex items-start gap-2">
-                  <div className="h-6 w-6 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-gray-700 dark:text-gray-300">{comment.content}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      {new Date(comment.created_at).toLocaleString()}
-                    </p>
+          ) : (
+            <div className="space-y-3 max-h-[200px] overflow-y-auto">
+              {comments.map((comment) => (
+                <div key={comment.id} className="text-sm">
+                  <div className="flex items-start gap-2">
+                    <div className="h-6 w-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-medium">
+                      {comment.users?.email?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          {comment.users?.email || 'Unknown'}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                          {new Date(comment.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 mt-1 break-words">{comment.content}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-3 flex gap-2">
             <Input
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Write a comment..."
+              disabled={isAddingComment}
               className="text-sm flex-1"
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleAddComment()}
             />
             <Button
               size="icon"
               onClick={handleAddComment}
-              disabled={!newComment.trim()}
+              disabled={!newComment.trim() || isAddingComment}
               className="h-9 w-9"
             >
-              <Send size={16} />
+              {isAddingComment ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Send size={16} />
+              )}
             </Button>
           </div>
         </div>

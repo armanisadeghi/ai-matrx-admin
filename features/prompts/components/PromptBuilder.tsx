@@ -11,7 +11,7 @@ import { useModelControls, getModelDefaults } from "../hooks/useModelControls";
 import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
 import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
-import ModelSettingsDialog from "@/app/(authenticated)/ai/prompts/test-controls/ModelSettingsDialog";
+import { ModelSettingsDialog } from "./configuration/ModelSettingsDialog";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { FullScreenEditor } from "./FullScreenEditor";
@@ -875,6 +875,26 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             }}
             initialSelection={fullScreenEditorInitialSelection}
             onAddMessage={addMessage}
+            model={model}
+            models={models}
+            modelConfig={modelConfig}
+            onModelChange={(newModel) => {
+                setModel(newModel);
+                setIsDirty(true);
+            }}
+            onModelConfigChange={(config) => {
+                setModelConfig(config);
+                setIsDirty(true);
+            }}
+            variableDefaults={variableDefaults}
+            onAddVariable={handleAddVariable}
+            onUpdateVariable={handleUpdateVariable}
+            onRemoveVariable={handleRemoveVariable}
+            selectedTools={modelConfig.tools || []}
+            availableTools={availableTools}
+            onAddTool={handleAddTool}
+            onRemoveTool={handleRemoveTool}
+            modelSupportsTools={modelSupportsTools}
         />
 
         {/* Settings Modal */}
