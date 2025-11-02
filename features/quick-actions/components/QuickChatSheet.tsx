@@ -24,30 +24,31 @@ const CHAT_PROMPT_ID = '187ba1d7-18cd-4cb8-999a-401c96cfd275';
 export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
     const promptModal = usePromptRunnerModal();
     const [chatKey, setChatKey] = useState(0); // Key to force remount for new chat
+    const [hasInitialized, setHasInitialized] = useState(false);
 
-    // Open the prompt modal when the sheet first loads
-    useEffect(() => {
-        if (!promptModal.isOpen) {
+    // Handle starting chat (first time or new chat)
+    const handleStartChat = () => {
+        if (!hasInitialized) {
+            setHasInitialized(true);
+        }
+        
+        // If modal is already open, close and restart
+        if (promptModal.isOpen) {
+            promptModal.close();
+            setTimeout(() => {
+                setChatKey(prev => prev + 1); // Force remount
+                promptModal.open({
+                    promptId: CHAT_PROMPT_ID,
+                    mode: 'manual',
+                });
+            }, 300);
+        } else {
+            // First time or modal was closed - just open
             promptModal.open({
                 promptId: CHAT_PROMPT_ID,
                 mode: 'manual',
             });
         }
-    }, [chatKey]); // Only re-run when chatKey changes
-
-    // Handle starting a new chat
-    const handleNewChat = () => {
-        // Close existing modal
-        promptModal.close();
-        
-        // Wait for modal to close, then open fresh
-        setTimeout(() => {
-            setChatKey(prev => prev + 1); // Force remount
-            promptModal.open({
-                promptId: CHAT_PROMPT_ID,
-                mode: 'manual',
-            });
-        }, 300);
     };
 
     // Handle modal close - also close the sheet
@@ -69,23 +70,35 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 gap-2"
-                                onClick={handleNewChat}
+                                onClick={handleStartChat}
                             >
                                 <MessageSquarePlus className="h-4 w-4" />
-                                <span className="text-xs">New Chat</span>
+                                <span className="text-xs">{hasInitialized ? 'New Chat' : 'Start Chat'}</span>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Start a new conversation</TooltipContent>
+                        <TooltipContent>
+                            {hasInitialized ? 'Start a new conversation' : 'Start chatting'}
+                        </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
             </div>
 
-            {/* Main Content Area - The modal will render here */}
+            {/* Main Content Area */}
             <div className="flex-1 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                <div className="text-center">
-                    <p className="text-sm">Chat interface is running</p>
-                    <p className="text-xs mt-1">Use the button above to start a new conversation</p>
-                </div>
+                {!hasInitialized ? (
+                    <div className="text-center">
+                        <p className="text-sm mb-3">Ready to chat with AI</p>
+                        <Button onClick={handleStartChat} variant="outline">
+                            <MessageSquarePlus className="h-4 w-4 mr-2" />
+                            Start Chat
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="text-center">
+                        <p className="text-sm">Chat is active</p>
+                        <p className="text-xs mt-1">Use the button above to start a new conversation</p>
+                    </div>
+                )}
             </div>
 
             {/* The Prompt Runner Modal */}

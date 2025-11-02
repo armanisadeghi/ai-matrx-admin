@@ -8,12 +8,12 @@ import { Label } from "@/components/ui/label";
 import { CopyTextarea, Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Check, Info, FileJson, Settings2, WrapText, Variable, Plus, RefreshCw, AlertCircle } from "lucide-react";
+import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle } from "lucide-react";
 import { PromptVariable } from "./PromptBuilder";
 import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
-import { VariablesManager } from "./configuration/VariablesManager";
 import { VariableEditorModal } from "./configuration/VariableEditorModal";
 import { VariableCustomComponent } from "../types/variable-components";
+import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 
 interface PromptSettingsModalProps {
     isOpen: boolean;
@@ -60,8 +60,6 @@ export function PromptSettingsModal({
     const [localMessages, setLocalMessages] = useState<PromptMessage[]>([...messages]);
     const [localSettings, setLocalSettings] = useState<Record<string, any>>({ ...settings });
     const [isSaving, setIsSaving] = useState(false);
-    const [copied, setCopied] = useState(false);
-    const [wrapJson, setWrapJson] = useState(false);
     
     // JSON editing state
     const [editableJson, setEditableJson] = useState('');
@@ -146,16 +144,6 @@ export function PromptSettingsModal({
             handleUpdateVariable(editingVariable.name, customComponent);
         }
         setIsVariableModalOpen(false);
-    };
-
-    const handleCopyJSON = async () => {
-        try {
-            await navigator.clipboard.writeText(JSON.stringify(promptObject, null, 2));
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (error) {
-            console.error("Failed to copy:", error);
-        }
     };
 
     const handleApplyJson = () => {
@@ -264,7 +252,7 @@ export function PromptSettingsModal({
                 </DialogHeader>
 
                 <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
-                    <TabsList className="mx-4 mt-3 grid w-auto grid-cols-5 gap-1 bg-gray-100 dark:bg-gray-800">
+                    <TabsList className="mx-4 mt-3 grid w-auto grid-cols-5 gap-1 bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                         <TabsTrigger value="overview" className="text-xs sm:text-sm">
                             <Info className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             Overview
@@ -282,12 +270,12 @@ export function PromptSettingsModal({
                             Settings
                         </TabsTrigger>
                         <TabsTrigger value="json" className="text-xs sm:text-sm">
-                            <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            <FileJson className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             JSON
                         </TabsTrigger>
                     </TabsList>
 
-                    <div className="flex-1 overflow-hidden px-4 pb-4">
+                    <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-4 pb-4">
                         <TabsContent value="overview" className="h-full overflow-y-auto mt-3 space-y-3">
                             {/* Basic Info */}
                             <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
@@ -494,89 +482,57 @@ export function PromptSettingsModal({
                             </Card>
                         </TabsContent>
 
-                        <TabsContent value="json" className="h-full mt-3 flex flex-col">
-                            <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex-1 flex flex-col min-h-0">
-                                <div className="flex justify-between items-center mb-2 flex-shrink-0">
-                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Edit JSON</h3>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => setWrapJson(!wrapJson)}
-                                            className="h-7 text-xs"
-                                        >
-                                            <WrapText className="w-3 h-3 mr-1" />
-                                            {wrapJson ? "No Wrap" : "Wrap"}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={handleCopyJSON}
-                                            className="h-7 text-xs"
-                                        >
-                                            {copied ? (
-                                                <>
-                                                    <Check className="w-3 h-3 mr-1" />
-                                                    Copied!
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Copy className="w-3 h-3 mr-1" />
-                                                    Copy JSON
-                                                </>
-                                            )}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            onClick={handleApplyJson}
-                                            className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
-                                        >
-                                            {jsonApplied ? (
-                                                <>
-                                                    <Check className="w-3 h-3 mr-1" />
-                                                    Applied!
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <RefreshCw className="w-3 h-3 mr-1" />
-                                                    Apply Changes
-                                                </>
-                                            )}
-                                        </Button>
-                                    </div>
+                        <TabsContent value="json" className="flex-1 flex flex-col min-h-0 mt-3">
+                            <div className="mb-3 flex justify-between items-center gap-2 flex-shrink-0">
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                                    <Info className="w-3 h-3 flex-shrink-0" />
+                                    <span>Edit the JSON (all fields except ID) and click "Apply Changes" to preview. Navigate to other tabs to see the impact. Changes won't be saved until you click "Save Settings".</span>
                                 </div>
+                                <Button
+                                    size="sm"
+                                    onClick={handleApplyJson}
+                                    className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 flex-shrink-0"
+                                >
+                                    {jsonApplied ? (
+                                        <>
+                                            <Check className="w-3.5 h-3.5 mr-1.5" />
+                                            Applied!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                                            Apply Changes
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
 
-                                {/* Info Message */}
-                                <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300 flex-shrink-0">
-                                    <Info className="w-3 h-3 inline mr-1" />
-                                    Edit the JSON below (all fields except ID) and click "Apply Changes" to preview updates. Navigate to other tabs to see the impact. Changes won't be saved until you click "Save Settings".
+                            {/* Error Message */}
+                            {jsonError && (
+                                <div className="mb-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-300 flex items-start gap-1 flex-shrink-0">
+                                    <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                    <span>{jsonError}</span>
                                 </div>
+                            )}
 
-                                {/* Error Message */}
-                                {jsonError && (
-                                    <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-300 flex items-start gap-1 flex-shrink-0">
-                                        <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span>{jsonError}</span>
-                                    </div>
-                                )}
+                            {/* Success Message */}
+                            {jsonApplied && !jsonError && (
+                                <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-700 dark:text-green-300 flex items-start gap-1 flex-shrink-0">
+                                    <Check className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                    <span>Changes applied! Check other tabs to see updates. Click "Save Settings" to persist changes.</span>
+                                </div>
+                            )}
 
-                                {/* Success Message */}
-                                {jsonApplied && !jsonError && (
-                                    <div className="mb-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-700 dark:text-green-300 flex items-start gap-1 flex-shrink-0">
-                                        <Check className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                        <span>Changes applied! Check other tabs to see updates. Click "Save Settings" to persist changes.</span>
-                                    </div>
-                                )}
-
-                                <Textarea
-                                    value={editableJson}
-                                    onChange={(e) => setEditableJson(e.target.value)}
-                                    className={`flex-1 min-h-0 text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded font-mono resize-none ${
-                                        wrapJson ? "whitespace-pre-wrap break-words" : "whitespace-pre"
-                                    }`}
-                                    spellCheck={false}
+                            <div className="flex-1 min-h-0 overflow-hidden">
+                                <CodeBlock
+                                    code={editableJson}
+                                    language="json"
+                                    onCodeChange={(newCode) => setEditableJson(newCode)}
+                                    showLineNumbers={true}
+                                    wrapLines={true}
+                                    fontSize={14}
                                 />
-                            </Card>
+                            </div>
                         </TabsContent>
                     </div>
                 </Tabs>
