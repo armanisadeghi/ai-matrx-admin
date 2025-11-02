@@ -6,7 +6,8 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/utils/supabase/client';
-import type { PromptJSON, PromptImportResult, PromptBatchJSON, PromptBatchImportResult } from '../types/prompt-json';
+import type { PromptImportResult, PromptBatchImportResult } from '../types/prompt-json';
+import { PromptsData, PromptsBatchData } from '@/features/prompts/types/core';
 
 /**
  * Extract variable names from messages
@@ -37,7 +38,7 @@ function normalizeVariableSyntax(content: string): string {
 /**
  * Validate prompt JSON
  */
-function validatePromptJSON(prompt: PromptJSON): { valid: boolean; error?: string } {
+function validatePromptJSON(prompt: PromptsData): { valid: boolean; error?: string } {
   if (!prompt.name || prompt.name.trim() === '') {
     return { valid: false, error: 'Prompt name is required' };
   }
@@ -62,15 +63,15 @@ function validatePromptJSON(prompt: PromptJSON): { valid: boolean; error?: strin
 /**
  * Import a single prompt from JSON
  */
-export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImportResult> {
+export async function importPrompt(promptData: PromptsData): Promise<PromptImportResult> {
   try {
     // Validate input
-    const validation = validatePromptJSON(promptJSON);
+    const validation = validatePromptJSON(promptData);
     if (!validation.valid) {
       return {
         success: false,
         promptId: '',
-        promptName: promptJSON.name,
+        promptName: promptData.name || '',
         error: validation.error
       };
     }
@@ -83,16 +84,16 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
       return {
         success: false,
         promptId: '',
-        promptName: promptJSON.name,
+        promptName: promptData.name || '',
         error: 'User not authenticated'
       };
     }
 
     // Generate ID if not provided
-    const promptId = promptJSON.id || uuidv4();
+    const promptId = promptData.id || uuidv4();
 
     // Normalize variable syntax in all messages (remove spaces from {{ var }})
-    const normalizedMessages = promptJSON.messages.map(msg => ({
+    const normalizedMessages = (promptData.messages || []).map(msg => ({
       ...msg,
       content: normalizeVariableSyntax(msg.content)
     }));
@@ -102,7 +103,7 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
     
     // Build variable defaults array, preserving customComponent
     const variableDefaults = extractedVariables.map(varName => {
-      const provided = promptJSON.variables?.find(v => v.name === varName);
+      const provided = promptData.variableDefaults?.find(v => v.name === varName);
       return {
         name: varName,
         defaultValue: provided?.defaultValue || '',
@@ -110,17 +111,16 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
       };
     });
 
-    // Prepare prompt data for database
-    const promptData = {
+    // Prepare prompt data for database (use snake_case for DB fields)
+    const dbPromptData = {
       id: promptId,
       user_id: user.id,
-      name: promptJSON.name,
-      description: promptJSON.description || null,
+      name: promptData.name,
+      description: promptData.description || null,
       messages: normalizedMessages, // Use normalized messages
       variable_defaults: variableDefaults,
-      settings: promptJSON.settings || {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      settings: promptData.settings || {}
+      // created_at and updated_at are automatically set by the database
     };
 
     // Check if prompt with this ID already exists
@@ -134,7 +134,7 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
       // Update existing prompt
       const { error } = await supabase
         .from('prompts')
-        .update(promptData)
+        .update(dbPromptData)
         .eq('id', promptId);
 
       if (error) throw error;
@@ -142,21 +142,21 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
       return {
         success: true,
         promptId,
-        promptName: promptJSON.name,
+        promptName: promptData.name || '',
         message: 'Prompt updated successfully'
       };
     } else {
       // Insert new prompt
       const { error } = await supabase
         .from('prompts')
-        .insert(promptData);
+        .insert(dbPromptData);
 
       if (error) throw error;
 
       return {
         success: true,
         promptId,
-        promptName: promptJSON.name,
+        promptName: promptData.name || '',
         message: 'Prompt created successfully'
       };
     }
@@ -165,8 +165,8 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
     console.error('Error importing prompt:', error);
     return {
       success: false,
-      promptId: promptJSON.id || '',
-      promptName: promptJSON.name,
+      promptId: promptData.id || '',
+      promptName: promptData.name || '',
       error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
@@ -175,11 +175,11 @@ export async function importPrompt(promptJSON: PromptJSON): Promise<PromptImport
 /**
  * Import multiple prompts from batch JSON
  */
-export async function importPromptBatch(batchJSON: PromptBatchJSON): Promise<PromptBatchImportResult> {
+export async function importPromptBatch(batchJSON: PromptsBatchData): Promise<PromptBatchImportResult> {
   const results: PromptImportResult[] = [];
   
-  for (const promptJSON of batchJSON.prompts) {
-    const result = await importPrompt(promptJSON);
+  for (const promptData of batchJSON.prompts) {
+    const result = await importPrompt(promptData);
     results.push(result);
   }
 
@@ -198,7 +198,7 @@ export async function importPromptBatch(batchJSON: PromptBatchJSON): Promise<Pro
  * Export a prompt as JSON
  * Includes all variable data including customComponent configurations
  */
-export async function exportPromptAsJSON(promptId: string): Promise<PromptJSON | null> {
+export async function exportPromptAsJSON(promptId: string): Promise<PromptsData | null> {
   try {
     const supabase = createClient();
     
@@ -214,12 +214,13 @@ export async function exportPromptAsJSON(promptId: string): Promise<PromptJSON |
     }
 
     // Export all variable data including customComponent configurations
+    // Convert from database snake_case to camelCase for the JSON format
     return {
       id: prompt.id,
       name: prompt.name,
       description: prompt.description,
       messages: prompt.messages,
-      variables: prompt.variable_defaults, // Includes name, defaultValue, and customComponent
+      variableDefaults: prompt.variable_defaults, // Convert snake_case to camelCase
       settings: prompt.settings
     };
 

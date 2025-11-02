@@ -24,7 +24,8 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { importPrompt, importPromptBatch } from '../../services/prompt-import-service';
-import type { PromptJSON, PromptBatchJSON, PromptImportResult } from '../../types/prompt-json';
+import type { PromptImportResult } from '../../types/prompt-json';
+import { PromptsData, PromptsBatchData } from '@/features/prompts/types/core';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -58,7 +59,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
       // Check if it's a batch import or single prompt
       if (parsed.prompts && Array.isArray(parsed.prompts)) {
         // Batch import
-        const batchResult = await importPromptBatch(parsed as PromptBatchJSON);
+        const batchResult = await importPromptBatch(parsed as PromptsBatchData);
         setResults(batchResult.results);
         
         if (batchResult.success) {
@@ -68,7 +69,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
         }
       } else {
         // Single prompt import
-        const result = await importPrompt(parsed as PromptJSON);
+        const result = await importPrompt(parsed as PromptsData);
         setResults([result]);
         
         if (result.success) {
@@ -100,7 +101,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
     handleClose();
   };
 
-  const singlePromptStructure: PromptJSON = {
+  const singlePromptStructure: PromptsData = {
     name: "Prompt Name",
     description: "Brief description",
     messages: [
@@ -113,7 +114,7 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
         content: "Use {{my_variable}} in your message"
       }
     ],
-    variables: [
+    variableDefaults: [
       {
         name: "my_variable",
         defaultValue: "default value"

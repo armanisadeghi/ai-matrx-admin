@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { PromptInput } from "./PromptInput";
-import { PromptVariable } from "@/features/prompts/types/variable-components";
-import { VariableCustomComponent } from "../types/variable-components";
+import { PromptVariable } from "@/features/prompts/types/core";
+import { VariableCustomComponent, VariableComponentType } from "@/features/prompts/types/core";
 import type { Resource } from "./resource-display";
 
 // Extended variable type with optional custom component

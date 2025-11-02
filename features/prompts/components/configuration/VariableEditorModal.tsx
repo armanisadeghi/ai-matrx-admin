@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { VariableCustomComponent } from "../../types/variable-components";
-import { sanitizeVariableName } from "../../utils/variable-utils";
+import { VariableCustomComponent } from "@/features/prompts/types/core";
+import { sanitizeVariableName } from "@/features/prompts/utils/variable-utils";
 import { VariableEditor } from "./VariableEditor";
 
 interface VariableEditorModalProps {

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { PromptMessage } from "@/features/prompts/hooks/usePrompts";
+import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import { PromptRunnerInput } from "./PromptRunnerInput";
 import { PromptUserMessage } from "./PromptUserMessage";
 import { PromptAssistantMessage } from "./PromptAssistantMessage";
@@ -27,15 +27,6 @@ const CanvasRenderer = dynamic(
     () => import("@/components/layout/adaptive-layout/CanvasRenderer").then(mod => ({ default: mod.CanvasRenderer })),
     { ssr: false }
 );
-
-// Variable definition structure
-import { VariableCustomComponent } from "../types/variable-components";
-
-export interface PromptVariable {
-    name: string;
-    defaultValue: string;
-    customComponent?: VariableCustomComponent;
-}
 
 interface PromptRunnerProps {
     models: any[];

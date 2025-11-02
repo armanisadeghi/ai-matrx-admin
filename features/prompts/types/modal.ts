@@ -4,7 +4,7 @@
  * Type definitions for the modal-based prompt runner system
  */
 
-import { PromptMessage, PromptVariable } from "@/features/prompts/hooks/usePrompts";
+import { PromptVariable, PromptMessage } from "@/features/prompts/types/core";
 
 // ============================================================================
 // Execution Modes

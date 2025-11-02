@@ -6,7 +6,7 @@ import { PromptAssistantMessage } from "./PromptAssistantMessage";
 import { PromptStats } from "./PromptStats";
 import { useAppSelector } from "@/lib/redux";
 import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { PromptVariable } from "@/features/prompts/types/variable-components";
+import { PromptVariable } from "@/features/prompts/types/core";
 import type { Resource } from "./resource-display";
 import { PromptInput } from "./PromptInput";
 

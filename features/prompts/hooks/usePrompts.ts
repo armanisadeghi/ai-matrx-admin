@@ -6,42 +6,9 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { v4 as uuidv4 } from "uuid";
 import { useCallbackManager } from "@/hooks/useCallbackManager";
-import { VariableCustomComponent } from "@/features/prompts/types/variable-components";
-
-export type PromptMessage = {
-    role: string;
-    content: string;
-    metadata?: Record<string, unknown>;
-}
-
-export type PromptVariable = {
-    name: string;
-    defaultValue: string;
-    customComponent?: VariableCustomComponent;
-}
-
-export type PromptsData = {
-    id: string;
-    createdAt: Date;
-    name?: string;
-    userId?: string;
-    tools?: Record<string, unknown>;
-    updatedAt?: Date;
-    isPublic?: boolean;
-    authenticatedRead?: boolean;
-    publicRead?: boolean;
-    messages?: PromptMessage[];
-    variableDefaults?: PromptVariable[]; // Array of { name, defaultValue, customComponent? }
-}
+import { PromptsData } from "@/features/prompts/types/core";
 
 
-export type SimplePromptsData = {
-    id: string;
-    name?: string;
-    tools?: string[];
-    messages?: PromptMessage[];
-    variableDefaults?: PromptVariable[];
-}
 
 type UsePromptsWithFetchReturn = {
     promptsSelectors: EntitySelectors<"prompts">;

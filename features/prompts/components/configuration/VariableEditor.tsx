@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
-import { VariableCustomComponent, VariableComponentType } from "../../types/variable-components";
-import { sanitizeVariableName, shouldShowSanitizationPreview } from "../../utils/variable-utils";
+import { VariableCustomComponent, VariableComponentType } from "@/features/prompts/types/core";
+import { sanitizeVariableName, shouldShowSanitizationPreview } from "@/features/prompts/utils/variable-utils";
 
 interface VariableEditorProps {
     name: string;

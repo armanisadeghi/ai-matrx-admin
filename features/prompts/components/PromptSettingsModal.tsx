@@ -9,11 +9,9 @@ import { CopyTextarea, Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle, X, Sparkles } from "lucide-react";
-import { PromptVariable } from "@/features/prompts/types/variable-components";
-import { PromptMessage } from "@/features/prompts/hooks/usePrompts";
+import { PromptVariable, PromptMessage, VariableCustomComponent } from "@/features/prompts/types/core";
 import { VariableEditor } from "./configuration/VariableEditor";
 import { ModelSettings } from "./configuration/ModelSettings";
-import { VariableCustomComponent } from "../types/variable-components";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import { FullPromptOptimizer } from "./FullPromptOptimizer";
 

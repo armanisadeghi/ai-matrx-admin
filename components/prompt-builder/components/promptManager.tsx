@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
-import { PromptsData, PromptMessage } from "@/features/prompts/hooks/usePrompts";
+import { PromptMessage, PromptsData } from "@/features/prompts/types/core";
 import PromptOverlayWrapper from "@/components/prompt-builder/components/PromptOverlayWrapper";
 import CompactPromptsList from "@/components/prompt-builder/components/CompactPromptsList";
 

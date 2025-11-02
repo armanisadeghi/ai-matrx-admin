@@ -4,28 +4,28 @@
  * Helper functions for AI assistants to generate prompt JSON
  */
 
-import type { PromptJSON, PromptMessageJSON, PromptSettingsJSON } from '../types/prompt-json';
-import { PromptVariable } from '../types/variable-components';
+import { PromptMessage, PromptVariable, PromptsData  } from '@/features/prompts/types/core';
+import { PromptModelConfig } from '../types/core';
 
 /**
  * Create a prompt JSON object
  */
 export function createPromptJSON(
   name: string,
-  messages: PromptMessageJSON[],
+  messages: PromptMessage[],
   options?: {
     id?: string;
     description?: string;
-    variables?: PromptVariable[];
-    settings?: PromptSettingsJSON;
+    variableDefaults?: PromptVariable[];
+    settings?: PromptModelConfig;
   }
-): PromptJSON {
+): PromptsData {
   return {
     id: options?.id,
     name,
     description: options?.description,
     messages,
-    variables: options?.variables,
+    variableDefaults: options?.variableDefaults,
     settings: options?.settings
   };
 }
@@ -33,21 +33,21 @@ export function createPromptJSON(
 /**
  * Create a system message
  */
-export function systemMessage(content: string): PromptMessageJSON {
+export function systemMessage(content: string): PromptMessage {
   return { role: 'system', content };
 }
 
 /**
  * Create a user message
  */
-export function userMessage(content: string): PromptMessageJSON {
+export function userMessage(content: string): PromptMessage {
   return { role: 'user', content };
 }
 
 /**
  * Create an assistant message
  */
-export function assistantMessage(content: string): PromptMessageJSON {
+export function assistantMessage(content: string): PromptMessage {
   return { role: 'assistant', content };
 }
 
@@ -61,7 +61,7 @@ export function variable(name: string, defaultValue: string = ''): PromptVariabl
 /**
  * Create default settings
  */
-export function defaultSettings(overrides?: Partial<PromptSettingsJSON>): PromptSettingsJSON {
+export function defaultSettings(overrides?: Partial<PromptModelConfig>): PromptModelConfig {
   return {
     temperature: 0.7,
     max_tokens: 2000,
@@ -72,14 +72,14 @@ export function defaultSettings(overrides?: Partial<PromptSettingsJSON>): Prompt
 /**
  * Format prompt JSON as a string
  */
-export function formatPromptJSON(prompt: PromptJSON, pretty: boolean = true): string {
+export function formatPromptJSON(prompt: PromptsData, pretty: boolean = true): string {
   return JSON.stringify(prompt, null, pretty ? 2 : 0);
 }
 
 /**
  * Create a batch import JSON
  */
-export function createBatchJSON(prompts: PromptJSON[], overwriteExisting: boolean = false) {
+export function createBatchJSON(prompts: PromptsData[], overwriteExisting: boolean = false) {
   return {
     prompts,
     overwriteExisting
@@ -95,9 +95,9 @@ export function quickPrompt(
   userContent: string,
   options?: {
     description?: string;
-    settings?: PromptSettingsJSON;
+    settings?: PromptModelConfig;
   }
-): PromptJSON {
+): PromptsData {
   return createPromptJSON(
     name,
     [systemMessage(systemContent), userMessage(userContent)],

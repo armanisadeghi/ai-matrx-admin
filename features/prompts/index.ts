@@ -33,9 +33,6 @@ export type {
 
 // Prompt JSON Types
 export type {
-  PromptJSON,
-  PromptMessageJSON,
-  PromptSettingsJSON,
   PromptBatchJSON,
   PromptImportResult,
   PromptBatchImportResult
@@ -51,8 +48,18 @@ export type {
   PromptRunnerModalConfig
 } from './types/modal';
 
+// Core Types
+export type {
+  PromptVariable,
+  PromptMessage,
+  PromptMessageRole,
+  PromptModelConfig,
+  VariableComponentType,
+  VariableCustomComponent
+} from './types/core';
+
 // Component Types
-export type { PromptRunnerProps, PromptVariable } from './components/modal/PromptRunner';
+export type { PromptRunnerProps } from './components/modal/PromptRunner';
 
 // Services
 export { PromptExecutionService, promptExecutionService, executePrompt } from './services/prompt-execution-service';

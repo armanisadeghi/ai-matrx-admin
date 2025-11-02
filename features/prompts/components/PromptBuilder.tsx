@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { usePromptsWithFetch, PromptMessage } from "@/features/prompts/hooks/usePrompts";
+import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
+import { PromptMessage } from "@/features/prompts/types/core";
 import { useRouter, usePathname } from "next/navigation";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
@@ -18,7 +19,7 @@ import { FullScreenEditor } from "./FullScreenEditor";
 import { PromptSettingsModal } from "./PromptSettingsModal";
 import { toast } from "sonner";
 import { PromptMessageRole, PromptModelConfig } from "../types/core";
-import { PromptVariable, VariableCustomComponent } from "../types/variable-components";
+import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
 
 
 interface PromptBuilderProps {

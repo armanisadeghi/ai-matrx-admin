@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { PromptMessage } from "@/features/prompts/hooks/usePrompts";
+import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import { PromptRunnerInput } from "../PromptRunnerInput";
 import { PromptUserMessage } from "../PromptUserMessage";
 import { PromptAssistantMessage } from "../PromptAssistantMessage";
@@ -19,7 +19,6 @@ import { v4 as uuidv4 } from "uuid";
 import { PromptRunnerModalProps, PromptData } from "../../types/modal";
 import type { Resource } from "../resource-display";
 import { AdditionalInfoModal } from "./AdditionalInfoModal";
-import { VariableCustomComponent } from "../../types/variable-components";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -27,11 +26,6 @@ const CanvasRenderer = dynamic(
     { ssr: false }
 );
 
-export interface PromptVariable {
-    name: string;
-    defaultValue: string;
-    customComponent?: VariableCustomComponent;
-}
 
 export interface PromptRunnerProps {
     promptId?: string;

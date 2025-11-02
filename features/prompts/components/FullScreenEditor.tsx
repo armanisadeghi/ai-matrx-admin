@@ -10,8 +10,8 @@ import { PromptEditorContextMenu } from './PromptEditorContextMenu';
 import { SystemPromptOptimizer } from './SystemPromptOptimizer';
 import { ModelSettings } from './configuration/ModelSettings';
 import { VariableEditor } from './configuration/VariableEditor';
-import { VariableCustomComponent } from '../types/variable-components';
-import { sanitizeVariableName } from '../utils/variable-utils';
+import { VariableCustomComponent } from '@/features/prompts/types/core';
+import { sanitizeVariableName } from '@/features/prompts/utils/variable-utils';
 import { formatText } from '@/utils/text/text-case-converter';
 import { mapIcon } from '@/utils/icons/icon-mapper';
 

@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import PromptEditor from "./PromptEditor";
-import { PromptMessage } from "../../../features/prompts/hooks/usePrompts";
+import { PromptMessage } from "@/features/prompts/types/core";
 
 interface PromptOverlayWrapperProps {
     isOpen: boolean;

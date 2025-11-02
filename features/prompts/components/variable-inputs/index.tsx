@@ -17,7 +17,7 @@ import { CheckboxGroupInput } from './CheckboxGroupInput';
 import { SelectInput } from './SelectInput';
 import { NumberInput } from './NumberInput';
 import { TextareaInput } from './TextareaInput';
-import { VariableCustomComponent } from '../../types/variable-components';
+import { VariableCustomComponent } from '@/features/prompts/types/core';
 import { formatText } from '@/utils/text/text-case-converter';
 
 interface VariableInputComponentProps {

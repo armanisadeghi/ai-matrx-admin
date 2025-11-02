@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Plus, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { VariableEditorModal } from "./VariableEditorModal";
-import { VariableCustomComponent } from "../../types/variable-components";
+import { VariableCustomComponent } from "@/features/prompts/types/core";
 
 // Extended variable type with optional custom component
 export interface ExtendedPromptVariable {

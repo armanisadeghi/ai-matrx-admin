@@ -1,6 +1,5 @@
 import React, { RefObject } from "react";
-import { PromptMessage } from "@/features/prompts/hooks/usePrompts";
-import { PromptVariable } from "@/features/prompts/types/variable-components";
+import { PromptMessage, PromptModelConfig, PromptVariable } from "@/features/prompts/types/core";
 import { ModelConfiguration } from "./configuration/ModelConfiguration";
 import { VariablesManager } from "./configuration/VariablesManager";
 import { ToolsManager } from "./configuration/ToolsManager";
@@ -8,44 +7,26 @@ import { SystemMessage } from "./configuration/SystemMessage";
 import { PromptMessages } from "./PromptMessages";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui";
+import { VariableCustomComponent } from "@/features/prompts/types/core";
 
-interface ModelConfig {
-    output_format?: string;
-    tool_choice?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    tools?: string[]; // Array of selected tool names
-    image_urls?: boolean;
-    file_urls?: boolean;
-    internal_web_search?: boolean;
-    youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-}
 
 interface PromptBuilderLeftPanelProps {
     // Model
     models: any[];
     model: string;
     onModelChange: (value: string) => void;
-    modelConfig: ModelConfig;
+    modelConfig: PromptModelConfig;
     onSettingsClick: () => void;
 
     // Variables - single source of truth
     variableDefaults: PromptVariable[];
-    onAddVariable: (name: string, defaultValue: string, customComponent?: any) => void;
-    onUpdateVariable: (name: string, defaultValue: string, customComponent?: any) => void;
+    onAddVariable: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
+    onUpdateVariable: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;
     onRemoveVariable: (variableName: string) => void;
 
     // Tools
     selectedTools: string[];
-    availableTools: any[]; // Array of database tool objects
+    availableTools: string[]; // Array of tool names
     isAddingTool: boolean;
     onIsAddingToolChange: (value: boolean) => void;
     onAddTool: (tool: string) => void;

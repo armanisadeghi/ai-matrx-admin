@@ -5,7 +5,7 @@
  * from anywhere in the application with flexible input and output handling.
  */
 
-import { PromptMessage } from "@/features/prompts/hooks/usePrompts";
+import { PromptMessage } from "@/features/prompts/types/core";
 
 // ============================================================================
 // Variable Input Sources
