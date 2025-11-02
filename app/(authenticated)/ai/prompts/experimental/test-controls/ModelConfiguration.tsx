@@ -5,14 +5,14 @@ import { Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PromptModelConfig } from "@/features/prompts/types/core";
+import { PromptSettings } from "@/features/prompts/types/core";
 
 
 interface ModelConfigurationProps {
     model: string;
     models: any[];
     onModelChange: (value: string) => void;
-    modelConfig: PromptModelConfig;
+    modelConfig: PromptSettings;
     onSettingsClick: () => void;
 }
 

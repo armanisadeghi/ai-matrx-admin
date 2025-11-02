@@ -5,7 +5,7 @@
  */
 
 import { PromptMessage, PromptVariable, PromptsData  } from '@/features/prompts/types/core';
-import { PromptModelConfig } from '../types/core';
+import { PromptSettings } from '../types/core';
 
 /**
  * Create a prompt JSON object
@@ -17,7 +17,7 @@ export function createPromptJSON(
     id?: string;
     description?: string;
     variableDefaults?: PromptVariable[];
-    settings?: PromptModelConfig;
+    settings?: PromptSettings;
   }
 ): PromptsData {
   return {
@@ -61,7 +61,7 @@ export function variable(name: string, defaultValue: string = ''): PromptVariabl
 /**
  * Create default settings
  */
-export function defaultSettings(overrides?: Partial<PromptModelConfig>): PromptModelConfig {
+export function defaultSettings(overrides?: Partial<PromptSettings>): PromptSettings {
   return {
     temperature: 0.7,
     max_tokens: 2000,
@@ -95,7 +95,7 @@ export function quickPrompt(
   userContent: string,
   options?: {
     description?: string;
-    settings?: PromptModelConfig;
+    settings?: PromptSettings;
   }
 ): PromptsData {
   return createPromptJSON(

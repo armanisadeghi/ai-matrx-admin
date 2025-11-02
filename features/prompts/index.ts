@@ -53,7 +53,7 @@ export type {
   PromptVariable,
   PromptMessage,
   PromptMessageRole,
-  PromptModelConfig,
+  PromptSettings as PromptModelConfig,
   VariableComponentType,
   VariableCustomComponent
 } from './types/core';

@@ -6,7 +6,7 @@ import { ModelSettingsDialog } from "@/features/prompts/components/configuration
 import { useModelControls } from "@/features/prompts/hooks/useModelControls";
 import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { RootState, useAppSelector } from "@/lib/redux";
-import { PromptModelConfig } from "@/features/prompts/types/core";
+import { PromptSettings } from "@/features/prompts/types/core";
 
 interface TestControlsWrapperProps {
     models: any[];
@@ -17,7 +17,7 @@ export function TestControlsWrapper({ models }: TestControlsWrapperProps) {
 
     const [selectedModelId, setSelectedModelId] = useState(modelPreferences.defaultModel || models[0]?.id || '');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [modelConfig, setModelConfig] = useState<PromptModelConfig>({
+    const [modelConfig, setModelConfig] = useState<PromptSettings>({
         output_format: "text",
         tool_choice: "auto",
         temperature: 0.5,

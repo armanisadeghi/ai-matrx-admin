@@ -1,6 +1,6 @@
 export type PromptMessageRole = "system" | "user" | "assistant";
 
-export interface PromptModelConfig {
+export interface PromptSettings {
     output_format?: string;
     tool_choice?: string;
     temperature?: number;
@@ -60,7 +60,7 @@ export type PromptsData = {
     tools?: Record<string, unknown>;
     messages?: PromptMessage[];
     variableDefaults?: PromptVariable[]; // Array of { name, defaultValue, customComponent? }
-    settings?: PromptModelConfig;
+    settings?: PromptSettings;
 };
 
 export interface PromptsBatchData {

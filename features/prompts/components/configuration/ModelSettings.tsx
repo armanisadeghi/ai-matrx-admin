@@ -11,32 +11,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useModelControls } from "@/features/prompts/hooks/useModelControls";
-
-interface ModelSettings {
-    output_format?: string;
-    tool_choice?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    tools?: string[]; // Array of selected tool names
-    image_urls?: boolean;
-    file_urls?: boolean;
-    internal_web_search?: boolean;
-    youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-}
+import { PromptSettings } from "@/features/prompts/types/core";
 
 interface ModelSettingsProps {
     modelId: string;
     models: any[];
-    settings: ModelSettings;
-    onSettingsChange: (settings: ModelSettings) => void;
+    settings: PromptSettings;
+    onSettingsChange: (settings: PromptSettings) => void;
 }
 
 export function ModelSettings({
@@ -48,7 +29,7 @@ export function ModelSettings({
     // Get normalized controls for the selected model
     const { normalizedControls, error } = useModelControls(models, modelId);
 
-    const handleSettingChange = (key: keyof ModelSettings, value: any) => {
+    const handleSettingChange = (key: keyof PromptSettings, value: any) => {
         onSettingsChange({
             ...settings,
             [key]: value,

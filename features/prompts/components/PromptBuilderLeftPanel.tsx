@@ -1,5 +1,5 @@
 import React, { RefObject } from "react";
-import { PromptMessage, PromptModelConfig, PromptVariable } from "@/features/prompts/types/core";
+import { PromptMessage, PromptSettings, PromptVariable } from "@/features/prompts/types/core";
 import { ModelConfiguration } from "./configuration/ModelConfiguration";
 import { VariablesManager } from "./configuration/VariablesManager";
 import { ToolsManager } from "./configuration/ToolsManager";
@@ -15,7 +15,7 @@ interface PromptBuilderLeftPanelProps {
     models: any[];
     model: string;
     onModelChange: (value: string) => void;
-    modelConfig: PromptModelConfig;
+    modelConfig: PromptSettings;
     onSettingsClick: () => void;
 
     // Variables - single source of truth

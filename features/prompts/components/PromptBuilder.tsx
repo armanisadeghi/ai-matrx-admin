@@ -18,7 +18,7 @@ import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId }
 import { FullScreenEditor } from "./FullScreenEditor";
 import { PromptSettingsModal } from "./PromptSettingsModal";
 import { toast } from "sonner";
-import { PromptMessageRole, PromptModelConfig } from "../types/core";
+import { PromptMessageRole, PromptSettings } from "../types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
 
 
@@ -99,7 +99,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const [promptName, setPromptName] = useState(initialData?.name || "");
     const [promptDescription, setPromptDescription] = useState(""); // TODO: Add to initialData when schema supports it
     const [model, setModel] = useState(initialModelId);
-    const [modelConfig, setModelConfig] = useState<PromptModelConfig>(getInitialModelConfig());
+    const [modelConfig, setModelConfig] = useState<PromptSettings>(getInitialModelConfig());
     
     const [developerMessage, setDeveloperMessage] = useState(getInitialDeveloperMessage());
     const [messages, setMessages] = useState<PromptMessage[]>(getInitialMessages());
@@ -660,7 +660,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 setModel(model_id);
             }
             if (Object.keys(config).length > 0) {
-                setModelConfig(config as PromptModelConfig);
+                setModelConfig(config as PromptSettings);
             }
         }
         
@@ -719,12 +719,12 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                         setModelConfig({ ...defaults, ...config });
                     } else {
                         // Model not found, just update config
-                        setModelConfig(config as PromptModelConfig);
+                        setModelConfig(config as PromptSettings);
                     }
                 } else {
                     // No model change, just update config
                     if (Object.keys(config).length > 0) {
-                        setModelConfig(config as PromptModelConfig);
+                        setModelConfig(config as PromptSettings);
                     }
                 }
             }
