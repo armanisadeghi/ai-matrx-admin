@@ -206,18 +206,41 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Update project with loading state
+  // Update project with OPTIMISTIC update
   const updateProject = async (projectId: string, name: string) => {
     setOperatingProjectId(projectId);
+    
+    // Store previous value for rollback
+    const project = dbProjectsWithTasks.find(p => p.id === projectId);
+    const previousName = project?.name || '';
+    
+    // OPTIMISTIC UPDATE: Update UI immediately
+    setDbProjectsWithTasks(prev => 
+      prev.map(p => 
+        p.id === projectId ? { ...p, name } : p
+      )
+    );
+    
     try {
       const success = await projectService.updateProject(projectId, { name });
       if (success) {
         toast.success('Project updated');
-        // Real-time subscription will update automatically
       } else {
+        // ROLLBACK
+        setDbProjectsWithTasks(prev => 
+          prev.map(p => 
+            p.id === projectId ? { ...p, name: previousName } : p
+          )
+        );
         toast.error('Failed to update project');
       }
     } catch (error) {
+      // ROLLBACK
+      setDbProjectsWithTasks(prev => 
+        prev.map(p => 
+          p.id === projectId ? { ...p, name: previousName } : p
+        )
+      );
       console.error('Error updating project:', error);
       toast.error('Failed to update project');
     } finally {
@@ -225,18 +248,94 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Update task project (move task to different project)
+  // Update task project (move task to different project) with OPTIMISTIC update
   const updateTaskProject = async (taskId: string, projectId: string | null) => {
     setOperatingTaskId(taskId);
+    
+    // Find the task in current projects
+    let sourceProjectId: string | null = null;
+    let taskToMove: DatabaseTask | null = null;
+    
+    for (const project of dbProjectsWithTasks) {
+      const task = project.tasks?.find(t => t.id === taskId);
+      if (task) {
+        sourceProjectId = project.id;
+        taskToMove = task;
+        break;
+      }
+    }
+    
+    if (!taskToMove) {
+      setOperatingTaskId(null);
+      toast.error('Task not found');
+      return;
+    }
+    
+    // OPTIMISTIC UPDATE: Move task between projects immediately
+    setDbProjectsWithTasks(prev => 
+      prev.map(p => {
+        // Remove from source project
+        if (p.id === sourceProjectId) {
+          return {
+            ...p,
+            tasks: p.tasks?.filter(t => t.id !== taskId) || []
+          };
+        }
+        // Add to target project
+        if (p.id === projectId) {
+          return {
+            ...p,
+            tasks: [...(p.tasks || []), { ...taskToMove, project_id: projectId }]
+          };
+        }
+        return p;
+      })
+    );
+    
     try {
       const success = await taskService.updateTask(taskId, { project_id: projectId });
       if (success) {
         toast.success('Task project updated');
-        // Real-time subscription will update automatically
       } else {
+        // ROLLBACK: Move task back
+        setDbProjectsWithTasks(prev => 
+          prev.map(p => {
+            if (p.id === projectId) {
+              return {
+                ...p,
+                tasks: p.tasks?.filter(t => t.id !== taskId) || []
+              };
+            }
+            if (p.id === sourceProjectId) {
+              return {
+                ...p,
+                tasks: [...(p.tasks || []), taskToMove]
+              };
+            }
+            return p;
+          })
+        );
         toast.error('Failed to update task project');
       }
     } catch (error) {
+      // ROLLBACK: Move task back
+      setDbProjectsWithTasks(prev => 
+        prev.map(p => {
+          if (p.id === projectId) {
+            return {
+              ...p,
+              tasks: p.tasks?.filter(t => t.id !== taskId) || []
+            };
+          }
+          if (p.id === sourceProjectId) {
+            return {
+              ...p,
+              tasks: [...(p.tasks || []), taskToMove]
+            };
+          }
+          return p;
+        })
+      );
       console.error('Error updating task project:', error);
       toast.error('Failed to update task project');
     } finally {
@@ -244,27 +343,49 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Delete project with loading state
+  // Delete project with OPTIMISTIC update
   const deleteProject = async (projectId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (operatingProjectId === projectId) return; // Prevent duplicate operations
     
     setOperatingProjectId(projectId);
+    
+    // Store project for rollback
+    const projectToDelete = dbProjectsWithTasks.find(p => p.id === projectId);
+    const wasActiveProject = activeProject === projectId;
+    
+    if (!projectToDelete) {
+      setOperatingProjectId(null);
+      return;
+    }
+    
+    // OPTIMISTIC UPDATE: Remove from UI immediately
+    setDbProjectsWithTasks(prev => prev.filter(p => p.id !== projectId));
+    
+    // If deleted project was active, clear selection
+    if (wasActiveProject) {
+      setActiveProject(null);
+    }
+    
     try {
-      const project = projects.find(p => p.id === projectId);
       const success = await projectService.deleteProject(projectId);
       
       if (success) {
-        toast.success(`Project "${project?.name}" deleted`);
-        // If deleted project was active, clear selection
-        if (activeProject === projectId) {
-          setActiveProject(null);
-        }
-        // Real-time subscription will update automatically
+        toast.success(`Project "${projectToDelete.name}" deleted`);
       } else {
+        // ROLLBACK: Restore project
+        setDbProjectsWithTasks(prev => [...prev, projectToDelete]);
+        if (wasActiveProject) {
+          setActiveProject(projectId);
+        }
         toast.error('Failed to delete project');
       }
     } catch (error) {
+      // ROLLBACK: Restore project
+      setDbProjectsWithTasks(prev => [...prev, projectToDelete]);
+      if (wasActiveProject) {
+        setActiveProject(projectId);
+      }
       console.error('Error deleting project:', error);
       toast.error('Failed to delete project');
     } finally {
@@ -359,29 +480,74 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Toggle task completion with loading state
+  // Toggle task completion with OPTIMISTIC update
   const toggleTaskComplete = async (projectId: string, taskId: string) => {
     if (operatingTaskId === taskId) return; // Prevent duplicate operations
     
     setOperatingTaskId(taskId);
+    
+    const project = dbProjectsWithTasks.find(p => p.id === projectId);
+    const task = project?.tasks?.find(t => t.id === taskId);
+    
+    if (!task) {
+      setOperatingTaskId(null);
+      return;
+    }
+    
+    const newStatus = task.status === 'completed' ? 'incomplete' : 'completed';
+    const previousStatus = task.status;
+    
+    // OPTIMISTIC UPDATE: Update UI immediately
+    setDbProjectsWithTasks(prev => 
+      prev.map(p => 
+        p.id === projectId 
+          ? { 
+              ...p, 
+              tasks: p.tasks?.map(t => 
+                t.id === taskId ? { ...t, status: newStatus } : t
+              ) || []
+            }
+          : p
+      )
+    );
+    
     try {
-      const project = dbProjectsWithTasks.find(p => p.id === projectId);
-      const task = project?.tasks?.find(t => t.id === taskId);
+      const success = await taskService.updateTask(taskId, {
+        status: newStatus,
+      });
       
-      if (task) {
-        const newStatus = task.status === 'completed' ? 'incomplete' : 'completed';
-        const success = await taskService.updateTask(taskId, {
-          status: newStatus,
-        });
-        
-        if (success) {
-          toast.success(newStatus === 'completed' ? 'Task completed' : 'Task reopened');
-          // Real-time subscription will update automatically
-        } else {
-          toast.error('Failed to update task');
-        }
+      if (success) {
+        toast.success(newStatus === 'completed' ? 'Task completed' : 'Task reopened');
+      } else {
+        // ROLLBACK: Revert optimistic update on failure
+        setDbProjectsWithTasks(prev => 
+          prev.map(p => 
+            p.id === projectId 
+              ? { 
+                  ...p, 
+                  tasks: p.tasks?.map(t => 
+                    t.id === taskId ? { ...t, status: previousStatus } : t
+                  ) || []
+                }
+              : p
+          )
+        );
+        toast.error('Failed to update task');
       }
     } catch (error) {
+      // ROLLBACK: Revert optimistic update on error
+      setDbProjectsWithTasks(prev => 
+        prev.map(p => 
+          p.id === projectId 
+            ? { 
+                ...p, 
+                tasks: p.tasks?.map(t => 
+                  t.id === taskId ? { ...t, status: previousStatus } : t
+                ) || []
+              }
+            : p
+        )
+      );
       console.error('Error toggling task:', error);
       toast.error('Failed to update task');
     } finally {
@@ -389,18 +555,63 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Update task title with loading state
+  // Update task title with OPTIMISTIC update
   const updateTaskTitle = async (projectId: string, taskId: string, title: string) => {
     setOperatingTaskId(taskId);
+    
+    // Store previous value for rollback
+    const project = dbProjectsWithTasks.find(p => p.id === projectId);
+    const task = project?.tasks?.find(t => t.id === taskId);
+    const previousTitle = task?.title || '';
+    
+    // OPTIMISTIC UPDATE: Update UI immediately
+    setDbProjectsWithTasks(prev => 
+      prev.map(p => 
+        p.id === projectId 
+          ? { 
+              ...p, 
+              tasks: p.tasks?.map(t => 
+                t.id === taskId ? { ...t, title } : t
+              ) || []
+            }
+          : p
+      )
+    );
+    
     try {
       const success = await taskService.updateTask(taskId, { title });
       if (success) {
         toast.success('Task title updated');
-        // Real-time subscription will update automatically
       } else {
+        // ROLLBACK
+        setDbProjectsWithTasks(prev => 
+          prev.map(p => 
+            p.id === projectId 
+              ? { 
+                  ...p, 
+                  tasks: p.tasks?.map(t => 
+                    t.id === taskId ? { ...t, title: previousTitle } : t
+                  ) || []
+                }
+              : p
+          )
+        );
         toast.error('Failed to update title');
       }
     } catch (error) {
+      // ROLLBACK
+      setDbProjectsWithTasks(prev => 
+        prev.map(p => 
+          p.id === projectId 
+            ? { 
+                ...p, 
+                tasks: p.tasks?.map(t => 
+                  t.id === taskId ? { ...t, title: previousTitle } : t
+                ) || []
+              }
+            : p
+        )
+      );
       console.error('Error updating task title:', error);
       toast.error('Failed to update title');
     } finally {
@@ -408,18 +619,63 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Update task description with loading state
+  // Update task description with OPTIMISTIC update
   const updateTaskDescription = async (projectId: string, taskId: string, description: string) => {
     setOperatingTaskId(taskId);
+    
+    // Store previous value for rollback
+    const project = dbProjectsWithTasks.find(p => p.id === projectId);
+    const task = project?.tasks?.find(t => t.id === taskId);
+    const previousDescription = task?.description || '';
+    
+    // OPTIMISTIC UPDATE: Update UI immediately
+    setDbProjectsWithTasks(prev => 
+      prev.map(p => 
+        p.id === projectId 
+          ? { 
+              ...p, 
+              tasks: p.tasks?.map(t => 
+                t.id === taskId ? { ...t, description } : t
+              ) || []
+            }
+          : p
+      )
+    );
+    
     try {
       const success = await taskService.updateTask(taskId, { description });
       if (success) {
         toast.success('Description updated');
-        // Real-time subscription will update automatically
       } else {
+        // ROLLBACK
+        setDbProjectsWithTasks(prev => 
+          prev.map(p => 
+            p.id === projectId 
+              ? { 
+                  ...p, 
+                  tasks: p.tasks?.map(t => 
+                    t.id === taskId ? { ...t, description: previousDescription } : t
+                  ) || []
+                }
+              : p
+          )
+        );
         toast.error('Failed to update description');
       }
     } catch (error) {
+      // ROLLBACK
+      setDbProjectsWithTasks(prev => 
+        prev.map(p => 
+          p.id === projectId 
+            ? { 
+                ...p, 
+                tasks: p.tasks?.map(t => 
+                  t.id === taskId ? { ...t, description: previousDescription } : t
+                ) || []
+              }
+            : p
+        )
+      );
       console.error('Error updating description:', error);
       toast.error('Failed to update description');
     } finally {
@@ -427,18 +683,63 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Update task due date with loading state
+  // Update task due date with OPTIMISTIC update
   const updateTaskDueDate = async (projectId: string, taskId: string, dueDate: string) => {
     setOperatingTaskId(taskId);
+    
+    // Store previous value for rollback
+    const project = dbProjectsWithTasks.find(p => p.id === projectId);
+    const task = project?.tasks?.find(t => t.id === taskId);
+    const previousDueDate = task?.due_date || null;
+    
+    // OPTIMISTIC UPDATE: Update UI immediately
+    setDbProjectsWithTasks(prev => 
+      prev.map(p => 
+        p.id === projectId 
+          ? { 
+              ...p, 
+              tasks: p.tasks?.map(t => 
+                t.id === taskId ? { ...t, due_date: dueDate || null } : t
+              ) || []
+            }
+          : p
+      )
+    );
+    
     try {
       const success = await taskService.updateTask(taskId, { due_date: dueDate || null });
       if (success) {
         toast.success('Due date updated');
-        // Real-time subscription will update automatically
       } else {
+        // ROLLBACK
+        setDbProjectsWithTasks(prev => 
+          prev.map(p => 
+            p.id === projectId 
+              ? { 
+                  ...p, 
+                  tasks: p.tasks?.map(t => 
+                    t.id === taskId ? { ...t, due_date: previousDueDate } : t
+                  ) || []
+                }
+              : p
+          )
+        );
         toast.error('Failed to update due date');
       }
     } catch (error) {
+      // ROLLBACK
+      setDbProjectsWithTasks(prev => 
+        prev.map(p => 
+          p.id === projectId 
+            ? { 
+                ...p, 
+                tasks: p.tasks?.map(t => 
+                  t.id === taskId ? { ...t, due_date: previousDueDate } : t
+                ) || []
+              }
+            : p
+        )
+      );
       console.error('Error updating due date:', error);
       toast.error('Failed to update due date');
     } finally {
@@ -446,21 +747,64 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Delete task with loading state
+  // Delete task with OPTIMISTIC update
   const deleteTask = async (projectId: string, taskId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (operatingTaskId === taskId) return; // Prevent duplicate operations
     
     setOperatingTaskId(taskId);
+    
+    // Store task for rollback
+    const project = dbProjectsWithTasks.find(p => p.id === projectId);
+    const taskToDelete = project?.tasks?.find(t => t.id === taskId);
+    
+    if (!taskToDelete) {
+      setOperatingTaskId(null);
+      return;
+    }
+    
+    // OPTIMISTIC UPDATE: Remove from UI immediately
+    setDbProjectsWithTasks(prev => 
+      prev.map(p => 
+        p.id === projectId 
+          ? { 
+              ...p, 
+              tasks: p.tasks?.filter(t => t.id !== taskId) || []
+            }
+          : p
+      )
+    );
+    
     try {
       const success = await taskService.deleteTask(taskId);
       if (success) {
         toast.success('Task deleted');
-        // Real-time subscription will update automatically
       } else {
+        // ROLLBACK: Restore task
+        setDbProjectsWithTasks(prev => 
+          prev.map(p => 
+            p.id === projectId 
+              ? { 
+                  ...p, 
+                  tasks: [...(p.tasks || []), taskToDelete]
+                }
+              : p
+          )
+        );
         toast.error('Failed to delete task');
       }
     } catch (error) {
+      // ROLLBACK: Restore task
+      setDbProjectsWithTasks(prev => 
+        prev.map(p => 
+          p.id === projectId 
+            ? { 
+                ...p, 
+                tasks: [...(p.tasks || []), taskToDelete]
+              }
+            : p
+        )
+      );
       console.error('Error deleting task:', error);
       toast.error('Failed to delete task');
     } finally {
