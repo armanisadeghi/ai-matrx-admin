@@ -226,15 +226,29 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             return "inset-0";
         }
         
-        const positionMap: Record<string, string> = {
-            right: `top-${spacing} bottom-${spacing} right-${spacing}`,
-            left: `top-${spacing} bottom-${spacing} left-${spacing}`,
-            top: `top-${spacing} left-${spacing} right-${spacing}`,
-            bottom: `bottom-${spacing} left-${spacing} right-${spacing}`,
-            center: "inset-0 flex items-center justify-center", // For centered modal style
+        // Map spacing values to actual Tailwind classes
+        const spacingClasses: Record<string, { top: string; bottom: string; left: string; right: string }> = {
+            "0": { top: "top-0", bottom: "bottom-0", left: "left-0", right: "right-0" },
+            "1": { top: "top-1", bottom: "bottom-1", left: "left-1", right: "right-1" },
+            "2": { top: "top-2", bottom: "bottom-2", left: "left-2", right: "right-2" },
+            "3": { top: "top-3", bottom: "bottom-3", left: "left-3", right: "right-3" },
+            "4": { top: "top-4", bottom: "bottom-4", left: "left-4", right: "right-4" },
+            "5": { top: "top-5", bottom: "bottom-5", left: "left-5", right: "right-5" },
+            "6": { top: "top-6", bottom: "bottom-6", left: "left-6", right: "right-6" },
+            "8": { top: "top-8", bottom: "bottom-8", left: "left-8", right: "right-8" },
         };
         
-        return positionMap[position] || `top-${spacing} bottom-${spacing} right-${spacing}`;
+        const classes = spacingClasses[spacing] || spacingClasses["4"];
+        
+        const positionMap: Record<string, string> = {
+            right: `${classes.top} ${classes.bottom} ${classes.right}`,
+            left: `${classes.top} ${classes.bottom} ${classes.left}`,
+            top: `${classes.top} ${classes.left} ${classes.right}`,
+            bottom: `${classes.bottom} ${classes.left} ${classes.right}`,
+            center: "inset-0 flex items-center justify-center",
+        };
+        
+        return positionMap[position] || `${classes.top} ${classes.bottom} ${classes.right}`;
     };
     
     // Determine transform classes for animations
@@ -273,7 +287,36 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             return "";
         }
         
-        return `rounded-${rounded}`;
+        // Map rounded values to actual Tailwind classes
+        const roundedMap: Record<string, string> = {
+            "none": "rounded-none",
+            "sm": "rounded-sm",
+            "md": "rounded-md",
+            "lg": "rounded-lg",
+            "xl": "rounded-xl",
+            "2xl": "rounded-2xl",
+            "3xl": "rounded-3xl",
+            "full": "rounded-full",
+        };
+        
+        return roundedMap[rounded] || "rounded-2xl";
+    };
+    
+    // Get duration class for animations
+    const getDurationClass = () => {
+        // Map animation duration (ms) to Tailwind duration classes
+        const durationMap: Record<number, string> = {
+            75: "duration-75",
+            100: "duration-100",
+            150: "duration-150",
+            200: "duration-200",
+            300: "duration-300",
+            500: "duration-500",
+            700: "duration-700",
+            1000: "duration-1000",
+        };
+        
+        return durationMap[animationDuration] || "duration-300";
     };
     
     const positionClasses = getPositionClasses();
@@ -281,6 +324,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     const heightClass = getHeightClass();
     const transformClass = getTransformClass();
     const roundedClass = getRoundedClass();
+    const durationClass = getDurationClass();
     
     // Determine if we need to show the header
     const showHeader = title || showCloseButton || headerContent;
@@ -310,7 +354,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             {/* Backdrop - Only shown when open */}
             {isOpen && hasBackdrop && (
                 <div
-                    className={`fixed inset-0 bg-black/50 z-40 ${isMobile ? "backdrop-blur-sm" : ""} transition-opacity duration-${animationDuration} ${backdropClassName}`}
+                    className={`fixed inset-0 bg-black/50 z-40 ${isMobile ? "backdrop-blur-sm" : ""} transition-opacity ${durationClass} ${backdropClassName}`}
                     onClick={handleBackdropClick}
                     aria-hidden="true"
                     data-testid="floating-sheet-backdrop"
@@ -322,7 +366,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 ref={sheetRef}
                 className={`fixed ${positionClasses} z-50 ${
                     isMobile || position === "center" ? "" : "w-full"
-                } ${widthClass} ${heightClass} ${roundedClass} bg-zinc-100 dark:bg-zinc-850 shadow-xl transform transition-all duration-${animationDuration} ease-in-out ${transformClass} ${
+                } ${widthClass} ${heightClass} ${roundedClass} bg-zinc-100 dark:bg-zinc-850 shadow-xl transform transition-all ${durationClass} ease-in-out ${transformClass} ${
                     isOpen ? "visible opacity-100" : "invisible opacity-0"
                 } ${isMobile ? "h-full flex flex-col" : "h-full"} outline-none ${className}`}
                 role={role}

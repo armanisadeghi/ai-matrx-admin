@@ -26,7 +26,7 @@ export interface TaskWithProject extends Task {
   projectName: string;
 }
 
-export type TaskFilterType = 'all' | 'completed' | 'incomplete' | 'overdue';
+export type TaskFilterType = 'all' | 'incomplete' | 'overdue';
 
 export interface TaskContextType {
   projects: Project[];
@@ -44,6 +44,7 @@ export interface TaskContextType {
   newTaskTitle: string;
   filter: TaskFilterType;
   showAllProjects: boolean;
+  showCompleted: boolean;
   searchQuery: string;
   // Actions
   setNewProjectName: (name: string) => void;
@@ -51,6 +52,7 @@ export interface TaskContextType {
   setActiveProject: (projectId: string | null) => void;
   setFilter: (filter: TaskFilterType) => void;
   setShowAllProjects: (show: boolean) => void;
+  setShowCompleted: (show: boolean) => void;
   setSearchQuery: (query: string) => void;
   toggleProjectExpand: (projectId: string) => void;
   toggleTaskExpand: (taskId: string) => void;

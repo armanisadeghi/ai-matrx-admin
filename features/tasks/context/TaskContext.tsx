@@ -40,6 +40,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [filter, setFilter] = useState<TaskFilterType>('all');
   const [showAllProjects, setShowAllProjects] = useState(true); // Default to All Tasks view
+  const [showCompleted, setShowCompleted] = useState(false); // Default to hiding completed tasks
   const [searchQuery, setSearchQuery] = useState('');
 
   // Convert database projects to UI projects with subtasks
@@ -837,7 +838,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
   };
 
-  // Get filtered tasks with search
+  // Get filtered tasks with search and completed visibility
   const getFilteredTasks = (): TaskWithProject[] => {
     // Get today's date at midnight local time for consistent comparison
     const today = new Date();
@@ -881,10 +882,13 @@ export function TaskProvider({ children }: TaskProviderProps) {
       });
     }
     
+    // Filter out completed tasks if showCompleted is false (default behavior)
+    if (!showCompleted) {
+      allTasks = allTasks.filter(task => !task.completed);
+    }
+    
     // Apply status filter
     switch (filter) {
-      case 'completed':
-        return allTasks.filter(task => task.completed);
       case 'incomplete':
         return allTasks.filter(task => !task.completed);
       case 'overdue':
@@ -912,12 +916,14 @@ export function TaskProvider({ children }: TaskProviderProps) {
     newTaskTitle,
     filter,
     showAllProjects,
+    showCompleted,
     searchQuery,
     setNewProjectName,
     setNewTaskTitle,
     setActiveProject,
     setFilter,
     setShowAllProjects,
+    setShowCompleted,
     setSearchQuery,
     toggleProjectExpand,
     toggleTaskExpand,

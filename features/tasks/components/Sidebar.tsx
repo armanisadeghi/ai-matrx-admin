@@ -1,12 +1,13 @@
 'use client';
 
 import React, { JSX } from 'react';
-import { FolderPlus, X, Loader2, Inbox, Calendar, CheckCircle, AlertCircle, Layers } from 'lucide-react';
+import { FolderPlus, X, Loader2, Inbox, Calendar, CheckCircle, AlertCircle, Layers, Eye, EyeOff } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { TaskFilterType } from '@/features/tasks/types';
 import EditableProjectName from './EditableProjectName';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 
 export default function Sidebar(): JSX.Element {
   const {
@@ -14,12 +15,14 @@ export default function Sidebar(): JSX.Element {
     newProjectName,
     activeProject,
     showAllProjects,
+    showCompleted,
     isCreatingProject,
     operatingProjectId,
     loading,
     setNewProjectName,
     setActiveProject,
     setShowAllProjects,
+    setShowCompleted,
     addProject,
     deleteProject,
     updateProject,
@@ -38,7 +41,6 @@ export default function Sidebar(): JSX.Element {
     switch (filterType) {
       case 'all': return <Inbox size={16} />;
       case 'incomplete': return <Circle size={16} />;
-      case 'completed': return <CheckCircle size={16} />;
       case 'overdue': return <AlertCircle size={16} />;
     }
   };
@@ -83,7 +85,7 @@ export default function Sidebar(): JSX.Element {
         <div>
           <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Filters</h2>
           <div className="space-y-1">
-            {(['incomplete', 'completed', 'overdue'] as TaskFilterType[]).map((filterType) => (
+            {(['incomplete', 'overdue'] as TaskFilterType[]).map((filterType) => (
               <button
                 key={filterType}
                 onClick={() => handleFilterClick(filterType)}
@@ -97,6 +99,26 @@ export default function Sidebar(): JSX.Element {
                 <span className="capitalize">{filterType}</span>
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Show Completed Toggle */}
+        <div>
+          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Display</h2>
+          <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-700/50">
+            <div className="flex items-center gap-2">
+              {showCompleted ? (
+                <Eye size={16} className="text-gray-600 dark:text-gray-400" />
+              ) : (
+                <EyeOff size={16} className="text-gray-600 dark:text-gray-400" />
+              )}
+              <span className="text-sm text-gray-700 dark:text-gray-300">Show Completed</span>
+            </div>
+            <Switch
+              checked={showCompleted}
+              onCheckedChange={setShowCompleted}
+              className="data-[state=checked]:bg-blue-600"
+            />
           </div>
         </div>
 

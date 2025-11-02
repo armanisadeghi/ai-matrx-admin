@@ -27,8 +27,11 @@ import {
     FolderPlus,
     Search,
     X,
+    Eye,
+    EyeOff,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import CompactTaskItem from './CompactTaskItem';
 import TaskDetailsPanel from './TaskDetailsPanel';
@@ -39,23 +42,19 @@ interface QuickTasksSheetProps {
     className?: string;
 }
 
-const Circle = ({ size, className }: { size: number; className?: string }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-        <circle cx="12" cy="12" r="10" />
-    </svg>
-);
-
 function QuickTasksSheetContent({ className }: { className?: string }) {
     const {
         projects,
         activeProject,
         showAllProjects,
+        showCompleted,
         filter,
         newTaskTitle,
         isCreatingTask,
         loading,
         setActiveProject,
         setShowAllProjects,
+        setShowCompleted,
         setFilter,
         setNewTaskTitle,
         addTask,
@@ -107,6 +106,12 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
         }
     }, [setShowAllProjects, setFilter, setActiveProject]);
 
+    const Circle = ({ size, className }: { size: number; className?: string }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+            <circle cx="12" cy="12" r="10" />
+        </svg>
+    );
+
     const handleAddTask = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newTaskTitle.trim() || !selectedProjectForTask) return;
@@ -151,12 +156,10 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                                 <span className="flex items-center gap-2">
                                     {filter === 'all' ? <Layers className="h-3 w-3" /> : 
                                      filter === 'incomplete' ? <Circle size={12} /> :
-                                     filter === 'completed' ? <CheckCircle className="h-3 w-3" /> :
                                      <AlertCircle className="h-3 w-3" />}
                                     <span>
                                         {filter === 'all' ? 'All Tasks' : 
                                          filter === 'incomplete' ? 'Incomplete' :
-                                         filter === 'completed' ? 'Completed' :
                                          'Overdue'}
                                     </span>
                                 </span>
@@ -187,12 +190,6 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                                 <div className="flex items-center gap-2">
                                     <Circle size={12} />
                                     <span>Incomplete</span>
-                                </div>
-                            </SelectItem>
-                            <SelectItem value="filter:completed" className="text-xs">
-                                <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-3 w-3" />
-                                    <span>Completed</span>
                                 </div>
                             </SelectItem>
                             <SelectItem value="filter:overdue" className="text-xs">
@@ -237,6 +234,28 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>New Project</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setShowCompleted(!showCompleted)}
+                            >
+                                {showCompleted ? (
+                                    <Eye className="h-4 w-4" />
+                                ) : (
+                                    <EyeOff className="h-4 w-4" />
+                                )}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {showCompleted ? 'Hide Completed' : 'Show Completed'}
+                        </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
 

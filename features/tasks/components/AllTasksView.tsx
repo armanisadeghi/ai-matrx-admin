@@ -12,7 +12,7 @@ interface AllTasksViewProps {
 }
 
 export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggle }: AllTasksViewProps) {
-  const { projects, filter, loading } = useTaskContext();
+  const { projects, filter, showCompleted, loading } = useTaskContext();
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
 
   // Show loading state during initial fetch
@@ -48,24 +48,29 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
     });
   };
 
-  // Filter tasks based on current filter
+  // Filter tasks based on current filter and showCompleted setting
   const getFilteredTasksForProject = (project: any) => {
     // Get today's date at midnight local time for consistent comparison
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStr = today.toISOString().split('T')[0];
     
+    let tasks = project.tasks;
+    
+    // Filter out completed tasks if showCompleted is false (default)
+    if (!showCompleted) {
+      tasks = tasks.filter((task: any) => !task.completed);
+    }
+    
     switch (filter) {
-      case 'completed':
-        return project.tasks.filter((task: any) => task.completed);
       case 'incomplete':
-        return project.tasks.filter((task: any) => !task.completed);
+        return tasks.filter((task: any) => !task.completed);
       case 'overdue':
-        return project.tasks.filter((task: any) => 
+        return tasks.filter((task: any) => 
           !task.completed && task.dueDate && task.dueDate < todayStr
         );
       default:
-        return project.tasks;
+        return tasks;
     }
   };
 
