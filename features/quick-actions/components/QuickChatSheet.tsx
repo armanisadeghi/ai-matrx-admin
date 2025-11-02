@@ -67,12 +67,12 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                 )}
             </div>
 
-            {/* Chat Interface - Hide PromptRunner's header */}
-            <div className="h-full [&>*]:h-full [&>*>*:first-child]:hidden">
+            {/* Chat Interface - Hide header, reduce padding, ensure autofocus */}
+            <div className="h-full [&>*]:h-full [&>*>*:first-child]:hidden [&_[style*='paddingBottom']]:!pb-28 [&_.px-6]:!px-3 [&_.pt-6]:!pt-3">
                 <PromptRunner
                     key={chatKey}
                     promptId={CHAT_PROMPT_ID}
-                    mode="manual"
+                    mode="auto-run"
                     isActive={true}
                     className="h-full"
                 />
