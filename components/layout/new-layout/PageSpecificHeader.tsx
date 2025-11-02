@@ -66,6 +66,11 @@ interface PromptHeaderProps {
   onSave: () => void;
   onOpenFullScreenEditor?: () => void;
   onOpenSettings?: () => void;
+  developerMessage: string;
+  onDeveloperMessageChange: (value: string) => void;
+  fullPromptObject?: any;
+  onAcceptFullPrompt?: (optimizedObject: any) => void;
+  onAcceptAsCopy?: (optimizedObject: any) => void;
 }
 
 export function PromptHeader(props: PromptHeaderProps) {

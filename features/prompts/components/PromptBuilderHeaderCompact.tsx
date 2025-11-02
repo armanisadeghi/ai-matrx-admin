@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { useAppSelector } from "@/lib/redux";
+import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { SystemPromptOptimizer } from "./SystemPromptOptimizer";
 
 interface PromptBuilderHeaderCompactProps {
     promptName: string;
@@ -12,6 +15,11 @@ interface PromptBuilderHeaderCompactProps {
     onSave: () => void;
     onOpenFullScreenEditor?: () => void;
     onOpenSettings?: () => void;
+    developerMessage: string;
+    onDeveloperMessageChange: (value: string) => void;
+    fullPromptObject?: any;
+    onAcceptFullPrompt?: (optimizedObject: any) => void;
+    onAcceptAsCopy?: (optimizedObject: any) => void;
 }
 
 export function PromptBuilderHeaderCompact({
@@ -22,8 +30,17 @@ export function PromptBuilderHeaderCompact({
     onSave,
     onOpenFullScreenEditor,
     onOpenSettings,
+    developerMessage,
+    onDeveloperMessageChange,
+    fullPromptObject,
+    onAcceptFullPrompt,
+    onAcceptAsCopy,
 }: PromptBuilderHeaderCompactProps) {
+    const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
+    const isAdminMode = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
+
     return (
+        <>
         <div className="flex items-center gap-2 h-full bg-textured">
             {/* Mobile - Always dropdown */}
             <div className="md:hidden">
@@ -54,18 +71,22 @@ export function PromptBuilderHeaderCompact({
                             </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            <GitCompare className="h-4 w-4 mr-2" />
-                            Compare
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setIsOptimizerOpen(true)}>
                             <Sparkles className="h-4 w-4 mr-2" />
                             Optimize
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <BarChart className="h-4 w-4 mr-2" />
-                            Evaluate
-                        </DropdownMenuItem>
+                        {isAdminMode && (
+                            <>
+                                <DropdownMenuItem>
+                                    <GitCompare className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                                    <span className="text-amber-600 dark:text-amber-400">Compare</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <BarChart className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                                    <span className="text-amber-600 dark:text-amber-400">Evaluate</span>
+                                </DropdownMenuItem>
+                            </>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={onSave} disabled={isSaving || !isDirty}>
                             <Save className="h-4 w-4 mr-2" />
@@ -146,26 +167,31 @@ export function PromptBuilderHeaderCompact({
                             variant="ghost" 
                             size="sm" 
                             className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            title="Compare"
-                        >
-                            <GitCompare className="h-3 w-3" />
-                        </Button>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            title="Optimize"
+                            onClick={() => setIsOptimizerOpen(true)}
+                            title="Optimize System Message"
                         >
                             <Sparkles className="h-3 w-3" />
                         </Button>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            title="Evaluate"
-                        >
-                            <BarChart className="h-3 w-3" />
-                        </Button>
+                        {isAdminMode && (
+                            <>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-7 w-7 p-0 hover:bg-amber-50 dark:hover:bg-amber-950"
+                                    title="Compare (Admin Only)"
+                                >
+                                    <GitCompare className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-7 w-7 p-0 hover:bg-amber-50 dark:hover:bg-amber-950"
+                                    title="Evaluate (Admin Only)"
+                                >
+                                    <BarChart className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                                </Button>
+                            </>
+                        )}
                     </div>
 
                     {/* Save button - always visible */}
@@ -181,5 +207,18 @@ export function PromptBuilderHeaderCompact({
                 </div>
             </div>
         </div>
+
+        <SystemPromptOptimizer
+            isOpen={isOptimizerOpen}
+            onClose={() => setIsOptimizerOpen(false)}
+            currentSystemMessage={developerMessage}
+            onAccept={(optimizedText) => {
+                onDeveloperMessageChange(optimizedText);
+            }}
+            fullPromptObject={fullPromptObject}
+            onAcceptFullPrompt={onAcceptFullPrompt}
+            onAcceptAsCopy={onAcceptAsCopy}
+        />
+        </>
     );
 }

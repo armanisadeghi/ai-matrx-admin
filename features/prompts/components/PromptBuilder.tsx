@@ -17,6 +17,8 @@ import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId }
 import { FullScreenEditor } from "./FullScreenEditor";
 import { PromptSettingsModal } from "./PromptSettingsModal";
 import { sanitizeVariableName } from "../utils/variable-utils";
+import { toast } from "sonner";
+
 
 type MessageRole = "system" | "user" | "assistant";
 
@@ -695,6 +697,125 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         setIsDirty(true);
     };
 
+    // Build full prompt object for the experimental full prompt optimizer
+    const fullPromptObject = {
+        id: initialData?.id,
+        name: promptName,
+        messages: [{ role: "system" as MessageRole, content: developerMessage }, ...messages],
+        variableDefaults,
+        settings: {
+            model_id: model,
+            ...modelConfig,
+        },
+    };
+
+    // Handler for accepting optimized full prompt from the experimental optimizer
+    const handleAcceptFullPrompt = (optimizedObject: any) => {
+        try {
+            // Update name if provided
+            if (optimizedObject.name && typeof optimizedObject.name === 'string') {
+                setPromptName(optimizedObject.name);
+            }
+
+            // Update messages if provided
+            if (Array.isArray(optimizedObject.messages) && optimizedObject.messages.length > 0) {
+                // Extract system message (first message)
+                const systemMsg = optimizedObject.messages.find((m: any) => m.role === 'system');
+                if (systemMsg) {
+                    setDeveloperMessage(systemMsg.content);
+                }
+
+                // Extract other messages (excluding system)
+                const otherMessages = optimizedObject.messages.filter((m: any) => m.role !== 'system');
+                setMessages(otherMessages);
+            }
+
+            // Update variables if provided
+            if (Array.isArray(optimizedObject.variableDefaults)) {
+                setVariableDefaults(optimizedObject.variableDefaults);
+            }
+
+            // Update settings if provided
+            if (optimizedObject.settings && typeof optimizedObject.settings === 'object') {
+                const { model_id, ...config } = optimizedObject.settings;
+
+                // Update model if provided and valid
+                if (model_id) {
+                    const newModel = models.find((m: any) => m.id === model_id);
+                    if (newModel) {
+                        setModel(model_id);
+                        // Apply defaults for the new model and merge with provided config
+                        const defaults = getModelDefaults(newModel);
+                        setModelConfig({ ...defaults, ...config });
+                    } else {
+                        // Model not found, just update config
+                        setModelConfig(config as ModelConfig);
+                    }
+                } else {
+                    // No model change, just update config
+                    if (Object.keys(config).length > 0) {
+                        setModelConfig(config as ModelConfig);
+                    }
+                }
+            }
+
+            setIsDirty(true);
+        } catch (error) {
+            console.error('Error applying optimized prompt:', error);
+        }
+    };
+
+    // Handler for saving optimized prompt as a copy
+    const handleAcceptFullPromptAsCopy = async (optimizedObject: any) => {
+        try {
+            // Prepare the name with " (Copy)" suffix
+            const newName = optimizedObject.name 
+                ? `${optimizedObject.name} (Copy)` 
+                : `${promptName} (Copy)`;
+
+            // Extract messages
+            const allMessages = Array.isArray(optimizedObject.messages) 
+                ? optimizedObject.messages 
+                : [{ role: "system", content: developerMessage }, ...messages];
+
+            // Extract settings
+            const newSettings = optimizedObject.settings && typeof optimizedObject.settings === 'object'
+                ? optimizedObject.settings
+                : { model_id: model, ...modelConfig };
+
+            // Extract variables
+            const newVariables = Array.isArray(optimizedObject.variableDefaults)
+                ? optimizedObject.variableDefaults
+                : variableDefaults;
+
+            // Create new prompt data
+            const promptData = {
+                name: newName,
+                messages: allMessages,
+                variableDefaults: newVariables,
+                settings: newSettings,
+            };
+
+            // Create the new prompt
+            const result = await createPrompt(promptData as any);
+            
+            if (result?.id) {
+                toast.success('Copy created successfully', {
+                    description: 'Routing to the new prompt...'
+                });
+                // Route to the newly created prompt's edit page
+                router.push(`/ai/prompts/edit/${result.id}`);
+            } else {
+                throw new Error('Failed to create prompt copy');
+            }
+        } catch (error) {
+            console.error('Error creating prompt copy:', error);
+            toast.error('Failed to create copy', {
+                description: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    };
+
     return (
         <>
         <AdaptiveLayout
@@ -713,6 +834,14 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     onSave={handleSave}
                     onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
                     onOpenSettings={() => setIsSettingsModalOpen(true)}
+                    developerMessage={developerMessage}
+                    onDeveloperMessageChange={(value) => {
+                        setDeveloperMessage(value);
+                        setIsDirty(true);
+                    }}
+                    fullPromptObject={fullPromptObject}
+                    onAcceptFullPrompt={handleAcceptFullPrompt}
+                    onAcceptAsCopy={handleAcceptFullPromptAsCopy}
                 />
             }
             leftPanel={

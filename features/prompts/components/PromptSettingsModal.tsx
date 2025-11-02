@@ -8,13 +8,14 @@ import { Label } from "@/components/ui/label";
 import { CopyTextarea, Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle, X } from "lucide-react";
+import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle, X, Sparkles } from "lucide-react";
 import { PromptVariable } from "./PromptBuilder";
 import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { VariableEditor } from "./configuration/VariableEditor";
 import { ModelSettings } from "./configuration/ModelSettings";
 import { VariableCustomComponent } from "../types/variable-components";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
+import { FullPromptOptimizer } from "./FullPromptOptimizer";
 
 interface PromptSettingsModalProps {
     isOpen: boolean;
@@ -73,6 +74,9 @@ export function PromptSettingsModal({
     const [editingVariableName, setEditingVariableName] = useState("");
     const [editingVariableDefaultValue, setEditingVariableDefaultValue] = useState("");
     const [editingVariableCustomComponent, setEditingVariableCustomComponent] = useState<VariableCustomComponent | undefined>();
+
+    // Full prompt optimizer state
+    const [isFullOptimizerOpen, setIsFullOptimizerOpen] = useState(false);
 
     // Reset local state when modal opens or props change
     useEffect(() => {
@@ -225,9 +229,23 @@ export function PromptSettingsModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-5xl h-[95vh] flex flex-col bg-textured p-0">
                 <DialogHeader className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        Prompt Settings
-                    </DialogTitle>
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Prompt Settings
+                        </DialogTitle>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsFullOptimizerOpen(true)}
+                            className="h-7 text-xs border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
+                        >
+                            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                            Optimize All
+                            <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30">
+                                BETA
+                            </span>
+                        </Button>
+                    </div>
                 </DialogHeader>
 
                 <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
@@ -597,6 +615,32 @@ export function PromptSettingsModal({
                     </Button>
                 </div>
             </DialogContent>
+
+            {/* Full Prompt Optimizer */}
+            <FullPromptOptimizer
+                isOpen={isFullOptimizerOpen}
+                onClose={() => setIsFullOptimizerOpen(false)}
+                currentPromptObject={promptObject}
+                onAccept={(optimizedObject) => {
+                    // Apply optimized object to local state
+                    if (optimizedObject.name && typeof optimizedObject.name === 'string') {
+                        setLocalName(optimizedObject.name);
+                    }
+                    if (optimizedObject.description !== undefined) {
+                        setLocalDescription(optimizedObject.description || '');
+                    }
+                    if (Array.isArray(optimizedObject.variableDefaults)) {
+                        setLocalVariables(optimizedObject.variableDefaults);
+                    }
+                    if (Array.isArray(optimizedObject.messages)) {
+                        setLocalMessages(optimizedObject.messages);
+                    }
+                    if (optimizedObject.settings && typeof optimizedObject.settings === 'object') {
+                        setLocalSettings(optimizedObject.settings);
+                    }
+                    setIsFullOptimizerOpen(false);
+                }}
+            />
         </Dialog>
     );
 }

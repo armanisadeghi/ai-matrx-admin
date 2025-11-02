@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { PromptUserMessage } from "./PromptUserMessage";
 import { PromptAssistantMessage } from "./PromptAssistantMessage";
 import { PromptStats } from "./PromptStats";
-import { PromptTestInput } from "./PromptTestInput";
 import { useAppSelector } from "@/lib/redux";
-import { selectPrimaryResponseTextByTaskId, selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { PromptVariable } from "./PromptBuilder";
 import type { Resource } from "./resource-display";
+import { PromptInput } from "./PromptInput";
 
 interface PromptBuilderRightPanelProps {
     conversationMessages: Array<{ 
@@ -176,7 +176,7 @@ export function PromptBuilderRightPanel({
                 )}
 
                 {/* Unified Chat Container with Variables and Input */}
-                <PromptTestInput
+                <PromptInput
                     variableDefaults={variableDefaults}
                     onVariableValueChange={onVariableValueChange}
                     expandedVariable={expandedVariable}
@@ -194,9 +194,11 @@ export function PromptBuilderRightPanel({
                     resources={resources}
                     onResourcesChange={setResources}
                     enablePasteImages={true}
+                    showAutoClear={true}
+                    showAttachments={true}
+                    sendButtonVariant="gray"
                 />
             </div>
         </div>
     );
 }
-

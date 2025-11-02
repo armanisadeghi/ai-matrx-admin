@@ -17,14 +17,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Wand2, Check, X, Loader2, Copy } from 'lucide-react';
+import { Wand2, Check, X, Loader2, Copy, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { FullPromptOptimizer } from './FullPromptOptimizer';
 
 interface SystemPromptOptimizerProps {
   isOpen: boolean;
   onClose: () => void;
   currentSystemMessage: string;
   onAccept: (optimizedText: string) => void;
+  fullPromptObject?: any;
+  onAcceptFullPrompt?: (optimizedObject: any) => void;
+  onAcceptAsCopy?: (optimizedObject: any) => void;
 }
 
 const OPTIMIZER_PROMPT_ID = '6e4e6335-dc04-4946-9435-561352db5b26';
@@ -33,13 +37,17 @@ export function SystemPromptOptimizer({
   isOpen,
   onClose,
   currentSystemMessage,
-  onAccept
+  onAccept,
+  fullPromptObject,
+  onAcceptFullPrompt,
+  onAcceptAsCopy
 }: SystemPromptOptimizerProps) {
   const dispatch = useAppDispatch();
   const [additionalGuidance, setAdditionalGuidance] = useState('');
   const [showGuidanceInput, setShowGuidanceInput] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+  const [isFullOptimizerOpen, setIsFullOptimizerOpen] = useState(false);
   
   // Watch streaming text - exactly like PromptRunner
   const streamingText = useAppSelector(state => 
@@ -151,19 +159,42 @@ export function SystemPromptOptimizer({
   };
 
   const hasOptimizedText = streamingText.trim().length > 0;
+  const showExperimentalButton = fullPromptObject && onAcceptFullPrompt;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            Optimize System Message
-          </DialogTitle>
-          <DialogDescription>
-            AI will help improve your system message for better clarity and effectiveness
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="flex items-center gap-2">
+                  <Wand2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  Optimize System Message
+                </DialogTitle>
+                <DialogDescription className="mt-1">
+                  AI will help improve your system message for better clarity and effectiveness
+                </DialogDescription>
+              </div>
+              {showExperimentalButton && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleClose();
+                    setIsFullOptimizerOpen(true);
+                  }}
+                  className="h-8 text-xs border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
+                >
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  Full Prompt Optimizer
+                  <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30">
+                    BETA
+                  </span>
+                </Button>
+              )}
+            </div>
+          </DialogHeader>
 
         <div className="flex-1 grid grid-cols-2 gap-4 px-6 overflow-hidden min-h-0">
           {/* Original System Message */}
@@ -313,5 +344,22 @@ export function SystemPromptOptimizer({
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Full Prompt Optimizer Modal */}
+    {showExperimentalButton && (
+      <FullPromptOptimizer
+        isOpen={isFullOptimizerOpen}
+        onClose={() => setIsFullOptimizerOpen(false)}
+        currentPromptObject={fullPromptObject}
+        onAccept={(optimizedObject) => {
+          if (onAcceptFullPrompt) {
+            onAcceptFullPrompt(optimizedObject);
+          }
+          setIsFullOptimizerOpen(false);
+        }}
+        onAcceptAsCopy={onAcceptAsCopy}
+      />
+    )}
+    </>
   );
 }
