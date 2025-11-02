@@ -639,12 +639,24 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     };
 
     // Handle settings modal updates
-    const handleSettingsUpdate = (id: string, data: { name: string; description?: string; variableDefaults: PromptVariable[] }) => {
+    const handleSettingsUpdate = (id: string, data: { 
+        name: string; 
+        description?: string; 
+        variableDefaults: PromptVariable[];
+        messages?: PromptMessage[];
+        settings?: Record<string, any>;
+    }) => {
         // Update the database using the existing updatePrompt method
         updatePrompt(id, data);
     };
 
-    const handleLocalStateUpdate = (updates: { name?: string; description?: string; variableDefaults?: PromptVariable[] }) => {
+    const handleLocalStateUpdate = (updates: { 
+        name?: string; 
+        description?: string; 
+        variableDefaults?: PromptVariable[];
+        messages?: PromptMessage[];
+        settings?: Record<string, any>;
+    }) => {
         // Update local state to reflect changes immediately
         if (updates.name !== undefined) {
             setPromptName(updates.name);
@@ -655,6 +667,31 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         if (updates.variableDefaults !== undefined) {
             setVariableDefaults(updates.variableDefaults);
         }
+        
+        // Handle messages update - split back into developerMessage and messages
+        if (updates.messages !== undefined && updates.messages.length > 0) {
+            // First message should be the system message (developer message)
+            if (updates.messages[0].role === 'system') {
+                setDeveloperMessage(updates.messages[0].content);
+                // Rest are user/assistant messages
+                setMessages(updates.messages.slice(1));
+            } else {
+                // If no system message, just set all as messages
+                setMessages(updates.messages);
+            }
+        }
+        
+        // Handle settings update - extract model and modelConfig
+        if (updates.settings !== undefined) {
+            const { model_id, ...config } = updates.settings;
+            if (model_id !== undefined) {
+                setModel(model_id);
+            }
+            if (Object.keys(config).length > 0) {
+                setModelConfig(config as ModelConfig);
+            }
+        }
+        
         setIsDirty(true);
     };
 

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { CopyTextarea, Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Check, Info, FileJson, Settings2, WrapText, Variable, Plus } from "lucide-react";
+import { Copy, Check, Info, FileJson, Settings2, WrapText, Variable, Plus, RefreshCw, AlertCircle } from "lucide-react";
 import { PromptVariable } from "./PromptBuilder";
 import { PromptMessage } from "@/components/prompt-builder/hooks/usePrompts";
 import { VariablesManager } from "./configuration/VariablesManager";
@@ -25,8 +25,20 @@ interface PromptSettingsModalProps {
     messages: PromptMessage[];
     settings: Record<string, any>;
     models: any[];
-    onUpdate: (id: string, data: { name: string; description?: string; variableDefaults: PromptVariable[] }) => void;
-    onLocalStateUpdate: (updates: { name?: string; description?: string; variableDefaults?: PromptVariable[] }) => void;
+    onUpdate: (id: string, data: { 
+        name: string; 
+        description?: string; 
+        variableDefaults: PromptVariable[];
+        messages?: PromptMessage[];
+        settings?: Record<string, any>;
+    }) => void;
+    onLocalStateUpdate: (updates: { 
+        name?: string; 
+        description?: string; 
+        variableDefaults?: PromptVariable[];
+        messages?: PromptMessage[];
+        settings?: Record<string, any>;
+    }) => void;
 }
 
 export function PromptSettingsModal({
@@ -45,9 +57,16 @@ export function PromptSettingsModal({
     const [localName, setLocalName] = useState(promptName);
     const [localDescription, setLocalDescription] = useState(promptDescription);
     const [localVariables, setLocalVariables] = useState<PromptVariable[]>([...variableDefaults]);
+    const [localMessages, setLocalMessages] = useState<PromptMessage[]>([...messages]);
+    const [localSettings, setLocalSettings] = useState<Record<string, any>>({ ...settings });
     const [isSaving, setIsSaving] = useState(false);
     const [copied, setCopied] = useState(false);
     const [wrapJson, setWrapJson] = useState(false);
+    
+    // JSON editing state
+    const [editableJson, setEditableJson] = useState('');
+    const [jsonError, setJsonError] = useState<string | null>(null);
+    const [jsonApplied, setJsonApplied] = useState(false);
     
     // Variable editor modal state
     const [isVariableModalOpen, setIsVariableModalOpen] = useState(false);
@@ -60,8 +79,10 @@ export function PromptSettingsModal({
             setLocalName(promptName);
             setLocalDescription(promptDescription);
             setLocalVariables([...variableDefaults]);
+            setLocalMessages([...messages]);
+            setLocalSettings({ ...settings });
         }
-    }, [isOpen, promptName, promptDescription, variableDefaults]);
+    }, [isOpen, promptName, promptDescription, variableDefaults, messages, settings]);
 
     // Build the complete prompt object
     const promptObject = useMemo(() => {
@@ -69,11 +90,18 @@ export function PromptSettingsModal({
             id: promptId,
             name: localName,
             description: localDescription,
-            messages,
+            messages: localMessages,
             variableDefaults: localVariables,
-            settings,
+            settings: localSettings,
         };
-    }, [promptId, localName, localDescription, messages, localVariables, settings]);
+    }, [promptId, localName, localDescription, localMessages, localVariables, localSettings]);
+
+    // Sync editableJson with promptObject
+    useEffect(() => {
+        setEditableJson(JSON.stringify(promptObject, null, 2));
+        setJsonError(null);
+        setJsonApplied(false);
+    }, [promptObject]);
 
     const handleVariableDefaultChange = (index: number, value: string) => {
         const updated = [...localVariables];
@@ -130,6 +158,61 @@ export function PromptSettingsModal({
         }
     };
 
+    const handleApplyJson = () => {
+        try {
+            const parsed = JSON.parse(editableJson);
+            
+            // Validate that ID matches (if provided in JSON)
+            if (parsed.id && parsed.id !== promptId) {
+                throw new Error(`ID mismatch: Expected "${promptId}" but got "${parsed.id}"`);
+            }
+            
+            // Validate required fields
+            if (!parsed.name || typeof parsed.name !== 'string') {
+                throw new Error('Name is required and must be a string');
+            }
+            
+            // Validate messages structure if provided
+            if (parsed.messages && !Array.isArray(parsed.messages)) {
+                throw new Error('Messages must be an array');
+            }
+            
+            // Validate each message has role and content
+            if (parsed.messages) {
+                for (let i = 0; i < parsed.messages.length; i++) {
+                    const msg = parsed.messages[i];
+                    if (!msg.role || !['system', 'user', 'assistant'].includes(msg.role)) {
+                        throw new Error(`Message ${i} must have a valid role (system, user, or assistant)`);
+                    }
+                    if (typeof msg.content !== 'string') {
+                        throw new Error(`Message ${i} content must be a string`);
+                    }
+                }
+            }
+            
+            // Validate variableDefaults structure
+            if (parsed.variableDefaults && !Array.isArray(parsed.variableDefaults)) {
+                throw new Error('Variable defaults must be an array');
+            }
+            
+            // Update all local state with parsed values
+            setLocalName(parsed.name);
+            setLocalDescription(parsed.description || '');
+            setLocalVariables(Array.isArray(parsed.variableDefaults) ? parsed.variableDefaults : []);
+            setLocalMessages(Array.isArray(parsed.messages) ? parsed.messages : localMessages);
+            setLocalSettings(parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : localSettings);
+            
+            setJsonError(null);
+            setJsonApplied(true);
+            
+            // Auto-hide success message after 3 seconds
+            setTimeout(() => setJsonApplied(false), 3000);
+        } catch (error) {
+            setJsonError(error instanceof Error ? error.message : 'Invalid JSON format');
+            setJsonApplied(false);
+        }
+    };
+
     const handleSave = async () => {
         if (!promptId) return;
 
@@ -139,6 +222,8 @@ export function PromptSettingsModal({
                 name: localName.trim(),
                 description: localDescription.trim(),
                 variableDefaults: localVariables,
+                messages: localMessages,
+                settings: localSettings,
             };
 
             // Update the database
@@ -160,11 +245,13 @@ export function PromptSettingsModal({
         setLocalName(promptName);
         setLocalDescription(promptDescription);
         setLocalVariables([...variableDefaults]);
+        setLocalMessages([...messages]);
+        setLocalSettings({ ...settings });
         onClose();
     };
 
-    // Get model name from settings
-    const selectedModel = models.find(m => m.id === settings?.model_id);
+    // Get model name from local settings
+    const selectedModel = models.find(m => m.id === localSettings?.model_id);
     const modelName = selectedModel?.common_name || selectedModel?.name || "Unknown";
 
     return (
@@ -355,10 +442,10 @@ export function PromptSettingsModal({
                         </TabsContent>
 
                         <TabsContent value="messages" className="h-full overflow-y-auto mt-3 space-y-2">
-                            {messages.length === 0 ? (
+                            {localMessages.length === 0 ? (
                                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">No messages defined</p>
                             ) : (
-                                messages.map((message, index) => (
+                                localMessages.map((message, index) => (
                                     <Card key={index} className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
@@ -386,7 +473,7 @@ export function PromptSettingsModal({
                             <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Model Configuration</h3>
                                 <div className="space-y-2">
-                                    {Object.entries(settings || {}).map(([key, value]) => (
+                                    {Object.entries(localSettings || {}).map(([key, value]) => (
                                         <div key={key} className="p-2 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
                                             <div className="flex justify-between items-start gap-2">
                                                 <span className="text-xs font-medium text-gray-700 dark:text-gray-300 font-mono">
@@ -407,10 +494,10 @@ export function PromptSettingsModal({
                             </Card>
                         </TabsContent>
 
-                        <TabsContent value="json" className="h-full overflow-y-auto mt-3">
-                            <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 h-full flex flex-col">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Complete Prompt Object</h3>
+                        <TabsContent value="json" className="h-full mt-3 flex flex-col">
+                            <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex-1 flex flex-col min-h-0">
+                                <div className="flex justify-between items-center mb-2 flex-shrink-0">
+                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Edit JSON</h3>
                                     <div className="flex gap-2">
                                         <Button
                                             size="sm"
@@ -439,13 +526,56 @@ export function PromptSettingsModal({
                                                 </>
                                             )}
                                         </Button>
+                                        <Button
+                                            size="sm"
+                                            onClick={handleApplyJson}
+                                            className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+                                        >
+                                            {jsonApplied ? (
+                                                <>
+                                                    <Check className="w-3 h-3 mr-1" />
+                                                    Applied!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <RefreshCw className="w-3 h-3 mr-1" />
+                                                    Apply Changes
+                                                </>
+                                            )}
+                                        </Button>
                                     </div>
                                 </div>
-                                <pre className={`flex-1 text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-auto font-mono ${
-                                    wrapJson ? "whitespace-pre-wrap break-words" : "whitespace-pre"
-                                }`}>
-                                    {JSON.stringify(promptObject, null, 2)}
-                                </pre>
+
+                                {/* Info Message */}
+                                <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300 flex-shrink-0">
+                                    <Info className="w-3 h-3 inline mr-1" />
+                                    Edit the JSON below (all fields except ID) and click "Apply Changes" to preview updates. Navigate to other tabs to see the impact. Changes won't be saved until you click "Save Settings".
+                                </div>
+
+                                {/* Error Message */}
+                                {jsonError && (
+                                    <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-300 flex items-start gap-1 flex-shrink-0">
+                                        <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                        <span>{jsonError}</span>
+                                    </div>
+                                )}
+
+                                {/* Success Message */}
+                                {jsonApplied && !jsonError && (
+                                    <div className="mb-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-700 dark:text-green-300 flex items-start gap-1 flex-shrink-0">
+                                        <Check className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                        <span>Changes applied! Check other tabs to see updates. Click "Save Settings" to persist changes.</span>
+                                    </div>
+                                )}
+
+                                <Textarea
+                                    value={editableJson}
+                                    onChange={(e) => setEditableJson(e.target.value)}
+                                    className={`flex-1 min-h-0 text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-3 rounded font-mono resize-none ${
+                                        wrapJson ? "whitespace-pre-wrap break-words" : "whitespace-pre"
+                                    }`}
+                                    spellCheck={false}
+                                />
                             </Card>
                         </TabsContent>
                     </div>

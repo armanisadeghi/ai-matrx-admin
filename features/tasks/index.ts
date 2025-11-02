@@ -18,6 +18,9 @@ export { useTasks, useProjects, useProjectsWithTasks } from './hooks/useTaskMana
 // Context (for using within the task manager UI)
 export { useTaskContext, TaskProvider } from './context/TaskContext';
 
+// Components
+export { QuickTasksSheet } from './components/QuickTasksSheet';
+
 // Types
 export type { 
   CreateTaskInput, 

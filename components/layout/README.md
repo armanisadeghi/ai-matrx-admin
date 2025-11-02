@@ -6,7 +6,7 @@ Dropdown menu in header (⚡ icon) for fast access to common tools.
 
 ### Adding New Actions
 
-Edit `components/layout/QuickActionsMenu.tsx`:
+Edit `features/quick-actions/components/QuickActionsMenu.tsx`:
 
 ```typescript
 // 1. Add state
@@ -29,6 +29,9 @@ const [isMyActionOpen, setIsMyActionOpen] = useState(false);
 
 ### Current Actions
 - **Notes**: Side sheet for quick note capture
+- **Tasks**: Side sheet for task management
+- **Chat**: AI conversation assistant
+- **Data**: User-generated table viewer
 - **Utilities Hub**: Full-screen overlay with tabs
 
 ---
@@ -39,7 +42,7 @@ Full-screen tabbed overlay for complex tools.
 
 ### Adding New Tabs
 
-Edit `components/layout/UtilitiesOverlay.tsx`:
+Edit `features/quick-actions/components/UtilitiesOverlay.tsx`:
 
 ```typescript
 const tabs: TabDefinition[] = [

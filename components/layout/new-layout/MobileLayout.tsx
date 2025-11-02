@@ -6,7 +6,7 @@ import { ThemeSwitcherIcon } from '@/styles/themes/ThemeSwitcher';
 import { NavigationMenu } from '@/components/ui/navigation-menu';
 import { NotificationDropdown } from '@/components/ui/notifications';
 import { Notification } from '@/types/notification.types';
-import { QuickActionsMenu } from '@/components/layout/QuickActionsMenu';
+import { QuickActionsMenu } from '@/features/quick-actions';
 import FeedbackButton from '@/components/layout/FeedbackButton';
 
 interface SidebarLink {

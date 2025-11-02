@@ -1,8 +1,8 @@
-// components/layout/QuickActionsMenu.tsx
+// features/quick-actions/components/QuickActionsMenu.tsx
 "use client";
 
 import React, { useState } from 'react';
-import { StickyNote, Zap, LayoutGrid } from 'lucide-react';
+import { StickyNote, Zap, LayoutGrid, CheckSquare, MessageSquare, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -15,6 +15,9 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
 import { QuickNotesSheet } from '@/features/notes';
+import { QuickTasksSheet } from '@/features/tasks';
+import { QuickChatSheet } from './QuickChatSheet';
+import { QuickDataSheet } from './QuickDataSheet';
 import { UtilitiesOverlay } from './UtilitiesOverlay';
 
 interface QuickActionsMenuProps {
@@ -23,9 +26,10 @@ interface QuickActionsMenuProps {
 
 export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
     const [isNotesOpen, setIsNotesOpen] = useState(false);
+    const [isTasksOpen, setIsTasksOpen] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isDataOpen, setIsDataOpen] = useState(false);
     const [isUtilitiesOpen, setIsUtilitiesOpen] = useState(false);
-    // Add more states here as you add more quick actions:
-    // const [isTasksOpen, setIsTasksOpen] = useState(false);
 
     return (
         <>
@@ -61,6 +65,44 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                                 </div>
                             </DropdownMenuItem>
 
+                            {/* Tasks Option */}
+                            <DropdownMenuItem
+                                onClick={() => setIsTasksOpen(true)}
+                                className="cursor-pointer"
+                            >
+                                <CheckSquare className="h-4 w-4 mr-2" />
+                                <div className="flex flex-col">
+                                    <span>Tasks</span>
+                                    <span className="text-xs text-zinc-500">Manage tasks & projects</span>
+                                </div>
+                            </DropdownMenuItem>
+
+                            {/* Chat Option */}
+                            <DropdownMenuItem
+                                onClick={() => setIsChatOpen(true)}
+                                className="cursor-pointer"
+                            >
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                <div className="flex flex-col">
+                                    <span>Chat</span>
+                                    <span className="text-xs text-zinc-500">AI conversation assistant</span>
+                                </div>
+                            </DropdownMenuItem>
+
+                            {/* Data Option */}
+                            <DropdownMenuItem
+                                onClick={() => setIsDataOpen(true)}
+                                className="cursor-pointer"
+                            >
+                                <Database className="h-4 w-4 mr-2" />
+                                <div className="flex flex-col">
+                                    <span>Data</span>
+                                    <span className="text-xs text-zinc-500">View & manage tables</span>
+                                </div>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
                             {/* Utilities Hub Option */}
                             <DropdownMenuItem
                                 onClick={() => setIsUtilitiesOpen(true)}
@@ -72,21 +114,6 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                                     <span className="text-xs text-zinc-500">Full view with all tools</span>
                                 </div>
                             </DropdownMenuItem>
-
-                            {/* Add more quick actions here as you build them:
-                            
-                            <DropdownMenuItem
-                                onClick={() => setIsTasksOpen(true)}
-                                className="cursor-pointer"
-                            >
-                                <CheckSquare className="h-4 w-4 mr-2" />
-                                <div className="flex flex-col">
-                                    <span>Tasks</span>
-                                    <span className="text-xs text-zinc-500">Quick task management</span>
-                                </div>
-                            </DropdownMenuItem>
-                            
-                            */}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </Tooltip>
@@ -108,26 +135,59 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                 <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
             </FloatingSheet>
 
+            {/* Tasks Sheet */}
+            <FloatingSheet
+                isOpen={isTasksOpen}
+                onClose={() => setIsTasksOpen(false)}
+                title="Quick Tasks"
+                description="Manage tasks and projects without losing context"
+                position="right"
+                width="xl"
+                height="full"
+                closeOnBackdropClick={true}
+                closeOnEsc={true}
+                showCloseButton={true}
+            >
+                <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
+            </FloatingSheet>
+
+            {/* Chat Sheet */}
+            <FloatingSheet
+                isOpen={isChatOpen}
+                onClose={() => setIsChatOpen(false)}
+                title="AI Chat"
+                description="Quick AI conversation assistant"
+                position="right"
+                width="xl"
+                height="full"
+                closeOnBackdropClick={true}
+                closeOnEsc={true}
+                showCloseButton={true}
+            >
+                <QuickChatSheet onClose={() => setIsChatOpen(false)} />
+            </FloatingSheet>
+
+            {/* Data Sheet */}
+            <FloatingSheet
+                isOpen={isDataOpen}
+                onClose={() => setIsDataOpen(false)}
+                title="Data Tables"
+                description="View and manage your data tables"
+                position="right"
+                width="xl"
+                height="full"
+                closeOnBackdropClick={true}
+                closeOnEsc={true}
+                showCloseButton={true}
+            >
+                <QuickDataSheet onClose={() => setIsDataOpen(false)} />
+            </FloatingSheet>
+
             {/* Utilities Hub Overlay */}
             <UtilitiesOverlay
                 isOpen={isUtilitiesOpen}
                 onClose={() => setIsUtilitiesOpen(false)}
             />
-
-            {/* Add more sheets here as you add more quick actions:
-            
-            <FloatingSheet
-                isOpen={isTasksOpen}
-                onClose={() => setIsTasksOpen(false)}
-                title="Quick Tasks"
-                position="right"
-                width="xl"
-                height="full"
-            >
-                <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
-            </FloatingSheet>
-            
-            */}
         </>
     );
 }

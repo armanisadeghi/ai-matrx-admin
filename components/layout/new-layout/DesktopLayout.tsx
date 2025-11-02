@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { QuickActionsMenu } from "@/components/layout/QuickActionsMenu";
+import { QuickActionsMenu } from "@/features/quick-actions";
 import FeedbackButton from "@/components/layout/FeedbackButton";
 
 interface SidebarLink {
