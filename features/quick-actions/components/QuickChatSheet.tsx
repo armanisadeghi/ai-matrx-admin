@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PromptRunner } from '@/features/prompts/components/modal/PromptRunner';
 import { cn } from '@/lib/utils';
@@ -55,7 +55,7 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                 </div>
             ) : (
                 <>
-                    {/* Compact Header with New Chat Button */}
+                    {/* Compact Header with New Chat and Close Buttons */}
                     <div className="flex-none flex items-center justify-between p-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
                         <TooltipProvider>
                             <Tooltip>
@@ -75,6 +75,26 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
+
+                        {onClose && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0"
+                                            onClick={onClose}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        Close
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                     </div>
 
                     {/* Chat Interface - Embedded PromptRunner */}

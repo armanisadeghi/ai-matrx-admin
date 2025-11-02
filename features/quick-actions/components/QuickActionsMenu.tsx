@@ -155,14 +155,12 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
             <FloatingSheet
                 isOpen={isChatOpen}
                 onClose={() => setIsChatOpen(false)}
-                title="AI Chat"
-                description="Quick AI conversation assistant"
                 position="right"
                 width="xl"
                 height="full"
                 closeOnBackdropClick={true}
                 closeOnEsc={true}
-                showCloseButton={true}
+                showCloseButton={false}
             >
                 <QuickChatSheet onClose={() => setIsChatOpen(false)} />
             </FloatingSheet>
