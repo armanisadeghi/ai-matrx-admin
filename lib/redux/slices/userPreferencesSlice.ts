@@ -23,6 +23,34 @@ export interface VoicePreferences {
     wakeWord: string;
 }
 
+// Text-to-Speech preferences (Groq PlayAI TTS) - separate from Voice service
+export type GroqTtsVoice = 
+    | 'Arista-PlayAI'
+    | 'Atlas-PlayAI'
+    | 'Basil-PlayAI'
+    | 'Briggs-PlayAI'
+    | 'Calum-PlayAI'
+    | 'Celeste-PlayAI'
+    | 'Cheyenne-PlayAI'
+    | 'Chip-PlayAI'
+    | 'Cillian-PlayAI'
+    | 'Deedee-PlayAI'
+    | 'Fritz-PlayAI'
+    | 'Gail-PlayAI'
+    | 'Indigo-PlayAI'
+    | 'Mamaw-PlayAI'
+    | 'Mason-PlayAI'
+    | 'Mikail-PlayAI'
+    | 'Mitch-PlayAI'
+    | 'Quinn-PlayAI'
+    | 'Thunder-PlayAI';
+
+export interface TextToSpeechPreferences {
+    preferredVoice: GroqTtsVoice;
+    autoPlay: boolean;
+    processMarkdown: boolean;
+}
+
 export interface AssistantPreferences {
     alwaysActive: boolean;
     alwaysWatching: boolean;
@@ -129,6 +157,7 @@ export interface SystemPreferences {
 export interface UserPreferences {
     display: DisplayPreferences;
     voice: VoicePreferences;
+    textToSpeech: TextToSpeechPreferences;
     assistant: AssistantPreferences;
     email: EmailPreferences;
     videoConference: VideoConferencePreferences;
@@ -178,6 +207,11 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
             microphone: false,
             speaker: false,
             wakeWord: 'Hey Matrix',
+        },
+        textToSpeech: {
+            preferredVoice: 'Cheyenne-PlayAI',
+            autoPlay: false,
+            processMarkdown: true,
         },
         flashcard: {
             fontSize: 16,
@@ -272,6 +306,7 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
     const mergedPreferences: UserPreferences = {
         display: { ...defaultPreferences.display, ...preferences.display },
         voice: { ...defaultPreferences.voice, ...preferences.voice },
+        textToSpeech: { ...defaultPreferences.textToSpeech, ...preferences.textToSpeech },
         assistant: { ...defaultPreferences.assistant, ...preferences.assistant },
         email: { ...defaultPreferences.email, ...preferences.email },
         videoConference: { ...defaultPreferences.videoConference, ...preferences.videoConference },

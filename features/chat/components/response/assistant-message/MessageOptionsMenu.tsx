@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save } from "lucide-react";
+import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2 } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { NotesAPI } from "@/features/notes";
 import { QuickSaveModal } from "@/features/notes";
+import { useTextToSpeech } from "@/features/tts";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { toast } from "sonner";
 
 interface MessageOptionsMenuProps {
   content: string;
@@ -16,6 +19,25 @@ interface MessageOptionsMenuProps {
 
 const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, isOpen, anchorElement }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  
+  // Get user's TTS preferences from userPreferences
+  const preferredVoice = useAppSelector((state) => state.userPreferences?.textToSpeech?.preferredVoice || 'Cheyenne-PlayAI');
+  const ttsProcessMarkdown = useAppSelector((state) => state.userPreferences?.textToSpeech?.processMarkdown ?? true);
+  
+  // TTS hook
+  const { speak, isGenerating: isTtsGenerating, isPlaying: isTtsPlaying } = useTextToSpeech({
+    defaultVoice: preferredVoice,
+    autoPlay: true,
+    processMarkdown: ttsProcessMarkdown,
+    onError: (error) => {
+      toast.error('Speech playback failed', { description: error });
+    },
+    onPlaybackStart: () => {
+      toast.success('Playing audio...', {
+        description: `Using ${preferredVoice} voice`,
+      });
+    },
+  });
 
   // Notes handlers
   const handleSaveToScratch = async () => {
@@ -29,6 +51,11 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
 
   const handleSaveToNotes = () => {
     setIsSaveModalOpen(true);
+  };
+
+  // TTS handler
+  const handlePlayAudio = async () => {
+    await speak(content);
   };
 
   // Copy handlers - simplified without state management
@@ -126,6 +153,19 @@ ${cssContent}
 
   // Build menu items for AdvancedMenu
   const menuItems: MenuItem[] = [
+    // Audio Option - First in list for easy access
+    { 
+      key: 'play-audio',
+      icon: Volume2, 
+      iconColor: "text-indigo-500 dark:text-indigo-400", 
+      label: "Play audio", 
+      description: "Listen to this message",
+      action: handlePlayAudio,
+      category: "Audio",
+      successMessage: "Playing audio...",
+      errorMessage: "Failed to play audio",
+      disabled: isTtsGenerating || isTtsPlaying,
+    },
     // Copy Options
     { 
       key: 'copy-plain',
