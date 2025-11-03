@@ -44,7 +44,9 @@ export function PromptActionModal({
     isDeleting = false,
     isDuplicating = false,
 }: PromptActionModalProps) {
-    const handleAction = (actionName: string, actionFn: () => void) => {
+    const handleAction = (e: React.MouseEvent, actionName: string, actionFn: () => void) => {
+        e.stopPropagation();
+        e.preventDefault();
         // Execute action immediately
         actionFn();
         // Close modal for navigation actions (run, edit, view)
@@ -57,11 +59,7 @@ export function PromptActionModal({
     const isAnyActionActive = isDeleting || isDuplicating;
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
-            if (!open) {
-                onClose();
-            }
-        }}>
+        <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md max-h-[100dvh] overflow-y-auto bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 border-slate-200 dark:border-slate-700">
                 <DialogHeader>
                     <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
@@ -77,7 +75,7 @@ export function PromptActionModal({
                 <div className="space-y-3 sm:space-y-4 py-4 sm:py-6">
                     {/* Run Prompt Option */}
                     <button
-                        onClick={() => handleAction('run', onRun)}
+                        onClick={(e) => handleAction(e, 'run', onRun)}
                         disabled={isAnyActionActive}
                         className={`w-full group relative overflow-hidden rounded-lg border-2 border-blue-200 dark:border-blue-800 transition-all duration-300 ${
                             isAnyActionActive 
@@ -101,7 +99,7 @@ export function PromptActionModal({
 
                     {/* Edit Prompt Option */}
                     <button
-                        onClick={() => handleAction('edit', onEdit)}
+                        onClick={(e) => handleAction(e, 'edit', onEdit)}
                         disabled={isAnyActionActive}
                         className={`w-full group relative overflow-hidden rounded-lg border-2 border-purple-200 dark:border-purple-800 transition-all duration-300 ${
                             isAnyActionActive 
@@ -134,7 +132,7 @@ export function PromptActionModal({
                             {showView && onView && (
                                 <Button
                                     variant="outline"
-                                    onClick={() => handleAction('view', onView)}
+                                    onClick={(e) => handleAction(e, 'view', onView)}
                                     disabled={isAnyActionActive}
                                     className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                                 >
@@ -146,7 +144,7 @@ export function PromptActionModal({
                             {showDuplicate && onDuplicate && (
                                 <Button
                                     variant="outline"
-                                    onClick={() => handleAction('duplicate', onDuplicate)}
+                                    onClick={(e) => handleAction(e, 'duplicate', onDuplicate)}
                                     disabled={isAnyActionActive}
                                     className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 relative"
                                 >
@@ -163,7 +161,7 @@ export function PromptActionModal({
                             {showShare && onShare && (
                                 <Button
                                     variant="outline"
-                                    onClick={() => handleAction('share', onShare)}
+                                    onClick={(e) => handleAction(e, 'share', onShare)}
                                     disabled={isAnyActionActive}
                                     className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                                 >
@@ -175,7 +173,7 @@ export function PromptActionModal({
                             {showDelete && onDelete && (
                                 <Button
                                     variant="outline"
-                                    onClick={() => handleAction('delete', onDelete)}
+                                    onClick={(e) => handleAction(e, 'delete', onDelete)}
                                     disabled={isAnyActionActive}
                                     className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 relative"
                                 >
@@ -194,7 +192,11 @@ export function PromptActionModal({
 
                 <Button
                     variant="ghost"
-                    onClick={onClose}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onClose();
+                    }}
                     disabled={isAnyActionActive}
                     className="w-full mt-2 py-2 sm:py-2.5"
                 >

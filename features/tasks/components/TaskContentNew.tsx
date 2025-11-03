@@ -6,6 +6,7 @@ import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import CompactTaskItem from './CompactTaskItem';
 import TaskDetailsPanel from './TaskDetailsPanel';
 import AllTasksView from './AllTasksView';
+import TaskSortControl from './TaskSortControl';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,8 @@ export default function TaskContentNew() {
     toggleTaskComplete,
     searchQuery,
     setSearchQuery,
+    sortBy,
+    setSortBy,
   } = useTaskContext();
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -195,24 +198,32 @@ export default function TaskContentNew() {
           <div className="flex flex-col overflow-hidden flex-1 max-w-4xl">
             <div className="flex-1 overflow-y-auto">
               <div className="p-4 space-y-3">
-                {/* Search Bar */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
-                  <Input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search tasks by name, description, or project..."
-                    className="pl-9 pr-9 h-9 text-sm bg-white dark:bg-gray-800"
+                {/* Search Bar and Sort Controls */}
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
+                    <Input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search tasks by name, description, or project..."
+                      className="pl-9 pr-9 h-9 text-sm bg-white dark:bg-gray-800"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <TaskSortControl
+                    currentSort={sortBy}
+                    onSortChange={setSortBy}
+                    compact={false}
                   />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
                 </div>
 
                 {/* Quick Add Input */}

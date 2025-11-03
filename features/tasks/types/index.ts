@@ -1,5 +1,6 @@
 // UI Types for Task Manager
 import { ReactNode } from 'react';
+import type { TaskSortField } from './sort';
 
 export interface Task {
   id: string;
@@ -47,6 +48,7 @@ export interface TaskContextType {
   showAllProjects: boolean;
   showCompleted: boolean;
   searchQuery: string;
+  sortBy: TaskSortField;
   // Actions
   setNewProjectName: (name: string) => void;
   setNewTaskTitle: (title: string) => void;
@@ -55,6 +57,7 @@ export interface TaskContextType {
   setShowAllProjects: (show: boolean) => void;
   setShowCompleted: (show: boolean) => void;
   setSearchQuery: (query: string) => void;
+  setSortBy: (sort: TaskSortField) => void;
   toggleProjectExpand: (projectId: string) => void;
   toggleTaskExpand: (taskId: string) => void;
   addProject: (e: React.FormEvent) => Promise<void>;
@@ -87,3 +90,6 @@ export interface TaskProviderProps {
 
 // Re-export database types
 export * from './database';
+
+// Re-export sort types
+export * from './sort';

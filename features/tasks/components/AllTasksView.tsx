@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, FolderOpen, CheckSquare } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import CompactTaskItem from './CompactTaskItem';
+import { sortTasks } from '../utils/taskSorting';
+import type { TaskSortConfig, TaskWithProject } from '../types';
 
 interface AllTasksViewProps {
   selectedTaskId: string | null;
@@ -12,7 +14,7 @@ interface AllTasksViewProps {
 }
 
 export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggle }: AllTasksViewProps) {
-  const { projects, filter, showCompleted, loading } = useTaskContext();
+  const { projects, filter, showCompleted, loading, sortBy } = useTaskContext();
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
 
   // Show loading state during initial fetch
@@ -62,16 +64,33 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
       tasks = tasks.filter((task: any) => !task.completed);
     }
     
+    let filteredTasks: any[];
     switch (filter) {
       case 'incomplete':
-        return tasks.filter((task: any) => !task.completed);
+        filteredTasks = tasks.filter((task: any) => !task.completed);
+        break;
       case 'overdue':
-        return tasks.filter((task: any) => 
+        filteredTasks = tasks.filter((task: any) => 
           !task.completed && task.dueDate && task.dueDate < todayStr
         );
+        break;
       default:
-        return tasks;
+        filteredTasks = tasks;
     }
+    
+    // Apply sorting - convert to TaskWithProject format
+    const tasksWithProject: TaskWithProject[] = filteredTasks.map((task: any) => ({
+      ...task,
+      projectId: project.id,
+      projectName: project.name,
+    }));
+    
+    const sortConfig: TaskSortConfig = {
+      primarySort: sortBy,
+      direction: 'asc',
+    };
+    
+    return sortTasks(tasksWithProject, sortConfig);
   };
 
   // Only show projects that have tasks matching the filter

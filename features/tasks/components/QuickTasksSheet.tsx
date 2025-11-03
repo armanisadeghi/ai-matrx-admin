@@ -35,6 +35,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import CompactTaskItem from './CompactTaskItem';
 import TaskDetailsPanel from './TaskDetailsPanel';
+import TaskSortControl from './TaskSortControl';
 import type { TaskFilterType } from '../types';
 
 interface QuickTasksSheetProps {
@@ -52,11 +53,13 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
         newTaskTitle,
         isCreatingTask,
         loading,
+        sortBy,
         setActiveProject,
         setShowAllProjects,
         setShowCompleted,
         setFilter,
         setNewTaskTitle,
+        setSortBy,
         addTask,
         getFilteredTasks,
         toggleTaskComplete,
@@ -258,6 +261,12 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
+
+                <TaskSortControl
+                    currentSort={sortBy}
+                    onSortChange={setSortBy}
+                    compact={true}
+                />
 
                 <div className="ml-auto pl-2 border-l border-zinc-200 dark:border-zinc-800">
                     <TooltipProvider>

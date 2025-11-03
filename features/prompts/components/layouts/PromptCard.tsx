@@ -148,7 +148,7 @@ export function PromptCard({
 
     const handleCardClick = (e: React.MouseEvent) => {
         // Only open modal if clicking the card itself, not if a modal is already open
-        if (!isDisabled && !isShareModalOpen) {
+        if (!isDisabled && !isShareModalOpen && !isActionModalOpen) {
             setIsActionModalOpen(true);
         }
     };

@@ -10,11 +10,14 @@ import type {
   TaskFilterType,
   TaskWithProject,
   Project,
-  ProjectWithTasks
+  ProjectWithTasks,
+  TaskSortField,
+  TaskSortConfig
 } from '../types';
 import type { DatabaseTask } from '../types/database';
 import * as taskService from '../services/taskService';
 import * as projectService from '../services/projectService';
+import { sortTasks } from '../utils/taskSorting';
 
 // Create context
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -42,6 +45,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
   const [showAllProjects, setShowAllProjects] = useState(true); // Default to All Tasks view
   const [showCompleted, setShowCompleted] = useState(false); // Default to hiding completed tasks
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<TaskSortField>('lastUpdated'); // Default sort
 
   // Convert database projects to UI projects with subtasks
   const projects: Project[] = dbProjectsWithTasks.map(dbProject => {
@@ -980,14 +984,13 @@ export function TaskProvider({ children }: TaskProviderProps) {
         filteredTasks = allTasks;
     }
     
-    // Sort by most recently updated (descending order)
-    filteredTasks.sort((a, b) => {
-      const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-      const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-      return bTime - aTime; // Most recent first
-    });
+    // Apply sorting using the reusable sort utility
+    const sortConfig: TaskSortConfig = {
+      primarySort: sortBy,
+      direction: 'asc', // Direction is handled within each comparator
+    };
     
-    return filteredTasks;
+    return sortTasks(filteredTasks, sortConfig);
   };
 
   const value: TaskContextType = {
@@ -1006,6 +1009,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
     showAllProjects,
     showCompleted,
     searchQuery,
+    sortBy,
     setNewProjectName,
     setNewTaskTitle,
     setActiveProject,
@@ -1013,6 +1017,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
     setShowAllProjects,
     setShowCompleted,
     setSearchQuery,
+    setSortBy,
     toggleProjectExpand,
     toggleTaskExpand,
     addProject,
