@@ -23,7 +23,13 @@ export function useRecorder(
         }
     }: UseRecorderProps = {}) {
     const {toast} = useToast();
-    const audioStore = useAudioStore();
+    const {
+        createRecording,
+        getRecording,
+        saveChunk,
+        updateRecordingStatus,
+        isLoading: isStoreLoading
+    } = useAudioStore();
 
     // Core state
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -118,7 +124,7 @@ export function useRecorder(
                                 blob: event.data,
                                 timestamp: new Date()
                             };
-                            await audioStore.saveChunk(chunk);
+                            await saveChunk(chunk);
                         } catch (err) {
                             console.error('[Recorder] Error saving chunk:', err);
                         }
@@ -135,7 +141,7 @@ export function useRecorder(
                 console.log('[Recorder] Recording stopped');
                 if (currentRecording?.id) {
                     try {
-                        await audioStore.updateRecordingStatus(currentRecording.id, 'completed', {
+                        await updateRecordingStatus(currentRecording.id, 'completed', {
                             duration,
                             updated_at: new Date()
                         });
@@ -180,10 +186,10 @@ export function useRecorder(
             };
 
             console.log('[Start] Creating recording in store');
-            const createResult = await audioStore.createRecording(newRecording);
+            const createResult = await createRecording(newRecording);
             if (createResult.error) throw new Error(createResult.error);
 
-            const recordingResult = await audioStore.getRecording(Number(createResult.data));
+            const recordingResult = await getRecording(Number(createResult.data));
             if (recordingResult.error) throw new Error(recordingResult.error);
 
             setCurrentRecording(recordingResult.data);
@@ -229,7 +235,7 @@ export function useRecorder(
             if (recorderRef.current && recorderRef.current.state === 'recording') {
                 recorderRef.current.pause();
                 if (currentRecording?.id) {
-                    await audioStore.updateRecordingStatus(currentRecording.id, 'paused');
+                    await updateRecordingStatus(currentRecording.id, 'paused');
                 }
             }
         } catch (err) {
@@ -244,7 +250,7 @@ export function useRecorder(
             if (recorderRef.current && recorderRef.current.state === 'paused') {
                 recorderRef.current.resume();
                 if (currentRecording?.id) {
-                    await audioStore.updateRecordingStatus(currentRecording.id, 'recording');
+                    await updateRecordingStatus(currentRecording.id, 'recording');
                 }
             }
         } catch (err) {
@@ -265,6 +271,6 @@ export function useRecorder(
         resumeRecording,
         currentRecording,
         previewStream: stream,
-        loading: isInitializing || audioStore.isLoading()
+        loading: isInitializing || isStoreLoading()
     };
 }
