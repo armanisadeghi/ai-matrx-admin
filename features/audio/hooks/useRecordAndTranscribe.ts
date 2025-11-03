@@ -60,6 +60,7 @@ export function useRecordAndTranscribe({
     isRecording,
     isPaused,
     duration,
+    audioLevel,
     startRecording,
     stopRecording,
     pauseRecording,
@@ -106,6 +107,7 @@ export function useRecordAndTranscribe({
     isRecording,
     isPaused,
     duration,
+    audioLevel,
     
     // Transcription state
     isTranscribing,

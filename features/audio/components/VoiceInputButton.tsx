@@ -58,6 +58,7 @@ export function VoiceInputButton({
     isRecording,
     isTranscribing,
     duration,
+    audioLevel,
     startRecording,
     stopRecording,
   } = useRecordAndTranscribe({
@@ -84,13 +85,18 @@ export function VoiceInputButton({
           <TranscriptionLoader duration={duration} size={size} />
         ) : isRecording ? (
           <div className="flex items-center gap-2">
-            <RecordingIndicator duration={duration} size={size} />
+            <RecordingIndicator 
+              duration={duration} 
+              audioLevel={audioLevel}
+              size={size}
+              color="blue"
+            />
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={stopRecording}
-              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Stop
             </Button>
@@ -115,14 +121,20 @@ export function VoiceInputButton({
           <TranscriptionLoader duration={duration} size={size} />
         </div>
       ) : isRecording || isExpanded ? (
-        <div className="flex items-center gap-3 px-4 py-2 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
-          <RecordingIndicator duration={duration} size={size} showPulse={isRecording} />
+        <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+          <RecordingIndicator 
+            duration={duration} 
+            audioLevel={audioLevel}
+            size={size} 
+            showPulse={isRecording}
+            color="blue"
+          />
           <Button
             type="button"
             size="sm"
             variant="ghost"
             onClick={stopRecording}
-            className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             Stop Recording
           </Button>

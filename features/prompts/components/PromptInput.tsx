@@ -84,6 +84,7 @@ export function PromptInput({
     const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isDebugMode = useAppSelector(selectIsDebugMode);
+    const pendingVoiceSubmitRef = useRef(false);
     
     // File upload hook for paste support
     const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);
@@ -93,6 +94,7 @@ export function PromptInput({
         isRecording,
         isTranscribing,
         duration,
+        audioLevel,
         startRecording,
         stopRecording,
     } = useRecordAndTranscribe({
@@ -100,14 +102,12 @@ export function PromptInput({
             if (result.success && result.text) {
                 // Append transcribed text to existing input
                 const newText = chatInput ? `${chatInput}\n${result.text}` : result.text;
+                
+                // Set flag to submit after state update
+                pendingVoiceSubmitRef.current = true;
+                
+                // Update the input value
                 onChatInputChange(newText);
-                
-                // Auto-submit after transcription
-                setTimeout(() => {
-                    onSendMessage();
-                }, 100);
-                
-                toast.success('Voice transcribed successfully');
             }
         },
         onError: (error) => {
@@ -117,6 +117,18 @@ export function PromptInput({
         },
         autoTranscribe: true,
     });
+
+    // Effect to handle pending voice submission after state update
+    useEffect(() => {
+        if (pendingVoiceSubmitRef.current && chatInput.trim()) {
+            pendingVoiceSubmitRef.current = false;
+            
+            // Small delay to ensure parent component state is updated
+            setTimeout(() => {
+                onSendMessage();
+            }, 50);
+        }
+    }, [chatInput, onSendMessage]);
 
     // Handle mic button click
     const handleMicClick = useCallback(() => {
@@ -335,16 +347,30 @@ export function PromptInput({
                             <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
                         </div>
                     ) : isRecording ? (
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={stopRecording}
-                            className="h-7 px-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 animate-pulse"
-                        >
-                            <Mic className="h-3.5 w-3.5 mr-1" />
-                            <span className="text-xs">Stop ({Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')})</span>
-                        </Button>
+                        <div className="flex items-center gap-1 px-1">
+                            {/* Audio level indicator - pulsing dot that grows with audio */}
+                            <div className="relative flex items-center justify-center w-5 h-5">
+                                <div 
+                                    className="absolute rounded-full bg-blue-500 dark:bg-blue-400 transition-transform duration-75"
+                                    style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        transform: `scale(${1 + (audioLevel / 150)})`,
+                                    }}
+                                />
+                                <div className="absolute w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-ping" />
+                            </div>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={stopRecording}
+                                className="h-7 px-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                                <Mic className="h-3.5 w-3.5 mr-1" />
+                                <span className="text-xs">Stop ({Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')})</span>
+                            </Button>
+                        </div>
                     ) : (
                         <PromptInputButton
                             icon={Mic}

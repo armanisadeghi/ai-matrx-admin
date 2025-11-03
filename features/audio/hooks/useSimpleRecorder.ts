@@ -22,6 +22,7 @@ export function useSimpleRecorder({
   const [isPaused, setIsPaused] = useState(false);
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -29,12 +30,29 @@ export function useSimpleRecorder({
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const pausedTimeRef = useRef<number>(0);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Cleanup function
   const cleanup = useCallback(() => {
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
+    }
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+
+    if (analyserRef.current) {
+      analyserRef.current = null;
     }
 
     if (streamRef.current) {
@@ -50,6 +68,7 @@ export function useSimpleRecorder({
     }
 
     chunksRef.current = [];
+    setAudioLevel(0);
   }, []);
 
   // Cleanup on unmount
@@ -73,6 +92,31 @@ export function useSimpleRecorder({
 
       streamRef.current = stream;
       chunksRef.current = [];
+
+      // Setup audio analysis for visual feedback
+      audioContextRef.current = new AudioContext();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      analyserRef.current.fftSize = 256;
+      analyserRef.current.smoothingTimeConstant = 0.8;
+
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      source.connect(analyserRef.current);
+
+      // Start audio level monitoring
+      const updateAudioLevel = () => {
+        if (!analyserRef.current) return;
+
+        const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+        analyserRef.current.getByteFrequencyData(dataArray);
+        
+        // Calculate average audio level (0-100)
+        const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        const normalizedLevel = Math.min(100, (average / 255) * 150); // Scale up for better visibility
+        
+        setAudioLevel(normalizedLevel);
+        animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+      };
+      updateAudioLevel();
 
       // Determine best MIME type
       const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
@@ -172,6 +216,7 @@ export function useSimpleRecorder({
     isPaused,
     duration,
     audioBlob,
+    audioLevel,
     startRecording,
     stopRecording,
     pauseRecording,

@@ -12,16 +12,20 @@ import { cn } from '@/lib/utils';
 
 export interface RecordingIndicatorProps {
   duration: number;
+  audioLevel?: number; // 0-100, optional audio level
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   showPulse?: boolean;
+  color?: 'blue' | 'purple' | 'green';
 }
 
 export function RecordingIndicator({
   duration,
+  audioLevel,
   className,
   size = 'md',
   showPulse = true,
+  color = 'blue',
 }: RecordingIndicatorProps) {
   
   // Size configurations
@@ -50,27 +54,55 @@ export function RecordingIndicator({
   const seconds = duration % 60;
   const formattedDuration = `${minutes}:${String(seconds).padStart(2, '0')}`;
 
+  // Color configurations
+  const colorConfig = {
+    blue: {
+      dot: 'bg-blue-500',
+      icon: 'text-blue-600 dark:text-blue-400',
+      text: 'text-blue-600 dark:text-blue-400',
+    },
+    purple: {
+      dot: 'bg-purple-500',
+      icon: 'text-purple-600 dark:text-purple-400',
+      text: 'text-purple-600 dark:text-purple-400',
+    },
+    green: {
+      dot: 'bg-green-500',
+      icon: 'text-green-600 dark:text-green-400',
+      text: 'text-green-600 dark:text-green-400',
+    },
+  };
+
+  const colors = colorConfig[color];
+
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      {/* Pulsing red dot */}
+      {/* Pulsing dot with optional audio level scaling */}
       <div className="relative flex items-center justify-center">
-        <div className={cn(
-          config.dot,
-          'rounded-full bg-red-500',
-          showPulse && 'animate-pulse'
-        )} />
+        <div 
+          className={cn(
+            config.dot,
+            'rounded-full transition-transform duration-75',
+            colors.dot,
+            showPulse && 'animate-pulse'
+          )}
+          style={audioLevel !== undefined ? {
+            transform: `scale(${1 + (audioLevel / 200)})`, // Scale based on audio level
+          } : undefined}
+        />
         {showPulse && (
           <div className={cn(
             config.dot,
-            'absolute rounded-full bg-red-500 animate-ping'
+            'absolute rounded-full animate-ping',
+            colors.dot
           )} />
         )}
       </div>
       
       {/* Recording text */}
       <div className="flex items-center gap-1.5">
-        <Mic className={cn(config.icon, 'text-red-600 dark:text-red-400')} />
-        <span className={cn(config.text, 'text-red-600 dark:text-red-400 font-medium')}>
+        <Mic className={cn(config.icon, colors.icon)} />
+        <span className={cn(config.text, colors.text, 'font-medium')}>
           Recording
         </span>
         <span className={cn(config.text, 'text-gray-600 dark:text-gray-400 font-mono')}>
