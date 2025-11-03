@@ -79,12 +79,7 @@ export default function IconDropdownMenu<T extends string = string>({
         <Button
           variant="outline"
           size={compact ? 'sm' : 'default'}
-          className={cn(
-            'gap-1 px-1',
-            'focus-visible:ring-1 focus-visible:ring-offset-1',
-            'dark:focus-visible:ring-zinc-800',
-            className
-          )}
+          className={cn('gap-1 px-1', className)}
         >
           <SelectedIcon size={compact ? 14 : 16} />
           <ChevronDown size={compact ? 12 : 14} className="opacity-50" />
