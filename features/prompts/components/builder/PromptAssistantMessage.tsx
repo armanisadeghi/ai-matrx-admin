@@ -3,10 +3,13 @@ import React, { useState, useRef } from "react";
 import { Edit, MoreHorizontal, Copy, Check } from "lucide-react";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
+import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
+import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
 import { PromptErrorMessage } from "../PromptErrorMessage";
 import { Button } from "@/components/ui/button";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 
 interface PromptAssistantMessageProps {
     content: string;
@@ -32,10 +35,16 @@ export function PromptAssistantMessage({
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [showOptionsMenu, setShowOptionsMenu] = useState(false);
     const [showHtmlModal, setShowHtmlModal] = useState(false);
-    const [htmlContent, setHtmlContent] = useState<string>('');
-    const [htmlTitle, setHtmlTitle] = useState<string>('HTML Preview');
     const [isCopied, setIsCopied] = useState(false);
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
+    const user = useAppSelector(selectUser);
+    
+    // HTML Preview state using the proper hook
+    const htmlPreviewState = useHtmlPreviewState({
+        markdownContent: content,
+        user: user,
+        isOpen: showHtmlModal,
+    });
     
     const handleContentChange = (newContent: string) => {
         if (onContentChange) {
@@ -74,9 +83,7 @@ export function PromptAssistantMessage({
         setShowOptionsMenu(!showOptionsMenu);
     };
 
-    const handleShowHtmlPreview = (html: string, title: string = 'HTML Preview') => {
-        setHtmlContent(html);
-        setHtmlTitle(title);
+    const handleShowHtmlPreview = () => {
         setShowHtmlModal(true);
     };
 
@@ -149,6 +156,7 @@ export function PromptAssistantMessage({
                                 content={content}
                                 onClose={() => setShowOptionsMenu(false)}
                                 onShowHtmlPreview={handleShowHtmlPreview}
+                                onEditContent={handleEditClick}
                                 anchorElement={moreOptionsButtonRef.current}
                             />
                         </div>
@@ -161,11 +169,12 @@ export function PromptAssistantMessage({
                 onSave={handleSaveEdit}
                 onCancel={handleCancelEdit}
             />
-            <HtmlPreviewModal
+            <HtmlPreviewFullScreenEditor
                 isOpen={showHtmlModal}
                 onClose={handleCloseHtmlModal}
-                htmlContent={htmlContent}
-                title={htmlTitle}
+                htmlPreviewState={htmlPreviewState}
+                title="HTML Preview & Publishing"
+                description="Edit markdown, preview HTML, and publish your content"
             />
         </div>
     );

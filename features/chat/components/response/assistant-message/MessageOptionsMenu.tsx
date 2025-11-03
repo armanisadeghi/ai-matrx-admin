@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2 } from "lucide-react";
+import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
@@ -13,11 +13,12 @@ interface MessageOptionsMenuProps {
   content: string;
   onClose: () => void;
   onShowHtmlPreview?: (html: string, title?: string) => void;
+  onEditContent?: () => void;
   isOpen: boolean;
   anchorElement?: HTMLElement | null;
 }
 
-const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, isOpen, anchorElement }) => {
+const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, isOpen, anchorElement }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   
   // Get user's TTS preferences from userPreferences
@@ -56,6 +57,14 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
   // TTS handler
   const handlePlayAudio = async () => {
     await speak(content);
+  };
+
+  // Edit Content handler
+  const handleEditContent = () => {
+    if (onEditContent) {
+      onEditContent();
+      onClose();
+    }
   };
 
   // Copy handlers - simplified without state management
@@ -151,15 +160,27 @@ ${cssContent}
   };
 
 
-  // Build menu items for AdvancedMenu
+  // Build menu items for AdvancedMenu (iOS-style: icon + label only)
   const menuItems: MenuItem[] = [
-    // Audio Option - First in list for easy access
+    // Edit Content - First for easy access
+    { 
+      key: 'edit-content',
+      icon: Edit, 
+      iconColor: "text-emerald-500 dark:text-emerald-400", 
+      label: "Edit content",
+      action: handleEditContent,
+      category: "Edit",
+      successMessage: "Opening editor...",
+      errorMessage: "Failed to open editor",
+      disabled: !onEditContent,
+      showToast: false
+    },
+    // Audio Option
     { 
       key: 'play-audio',
       icon: Volume2, 
       iconColor: "text-indigo-500 dark:text-indigo-400", 
-      label: "Play audio", 
-      description: "Listen to this message",
+      label: "Play audio",
       action: handlePlayAudio,
       category: "Audio",
       successMessage: "Playing audio...",
@@ -171,42 +192,38 @@ ${cssContent}
       key: 'copy-plain',
       icon: Copy, 
       iconColor: "text-blue-500 dark:text-blue-400", 
-      label: "Copy text", 
-      description: "Plain text to clipboard",
+      label: "Copy text",
       action: handleCopyPlain,
       category: "Copy",
-      successMessage: "Plain text copied to clipboard",
+      successMessage: "Plain text copied",
       errorMessage: "Failed to copy text"
     },
     { 
       key: 'copy-docs',
       icon: FileText, 
       iconColor: "text-green-500 dark:text-green-400", 
-      label: "Copy for Docs", 
-      description: "Formatted for Google Docs",
+      label: "Copy for Docs",
       action: handleCopyGoogleDocs,
       category: "Copy",
       successMessage: "Formatted for Google Docs",
-      errorMessage: "Failed to copy for Google Docs"
+      errorMessage: "Failed to copy"
     },
     { 
       key: 'copy-thinking',
       icon: Brain, 
       iconColor: "text-purple-500 dark:text-purple-400", 
-      label: "With Thinking", 
-      description: "Include thinking blocks",
+      label: "With thinking",
       action: handleCopyWithThinking,
       category: "Copy",
-      successMessage: "Content with thinking blocks copied",
-      errorMessage: "Failed to copy with thinking"
+      successMessage: "Copied with thinking blocks",
+      errorMessage: "Failed to copy"
     },
     // Export Options
     { 
       key: 'html-preview',
       icon: Eye, 
       iconColor: "text-indigo-500 dark:text-indigo-400", 
-      label: "HTML preview", 
-      description: "View formatted HTML",
+      label: "HTML preview",
       action: handleHtmlPreview,
       category: "Export",
       successMessage: "Preview opened",
@@ -216,11 +233,10 @@ ${cssContent}
       key: 'copy-html',
       icon: Globe, 
       iconColor: "text-orange-500 dark:text-orange-400", 
-      label: "Copy HTML page", 
-      description: "Complete HTML with CSS",
+      label: "Copy HTML page",
       action: handleCopyCompleteHTML,
       category: "Export",
-      successMessage: "Complete HTML page copied",
+      successMessage: "HTML page copied",
       errorMessage: "Failed to copy HTML"
     },
     // Action Options
@@ -228,31 +244,28 @@ ${cssContent}
       key: 'save-scratch',
       icon: FileText, 
       iconColor: "text-cyan-500 dark:text-cyan-400", 
-      label: "Save to Scratch", 
-      description: "Quick save to Scratch folder",
+      label: "Save to Scratch",
       action: handleSaveToScratch,
       category: "Actions",
       successMessage: "Saved to Scratch!",
-      errorMessage: "Failed to save to Scratch"
+      errorMessage: "Failed to save"
     },
     { 
       key: 'save-notes',
       icon: Save, 
       iconColor: "text-violet-500 dark:text-violet-400", 
-      label: "Save to Notes", 
-      description: "Edit and choose folder",
+      label: "Save to Notes",
       action: handleSaveToNotes,
       category: "Actions",
       successMessage: "Opening save dialog...",
-      errorMessage: "Failed to open save dialog",
+      errorMessage: "Failed to open dialog",
       showToast: false
     },
     { 
       key: 'convert-broker',
       icon: Briefcase, 
       iconColor: "text-amber-500 dark:text-amber-400", 
-      label: "Convert to broker", 
-      description: "Create broker instance",
+      label: "Convert to broker",
       action: () => {},
       category: "Actions",
       disabled: true,
@@ -262,8 +275,7 @@ ${cssContent}
       key: 'add-docs',
       icon: BookText, 
       iconColor: "text-emerald-500 dark:text-emerald-400", 
-      label: "Add to docs", 
-      description: "Save to documentation",
+      label: "Add to docs",
       action: () => {},
       category: "Actions",
       disabled: true,
@@ -273,8 +285,7 @@ ${cssContent}
       key: 'save-file',
       icon: FileCode, 
       iconColor: "text-rose-500 dark:text-rose-400", 
-      label: "Save as file", 
-      description: "Export to local file",
+      label: "Save as file",
       action: () => {},
       category: "Actions",
       disabled: true,
@@ -289,7 +300,6 @@ ${cssContent}
         onClose={onClose}
         items={menuItems}
         title="Message Options"
-        description="Copy, export, or save this message"
         position="bottom-left"
         anchorElement={anchorElement}
       />

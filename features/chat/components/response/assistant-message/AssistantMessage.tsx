@@ -3,11 +3,14 @@ import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, 
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
+import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
+import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import { ClassifiedMetadata } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
 import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 
 interface AssistantMessageProps {
     message: localMessage;
@@ -37,15 +40,19 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [isAppearing, setIsAppearing] = useState(true);
     const [showHtmlModal, setShowHtmlModal] = useState(false);
-    const [htmlContent, setHtmlContent] = useState<string>('');
-    const [htmlTitle, setHtmlTitle] = useState<string>('HTML Preview');
     const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const content = message.content;
+    const user = useAppSelector(selectUser);
+    
+    // HTML Preview state using the proper hook
+    const htmlPreviewState = useHtmlPreviewState({
+        markdownContent: content,
+        user: user,
+        isOpen: showHtmlModal,
+    });
     
     // HTML Preview handlers
-    const handleShowHtmlPreview = (html: string, title: string = 'HTML Preview') => {
-        setHtmlContent(html);
-        setHtmlTitle(title);
+    const handleShowHtmlPreview = () => {
         setShowHtmlModal(true);
     };
     
@@ -236,17 +243,28 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             content={content} 
                             onClose={() => setShowOptions(false)}
                             onShowHtmlPreview={handleShowHtmlPreview}
+                            onEditContent={handleEditClick}
                             anchorElement={moreOptionsButtonRef.current}
                         />
                     </div>
                 )}
             </div>
-            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={metadata} messageId={message.id} />
-            <HtmlPreviewModal
+            <FullScreenMarkdownEditor 
+                isOpen={isEditorOpen} 
+                initialContent={content} 
+                onSave={handleSaveEdit} 
+                onCancel={handleCancelEdit} 
+                analysisData={metadata} 
+                messageId={message.id} 
+            />
+            <HtmlPreviewFullScreenEditor
                 isOpen={showHtmlModal}
                 onClose={handleCloseHtmlModal}
-                htmlContent={htmlContent}
-                title={htmlTitle}
+                htmlPreviewState={htmlPreviewState}
+                title="HTML Preview & Publishing"
+                description="Edit markdown, preview HTML, and publish your content"
+                analysisData={metadata}
+                messageId={message.id}
             />
         </div>
     );
