@@ -183,7 +183,7 @@ export function useRecorder(
             const createResult = await audioStore.createRecording(newRecording);
             if (createResult.error) throw new Error(createResult.error);
 
-            const recordingResult = await audioStore.getRecording(createResult.data);
+            const recordingResult = await audioStore.getRecording(Number(createResult.data));
             if (recordingResult.error) throw new Error(recordingResult.error);
 
             setCurrentRecording(recordingResult.data);

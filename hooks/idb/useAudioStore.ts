@@ -16,9 +16,7 @@ export function useAudioStore() {
         opId: string,
         operation: () => AsyncResult<T>
     ): Promise<StoreResult<T>> => {
-        if (!loadingOps.includes(opId)) {
-            setLoadingOps(prev => [...prev, opId]);
-        }
+        setLoadingOps(prev => [...prev, opId]);
 
         try {
             const result = await operation();
@@ -34,7 +32,7 @@ export function useAudioStore() {
         } finally {
             setLoadingOps(prev => prev.filter(id => id !== opId));
         }
-    }, [loadingOps]);
+    }, []);
 
     const isLoading = useCallback((opId?: string) => {
         return opId ? loadingOps.includes(opId) : loadingOps.length > 0;

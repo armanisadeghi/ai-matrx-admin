@@ -29,8 +29,8 @@ export const config = {
          * 
          * Everything else requires authentication, including:
          * - /tests (all test routes)
-         * - /flash-cards, /ava, /dash, /dashboard, etc.
+         * - /flash-cards, /dash, /dashboard, etc.
          */
-        '/((?!api|_next/static|_next/image|public|login|auth|matrx|flash-cards|ava|dash-test|app_redirect|app_callback|sign-up|forgot-password|error|reset-password|contact|about|privacy-policy|google-settings|google-auth-demo|favicon.ico|sitemap.xml|robots.txt|$).*)',
+        '/((?!api|_next/static|_next/image|public|login|auth|matrx|flash-cards|dash-test|app_redirect|app_callback|sign-up|forgot-password|error|reset-password|contact|about|privacy-policy|google-settings|google-auth-demo|favicon.ico|sitemap.xml|robots.txt|$).*)',
     ],
 }

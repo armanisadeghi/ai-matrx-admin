@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Mic,
@@ -15,8 +13,6 @@ import {
     StopCircle,
     Volume2,
     VolumeX,
-    AlertCircle,
-    CheckCircle2,
     RefreshCcw
 } from 'lucide-react';
 import { useRecorder } from '@/app/(features)/voice-notes/hooks/useRecorder';

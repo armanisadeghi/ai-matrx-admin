@@ -7,35 +7,35 @@ export abstract class PublicStoreManager<T> extends DBStoreManager<T> {
         super(dbName, version);
     }
 
-    public async addItem(storeName: string, data: T): AsyncResult<string> {
+    public addItem(storeName: string, data: T): AsyncResult<string> {
         return this.add(storeName, data);
     }
 
-    public async getItem(storeName: string, id: string): AsyncResult<T> {
+    public getItem(storeName: string, id: string): AsyncResult<T> {
         return this.get(storeName, id);
     }
 
-    public async getAllItems(storeName: string): AsyncResult<T[]> {
+    public getAllItems(storeName: string): AsyncResult<T[]> {
         return this.getAll(storeName);
     }
 
-    public async updateItem<T extends object>(
+    public updateItem<U extends object>(
         storeName: string,
         id: number,
-        data: Partial<T>
-    ): Promise<AsyncResult<boolean>> {
-        return this.update(storeName, id, data);
+        data: Partial<U>
+    ): AsyncResult<boolean> {
+        return this.update<U>(storeName, id, data);
     }
 
-    public async deleteItem(storeName: string, id: number): Promise<AsyncResult<boolean>> {
+    public deleteItem(storeName: string, id: number): AsyncResult<boolean> {
         return this.delete(storeName, id);
     }
 
-    public async queryItems<T>(
+    public queryItems<U>(
         storeName: string,
         indexName: string,
         query: IDBValidKey | IDBKeyRange
-    ): Promise<AsyncResult<T[]>> {
-        return this.query(storeName, indexName, query);
+    ): AsyncResult<U[]> {
+        return this.query<U>(storeName, indexName, query);
     }
 }

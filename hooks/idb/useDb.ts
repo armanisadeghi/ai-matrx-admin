@@ -4,23 +4,22 @@ import { useState, useCallback } from 'react';
 import { AsyncResult } from '@/lib/idb/store-manager';
 import { PublicStoreManager } from '@/lib/idb/store-interface';
 
-export function useIDB(store: PublicStoreManager) {
+export function useIDB(store: PublicStoreManager<any>) {
     const [loadingOps, setLoadingOps] = useState(new Set<string>());
 
-    const withLoading = useCallback(async <T,>(
+    const withLoading = useCallback(<T,>(
         opId: string,
-        operation: () => Promise<AsyncResult<T>>
-    ): Promise<AsyncResult<T>> => {
+        operation: () => AsyncResult<T>
+    ): AsyncResult<T> => {
         setLoadingOps(prev => new Set(prev).add(opId));
-        try {
-            return await operation();
-        } finally {
+        
+        return operation().finally(() => {
             setLoadingOps(prev => {
                 const next = new Set(prev);
                 next.delete(opId);
                 return next;
             });
-        }
+        }) as AsyncResult<T>;
     }, []);
 
     const isLoading = useCallback((opId?: string) => {
@@ -29,56 +28,56 @@ export function useIDB(store: PublicStoreManager) {
 
     return {
         isLoading,
-        add: useCallback(async <T extends object>(
+        add: useCallback(<T extends object>(
             storeName: string,
             data: T
-        ): Promise<AsyncResult<number>> => {
-            return withLoading<number>(`add-${storeName}`, () =>
+        ): AsyncResult<string> => {
+            return withLoading<string>(`add-${storeName}`, () =>
                 store.addItem(storeName, data)
             );
         }, [withLoading, store]),
 
-        get: useCallback(async <T,>(
+        get: useCallback((
             storeName: string,
-            id: number
-        ): Promise<AsyncResult<T>> => {
-            return withLoading<T>(`get-${storeName}-${id}`, () =>
-                store.getItem<T>(storeName, id)
+            id: string
+        ): AsyncResult<any> => {
+            return withLoading<any>(`get-${storeName}-${id}`, () =>
+                store.getItem(storeName, id)
             );
         }, [withLoading, store]),
 
-        getAll: useCallback(async <T,>(
+        getAll: useCallback((
             storeName: string
-        ): Promise<AsyncResult<T[]>> => {
-            return withLoading<T[]>(`getAll-${storeName}`, () =>
-                store.getAllItems<T>(storeName)
+        ): AsyncResult<any[]> => {
+            return withLoading<any[]>(`getAll-${storeName}`, () =>
+                store.getAllItems(storeName)
             );
         }, [withLoading, store]),
 
-        update: useCallback(async <T extends object>(
+        update: useCallback(<T extends object>(
             storeName: string,
             id: number,
             data: Partial<T>
-        ): Promise<AsyncResult<boolean>> => {
+        ): AsyncResult<boolean> => {
             return withLoading<boolean>(`update-${storeName}-${id}`, () =>
                 store.updateItem<T>(storeName, id, data)
             );
         }, [withLoading, store]),
 
-        remove: useCallback(async (
+        remove: useCallback((
             storeName: string,
             id: number
-        ): Promise<AsyncResult<boolean>> => {
+        ): AsyncResult<boolean> => {
             return withLoading<boolean>(`delete-${storeName}-${id}`, () =>
                 store.deleteItem(storeName, id)
             );
         }, [withLoading, store]),
 
-        query: useCallback(async <T,>(
+        query: useCallback(<T,>(
             storeName: string,
             indexName: string,
             queryKey: IDBValidKey | IDBKeyRange
-        ): Promise<AsyncResult<T[]>> => {
+        ): AsyncResult<T[]> => {
             return withLoading<T[]>(`query-${storeName}-${indexName}`, () =>
                 store.queryItems<T>(storeName, indexName, queryKey)
             );

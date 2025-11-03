@@ -133,7 +133,7 @@ export function useVoiceNotes(
             const result = await audioStore.createRecording(newRecording);
             if (result.error) throw result.error;
             if (!result.data) throw new Error('Failed to create recording');
-            const recordingResult = await audioStore.getRecording(result.data);
+            const recordingResult = await audioStore.getRecording(Number(result.data));
             if (recordingResult.error) throw recordingResult.error;
             if (!recordingResult.data) throw new Error('Failed to fetch created recording');
             setCurrentRecording(recordingResult.data);
