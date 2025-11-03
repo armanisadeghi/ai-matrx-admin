@@ -26,13 +26,15 @@ export default function TaskContent(): JSX.Element {
     addProject,
     isCreatingTask,
     isCreatingProject,
-    loading
+    loading,
+    toggleTaskComplete
   } = useTaskContext();
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [taskDescription, setTaskDescription] = useState('');
   const [taskDueDate, setTaskDueDate] = useState('');
   const [selectedProjectForTask, setSelectedProjectForTask] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   
   // Update selected project when activeProject changes
   useEffect(() => {
@@ -217,7 +219,7 @@ export default function TaskContent(): JSX.Element {
                         value={taskDescription}
                         onChange={(e) => setTaskDescription(e.target.value)}
                         placeholder="Add details..."
-                        className="text-sm resize-none"
+                        className="text-sm resize-y"
                         rows={1}
                       />
                     </div>
@@ -312,7 +314,11 @@ export default function TaskContent(): JSX.Element {
         {canShowTasks && (
           <div className="mx-auto max-w-4xl">
             {showAllProjects ? (
-              <AllTasksView />
+              <AllTasksView 
+                selectedTaskId={selectedTaskId}
+                onTaskSelect={setSelectedTaskId}
+                onTaskToggle={toggleTaskComplete}
+              />
             ) : (
               <TaskList tasks={filteredTasks} />
             )}

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Search, Loader2, CheckSquare, Circle, CheckCircle2, FolderKanban } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Loader2, CheckSquare, Circle, CheckCircle2, FolderKanban, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useProjectsWithTasks } from "@/features/tasks/hooks/useTaskManager";
 import type { ProjectWithTasks, DatabaseTask } from "@/features/tasks/types";
 
@@ -16,6 +17,9 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
     const { projects, loading } = useProjectsWithTasks();
     const [selectedProject, setSelectedProject] = useState<ProjectWithTasks | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [showCompleted, setShowCompleted] = useState(false);
+    const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+    const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
 
     // Filter projects by search
     const filteredProjects = useMemo(() => {
@@ -30,17 +34,27 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
         );
     }, [projects, searchQuery]);
 
-    // Filter tasks by search
+    // Filter tasks by search and completion status
     const filteredTasks = useMemo(() => {
         if (!selectedProject) return [];
-        const tasks = selectedProject.tasks || [];
-        if (!searchQuery.trim()) return tasks;
-        const query = searchQuery.toLowerCase();
-        return tasks.filter(task => 
-            task.title.toLowerCase().includes(query) || 
-            task.description?.toLowerCase().includes(query)
-        );
-    }, [selectedProject, searchQuery]);
+        let tasks = selectedProject.tasks || [];
+        
+        // Filter by completion status
+        if (!showCompleted) {
+            tasks = tasks.filter(task => task.status !== 'completed');
+        }
+        
+        // Filter by search query
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            tasks = tasks.filter(task => 
+                task.title.toLowerCase().includes(query) || 
+                task.description?.toLowerCase().includes(query)
+            );
+        }
+        
+        return tasks;
+    }, [selectedProject, searchQuery, showCompleted]);
 
     // Count tasks per project (incomplete/total)
     const getProjectTaskCount = (project: ProjectWithTasks) => {
@@ -60,6 +74,49 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
         }
     };
 
+    // Reset expanded task when project or search changes
+    React.useEffect(() => {
+        setExpandedTaskId(null);
+    }, [selectedProject, searchQuery, showCompleted]);
+
+    // Reset selections when changing projects
+    React.useEffect(() => {
+        setSelectedTaskIds(new Set());
+    }, [selectedProject]);
+
+    // Toggle task selection
+    const toggleTaskSelection = (taskId: string) => {
+        setSelectedTaskIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(taskId)) {
+                newSet.delete(taskId);
+            } else {
+                newSet.add(taskId);
+            }
+            return newSet;
+        });
+    };
+
+    // Select all filtered tasks
+    const selectAllTasks = () => {
+        const allIds = new Set(filteredTasks.map(t => t.id));
+        setSelectedTaskIds(allIds);
+    };
+
+    // Clear all selections
+    const clearAllSelections = () => {
+        setSelectedTaskIds(new Set());
+    };
+
+    // Add selected tasks
+    const addSelectedTasks = () => {
+        const tasks = filteredTasks.filter(t => selectedTaskIds.has(t.id));
+        tasks.forEach(task => {
+            onSelect({ type: 'task', data: task });
+        });
+        setSelectedTaskIds(new Set());
+    };
+
     return (
         <div className="flex flex-col h-[400px]">
             {/* Header */}
@@ -74,16 +131,64 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
                 </Button>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1 truncate">
                     {selectedProject ? selectedProject.name : "Tasks"}
+                    {selectedProject && selectedTaskIds.size > 0 && (
+                        <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                            ({selectedTaskIds.size} selected)
+                        </span>
+                    )}
                 </span>
                 {selectedProject && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-[10px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                        onClick={() => onSelect({ type: 'project', data: selectedProject })}
-                    >
-                        Add All
-                    </Button>
+                    <>
+                        <label className="flex items-center gap-1 cursor-pointer">
+                            <Checkbox 
+                                checked={showCompleted}
+                                onCheckedChange={(checked) => setShowCompleted(checked === true)}
+                                className="h-3 w-3"
+                            />
+                            <span className="text-[10px] text-gray-600 dark:text-gray-400">
+                                Completed
+                            </span>
+                        </label>
+                        {selectedTaskIds.size > 0 ? (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-[10px] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    onClick={clearAllSelections}
+                                >
+                                    Clear
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-[10px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                    onClick={addSelectedTasks}
+                                >
+                                    Add ({selectedTaskIds.size})
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-[10px] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    onClick={selectAllTasks}
+                                >
+                                    Select All
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-[10px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                    onClick={() => onSelect({ type: 'project', data: selectedProject })}
+                                >
+                                    Add Project
+                                </Button>
+                            </>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -119,36 +224,102 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
                                 {filteredTasks.map((task) => {
                                     const isCompleted = task.status === 'completed';
                                     const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !isCompleted;
+                                    const isExpanded = expandedTaskId === task.id;
+                                    const isSelected = selectedTaskIds.has(task.id);
                                     
                                     return (
-                                        <button
+                                        <div
                                             key={task.id}
-                                            onClick={() => onSelect({ type: 'task', data: task })}
-                                            className="w-full text-left px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group"
+                                            className={`rounded overflow-hidden border transition-all ${
+                                                isSelected 
+                                                    ? 'border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/20' 
+                                                    : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+                                            }`}
                                         >
-                                            <div className="flex items-start gap-2">
-                                                {isCompleted ? (
-                                                    <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-green-600 dark:text-green-500 mt-0.5" />
-                                                ) : (
-                                                    <Circle className="w-4 h-4 flex-shrink-0 text-gray-400 dark:text-gray-500 mt-0.5" />
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className={`text-xs font-medium truncate mb-0.5 ${
-                                                        isCompleted 
-                                                            ? 'text-gray-500 dark:text-gray-400 line-through' 
-                                                            : 'text-gray-900 dark:text-gray-100'
-                                                    }`}>
-                                                        {task.title}
+                                            <div className="flex items-start gap-2 px-2 py-2">
+                                                {/* Checkbox for multi-select */}
+                                                <Checkbox
+                                                    checked={isSelected}
+                                                    onCheckedChange={() => toggleTaskSelection(task.id)}
+                                                    className="mt-0.5 flex-shrink-0"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                                
+                                                {/* Task content - clickable to immediately add */}
+                                                <button
+                                                    onClick={() => onSelect({ type: 'task', data: task })}
+                                                    className="flex-1 text-left hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors rounded px-1 py-0.5 -mx-1 -my-0.5 min-w-0"
+                                                >
+                                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                                        <span className={`text-xs font-medium truncate ${
+                                                            isCompleted 
+                                                                ? 'text-gray-500 dark:text-gray-400' 
+                                                                : 'text-gray-900 dark:text-gray-100'
+                                                        }`}>
+                                                            {task.title}
+                                                        </span>
+                                                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${
+                                                            isCompleted 
+                                                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                                        }`}>
+                                                            {task.status}
+                                                        </span>
                                                     </div>
-                                                    {task.description && (
+                                                    {!isExpanded && task.description && (
                                                         <div className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1 leading-tight mb-1">
                                                             {task.description}
                                                         </div>
                                                     )}
+                                                    {!isExpanded && (
+                                                        <div className="flex gap-1 flex-wrap items-center">
+                                                            {task.priority && (
+                                                                <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${getPriorityColor(task.priority)}`}>
+                                                                    {task.priority}
+                                                                </span>
+                                                            )}
+                                                            {task.due_date && (
+                                                                <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                                                                    isOverdue 
+                                                                        ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' 
+                                                                        : 'bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-400'
+                                                                }`}>
+                                                                    {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </button>
+                                                
+                                                {/* Chevron - toggles expansion */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setExpandedTaskId(isExpanded ? null : task.id);
+                                                    }}
+                                                    className="flex-shrink-0 p-1 -mr-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors"
+                                                    title={isExpanded ? "Hide details" : "Show details"}
+                                                >
+                                                    <ChevronDown 
+                                                        className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                    />
+                                                </button>
+                                            </div>
+
+                                            {isExpanded && (
+                                                <div className="px-2 pb-2 pl-9 space-y-2 bg-gray-50 dark:bg-zinc-800/50">
+                                                    {task.description && (
+                                                        <div className="max-h-24 overflow-y-auto scrollbar-thin rounded bg-white dark:bg-zinc-900 p-2 border border-gray-200 dark:border-gray-700">
+                                                            <div className="text-[11px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                                                                {task.description}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    
                                                     <div className="flex gap-1 flex-wrap items-center">
                                                         {task.priority && (
                                                             <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${getPriorityColor(task.priority)}`}>
-                                                                {task.priority}
+                                                                {task.priority} priority
                                                             </span>
                                                         )}
                                                         {task.due_date && (
@@ -157,13 +328,13 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
                                                                     ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' 
                                                                     : 'bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-400'
                                                             }`}>
-                                                                {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                                Due: {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </button>
+                                            )}
+                                        </div>
                                     );
                                 })}
                             </div>

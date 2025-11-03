@@ -65,15 +65,6 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
         },
     ];
 
-    // Filter resources based on capabilities
-    const filteredCategories = resourceCategories.map(category => ({
-        ...category,
-        items: category.items.filter(resource => {
-            if (!resource.requiresCapability) return true;
-            return attachmentCapabilities?.[resource.requiresCapability] === true;
-        })
-    })).filter(category => category.items.length > 0);
-
     // Check if a resource is enabled based on capabilities
     const isResourceEnabled = (resource: { requiresCapability: string | null }) => {
         if (!resource.requiresCapability) return true;
@@ -203,7 +194,7 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
             }
 
             // Add other resource pickers here as they're implemented
-            const currentResource = filteredCategories
+            const currentResource = resourceCategories
                 .flatMap(cat => cat.items)
                 .find(r => r.id === activeView);
             
@@ -232,7 +223,7 @@ export function ResourcePickerMenu({ onResourceSelected, onClose, attachmentCapa
     // Main menu view
     return (
         <div className="py-1">
-            {filteredCategories.map((category, categoryIndex) => (
+            {resourceCategories.map((category, categoryIndex) => (
                 <div key={category.category}>
                     <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-2 py-0.5 mt-1">
                         {category.category}

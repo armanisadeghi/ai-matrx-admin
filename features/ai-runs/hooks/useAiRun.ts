@@ -31,8 +31,17 @@ export function useAiRun(initialRunId?: string): UseAiRunReturn {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Update runId when initialRunId changes (e.g., from URL updates)
+  useEffect(() => {
+    if (initialRunId !== runId) {
+      console.log('🔄 useAiRun: runId changing from', runId, 'to', initialRunId);
+      setRunId(initialRunId);
+    }
+  }, [initialRunId, runId]);
+
   // Load run and tasks
   const loadRun = useCallback(async (id: string) => {
+    console.log('📥 useAiRun: Loading run', id);
     setIsLoading(true);
     setError(null);
     
@@ -40,14 +49,17 @@ export function useAiRun(initialRunId?: string): UseAiRunReturn {
       const data = await aiRunsService.getWithTasks(id);
       
       if (data) {
+        console.log('✅ useAiRun: Run loaded with', data.tasks.length, 'tasks and', data.messages?.length || 0, 'messages');
         setRun(data);
         setTasks(data.tasks);
       } else {
+        console.warn('⚠️ useAiRun: Run not found:', id);
         setRun(null);
         setTasks([]);
         setError(new Error('Run not found'));
       }
     } catch (err) {
+      console.error('❌ useAiRun: Error loading run:', err);
       setError(err as Error);
       setRun(null);
       setTasks([]);

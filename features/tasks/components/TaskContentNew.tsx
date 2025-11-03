@@ -244,7 +244,7 @@ export default function TaskContentNew() {
                         value={quickAddDescription}
                         onChange={(e) => setQuickAddDescription(e.target.value)}
                         placeholder="Add a description (optional)..."
-                        className="text-sm resize-none min-h-[60px]"
+                        className="text-sm resize-y min-h-[60px]"
                         rows={2}
                       />
                     )}

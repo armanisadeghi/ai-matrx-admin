@@ -164,14 +164,26 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
 
     // Get display value for a row
     const getRowDisplayValue = (row: TableRow) => {
+        // First try meaningful field names
         const meaningfulFields = ['name', 'title', 'label', 'description'];
         for (const fieldName of meaningfulFields) {
             if (row.data[fieldName]) {
                 return `${row.data[fieldName]}`;
             }
         }
-        const firstValue = Object.values(row.data).find(val => val !== null && val !== undefined);
-        return firstValue ? `${firstValue}` : row.id.substring(0, 8);
+        
+        // Fall back to the first column based on field_order
+        if (fields.length > 0) {
+            const sortedFields = [...fields].sort((a, b) => a.field_order - b.field_order);
+            const firstField = sortedFields[0];
+            const firstValue = row.data[firstField.field_name];
+            if (firstValue !== null && firstValue !== undefined) {
+                return `${firstValue}`;
+            }
+        }
+        
+        // Last resort: use row ID
+        return row.id.substring(0, 8);
     };
 
     // Handle table preview
@@ -548,4 +560,3 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
         </div>
     );
 }
-

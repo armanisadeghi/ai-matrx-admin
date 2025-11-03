@@ -48,7 +48,7 @@ interface PromptInputProps {
     
     // Resource management
     resources?: Resource[];
-    onResourcesChange?: (resources: Resource[]) => void;
+    onResourcesChange?: (resources: Resource[] | ((prev: Resource[]) => Resource[])) => void;
     enablePasteImages?: boolean;
     uploadBucket?: string;
     uploadPath?: string;
@@ -142,16 +142,18 @@ export function PromptInput({
     // Handle resource selection from picker
     const handleResourceSelected = useCallback((resource: any) => {
         if (onResourcesChange) {
-            onResourcesChange([...resources, resource]);
+            // Use functional update to ensure we always have the latest resources array
+            // This prevents race conditions when adding multiple resources rapidly
+            onResourcesChange((prevResources: Resource[]) => [...prevResources, resource]);
         }
-    }, [resources, onResourcesChange]);
+    }, [onResourcesChange]);
 
     // Handle resource removal
     const handleRemoveResource = useCallback((index: number) => {
         if (onResourcesChange) {
-            onResourcesChange(resources.filter((_, i) => i !== index));
+            onResourcesChange((prevResources: Resource[]) => prevResources.filter((_, i) => i !== index));
         }
-    }, [resources, onResourcesChange]);
+    }, [onResourcesChange]);
 
     // Handle resource preview
     const handlePreviewResource = useCallback((resource: Resource, index: number) => {
@@ -163,12 +165,12 @@ export function PromptInput({
         try {
             const results = await uploadMultipleToPrivateUserAssets([file]);
             if (results && results.length > 0 && onResourcesChange) {
-                onResourcesChange([...resources, { type: "file", data: results[0] }]);
+                onResourcesChange((prevResources: Resource[]) => [...prevResources, { type: "file", data: results[0] }]);
             }
         } catch (error) {
             console.error("Failed to upload pasted image:", error);
         }
-    }, [resources, onResourcesChange, uploadMultipleToPrivateUserAssets]);
+    }, [onResourcesChange, uploadMultipleToPrivateUserAssets]);
 
     // Setup clipboard paste
     useClipboardPaste({

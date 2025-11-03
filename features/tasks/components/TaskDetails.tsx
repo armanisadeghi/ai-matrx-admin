@@ -134,7 +134,7 @@ export default function TaskDetails({ task }: { task: any }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add details about this task..."
-            className="text-sm resize-none"
+            className="text-sm resize-y"
             rows={fullScreenMode ? 12 : 8}
           />
         </div>

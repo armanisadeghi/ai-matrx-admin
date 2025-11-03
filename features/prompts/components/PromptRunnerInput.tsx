@@ -23,7 +23,7 @@ interface PromptRunnerInputProps {
     
     // Resource management
     resources?: Resource[];
-    onResourcesChange?: (resources: Resource[]) => void;
+    onResourcesChange?: (resources: Resource[] | ((prev: Resource[]) => Resource[])) => void;
     enablePasteImages?: boolean;
 }
 

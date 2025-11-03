@@ -200,9 +200,15 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
         }
     }, [run, hasLoadedRun]);
     
-    // Reset hasLoadedRun when urlRunId changes
+    // Reset state when urlRunId changes (switching between runs)
     useEffect(() => {
         setHasLoadedRun(false);
+        // Clear conversation state to prevent showing old messages
+        if (urlRunId) {
+            setConversationMessages([]);
+            setApiConversationHistory([]);
+            setConversationStarted(false);
+        }
     }, [urlRunId]);
     
     // Helper function to replace variables in content

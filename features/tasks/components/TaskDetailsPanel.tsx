@@ -460,7 +460,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
             value={description}
             onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Implement the /api/v1/auth/login endpoint using JWT for token generation. Include password hashing with bcrypt."
-            className="text-sm resize-none min-h-[100px]"
+            className="text-sm resize-y min-h-[100px]"
           />
         </div>
 

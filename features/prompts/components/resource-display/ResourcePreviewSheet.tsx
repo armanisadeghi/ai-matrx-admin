@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, ExternalLink, Image, FileText, Mic } from "lucide-react";
+import { StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, ExternalLink, Image, FileText, Mic, Calendar, Flag, User, MessageSquare, Circle, CheckCircle2 } from "lucide-react";
 import { CiYoutube } from "react-icons/ci";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import type { Resource } from "./ResourceChips";
@@ -234,55 +234,114 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
                     {/* Task Preview */}
                     {resource.type === "task" && (
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <CheckSquare className={`w-5 h-5 ${
-                                    resource.data.status === 'completed' 
-                                        ? 'text-green-600 dark:text-green-500' 
-                                        : 'text-gray-400 dark:text-gray-500'
-                                }`} />
-                                <span className={`text-sm font-medium ${
-                                    resource.data.status === 'completed'
-                                        ? 'text-gray-500 dark:text-gray-400 line-through'
-                                        : 'text-gray-900 dark:text-gray-100'
-                                }`}>
-                                    {resource.data.status === 'completed' ? 'Completed' : 'Pending'}
-                                </span>
-                            </div>
-
-                            {resource.data.description && (
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                                        Description
-                                    </h3>
-                                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                                        {resource.data.description}
-                                    </p>
+                            <div className="space-y-3 text-sm">
+                                {/* Title */}
+                                <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Title:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{resource.data.title}</span>
                                 </div>
-                            )}
 
-                            {resource.data.priority && (
-                                <div>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">Priority: </span>
-                                    <span className={`text-xs font-medium px-2 py-1 rounded ${
-                                        resource.data.priority === 'high' 
-                                            ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400'
-                                            : resource.data.priority === 'medium'
-                                            ? 'bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400'
-                                            : 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
+                                {/* Status */}
+                                <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Status:</span>
+                                    <span className={`inline-flex items-center gap-1.5 ${
+                                        resource.data.status === 'completed'
+                                            ? 'text-green-600 dark:text-green-400'
+                                            : 'text-blue-600 dark:text-blue-400'
                                     }`}>
-                                        {resource.data.priority}
+                                        {resource.data.status === 'completed' ? (
+                                            <CheckCircle2 className="w-4 h-4" />
+                                        ) : (
+                                            <Circle className="w-4 h-4" />
+                                        )}
+                                        {resource.data.status || 'Not set'}
                                     </span>
                                 </div>
-                            )}
 
-                            {resource.data.due_date && (
-                                <div>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">Due: </span>
-                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                        {new Date(resource.data.due_date).toLocaleDateString()}
+                                {/* Priority */}
+                                <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Priority:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">
+                                        {resource.data.priority ? (
+                                            <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                                resource.data.priority === 'high' 
+                                                    ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400'
+                                                    : resource.data.priority === 'medium'
+                                                    ? 'bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400'
+                                                    : 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400'
+                                            }`}>
+                                                {resource.data.priority}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-500 dark:text-gray-400 italic">Not set</span>
+                                        )}
                                     </span>
                                 </div>
-                            )}
+
+                                {/* Due Date */}
+                                <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Due Date:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">
+                                        {resource.data.due_date ? (
+                                            <>
+                                                {new Date(resource.data.due_date).toLocaleDateString('en-US', { 
+                                                    year: 'numeric', 
+                                                    month: 'short', 
+                                                    day: 'numeric' 
+                                                })}
+                                                {new Date(resource.data.due_date) < new Date() && resource.data.status !== 'completed' && (
+                                                    <span className="ml-2 text-xs bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded">
+                                                        Overdue
+                                                    </span>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <span className="text-gray-500 dark:text-gray-400 italic">Not set</span>
+                                        )}
+                                    </span>
+                                </div>
+
+                                {/* Project */}
+                                {resource.data.project_name && (
+                                    <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                                        <span className="text-gray-600 dark:text-gray-400 font-medium">Project:</span>
+                                        <span className="text-gray-900 dark:text-gray-100">{resource.data.project_name}</span>
+                                    </div>
+                                )}
+
+                                {/* Description */}
+                                <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Description:</span>
+                                    <div className="text-gray-900 dark:text-gray-100">
+                                        {resource.data.description ? (
+                                            <div className="whitespace-pre-wrap">{resource.data.description}</div>
+                                        ) : (
+                                            <span className="text-gray-500 dark:text-gray-400 italic">No description</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Subtasks if available */}
+                                {resource.data.subtasks && resource.data.subtasks.length > 0 && (
+                                    <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+                                        <span className="text-gray-600 dark:text-gray-400 font-medium">Subtasks:</span>
+                                        <div className="space-y-1.5">
+                                            {resource.data.subtasks.map((subtask: any) => (
+                                                <div key={subtask.id} className="flex items-center gap-2 text-sm">
+                                                    {subtask.completed ? (
+                                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-500 flex-shrink-0" />
+                                                    ) : (
+                                                        <Circle className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                    )}
+                                                    <span className={subtask.completed ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}>
+                                                        {subtask.title}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
