@@ -1,7 +1,9 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Copy, Edit, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from "../../utils/resource-parsing";
+import { ResourcesContainer } from "../resource-display/ResourceDisplay";
 
 interface PromptUserMessageProps {
     content: string;
@@ -18,6 +20,11 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
 
     const contentRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    
+    // Parse resources from content
+    const hasResources = useMemo(() => messageContainsResources(content), [content]);
+    const resources = useMemo(() => hasResources ? parseResourcesFromMessage(content) : [], [content, hasResources]);
+    const textContent = useMemo(() => hasResources ? extractMessageWithoutResources(content) : content, [content, hasResources]);
 
     // Reset edit content when message changes
     useEffect(() => {
@@ -161,19 +168,29 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                             )}
                         </div>
                     ) : (
-                        <div className="relative">
-                            <div
-                                ref={contentRef}
-                                className={`text-sm text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${
-                                    isCollapsed ? "max-h-16" : ""
-                                }`}
-                            >
-                                {content}
-                            </div>
-                            {isCollapsed && (
-                                <div
-                                    className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-muted to-transparent pointer-events-none"
-                                />
+                        <div className="space-y-2">
+                            {/* Display resources first if any */}
+                            {resources.length > 0 && (
+                                <ResourcesContainer resources={resources} />
+                            )}
+                            
+                            {/* Display text content */}
+                            {textContent.trim() && (
+                                <div className="relative">
+                                    <div
+                                        ref={contentRef}
+                                        className={`text-sm text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${
+                                            isCollapsed ? "max-h-16" : ""
+                                        }`}
+                                    >
+                                        {textContent}
+                                    </div>
+                                    {isCollapsed && (
+                                        <div
+                                            className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-muted to-transparent pointer-events-none"
+                                        />
+                                    )}
+                                </div>
                             )}
                         </div>
                     )}

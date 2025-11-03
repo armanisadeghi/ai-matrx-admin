@@ -3,19 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { X, StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, FileText, Youtube, Image, Mic } from "lucide-react";
 import { motion } from "framer-motion";
-
-// Resource types
-export type Resource = 
-    | { type: "note"; data: any }
-    | { type: "task"; data: any }
-    | { type: "project"; data: any }
-    | { type: "file"; data: any }
-    | { type: "table"; data: any }
-    | { type: "webpage"; data: any }
-    | { type: "youtube"; data: any }
-    | { type: "image_url"; data: any }
-    | { type: "file_url"; data: any }
-    | { type: "audio"; data: any };
+import { Resource } from "../../types/resources";
 
 interface ResourceChipsProps {
     resources: Resource[];

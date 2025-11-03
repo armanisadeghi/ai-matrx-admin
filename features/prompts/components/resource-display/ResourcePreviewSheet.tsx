@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, ExternalLink, Image, FileText, Mic, Calendar, Flag, User, MessageSquare, Circle, CheckCircle2 } from "lucide-react";
 import { CiYoutube } from "react-icons/ci";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
-import type { Resource } from "./ResourceChips";
+import type { Resource } from "../../types/resources";
 import FilePreviewSheet from "@/components/ui/file-preview/FilePreviewSheet";
 import { createClient } from "@/utils/supabase/client";
 import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
@@ -107,12 +107,12 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
     }, [resource, isOpen, supabase]);
 
     // For file resources, use existing FilePreviewSheet
-    if (resource.type === "file") {
+    if (resource.type === "file" && resource.data.url && resource.data.type) {
         return (
             <FilePreviewSheet
                 isOpen={isOpen}
                 onClose={onClose}
-                file={resource.data}
+                file={resource.data as any}
             />
         );
     }

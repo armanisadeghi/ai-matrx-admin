@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from "uuid";
 import { PromptRunnerModalProps, PromptData } from "../../types/modal";
 import type { Resource } from "../resource-display";
 import { AdditionalInfoModal } from "./AdditionalInfoModal";
+import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -69,6 +70,7 @@ export function PromptRunner({
 }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
+    const { formatMessageWithResources } = useResourceMessageFormatter();
     
     // Prompt data state
     const [promptData, setPromptData] = useState<PromptData | null>(initialPromptData || null);
@@ -500,7 +502,17 @@ export function PromptRunner({
             displayUserMessage = chatInput;
         }
 
+        // Format message with resources before sending
+        const { formattedMessage, settingsAttachments } = await formatMessageWithResources(userMessageContent, resources);
+        
+        // Use formatted message for API
+        userMessageContent = formattedMessage;
+        
+        // Also update display message to include resources for UI rendering
+        displayUserMessage = formattedMessage;
+
         setChatInput("");
+        setResources([]); // Clear resources after sending
 
         const displayMessageWithReplacedVariables = replaceVariables(displayUserMessage);
 
@@ -508,6 +520,9 @@ export function PromptRunner({
         if (shouldDisplayUserMessage) {
             setConversationMessages((prev) => [...prev, { role: "user", content: displayMessageWithReplacedVariables }]);
         }
+        
+        // TODO: Handle settingsAttachments (image_url, file_url, youtube, etc.)
+        // These should be added to the model settings/config
 
         setIsTestingPrompt(true);
         setMessageStartTime(performance.now());
