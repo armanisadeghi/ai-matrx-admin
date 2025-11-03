@@ -1,3 +1,14 @@
+/**
+ * Content Splitter V1 - LEGACY Parser (Retained for Rollback)
+ * 
+ * This is the original markdown parser. As of the V2 migration, this is no longer
+ * used in production but is kept available for emergency rollback if needed.
+ * 
+ * Current production parser: content-splitter-v2.ts
+ * 
+ * To rollback to V1, set useV2Parser={false} in EnhancedChatMarkdown props.
+ */
+
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 
 export interface ContentBlock {

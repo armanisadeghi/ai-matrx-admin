@@ -130,7 +130,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [quickCategoryData, setQuickCategoryData] = useState({ label: '', icon_name: 'Folder', color: '#3b82f6' });
     const [quickSubcategoryData, setQuickSubcategoryData] = useState({ label: '', icon_name: 'FolderOpen', categoryId: '' });
     // Preview mode for Template Content
-    const [previewMode, setPreviewMode] = useState<'editor' | 'v1' | 'v2'>('editor');
+    const [previewMode, setPreviewMode] = useState<'editor' | 'v1' | 'v2'>('v2');
 
     // Toast notifications
     const { toast } = useToast();
@@ -1131,22 +1131,22 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     Editor
                                                 </Button>
                                                 <Button
-                                                    variant={previewMode === 'v1' ? 'default' : 'outline'}
-                                                    size="sm"
-                                                    onClick={() => setPreviewMode('v1')}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Columns2 className="w-4 h-4" />
-                                                    V1
-                                                </Button>
-                                                <Button
                                                     variant={previewMode === 'v2' ? 'default' : 'outline'}
                                                     size="sm"
                                                     onClick={() => setPreviewMode('v2')}
                                                     className="flex items-center gap-2"
                                                 >
                                                     <Columns2 className="w-4 h-4" />
-                                                    V2
+                                                    Preview
+                                                </Button>
+                                                <Button
+                                                    variant={previewMode === 'v1' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => setPreviewMode('v1')}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Columns2 className="w-4 h-4" />
+                                                    V1 (Legacy)
                                                 </Button>
                                             </div>
                                         </div>
@@ -1170,13 +1170,13 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
                                                         <span>PREVIEW</span>
                                                         <Badge variant={previewMode === 'v2' ? 'default' : 'outline'} className="text-xs">
-                                                            {previewMode === 'v1' ? 'Parser V1 (Current)' : 'Parser V2 (Test)'}
+                                                            {previewMode === 'v1' ? 'Parser V1 (Legacy)' : 'Parser V2 (Current)'}
                                                         </Badge>
                                                     </div>
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
                                                         <EnhancedChatMarkdown 
                                                             content={editData.template || ''} 
-                                                            useV2Parser={previewMode === 'v2'}
+                                                            useV2Parser={previewMode !== 'v1'}
                                                         />
                                                     </div>
                                                 </div>

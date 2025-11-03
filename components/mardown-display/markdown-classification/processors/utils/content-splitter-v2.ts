@@ -1,7 +1,8 @@
 /**
- * Content Splitter V2 - Refactored Parser
+ * Content Splitter V2 - PRODUCTION Parser
  * 
  * A streamlined, registry-based markdown parser optimized for streaming content.
+ * This is the current production parser used by EnhancedChatMarkdown.
  * 
  * Key improvements over V1:
  * - Registry-based architecture for block types (easy to extend)
@@ -18,8 +19,7 @@
  * 5. Tables
  * 6. Text (fallback)
  * 
- * To test against V1:
- * Run: npx ts-node components/mardown-display/markdown-classification/processors/utils/__tests__/run-comparison.ts
+ * Legacy V1 parser available in content-splitter.ts for rollback if needed.
  */
 
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";

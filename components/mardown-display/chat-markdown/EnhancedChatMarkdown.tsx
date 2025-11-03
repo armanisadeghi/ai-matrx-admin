@@ -25,7 +25,7 @@ interface ChatMarkdownDisplayProps {
     messageId?: string;
     allowFullScreenEditor?: boolean;
     hideCopyButton?: boolean;
-    useV2Parser?: boolean; // Test flag for V2 parser
+    useV2Parser?: boolean; // Default: true (V2 parser). Set to false to use legacy V1 parser.
 }
 
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
@@ -61,8 +61,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     // Skip expensive processing if we're in loading state
     const blocks = useMemo(() => {
         if (isWaitingForContent) return [];
-        // Use V2 parser if flag is set, otherwise use V1
-        return useV2Parser 
+        // Use V2 parser by default (V1 available via useV2Parser=false if needed for testing/rollback)
+        return useV2Parser !== false
             ? splitContentIntoBlocksV2(currentContent)
             : splitContentIntoBlocks(currentContent);
     }, [currentContent, isWaitingForContent, useV2Parser]);
