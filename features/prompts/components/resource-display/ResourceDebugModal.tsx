@@ -28,6 +28,7 @@ export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalP
         formattedXml: string;
         fullMessage: string;
         settingsAttachments: any;
+        metadata: any;
     } | null>(null);
     const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
@@ -75,6 +76,11 @@ export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalP
             // Extract settings attachments
             const settingsAttachments = extractSettingsAttachments(enrichedResources);
             
+            // Extract message metadata (files and resource references)
+            const metadata = await import('../../utils/resource-formatting').then(mod => 
+                mod.extractMessageMetadata(enrichedResources)
+            );
+            
             // Create example message
             const exampleUserMessage = "Here are the resources I want to discuss:";
             const fullMessage = appendResourcesToMessage(exampleUserMessage, formattedXml);
@@ -82,7 +88,8 @@ export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalP
             setPreviewData({
                 formattedXml,
                 fullMessage,
-                settingsAttachments
+                settingsAttachments,
+                metadata
             });
             setShowMessagePreview(true);
         } catch (error) {
@@ -290,11 +297,39 @@ export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalP
                                 </pre>
                             </div>
                             
+                            {/* Message Metadata */}
+                            {previewData.metadata && (previewData.metadata.files?.length > 0 || previewData.metadata.resources?.length > 0) && (
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="text-sm font-semibold">Message Metadata</h3>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 px-2 text-xs"
+                                            onClick={() => copyPreviewToClipboard(JSON.stringify(previewData.metadata, null, 2))}
+                                        >
+                                            <Copy className="w-3 h-3 mr-1" />
+                                            Copy
+                                        </Button>
+                                    </div>
+                                    <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto border border-border max-h-64 overflow-y-auto">
+                                        {JSON.stringify(previewData.metadata, null, 2)}
+                                    </pre>
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        This metadata is attached to the user message and sent to the backend for processing.
+                                        <br />
+                                        • <strong>files</strong>: Array of file URIs with mime types for the backend to process
+                                        <br />
+                                        • <strong>resources</strong>: Array of resource references (type + id for DB resources, full object for tables)
+                                    </p>
+                                </div>
+                            )}
+                            
                             {/* Settings Attachments */}
                             {Object.keys(previewData.settingsAttachments).length > 0 && (
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <h3 className="text-sm font-semibold">Settings Attachments</h3>
+                                        <h3 className="text-sm font-semibold">Settings Attachments (Legacy)</h3>
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -309,23 +344,29 @@ export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalP
                                         {JSON.stringify(previewData.settingsAttachments, null, 2)}
                                     </pre>
                                     <p className="text-xs text-muted-foreground mt-2">
-                                        These attachments (YouTube URLs, Image URLs, File URLs) should be added to the model config, not the message content.
+                                        These attachments (YouTube URLs, Image URLs, File URLs) can optionally be added to the model config.
+                                        <br />
+                                        <strong>Note:</strong> Files are now primarily sent via message metadata above.
                                     </p>
                                 </div>
                             )}
                             
                             {/* Stats */}
-                            <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                            <div className="grid grid-cols-4 gap-4 pt-4 border-t">
                                 <div>
                                     <div className="text-xs text-muted-foreground">Resources</div>
                                     <div className="text-sm font-semibold">{resources.length}</div>
                                 </div>
                                 <div>
-                                    <div className="text-xs text-muted-foreground">XML Characters</div>
+                                    <div className="text-xs text-muted-foreground">Files</div>
+                                    <div className="text-sm font-semibold">{previewData.metadata?.files?.length || 0}</div>
+                                </div>
+                                <div>
+                                    <div className="text-xs text-muted-foreground">XML Size</div>
                                     <div className="text-sm font-semibold">{previewData.formattedXml.length.toLocaleString()}</div>
                                 </div>
                                 <div>
-                                    <div className="text-xs text-muted-foreground">Total Characters</div>
+                                    <div className="text-xs text-muted-foreground">Total Size</div>
                                     <div className="text-sm font-semibold">{previewData.fullMessage.length.toLocaleString()}</div>
                                 </div>
                             </div>

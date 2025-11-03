@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Paperclip, RefreshCw, ArrowUp, CornerDownLeft, Image, FileText, Mic, ChevronRight } from "lucide-react";
+import { RefreshCw, ArrowUp, CornerDownLeft, Mic, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptVariable } from "@/features/prompts/types/core";
 import { formatText } from "@/utils/text/text-case-converter";
-import { FaYoutube } from "react-icons/fa";
 import { VariableInputComponent } from "./variable-inputs";
 import { PromptInputButton } from "./PromptInputButton";
 import { ResourcePickerButton } from "./resource-picker";

@@ -503,7 +503,7 @@ export function PromptRunner({
         }
 
         // Format message with resources before sending
-        const { formattedMessage, settingsAttachments } = await formatMessageWithResources(userMessageContent, resources);
+        const { formattedMessage, settingsAttachments, metadata } = await formatMessageWithResources(userMessageContent, resources);
         
         // Use formatted message for API
         userMessageContent = formattedMessage;
@@ -521,8 +521,8 @@ export function PromptRunner({
             setConversationMessages((prev) => [...prev, { role: "user", content: displayMessageWithReplacedVariables }]);
         }
         
-        // TODO: Handle settingsAttachments (image_url, file_url, youtube, etc.)
-        // These should be added to the model settings/config
+        // Note: settingsAttachments (image_url, file_url, youtube, etc.) will be added to chatConfig below
+        // metadata (files array, resources array) will be attached to the user message
 
         setIsTestingPrompt(true);
         setMessageStartTime(performance.now());
@@ -547,6 +547,13 @@ export function PromptRunner({
             }
             
             let messagesToSend: PromptMessage[];
+            
+            // Create user message with metadata (files and resource references)
+            const userMessage: PromptMessage = {
+                role: "user",
+                content: userMessageContent,
+                ...(Object.keys(metadata).length > 0 && { metadata: metadata as Record<string, unknown> })
+            };
 
             if (isFirstMessage) {
                 const lastPromptMessage = conversationTemplate.length > 0 ? conversationTemplate[conversationTemplate.length - 1] : null;
@@ -554,12 +561,12 @@ export function PromptRunner({
 
                 if (isLastMessageUser) {
                     const messagesWithoutLast = conversationTemplate.slice(0, -1);
-                    messagesToSend = [...messagesWithoutLast, { role: "user", content: userMessageContent }];
+                    messagesToSend = [...messagesWithoutLast, userMessage];
                 } else {
-                    messagesToSend = [...conversationTemplate, { role: "user", content: userMessageContent }];
+                    messagesToSend = [...conversationTemplate, userMessage];
                 }
             } else {
-                messagesToSend = [...apiConversationHistory, { role: "user", content: userMessageContent }];
+                messagesToSend = [...apiConversationHistory, userMessage];
             }
 
             const allMessages = [{ role: "system", content: systemMessage }, ...messagesToSend];
@@ -568,7 +575,8 @@ export function PromptRunner({
                 content: replaceVariables(msg.content)
             }));
 
-            setApiConversationHistory((prev) => [...prev, { role: "user", content: userMessageContent }]);
+            // Update API conversation history with metadata
+            setApiConversationHistory((prev) => [...prev, userMessage]);
 
             const chatConfig: Record<string, any> = {
                 model_id: modelId,

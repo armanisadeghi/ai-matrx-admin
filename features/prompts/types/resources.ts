@@ -238,6 +238,35 @@ export interface ResourceFormatConfig {
 }
 
 // ===========================
+// Message Metadata
+// ===========================
+
+/**
+ * File reference for message metadata
+ */
+export interface MessageFileReference {
+    uri: string;
+    mime_type?: string;
+}
+
+/**
+ * Resource reference for message metadata (minimal info for backend)
+ */
+export interface MessageResourceReference {
+    type: string;
+    id?: string;
+    data?: any; // Full object for tables
+}
+
+/**
+ * Message metadata structure
+ */
+export interface MessageMetadata {
+    files?: MessageFileReference[];
+    resources?: MessageResourceReference[];
+}
+
+// ===========================
 // Processed Resources
 // ===========================
 
@@ -259,6 +288,11 @@ export interface ProcessedResources {
         youtubeUrls?: string[];
         audioFiles?: string[];
     };
+    
+    /**
+     * Metadata to attach to the message (files array, resources array)
+     */
+    metadata: MessageMetadata;
     
     /**
      * Original resources for reference

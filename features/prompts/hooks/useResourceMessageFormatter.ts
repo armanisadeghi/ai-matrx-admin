@@ -6,9 +6,9 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Resource } from '../types/resources';
+import { Resource, MessageMetadata } from '../types/resources';
 import { fetchResourcesData } from '../utils/resource-data-fetcher';
-import { appendResourcesToMessage, formatResourcesToXml, extractSettingsAttachments } from '../utils/resource-formatting';
+import { appendResourcesToMessage, formatResourcesToXml, extractSettingsAttachments, extractMessageMetadata } from '../utils/resource-formatting';
 
 interface UseResourceMessageFormatterResult {
     /**
@@ -23,6 +23,7 @@ interface UseResourceMessageFormatterResult {
             youtubeUrls?: string[];
             audioFiles?: string[];
         };
+        metadata: MessageMetadata;
     }>;
     
     /**
@@ -49,6 +50,7 @@ export function useResourceMessageFormatter(): UseResourceMessageFormatterResult
                 return {
                     formattedMessage: messageContent,
                     settingsAttachments: {},
+                    metadata: {},
                 };
             }
             
@@ -64,9 +66,13 @@ export function useResourceMessageFormatter(): UseResourceMessageFormatterResult
             // Step 4: Extract settings attachments
             const settingsAttachments = extractSettingsAttachments(enrichedResources);
             
+            // Step 5: Extract message metadata (files and resource references)
+            const metadata = extractMessageMetadata(enrichedResources);
+            
             return {
                 formattedMessage,
                 settingsAttachments,
+                metadata,
             };
         } finally {
             setIsFormatting(false);

@@ -9,6 +9,9 @@ import {
     Resource, 
     ResourceFormatConfig, 
     ProcessedResources,
+    MessageFileReference,
+    MessageResourceReference,
+    MessageMetadata,
     NoteResourceData,
     TaskResourceData,
     ProjectResourceData,
@@ -481,6 +484,126 @@ export function extractSettingsAttachments(resources: Resource[]): ProcessedReso
 }
 
 /**
+ * Extract file references for message metadata
+ * These will be sent to the backend for processing (base64 conversion, etc.)
+ */
+export function extractFileReferences(resources: Resource[]): MessageFileReference[] {
+    const files: MessageFileReference[] = [];
+    
+    for (const resource of resources) {
+        switch (resource.type) {
+            case 'youtube':
+                // YouTube videos
+                files.push({
+                    uri: resource.data.url,
+                    mime_type: 'video/*'
+                });
+                break;
+                
+            case 'image_url':
+                // Image URLs
+                files.push({
+                    uri: resource.data.url,
+                    mime_type: resource.data.type || 'image/*'
+                });
+                break;
+                
+            case 'file_url':
+                // File URLs
+                files.push({
+                    uri: resource.data.url,
+                    mime_type: resource.data.mime_type
+                });
+                break;
+                
+            case 'file':
+                // Uploaded or stored files (must have public URL)
+                if (resource.data.url) {
+                    files.push({
+                        uri: resource.data.url,
+                        mime_type: resource.data.mime_type || resource.data.content_type
+                    });
+                }
+                break;
+                
+            case 'audio':
+                // Audio files
+                if (resource.data.url) {
+                    files.push({
+                        uri: resource.data.url,
+                        mime_type: 'audio/*'
+                    });
+                }
+                break;
+        }
+    }
+    
+    return files;
+}
+
+/**
+ * Extract resource references for message metadata
+ * Minimal info for backend - just type and id for most, full object for tables
+ */
+export function extractResourceReferences(resources: Resource[]): MessageResourceReference[] {
+    const references: MessageResourceReference[] = [];
+    
+    for (const resource of resources) {
+        switch (resource.type) {
+            case 'table':
+                // Tables: include full reference object (our universal language for table references)
+                references.push({
+                    type: resource.type,
+                    data: resource.data
+                });
+                break;
+                
+            case 'note':
+            case 'task':
+            case 'project':
+            case 'file':
+            case 'audio':
+                // Database resources: just type and id (backend can fetch from DB)
+                references.push({
+                    type: resource.type,
+                    id: resource.data.id
+                });
+                break;
+                
+            case 'webpage':
+                // Webpage: type and URL as id
+                references.push({
+                    type: resource.type,
+                    id: resource.data.url
+                });
+                break;
+                
+            case 'youtube':
+            case 'image_url':
+            case 'file_url':
+                // URL-based: type and URL
+                references.push({
+                    type: resource.type,
+                    id: resource.data.url
+                });
+                break;
+        }
+    }
+    
+    return references;
+}
+
+/**
+ * Extract message metadata from resources
+ */
+export function extractMessageMetadata(resources: Resource[]): MessageMetadata {
+    return {
+        files: extractFileReferences(resources),
+        resources: extractResourceReferences(resources)
+    };
+}
+
+/**
  * Process resources for message inclusion
  * This is the main function to use when preparing a message with resources
  */
@@ -488,6 +611,7 @@ export async function processResourcesForMessage(resources: Resource[]): Promise
     return {
         formattedXml: formatResourcesToXml(resources),
         settingsAttachments: extractSettingsAttachments(resources),
+        metadata: extractMessageMetadata(resources),
         originalResources: resources,
     };
 }
