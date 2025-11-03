@@ -57,6 +57,13 @@ const getDirectionClasses = (direction: 'rtl' | 'ltr') => {
         : 'text-left ltr';
 };
 
+// Get font size based on text direction
+const getDirectionFontSize = (direction: 'rtl' | 'ltr') => {
+    return direction === 'rtl' 
+        ? 'text-base' // Bigger for RTL (Arabic/Persian)
+        : 'text-sm';   // Smaller for LTR (English)
+};
+
 // Simple List Item Component
 const ListItemComponent: React.FC<{ children: React.ReactNode; node?: any }> = ({ children, node }) => {
     // Detect direction for list item content
@@ -70,7 +77,7 @@ const ListItemComponent: React.FC<{ children: React.ReactNode; node?: any }> = (
     // For task items, just return the content without additional styling
     if (isTaskItem) {
         return (
-            <li className={`mb-1 text-base ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
+            <li className={`mb-1 ${getDirectionFontSize(itemDirection)} ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
                 {children}
             </li>
         );
@@ -78,7 +85,7 @@ const ListItemComponent: React.FC<{ children: React.ReactNode; node?: any }> = (
     
     // For regular list items, use simple styling
     return (
-        <li className={`mb-1 text-base ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
+        <li className={`mb-1 ${getDirectionFontSize(itemDirection)} ${getDirectionClasses(itemDirection)}`} dir={itemDirection}>
             {children}
         </li>
     );
@@ -264,7 +271,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <p 
-                    className={`font-sans tracking-wide leading-relaxed text-base mb-2 pl-0 ml-0 ${paragraphDirClasses}`} 
+                    className={`font-sans tracking-wide leading-relaxed ${getDirectionFontSize(paragraphDirection)} mb-2 pl-0 ml-0 ${paragraphDirClasses}`} 
                     dir={paragraphDirection}
                     {...props}
                 >
@@ -337,7 +344,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <ul 
-                    className={`list-disc mb-3 leading-relaxed text-base pl-6 ${getDirectionClasses(listDirection)}`}
+                    className={`list-disc mb-3 leading-relaxed ${getDirectionFontSize(listDirection)} pl-6 ${getDirectionClasses(listDirection)}`}
                     dir={listDirection}
                     {...props}
                 >
@@ -353,7 +360,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
             
             return (
                 <ol 
-                    className={`list-decimal mb-3 leading-relaxed text-base pl-6 ${getDirectionClasses(listDirection)}`}
+                    className={`list-decimal mb-3 leading-relaxed ${getDirectionFontSize(listDirection)} pl-6 ${getDirectionClasses(listDirection)}`}
                     dir={listDirection}
                     {...props}
                 >

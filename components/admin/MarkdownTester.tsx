@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
+import { AudioTestModal } from '@/components/admin/AudioTestModal';
 import { 
   CheckCircle2, 
   Copy, 
@@ -18,7 +19,8 @@ import {
   Minimize2,
   RefreshCw,
   Zap,
-  Hand
+  Hand,
+  Volume2
 } from 'lucide-react';
 
 interface MarkdownTesterProps {
@@ -35,6 +37,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
   const [isAutoMode, setIsAutoMode] = useState(false); // Default to Manual mode
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState('enhanced-markdown');
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const getTextarea = useCallback(() => textareaRef.current, []);
@@ -169,6 +172,16 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
               Clear
             </Button>
 
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setAudioModalOpen(true)}
+              className="h-7 px-2.5 text-xs"
+            >
+              <Volume2 className="h-3.5 w-3.5 mr-1.5" />
+              Test Audio
+            </Button>
+
             <div className="ml-auto flex items-center gap-1.5">
               <Badge variant="secondary" className="text-xs h-6">
                 {inputContent.length} chars
@@ -260,6 +273,13 @@ Right-click for content block templates!"
           )}
         </div>
       </div>
+
+      {/* Audio Test Modal */}
+      <AudioTestModal
+        open={audioModalOpen}
+        onOpenChange={setAudioModalOpen}
+        markdownContent={renderedContent}
+      />
     </>
   );
 };
