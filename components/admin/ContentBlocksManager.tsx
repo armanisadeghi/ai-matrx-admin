@@ -129,8 +129,8 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
     const [quickCreateContext, setQuickCreateContext] = useState<'edit' | 'create'>('create');
     const [quickCategoryData, setQuickCategoryData] = useState({ label: '', icon_name: 'Folder', color: '#3b82f6' });
     const [quickSubcategoryData, setQuickSubcategoryData] = useState({ label: '', icon_name: 'FolderOpen', categoryId: '' });
-    // Split view toggle for Template Content
-    const [showPreview, setShowPreview] = useState(false);
+    // Preview mode for Template Content
+    const [previewMode, setPreviewMode] = useState<'editor' | 'v1' | 'v2'>('editor');
 
     // Toast notifications
     const { toast } = useToast();
@@ -1120,30 +1120,41 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     This is the content that will be inserted when users select this block from context menus.
                                                 </CardDescription>
                                             </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setShowPreview(!showPreview)}
-                                                className="flex items-center gap-2"
-                                            >
-                                                {showPreview ? (
-                                                    <>
-                                                        <PanelLeft className="w-4 h-4" />
-                                                        Editor Only
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Columns2 className="w-4 h-4" />
-                                                        Split View
-                                                    </>
-                                                )}
-                                            </Button>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant={previewMode === 'editor' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => setPreviewMode('editor')}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <PanelLeft className="w-4 h-4" />
+                                                    Editor
+                                                </Button>
+                                                <Button
+                                                    variant={previewMode === 'v1' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => setPreviewMode('v1')}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Columns2 className="w-4 h-4" />
+                                                    V1
+                                                </Button>
+                                                <Button
+                                                    variant={previewMode === 'v2' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => setPreviewMode('v2')}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Columns2 className="w-4 h-4" />
+                                                    V2
+                                                </Button>
+                                            </div>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className={showPreview ? "flex flex-col lg:flex-row gap-4 items-stretch" : ""}>
+                                        <div className={previewMode !== 'editor' ? "flex flex-col lg:flex-row gap-4 items-stretch" : ""}>
                                             {/* Editor Section */}
-                                            <div className={showPreview ? "flex-1 min-w-0" : ""}>
+                                            <div className={previewMode !== 'editor' ? "flex-1 min-w-0" : ""}>
                                                 <AutoResizeTextarea
                                                     value={editData.template || ''}
                                                     onChange={(e) => handleEditChange('template', e.target.value)}
@@ -1154,13 +1165,19 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                             </div>
                                             
                                             {/* Preview Section */}
-                                            {showPreview && (
+                                            {previewMode !== 'editor' && (
                                                 <div className="flex-1 min-w-0 min-h-[300px] border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-textured overflow-auto">
-                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-                                                        PREVIEW
+                                                    <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                                                        <span>PREVIEW</span>
+                                                        <Badge variant={previewMode === 'v2' ? 'default' : 'outline'} className="text-xs">
+                                                            {previewMode === 'v1' ? 'Parser V1 (Current)' : 'Parser V2 (Test)'}
+                                                        </Badge>
                                                     </div>
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                        <EnhancedChatMarkdown content={editData.template || ''} />
+                                                        <EnhancedChatMarkdown 
+                                                            content={editData.template || ''} 
+                                                            useV2Parser={previewMode === 'v2'}
+                                                        />
                                                     </div>
                                                 </div>
                                             )}

@@ -69,7 +69,11 @@ export function PromptActionModal({
     const isAnyActionActive = activeAction !== null || isDeleting || isDuplicating;
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !isAnyActionActive && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            if (!open && !isAnyActionActive) {
+                onClose();
+            }
+        }}>
             <DialogContent className="sm:max-w-md max-h-[100dvh] overflow-y-auto bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 border-slate-200 dark:border-slate-700">
                 <DialogHeader>
                     <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">

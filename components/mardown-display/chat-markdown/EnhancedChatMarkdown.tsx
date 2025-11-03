@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { cn } from "@/styles/themes/utils";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import { ContentBlock, splitContentIntoBlocks } from "../markdown-classification/processors/utils/content-splitter";
+import { splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
@@ -24,6 +25,7 @@ interface ChatMarkdownDisplayProps {
     messageId?: string;
     allowFullScreenEditor?: boolean;
     hideCopyButton?: boolean;
+    useV2Parser?: boolean; // Test flag for V2 parser
 }
 
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
@@ -38,6 +40,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     messageId,
     allowFullScreenEditor = true,
     hideCopyButton = false,
+    useV2Parser = false,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [currentContent, setCurrentContent] = useState(content);
@@ -58,8 +61,11 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     // Skip expensive processing if we're in loading state
     const blocks = useMemo(() => {
         if (isWaitingForContent) return [];
-        return splitContentIntoBlocks(currentContent);
-    }, [currentContent, isWaitingForContent]);
+        // Use V2 parser if flag is set, otherwise use V1
+        return useV2Parser 
+            ? splitContentIntoBlocksV2(currentContent)
+            : splitContentIntoBlocks(currentContent);
+    }, [currentContent, isWaitingForContent, useV2Parser]);
 
     // Memoize parsed table data to prevent infinite loops from new object references
     // Skip expensive processing if we're in loading state
