@@ -35,15 +35,13 @@ export async function POST(
         const { data: newPrompt, error: insertError } = await supabase
             .from("prompts")
             .insert({
-                name: `${template.name} (From Template)`,
-                messages: template.messages,
-                variable_defaults: template.variable_defaults,
-                tools: template.tools,
-                settings: template.settings,
                 user_id: user.id,
-                authenticated_read: true,
-                is_public: false,
-                public_read: false,
+                name: `${template.name} (From Template)`,
+                description: template.description || null,
+                messages: template.messages || [],
+                variable_defaults: template.variable_defaults || [],
+                tools: template.tools || null,
+                settings: template.settings || {},
             })
             .select()
             .single();
