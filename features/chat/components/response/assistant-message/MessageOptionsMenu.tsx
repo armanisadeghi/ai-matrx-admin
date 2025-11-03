@@ -59,10 +59,12 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
 
   // Edit Content handler
   const handleEditContent = () => {
+    console.log("📝 Edit Content clicked from menu");
+    console.log("📝 onEditContent callback:", onEditContent ? "exists" : "missing");
     if (onEditContent) {
       onEditContent();
-      onClose();
     }
+    onClose();
   };
 
   // Copy handlers - simplified without state management
@@ -170,7 +172,6 @@ ${cssContent}
       category: "Edit",
       successMessage: "Opening editor...",
       errorMessage: "Failed to open editor",
-      disabled: !onEditContent,
       showToast: false
     },
     // Audio Option

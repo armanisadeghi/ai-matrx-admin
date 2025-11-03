@@ -53,9 +53,8 @@ export function PromptAssistantMessage({
     };
 
     const handleEditClick = () => {
-        if (onContentChange) {
-            setIsEditorOpen(true);
-        }
+        // Always open editor - save functionality will be optional
+        setIsEditorOpen(true);
     };
 
     const handleSaveEdit = (newContent: string) => {

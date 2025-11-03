@@ -170,7 +170,7 @@ interface MarkdownTableProps {
 const MarkdownTable: React.FC<MarkdownTableProps> = ({
     data,
     className = "",
-    fontSize = 16,
+    fontSize = 14,
     theme = "professional",
     onSave = () => {},
     content = "",

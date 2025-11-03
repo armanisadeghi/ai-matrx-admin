@@ -62,7 +62,7 @@ export function useCartesiaWithPreferences({
       setConnectionState("disconnected");
       onError?.(errorMessage);
     }
-  }, [onError]);
+  }, []); // Remove onError from dependencies to prevent infinite loop
 
   useEffect(() => {
     connect();
@@ -75,7 +75,7 @@ export function useCartesiaWithPreferences({
         playerRef.current.stop();
       }
     };
-  }, [connect]);
+  }, []); // Only connect once on mount
 
   const speak = useCallback(
     async (text: string) => {

@@ -41,7 +41,7 @@ export function useCartesiaControls() {
 
     useEffect(() => {
         connect();
-    }, [connect]);
+    }, []); // Only connect once on mount
 
     const resume = useCallback(async () => {
         if (playerRef.current && playerState === "paused") {

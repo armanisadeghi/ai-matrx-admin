@@ -38,6 +38,42 @@ export function AudioTestModal({
   const [speechText, setSpeechText] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Convert markdown to speech text when modal opens or content changes
+  useEffect(() => {
+    if (open && markdownContent) {
+      const converted = parseMarkdownToText(markdownContent);
+      setSpeechText(converted);
+    }
+  }, [open, markdownContent]);
+
+  // Early return if modal is not open - don't initialize audio hook
+  if (!open) {
+    return null;
+  }
+
+  return <AudioTestModalContent 
+    open={open}
+    onOpenChange={onOpenChange}
+    speechText={speechText}
+    setCopied={setCopied}
+    copied={copied}
+  />;
+}
+
+// Separate component that only mounts when modal is open
+function AudioTestModalContent({
+  open,
+  onOpenChange,
+  speechText,
+  copied,
+  setCopied,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  speechText: string;
+  copied: boolean;
+  setCopied: (copied: boolean) => void;
+}) {
   const {
     connectionState,
     playerState,
@@ -51,14 +87,6 @@ export function AudioTestModal({
       toast.error('Audio playback failed', { description: error });
     },
   });
-
-  // Convert markdown to speech text when modal opens or content changes
-  useEffect(() => {
-    if (open && markdownContent) {
-      const converted = parseMarkdownToText(markdownContent);
-      setSpeechText(converted);
-    }
-  }, [open, markdownContent]);
 
   const handlePlay = async () => {
     if (!speechText.trim()) {
@@ -251,4 +279,3 @@ export function AudioTestModal({
     </Dialog>
   );
 }
-
