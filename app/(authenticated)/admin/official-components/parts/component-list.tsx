@@ -121,6 +121,14 @@ export const categoryIcons: Record<ComponentCategory, React.ReactNode> = {
 
 export const componentList: ComponentEntry[] = [
   {
+    id: 'icon-dropdown-menu',
+    name: 'Icon Dropdown Menu',
+    path: 'components/official/IconDropdownMenu.tsx',
+    description: 'Elegant iOS-style dropdown menu with icon trigger. Perfect for sort, filter, and view selectors.',
+    categories: ['selectors', 'navigation', 'interactive'],
+    tags: ['dropdown', 'menu', 'icon', 'ios', 'selector', 'sort', 'filter']
+  },
+  {
     id: 'icon-button',
     name: 'Icon Button with Tooltip',
     path: 'components/official/IconButton.tsx',
