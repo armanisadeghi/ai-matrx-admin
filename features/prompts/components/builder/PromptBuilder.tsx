@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
 import { PromptMessage } from "@/features/prompts/types/core";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
@@ -17,6 +17,7 @@ import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThun
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
 import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
+import { PromptRunnerModal } from "@/features/prompts/components/modal/PromptRunnerModal";
 import { toast } from "sonner";
 import { PromptMessageRole, PromptSettings } from "../../types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
@@ -39,6 +40,7 @@ interface PromptBuilderProps {
 export function PromptBuilder({ models, initialData, availableTools }: PromptBuilderProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const dispatch = useAppDispatch();
     const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
@@ -147,6 +149,9 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     // Settings modal state
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
+    // Prompt runner modal state
+    const [isPromptRunnerOpen, setIsPromptRunnerOpen] = useState(false);
+
     const [chatInput, setChatInput] = useState("");
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
         role: string; 
@@ -215,6 +220,23 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     useEffect(() => {
         localStorage.setItem('promptBuilder_submitOnEnter', String(submitOnEnter));
     }, [submitOnEnter]);
+
+    // Check for autoRun query parameter and open prompt runner modal
+    useEffect(() => {
+        const autoRun = searchParams.get('autoRun');
+        if (autoRun === 'true' && initialData?.id) {
+            // Open the modal after a short delay to ensure the page has loaded
+            const timer = setTimeout(() => {
+                setIsPromptRunnerOpen(true);
+                
+                // Clean up the URL by removing the query parameter
+                const newUrl = pathname;
+                router.replace(newUrl);
+            }, 500);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [searchParams, initialData?.id, pathname, router]);
 
     // Handler to add a new variable
     const handleAddVariable = (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => {
@@ -1010,6 +1032,16 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             onUpdate={handleSettingsUpdate}
             onLocalStateUpdate={handleLocalStateUpdate}
         />
+
+        {/* Prompt Runner Modal - Opens automatically after generation */}
+        {initialData?.id && (
+            <PromptRunnerModal
+                isOpen={isPromptRunnerOpen}
+                onClose={() => setIsPromptRunnerOpen(false)}
+                promptId={initialData.id}
+                mode="manual"
+            />
+        )}
         </>
     );
 }

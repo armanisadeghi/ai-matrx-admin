@@ -20,7 +20,6 @@ import { Input } from '@/components/ui/input';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
-import CodeBlock from '@/components/mardown-display/code/CodeBlock';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { useRouter } from 'next/navigation';
 
@@ -67,6 +66,12 @@ export function PromptGenerator({
       if (result.success && result.data) {
         setExtractedJson(result.data);
         setExtractionError(null);
+        
+        // Auto-populate the prompt name if available
+        if (result.data.name && typeof result.data.name === 'string') {
+          setPromptName(result.data.name);
+        }
+        
         toast.success('Prompt generated successfully', {
           description: 'Review the generated prompt and click "Create Prompt" to save it'
         });
@@ -199,12 +204,12 @@ export function PromptGenerator({
       }
 
       toast.success('Prompt created successfully!', {
-        description: 'Redirecting to your new prompt...'
+        description: 'Opening prompt editor with test runner...'
       });
 
-      // Close modal and navigate to the new prompt
+      // Close modal and navigate to the new prompt with autoRun query param
       handleClose();
-      router.push(`/ai/prompts/edit/${promptId}`);
+      router.push(`/ai/prompts/edit/${promptId}?autoRun=true`);
       router.refresh();
       
     } catch (error) {
@@ -257,7 +262,7 @@ export function PromptGenerator({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 grid grid-cols-2 gap-4 px-6 overflow-hidden min-h-0 mt-4">
+        <div className="flex-1 grid grid-cols-[40%_60%] gap-4 px-6 overflow-hidden min-h-0 mt-4">
           {/* Input Section */}
           <div className="flex flex-col min-h-0 space-y-4">
             <div className="space-y-4">
@@ -344,78 +349,46 @@ export function PromptGenerator({
                 </div>
               )}
             </div>
-            <div className="flex-1 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200 dark:border-purple-700 rounded-lg overflow-hidden">
+            <div className="flex-1 bg-textured border-2 border-purple-300 dark:border-purple-700 rounded-lg overflow-hidden">
               {isGenerating ? (
-                <div className="p-6 space-y-4 h-full flex flex-col">
-                  <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-sm font-medium">Generating your prompt...</span>
+                <div className="h-full flex flex-col">
+                  <div className="flex-none flex items-center gap-2 p-2 border-b border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30">
+                    <Loader2 className="h-4 w-4 animate-spin text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Generating your prompt...</span>
                   </div>
-                  
-                  {streamingText && (
-                    <div className="flex-1 bg-white/50 dark:bg-gray-900/50 rounded-lg overflow-hidden flex flex-col">
-                      <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Live Response:</p>
-                      </div>
-                      <div className="flex-1 overflow-y-auto p-4">
-                        <EnhancedChatMarkdown
-                          content={streamingText}
-                          isStreamActive={true}
-                          hideCopyButton={true}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Streaming response...</span>
+                  <div className="flex-1 overflow-y-auto p-2">
+                    {streamingText ? (
+                      <EnhancedChatMarkdown
+                        content={streamingText}
+                        isStreamActive={true}
+                        hideCopyButton={true}
+                      />
+                    ) : null}
                   </div>
                 </div>
               ) : streamingText ? (
                 <div className="h-full flex flex-col overflow-hidden">
-                  {/* Show extraction status */}
+                  {/* Show extraction status banner if needed */}
                   {extractionError && (
-                    <div className="p-3 bg-amber-100 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1 text-xs text-amber-700 dark:text-amber-300">
+                    <div className="flex-none p-2 bg-amber-100 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-start gap-2">
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-xs text-amber-700 dark:text-amber-300">
                         <strong>JSON Extraction Failed:</strong> {extractionError}
-                        <br />
-                        <span className="text-amber-600 dark:text-amber-400">The full AI response is displayed below.</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {hasGeneratedPrompt && !extractionError && (
-                    <div className="p-3 bg-green-100 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      <span className="text-xs text-green-700 dark:text-green-300">
-                        Prompt generated successfully! Review the configuration below or click "Create Prompt" to save.
                       </span>
                     </div>
                   )}
                   
-                  {/* Show the extracted JSON if available */}
-                  {hasGeneratedPrompt && (
-                    <div className="flex-1 overflow-y-auto p-4 bg-white/50 dark:bg-gray-900/50">
-                      <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Extracted Prompt Configuration:</p>
-                      </div>
-                      <CodeBlock
-                        code={JSON.stringify(extractedJson, null, 2)}
-                        language="json"
-                        showLineNumbers={true}
-                        wrapLines={false}
-                        fontSize={12}
-                      />
-                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Full AI Response:</p>
-                      </div>
+                  {hasGeneratedPrompt && !extractionError && (
+                    <div className="flex-none p-2 bg-green-100 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 flex items-center gap-2">
+                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                      <span className="text-xs text-green-700 dark:text-green-300">
+                        Prompt generated successfully!
+                      </span>
                     </div>
                   )}
                   
-                  {/* Always show the full raw response */}
-                  <div className={`${hasGeneratedPrompt ? '' : 'flex-1'} overflow-y-auto p-4 bg-white/50 dark:bg-gray-900/50`}>
+                  {/* Simple clean display of the response */}
+                  <div className="flex-1 overflow-y-auto p-2">
                     <EnhancedChatMarkdown
                       content={streamingText}
                       isStreamActive={false}
