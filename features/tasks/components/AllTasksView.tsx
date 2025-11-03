@@ -22,14 +22,14 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
     return (
       <div className="space-y-3 animate-pulse">
         {[...Array(3)].map((_, projectIndex) => (
-          <div key={projectIndex} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div key={projectIndex} className="bg-card rounded-lg border border-border">
             <div className="p-3 flex items-center gap-3">
-              <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+              <div className="w-5 h-5 bg-muted rounded" />
+              <div className="h-6 bg-muted rounded w-1/4" />
             </div>
-            <div className="p-3 space-y-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="p-3 space-y-2 border-t border-border">
               {[...Array(2)].map((_, taskIndex) => (
-                <div key={taskIndex} className="h-16 bg-gray-100 dark:bg-gray-700 rounded" />
+                <div key={taskIndex} className="h-16 bg-muted rounded" />
               ))}
             </div>
           </div>
@@ -104,13 +104,13 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
   if (projectsWithTasks.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckSquare className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CheckSquare className="w-8 h-8 text-primary" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+        <h3 className="text-lg font-semibold text-foreground mb-2">
           No tasks found
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           {filter === 'all' 
             ? 'Create your first task to get started!'
             : `No ${filter} tasks at the moment`
@@ -130,39 +130,39 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
         return (
           <div 
             key={project.id} 
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm"
+            className="bg-card rounded-lg border border-border overflow-hidden shadow-sm"
           >
             {/* Project Header */}
             <button
               onClick={() => toggleProjectCollapse(project.id)}
-              className="w-full px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="w-full px-3 py-2.5 flex items-center gap-3 hover:bg-accent transition-colors"
             >
               {isCollapsed ? (
-                <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               )}
               
-              <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" />
               
               <div className="flex-1 text-left">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className="text-sm font-semibold text-foreground">
                   {project.name}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {completedCount} of {taskCount} completed
                 </p>
               </div>
 
               {/* Task count badge */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs font-medium">
+              <div className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-medium">
                 {taskCount}
               </div>
             </button>
 
             {/* Tasks List */}
             {!isCollapsed && (
-              <div className="px-3 pb-3 pt-1 space-y-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="px-3 pb-3 pt-1 space-y-2 border-t border-border">
                 {project.filteredTasks.map((task: any) => (
                   <CompactTaskItem
                     key={task.id}

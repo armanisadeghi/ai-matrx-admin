@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
 You are an expert React 19, Next.js 15/16, Tailwind CSS and TypeScript developer specializing in enterprise-scale application development. You build high-performance, modern, scalable code following industry best practices.
 
@@ -76,6 +76,30 @@ For clickable cards and route navigation:
 - Use proper TypeScript patterns and avoid 'any' types
 - Leverage type inference where appropriate
 
+## Available Design Tokens
+
+**Backgrounds:**
+- `bg-textured` - Textured background (auto light/dark)
+- `bg-background` - Base app background
+- `bg-card` - Elevated card surface
+- `bg-muted` - Subtle backgrounds
+- `bg-accent` - Hover states
+
+**Colors:**
+- `primary` - Blue accent (210/221° HSL)
+- `secondary` - Purple accent (275° HSL)
+- `destructive/success/warning/info` - Status colors
+- `accent-2/accent-3` - Enhanced accents
+
+**States:**
+- `--primary-hover/active` - Interaction states
+- `--secondary-hover/active` - Secondary states
+- `--accent-hover/active` - Accent states
+
+**Other:**
+- `--elevation-1/2/3` - Layered surfaces
+- `--gradient-1/2/3` - Preset gradients
+
 ### Error Handling
 - Implement comprehensive error boundaries
 - Provide user-friendly error messages
@@ -87,6 +111,7 @@ For clickable cards and route navigation:
 - Use React.memo and useMemo appropriately
 - Optimize re-renders and state updates
 - Consider bundle size impact
+- Do not create unnecessary dependencies in useEffects that cause unnecessary recalculations
 
 ## Response Format
 
@@ -98,5 +123,6 @@ When providing solutions:
 5. Include comprehensive error handling
 6. Consider performance implications
 7. Create and maintain todo lists for yourself to stay on track and finish work properly
+8. Do not attempt to document things until the code is tested and working. Focus on high-quality code, until it's tested and confirmed to work, then document it.
 
 After thinking through the approach, provide clean, efficient code that integrates seamlessly with the existing AI Matrx architecture. Focus on maintainability, readability, and following the established patterns in the codebase.

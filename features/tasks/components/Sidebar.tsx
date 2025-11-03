@@ -52,17 +52,17 @@ export default function Sidebar(): JSX.Element {
   );
 
   return (
-    <div className="w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+    <div className="w-64 h-full bg-card border-r border-border flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tasks</h1>
+      <div className="flex-shrink-0 p-4 border-b border-border">
+        <h1 className="text-xl font-bold text-foreground">Tasks</h1>
       </div>
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Views Section */}
         <div>
-          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Views</h2>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-2">Views</h2>
           <div className="space-y-1">
             <button
               onClick={() => {
@@ -71,8 +71,8 @@ export default function Sidebar(): JSX.Element {
               }}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
                 showAllProjects && filter === 'all'
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-foreground hover:bg-accent'
               }`}
             >
               <Layers size={16} />
@@ -83,7 +83,7 @@ export default function Sidebar(): JSX.Element {
 
         {/* Filters Section */}
         <div>
-          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Filters</h2>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-2">Filters</h2>
           <div className="space-y-1">
             {(['incomplete', 'overdue'] as TaskFilterType[]).map((filterType) => (
               <button
@@ -91,8 +91,8 @@ export default function Sidebar(): JSX.Element {
                 onClick={() => handleFilterClick(filterType)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
                   filter === filterType
-                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground hover:bg-accent'
                 }`}
               >
                 {getFilterIcon(filterType)}
@@ -104,20 +104,20 @@ export default function Sidebar(): JSX.Element {
 
         {/* Show Completed Toggle */}
         <div>
-          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Display</h2>
-          <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-700/50">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-2">Display</h2>
+          <div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted">
             <div className="flex items-center gap-2">
               {showCompleted ? (
-                <Eye size={16} className="text-gray-600 dark:text-gray-400" />
+                <Eye size={16} className="text-muted-foreground" />
               ) : (
-                <EyeOff size={16} className="text-gray-600 dark:text-gray-400" />
+                <EyeOff size={16} className="text-muted-foreground" />
               )}
-              <span className="text-sm text-gray-700 dark:text-gray-300">Show Completed</span>
+              <span className="text-sm text-foreground">Show Completed</span>
             </div>
             <Switch
               checked={showCompleted}
               onCheckedChange={setShowCompleted}
-              className="data-[state=checked]:bg-blue-600"
+              className="data-[state=checked]:bg-primary"
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function Sidebar(): JSX.Element {
         {/* Projects Section */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Projects</h2>
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase">Projects</h2>
           </div>
 
           {/* Add Project Form */}
@@ -164,8 +164,8 @@ export default function Sidebar(): JSX.Element {
               return (
                 <div key={project.id} className="relative">
                   {isOperating && (
-                    <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm z-10 rounded-md flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
+                    <div className="absolute inset-0 bg-card/50 backdrop-blur-sm z-10 rounded-md flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
                     </div>
                   )}
                   <div
@@ -177,8 +177,8 @@ export default function Sidebar(): JSX.Element {
                     }}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors group cursor-pointer ${
                       isActive
-                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-foreground hover:bg-accent'
                     } ${isOperating ? 'opacity-60 pointer-events-none' : ''}`}
                   >
                     <EditableProjectName
@@ -187,7 +187,7 @@ export default function Sidebar(): JSX.Element {
                         await updateProject(project.id, newName);
                       }}
                     />
-                    <span className="ml-auto text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                    <span className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">
                       {project.tasks.length}
                     </span>
                     <button
@@ -196,7 +196,7 @@ export default function Sidebar(): JSX.Element {
                         deleteProject(project.id, e);
                       }}
                       disabled={isOperating}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-red-500 dark:hover:text-red-400"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-destructive"
                     >
                       <X size={14} />
                     </button>
@@ -207,7 +207,7 @@ export default function Sidebar(): JSX.Element {
           </div>
 
           {projects.length === 0 && !loading && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">
+            <p className="text-xs text-muted-foreground text-center py-4">
               No projects yet.<br/>Create one above!
             </p>
           )}
@@ -215,7 +215,7 @@ export default function Sidebar(): JSX.Element {
           {projects.length === 0 && loading && (
             <div className="space-y-2 animate-pulse">
               {[...Array(3)].map((_, index) => (
-                <div key={index} className="h-8 bg-gray-100 dark:bg-gray-700 rounded" />
+                <div key={index} className="h-8 bg-muted rounded" />
               ))}
             </div>
           )}

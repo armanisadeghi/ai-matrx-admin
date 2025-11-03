@@ -6,7 +6,7 @@ import { TaskProvider, useTaskContext } from '@/features/tasks/context/TaskConte
 export default function TaskApp() {
   return (
     <TaskProvider>
-      <div className="flex h-full w-full bg-textured text-gray-900 dark:bg-gray-900 dark:text-white">
+      <div className="flex h-full w-full bg-textured text-foreground">
         <Sidebar />
         <TaskContentNew />
       </div>

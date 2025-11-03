@@ -42,8 +42,8 @@ export default function CompactTaskItem({
     <div
       className={`group px-3 py-2.5 rounded-lg border transition-all cursor-pointer ${
         isSelected
-          ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-700 shadow-sm'
-          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm'
+          ? 'bg-primary/10 border-primary/30 shadow-sm'
+          : 'bg-card border-border hover:border-border/80 hover:shadow-sm'
       }`}
       onClick={onSelect}
     >
@@ -63,8 +63,8 @@ export default function CompactTaskItem({
           <h3
             className={`text-sm font-medium mb-1 ${
               task.completed
-                ? 'line-through text-gray-400 dark:text-gray-500'
-                : 'text-gray-900 dark:text-white'
+                ? 'line-through text-muted-foreground'
+                : 'text-foreground'
             }`}
           >
             {task.title}
@@ -77,8 +77,8 @@ export default function CompactTaskItem({
               <div
                 className={`flex items-center gap-1 ${
                   isPastDue
-                    ? 'text-red-600 dark:text-red-400 font-medium'
-                    : 'text-gray-500 dark:text-gray-400'
+                    ? 'text-destructive font-medium'
+                    : 'text-muted-foreground'
                 }`}
               >
                 <Calendar size={12} />
@@ -88,8 +88,8 @@ export default function CompactTaskItem({
 
             {/* Project */}
             {task.projectName && !hideProjectName && (
-              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                <span className="text-blue-600 dark:text-blue-400">● {task.projectName}</span>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <span className="text-primary">● {task.projectName}</span>
               </div>
             )}
 
@@ -102,7 +102,7 @@ export default function CompactTaskItem({
 
             {/* Attachments */}
             {task.attachments && task.attachments.length > 0 && (
-              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1 text-muted-foreground">
                 <Paperclip size={12} />
                 <span>{task.attachments.length}</span>
               </div>
@@ -110,7 +110,7 @@ export default function CompactTaskItem({
 
             {/* Assignee */}
             {task.assigneeName && (
-              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1 text-muted-foreground">
                 <User size={12} />
                 <span>{task.assigneeName}</span>
               </div>

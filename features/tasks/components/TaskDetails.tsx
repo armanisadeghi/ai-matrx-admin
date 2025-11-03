@@ -93,7 +93,7 @@ export default function TaskDetails({ task }: { task: any }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isSaving && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Loader2 size={12} className="animate-spin" />
               Saving...
             </span>
@@ -105,7 +105,7 @@ export default function TaskDetails({ task }: { task: any }) {
               e.stopPropagation();
               setIsFullScreen(true);
             }}
-            className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1 text-muted-foreground hover:text-primary rounded hover:bg-muted transition-colors"
             title="Expand to full screen"
           >
             <Maximize2 size={14} />
@@ -114,7 +114,7 @@ export default function TaskDetails({ task }: { task: any }) {
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-xs font-medium text-foreground mb-1">
           Due Date
         </label>
         <Input
@@ -126,7 +126,7 @@ export default function TaskDetails({ task }: { task: any }) {
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-xs font-medium text-foreground mb-1">
           Details
         </label>
         <div className={`${fullScreenMode ? 'max-h-96' : 'max-h-48'} overflow-y-auto`}>
@@ -143,7 +143,7 @@ export default function TaskDetails({ task }: { task: any }) {
       {/* Attachments */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300">
+          <h4 className="text-xs font-medium text-foreground">
             Attachments ({attachments.length})
           </h4>
           <button
@@ -151,7 +151,7 @@ export default function TaskDetails({ task }: { task: any }) {
               e.stopPropagation();
               setShowFileUpload(!showFileUpload);
             }}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+            className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             <Paperclip size={12} />
             Add Files
@@ -159,7 +159,7 @@ export default function TaskDetails({ task }: { task: any }) {
         </div>
         
         {showFileUpload && (
-          <div className="mb-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900">
+          <div className="mb-3 p-3 border border-border rounded-lg bg-muted">
             <FileUploadWithStorage
               bucket="task-attachments"
               path={`tasks/${task.id}`}
@@ -174,14 +174,14 @@ export default function TaskDetails({ task }: { task: any }) {
         {attachments.length > 0 ? (
           <ul className="space-y-1.5">
             {attachments.map((attachment: any, index: number) => (
-              <li key={index} className="flex items-center gap-2 rounded px-2 py-1.5 bg-gray-50 dark:bg-gray-700 group">
-                <Paperclip size={12} className="text-gray-500 dark:text-gray-400 flex-shrink-0" />
+              <li key={index} className="flex items-center gap-2 rounded px-2 py-1.5 bg-muted group">
+                <Paperclip size={12} className="text-muted-foreground flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                  <div className="text-xs text-foreground truncate">
                     {typeof attachment === 'string' ? attachment : attachment.name}
                   </div>
                   {attachment.size && (
-                    <div className="text-xs text-gray-400 dark:text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {(attachment.size / 1024).toFixed(1)} KB
                     </div>
                   )}
@@ -194,7 +194,7 @@ export default function TaskDetails({ task }: { task: any }) {
                           e.stopPropagation();
                           window.open(attachment.url, '_blank');
                         }}
-                        className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="p-1 text-muted-foreground hover:text-primary rounded hover:bg-accent"
                         title="Open"
                       >
                         <ExternalLink size={12} />
@@ -204,7 +204,7 @@ export default function TaskDetails({ task }: { task: any }) {
                           e.stopPropagation();
                           handleDownload(attachment.url, attachment.name || 'download');
                         }}
-                        className="p-1 text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="p-1 text-muted-foreground hover:text-primary rounded hover:bg-accent"
                         title="Download"
                       >
                         <Download size={12} />
@@ -216,7 +216,7 @@ export default function TaskDetails({ task }: { task: any }) {
                       e.stopPropagation();
                       handleRemoveAttachment(index);
                     }}
-                    className="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="p-1 text-muted-foreground hover:text-destructive rounded hover:bg-accent"
                     title="Remove"
                   >
                     <X size={12} />
@@ -226,7 +226,7 @@ export default function TaskDetails({ task }: { task: any }) {
             ))}
           </ul>
         ) : (
-          <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
+          <p className="text-xs text-muted-foreground text-center py-4">
             No attachments yet. Click "Add Files" to upload.
           </p>
         )}
@@ -243,7 +243,7 @@ export default function TaskDetails({ task }: { task: any }) {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span className={task.completed ? 'line-through text-gray-400' : ''}>
+              <span className={task.completed ? 'line-through text-muted-foreground' : ''}>
                 {task.title}
               </span>
             </DialogTitle>

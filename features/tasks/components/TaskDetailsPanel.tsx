@@ -248,7 +248,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
   return (
       <div className="h-full flex flex-col overflow-hidden">
         {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex-shrink-0 p-4 border-b border-border">
         <div className="flex items-start gap-3 mb-3">
           <Button
             variant="ghost"
@@ -287,8 +287,8 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
               />
             ) : (
               <h2 
-                className={`text-lg font-semibold cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
-                  task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'
+                className={`text-lg font-semibold cursor-pointer hover:text-primary transition-colors ${
+                  task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
                 }`}
                 onClick={() => setIsEditingTitle(true)}
               >
@@ -342,7 +342,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                 <DropdownMenuItem
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex items-center gap-2 text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                  className="flex items-center gap-2 text-destructive focus:text-destructive"
                 >
                   {isDeleting ? (
                     <>
@@ -370,8 +370,8 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
             <User size={14} />
             Assignee
           </label>
-          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-medium">
               {task.assigneeName?.[0] || 'U'}
             </div>
             <span>{task.assigneeName || 'Unassigned'}</span>
@@ -406,7 +406,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">
-                <span className="text-gray-500 dark:text-gray-400">No Project</span>
+                <span className="text-muted-foreground">No Project</span>
               </SelectItem>
               {projects.map(project => (
                 <SelectItem key={project.id} value={project.id}>
@@ -476,7 +476,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                   checked={subtask.completed}
                   onCheckedChange={() => handleToggleSubtask(subtask.id)}
                 />
-                <span className={`text-sm flex-1 ${subtask.completed ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                <span className={`text-sm flex-1 ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                   {subtask.title}
                 </span>
                 <Button
@@ -527,7 +527,7 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
               <Loader2 size={20} className="animate-spin text-gray-400" />
             </div>
           ) : comments.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
+            <p className="text-sm text-muted-foreground text-center py-4">
               No comments yet.
             </p>
           ) : (
@@ -540,19 +540,19 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
                 return (
                   <div key={comment.id} className="text-sm">
                     <div className="flex items-start gap-2">
-                      <div className="h-6 w-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-medium">
+                      <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 text-xs font-medium">
                         {initial}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
-                          <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                          <p className="text-xs font-medium text-muted-foreground">
                             {displayName}
                           </p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500">
+                          <p className="text-xs text-muted-foreground/80">
                             {new Date(comment.created_at).toLocaleDateString()}
                           </p>
                         </div>
-                        <p className="text-gray-700 dark:text-gray-300 mt-1 break-words">{comment.content}</p>
+                        <p className="text-foreground mt-1 break-words">{comment.content}</p>
                       </div>
                     </div>
                   </div>

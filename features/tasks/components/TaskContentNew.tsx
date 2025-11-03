@@ -102,7 +102,7 @@ export default function TaskContentNew() {
           {[...Array(5)].map((_, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-16"
+              className="bg-card rounded-lg border border-border p-3 h-16"
             />
           ))}
         </div>
@@ -117,14 +117,14 @@ export default function TaskContentNew() {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
             <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/20 mb-4">
-                <FolderPlus className="w-10 h-10 text-blue-500 dark:text-blue-400" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
+                <FolderPlus className="w-10 h-10 text-primary" />
               </div>
             </div>
-            <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            <h3 className="text-2xl font-semibold text-foreground mb-3">
               Welcome to Tasks!
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">
+            <p className="text-muted-foreground mb-8">
               Get organized by creating your first project.
             </p>
 
@@ -165,9 +165,9 @@ export default function TaskContentNew() {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
             <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/20 mb-4">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
                 <svg
-                  className="w-10 h-10 text-blue-500 dark:text-blue-400"
+                  className="w-10 h-10 text-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -181,10 +181,10 @@ export default function TaskContentNew() {
                 </svg>
               </div>
             </div>
-            <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            <h3 className="text-2xl font-semibold text-foreground mb-3">
               Select a project
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Choose a project from the sidebar to view and manage its tasks
             </p>
           </div>
@@ -201,18 +201,18 @@ export default function TaskContentNew() {
                 {/* Search Bar and Sort Controls */}
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
                     <Input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search tasks by name, description, or project..."
-                      className="pl-9 pr-9 h-9 text-sm bg-white dark:bg-gray-800"
+                      className="pl-9 pr-9 h-9 text-sm bg-card"
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
                         <X size={16} />
                       </button>
@@ -227,7 +227,7 @@ export default function TaskContentNew() {
                 </div>
 
                 {/* Quick Add Input */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-card rounded-lg border border-border shadow-sm">
                   <form onSubmit={handleAddTask} className="p-3 space-y-2">
                     <Input
                       type="text"
@@ -244,7 +244,7 @@ export default function TaskContentNew() {
                         value={quickAddDescription}
                         onChange={(e) => setQuickAddDescription(e.target.value)}
                         placeholder="Add a description (optional)..."
-                        className="text-sm resize-none min-h-[60px] border-gray-200 dark:border-gray-700"
+                        className="text-sm resize-none min-h-[60px]"
                         rows={2}
                       />
                     )}
@@ -257,7 +257,7 @@ export default function TaskContentNew() {
                         >
                           <SelectTrigger className="h-8 text-xs max-w-[200px]">
                             <div className="flex items-center gap-2">
-                              <Folder size={12} className="text-gray-500 dark:text-gray-400" />
+                              <Folder size={12} className="text-muted-foreground" />
                               <span>
                                 {projects.find((p) => p.id === selectedProjectForTask)?.name ||
                                   'Select project'}
@@ -276,7 +276,7 @@ export default function TaskContentNew() {
                           </SelectContent>
                         </Select>
                       ) : activeProject ? (
-                        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Folder size={12} />
                           <span>{projects.find((p) => p.id === activeProject)?.name}</span>
                         </div>
@@ -312,7 +312,7 @@ export default function TaskContentNew() {
                   <div className="space-y-2">
                     {filteredTasks.length === 0 ? (
                       <div className="text-center py-12">
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        <p className="text-muted-foreground text-sm">
                           No tasks yet. Create one above!
                         </p>
                       </div>
@@ -335,7 +335,7 @@ export default function TaskContentNew() {
           </div>
 
           {/* Task Details Panel (Right Sidebar) - Always visible for stable layout */}
-          <div className="w-96 flex-shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="w-96 flex-shrink-0 border-l border-border bg-card">
             {selectedTask ? (
               <TaskDetailsPanel
                 task={selectedTask}
@@ -344,15 +344,15 @@ export default function TaskContentNew() {
             ) : (
               <div className="flex items-center justify-center h-full p-8">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                   </div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-sm font-medium text-foreground mb-2">
                     No Task Selected
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Select a task from the list to view and edit its details
                   </p>
                 </div>
