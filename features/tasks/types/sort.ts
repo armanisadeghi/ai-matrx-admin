@@ -1,4 +1,12 @@
 // Task Sorting Types and Utilities
+import { 
+  LucideIcon, 
+  Clock, 
+  Calendar, 
+  Flag, 
+  ArrowDownAZ, 
+  Plus 
+} from 'lucide-react';
 
 export type TaskSortField = 
   | 'lastUpdated'
@@ -12,8 +20,7 @@ export type TaskSortDirection = 'asc' | 'desc';
 export interface TaskSortOption {
   field: TaskSortField;
   label: string;
-  description: string;
-  icon?: string;
+  icon: LucideIcon;
 }
 
 export interface TaskSortConfig {
@@ -28,27 +35,27 @@ export const TASK_SORT_OPTIONS: TaskSortOption[] = [
   {
     field: 'lastUpdated',
     label: 'Last Updated',
-    description: 'Most recently modified first',
+    icon: Clock,
   },
   {
     field: 'dueDate',
     label: 'Due Date',
-    description: 'Soonest due date first',
+    icon: Calendar,
   },
   {
     field: 'priority',
     label: 'Priority',
-    description: 'High priority first',
+    icon: Flag,
   },
   {
     field: 'title',
     label: 'Alphabetical',
-    description: 'Sort by task name A-Z',
+    icon: ArrowDownAZ,
   },
   {
     field: 'created',
     label: 'Date Created',
-    description: 'Most recently created first',
+    icon: Plus,
   },
 ];
 

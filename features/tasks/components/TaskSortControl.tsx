@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowUpDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { TASK_SORT_OPTIONS, type TaskSortField } from '../types/sort';
+import { TASK_SORT_OPTIONS, getSortOption, type TaskSortField } from '../types/sort';
 import { cn } from '@/lib/utils';
 
 interface TaskSortControlProps {
@@ -22,7 +22,7 @@ interface TaskSortControlProps {
 
 /**
  * Reusable sort control component for tasks
- * Displays a dropdown menu with available sort options
+ * Displays icon-only button with elegant iOS-style dropdown menu
  */
 export default function TaskSortControl({
   currentSort,
@@ -30,7 +30,8 @@ export default function TaskSortControl({
   className,
   compact = false,
 }: TaskSortControlProps) {
-  const currentOption = TASK_SORT_OPTIONS.find(opt => opt.field === currentSort);
+  const currentOption = getSortOption(currentSort);
+  const CurrentIcon = currentOption.icon;
 
   return (
     <DropdownMenu>
@@ -38,40 +39,45 @@ export default function TaskSortControl({
         <Button
           variant="outline"
           size={compact ? 'sm' : 'default'}
-          className={cn('gap-2', className)}
+          className={cn('gap-1.5', className)}
         >
-          <ArrowUpDown size={compact ? 14 : 16} />
-          {!compact && <span>{currentOption?.label || 'Sort'}</span>}
+          <CurrentIcon size={compact ? 14 : 16} />
+          <ChevronDown size={compact ? 12 : 14} className="opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
-          Sort by
-        </div>
+      <DropdownMenuContent align="end" className="w-48 rounded-xl p-1">
         {TASK_SORT_OPTIONS.map((option) => {
           const isSelected = option.field === currentSort;
+          const OptionIcon = option.icon;
           
           return (
             <DropdownMenuItem
               key={option.field}
               onClick={() => onSortChange(option.field)}
-              className="flex items-start gap-2 cursor-pointer"
+              className={cn(
+                "flex items-center gap-3 cursor-pointer rounded-lg py-2.5 px-3 transition-colors",
+                isSelected && "bg-blue-50 dark:bg-blue-950/30"
+              )}
             >
-              <div className="flex items-center justify-center w-4 h-4 mt-0.5">
-                {isSelected && <Check size={14} className="text-blue-600 dark:text-blue-400" />}
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">{option.label}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {option.description}
-                </div>
-              </div>
+              <OptionIcon 
+                size={16} 
+                className={cn(
+                  "flex-shrink-0",
+                  isSelected ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+                )}
+              />
+              <span className={cn(
+                "text-sm flex-1 leading-tight",
+                isSelected ? "font-medium text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"
+              )}>
+                {option.label}
+              </span>
+              {isSelected && (
+                <Check size={16} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              )}
             </DropdownMenuItem>
           );
         })}
-        <div className="px-2 py-2 text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700 mt-1">
-          Secondary sorts apply as tie-breakers
-        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
