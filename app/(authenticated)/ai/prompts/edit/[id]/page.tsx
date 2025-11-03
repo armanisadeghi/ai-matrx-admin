@@ -63,21 +63,21 @@ export default async function EditPromptPage({
     if (error || !data) {
         return (
             <div className="h-full w-full flex items-center justify-center p-8">
-                <Card className="max-w-md w-full p-8 bg-textured border-red-200 dark:border-red-800">
+                <Card className="max-w-md w-full p-8 bg-textured border-destructive/30">
                     <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-                            <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+                        <div className="p-3 bg-destructive/10 rounded-full">
+                            <AlertCircle className="h-8 w-8 text-destructive" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                            <h2 className="text-xl font-semibold text-foreground mb-2">
                                 Prompt Not Found
                             </h2>
-                            <p className="text-gray-600 dark:text-gray-400">
+                            <p className="text-muted-foreground">
                                 This prompt either doesn't exist or you don't have permission to access it.
                             </p>
                         </div>
                         <Link href="/ai/prompts">
-                            <Button className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white">
+                            <Button>
                                 Back to Prompts
                             </Button>
                         </Link>

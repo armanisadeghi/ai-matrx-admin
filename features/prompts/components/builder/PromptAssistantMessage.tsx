@@ -95,10 +95,10 @@ export function PromptAssistantMessage({
     
     return (
         <div className="mr-12">
-            <div className="text-xs font-semibold mb-1 text-gray-600 dark:text-gray-400">
+            <div className="text-xs font-semibold mb-1 text-muted-foreground">
                 Assistant
                 {metadata && metadata.totalTime && (
-                    <span className="ml-2 text-gray-500 dark:text-gray-500 font-normal">
+                    <span className="ml-2 text-muted-foreground font-normal">
                         ({Math.round(metadata.totalTime / 1000)}s)
                     </span>
                 )}
@@ -124,7 +124,7 @@ export function PromptAssistantMessage({
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleCopy}
-                                className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
+                                className="h-6 w-6 p-0 text-muted-foreground"
                                 title="Copy"
                             >
                                 {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -134,7 +134,7 @@ export function PromptAssistantMessage({
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleEditClick}
-                                    className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
+                                    className="h-6 w-6 p-0 text-muted-foreground"
                                     title="Edit in full screen"
                                 >
                                     <Edit className="w-3.5 h-3.5" />
@@ -145,7 +145,7 @@ export function PromptAssistantMessage({
                                 variant="ghost"
                                 size="sm"
                                 onClick={toggleOptionsMenu}
-                                className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
+                                className="h-6 w-6 p-0 text-muted-foreground"
                                 title="More options"
                             >
                                 <MoreHorizontal className="w-3.5 h-3.5" />

@@ -96,7 +96,6 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
                     variant={showFilters ? "default" : "outline"}
                     size="sm"
                     onClick={() => setShowFilters(!showFilters)}
-                    className={cn(showFilters && "bg-blue-500 hover:bg-blue-600")}
                 >
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
                     Filters
@@ -146,7 +145,7 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
                     Showing {filteredPrompts.length} of {prompts.length} prompts
                 </span>
                 {hasActiveFilters && (
-                    <span className="text-blue-600 dark:text-blue-400">
+                    <span className="text-primary">
                         Filters active
                     </span>
                 )}

@@ -79,7 +79,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 // Open canvas and show it on mobile
                 openCanvas({ 
                     type: 'html', 
-                    data: '<div class="p-6"><p class="text-gray-500">Canvas panel - content will appear here</p></div>',
+                    data: '<div class="p-6"><p class="text-muted-foreground">Canvas panel - content will appear here</p></div>',
                     metadata: { title: 'Canvas' }
                 });
                 setShowCanvasOnMobile(true);
@@ -91,7 +91,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
             } else {
                 openCanvas({ 
                     type: 'html', 
-                    data: '<div class="p-6"><p class="text-gray-500">Canvas panel - content will appear here</p></div>',
+                    data: '<div class="p-6"><p class="text-muted-foreground">Canvas panel - content will appear here</p></div>',
                     metadata: { title: 'Canvas' }
                 });
             }
@@ -583,13 +583,13 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                             variant="ghost"
                             size="sm"
                             onClick={() => router.push('/ai/prompts')}
-                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 flex-shrink-0"
+                            className="text-muted-foreground hover:text-foreground flex-shrink-0"
                         >
                             <ArrowLeft className="w-4 h-4 sm:mr-2" />
                             <span className="hidden sm:inline">Back</span>
                         </Button>
-                        <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 flex-shrink-0" />
-                        <h1 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                        <div className="h-6 w-px bg-border flex-shrink-0" />
+                        <h1 className="text-xs sm:text-sm font-semibold text-foreground truncate">
                             {promptData.name || "Untitled Prompt"}
                         </h1>
                     </div>
@@ -600,7 +600,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setShowSidebarOnMobile(!showSidebarOnMobile)}
-                                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                className="text-muted-foreground hover:text-foreground"
                                 title={showSidebarOnMobile ? "Close runs" : "Show runs"}
                             >
                                 {showSidebarOnMobile ? (
@@ -615,7 +615,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                             variant="ghost"
                             size="sm"
                             onClick={handleClearConversation}
-                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                            className="text-muted-foreground hover:text-foreground"
                             title="Start new run"
                         >
                             <FilePlus className="w-4 h-4 sm:mr-1.5" />
@@ -626,7 +626,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleClearConversation}
-                                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                className="text-muted-foreground hover:text-foreground"
                                 title="Reset conversation"
                             >
                                 <RotateCcw className="w-4 h-4" />
@@ -636,7 +636,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                             variant="ghost"
                             size="sm"
                             onClick={handleCanvasToggle}
-                            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                            className="text-muted-foreground hover:text-foreground"
                             title={isMobile && showCanvasOnMobile ? "Back to conversation" : isCanvasOpen ? "Close canvas" : "Open canvas"}
                         >
                             {isMobile && showCanvasOnMobile ? (
@@ -658,7 +658,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                 </div>
             ) : isMobile && showSidebarOnMobile ? (
                 /* Mobile Sidebar Full Screen View */
-                <div className="h-[calc(100vh-3rem)] bg-white dark:bg-zinc-900">
+                <div className="h-[calc(100vh-3rem)] bg-card">
                     <PromptRunsSidebar
                         promptId={promptData.id}
                         promptName={promptData.name}
@@ -709,12 +709,12 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                             }}
                         >
                             {isLoadingRun ? (
-                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-gray-400 dark:text-gray-600">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
                                     <p className="text-lg font-medium">Loading run...</p>
                                 </div>
                             ) : displayMessages.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-gray-400 dark:text-gray-600">
+                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground">
                                     <MessageSquare className="w-16 h-16 mb-4" />
                                     <p className="text-lg font-medium">Ready to run your prompt</p>
                                     <p className="text-sm mt-2 text-center px-6">

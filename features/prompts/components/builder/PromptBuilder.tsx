@@ -47,7 +47,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
 
     
     if (!models || models.length === 0) {
-        return <div className="p-8 text-center text-red-600">Error: No models available</div>;
+        return <div className="p-8 text-center text-destructive">Error: No models available</div>;
     }
     
     // Determine if we're in edit mode based on whether we have an existing prompt ID

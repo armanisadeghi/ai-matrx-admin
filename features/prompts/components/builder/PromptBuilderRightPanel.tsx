@@ -117,7 +117,7 @@ export function PromptBuilderRightPanel({
             {/* Conversation Preview */}
             <div className="flex-1 overflow-y-auto p-6" style={{ scrollbarGutter: "stable" }}>
                 {displayMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-600">
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                         <MessageSquare className="w-12 h-12 mb-3" />
                         <p className="text-xs">Your conversation will appear here</p>
                     </div>
@@ -162,7 +162,7 @@ export function PromptBuilderRightPanel({
                             variant="ghost"
                             size="sm"
                             onClick={onClearConversation}
-                            className="text-gray-400 dark:text-gray-400 hover:text-gray-300"
+                            className="text-muted-foreground hover:text-foreground"
                         >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Clear conversation

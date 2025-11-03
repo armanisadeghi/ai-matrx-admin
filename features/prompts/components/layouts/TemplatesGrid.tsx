@@ -80,7 +80,7 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
     if (templates.length === 0) {
         return (
             <div className="text-center py-12">
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground">
                     No templates available yet. Check back soon!
                 </p>
             </div>
@@ -90,7 +90,7 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
     return (
         <div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                <TabsList className="bg-slate-200 dark:bg-slate-800">
+                <TabsList className="bg-muted">
                     <TabsTrigger value="all">All Templates</TabsTrigger>
                     <TabsTrigger value="featured">Featured</TabsTrigger>
                     {categories.map((category) => (
@@ -122,7 +122,7 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
 
             {filteredTemplates.length === 0 && (
                 <div className="text-center py-12">
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground">
                         No templates found in this category.
                     </p>
                 </div>

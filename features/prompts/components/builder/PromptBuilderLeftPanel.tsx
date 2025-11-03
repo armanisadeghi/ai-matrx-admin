@@ -103,7 +103,7 @@ export function PromptBuilderLeftPanel({
     onOpenFullScreenEditor,
 }: PromptBuilderLeftPanelProps) {
     return (
-        <div className="h-full w-full border-r border-gray-200 dark:border-gray-800 bg-textured flex flex-col">
+        <div className="h-full w-full border-r border-border bg-textured flex flex-col">
             <div className="flex-1 overflow-y-auto pl-2 pr-1 space-y-3 scrollbar-thin" style={{ scrollbarGutter: "stable" }}>
                 {/* Model Configuration */}
                 <ModelConfiguration
@@ -173,7 +173,7 @@ export function PromptBuilderLeftPanel({
                     variant="ghost"
                     size="sm"
                     onClick={onAddMessage}
-                    className="w-full text-gray-400 hover:text-gray-300 border border-dashed border-gray-600 hover:border-gray-500"
+                    className="w-full text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-border"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     Add message

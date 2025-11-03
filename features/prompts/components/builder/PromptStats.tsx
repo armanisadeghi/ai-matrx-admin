@@ -19,7 +19,7 @@ export function PromptStats({ timeToFirstToken, totalTime, tokens }: PromptStats
     };
 
     return (
-        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
             {timeToFirstToken !== undefined && (
                 <div className="flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5" />

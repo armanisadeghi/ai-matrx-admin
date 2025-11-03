@@ -625,8 +625,8 @@ export function PromptRunner({
     if (isLoadingPrompt) {
         return (
             <div className={`flex flex-col items-center justify-center h-full gap-4 ${className || ''}`}>
-                <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
-                <p className="text-sm text-gray-600 dark:text-gray-400">Loading prompt...</p>
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Loading prompt...</p>
             </div>
         );
     }
@@ -635,14 +635,14 @@ export function PromptRunner({
     if (promptError || !promptData) {
         return (
             <div className={`flex flex-col items-center justify-center h-full gap-4 p-8 ${className || ''}`}>
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-                    <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+                <div className="p-3 bg-destructive/10 rounded-full">
+                    <AlertCircle className="h-8 w-8 text-destructive" />
                 </div>
                 <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                         Failed to Load Prompt
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                         {promptError || 'Could not load prompt data'}
                     </p>
                 </div>
@@ -688,8 +688,8 @@ export function PromptRunner({
             {isMobile && showCanvasOnMobile && isCanvasOpen ? (
                 <div className={`h-full flex flex-col bg-textured ${className || ''}`}>
                     {/* Canvas Header */}
-                    <div className="flex-none flex items-center justify-between px-4 py-3 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-gray-800">
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="flex-none flex items-center justify-between px-4 py-3 bg-card border-b border-border">
+                        <h3 className="text-sm font-semibold text-foreground">
                             Canvas
                         </h3>
                         <Button
@@ -709,8 +709,8 @@ export function PromptRunner({
             ) : (
                 <div className={`h-full flex flex-col ${className || ''}`}>
                     {/* Header */}
-                    <div className="flex-none flex items-center justify-between px-4 py-3 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-gray-800">
-                        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">
+                    <div className="flex-none flex items-center justify-between px-4 py-3 bg-card border-b border-border">
+                        <h2 className="text-base font-semibold text-foreground truncate flex-1">
                             {title || promptData.name || "Run Prompt"}
                         </h2>
                         <div className="flex items-center gap-2 flex-shrink-0">
@@ -763,13 +763,13 @@ export function PromptRunner({
                                         }}
                                     >
                                         {displayMessages.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-gray-400 dark:text-gray-600 px-6">
+                                            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
                                                 <div className="text-center max-w-md">
                                                     <p className="text-lg font-medium mb-2">
                                                         {(mode === 'auto-run' || mode === 'auto-run-one-shot') ? 'Starting execution...' : 'Ready to run your prompt'}
                                                     </p>
                                                     {(mode === 'auto-run' || mode === 'auto-run-one-shot') ? (
-                                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mt-4"></div>
+                                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mt-4"></div>
                                                     ) : (
                                                         <p className="text-sm">
                                                             {variableDefaults.length > 0 

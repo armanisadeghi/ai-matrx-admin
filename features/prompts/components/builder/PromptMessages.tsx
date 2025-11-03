@@ -56,7 +56,7 @@ export function PromptMessages({
         <>
             {/* Prompt Messages */}
             <div className="space-y-2">
-                <Label className="text-xs text-gray-600 dark:text-gray-400">Prompt messages</Label>
+                <Label className="text-xs text-muted-foreground">Prompt messages</Label>
                 <div className="space-y-2">
                     {messages.map((message, index) => {
                         const isEditing = editingMessageIndex === index;
@@ -64,12 +64,12 @@ export function PromptMessages({
                         return (
                             <div
                                 key={index}
-                                className="group border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800"
+                                className="group border border-border rounded-lg bg-muted"
                             >
                                 {/* Header */}
                                 <div className="flex items-center justify-between px-2 py-1">
                                     <Select value={message.role} onValueChange={(role) => onMessageRoleChange(index, role)}>
-                                        <SelectTrigger className="h-8 bg-transparent text-gray-800 dark:text-gray-200 border-none hover:bg-gray-200 dark:hover:bg-gray-700 w-auto min-w-[180px] text-xs focus-none [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
+                                        <SelectTrigger className="h-8 bg-transparent text-foreground border-none hover:bg-accent w-auto min-w-[180px] text-xs focus-none [&>svg]:opacity-0 [&>svg]:group-hover:opacity-100 [&>svg]:transition-opacity">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -89,7 +89,7 @@ export function PromptMessages({
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-7 px-2 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-300 dark:hover:text-gray-300"
+                                                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
                                                     onMouseDown={(e) => {
                                                         // Prevent textarea from losing focus
                                                         e.preventDefault();
@@ -117,7 +117,7 @@ export function PromptMessages({
                                             <PopoverContent className="w-56 p-2" align="start">
                                                 <div className="space-y-1">
                                                     {variableNames.length === 0 ? (
-                                                        <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-2 italic">
+                                                        <div className="text-xs text-muted-foreground px-2 py-2 italic">
                                                             No variables defined
                                                         </div>
                                                     ) : (
@@ -126,7 +126,7 @@ export function PromptMessages({
                                                                 key={variable}
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="w-full justify-start h-8 px-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                className="w-full justify-start h-8 px-2 text-xs text-foreground hover:bg-accent"
                                                                 onMouseDown={(e) => {
                                                                     // Prevent textarea from losing focus
                                                                     e.preventDefault();
@@ -147,7 +147,7 @@ export function PromptMessages({
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="h-7 w-7 p-0 text-gray-400 hover:text-blue-400"
+                                                className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
                                                 onClick={() => onOpenFullScreenEditor(index)}
                                                 title="Open in full screen editor"
                                             >
@@ -157,7 +157,7 @@ export function PromptMessages({
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-7 w-7 p-0 text-gray-400 hover:text-gray-300"
+                                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                                             onClick={() => onEditingMessageIndexChange(isEditing ? null : index)}
                                         >
                                             <Edit2 className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ export function PromptMessages({
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-7 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                            className="h-7 text-xs text-muted-foreground hover:text-foreground"
                                             onClick={() => onClearMessage(index)}
                                         >
                                             Clear
@@ -173,7 +173,7 @@ export function PromptMessages({
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-7 w-7 p-0 text-gray-400 hover:text-red-400"
+                                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                                             onClick={() => onDeleteMessage(index)}
                                         >
                                             <X className="w-4 h-4" />
@@ -230,7 +230,7 @@ export function PromptMessages({
                                                     });
                                                 }}
                                                 placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
-                                                className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden leading-normal"
+                                                className="w-full bg-card border-none outline-none text-xs text-foreground placeholder:text-muted-foreground p-0 resize-none overflow-hidden leading-normal"
                                                 autoFocus
                                                 onBlur={() => {
                                                     // Don't close edit mode if context menu is open
@@ -250,7 +250,7 @@ export function PromptMessages({
                                         </PromptEditorContextMenu>
                                     ) : (
                                         <div
-                                            className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
+                                            className="text-xs pb-2 text-muted-foreground whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
                                             onClick={() => onEditingMessageIndexChange(index)}
                                             style={{
                                                 lineHeight: "1.5",
@@ -259,7 +259,7 @@ export function PromptMessages({
                                             {message.content ? (
                                                 <HighlightedText text={message.content} validVariables={variableNames} />
                                             ) : (
-                                                <span className="text-gray-500 dark:text-gray-500 italic">
+                                                <span className="text-muted-foreground italic">
                                                     {message.role === "assistant" ? "Enter assistant message..." : "Enter message..."}
                                                 </span>
                                             )}

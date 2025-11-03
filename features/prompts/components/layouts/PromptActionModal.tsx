@@ -60,13 +60,13 @@ export function PromptActionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md max-h-[100dvh] overflow-y-auto bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 border-slate-200 dark:border-slate-700">
+            <DialogContent className="sm:max-w-md max-h-[100dvh] overflow-y-auto bg-gradient-to-br from-card to-muted border-border">
                 <DialogHeader>
-                    <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-2">
+                    <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-foreground mb-2">
                         {promptName || "Untitled Prompt"}
                     </DialogTitle>
                     {promptDescription && (
-                        <DialogDescription className="text-center text-gray-600 dark:text-gray-400 pt-2 text-sm">
+                        <DialogDescription className="text-center text-muted-foreground pt-2 text-sm">
                             {promptDescription}
                         </DialogDescription>
                     )}
@@ -77,21 +77,21 @@ export function PromptActionModal({
                     <button
                         onClick={(e) => handleAction(e, 'run', onRun)}
                         disabled={isAnyActionActive}
-                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-blue-200 dark:border-blue-800 transition-all duration-300 ${
+                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-primary/30 transition-all duration-300 ${
                             isAnyActionActive 
                                 ? 'opacity-50 cursor-not-allowed' 
-                                : 'hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xl hover:scale-[1.02]'
+                                : 'hover:border-primary/50 hover:shadow-xl hover:scale-[1.02]'
                         }`}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-600/20 dark:to-purple-600/20 group-hover:from-blue-500/20 group-hover:to-purple-500/20 transition-all duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300" />
                         <div className="relative p-4 sm:p-6 md:p-8 flex flex-col items-center">
-                            <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-500 dark:bg-blue-600 rounded-full group-hover:bg-blue-600 dark:group-hover:bg-blue-700 transition-colors duration-300 group-hover:scale-110 transform">
-                                <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                            <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-primary rounded-full group-hover:bg-primary/90 transition-colors duration-300 group-hover:scale-110 transform">
+                                <Play className="w-6 h-6 sm:w-8 sm:h-8 text-primary-foreground" />
                             </div>
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 sm:mb-2">
+                            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1 sm:mb-2">
                                 Run Prompt
                             </h3>
-                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center">
+                            <p className="text-xs sm:text-sm text-muted-foreground text-center">
                                 Execute this prompt with AI models
                             </p>
                         </div>
@@ -101,21 +101,21 @@ export function PromptActionModal({
                     <button
                         onClick={(e) => handleAction(e, 'edit', onEdit)}
                         disabled={isAnyActionActive}
-                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-purple-200 dark:border-purple-800 transition-all duration-300 ${
+                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-secondary/30 transition-all duration-300 ${
                             isAnyActionActive 
                                 ? 'opacity-50 cursor-not-allowed' 
-                                : 'hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-xl hover:scale-[1.02]'
+                                : 'hover:border-secondary/50 hover:shadow-xl hover:scale-[1.02]'
                         }`}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 dark:from-purple-600/20 dark:to-pink-600/20 group-hover:from-purple-500/20 group-hover:to-pink-500/20 transition-all duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 to-accent/10 group-hover:from-secondary/20 group-hover:to-accent/20 transition-all duration-300" />
                         <div className="relative p-4 sm:p-6 md:p-8 flex flex-col items-center">
-                            <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-purple-500 dark:bg-purple-600 rounded-full group-hover:bg-purple-600 dark:group-hover:bg-purple-700 transition-colors duration-300 group-hover:scale-110 transform">
-                                <Pencil className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                            <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-secondary rounded-full group-hover:bg-secondary/90 transition-colors duration-300 group-hover:scale-110 transform">
+                                <Pencil className="w-6 h-6 sm:w-8 sm:h-8 text-secondary-foreground" />
                             </div>
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 sm:mb-2">
+                            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1 sm:mb-2">
                                 Edit Prompt
                             </h3>
-                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center">
+                            <p className="text-xs sm:text-sm text-muted-foreground text-center">
                                 Modify messages, settings, and variables
                             </p>
                         </div>
@@ -124,8 +124,8 @@ export function PromptActionModal({
 
                 {/* Additional Actions */}
                 {(showView || showDuplicate || showShare || showDelete) && (
-                    <div className="border-t border-slate-200 dark:border-slate-700 pt-3 sm:pt-4">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3 text-center font-medium uppercase tracking-wider">
+                    <div className="border-t border-border pt-3 sm:pt-4">
+                        <p className="text-xs text-muted-foreground mb-2 sm:mb-3 text-center font-medium uppercase tracking-wider">
                             Additional Actions
                         </p>
                         <div className="grid grid-cols-2 gap-2 sm:gap-2">
@@ -134,7 +134,7 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'view', onView)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-border hover:bg-accent"
                                 >
                                     <Eye className="w-4 h-4 flex-shrink-0" />
                                     <span className="text-xs sm:text-sm font-medium">View</span>
@@ -146,11 +146,11 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'duplicate', onDuplicate)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 relative"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-border hover:bg-accent relative"
                                 >
                                     {isDuplicating && (
-                                        <div className="absolute inset-0 bg-slate-500/20 dark:bg-slate-600/30 backdrop-blur-sm flex items-center justify-center rounded-md">
-                                            <Loader2 className="w-4 h-4 text-slate-600 dark:text-slate-400 animate-spin" />
+                                        <div className="absolute inset-0 bg-muted/50 backdrop-blur-sm flex items-center justify-center rounded-md">
+                                            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
                                         </div>
                                     )}
                                     <Copy className="w-4 h-4 flex-shrink-0" />
@@ -163,7 +163,7 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'share', onShare)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-border hover:bg-accent"
                                 >
                                     <Share2 className="w-4 h-4 flex-shrink-0" />
                                     <span className="text-xs sm:text-sm font-medium">Share</span>
@@ -175,11 +175,11 @@ export function PromptActionModal({
                                     variant="outline"
                                     onClick={(e) => handleAction(e, 'delete', onDelete)}
                                     disabled={isAnyActionActive}
-                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 relative"
+                                    className="flex items-center justify-start gap-1.5 sm:gap-2 h-auto py-2.5 sm:py-3 px-3 sm:px-4 border-destructive/30 text-destructive hover:bg-destructive/10 relative"
                                 >
                                     {isDeleting && (
-                                        <div className="absolute inset-0 bg-red-500/20 dark:bg-red-600/30 backdrop-blur-sm flex items-center justify-center rounded-md">
-                                            <Loader2 className="w-4 h-4 text-red-600 dark:text-red-400 animate-spin" />
+                                        <div className="absolute inset-0 bg-destructive/20 backdrop-blur-sm flex items-center justify-center rounded-md">
+                                            <Loader2 className="w-4 h-4 text-destructive animate-spin" />
                                         </div>
                                     )}
                                     <Trash2 className="w-4 h-4 flex-shrink-0" />

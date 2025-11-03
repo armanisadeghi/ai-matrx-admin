@@ -29,16 +29,16 @@ export default async function PromptTemplatesPage() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="hover:bg-slate-200 dark:hover:bg-slate-800 h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0"
+                                className="hover:bg-accent h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0"
                             >
                                 <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                             </Button>
                         </Link>
                         <div className="flex-1 min-w-0">
-                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1 sm:mb-2">
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
                                 Prompt Templates
                             </h1>
-                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                            <p className="text-sm sm:text-base text-muted-foreground">
                                 Start with pre-built templates to jumpstart your prompts
                             </p>
                         </div>

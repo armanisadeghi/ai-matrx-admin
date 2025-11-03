@@ -92,16 +92,16 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
     
     return (
         <>
-            <Card className="p-6 bg-white dark:bg-zinc-900 border-2 border-dashed border-purple-300 dark:border-purple-700">
+            <Card className="p-6 bg-card border-2 border-dashed border-secondary/30">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                        <Play className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2 bg-secondary/10 rounded-lg">
+                        <Play className="w-5 h-5 text-secondary" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        <h3 className="text-lg font-semibold text-foreground">
                             Modal Testing Controls
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                             Test different execution modes for the PromptRunnerModal
                         </p>
                     </div>
@@ -119,7 +119,7 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
                             {promptData.variableDefaults && promptData.variableDefaults.length > 0 ? (
                                 promptData.variableDefaults.map(variable => (
                                     <div key={variable.name} className="space-y-1">
-                                        <Label className="text-xs text-gray-600 dark:text-gray-400">
+                                        <Label className="text-xs text-muted-foreground">
                                             {variable.name}
                                         </Label>
                                         <Input
@@ -131,7 +131,7 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-sm text-gray-500 dark:text-gray-600 italic">
+                                <p className="text-sm text-muted-foreground italic">
                                     No variables defined for this prompt
                                 </p>
                             )}
@@ -166,8 +166,8 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
                                 className={`
                                     group relative overflow-hidden
                                     p-4 rounded-lg border-2 
-                                    bg-white dark:bg-zinc-900
-                                    border-gray-200 dark:border-gray-700
+                                    bg-card
+                                    border-border
                                     hover:border-transparent
                                     transition-all duration-200
                                     text-left
@@ -179,7 +179,7 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
                                     opacity-0 group-hover:opacity-100 transition-opacity duration-200
                                     -z-10
                                 `} />
-                                <div className="absolute inset-[2px] bg-white dark:bg-zinc-900 rounded-md -z-10" />
+                                <div className="absolute inset-[2px] bg-card rounded-md -z-10" />
                                 
                                 {/* Content */}
                                 <div className="relative flex items-start gap-3">
@@ -191,10 +191,10 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
                                         <mode.icon className="w-4 h-4 text-white" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1">
+                                        <div className="font-semibold text-sm text-foreground mb-1">
                                             {mode.name}
                                         </div>
-                                        <div className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                                        <div className="text-xs text-muted-foreground leading-tight">
                                             {mode.description}
                                         </div>
                                     </div>
@@ -204,8 +204,8 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
                     </div>
                 </div>
                 
-                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-xs text-blue-800 dark:text-blue-200">
+                <div className="mt-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                    <p className="text-xs text-primary">
                         <strong>Tip:</strong> Fill in the test variables and message above, then click any mode button 
                         to open the modal with that configuration. Auto-run mode will immediately start execution if 
                         all variables are filled.

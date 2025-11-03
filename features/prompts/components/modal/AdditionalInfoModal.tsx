@@ -85,17 +85,17 @@ export function AdditionalInfoModal({
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         {!hasInteracted ? (
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Proceeding in <span className="font-semibold text-gray-900 dark:text-gray-100">{countdown}s</span>
+                            <p className="text-sm text-muted-foreground">
+                                Proceeding in <span className="font-semibold text-foreground">{countdown}s</span>
                             </p>
                         ) : (
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Press <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Enter</kbd> to continue
+                            <p className="text-sm text-muted-foreground">
+                                Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to continue
                             </p>
                         )}
                         <button
                             onClick={handleContinue}
-                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                            className="text-xs text-primary hover:underline flex items-center gap-1"
                         >
                             Continue now
                             <ArrowRight className="w-3 h-3" />
@@ -115,11 +115,11 @@ export function AdditionalInfoModal({
                         autoFocus
                     />
 
-                    <p className="text-xs text-gray-500 dark:text-gray-600">
+                    <p className="text-xs text-muted-foreground">
                         {!hasInteracted ? (
-                            <>Press <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Enter</kbd> or wait to continue</>
+                            <>Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> or wait to continue</>
                         ) : (
-                            <><kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Ctrl+Enter</kbd> for new line</>
+                            <><kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+Enter</kbd> for new line</>
                         )}
                     </p>
                 </div>

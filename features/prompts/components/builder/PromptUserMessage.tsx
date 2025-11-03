@@ -86,13 +86,13 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
     return (
         <div className="ml-12">
             {/* Unified container with border and background */}
-            <div className={`bg-zinc-100 dark:bg-zinc-850 border border-zinc-300 dark:border-zinc-700 ${isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
+            <div className={`bg-muted border border-border ${isCollapsed && !isEditing ? 'rounded-t-lg' : 'rounded-lg'}`}>
                 {/* Thin delicate header */}
                 <div 
                     className="flex items-center justify-between px-3 py-2 cursor-pointer"
                     onClick={handleHeaderClick}
                 >
-                    <div className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+                    <div className="text-xs font-semibold text-muted-foreground">
                         User
                     </div>
                     <div className="flex items-center gap-1">
@@ -102,7 +102,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleSave}
-                                    className="h-6 px-2 text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                                    className="h-6 px-2 text-xs text-success hover:text-success/90"
                                 >
                                     <Check className="w-3.5 h-3.5 mr-1" />
                                     Save
@@ -111,7 +111,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleCancel}
-                                    className="h-6 px-2 text-xs text-gray-600 dark:text-gray-400"
+                                    className="h-6 px-2 text-xs text-muted-foreground"
                                 >
                                     <X className="w-3.5 h-3.5 mr-1" />
                                     Cancel
@@ -123,7 +123,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleCopy}
-                                    className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
+                                    className="h-6 w-6 p-0 text-muted-foreground"
                                     title="Copy"
                                 >
                                     {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -133,7 +133,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                                         variant="ghost"
                                         size="sm"
                                         onClick={handleEdit}
-                                        className="h-6 w-6 p-0 text-gray-600 dark:text-gray-400"
+                                        className="h-6 w-6 p-0 text-muted-foreground"
                                         title="Edit"
                                     >
                                         <Edit className="w-3.5 h-3.5" />
@@ -152,10 +152,10 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                                 ref={textareaRef}
                                 value={editContent}
                                 onChange={handleTextareaChange}
-                                className="w-full text-sm text-gray-800 dark:text-gray-200 bg-zinc-50 dark:bg-zinc-900 border-none outline-none focus:outline-none focus:ring-0 resize-none overflow-hidden"
+                                className="w-full text-sm text-foreground bg-card border-none outline-none focus:outline-none focus:ring-0 resize-none overflow-hidden"
                             />
                             {hasUnsavedChanges && (
-                                <div className="text-xs text-amber-600 dark:text-amber-400">
+                                <div className="text-xs text-warning">
                                     Unsaved changes
                                 </div>
                             )}
@@ -164,7 +164,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                         <div className="relative">
                             <div
                                 ref={contentRef}
-                                className={`text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${
+                                className={`text-sm text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300 ${
                                     isCollapsed ? "max-h-16" : ""
                                 }`}
                             >
@@ -172,7 +172,7 @@ export function PromptUserMessage({ content, messageIndex, onContentChange }: Pr
                             </div>
                             {isCollapsed && (
                                 <div
-                                    className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-zinc-100 dark:from-zinc-850 to-transparent pointer-events-none"
+                                    className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-muted to-transparent pointer-events-none"
                                 />
                             )}
                         </div>

@@ -108,14 +108,14 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => openModalWithMode(mode.id)}
-                                    className="w-full justify-start h-7 px-2 text-xs hover:bg-gray-100 dark:hover:bg-zinc-800"
+                                    className="w-full justify-start h-7 px-2 text-xs hover:bg-accent"
                                 >
                                     <mode.icon className={`w-3.5 h-3.5 mr-2 ${mode.color}`} />
                                     <span className="flex-1 text-left">{mode.name}</span>
                                 </Button>
                             ))}
                         </div>
-                        <div className="px-2 py-1.5 text-[10px] text-gray-500 dark:text-gray-600 leading-tight">
+                        <div className="px-2 py-1.5 text-[10px] text-muted-foreground leading-tight">
                             Test prompt in modal with different execution modes
                         </div>
                     </CollapsibleContent>
