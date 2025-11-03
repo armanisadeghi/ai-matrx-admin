@@ -101,6 +101,8 @@ export function PromptCard({
     };
 
     const handleShareClick = () => {
+        // Close action modal first to prevent both modals being open
+        setIsActionModalOpen(false);
         setIsShareModalOpen(true);
     };
 
@@ -109,6 +111,11 @@ export function PromptCard({
         if (!isDisabled) {
             setIsShareModalOpen(true);
         }
+    };
+
+    const handleShareModalClose = () => {
+        setIsShareModalOpen(false);
+        // Prevent action modal from reopening by not calling anything else
     };
 
     const handleConvertToTemplate = async () => {
@@ -139,8 +146,9 @@ export function PromptCard({
         }
     };
 
-    const handleCardClick = () => {
-        if (!isDisabled) {
+    const handleCardClick = (e: React.MouseEvent) => {
+        // Only open modal if clicking the card itself, not if a modal is already open
+        if (!isDisabled && !isShareModalOpen) {
             setIsActionModalOpen(true);
         }
     };
@@ -155,7 +163,7 @@ export function PromptCard({
                     ? 'opacity-60 cursor-not-allowed' 
                     : 'hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer hover:scale-[1.02] group'
             }`}
-            onClick={isDisabled ? undefined : handleCardClick}
+            onClick={handleCardClick}
             title={isDisabled ? (isNavigating ? "Navigating..." : "Please wait...") : "Click to choose action"}
         >
             {/* Loading Overlay */}
@@ -282,7 +290,7 @@ export function PromptCard({
 
             <ShareModal
                 isOpen={isShareModalOpen}
-                onClose={() => setIsShareModalOpen(false)}
+                onClose={handleShareModalClose}
                 resourceType="prompt"
                 resourceId={id}
                 resourceName={name}
