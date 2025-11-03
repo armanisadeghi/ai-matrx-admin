@@ -48,15 +48,15 @@ export function TemplateCard({
     const showLoadingOverlay = isNavigating || isUsingTemplate;
 
     return (
-        <Card className={`flex flex-col h-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all duration-200 overflow-hidden relative ${
+        <Card className={`flex flex-col h-full bg-card border border-border transition-all duration-200 overflow-hidden relative ${
             isDisabled ? 'opacity-60' : 'hover:shadow-md'
         }`}>
             {/* Loading Overlay */}
             {showLoadingOverlay && (
-                <div className="absolute inset-0 bg-slate-900/20 dark:bg-slate-950/40 backdrop-blur-sm z-20 flex items-center justify-center">
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-20 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="w-8 h-8 text-blue-500 dark:text-blue-400 animate-spin" />
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                        <span className="text-sm font-medium text-foreground">
                             {isNavigating ? "Loading..." : "Creating prompt..."}
                         </span>
                     </div>
@@ -65,16 +65,16 @@ export function TemplateCard({
 
             <div className="p-6 flex-1">
                 <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 flex-1">
+                    <h3 className="text-lg font-semibold text-foreground line-clamp-2 flex-1">
                         {name || "Untitled Template"}
                     </h3>
                     {isFeatured && (
-                        <Star className="h-5 w-5 text-yellow-500 dark:text-yellow-400 flex-shrink-0 ml-2" />
+                        <Star className="h-5 w-5 text-warning flex-shrink-0 ml-2" />
                     )}
                 </div>
                 
                 {description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                         {description}
                     </p>
                 )}
@@ -83,7 +83,7 @@ export function TemplateCard({
                     {category && (
                         <Badge
                             variant="secondary"
-                            className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                            className="bg-primary/10 text-primary"
                         >
                             {category}
                         </Badge>
@@ -91,7 +91,7 @@ export function TemplateCard({
                     {useCount > 0 && (
                         <Badge
                             variant="outline"
-                            className="text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600"
+                            className="text-muted-foreground border-border"
                         >
                             {useCount} uses
                         </Badge>
@@ -99,14 +99,14 @@ export function TemplateCard({
                 </div>
             </div>
 
-            <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-100 dark:bg-slate-900 rounded-b-lg">
+            <div className="border-t border-border p-4 bg-muted rounded-b-lg">
                 <div className="flex gap-2 justify-center">
                     <Button
                         size="sm"
                         variant="outline"
                         onClick={handleView}
                         disabled={isDisabled}
-                        className="flex-1 hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700"
+                        className="flex-1"
                     >
                         {isNavigating ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -119,7 +119,7 @@ export function TemplateCard({
                         size="sm"
                         onClick={handleUseTemplate}
                         disabled={isDisabled}
-                        className="flex-1 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
+                        className="flex-1"
                     >
                         {isUsingTemplate ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />

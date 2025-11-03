@@ -22,8 +22,9 @@ coverage
 p
 .DS_Store
 
-# Documentation that doesn't need to be cached
+# Documentation that doesn't need to be cached (excluding documentation viewer files)
 **/*.md
+!app/(authenticated)/tests/utility-function-tests/documentation/*.md
 
 # Temporary files
 *.tmp

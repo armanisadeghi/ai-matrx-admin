@@ -116,7 +116,7 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
     if (prompts.length === 0) {
         return (
             <div className="text-center py-12">
-                <p className="text-gray-600 dark:text-gray-400">No prompts found. Create your first prompt to get started!</p>
+                <p className="text-muted-foreground">No prompts found. Create your first prompt to get started!</p>
             </div>
         );
     }
@@ -132,7 +132,7 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
             {/* Prompts Grid */}
             {filteredPrompts.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground">
                         No prompts match your filters. Try adjusting your search or filters.
                     </p>
                 </div>
@@ -164,7 +164,7 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-red-600 dark:text-red-400">
+                        <AlertDialogTitle className="text-destructive">
                             Delete Prompt
                         </AlertDialogTitle>
                         <AlertDialogDescription>
@@ -178,7 +178,7 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleConfirmDelete}
-                            className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+                            className="bg-destructive hover:bg-destructive/90"
                         >
                             Delete Prompt
                         </AlertDialogAction>
