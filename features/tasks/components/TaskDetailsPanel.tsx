@@ -3,14 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Calendar, Flag, User, Paperclip, MessageSquare, 
-  CheckSquare, Loader2, Plus, Send, Save, X as XIcon, ChevronLeft
+  CheckSquare, Loader2, Plus, Send, Save, X as XIcon, ChevronLeft, Trash2, Check, MoreVertical
 } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { supabase } from '@/utils/supabase/client';
+import * as taskService from '@/features/tasks/services/taskService';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 interface TaskDetailsPanelProps {
   task: any;
@@ -22,6 +31,9 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     updateTaskDescription,
     updateTaskDueDate,
     updateTaskProject,
+    updateTaskTitle,
+    toggleTaskComplete,
+    deleteTask,
     projects,
     refresh,
     createSubtask,
@@ -31,27 +43,43 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     createTaskComment,
   } = useTaskContext();
 
+  const [title, setTitle] = useState(task.title || '');
   const [description, setDescription] = useState(task.description || '');
   const [dueDate, setDueDate] = useState(task.dueDate || '');
   const [projectId, setProjectId] = useState<string | null>(task.projectId || null);
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | null>(task.priority || null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newSubtask, setNewSubtask] = useState('');
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const [isAddingComment, setIsAddingComment] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Update local state when task changes from context
   useEffect(() => {
+    setTitle(task.title || '');
     setDescription(task.description || '');
     setDueDate(task.dueDate || '');
     setProjectId(task.projectId || null);
     setPriority(task.priority || null);
     setIsDirty(false); // Reset dirty state when task updates
-  }, [task.id, task.description, task.dueDate, task.projectId, task.priority]);
+  }, [task.id, task.title, task.description, task.dueDate, task.projectId, task.priority]);
+
+  // Get current user
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
 
   // Load comments when task changes
   useEffect(() => {
@@ -64,6 +92,11 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     
     loadComments();
   }, [task.id, getTaskComments]);
+
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    setIsDirty(true);
+  };
 
   const handleDescriptionChange = (newDescription: string) => {
     setDescription(newDescription);
@@ -85,12 +118,37 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
     setIsDirty(true);
   };
 
+  const handleToggleComplete = async () => {
+    await toggleTaskComplete(task.projectId, task.id);
+    await refresh();
+  };
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      // Create a fake event for the deleteTask function
+      const fakeEvent = { stopPropagation: () => {} } as React.MouseEvent;
+      await deleteTask(task.projectId, task.id, fakeEvent);
+      // Close the panel after successful deletion
+      onClose();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!isDirty || isSaving) return;
     
     setIsSaving(true);
     try {
       // Save all changes
+      if (title !== task.title) {
+        await updateTaskTitle(task.projectId, task.id, title);
+      }
       if (description !== task.description) {
         await updateTaskDescription(task.projectId, task.id, description);
       }
@@ -100,7 +158,9 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
       if (projectId !== task.projectId) {
         await updateTaskProject(task.id, projectId);
       }
-      // TODO: Save priority when implemented in context
+      if (priority !== task.priority) {
+        await taskService.updateTask(task.id, { priority });
+      }
       
       // Refresh to get updated data
       await refresh();
@@ -198,29 +258,107 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
           >
             <ChevronLeft size={22} />
           </Button>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex-1 pr-2">
-            {task.title}
-          </h2>
-          {isDirty && (
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              size="sm"
-              className="h-8 px-3"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 size={14} className="animate-spin mr-1" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save size={14} className="mr-1" />
-                  Save
-                </>
-              )}
-            </Button>
-          )}
+          
+          {/* Complete/Incomplete Checkbox */}
+          <Checkbox
+            checked={task.completed}
+            onCheckedChange={handleToggleComplete}
+            className="mt-1.5 flex-shrink-0"
+          />
+          
+          {/* Title - Editable */}
+          <div className="flex-1 min-w-0">
+            {isEditingTitle ? (
+              <Input
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                onBlur={() => setIsEditingTitle(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsEditingTitle(false);
+                  }
+                  if (e.key === 'Escape') {
+                    setTitle(task.title);
+                    setIsEditingTitle(false);
+                  }
+                }}
+                autoFocus
+                className="text-lg font-semibold"
+              />
+            ) : (
+              <h2 
+                className={`text-lg font-semibold cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                  task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'
+                }`}
+                onClick={() => setIsEditingTitle(true)}
+              >
+                {task.title}
+              </h2>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            {isDirty && (
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                size="sm"
+                className="h-8 px-3"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin mr-1" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={14} className="mr-1" />
+                    Save
+                  </>
+                )}
+              </Button>
+            )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <MoreVertical size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={handleToggleComplete}
+                  className="flex items-center gap-2"
+                >
+                  <Check size={14} />
+                  {task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2 text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={14} />
+                      Delete Task
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 
@@ -394,26 +532,32 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
             </p>
           ) : (
             <div className="space-y-3 max-h-[200px] overflow-y-auto">
-              {comments.map((comment) => (
-                <div key={comment.id} className="text-sm">
-                  <div className="flex items-start gap-2">
-                    <div className="h-6 w-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-medium">
-                      {comment.users?.email?.[0]?.toUpperCase() || 'U'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2">
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                          {comment.users?.email || 'Unknown'}
-                        </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
-                          {new Date(comment.created_at).toLocaleDateString()}
-                        </p>
+              {comments.map((comment) => {
+                const isCurrentUser = comment.user_id === currentUserId;
+                const displayName = isCurrentUser ? 'You' : 'User';
+                const initial = isCurrentUser ? 'Y' : 'U';
+                
+                return (
+                  <div key={comment.id} className="text-sm">
+                    <div className="flex items-start gap-2">
+                      <div className="h-6 w-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0 text-xs font-medium">
+                        {initial}
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 mt-1 break-words">{comment.content}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2">
+                          <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
+                            {new Date(comment.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 mt-1 break-words">{comment.content}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

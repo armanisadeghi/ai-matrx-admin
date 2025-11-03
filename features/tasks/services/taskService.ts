@@ -274,11 +274,7 @@ export async function getTaskComments(taskId: string): Promise<any[]> {
         content,
         created_at,
         updated_at,
-        user_id,
-        users:user_id (
-          id,
-          email
-        )
+        user_id
       `)
       .eq('task_id', taskId)
       .order('created_at', { ascending: true });
@@ -321,11 +317,7 @@ export async function createTaskComment(
         content,
         created_at,
         updated_at,
-        user_id,
-        users:user_id (
-          id,
-          email
-        )
+        user_id
       `)
       .single();
 
