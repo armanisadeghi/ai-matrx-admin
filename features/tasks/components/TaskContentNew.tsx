@@ -313,6 +313,7 @@ export default function TaskContentNew() {
                           isSelected={selectedTaskId === task.id}
                           onSelect={() => handleTaskSelect(task.id)}
                           onToggleComplete={() => handleTaskToggle(task.projectId, task.id)}
+                          hideProjectName={!showAllProjects}
                         />
                       ))
                     )}

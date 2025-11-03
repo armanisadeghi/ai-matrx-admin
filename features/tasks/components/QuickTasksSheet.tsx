@@ -353,6 +353,7 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                                                 isSelected={false}
                                                 onSelect={() => setSelectedTaskId(task.id)}
                                                 onToggleComplete={() => toggleTaskComplete(task.projectId, task.id)}
+                                                hideProjectName={!showAllProjects}
                                             />
                                         ))}
                                     </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Calendar, Flag, User, Paperclip, MessageSquare, 
-  CheckSquare, Loader2, Plus, Send, Save, X as XIcon
+  CheckSquare, Loader2, Plus, Send, Save, X as XIcon, ChevronLeft
 } from 'lucide-react';
 import { useTaskContext } from '@/features/tasks/context/TaskContext';
 import { Input } from '@/components/ui/input';
@@ -189,40 +189,38 @@ export default function TaskDetailsPanel({ task, onClose }: TaskDetailsPanelProp
       <div className="h-full flex flex-col overflow-hidden">
         {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start gap-3 mb-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="flex-shrink-0 h-9 w-9"
+          >
+            <ChevronLeft size={22} />
+          </Button>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex-1 pr-2">
             {task.title}
           </h2>
-          <div className="flex items-center gap-2">
-            {isDirty && (
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                size="sm"
-                className="h-8 px-3"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin mr-1" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save size={14} className="mr-1" />
-                    Save
-                  </>
-                )}
-              </Button>
-            )}
+          {isDirty && (
             <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="flex-shrink-0 h-8 w-8"
+              onClick={handleSave}
+              disabled={isSaving}
+              size="sm"
+              className="h-8 px-3"
             >
-              <X size={18} />
+              {isSaving ? (
+                <>
+                  <Loader2 size={14} className="animate-spin mr-1" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={14} className="mr-1" />
+                  Save
+                </>
+              )}
             </Button>
-          </div>
+          )}
         </div>
       </div>
 

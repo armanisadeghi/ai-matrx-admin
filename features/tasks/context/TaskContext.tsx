@@ -62,6 +62,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
         dueDate: dbTask.due_date || '',
         parentTaskId: dbTask.parent_task_id || null,
         subtasks: [],
+        updatedAt: dbTask.updated_at || null,
       };
       taskMap.set(dbTask.id, task);
     });
@@ -963,18 +964,30 @@ export function TaskProvider({ children }: TaskProviderProps) {
     }
     
     // Apply status filter
+    let filteredTasks: TaskWithProject[];
     switch (filter) {
       case 'incomplete':
-        return allTasks.filter(task => !task.completed);
+        filteredTasks = allTasks.filter(task => !task.completed);
+        break;
       case 'overdue':
-        return allTasks.filter(task => {
+        filteredTasks = allTasks.filter(task => {
           if (task.completed || !task.dueDate) return false;
           // Compare dates consistently - both as YYYY-MM-DD strings
           return task.dueDate < todayStr;
         });
+        break;
       default:
-        return allTasks;
+        filteredTasks = allTasks;
     }
+    
+    // Sort by most recently updated (descending order)
+    filteredTasks.sort((a, b) => {
+      const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return bTime - aTime; // Most recent first
+    });
+    
+    return filteredTasks;
   };
 
   const value: TaskContextType = {
