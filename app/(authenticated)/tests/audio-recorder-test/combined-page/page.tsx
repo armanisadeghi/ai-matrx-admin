@@ -15,7 +15,7 @@ import {
     VolumeX,
     RefreshCcw
 } from 'lucide-react';
-import { useRecorder } from '@/app/(features)/voice-notes/hooks/useRecorder';
+import { useRecorder } from '@/app/(authenticated)/tests/audio-recorder-test/hooks/useRecorder';
 import { useAudioStore } from '@/hooks/idb/useAudioStore';
 import { Recording } from '@/types/audioRecording.types';
 import { useToast } from '@/components/ui/use-toast';
