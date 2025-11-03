@@ -111,6 +111,46 @@ export function parseMarkdownToText(markdown: string): string {
       'IMAP': 'Internet Message Access Protocol'
     };
 
+    const measurementUnits: { [key: string]: string } = {
+      // Weight
+      'lbs': 'pounds',
+      'lb': 'pounds',
+      'oz': 'ounces',
+      'kg': 'kilograms',
+      'gm': 'grams',
+      'mg': 'milligrams',
+      // Distance/Length
+      'km': 'kilometers',
+      'cm': 'centimeters',
+      'mm': 'millimeters',
+      'ft': 'feet',
+      'mi': 'miles',
+      // Speed
+      'mph': 'miles per hour',
+      'kph': 'kilometers per hour',
+      'kmh': 'kilometers per hour',
+      // Volume
+      'ml': 'milliliters',
+      'mL': 'milliliters',
+      'gal': 'gallons',
+      'qt': 'quarts',
+      'tbsp': 'tablespoons',
+      'tsp': 'teaspoons',
+      // Area
+      'sqft': 'square feet',
+      'sqm': 'square meters',
+      // Time
+      'sec': 'seconds',
+      'min': 'minutes',
+      'hr': 'hours',
+      'hrs': 'hours',
+      'ms': 'milliseconds',
+      // Other common units
+      'psi': 'pounds per square inch',
+      'rpm': 'revolutions per minute',
+      'bpm': 'beats per minute'
+    };
+
     let result = markdown
       // Handle Mermaid diagrams first (before other processing)
       .replace(/```mermaid[\s\S]*?```/g, 'Please see the diagram provided.')
@@ -159,9 +199,21 @@ export function parseMarkdownToText(markdown: string): string {
       .replace(/^([-*+])\s+(.+)$/gm, 'Bullet point: $2')
       // Replace ordered lists
       .replace(/^(\d+)\.\s+(.+)$/gm, (_match, num, content) => `Number ${numberToWords(num)}: ${content}`)
-      // Replace tables
-      .replace(/^\|.*\|$/gm, 'Please see the table provided.')
-      .replace(/^-{2,}\|-{2,}\|$/gm, '') // Remove table header separator
+      // Replace tables (match entire table as one unit)
+      .replace(/(\|[^\n]+\|\n)(\|[\s:-]+\|[\s:-]*\n)((?:\|[^\n]+\|\n?)+)/gm, (fullMatch, headerRow) => {
+        // Extract header column names
+        const headers = headerRow
+          .split('|')
+          .map((h: string) => h.trim())
+          .filter((h: string) => h.length > 0);
+        
+        if (headers.length > 0) {
+          return `Table with columns: ${headers.join(', ')}. Please see the table for details.`;
+        }
+        return 'Please see the table provided.';
+      })
+      // Replace any remaining table-like structures (fallback)
+      .replace(/^\|.*\|$/gm, '')
       // Replace footnotes and citations
       .replace(/\[\^(\d+)\]/g, 'Reference $1')
       .replace(/^\[\d+\]:\s*(.+)$/gm, 'Reference: $1')
@@ -198,6 +250,17 @@ export function parseMarkdownToText(markdown: string): string {
       // Replace common abbreviations (case-insensitive, whole word)
       .replace(/\b(AI|API|HTTP|HTTPS|URL|URI|JSON|XML|CSS|HTML|JS|TS|SQL|DB|UI|UX|SEO|SDK|CLI|IDE|JWT|OAuth|REST|CRUD|MVC|SPA|SSR|CSR|PWA|DOM|BOM|CDN|CMS|ERP|CRM|SaaS|PaaS|IaaS|VPN|LAN|WAN|TCP|UDP|IP|DNS|FTP|SMTP|POP3|IMAP)\b/gi, (match) => {
         return commonAbbreviations[match.toUpperCase()] || match;
+      })
+      // Replace measurement units (with word boundaries and optional numbers before)
+      .replace(/(\d+(?:\.\d+)?)\s*(lbs|lb|oz|kg|gm|mg|km|cm|mm|ft|mi|mph|kph|kmh|ml|mL|gal|qt|tbsp|tsp|sqft|sqm|sec|min|hr|hrs|ms|psi|rpm|bpm)\b/gi, (match, number, unit) => {
+        const unitLower = unit.toLowerCase();
+        const unitText = measurementUnits[unitLower] || measurementUnits[unit] || unit;
+        return `${number} ${unitText}`;
+      })
+      // Replace standalone measurement units (when preceded by space or number)
+      .replace(/\b(lbs|lb|oz|kg|gm|mg|km|cm|mm|mph|kph|kmh|ml|mL|gal|qt|tbsp|tsp|sqft|sqm|psi|rpm|bpm)(?=\s|$|[.,;!?])/gi, (match) => {
+        const unitLower = match.toLowerCase();
+        return measurementUnits[unitLower] || measurementUnits[match] || match;
       })
       // Replace special characters and symbols
       .replace(/©/g, 'copyright')
