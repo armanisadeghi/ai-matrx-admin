@@ -5,7 +5,7 @@ import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/Enh
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
 import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
-import { PromptErrorMessage } from "./PromptErrorMessage";
+import { PromptErrorMessage } from "../PromptErrorMessage";
 import { Button } from "@/components/ui/button";
 
 interface PromptAssistantMessageProps {

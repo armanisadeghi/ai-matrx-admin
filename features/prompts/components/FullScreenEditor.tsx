@@ -7,44 +7,13 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PromptEditorContextMenu } from './PromptEditorContextMenu';
-import { SystemPromptOptimizer } from './SystemPromptOptimizer';
+import { SystemPromptOptimizer } from '@/features/prompts/components/actions/SystemPromptOptimizer';
 import { ModelSettings } from './configuration/ModelSettings';
 import { VariableEditor } from './configuration/VariableEditor';
-import { VariableCustomComponent } from '@/features/prompts/types/core';
 import { sanitizeVariableName } from '@/features/prompts/utils/variable-utils';
 import { formatText } from '@/utils/text/text-case-converter';
 import { mapIcon } from '@/utils/icons/icon-mapper';
-
-interface PromptMessage {
-    role: string;
-    content: string;
-}
-
-interface PromptVariable {
-    name: string;
-    defaultValue: string;
-    customComponent?: VariableCustomComponent;
-}
-
-interface ModelConfig {
-    output_format?: string;
-    tool_choice?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    top_k?: number;
-    store?: boolean;
-    stream?: boolean;
-    parallel_tool_calls?: boolean;
-    tools?: string[];
-    image_urls?: boolean;
-    file_urls?: boolean;
-    internal_web_search?: boolean;
-    youtube_videos?: boolean;
-    reasoning_effort?: string;
-    verbosity?: string;
-    reasoning_summary?: string;
-}
+import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from '@/features/prompts/types/core';
 
 type MessageItem = 
     | { type: 'system'; index: -1 }
@@ -66,9 +35,9 @@ interface FullScreenEditorProps {
     // Model Settings
     model?: string;
     models?: any[];
-    modelConfig?: ModelConfig;
+    modelConfig?: PromptSettings;
     onModelChange?: (value: string) => void;
-    onModelConfigChange?: (config: ModelConfig) => void;
+    onModelConfigChange?: (config: PromptSettings) => void;
     // Variables
     variableDefaults?: PromptVariable[];
     onAddVariable?: (name: string, defaultValue: string, customComponent?: VariableCustomComponent) => void;

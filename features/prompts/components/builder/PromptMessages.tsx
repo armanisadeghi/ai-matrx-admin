@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PromptMessage } from "@/features/prompts/types/core";
-import { HighlightedText } from "./HighlightedText";
-import { PromptEditorContextMenu } from "./PromptEditorContextMenu";
+import { HighlightedText } from "../HighlightedText";
+import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { PromptVariable } from "@/features/prompts/types/core";
 
 interface PromptMessagesProps {

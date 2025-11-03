@@ -85,7 +85,7 @@ export function PromptHeader(props: PromptHeaderProps) {
   const [PromptBuilderHeaderCompact, setPromptBuilderHeaderCompact] = useState<any>(null);
 
   useEffect(() => {
-    import('@/features/prompts/components/PromptBuilderHeaderCompact').then((module) => {
+    import('@/features/prompts/components/layouts/PromptBuilderHeaderCompact').then((module) => {
       setPromptBuilderHeaderCompact(() => module.PromptBuilderHeaderCompact);
     });
   }, []);

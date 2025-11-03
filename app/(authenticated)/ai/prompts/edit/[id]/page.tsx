@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchAIModels } from "@/lib/api/ai-models-server";
-import { PromptBuilder } from "@/features/prompts/components/PromptBuilder";
+import { PromptBuilder } from "@/features/prompts/components/builder/PromptBuilder";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
 
 // Cache AI models data for 12 hours

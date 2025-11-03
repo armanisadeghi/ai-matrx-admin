@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { PromptsGrid } from "@/features/prompts/components/layouts/PromptsGrid";
 import { ImportPromptButton } from "@/features/prompts/components/common/ImportPromptButton";
+import { GeneratePromptButton } from "@/features/prompts/components/common/GeneratePromptButton";
 import { FaIndent } from "react-icons/fa6";
 
 export default async function PromptsPage() {
@@ -53,6 +54,7 @@ export default async function PromptsPage() {
                         </div>
                         <div className="flex flex-wrap gap-2">
                             <ImportPromptButton />
+                            <GeneratePromptButton />
                             <Link href="/ai/prompts/templates">
                                 <Button
                                     variant="outline"

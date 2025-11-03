@@ -1,4 +1,4 @@
-import { PromptBuilder } from "@/features/prompts/components/PromptBuilder";
+import { PromptBuilder } from "@/features/prompts/components/builder/PromptBuilder";
 import { fetchAIModels } from "@/lib/api/ai-models-server";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
 

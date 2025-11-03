@@ -21,7 +21,7 @@ import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Info } from 'lucide-r
 import { toast } from 'sonner';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import CodeBlock from '@/components/mardown-display/code/CodeBlock';
-import { extractJsonFromText } from '../utils/json-extraction';
+import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 
 interface FullPromptOptimizerProps {
   isOpen: boolean;

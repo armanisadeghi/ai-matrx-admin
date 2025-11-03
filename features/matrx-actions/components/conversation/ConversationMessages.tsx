@@ -9,8 +9,8 @@
 
 import React, { useRef, useEffect } from 'react';
 import { MessageSquare } from 'lucide-react';
-import { PromptUserMessage } from '@/features/prompts/components/PromptUserMessage';
-import { PromptAssistantMessage } from '@/features/prompts/components/PromptAssistantMessage';
+import { PromptUserMessage } from '@/features/prompts/components/builder/PromptUserMessage';
+import { PromptAssistantMessage } from '@/features/prompts/components/builder/PromptAssistantMessage';
 
 export interface ConversationMessage {
   role: 'user' | 'assistant';

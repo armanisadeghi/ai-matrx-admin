@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import Link from "next/link";
 import { useAppSelector } from "@/lib/redux";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
-import { SystemPromptOptimizer } from "./SystemPromptOptimizer";
+import { SystemPromptOptimizer } from "@/features/prompts/components/actions/SystemPromptOptimizer";
 
 interface PromptBuilderHeaderCompactProps {
     promptName: string;

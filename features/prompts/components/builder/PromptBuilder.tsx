@@ -8,17 +8,17 @@ import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader"
 import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
 import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
-import { useModelControls, getModelDefaults } from "../hooks/useModelControls";
+import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
 import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
 import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
-import { ModelSettingsDialog } from "./configuration/ModelSettingsDialog";
+import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { FullScreenEditor } from "./FullScreenEditor";
-import { PromptSettingsModal } from "./PromptSettingsModal";
+import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
+import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
 import { toast } from "sonner";
-import { PromptMessageRole, PromptSettings } from "../types/core";
+import { PromptMessageRole, PromptSettings } from "../../types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
 
 

@@ -1,9 +1,9 @@
 import React, { RefObject } from "react";
 import { PromptMessage, PromptSettings, PromptVariable } from "@/features/prompts/types/core";
-import { ModelConfiguration } from "./configuration/ModelConfiguration";
-import { VariablesManager } from "./configuration/VariablesManager";
-import { ToolsManager } from "./configuration/ToolsManager";
-import { SystemMessage } from "./configuration/SystemMessage";
+import { ModelConfiguration } from "../configuration/ModelConfiguration";
+import { VariablesManager } from "../configuration/VariablesManager";
+import { ToolsManager } from "../configuration/ToolsManager";
+import { SystemMessage } from "../configuration/SystemMessage";
 import { PromptMessages } from "./PromptMessages";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui";

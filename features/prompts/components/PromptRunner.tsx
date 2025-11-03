@@ -8,8 +8,8 @@ import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThun
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 import { PromptRunnerInput } from "./PromptRunnerInput";
-import { PromptUserMessage } from "./PromptUserMessage";
-import { PromptAssistantMessage } from "./PromptAssistantMessage";
+import { PromptUserMessage } from "./builder/PromptUserMessage";
+import { PromptAssistantMessage } from "./builder/PromptAssistantMessage";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import type { Resource } from "./resource-display";
 import { Button } from "@/components/ui/button";
