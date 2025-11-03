@@ -50,15 +50,15 @@ export default function AcceptSharedNotePage({ params }: PageProps) {
     }, [params.id, user, toast, router]);
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-900">
-            <div className="max-w-md w-full p-8 bg-white dark:bg-zinc-800 rounded-lg shadow-lg">
+        <div className="flex items-center justify-center min-h-screen bg-muted">
+            <div className="max-w-md w-full p-8 bg-card rounded-lg shadow-lg">
                 {status === 'loading' && (
                     <div className="text-center">
-                        <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-blue-500" />
-                        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                        <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
+                        <h2 className="text-xl font-semibold text-foreground mb-2">
                             Accepting Shared Note...
                         </h2>
-                        <p className="text-zinc-600 dark:text-zinc-400">
+                        <p className="text-muted-foreground">
                             Please wait while we add this note to your collection.
                         </p>
                     </div>
@@ -66,13 +66,13 @@ export default function AcceptSharedNotePage({ params }: PageProps) {
 
                 {status === 'success' && (
                     <div className="text-center">
-                        <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                            <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-success/10 flex items-center justify-center">
+                            <Check className="h-6 w-6 text-success" />
                         </div>
-                        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                        <h2 className="text-xl font-semibold text-foreground mb-2">
                             Note Accepted!
                         </h2>
-                        <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                        <p className="text-muted-foreground mb-4">
                             The shared note has been added to your collection.
                         </p>
                         <Button onClick={() => router.push('/notes')}>
@@ -83,13 +83,13 @@ export default function AcceptSharedNotePage({ params }: PageProps) {
 
                 {status === 'error' && (
                     <div className="text-center">
-                        <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                        <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
+                            <AlertCircle className="h-6 w-6 text-destructive" />
                         </div>
-                        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+                        <h2 className="text-xl font-semibold text-foreground mb-2">
                             Unable to Accept Note
                         </h2>
-                        <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                        <p className="text-muted-foreground mb-4">
                             {errorMessage}
                         </p>
                         <div className="flex gap-2 justify-center">

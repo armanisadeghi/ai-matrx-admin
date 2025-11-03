@@ -51,35 +51,35 @@ export function TagInput({ tags, onChange, className }: TagInputProps) {
                 >
                     {tag}
                     <button
-                        onClick={() => handleRemoveTag(tag)}
-                        className="hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full p-0.5"
-                    >
-                        <X className="h-2.5 w-2.5" />
-                    </button>
-                </Badge>
-            ))}
-
-            {isAdding ? (
-                <Input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onBlur={() => {
-                        if (inputValue.trim()) {
-                            handleAddTag();
-                        } else {
-                            setIsAdding(false);
-                        }
-                    }}
-                    placeholder="Type tag..."
-                    className="h-5 text-xs px-1.5 w-24 bg-zinc-100 dark:bg-zinc-800 border-0"
-                    autoFocus
-                />
-            ) : (
-                <button
-                    onClick={() => setIsAdding(true)}
-                    className="h-5 px-1.5 text-xs flex items-center gap-1 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:bg-accent rounded-full p-0.5"
                 >
+                    <X className="h-2.5 w-2.5" />
+                </button>
+            </Badge>
+        ))}
+        
+        {isAdding ? (
+            <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={() => {
+                    if (inputValue.trim()) {
+                        handleAddTag();
+                    } else {
+                        setIsAdding(false);
+                    }
+                }}
+                placeholder="Type tag..."
+                className="h-5 text-xs px-1.5 w-24 bg-muted border-0"
+                autoFocus
+            />
+        ) : (
+            <button
+                onClick={() => setIsAdding(true)}
+                className="h-5 px-1.5 text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded"
+            >
                     <Plus className="h-3 w-3" />
                     Tag
                 </button>

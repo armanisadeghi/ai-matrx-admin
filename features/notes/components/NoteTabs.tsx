@@ -190,7 +190,7 @@ export function NoteTabs({
             label: 'Plain Text',
             description: 'Simple text editor',
             action: () => handleViewModeChange('plain'),
-            iconColor: currentMode === 'plain' ? 'text-blue-500' : undefined,
+            iconColor: currentMode === 'plain' ? 'text-primary' : undefined,
         },
         {
             key: 'wysiwyg',
@@ -198,7 +198,7 @@ export function NoteTabs({
             label: 'Rich Editor',
             description: 'WYSIWYG editor',
             action: () => handleViewModeChange('wysiwyg'),
-            iconColor: currentMode === 'wysiwyg' ? 'text-blue-500' : undefined,
+            iconColor: currentMode === 'wysiwyg' ? 'text-primary' : undefined,
         },
         {
             key: 'markdown',
@@ -206,7 +206,7 @@ export function NoteTabs({
             label: 'Split View',
             description: 'Markdown with preview',
             action: () => handleViewModeChange('markdown'),
-            iconColor: currentMode === 'markdown' ? 'text-blue-500' : undefined,
+            iconColor: currentMode === 'markdown' ? 'text-primary' : undefined,
         },
         {
             key: 'preview',
@@ -214,7 +214,7 @@ export function NoteTabs({
             label: 'Preview',
             description: 'Read-only preview',
             action: () => handleViewModeChange('preview'),
-            iconColor: currentMode === 'preview' ? 'text-blue-500' : undefined,
+            iconColor: currentMode === 'preview' ? 'text-primary' : undefined,
         },
     ];
 
@@ -308,7 +308,7 @@ export function NoteTabs({
                 label: 'Delete Note',
                 description: 'Permanently delete this note',
                 action: () => onDeleteNote(noteId),
-                iconColor: 'text-red-500',
+                iconColor: 'text-destructive',
                 category: 'Danger',
             },
         ];
@@ -323,7 +323,7 @@ export function NoteTabs({
     };
 
     return (
-        <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 hidden md:block">
+        <div className="border-b border-border bg-muted hidden md:block">
             <ScrollArea className="w-full">
                 <div className="flex items-center px-2 py-1 gap-1">
                     {/* Tabs */}
@@ -353,10 +353,10 @@ export function NoteTabs({
                                     "group flex items-center gap-1.5 px-2 py-1 rounded-t border-b-2 transition-all flex-shrink-0 cursor-move",
                                     "min-w-[200px] max-w-[400px]",
                                     isActive
-                                        ? "bg-white dark:bg-zinc-800 border-blue-500 dark:border-blue-400"
-                                        : "bg-transparent border-transparent hover:bg-zinc-100 dark:hover:bg-zinc-700",
+                                        ? "bg-card border-primary"
+                                        : "bg-transparent border-transparent hover:bg-accent",
                                     isBeingDragged && "opacity-50",
-                                    isDragOver && "border-blue-300 dark:border-blue-600"
+                                    isDragOver && "border-primary/50"
                                 )}
                             >
                                 {/* View Mode Icon - clickable on active tab */}
@@ -366,13 +366,13 @@ export function NoteTabs({
                                             e.stopPropagation();
                                             setViewMenuOpen(true);
                                         }}
-                                        className="flex-shrink-0 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded p-0.5 transition-colors"
+                                        className="flex-shrink-0 cursor-pointer hover:bg-accent rounded p-0.5 transition-colors"
                                     >
-                                        <ModeIcon className="h-3.5 w-3.5 text-zinc-700 dark:text-zinc-300" />
+                                        <ModeIcon className="h-3.5 w-3.5 text-foreground" />
                                     </div>
                                 ) : (
                                     <ModeIcon 
-                                        className="flex-shrink-0 h-3.5 w-3.5 text-zinc-500 dark:text-zinc-500 cursor-pointer"
+                                        className="flex-shrink-0 h-3.5 w-3.5 text-muted-foreground cursor-pointer"
                                         onClick={() => handleTabClick(noteId)}
                                     />
                                 )}
@@ -384,12 +384,12 @@ export function NoteTabs({
                                         onChange={(e) => handleLabelChange(noteId, e.target.value)}
                                         onBlur={() => handleLabelBlur(noteId)}
                                         onClick={handleInputClick}
-                                        className="flex-1 h-6 text-xs bg-transparent px-1 outline-none border-none text-zinc-900 dark:text-zinc-100"
+                                        className="flex-1 h-6 text-xs bg-transparent px-1 outline-none border-none text-foreground"
                                         style={{ boxShadow: 'none' }}
                                     />
                                 ) : (
                                     <span 
-                                        className="flex-1 text-xs font-medium truncate cursor-pointer text-zinc-600 dark:text-zinc-400"
+                                        className="flex-1 text-xs font-medium truncate cursor-pointer text-muted-foreground"
                                         onClick={() => handleTabClick(noteId)}
                                     >
                                         {localLabels[noteId] ?? note.label}
@@ -413,19 +413,19 @@ export function NoteTabs({
                                                             className={cn(
                                                                 "flex items-center justify-center h-5 w-5 rounded transition-colors",
                                                                 isSaving 
-                                                                    ? "cursor-wait bg-yellow-100 dark:bg-yellow-900/30" 
+                                                                    ? "cursor-wait bg-warning/10" 
                                                                     : isDirty 
-                                                                        ? "cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30" 
-                                                                        : "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                                                        ? "cursor-pointer hover:bg-success/10" 
+                                                                        : "cursor-pointer hover:bg-accent"
                                                             )}
                                                         >
                                                             <Save className={cn(
                                                                 "h-3 w-3",
                                                                 isSaving 
-                                                                    ? "text-yellow-600 dark:text-yellow-400 animate-pulse" 
+                                                                    ? "text-warning animate-pulse" 
                                                                     : isDirty
-                                                                        ? "text-green-600 dark:text-green-500"
-                                                                        : "text-zinc-500 dark:text-zinc-400"
+                                                                        ? "text-success"
+                                                                        : "text-muted-foreground"
                                                             )} />
                                                         </div>
                                                     </TooltipTrigger>
@@ -443,9 +443,9 @@ export function NoteTabs({
                                                                 e.stopPropagation();
                                                                 onCopyNote(noteId);
                                                             }}
-                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-accent transition-colors cursor-pointer"
                                                         >
-                                                            <Copy className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
+                                                            <Copy className="h-3 w-3 text-muted-foreground" />
                                                         </div>
                                                     </TooltipTrigger>
                                                     <TooltipContent>Duplicate</TooltipContent>
@@ -460,9 +460,9 @@ export function NoteTabs({
                                                                 e.stopPropagation();
                                                                 onShareNote(noteId);
                                                             }}
-                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-accent transition-colors cursor-pointer"
                                                         >
-                                                            <Share2 className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
+                                                            <Share2 className="h-3 w-3 text-muted-foreground" />
                                                         </div>
                                                     </TooltipTrigger>
                                                     <TooltipContent>Share</TooltipContent>
@@ -477,9 +477,9 @@ export function NoteTabs({
                                                                 e.stopPropagation();
                                                                 onDeleteNote(noteId);
                                                             }}
-                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+                                                            className="flex items-center justify-center h-5 w-5 rounded hover:bg-destructive/10 transition-colors cursor-pointer"
                                                         >
-                                                            <Trash2 className="h-3 w-3 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400" />
+                                                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                                                         </div>
                                                     </TooltipTrigger>
                                                     <TooltipContent>Delete</TooltipContent>
@@ -492,13 +492,13 @@ export function NoteTabs({
                                     <div
                                         onClick={(e) => handleCloseTab(e, noteId)}
                                         className={cn(
-                                            "flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-all cursor-pointer",
+                                            "flex items-center justify-center h-5 w-5 rounded hover:bg-accent transition-all cursor-pointer",
                                             isActive ? "ml-0.5" : "",
                                             isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                                         )}
                                         title="Close tab"
                                     >
-                                        <X className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
+                                        <X className="h-3 w-3 text-muted-foreground" />
                                     </div>
                                 </div>
                             </div>

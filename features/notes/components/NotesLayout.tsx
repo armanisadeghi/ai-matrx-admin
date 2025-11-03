@@ -253,7 +253,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
     if (isLoading) {
         return (
             <div className={cn("flex items-center justify-center h-full", className)}>
-                <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
         );
     }
@@ -291,7 +291,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 {/* Main Editor */}
                 <div className="flex-1 flex flex-col min-w-0">
                     {/* Mobile: Show menu button */}
-                    <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800 bg-textured md:hidden h-9">
+                    <div className="flex items-center border-b border-border bg-textured md:hidden h-9">
                         <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
                             <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-7 w-7 m-1">
@@ -316,7 +316,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                         
                         {/* Mobile - Show active note title */}
                         {activeNote && (
-                            <div className="flex-1 px-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                            <div className="flex-1 px-2 text-xs font-medium text-foreground truncate">
                                 {activeNote.label}
                             </div>
                         )}

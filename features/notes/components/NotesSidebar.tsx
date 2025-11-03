@@ -308,17 +308,17 @@ export function NotesSidebar({
     };
 
     return (
-        <div className={cn("flex flex-col h-full bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800", className)}>
+        <div className={cn("flex flex-col h-full bg-muted border-r border-border", className)}>
             {/* Compact Search Header - VS Code Style */}
-            <div className="flex items-center gap-1 p-1.5 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center gap-1 p-1.5 border-b border-border">
                 <div className="relative flex-1">
-                    <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+                    <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <Input
                         type="text"
                         placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-6 h-6 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                        className="pl-6 h-6 text-xs bg-card border-border"
                     />
                 </div>
             </div>
@@ -327,7 +327,7 @@ export function NotesSidebar({
             <ScrollArea className="flex-1">
                 <div className="p-0.5">
                     {folderGroups.length === 0 ? (
-                        <div className="text-center text-xs text-zinc-500 dark:text-zinc-400 py-3">
+                        <div className="text-center text-xs text-muted-foreground py-3">
                             No notes found
                         </div>
                     ) : (
@@ -351,9 +351,9 @@ export function NotesSidebar({
                                             variant="ghost"
                                             size="sm"
                                             className={cn(
-                                                "h-5 px-1 justify-start text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800",
+                                                "h-5 px-1 justify-start text-xs font-medium text-foreground hover:bg-accent",
                                                 "flex-1 min-w-0",
-                                                isDropTarget && "bg-blue-100 dark:bg-blue-900/30 border-2 border-dashed border-blue-500"
+                                                isDropTarget && "bg-primary/10 border-2 border-dashed border-primary"
                                             )}
                                             onClick={() => hasNotes && toggleFolder(group.folder_name)}
                                         >
@@ -375,7 +375,7 @@ export function NotesSidebar({
                                         </Button>
                                         
                                         {/* Count - Fixed width to prevent layout shift */}
-                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 w-3 text-right shrink-0">
+                                        <span className="text-[10px] text-muted-foreground w-3 text-right shrink-0">
                                             {group.count}
                                         </span>
                                         
@@ -423,14 +423,14 @@ export function NotesSidebar({
                                                             variant="ghost"
                                                             size="sm"
                                                             className={cn(
-                                                                "h-5 px-1 flex-1 justify-start text-xs rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-move min-w-0 font-normal",
-                                                                isActive && "bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 font-medium border-b border-blue-500",
+                                                                "h-5 px-1 flex-1 justify-start text-xs rounded-none hover:bg-accent cursor-move min-w-0 font-normal",
+                                                                isActive && "bg-primary/10 text-primary font-medium border-b border-primary",
                                                                 isDragging && "opacity-50"
                                                             )}
                                                             onClick={() => onSelectNote(note)}
                                                         >
                                                             {/* Tiny subtle icon */}
-                                                            <div className="w-2 h-2 rounded-full bg-zinc-400 dark:bg-zinc-500 mr-0 shrink-0" />
+                                                            <div className="w-2 h-2 rounded-full bg-muted-foreground/50 mr-0 shrink-0" />
                                                             <span className="truncate flex-1 text-left min-w-0">
                                                                 {note.label}
                                                             </span>
@@ -445,7 +445,7 @@ export function NotesSidebar({
                                                                 onDeleteNote(note.id);
                                                             }}
                                                         >
-                                                            <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                                            <Trash2 className="h-2.5 w-2.5 text-destructive" />
                                                         </Button>
                                                     </div>
                                                 );
@@ -541,7 +541,7 @@ export function NotesSidebar({
                                 onDeleteFolderNotes?.(deleteFolderName);
                                 setDeleteFolderAlertOpen(false);
                             }}
-                            className="bg-red-600 hover:bg-red-700 dark:bg-red-900 dark:hover:bg-red-800"
+                            className="bg-destructive hover:bg-destructive/90"
                         >
                             Delete All
                         </AlertDialogAction>

@@ -240,7 +240,7 @@ export function CategoryNotesModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[95vw] w-full md:w-[1400px] max-h-[90vh] h-[90vh] flex flex-col p-0">
                 {/* Header */}
-                <DialogHeader className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+                <DialogHeader className="px-4 py-3 border-b border-border flex-shrink-0">
                     <div className="flex items-center justify-between pr-8">
                         <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
                             <CategoryIcon className={`h-5 w-5 ${categoryColor}`} />
@@ -285,11 +285,11 @@ export function CategoryNotesModal({
                             </Button>
 
                             {/* Sidebar */}
-                            <div className={`${sidebarCollapsed ? 'hidden' : 'flex'} lg:flex flex-col w-full lg:w-80 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50`}>
+                            <div className={`${sidebarCollapsed ? 'hidden' : 'flex'} lg:flex flex-col w-full lg:w-80 border-r border-border bg-muted`}>
                                 {/* Search */}
-                                <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                                <div className="p-3 border-b border-border">
                                     <div className="relative">
-                                        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-slate-400" />
+                                        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                                         <Input
                                             placeholder="Search..."
                                             value={searchQuery}
@@ -303,12 +303,12 @@ export function CategoryNotesModal({
                                 <ScrollArea className="flex-1">
                                     {isLoading ? (
                                         <div className="flex items-center justify-center py-12">
-                                            <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                                         </div>
                                     ) : sortedNotes.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                                            <FileText className="h-10 w-10 text-slate-300 dark:text-slate-700 mb-2" />
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                            <FileText className="h-10 w-10 text-muted-foreground/50 mb-2" />
+                                            <p className="text-sm text-muted-foreground">
                                                 {searchQuery ? 'No items found' : `No ${categoryName.toLowerCase()} yet`}
                                             </p>
                                         </div>
@@ -320,21 +320,21 @@ export function CategoryNotesModal({
                                                     onClick={() => setSelectedNoteId(note.id)}
                                                     className={`p-2 rounded cursor-pointer transition-colors ${
                                                         selectedNoteId === note.id
-                                                            ? 'bg-slate-200 dark:bg-slate-800'
-                                                            : 'hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                                                            ? 'bg-accent'
+                                                            : 'hover:bg-accent/50'
                                                     }`}
                                                 >
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-medium truncate text-slate-900 dark:text-slate-100">
+                                                            <p className="text-sm font-medium truncate text-foreground">
                                                                 {note.label}
                                                             </p>
-                                                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                                            <p className="text-xs text-muted-foreground truncate mt-0.5">
                                                                 {new Date(note.updated_at).toLocaleDateString()}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-1">
+                                                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                                                         {note.content}
                                                     </p>
                                                 </div>
@@ -349,13 +349,13 @@ export function CategoryNotesModal({
                                 {selectedNote ? (
                                     <div className="flex-1 flex flex-col overflow-hidden">
                                         {/* Note Header */}
-                                        <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                                        <div className="p-4 border-b border-border bg-card">
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="text-lg font-semibold truncate text-slate-900 dark:text-slate-100">
+                                                    <h3 className="text-lg font-semibold truncate text-foreground">
                                                         {selectedNote.label}
                                                     </h3>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                                    <p className="text-xs text-muted-foreground mt-1">
                                                         {new Date(selectedNote.updated_at).toLocaleString()}
                                                     </p>
                                                 </div>
@@ -371,7 +371,7 @@ export function CategoryNotesModal({
                                                         </Button>
                                                     )}
                                                     {allowDelete && (
-                                                        <Button size="sm" variant="ghost" onClick={() => handleDelete(selectedNote.id)} className="text-red-600" title="Delete">
+                                                        <Button size="sm" variant="ghost" onClick={() => handleDelete(selectedNote.id)} className="text-destructive" title="Delete">
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     )}
@@ -387,8 +387,8 @@ export function CategoryNotesModal({
                                         </div>
 
                                         {/* Note Content */}
-                                        <ScrollArea className="flex-1 p-4 bg-white dark:bg-slate-900">
-                                            <pre className="text-sm text-slate-700 dark:text-slate-300 font-mono whitespace-pre-wrap">
+                                        <ScrollArea className="flex-1 p-4 bg-card">
+                                            <pre className="text-sm text-foreground font-mono whitespace-pre-wrap">
                                                 {selectedNote.content}
                                             </pre>
                                         </ScrollArea>
@@ -396,8 +396,8 @@ export function CategoryNotesModal({
                                 ) : (
                                     <div className="flex-1 flex items-center justify-center text-center p-8">
                                         <div>
-                                            <FileText className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                                            <p className="text-slate-500 dark:text-slate-400">
+                                            <FileText className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                                            <p className="text-muted-foreground">
                                                 Select an item to view details
                                             </p>
                                         </div>
@@ -409,7 +409,7 @@ export function CategoryNotesModal({
 
                     {/* Create View */}
                     {viewMode === 'create' && (
-                        <div className="flex-1 flex flex-col overflow-hidden p-4 bg-white dark:bg-slate-900">
+                        <div className="flex-1 flex flex-col overflow-hidden p-4 bg-card">
                             <div className="mb-3">
                                 <Input
                                     placeholder="Title (optional - auto-generated from content)"
@@ -435,7 +435,7 @@ export function CategoryNotesModal({
 
                     {/* Edit View */}
                     {viewMode === 'edit' && editingNote && (
-                        <div className="flex-1 flex flex-col overflow-hidden p-4 bg-white dark:bg-slate-900">
+                        <div className="flex-1 flex flex-col overflow-hidden p-4 bg-card">
                             <div className="mb-3">
                                 <Input
                                     placeholder="Title (optional)"
@@ -461,10 +461,10 @@ export function CategoryNotesModal({
 
                     {/* Import View */}
                     {viewMode === 'import' && (
-                        <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-slate-900">
-                            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex-1 flex flex-col overflow-hidden bg-card">
+                            <div className="p-3 border-b border-border">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Search all notes to import..."
                                         value={importSearchQuery}
@@ -476,8 +476,8 @@ export function CategoryNotesModal({
                             <ScrollArea className="flex-1">
                                 {sortedImportNotes.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                                        <FileText className="h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
-                                        <p className="text-slate-500 dark:text-slate-400">
+                                        <FileText className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                                        <p className="text-muted-foreground">
                                             {importSearchQuery ? 'No notes found' : 'No other notes available to import'}
                                         </p>
                                     </div>
@@ -486,16 +486,16 @@ export function CategoryNotesModal({
                                         {sortedImportNotes.map((note) => (
                                             <div
                                                 key={note.id}
-                                                className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                                                className="border border-border rounded-lg p-3 hover:bg-accent transition-colors"
                                             >
                                                 <div className="flex items-start justify-between gap-3 mb-2">
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="font-medium text-sm truncate text-slate-900 dark:text-slate-100">
+                                                        <h4 className="font-medium text-sm truncate text-foreground">
                                                             {note.label}
                                                         </h4>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <Badge variant="outline" className="text-xs">{note.folder_name}</Badge>
-                                                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                            <span className="text-xs text-muted-foreground">
                                                                 {new Date(note.updated_at).toLocaleDateString()}
                                                             </span>
                                                         </div>
@@ -504,7 +504,7 @@ export function CategoryNotesModal({
                                                         Import
                                                     </Button>
                                                 </div>
-                                                <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 font-mono mt-2">
+                                                <p className="text-xs text-muted-foreground line-clamp-2 font-mono mt-2">
                                                     {note.content}
                                                 </p>
                                             </div>

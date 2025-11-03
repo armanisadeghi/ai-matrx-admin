@@ -72,7 +72,7 @@ export function MoveNoteDialog({
             <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <FolderInput className="h-5 w-5 text-blue-500" />
+                        <FolderInput className="h-5 w-5 text-primary" />
                         Move Note
                     </DialogTitle>
                     <DialogDescription>
@@ -98,15 +98,15 @@ export function MoveNoteDialog({
                                             disabled={isCurrent}
                                             className={cn(
                                                 "w-full flex items-center gap-2 p-2 rounded-md text-left transition-all text-sm",
-                                                "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                                                isSelected && "bg-blue-100 dark:bg-blue-950 border border-blue-500 dark:border-blue-400",
+                                                "hover:bg-accent",
+                                                isSelected && "bg-primary/10 border border-primary",
                                                 isCurrent && "opacity-50 cursor-not-allowed"
                                             )}
                                         >
                                             <FolderIcon className={cn("h-4 w-4 flex-shrink-0", iconColor)} />
                                             <span className="flex-1 truncate">{folder}</span>
                                             {isCurrent && (
-                                                <span className="text-xs text-zinc-500 dark:text-zinc-400">(Current)</span>
+                                                <span className="text-xs text-muted-foreground">(Current)</span>
                                             )}
                                         </button>
                                     );

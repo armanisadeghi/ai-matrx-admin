@@ -95,7 +95,7 @@ export function CreateFolderDialog({
                             autoFocus
                         />
                         {error && (
-                            <p className="text-sm text-red-500 dark:text-red-400">
+                            <p className="text-sm text-destructive">
                                 {error}
                             </p>
                         )}
@@ -115,18 +115,18 @@ export function CreateFolderDialog({
                                             onClick={() => handleCategorySelect(category)}
                                             className={cn(
                                                 "flex items-start gap-3 p-3 rounded-lg border text-left transition-all",
-                                                "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                                                "hover:bg-accent",
                                                 isSelected 
-                                                    ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-950" 
-                                                    : "border-zinc-200 dark:border-zinc-800"
+                                                    ? "border-primary bg-primary/10" 
+                                                    : "border-border"
                                             )}
                                         >
                                             <Icon className={cn("h-5 w-5 mt-0.5 flex-shrink-0", category.color)} />
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+                                                <div className="font-medium text-sm text-foreground">
                                                     {category.label}
                                                 </div>
-                                                <div className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                                                <div className="text-xs text-muted-foreground line-clamp-2">
                                                     {category.description}
                                                 </div>
                                             </div>

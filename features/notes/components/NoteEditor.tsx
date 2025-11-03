@@ -251,7 +251,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 "h-full bg-textured",
                 className
             )}>
-                <div className="text-center text-zinc-400 dark:text-zinc-500">
+                <div className="text-center text-muted-foreground">
                     <p className="text-lg">No note selected</p>
                     <p className="text-sm mt-2">Select a note or create a new one</p>
                 </div>
@@ -262,12 +262,12 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     return (
         <div className={cn("flex flex-col h-full bg-textured", className)}>
             {/* Header - Metadata only (title is now in tabs) */}
-            <div className="flex-none border-b border-zinc-200 dark:border-zinc-800 bg-textured">
+            <div className="flex-none border-b border-border bg-textured">
                 {/* Folder, Tags, Status */}
                 <div className="flex items-center gap-2 px-3 py-2">
                     {/* View Mode Selector */}
                     <Select value={editorMode} onValueChange={(value) => handleModeChange(value as EditorMode)}>
-                        <SelectTrigger className="w-[36px] h-7 p-0 border-zinc-300 dark:border-zinc-700">
+                        <SelectTrigger className="w-[36px] h-7 p-0 border-border">
                             <div className="flex items-center justify-center w-full">
                                 {editorMode === 'plain' && <FileText className="h-3.5 w-3.5" />}
                                 {editorMode === 'wysiwyg' && <PilcrowRight className="h-3.5 w-3.5" />}
@@ -281,7 +281,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                     <FileText className="h-3.5 w-3.5" />
                                     <div className="flex flex-col">
                                         <span className="font-medium">Plain Text</span>
-                                        <span className="text-[10px] text-zinc-500">Simple editor</span>
+                                        <span className="text-[10px] text-muted-foreground">Simple editor</span>
                                     </div>
                                 </div>
                             </SelectItem>
@@ -290,7 +290,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                     <PilcrowRight className="h-3.5 w-3.5" />
                                     <div className="flex flex-col">
                                         <span className="font-medium">Rich Editor</span>
-                                        <span className="text-[10px] text-zinc-500">WYSIWYG</span>
+                                        <span className="text-[10px] text-muted-foreground">WYSIWYG</span>
                                     </div>
                                 </div>
                             </SelectItem>
@@ -299,7 +299,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                     <SplitSquareHorizontal className="h-3.5 w-3.5" />
                                     <div className="flex flex-col">
                                         <span className="font-medium">Split View</span>
-                                        <span className="text-[10px] text-zinc-500">Markdown + Preview</span>
+                                        <span className="text-[10px] text-muted-foreground">Markdown + Preview</span>
                                     </div>
                                 </div>
                             </SelectItem>
@@ -308,7 +308,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                                     <Eye className="h-3.5 w-3.5" />
                                     <div className="flex flex-col">
                                         <span className="font-medium">Preview</span>
-                                        <span className="text-[10px] text-zinc-500">Read-only</span>
+                                        <span className="text-[10px] text-muted-foreground">Read-only</span>
                                     </div>
                                 </div>
                             </SelectItem>
@@ -391,7 +391,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                             {localContent.trim() ? (
                                 <EnhancedChatMarkdown content={localContent} />
                             ) : (
-                                <div className="text-center py-12 text-zinc-400 dark:text-zinc-500">
+                                <div className="text-center py-12 text-muted-foreground">
                                     No content to preview
                                 </div>
                             )}

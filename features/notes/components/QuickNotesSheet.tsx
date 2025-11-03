@@ -133,7 +133,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
     return (
         <div className={cn("flex flex-col h-full", className)}>
             {/* Compact Header with Note Selector */}
-            <div className="flex items-center gap-2 p-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+            <div className="flex items-center gap-2 p-2 border-b border-border bg-muted">
                 <Select
                     value={activeNote?.id || ''}
                     onValueChange={handleSelectNote}
@@ -142,9 +142,9 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                         <SelectValue placeholder="Select a note">
                             {activeNote ? (
                                 <span className="flex items-center gap-2">
-                                    <FolderOpen className="h-3 w-3 text-zinc-400" />
+                                    <FolderOpen className="h-3 w-3 text-muted-foreground" />
                                     <span className="font-medium">{activeNote.folder_name}</span>
-                                    <span className="text-zinc-400">/</span>
+                                    <span className="text-muted-foreground">/</span>
                                     <span>{activeNote.label}</span>
                                 </span>
                             ) : (
@@ -155,7 +155,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                     <SelectContent className="max-h-[400px]">
                         {Object.entries(notesByFolder).map(([folder, folderNotes]) => (
                             <React.Fragment key={folder}>
-                                <div className="px-2 py-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
                                     {folder}
                                 </div>
                                 {folderNotes.map((note) => (
@@ -227,7 +227,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                                         className="h-8 w-8"
                                         onClick={handleDeleteNote}
                                     >
-                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                        <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>Delete Note</TooltipContent>
@@ -236,7 +236,7 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
                     </>
                 )}
 
-                <div className="ml-auto pl-2 border-l border-zinc-200 dark:border-zinc-800">
+                <div className="ml-auto pl-2 border-l border-border">
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>

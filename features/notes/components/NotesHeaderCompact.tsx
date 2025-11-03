@@ -39,7 +39,7 @@ export function NotesHeaderCompact({
                         <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className="h-7 w-7 p-0 hover:bg-accent"
                             onClick={onCreateNote}
                             title="New Note"
                         >
@@ -57,7 +57,7 @@ export function NotesHeaderCompact({
                         <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className="h-7 w-7 p-0 hover:bg-accent"
                             onClick={onCreateFolder}
                             title="New Folder"
                         >
@@ -77,7 +77,7 @@ export function NotesHeaderCompact({
                                 <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    className="h-7 w-7 p-0 hover:bg-accent"
                                     title="Sort Options"
                                 >
                                     {sortConfig.order === 'asc' ? (

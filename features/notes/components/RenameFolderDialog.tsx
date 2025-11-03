@@ -80,7 +80,7 @@ export function RenameFolderDialog({
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <FolderOpen className="h-5 w-5 text-blue-500" />
+                        <FolderOpen className="h-5 w-5 text-primary" />
                         Rename Folder
                     </DialogTitle>
                     <DialogDescription>
@@ -102,7 +102,7 @@ export function RenameFolderDialog({
                             autoFocus
                         />
                         {error && (
-                            <p className="text-sm text-red-500 dark:text-red-400">
+                            <p className="text-sm text-destructive">
                                 {error}
                             </p>
                         )}
