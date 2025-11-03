@@ -6,7 +6,7 @@ import {
     Grid3X3,
     Database,
     Cpu,
-    Image,
+    Image as ImageIcon,
     Zap,
     BarChart3,
     Clock,
@@ -18,6 +18,7 @@ import {
     Scissors,
     Building2,
 } from "lucide-react";
+import Image from "next/image";
 import { Grid, CardProps, HorizontalCardProps, List } from "@/components/official/card-and-grid";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AiFillAudio } from "react-icons/ai";
@@ -77,7 +78,7 @@ const DashboardPage = () => {
         {
             title: "Image Generator",
             description: "Create custom visuals",
-            icon: <Image />,
+            icon: <ImageIcon />,
             color: "green",
             path: "/chat",
         },
@@ -130,7 +131,7 @@ const DashboardPage = () => {
         {
             title: "Image Gallery",
             description: "Browse a collection of images you can use in your projects",
-            icon: <Image />,
+            icon: <ImageIcon />,
             color: "rose",
             path: "/image-editing/public-image-search",
         },
@@ -252,7 +253,13 @@ const DashboardPage = () => {
                                     <div className="flex items-center mb-4">
                                         <div className="h-16 w-16 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
                                             {user.userMetadata.picture ? (
-                                                <img src={user.userMetadata.picture} alt="Profile" className="h-full w-full object-cover" />
+                                                <Image 
+                                                    src={user.userMetadata.picture} 
+                                                    alt="Profile" 
+                                                    width={64}
+                                                    height={64}
+                                                    className="h-full w-full object-cover rounded-full" 
+                                                />
                                             ) : (
                                                 <User size={32} className="text-gray-400 dark:text-gray-500" />
                                             )}
