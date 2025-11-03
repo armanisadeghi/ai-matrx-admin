@@ -32,13 +32,6 @@ const nextConfig = {
         ],
     },
     
-    // Include markdown files in the build output
-    outputFileTracingIncludes: {
-        '/tests/utility-function-tests/documentation': [
-            'app/(authenticated)/tests/utility-function-tests/documentation/**/*.md',
-        ],
-    },
-    
     experimental: {
         serverActions: {
             bodySizeLimit: "10mb",

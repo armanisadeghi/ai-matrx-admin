@@ -1,6 +1,4 @@
-// This file reads markdown content at build/runtime
-// The markdown files are now properly included via .vercelignore exception and outputFileTracingIncludes
-
+// Simple markdown content loader for documentation viewer
 import { promises as fs } from 'fs';
 import path from 'path';
 
