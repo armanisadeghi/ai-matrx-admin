@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { useRouter } from 'next/navigation';
+import { VoiceInputButton } from '@/features/audio';
 
 interface PromptGeneratorProps {
   isOpen: boolean;
@@ -267,10 +268,30 @@ export function PromptGenerator({
           <div className="flex flex-col min-h-0 space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  Prompt Purpose
-                  <span className="text-xs text-red-500">*</span>
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    Prompt Purpose
+                    <span className="text-xs text-red-500">*</span>
+                  </Label>
+                  {!isGenerating && !hasGeneratedPrompt && (
+                    <VoiceInputButton
+                      variant="button"
+                      buttonText="Explain it Instead"
+                      size="sm"
+                      onTranscriptionComplete={(text) => {
+                        // Append to existing text or replace
+                        const newText = promptPurpose ? `${promptPurpose}\n${text}` : text;
+                        setPromptPurpose(newText);
+                        toast.success('Voice explanation added');
+                      }}
+                      onError={(error) => {
+                        toast.error('Voice input failed', {
+                          description: error,
+                        });
+                      }}
+                    />
+                  )}
+                </div>
                 <Textarea
                   value={promptPurpose}
                   onChange={(e) => setPromptPurpose(e.target.value)}
@@ -284,10 +305,30 @@ export function PromptGenerator({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Additional Context & Specifications
-                  <span className="text-xs text-gray-500 ml-1">(Optional)</span>
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">
+                    Additional Context & Specifications
+                    <span className="text-xs text-gray-500 ml-1">(Optional)</span>
+                  </Label>
+                  {!isGenerating && !hasGeneratedPrompt && (
+                    <VoiceInputButton
+                      variant="button"
+                      buttonText="Add Voice Context"
+                      size="sm"
+                      onTranscriptionComplete={(text) => {
+                        // Append to existing text or replace
+                        const newText = additionalContext ? `${additionalContext}\n${text}` : text;
+                        setAdditionalContext(newText);
+                        toast.success('Voice context added');
+                      }}
+                      onError={(error) => {
+                        toast.error('Voice input failed', {
+                          description: error,
+                        });
+                      }}
+                    />
+                  )}
+                </div>
                 <Textarea
                   value={additionalContext}
                   onChange={(e) => setAdditionalContext(e.target.value)}

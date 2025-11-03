@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import { TemplatesGrid } from "../../../../../features/prompts/components/layouts/TemplatesGrid";
+import { TemplatesGrid } from "@/features/prompts/components/layouts/TemplatesGrid";
 
 export default async function PromptTemplatesPage() {
     const supabase = await createClient();

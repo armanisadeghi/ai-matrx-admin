@@ -14,6 +14,9 @@ import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { useRecordAndTranscribe } from '@/features/audio';
+import { TranscriptionLoader } from '@/features/audio';
+import { toast } from 'sonner';
 
 interface PromptInputProps {
     variableDefaults: PromptVariable[];
@@ -84,6 +87,45 @@ export function PromptInput({
     
     // File upload hook for paste support
     const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);
+
+    // Voice transcription hook
+    const {
+        isRecording,
+        isTranscribing,
+        duration,
+        startRecording,
+        stopRecording,
+    } = useRecordAndTranscribe({
+        onTranscriptionComplete: (result) => {
+            if (result.success && result.text) {
+                // Append transcribed text to existing input
+                const newText = chatInput ? `${chatInput}\n${result.text}` : result.text;
+                onChatInputChange(newText);
+                
+                // Auto-submit after transcription
+                setTimeout(() => {
+                    onSendMessage();
+                }, 100);
+                
+                toast.success('Voice transcribed successfully');
+            }
+        },
+        onError: (error) => {
+            toast.error('Transcription failed', {
+                description: error,
+            });
+        },
+        autoTranscribe: true,
+    });
+
+    // Handle mic button click
+    const handleMicClick = useCallback(() => {
+        if (isRecording) {
+            stopRecording();
+        } else if (!isTranscribing) {
+            startRecording();
+        }
+    }, [isRecording, isTranscribing, startRecording, stopRecording]);
 
     // Handle resource selection from picker
     const handleResourceSelected = useCallback((resource: any) => {
@@ -287,6 +329,31 @@ export function PromptInput({
             {/* Bottom Controls - All buttons in one row */}
             <div className="flex items-center justify-between px-2 pb-1.5">
                 <div className="flex items-center gap-1">
+                    {/* Voice Input - Show transcription loader when processing */}
+                    {isTranscribing ? (
+                        <div className="px-2">
+                            <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
+                        </div>
+                    ) : isRecording ? (
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={stopRecording}
+                            className="h-7 px-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 animate-pulse"
+                        >
+                            <Mic className="h-3.5 w-3.5 mr-1" />
+                            <span className="text-xs">Stop ({Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')})</span>
+                        </Button>
+                    ) : (
+                        <PromptInputButton
+                            icon={Mic}
+                            tooltip="Record voice message"
+                            onClick={handleMicClick}
+                            active={false}
+                        />
+                    )}
+
                     {/* Resource Picker */}
                     <ResourcePickerButton
                         onResourceSelected={handleResourceSelected}
