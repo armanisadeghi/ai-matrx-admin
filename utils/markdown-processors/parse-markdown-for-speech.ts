@@ -113,44 +113,44 @@ export function parseMarkdownToText(markdown: string): string {
 
     const measurementUnits: { [key: string]: string } = {
       // Weight
-      'lbs': 'pounds',
-      'lb': 'pounds',
-      'oz': 'ounces',
-      'kg': 'kilograms',
-      'gm': 'grams',
-      'mg': 'milligrams',
+      'lbs': 'pound', // Changed from 'pounds'
+      'lb': 'pound',
+      'oz': 'ounce', // Changed from 'ounces'
+      'kg': 'kilogram', // Changed from 'kilograms'
+      'gm': 'gram', // Changed from 'grams'
+      'mg': 'milligram', // Changed from 'milligrams'
       // Distance/Length
-      'km': 'kilometers',
-      'cm': 'centimeters',
-      'mm': 'millimeters',
-      'ft': 'feet',
-      'mi': 'miles',
+      'km': 'kilometer', // Changed from 'kilometers'
+      'cm': 'centimeter', // Changed from 'centimeters'
+      'mm': 'millimeter', // Changed from 'millimeters'
+      'ft': 'foot', // Changed from 'feet' (Irregular plural)
+      'mi': 'mile', // Changed from 'miles'
       // Speed
-      'mph': 'miles per hour',
-      'kph': 'kilometers per hour',
-      'kmh': 'kilometers per hour',
+      'mph': 'mile per hour', // Changed from 'miles per hour'
+      'kph': 'kilometer per hour', // Changed from 'kilometers per hour'
+      'kmh': 'kilometer per hour', // Changed from 'kilometers per hour'
       // Volume
-      'ml': 'milliliters',
-      'mL': 'milliliters',
-      'gal': 'gallons',
-      'qt': 'quarts',
-      'tbsp': 'tablespoons',
-      'tsp': 'teaspoons',
+      'ml': 'milliliter', // Changed from 'milliliters'
+      'mL': 'milliliter', // Changed from 'milliliters'
+      'gal': 'gallon', // Changed from 'gallons'
+      'qt': 'quart', // Changed from 'quarts'
+      'tbsp': 'tablespoon', // Changed from 'tablespoons'
+      'tsp': 'teaspoon', // Changed from 'teaspoons'
       // Area
-      'sqft': 'square feet',
-      'sqm': 'square meters',
+      'sqft': 'square foot', // Changed from 'square feet' (Irregular plural)
+      'sqm': 'square meter', // Changed from 'square meters'
       // Time
-      'sec': 'seconds',
-      'min': 'minutes',
-      'hr': 'hours',
-      'hrs': 'hours',
-      'ms': 'milliseconds',
+      'sec': 'second', // Changed from 'seconds'
+      'min': 'minute', // Changed from 'minutes'
+      'hr': 'hour', // Changed from 'hours'
+      'hrs': 'hour', // Changed from 'hours'
+      'ms': 'millisecond', // Changed from 'milliseconds'
       // Other common units
-      'psi': 'pounds per square inch',
-      'rpm': 'revolutions per minute',
-      'bpm': 'beats per minute'
+      'psi': 'pound per square inch', // Changed from 'pounds per square inch'
+      'rpm': 'revolution per minute', // Changed from 'revolutions per minute'
+      'bpm': 'beat per minute' // Changed from 'beats per minute'
     };
-
+    
     let result = markdown
       // Handle Mermaid diagrams first (before other processing)
       .replace(/```mermaid[\s\S]*?```/g, 'Please see the diagram provided.')

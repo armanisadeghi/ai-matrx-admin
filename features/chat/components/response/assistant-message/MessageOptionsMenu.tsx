@@ -5,7 +5,7 @@ import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { NotesAPI } from "@/features/notes";
 import { QuickSaveModal } from "@/features/notes";
-import { useTextToSpeech } from "@/features/tts";
+import { useCartesiaWithPreferences } from "@/hooks/tts/simple/useCartesiaWithPreferences";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "sonner";
 
@@ -21,21 +21,19 @@ interface MessageOptionsMenuProps {
 const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, isOpen, anchorElement }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   
-  // Get user's TTS preferences from userPreferences
-  const preferredVoice = useAppSelector((state) => state.userPreferences?.textToSpeech?.preferredVoice || 'Cheyenne-PlayAI');
-  const ttsProcessMarkdown = useAppSelector((state) => state.userPreferences?.textToSpeech?.processMarkdown ?? true);
+  // Get user's voice preferences (for Cartesia TTS)
+  const voicePreferences = useAppSelector((state) => state.userPreferences?.voice);
+  const voiceName = voicePreferences?.voice ? 'Cartesia' : 'Default voice';
   
-  // TTS hook
-  const { speak, isGenerating: isTtsGenerating, isPlaying: isTtsPlaying } = useTextToSpeech({
-    defaultVoice: preferredVoice,
-    autoPlay: true,
-    processMarkdown: ttsProcessMarkdown,
+  // Cartesia TTS hook with preferences integration
+  const { speak, isGenerating: isTtsGenerating, isPlaying: isTtsPlaying } = useCartesiaWithPreferences({
+    processMarkdown: true,
     onError: (error) => {
       toast.error('Speech playback failed', { description: error });
     },
     onPlaybackStart: () => {
       toast.success('Playing audio...', {
-        description: `Using ${preferredVoice} voice`,
+        description: `Using ${voiceName}`,
       });
     },
   });

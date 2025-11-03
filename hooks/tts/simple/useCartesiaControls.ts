@@ -16,7 +16,7 @@ export function useCartesiaControls() {
     const [emotions, setEmotions] = useState<Emotion[]>([]);
     const [language, setLanguage] = useState("en");
     const [speed, setSpeed] = useState<number>(0);
-    const [modelId, setModelId] = useState("sonic-turbo");
+    const [modelId, setModelId] = useState("sonic-3");
 
     const connect = useCallback(async () => {
         setConnectionState("fetching-token");
@@ -64,7 +64,7 @@ export function useCartesiaControls() {
 
             // Create a new player if one doesn't exist or if we're starting a new speech
             if (!playerRef.current || playerState === "idle") {
-                playerRef.current = new WebPlayer({ bufferDuration: 600 });
+                playerRef.current = new WebPlayer({ bufferDuration: 0.25 }); // 250ms buffer for fast streaming
             }
 
             // If player is paused, resume instead of starting new speech

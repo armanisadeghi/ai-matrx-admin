@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
-import { useCartesiaControls } from '@/hooks/tts/simple/useCartesiaControls';
+import { useCartesiaWithPreferences } from '@/hooks/tts/simple/useCartesiaWithPreferences';
 import {
   Play,
   Pause,
@@ -45,7 +45,12 @@ export function AudioTestModal({
     pause,
     resume,
     stop,
-  } = useCartesiaControls();
+  } = useCartesiaWithPreferences({
+    processMarkdown: false, // Already processed in speechText
+    onError: (error) => {
+      toast.error('Audio playback failed', { description: error });
+    },
+  });
 
   // Convert markdown to speech text when modal opens or content changes
   useEffect(() => {
