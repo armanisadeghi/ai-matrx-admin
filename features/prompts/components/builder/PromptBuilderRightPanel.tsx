@@ -28,6 +28,8 @@ interface PromptBuilderRightPanelProps {
     onExpandedVariableChange: (variable: string | null) => void;
     chatInput: string;
     onChatInputChange: (value: string) => void;
+    resources: Resource[];
+    onResourcesChange: (resources: Resource[] | ((prev: Resource[]) => Resource[])) => void;
     onSendMessage: () => void;
     isTestingPrompt: boolean;
     autoClear: boolean;
@@ -61,6 +63,8 @@ export function PromptBuilderRightPanel({
     onExpandedVariableChange,
     chatInput,
     onChatInputChange,
+    resources,
+    onResourcesChange,
     onSendMessage,
     isTestingPrompt,
     autoClear,
@@ -76,8 +80,6 @@ export function PromptBuilderRightPanel({
     attachmentCapabilities = { supportsImageUrls: false, supportsFileUrls: false, supportsYoutubeVideos: false },
     onMessageContentChange,
 }: PromptBuilderRightPanelProps) {
-    // Local state for resources
-    const [resources, setResources] = useState<Resource[]>([]);
     
     // Get streaming text from Redux - this doesn't cause parent re-renders
     const streamingText = useAppSelector((state) => 
@@ -192,7 +194,7 @@ export function PromptBuilderRightPanel({
                     messages={messages}
                     attachmentCapabilities={attachmentCapabilities}
                     resources={resources}
-                    onResourcesChange={setResources}
+                    onResourcesChange={onResourcesChange}
                     enablePasteImages={true}
                     showAutoClear={true}
                     showAttachments={true}

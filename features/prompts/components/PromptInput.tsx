@@ -443,6 +443,8 @@ export function PromptInput({
             <ResourceDebugModal 
                 resources={resources}
                 isVisible={isDebugMode}
+                chatInput={chatInput}
+                variableDefaults={variableDefaults}
             />
         </div>
     );

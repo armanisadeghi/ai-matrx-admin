@@ -13,13 +13,16 @@ import {
 import type { Resource } from "../../types/resources";
 import { fetchResourcesData } from "../../utils/resource-data-fetcher";
 import { formatResourcesToXml, extractSettingsAttachments, appendResourcesToMessage } from "../../utils/resource-formatting";
+import type { PromptVariable } from "../../types/core";
 
 interface ResourceDebugModalProps {
     resources: Resource[];
     isVisible: boolean;
+    chatInput?: string;
+    variableDefaults?: PromptVariable[];
 }
 
-export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalProps) {
+export function ResourceDebugModal({ resources, isVisible, chatInput = "", variableDefaults = [] }: ResourceDebugModalProps) {
     const [expandedIndices, setExpandedIndices] = useState<Set<number>>(new Set());
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     const [minimized, setMinimized] = useState(false);
@@ -64,6 +67,16 @@ export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalP
         }
     };
 
+    // Helper function to replace variables in content
+    const replaceVariables = (content: string): string => {
+        let result = content;
+        variableDefaults.forEach(({ name, defaultValue }) => {
+            const regex = new RegExp(`\\{\\{${name}\\}\\}`, 'g');
+            result = result.replace(regex, defaultValue || '');
+        });
+        return result;
+    };
+
     const generateMessagePreview = async () => {
         setIsGeneratingPreview(true);
         try {
@@ -81,9 +94,10 @@ export function ResourceDebugModal({ resources, isVisible }: ResourceDebugModalP
                 mod.extractMessageMetadata(enrichedResources)
             );
             
-            // Create example message
-            const exampleUserMessage = "Here are the resources I want to discuss:";
-            const fullMessage = appendResourcesToMessage(exampleUserMessage, formattedXml);
+            // Use actual chatInput with variables replaced, or a placeholder if empty
+            const baseMessage = chatInput.trim() || "Here are the resources I want to discuss:";
+            const messageWithVariablesReplaced = replaceVariables(baseMessage);
+            const fullMessage = appendResourcesToMessage(messageWithVariablesReplaced, formattedXml);
             
             setPreviewData({
                 formattedXml,

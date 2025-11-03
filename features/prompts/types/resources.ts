@@ -5,6 +5,8 @@
  * Resources are converted to XML format when sent to the LLM and parsed back for display.
  */
 
+import type { MessageMetadata } from './core';
+
 // ===========================
 // Base Resource Interfaces
 // ===========================
@@ -241,30 +243,8 @@ export interface ResourceFormatConfig {
 // Message Metadata
 // ===========================
 
-/**
- * File reference for message metadata
- */
-export interface MessageFileReference {
-    uri: string;
-    mime_type?: string;
-}
-
-/**
- * Resource reference for message metadata (minimal info for backend)
- */
-export interface MessageResourceReference {
-    type: string;
-    id?: string;
-    data?: any; // Full object for tables
-}
-
-/**
- * Message metadata structure
- */
-export interface MessageMetadata {
-    files?: MessageFileReference[];
-    resources?: MessageResourceReference[];
-}
+// Re-export metadata types from core for convenience
+export type { MessageFileReference, MessageResourceReference, MessageMetadata } from './core';
 
 // ===========================
 // Processed Resources

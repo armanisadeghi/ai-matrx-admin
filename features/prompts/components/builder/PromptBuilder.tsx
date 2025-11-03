@@ -21,6 +21,8 @@ import { PromptRunnerModal } from "@/features/prompts/components/modal/PromptRun
 import { toast } from "sonner";
 import { PromptMessageRole, PromptSettings } from "../../types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
+import type { Resource } from "../resource-display";
+import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
 
 
 interface PromptBuilderProps {
@@ -44,6 +46,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const dispatch = useAppDispatch();
     const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
+    const { formatMessageWithResources } = useResourceMessageFormatter();
 
     
     if (!models || models.length === 0) {
@@ -153,6 +156,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const [isPromptRunnerOpen, setIsPromptRunnerOpen] = useState(false);
 
     const [chatInput, setChatInput] = useState("");
+    const [resources, setResources] = useState<Resource[]>([]);
     const [conversationMessages, setConversationMessages] = useState<Array<{ 
         role: string; 
         content: string;
@@ -551,9 +555,19 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             displayUserMessage = chatInput;
         }
 
+        // Format message with resources before sending
+        const { formattedMessage, settingsAttachments, metadata } = await formatMessageWithResources(userMessageContent, resources);
+        
+        // Use formatted message for API
+        userMessageContent = formattedMessage;
+        
+        // Also update display message to include resources for UI rendering
+        displayUserMessage = formattedMessage;
+
         if (autoClear) {
             setChatInput("");
         }
+        setResources([]); // Clear resources after sending
 
         // Replace variables in the display message before showing it
         const displayMessageWithReplacedVariables = replaceVariables(displayUserMessage);
@@ -567,6 +581,13 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         timeToFirstTokenRef.current = undefined; // Reset time to first token
 
         try {
+            // Create user message with metadata (files and resource references)
+            const userMessage: PromptMessage = {
+                role: "user",
+                content: userMessageContent,
+                ...(Object.keys(metadata).length > 0 && { metadata })
+            };
+
             let messagesToSend: PromptMessage[];
 
             if (isFirstMessage) {
@@ -577,14 +598,14 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 if (isLastMessageUser) {
                     // Replace the last template message with our combined content
                     const messagesWithoutLast = messages.slice(0, -1);
-                    messagesToSend = [...messagesWithoutLast, { role: "user", content: userMessageContent }];
+                    messagesToSend = [...messagesWithoutLast, userMessage];
                 } else {
                     // Append the new user message
-                    messagesToSend = [...messages, { role: "user", content: userMessageContent }];
+                    messagesToSend = [...messages, userMessage];
                 }
             } else {
                 // Subsequent messages: Use conversation history + new user message
-                messagesToSend = [...apiConversationHistory, { role: "user", content: userMessageContent }];
+                messagesToSend = [...apiConversationHistory, userMessage];
             }
 
             // Add system message and replace variables
@@ -594,8 +615,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 content: replaceVariables(msg.content)
             }));
 
-            // Add the new user message to the API conversation history
-            setApiConversationHistory((prev) => [...prev, { role: "user", content: userMessageContent }]);
+            // Add the new user message with metadata to the API conversation history
+            setApiConversationHistory((prev) => [...prev, userMessage]);
 
             // Build chat_config for direct_chat task
             const chatConfig: Record<string, any> = {
@@ -929,6 +950,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     onExpandedVariableChange={setExpandedVariable}
                     chatInput={chatInput}
                     onChatInputChange={setChatInput}
+                    resources={resources}
+                    onResourcesChange={setResources}
                     onSendMessage={handleSendTestMessage}
                     isTestingPrompt={isTestingPrompt}
                     autoClear={autoClear}

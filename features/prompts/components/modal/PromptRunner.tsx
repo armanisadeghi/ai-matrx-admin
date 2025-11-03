@@ -552,7 +552,7 @@ export function PromptRunner({
             const userMessage: PromptMessage = {
                 role: "user",
                 content: userMessageContent,
-                ...(Object.keys(metadata).length > 0 && { metadata: metadata as Record<string, unknown> })
+                ...(Object.keys(metadata).length > 0 && { metadata })
             };
 
             if (isFirstMessage) {

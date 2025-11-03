@@ -20,10 +20,36 @@ export interface PromptSettings {
     reasoning_summary?: string;
 }
 
+/**
+ * File reference for message metadata
+ */
+export interface MessageFileReference {
+    uri: string;
+    mime_type?: string;
+}
+
+/**
+ * Resource reference for message metadata (minimal info for backend)
+ */
+export interface MessageResourceReference {
+    type: string;
+    id?: string;
+    data?: any; // Full object for tables
+}
+
+/**
+ * Message metadata structure - extensible for future additions
+ */
+export interface MessageMetadata {
+    files?: MessageFileReference[];
+    resources?: MessageResourceReference[];
+    [key: string]: unknown; // Allow additional metadata properties
+}
+
 export type PromptMessage = {
     role: string;
     content: string;
-    metadata?: Record<string, unknown>;
+    metadata?: MessageMetadata;
 };
 
 export type VariableComponentType =
