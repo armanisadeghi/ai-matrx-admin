@@ -40,9 +40,20 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
     const toast = useToastManager('notes');
     const [shareNoteId, setShareNoteId] = useState<string | null>(null);
 
-    // Refresh when sheet opens
+    // Refresh when sheet opens and ensure we have a new note ready
     useEffect(() => {
-        refreshNotes();
+        const initialize = async () => {
+            await refreshNotes();
+            // After refresh, find or create an empty note for quick capture
+            // This ensures we always start with a new note, reusing existing empty ones
+            try {
+                await findOrCreateEmptyNote('Draft');
+            } catch (error) {
+                console.error('Error initializing new note:', error);
+            }
+        };
+        
+        initialize();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run once when component mounts
 

@@ -244,6 +244,20 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         }
     };
 
+    const handleLabelChange = (newLabel: string) => {
+        if (note) {
+            updateWithAutoSave({ 
+                label: newLabel, 
+                content: localContent, 
+                folder_name: localFolder, 
+                tags: localTags,
+                metadata: { ...note.metadata, lastEditorMode: editorMode }
+            });
+            // Immediate update to parent for selector refresh
+            onUpdate?.(note.id, { label: newLabel });
+        }
+    };
+
     if (!note) {
         return (
             <div className={cn(
@@ -263,6 +277,17 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         <div className={cn("flex flex-col h-full bg-textured", className)}>
             {/* Header - Metadata only (title is now in tabs) */}
             <div className="flex-none border-b border-border bg-textured">
+                {/* Note Title/Label - NEW */}
+                <div className="px-3 pt-3 pb-2">
+                    <input
+                        type="text"
+                        value={note.label}
+                        onChange={(e) => handleLabelChange(e.target.value)}
+                        className="w-full bg-transparent border-0 text-lg font-semibold focus:outline-none focus:ring-0 placeholder:text-muted-foreground"
+                        placeholder="Untitled Note"
+                    />
+                </div>
+                
                 {/* Folder, Tags, Status */}
                 <div className="flex items-center gap-2 px-3 py-2">
                     {/* View Mode Selector */}
