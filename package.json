@@ -30,6 +30,7 @@
     "@hello-pangea/dnd": "latest",
     "@heroui/react": "^2.7.8",
     "@hookform/resolvers": "latest",
+    "@lobehub/icons": "^2.43.1",
     "@midudev/tailwind-animations": "latest",
     "@monaco-editor/react": "^4.7.0",
     "@mynaui/icons-react": "latest",
