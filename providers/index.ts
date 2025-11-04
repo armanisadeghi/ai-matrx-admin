@@ -4,5 +4,4 @@ export * from './entity-context/EntityProvider';
 export * from './entity-context/EntityHookProvider';
 export * from './NavigationEvents';
 export * from './StoreProvider';
-export * from './StreamClientProvider';
 export * from './toast-context';
