@@ -130,6 +130,11 @@ export default function SystemFilesPage() {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
 
+  // Create stable set of selected node IDs
+  const selectedNodeIds = React.useMemo(() => {
+    return new Set(selectedNodes.map(n => n.itemId));
+  }, [selectedNodes]);
+
   // Load initial data
   React.useEffect(() => {
     if (!isInitialized) {
@@ -315,7 +320,7 @@ export default function SystemFilesPage() {
   const renderTreeNodes = useCallback((nodes: FileSystemNode[], depth = 0): React.ReactNode[] => {
     return nodes.map(node => {
       const isExpanded = expandedNodes.has(node.itemId);
-      const isSelected = selectedNodes.some(n => n.itemId === node.itemId);
+      const isSelected = selectedNodeIds.has(node.itemId);
       const children = allNodes.filter(n => n.parentId === node.itemId);
 
       return (
@@ -334,7 +339,7 @@ export default function SystemFilesPage() {
         </div>
       );
     });
-  }, [allNodes, expandedNodes, selectedNodes, handleToggleNode, handleSelectNode]);
+  }, [allNodes, expandedNodes, selectedNodeIds, handleToggleNode, handleSelectNode]);
 
   return (
     <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
