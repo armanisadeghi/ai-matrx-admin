@@ -124,13 +124,19 @@ export function extractUniqueTags(notes: Note[]): string[] {
 }
 
 /**
- * Find an existing empty note (no content and default "New Note" label)
+ * Find an existing empty note (no content and "New Note" label or variants like "New Note 1", "New Note 2", etc.)
+ * This prevents duplicate empty notes from accumulating
  */
 export function findEmptyNewNote(notes: Note[]): Note | null {
-    return notes.find(note => 
-        note.label === 'New Note' && 
-        (!note.content || note.content.trim() === '')
-    ) || null;
+    return notes.find(note => {
+        // Check if content is empty
+        const isEmpty = !note.content || note.content.trim() === '';
+        if (!isEmpty) return false;
+        
+        // Check if label is "New Note" or "New Note [number]"
+        const isNewNoteLabel = note.label === 'New Note' || /^New Note \d+$/.test(note.label);
+        return isNewNoteLabel;
+    }) || null;
 }
 
 /**
@@ -146,16 +152,38 @@ export function findEmptyNewNoteInFolder(notes: Note[], folderName: string): Not
 
 /**
  * Generate a unique label for a new note
+ * IMPORTANT: Only generates numbered variants if base label exists AND is not empty
+ * This prevents creating "New Note 1" when "New Note" exists but is empty (we should reuse the empty one)
  */
 export function generateUniqueLabel(existingNotes: Note[], baseLabel = 'New Note'): string {
-    const existingLabels = new Set(existingNotes.map(n => n.label));
+    // Check if base label exists
+    const baseNote = existingNotes.find(n => n.label === baseLabel);
     
-    if (!existingLabels.has(baseLabel)) {
+    // If base label doesn't exist, use it
+    if (!baseNote) {
         return baseLabel;
     }
-
+    
+    // If base label exists but is empty, this is a problem!
+    // The caller should have found and reused this empty note instead
+    // But we'll return the base label anyway - duplicate checking should handle this
+    const isBaseEmpty = !baseNote.content || baseNote.content.trim() === '';
+    if (isBaseEmpty) {
+        console.warn(`generateUniqueLabel: "${baseLabel}" exists but is empty. Should be reused, not duplicated.`);
+        return baseLabel;
+    }
+    
+    // Base label exists and has content, so find next available number
     let counter = 1;
+    const existingLabels = new Set(existingNotes.map(n => n.label));
+    
     while (existingLabels.has(`${baseLabel} ${counter}`)) {
+        // Check if this numbered variant is empty
+        const numberedNote = existingNotes.find(n => n.label === `${baseLabel} ${counter}`);
+        if (numberedNote && (!numberedNote.content || numberedNote.content.trim() === '')) {
+            console.warn(`generateUniqueLabel: "${baseLabel} ${counter}" exists but is empty. Should be reused, not duplicated.`);
+            return `${baseLabel} ${counter}`;
+        }
         counter++;
     }
 

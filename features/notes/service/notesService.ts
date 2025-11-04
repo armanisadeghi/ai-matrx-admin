@@ -3,6 +3,7 @@
 import { supabase } from '@/utils/supabase/client';
 import type { Note, CreateNoteInput, UpdateNoteInput } from '../types';
 import { generateLabelFromContent } from '../hooks/useAutoLabel';
+import { findEmptyNewNote } from '../utils/noteUtils';
 
 /**
  * Fetch all notes for the current user (excluding deleted)
@@ -44,6 +45,7 @@ export async function fetchNoteById(id: string): Promise<Note | null> {
 /**
  * Create a new note
  * Automatically generates label from content if label is missing or is "New Note"
+ * IMPORTANT: Checks for existing empty notes and reuses them to prevent duplicates
  */
 export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
     const { data: userData } = await supabase.auth.getUser();
@@ -52,9 +54,32 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
         throw new Error('User not authenticated');
     }
 
+    const content = input.content || '';
+    const targetFolder = input.folder_name || 'Draft';
+    
+    // CRITICAL: If creating an empty note (no content or whitespace only), check for existing empty notes
+    const isCreatingEmptyNote = !content || content.trim() === '';
+    
+    if (isCreatingEmptyNote) {
+        // Fetch all user's notes to check for existing empty ones
+        const existingNotes = await fetchNotes();
+        const existingEmptyNote = findEmptyNewNote(existingNotes);
+        
+        if (existingEmptyNote) {
+            console.log('Reusing existing empty note instead of creating duplicate:', existingEmptyNote.id);
+            
+            // If it's in a different folder, move it to the target folder
+            if (existingEmptyNote.folder_name !== targetFolder) {
+                return updateNote(existingEmptyNote.id, { folder_name: targetFolder });
+            }
+            
+            // Already in the right folder, just return it
+            return existingEmptyNote;
+        }
+    }
+
     // Auto-generate label from content if needed
     let finalLabel = input.label || 'New Note';
-    const content = input.content || '';
     
     // Check if we should auto-generate the label
     const shouldAutoGenerate = 
@@ -69,13 +94,14 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
         }
     }
 
+    // No existing empty note found, create a new one
     const { data, error } = await supabase
         .from('notes')
         .insert({
             user_id: userData.user.id,
             label: finalLabel,
             content: content,
-            folder_name: input.folder_name || 'Draft',
+            folder_name: targetFolder,
             tags: input.tags || [],
             metadata: input.metadata || {},
             position: input.position || 0,
@@ -88,6 +114,7 @@ export async function createNote(input: CreateNoteInput = {}): Promise<Note> {
         throw error;
     }
 
+    console.log('Created new note:', data.id, 'Label:', finalLabel, 'Content length:', content.length);
     return data;
 }
 

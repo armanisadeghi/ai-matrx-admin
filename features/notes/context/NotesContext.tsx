@@ -34,6 +34,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     const [activeNote, setActiveNote] = useState<Note | null>(null);
     const [openTabs, setOpenTabs] = useState<string[]>([]);
     const isRefreshing = useRef(false);
+    const isInitialized = useRef(false); // Track if initial fetch completed
+    const initializationPromise = useRef<Promise<void> | null>(null); // For race condition prevention
     const notesRef = useRef<Note[]>([]); // Add ref for notes to avoid callback dependencies
     const activeNoteRef = useRef<Note | null>(null);
 
@@ -43,63 +45,94 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         activeNoteRef.current = activeNote;
     }, [notes, activeNote]);
 
-    // Fetch notes from database
+    // Fetch notes from database with race condition prevention
     const refreshNotes = useCallback(async () => {
+        // If already refreshing, wait for that to complete
+        if (isRefreshing.current && initializationPromise.current) {
+            console.log('Waiting for existing refresh to complete...');
+            await initializationPromise.current;
+            return;
+        }
+        
         if (isRefreshing.current) return;
         
         isRefreshing.current = true;
         setIsLoading(true);
         setError(null);
         
-        try {
-            const fetchedNotes = await fetchNotes();
-            setNotes(fetchedNotes);
-            
-            // Update active note if it exists in the new data (use ref to avoid dependency)
-            const currentActive = activeNoteRef.current;
-            if (currentActive) {
-                const updatedActiveNote = fetchedNotes.find(n => n.id === currentActive.id);
-                if (updatedActiveNote) {
-                    setActiveNote(updatedActiveNote);
-                    // Ensure active note is in tabs
-                    setOpenTabs(prev => {
-                        if (!prev.includes(updatedActiveNote.id)) {
-                            return [...prev, updatedActiveNote.id];
-                        }
-                        return prev;
-                    });
-                } else {
-                    // Active note was deleted, select another or null
-                    const nextNote = fetchedNotes.length > 0 ? fetchedNotes[0] : null;
-                    setActiveNote(nextNote);
-                    if (nextNote) {
+        // Create a promise for this initialization
+        const currentInit = (async () => {
+            try {
+                const fetchedNotes = await fetchNotes();
+                setNotes(fetchedNotes);
+                
+                // Mark as initialized
+                isInitialized.current = true;
+                
+                // Update active note if it exists in the new data (use ref to avoid dependency)
+                const currentActive = activeNoteRef.current;
+                if (currentActive) {
+                    const updatedActiveNote = fetchedNotes.find(n => n.id === currentActive.id);
+                    if (updatedActiveNote) {
+                        setActiveNote(updatedActiveNote);
+                        // Ensure active note is in tabs
                         setOpenTabs(prev => {
-                            if (!prev.includes(nextNote.id)) {
-                                return [...prev, nextNote.id];
+                            if (!prev.includes(updatedActiveNote.id)) {
+                                return [...prev, updatedActiveNote.id];
                             }
                             return prev;
                         });
+                    } else {
+                        // Active note was deleted, select another or null
+                        const nextNote = fetchedNotes.length > 0 ? fetchedNotes[0] : null;
+                        setActiveNote(nextNote);
+                        if (nextNote) {
+                            setOpenTabs(prev => {
+                                if (!prev.includes(nextNote.id)) {
+                                    return [...prev, nextNote.id];
+                                }
+                                return prev;
+                            });
+                        }
                     }
+                } else if (fetchedNotes.length > 0) {
+                    // No active note but we have notes, select the first one and open in tab
+                    const firstNote = fetchedNotes[0];
+                    setActiveNote(firstNote);
+                    setOpenTabs(prev => {
+                        if (!prev.includes(firstNote.id)) {
+                            return [firstNote.id];
+                        }
+                        return prev;
+                    });
                 }
-            } else if (fetchedNotes.length > 0) {
-                // No active note but we have notes, select the first one and open in tab
-                const firstNote = fetchedNotes[0];
-                setActiveNote(firstNote);
-                setOpenTabs(prev => {
-                    if (!prev.includes(firstNote.id)) {
-                        return [firstNote.id];
-                    }
-                    return prev;
-                });
+            } catch (err) {
+                setError(err as Error);
+                console.error("Failed to fetch notes:", err);
+            } finally {
+                setIsLoading(false);
+                isRefreshing.current = false;
+                initializationPromise.current = null;
             }
-        } catch (err) {
-            setError(err as Error);
-            console.error("Failed to fetch notes:", err);
-        } finally {
-            setIsLoading(false);
-            isRefreshing.current = false;
-        }
+        })();
+        
+        initializationPromise.current = currentInit;
+        await currentInit;
     }, []); // No dependencies - stable function
+    
+    // Helper to ensure notes are loaded before operations
+    const ensureNotesLoaded = useCallback(async () => {
+        if (isInitialized.current) return;
+        
+        // If initialization is in progress, wait for it
+        if (initializationPromise.current) {
+            console.log('Waiting for notes initialization...');
+            await initializationPromise.current;
+        } else {
+            // Start initialization if not started
+            await refreshNotes();
+        }
+    }, [refreshNotes]);
 
     // Initial load
     useEffect(() => {
@@ -108,6 +141,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
     // Find or create an empty "New Note" - prevents duplicates
     const findOrCreateEmptyNote = useCallback(async (folderName: string = 'Draft'): Promise<Note> => {
+        // Ensure notes are loaded before checking
+        await ensureNotesLoaded();
+        
         // Use ref to avoid dependency on notes state
         const currentNotes = notesRef.current;
         
@@ -115,6 +151,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         const existingEmptyNote = findEmptyNewNote(currentNotes);
         
         if (existingEmptyNote) {
+            console.log('Found existing empty note, reusing:', existingEmptyNote.id);
             // If it's in a different folder, move it to the target folder
             if (existingEmptyNote.folder_name !== folderName) {
                 const updated = await updateNoteService(existingEmptyNote.id, { folder_name: folderName });
@@ -129,6 +166,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
         // No empty note exists, create a new one
         const uniqueLabel = generateUniqueLabel(currentNotes);
+        console.log('No empty note found, creating new one with label:', uniqueLabel);
         const newNote = await createNoteService({
             label: uniqueLabel,
             folder_name: folderName,
@@ -138,10 +176,13 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         setNotes(prev => [newNote, ...prev]);
         setActiveNote(newNote);
         return newNote;
-    }, []); // No dependencies now!
+    }, [ensureNotesLoaded]); // Depend on ensureNotesLoaded
 
     // Create a new note (with duplicate checking)
     const createNote = useCallback(async (input: CreateNoteInput): Promise<Note> => {
+        // Ensure notes are loaded before creating
+        await ensureNotesLoaded();
+        
         const targetFolder = input.folder_name || 'Draft';
         
         // If creating an empty note, check for existing empty notes first
@@ -160,7 +201,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         setNotes(prev => [newNote, ...prev]);
         setActiveNote(newNote);
         return newNote;
-    }, [findOrCreateEmptyNote]); // Only depend on findOrCreateEmptyNote which is now stable
+    }, [ensureNotesLoaded, findOrCreateEmptyNote]);
 
     // Update a note
     const updateNote = useCallback(async (id: string, updates: UpdateNoteInput): Promise<Note> => {
