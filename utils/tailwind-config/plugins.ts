@@ -19,7 +19,6 @@ function addVariablesForColors({addBase, theme}: any) {
 export const plugins = [
     require("tailwindcss-animate"),
     require("@xpd/tailwind-3dtransforms"),
-    require("flowbite/plugin"),
     require('tailwind-scrollbar'),
     require('tailwind-scrollbar-hide'),
     require('tailwindcss-3d'),
