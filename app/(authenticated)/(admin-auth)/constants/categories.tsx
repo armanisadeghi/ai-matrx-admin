@@ -162,6 +162,12 @@ export const adminCategories = [
                 icon: <IconCode />,
                 link: "/administration/markdown-tester",
             },
+            {
+                title: "System Files Manager",
+                description: "Upload and manage public files for app-wide use including voice samples, documentation, images, and sample files. Easily copy URLs for use in code.",
+                icon: <IconUpload />,
+                link: "/administration/system-files",
+            },
         ],
     },
     {

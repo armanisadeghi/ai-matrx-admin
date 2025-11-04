@@ -233,22 +233,17 @@ export function ResourceDisplay({ resource, className }: ResourceDisplayProps) {
             </div>
             
             {/* Content - Only show if has content and expanded */}
-            {hasContent && (isExpanded || !isTruncated) && (
+            {hasContent && isExpanded && (
                 <div className="px-3 py-2 border-t border-current/10">
                     <div className="text-xs text-foreground/80 whitespace-pre-wrap break-words font-mono">
                         {contentDisplay}
                     </div>
-                    {isTruncated && !isExpanded && (
+                    {isTruncated && (
                         <button
-                            onClick={() => setIsExpanded(true)}
-                            className="text-xs text-muted-foreground hover:text-foreground mt-1 underline"
-                        >
-                            Show more
-                        </button>
-                    )}
-                    {isExpanded && isTruncated && (
-                        <button
-                            onClick={() => setIsExpanded(false)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsExpanded(false);
+                            }}
                             className="text-xs text-muted-foreground hover:text-foreground mt-1 underline"
                         >
                             Show less

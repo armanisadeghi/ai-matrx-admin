@@ -62,6 +62,7 @@ export const availableBuckets = [
     "Notes",
     "Spreadsheets",
     "audio-recordings",
+    "app-assets",
 ] as const;
 
 const fileSystemReducers = availableBuckets.reduce<{ [K in AvailableBuckets]: Reducer<FileManagement> }>((acc, bucket) => {
@@ -145,4 +146,3 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         // brokerMapping: brokerMappingSlice.reducer,
         // recipeBuilder: recipeBuilderSlice.reducer,
         // workflowBuilder: workflowBuilderSlice.reducer,
-
