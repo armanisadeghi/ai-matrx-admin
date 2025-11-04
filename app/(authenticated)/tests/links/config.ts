@@ -250,36 +250,6 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Table Test',
-        path: 'tests/table-test',
-        relative: false,
-        description: ''
-    },
-    {
-        title: 'Custom Table',
-        path: 'tests/table-test/custom-table',
-        relative: false,
-        description: ''
-    },
-    {
-        title: 'Entity Data Table',
-        path: 'tests/table-test/entity-data-table',
-        relative: false,
-        description: ''
-    },
-    {
-        title: 'Entity Table Test',
-        path: 'tests/table-test/entity-table-test',
-        relative: false,
-        description: ''
-    },
-    {
-        title: 'Matrx Data Table',
-        path: 'tests/table-test/matrx-data-table',
-        relative: false,
-        description: ''
-    },
-    {
         title: 'Tailwind Test',
         path: 'tests/tailwind-test',
         relative: false,

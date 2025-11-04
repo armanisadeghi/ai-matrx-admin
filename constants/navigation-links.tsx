@@ -204,13 +204,6 @@ export const allNavigationLinks: NavigationLink[] = [
         category: "Socket IO",
     },
     {
-        label: "Matrx Table",
-        href: "/tests/table-test/advanced-data-table",
-        icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-        section: "admin",
-        category: "Entities",
-    },
-    {
         label: "App Builder Parts",
         href: "/apps/app-builder",
         icon: (
@@ -289,13 +282,6 @@ export const allNavigationLinks: NavigationLink[] = [
         icon: <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         section: "admin",
         category: "Styling",
-    },
-    {
-        label: "Table Test",
-        href: "/tests/table-test",
-        icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-        section: "admin",
-        category: "Entities",
     },
     {
         label: "Registered Functions",

@@ -1,5 +1,9 @@
 [
   {
+    "path": "/tests/advanced-data-table",
+    "name": "advanced-data-table"
+  },
+  {
     "path": "/tests/animation-tests",
     "name": "animation-tests"
   },
@@ -22,6 +26,10 @@
   {
     "path": "/tests/chat-tests",
     "name": "chat-tests"
+  },
+  {
+    "path": "/tests/content",
+    "name": "content"
   },
   {
     "path": "/tests/context-menu",
@@ -134,14 +142,6 @@
   {
     "path": "/tests/ssr-test",
     "name": "ssr-test"
-  },
-  {
-    "path": "/tests/storage-tests",
-    "name": "storage-tests"
-  },
-  {
-    "path": "/tests/table-test",
-    "name": "table-test"
   },
   {
     "path": "/tests/tailwind-test",

@@ -8,8 +8,8 @@ import {MatrxTableProps, TableInstance, ExtendedTableState} from "@/types/tableT
 import MatrxTableHeader from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableHeader";
 import MatrxTableBody from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableBody";
 import {cn} from "@/styles/themes";
-import TableTopOptions from "@/app/(authenticated)/tests/table-test/custom-table/TableTopOptions";
-import TableBottomSection from "@/app/(authenticated)/tests/table-test/custom-table/TableBottomSection";
+import TableTopOptions from "@/components/matrx/table/TableTopOptions";
+import TableBottomSection from "@/components/matrx/table/TableBottomSection";
 import MatrxColumnSettings from "@/app/(authenticated)/tests/matrx-table/components/MatrxColumnSettings";
 
 

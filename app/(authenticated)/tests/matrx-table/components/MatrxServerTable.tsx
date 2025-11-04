@@ -8,8 +8,8 @@ import {TableInstance, ExtendedTableState} from "@/types/tableTypes";
 import MatrxTableHeader from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableHeader";
 import MatrxTableBody from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableBody";
 import {cn} from "@/styles/themes";
-import TableTopOptions from "@/app/(authenticated)/tests/table-test/custom-table/TableTopOptions";
-import TableBottomSection from "@/app/(authenticated)/tests/table-test/custom-table/TableBottomSection";
+import TableTopOptions from "@/components/matrx/table/TableTopOptions";
+import TableBottomSection from "@/components/matrx/table/TableBottomSection";
 import MatrxColumnSettings from "@/app/(authenticated)/tests/matrx-table/components/MatrxColumnSettings";
 
 interface MatrxServerTableProps {
@@ -103,22 +103,6 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
     );
 
     const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
-
-    const tableInstance = useTable(
-        {
-            columns: visibleColumns,
-            data: allData,
-            initialState: {
-                pageSize: serverPageSize || 10,
-                pageIndex: isServerSide ? (serverPage ? serverPage - 1 : 0) : 0,
-            },
-            manualPagination: isServerSide,
-            pageCount: isServerSide ? Math.ceil((totalCount || 0) / (serverPageSize || 10)) : undefined,
-        },
-        useGlobalFilter,
-        useSortBy,
-        usePagination
-    ) as unknown as TableInstance;
 
 
 

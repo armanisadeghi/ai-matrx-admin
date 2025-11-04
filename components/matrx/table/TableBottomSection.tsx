@@ -71,3 +71,4 @@ const TableBottomSection: React.FC<TableBottomSectionProps> = (
 };
 
 export default TableBottomSection;
+

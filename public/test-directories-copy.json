@@ -74,9 +74,5 @@
     {
         "path": "/tests/storage-tests",
         "name": "storage-tests"
-    },
-    {
-        "path": "/tests/table-test",
-        "name": "table-test"
     }
 ]
