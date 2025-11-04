@@ -48,6 +48,10 @@ import { cn } from '@/lib/utils';
 
 const BUCKET_NAME = 'app-assets';
 
+// Create slice and selectors once outside the component
+const fileSystemSlice = createFileSystemSlice(BUCKET_NAME);
+const fileSystemSelectors = createFileSystemSelectors(BUCKET_NAME);
+
 // Predefined folder categories
 const FOLDER_CATEGORIES = [
   { value: 'voice-samples', label: 'Voice Samples', description: 'Audio files used as voice examples' },
@@ -68,7 +72,7 @@ interface FileNodeItemProps {
   onSelect: () => void;
 }
 
-function FileNodeItem({ node, depth, isExpanded, onToggle, isSelected, onSelect }: FileNodeItemProps) {
+const FileNodeItem = React.memo(({ node, depth, isExpanded, onToggle, isSelected, onSelect }: FileNodeItemProps) => {
   const isFolder = node.contentType === 'FOLDER';
 
   return (
@@ -95,7 +99,8 @@ function FileNodeItem({ node, depth, isExpanded, onToggle, isSelected, onSelect 
       </div>
     </div>
   );
-}
+});
+FileNodeItem.displayName = 'FileNodeItem';
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -110,15 +115,13 @@ export default function SystemFilesPage() {
   const dispatch = useAppDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const slice = createFileSystemSlice(BUCKET_NAME);
-  const selectors = createFileSystemSelectors(BUCKET_NAME);
-  const { actions } = slice;
+  const { actions } = fileSystemSlice;
 
-  const allNodes = useAppSelector(selectors.selectAllNodes);
-  const selectedNodes = useAppSelector(selectors.selectSelectedNodes);
-  const activeNode = useAppSelector(selectors.selectActiveNode);
-  const isLoading = useAppSelector(selectors.selectIsLoading);
-  const isInitialized = useAppSelector(selectors.selectIsInitialized);
+  const allNodes = useAppSelector(fileSystemSelectors.selectAllNodes);
+  const selectedNodeIds = useAppSelector(fileSystemSelectors.selectSelectedNodeIds);
+  const activeNode = useAppSelector(fileSystemSelectors.selectActiveNode);
+  const isLoading = useAppSelector(fileSystemSelectors.selectIsLoading);
+  const isInitialized = useAppSelector(fileSystemSelectors.selectIsInitialized);
 
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isCreateFolderDialogOpen, setIsCreateFolderDialogOpen] = useState(false);
@@ -130,38 +133,6 @@ export default function SystemFilesPage() {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
 
-  // Create stable set of selected node IDs
-  const selectedNodeIds = React.useMemo(() => {
-    return new Set(selectedNodes.map(n => n.itemId));
-  }, [selectedNodes]);
-
-  // Load initial data
-  React.useEffect(() => {
-    if (!isInitialized) {
-      startTransition(() => {
-        dispatch(actions.listContents({ forceFetch: true }));
-      });
-    }
-  }, [isInitialized, dispatch, actions]);
-
-  const rootNodes = allNodes.filter(node => node.parentId === 'root' || node.storagePath.split('/').length === 1);
-
-  const handleToggleNode = useCallback((nodeId: string) => {
-    setExpandedNodes(prev => {
-      const next = new Set(prev);
-      if (next.has(nodeId)) {
-        next.delete(nodeId);
-      } else {
-        next.add(nodeId);
-      }
-      return next;
-    });
-  }, []);
-
-  const handleSelectNode = useCallback((node: FileSystemNode) => {
-    dispatch(actions.selectNode({ nodeId: node.itemId, isMultiSelect: false, isRangeSelect: false }));
-  }, [dispatch, actions]);
-
   const handleRefresh = useCallback(() => {
     startTransition(() => {
       dispatch(actions.listContents({ forceFetch: true }));
@@ -171,6 +142,85 @@ export default function SystemFilesPage() {
       });
     });
   }, [dispatch, actions, toast]);
+
+  // Load initial data - just root level
+  React.useEffect(() => {
+    if (!isInitialized) {
+      dispatch(actions.listContents({ forceFetch: true }));
+    }
+  }, [isInitialized, dispatch, actions]);
+
+  const rootNodes = React.useMemo(() => 
+    allNodes.filter(node => node.parentId === 'root' || node.storagePath.split('/').length === 1),
+    [allNodes]
+  );
+
+  const handleToggleNode = useCallback(async (nodeId: string, node: FileSystemNode) => {
+    const isCurrentlyExpanded = expandedNodes.has(nodeId);
+    
+    if (!isCurrentlyExpanded && node.contentType === 'FOLDER') {
+      // Expanding a folder - check if we need to load its contents
+      const hasChildren = allNodes.some(n => n.parentId === nodeId);
+      
+      if (!hasChildren) {
+        // No children loaded yet, load them
+        const currentActiveNode = activeNode?.itemId;
+        
+        // Temporarily select this folder to load its contents
+        dispatch(actions.selectNode({ nodeId, isMultiSelect: false, isRangeSelect: false }));
+        await dispatch(actions.listContents({ forceFetch: false })).unwrap();
+        
+        // Restore previous selection
+        if (currentActiveNode) {
+          dispatch(actions.selectNode({ nodeId: currentActiveNode, isMultiSelect: false, isRangeSelect: false }));
+        } else {
+          dispatch(actions.clearSelection());
+        }
+      }
+    }
+    
+    // Toggle expansion state
+    setExpandedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return next;
+    });
+  }, [expandedNodes, allNodes, activeNode, dispatch, actions]);
+
+  const handleSelectNode = useCallback(async (node: FileSystemNode) => {
+    console.log('📂 Selecting node:', node.name, 'ID:', node.itemId);
+    dispatch(actions.selectNode({ nodeId: node.itemId, isMultiSelect: false, isRangeSelect: false }));
+    
+    // Auto-expand folders when clicked and load contents if needed
+    if (node.contentType === 'FOLDER') {
+      const isCurrentlyExpanded = expandedNodes.has(node.itemId);
+      console.log('📂 Folder expanded?', isCurrentlyExpanded);
+      
+      if (!isCurrentlyExpanded) {
+        // Check if children are already loaded
+        const hasChildren = allNodes.some(n => n.parentId === node.itemId);
+        console.log('📂 Has children loaded?', hasChildren, 'Children count:', allNodes.filter(n => n.parentId === node.itemId).length);
+        
+        if (!hasChildren) {
+          // Load children
+          console.log('📂 Loading children for:', node.name);
+          try {
+            const result = await dispatch(actions.listContents({ forceFetch: false })).unwrap();
+            console.log('📂 Loaded children:', result);
+          } catch (error) {
+            console.error('Error loading folder contents:', error);
+          }
+        }
+        
+        // Expand after loading
+        setExpandedNodes(prev => new Set(prev).add(node.itemId));
+      }
+    }
+  }, [dispatch, actions, expandedNodes, allNodes]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedFiles(e.target.files);
@@ -317,11 +367,50 @@ export default function SystemFilesPage() {
     }
   }, [dispatch, actions, toast]);
 
-  const renderTreeNodes = useCallback((nodes: FileSystemNode[], depth = 0): React.ReactNode[] => {
+  // Build a lookup map for children to avoid filtering on every render
+  const childrenMap = React.useMemo(() => {
+    const map = new Map<string, FileSystemNode[]>();
+    allNodes.forEach(node => {
+      const parentId = node.parentId || 'root';
+      if (!map.has(parentId)) {
+        map.set(parentId, []);
+      }
+      map.get(parentId)!.push(node);
+    });
+    
+    // Debug: Log the structure
+    console.log('🗂️ Total nodes:', allNodes.length);
+    console.log('🗂️ Parent-child map:', Object.fromEntries(
+      Array.from(map.entries()).map(([key, children]) => [
+        key,
+        children.map(c => c.name)
+      ])
+    ));
+    
+    return map;
+  }, [allNodes]);
+
+  // Memoize toggle and select handlers per node
+  const nodeHandlers = React.useMemo(() => {
+    const handlers = new Map<string, { onToggle: () => void; onSelect: () => void }>();
+    allNodes.forEach(node => {
+      handlers.set(node.itemId, {
+        onToggle: () => handleToggleNode(node.itemId, node),
+        onSelect: () => handleSelectNode(node),
+      });
+    });
+    return handlers;
+  }, [allNodes, handleToggleNode, handleSelectNode]);
+
+  // Render tree nodes recursively based on expansion state
+  const renderTreeNodes = (nodes: FileSystemNode[], depth = 0): React.ReactNode[] => {
     return nodes.map(node => {
       const isExpanded = expandedNodes.has(node.itemId);
-      const isSelected = selectedNodeIds.has(node.itemId);
-      const children = allNodes.filter(n => n.parentId === node.itemId);
+      const children = childrenMap.get(node.itemId) || [];
+      const isSelected = selectedNodeIds.includes(node.itemId);
+      const handlers = nodeHandlers.get(node.itemId);
+
+      if (!handlers) return null;
 
       return (
         <div key={node.itemId}>
@@ -329,9 +418,9 @@ export default function SystemFilesPage() {
             node={node}
             depth={depth}
             isExpanded={isExpanded}
-            onToggle={() => handleToggleNode(node.itemId)}
+            onToggle={handlers.onToggle}
             isSelected={isSelected}
-            onSelect={() => handleSelectNode(node)}
+            onSelect={handlers.onSelect}
           />
           {isExpanded && children.length > 0 && (
             <div>{renderTreeNodes(children, depth + 1)}</div>
@@ -339,7 +428,12 @@ export default function SystemFilesPage() {
         </div>
       );
     });
-  }, [allNodes, expandedNodes, selectedNodeIds, handleToggleNode, handleSelectNode]);
+  };
+
+  // Memoize the rendered tree - must depend on expandedNodes to re-render when folders expand
+  const renderedTree = React.useMemo(() => {
+    return renderTreeNodes(rootNodes);
+  }, [rootNodes, childrenMap, expandedNodes, selectedNodeIds, nodeHandlers]);
 
   return (
     <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
@@ -378,7 +472,7 @@ export default function SystemFilesPage() {
                   <p className="text-xs">Upload files to get started</p>
                 </div>
               ) : (
-                <div className="py-2">{renderTreeNodes(rootNodes)}</div>
+                <div className="py-2">{renderedTree}</div>
               )}
             </ScrollArea>
           </CardContent>

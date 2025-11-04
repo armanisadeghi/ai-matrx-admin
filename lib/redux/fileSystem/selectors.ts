@@ -154,9 +154,12 @@ export const createSelectionSelectors = (bucketName: AvailableBuckets) => ({
         })
   ),
 
-  selectSelectedNodeIds: createBucketSpecificSelector<NodeItemId[]>(
-    bucketName,
-    (state) => Array.from(state.selection.selectedNodes)
+  selectSelectedNodeIds: createSelector(
+    [(state: RootState) => state.fileSystem[bucketName]?.selection?.selectedNodes],
+    (selectedNodes) => {
+      if (!selectedNodes) return [];
+      return Array.from(selectedNodes);
+    }
   ),
 
   selectSelectionCount: createBucketSpecificSelector<number>(
@@ -195,9 +198,12 @@ export const createSelectionSelectors = (bucketName: AvailableBuckets) => ({
 
 // Node Utility Selectors
 export const createNodeUtilitySelectors = (bucketName: AvailableBuckets) => ({
-  selectAllNodes: createBucketSpecificSelector<FileSystemNode[]>(
-    bucketName,
-    (state) => state?.nodes ? Object.values(state.nodes) : []
+  selectAllNodes: createSelector(
+    [(state: RootState) => state.fileSystem[bucketName]?.nodes],
+    (nodes) => {
+      if (!nodes) return [];
+      return Object.values(nodes);
+    }
   ),
 
   selectNode: (nodeId: NodeItemId) =>
