@@ -5,7 +5,7 @@ const { getHeaders } = require("./utils/next-config/headers");
 const { configureWebpack } = require("./utils/next-config/webpackConfig");
 const copyFiles = require("./utils/next-config/copyFiles");
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
-    enabled: process.env.ANALYZE === "true" && !process.env.VERCEL,
+    enabled: process.env.ANALYZE === "true",
     openAnalyzer: true,
     generateStatsFile: true,
     statsFilename: "stats.json",
@@ -15,13 +15,6 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 const nextConfig = {
     // Build performance optimizations
     productionBrowserSourceMaps: false,
-    
-    // Disable build cache on Vercel to reduce cache size
-    ...(process.env.VERCEL && {
-        generateBuildId: async () => {
-            return 'vercel-build-' + Date.now()
-        },
-    }),
     
     compiler: {
         removeConsole: process.env.NODE_ENV === 'production' ? {
@@ -34,17 +27,8 @@ const nextConfig = {
         '*': [
             'node_modules/@swc/**/*',
             'node_modules/@esbuild/**/*',
-            'node_modules/@next/swc*/**/*',
-            'node_modules/webpack/**/*',
-            'node_modules/terser/**/*',
-            'node_modules/esbuild/**/*',
             '.git/**/*',
             '**/*.map',
-            '**/*.d.ts',
-            '**/*.tsbuildinfo',
-            'node_modules/.cache/**/*',
-            'node_modules/.pnpm/**/*',
-            '.next/cache/**/*',
         ],
     },
     
@@ -90,14 +74,6 @@ const nextConfig = {
         // Optimize webpack for production builds - MINIMAL SAFE CONFIG
         if (!dev) {
             config.output.hashFunction = 'xxhash64';
-            
-            // On Vercel, use memory cache instead of filesystem to reduce build cache size
-            if (process.env.VERCEL) {
-                config.cache = {
-                    type: 'memory',
-                    maxGenerations: 1,
-                };
-            }
         }
 
         // Add rule to prevent bundling of .onnx files

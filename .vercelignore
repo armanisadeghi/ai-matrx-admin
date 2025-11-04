@@ -1,20 +1,9 @@
 # Webpack cache pack files (exceed Vercel's 1.5GB limit)
 .next/cache/webpack/**/*.pack
-.next/cache/webpack
-.next/cache
 
 # Large cache files
 .next/cache/**/*.log
 node_modules/.cache
-
-# pnpm cache and store (major space saver)
-.pnpm-store
-node_modules/.pnpm
-**/.pnpm
-
-# Bundle analyzer artifacts (can be huge)
-stats.json
-.next/analyze
 
 # Turbo cache (if using turbo)
 .turbo
@@ -28,27 +17,12 @@ coverage
 # Development files
 .vscode
 .idea
-*.swp
-*.swo
-*.swn
+*.sw
+
+p
 .DS_Store
 
 # Temporary files
 *.tmp
 *.temp
-
-# Build artifacts
-*.tsbuildinfo
-.eslintcache
-
-# Development folders
-_dev/
-temp/
-_armani/
--armani/
-public/cache/
-
-# Documentation
-/docs/
-.history/
 
