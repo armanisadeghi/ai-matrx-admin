@@ -25,7 +25,7 @@ export default function TasksPage() {
 
   // Desktop view - Three-column layout
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full h-page">
       <Sidebar />
       <TaskContentNew />
     </div>

@@ -184,14 +184,14 @@ const DashboardPage = () => {
     ];
 
     return (
-        <div className="flex flex-col h-full w-full overflow-hidden">
+        <div className="flex flex-col h-page w-full overflow-hidden">
             {/* Wrapper div that contains both the floating menu and the content */}
             <div 
                 className="flex flex-col w-full h-full bg-textured text-gray-800 dark:text-gray-100"
             >
 
                 {/* Main content with fixed height and scrollable sections */}
-                <div className={`w-full ${isMobile ? 'px-3' : 'px-6'} pt-4 ${isMobile ? 'h-full overflow-y-auto' : 'h-[calc(100vh-64px)] overflow-hidden'}`}>
+                <div className={`w-full ${isMobile ? 'px-3' : 'px-6'} pt-4 ${isMobile ? 'h-full overflow-y-auto' : 'h-full overflow-hidden'}`}>
                     {/* Main content grid */}
                     <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${isMobile ? '' : 'h-full'}`}>
                         {/* Main features section - spans 2 columns with independent scroll */}

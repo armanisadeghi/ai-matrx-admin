@@ -268,7 +268,7 @@ export function NotesLayout({ className }: NotesLayoutProps) {
                 onSortChange={handleSortChange}
             />
             
-            <div className={cn("flex h-full overflow-hidden", className)}>
+            <div className={cn("flex h-page overflow-hidden", className)}>
                 {/* Desktop Sidebar - Compact */}
                 <div
                     style={{ width: `${sidebarWidth}px` }}

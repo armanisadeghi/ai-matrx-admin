@@ -22,7 +22,7 @@ export default function UserGeneratedDataPage() {
   };
 
   return (
-    <div className="w-full h-full bg-gray-100 dark:bg-gray-900 p-4 rounded-lg space-y-4 scrollbar-none">
+    <div className="w-full h-page bg-gray-100 dark:bg-gray-900 p-4 rounded-lg space-y-4 overflow-y-auto scrollbar-none">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Your Data Tables</h1>

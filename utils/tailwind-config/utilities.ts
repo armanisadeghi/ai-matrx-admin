@@ -122,15 +122,15 @@ export function createUtilities({ addUtilities, theme }: any) {
             marginTop: "env(safe-area-inset-top, 1rem)",
         },
         // Page height utilities - automatically accounts for header height
-        // Mobile: 3rem (h-12), Desktop (lg+): 2.5rem (h-10)
+        // Header: 2.5rem (h-10) unified for both mobile and desktop
         ".h-page": {
-            height: "calc(100vh - var(--header-height))",
+            height: "calc(100dvh - var(--header-height))",
         },
         ".min-h-page": {
-            minHeight: "calc(100vh - var(--header-height))",
+            minHeight: "calc(100dvh - var(--header-height))",
         },
         ".max-h-page": {
-            maxHeight: "calc(100vh - var(--header-height))",
+            maxHeight: "calc(100dvh - var(--header-height))",
         },
     };
     addUtilities(utilities, ["responsive", "hover", "focus", "dark"]);

@@ -19,7 +19,7 @@ export default function AllFilesPage() {
   }, []);
 
   return (
-    <div className="flex h-full gap-4 p-4">
+    <div className="flex h-page gap-4 p-4">
       {/* File Tree with Multiple Buckets */}
       <Card className="w-96 flex flex-col overflow-hidden">
         <CardHeader className="pb-3 border-b">

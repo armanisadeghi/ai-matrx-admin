@@ -37,7 +37,7 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
   
   if (!isInitialized) {
     return (
-      <div className="h-full w-full flex items-center justify-center">
+      <div className="h-page w-full flex items-center justify-center">
         <LoadingSpinner />
       </div>
     );
@@ -45,7 +45,7 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
   
   // Create our own custom layout that uses the appDisplay and appletCard components
   return (
-    <div className="h-full w-full overflow-auto p-4 md:p-8">
+    <div className="h-page w-full overflow-auto p-4 md:p-8">
       {/* App Header - Using provided app display component */}
       {appDisplayComponent}
       
