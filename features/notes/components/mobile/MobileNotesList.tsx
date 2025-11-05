@@ -60,7 +60,17 @@ export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) 
 
   // Filter notes based on search and folder
   const filteredNotes = useMemo(() => {
-    let result = notes;
+    // Deduplicate notes first
+    const seenIds = new Set<string>();
+    const uniqueNotes = notes.filter(note => {
+      if (seenIds.has(note.id)) {
+        return false;
+      }
+      seenIds.add(note.id);
+      return true;
+    });
+
+    let result = uniqueNotes;
 
     // Filter by folder
     if (selectedFolder !== 'All Notes') {
@@ -121,7 +131,7 @@ export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) 
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border bg-card">
         {/* Title Bar */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+        <div className="flex items-center justify-between px-4 pt-2 pb-1">
           <h1 className="text-2xl font-bold text-foreground">Notes</h1>
           <div className="flex items-center gap-2">
             <Button
@@ -137,7 +147,7 @@ export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) 
         </div>
 
         {/* Folder Selector */}
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-1">
           <button
             onClick={() => setShowFolderSelector(true)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
@@ -151,7 +161,7 @@ export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) 
         </div>
 
         {/* Search Bar */}
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-1">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
@@ -177,7 +187,7 @@ export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) 
       </div>
 
       {/* Notes List */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch">
         {isLoading ? (
           <div className="flex items-center justify-center h-full p-8">
             <div className="text-center">
@@ -198,7 +208,7 @@ export default function MobileNotesList({ onNoteSelect }: MobileNotesListProps) 
               <button
                 key={note.id}
                 onClick={() => onNoteSelect(note)}
-                className="w-full flex items-start gap-3 p-4 text-left active:bg-muted/50 transition-colors"
+                className="w-full flex items-start gap-3 px-4 py-3 text-left active:bg-muted/50 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-medium text-foreground mb-1 truncate">

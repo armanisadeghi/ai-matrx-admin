@@ -20,6 +20,9 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
 @layer base {
     :root {
+        /* Layout Header Heights - Mobile: 3rem (h-12), Desktop: 2.5rem (h-10) */
+        --header-height: 3rem;
+        
         /* Base Background - Zinc-100 with texture (rgb 244 244 245) */
         --background: 240 5% 96%;
         --background-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
@@ -131,6 +134,13 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --typography-p-lineHeight: 1.6;
         --typography-p-margin: 1rem;
         --typography-letter-spacing: 0.01em;
+    }
+
+    /* Desktop header height override - lg breakpoint (1024px) matches layout breakpoint */
+    @media (min-width: 1024px) {
+        :root {
+            --header-height: 2.5rem;
+        }
     }
 
     .dark {

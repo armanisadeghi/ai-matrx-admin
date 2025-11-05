@@ -21,6 +21,7 @@ import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-genera
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
 import { v4 as uuidv4 } from "uuid";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -48,26 +49,18 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     // Get runId from URL query parameter
     const urlRunId = searchParams.get('runId');
     
-    // Mobile detection
-    const [isMobile, setIsMobile] = useState(false);
+    // Mobile detection using consistent hook
+    const isMobile = useIsMobile();
     const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
     const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(false);
     
+    // Auto-close mobile views when resizing to desktop
     useEffect(() => {
-        const checkMobile = () => {
-            const mobile = window.innerWidth < 768;
-            setIsMobile(mobile);
-            // Auto-close canvas/sidebar mobile views when resizing to desktop
-            if (!mobile) {
-                if (showCanvasOnMobile) setShowCanvasOnMobile(false);
-                if (showSidebarOnMobile) setShowSidebarOnMobile(false);
-            }
-        };
-        
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, [showCanvasOnMobile, showSidebarOnMobile]);
+        if (!isMobile) {
+            if (showCanvasOnMobile) setShowCanvasOnMobile(false);
+            if (showSidebarOnMobile) setShowSidebarOnMobile(false);
+        }
+    }, [isMobile, showCanvasOnMobile, showSidebarOnMobile]);
     
     // Handle canvas toggle for mobile
     const handleCanvasToggle = () => {
@@ -659,12 +652,12 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
 
             {/* Mobile Canvas Full Screen View */}
             {isMobile && showCanvasOnMobile && isCanvasOpen ? (
-                <div className="h-[calc(100vh-3rem)] bg-textured overflow-hidden">
+                <div className="h-page bg-textured overflow-hidden">
                     <CanvasRenderer content={canvasContent} />
                 </div>
             ) : isMobile && showSidebarOnMobile ? (
                 /* Mobile Sidebar Full Screen View */
-                <div className="h-[calc(100vh-3rem)] bg-card">
+                <div className="h-page bg-card overflow-hidden">
                     <PromptRunsSidebar
                         promptId={promptData.id}
                         promptName={promptData.name}
@@ -679,7 +672,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
             ) : (
                 /* Main Layout with AdaptiveLayout */
                 <AdaptiveLayout
-                    className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
+                    className="h-page bg-textured"
                     disableAutoCanvas={isMobile} // Disable auto canvas on mobile
                     leftPanelMaxWidth={280} // Compact sidebar for runs list
                     leftPanel={
@@ -704,14 +697,17 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         ) : undefined
                     }
                     rightPanel={
-                        <div className="h-full flex flex-col relative">
+                        <div className="h-full flex flex-col relative overflow-hidden">
                         {/* Messages Area - Scrollable */}
                         <div 
                             ref={messagesContainerRef}
-                            className="flex-1 overflow-y-auto pb-64 scrollbar-hide" 
+                            className={`flex-1 overflow-y-auto scrollbar-hide overscroll-contain ${
+                                isMobile ? 'pb-72' : 'pb-64'
+                            }`}
                             style={{ 
                                 scrollbarWidth: 'none',
                                 msOverflowStyle: 'none',
+                                WebkitOverflowScrolling: 'touch',
                             }}
                         >
                             {isLoadingRun ? (
@@ -730,7 +726,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="space-y-6 px-6 pt-6">
+                                <div className={`space-y-6 pt-6 ${isMobile ? 'px-3' : 'px-6'}`}>
                                     {displayMessages.map((msg, idx) => {
                                         const isLastMessage = idx === displayMessages.length - 1;
                                         const isStreaming = isLastMessage && msg.role === "assistant" && isTestingPrompt;
@@ -761,8 +757,14 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         </div>
                         
                         {/* Input Area - Fixed at Bottom, within the content wrapper */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-textured pt-6 pb-4 px-6 pointer-events-none">
-                            <div className="pointer-events-auto max-w-[800px] mx-auto rounded-xl">
+                        <div className={`absolute bottom-0 left-0 right-0 bg-textured pointer-events-none ${
+                            isMobile 
+                                ? 'pt-4 pb-[env(safe-area-inset-bottom,1rem)] px-3' 
+                                : 'pt-6 pb-4 px-6'
+                        }`}>
+                            <div className={`pointer-events-auto rounded-xl ${
+                                isMobile ? 'w-full' : 'max-w-[800px] mx-auto'
+                            }`}>
                                 <PromptRunnerInput
                                     variableDefaults={variableDefaults}
                                     onVariableValueChange={handleVariableValueChange}

@@ -150,7 +150,7 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
     <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border bg-card">
-        <div className="flex items-center justify-between p-3">
+        <div className="flex items-center justify-between px-3 py-2">
           <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-9 w-9">
             <ChevronLeft size={22} />
           </Button>
@@ -230,8 +230,8 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
-        <div className="p-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch">
+        <div className="p-3">
           <Textarea
             ref={contentRef}
             value={localContent}
@@ -249,7 +249,7 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
 
       {/* Toolbar */}
       <div className="flex-shrink-0 border-t border-border bg-card">
-        <div className="flex items-center justify-between p-3">
+        <div className="flex items-center justify-between px-3 py-2">
           <button
             onClick={() => setShowToolbar(true)}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -270,7 +270,7 @@ export default function MobileNoteEditor({ note, onBack }: MobileNoteEditorProps
 
       {/* Save Button (Sticky at bottom if dirty) */}
       {isDirty && (
-        <div className="flex-shrink-0 border-t border-border bg-card p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="flex-shrink-0 border-t border-border bg-card px-3 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
           <Button onClick={handleSave} disabled={isSaving} className="w-full" size="lg">
             {isSaving ? (
               <>

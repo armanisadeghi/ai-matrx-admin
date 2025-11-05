@@ -97,7 +97,7 @@ export default async function RunPromptPage({
 
     return (
         <Suspense fallback={
-            <div className="h-[calc(100vh-3rem)] flex items-center justify-center bg-textured">
+            <div className="h-page flex items-center justify-center bg-textured">
                 <div className="flex flex-col items-center gap-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                     <p className="text-sm text-muted-foreground">Loading prompt runner...</p>

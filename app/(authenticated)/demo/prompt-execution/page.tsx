@@ -23,7 +23,7 @@ export default function PromptExecutionDemoPage() {
   };
   
   return (
-    <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden bg-textured">
+    <div className="h-page flex flex-col overflow-hidden bg-textured">
       <div className="flex-none border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between gap-4">

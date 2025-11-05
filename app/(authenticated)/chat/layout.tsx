@@ -20,7 +20,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     return (
         <>
             {SidebarContent}
-            <div className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden bg-textured">
+            <div className="h-page flex flex-col overflow-hidden bg-textured">
                 {/* Render chat controls in main header */}
                 <ChatHeader baseRoute="/chat" />
                 

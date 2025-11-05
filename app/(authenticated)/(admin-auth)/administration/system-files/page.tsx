@@ -436,7 +436,7 @@ export default function SystemFilesPage() {
   }, [rootNodes, childrenMap, expandedNodes, selectedNodeIds, nodeHandlers]);
 
   return (
-    <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">
+    <div className="h-page flex flex-col overflow-hidden">
       <div className="flex-1 flex gap-4 p-4 min-h-0">
         {/* File Tree */}
         <Card className="w-96 flex flex-col overflow-hidden">

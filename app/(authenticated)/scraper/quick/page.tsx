@@ -49,7 +49,7 @@ export default function QuickScrapePage() {
     };
 
     return (
-        <div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden bg-textured">
+        <div className="h-page flex flex-col overflow-hidden bg-textured">
             {/* Header */}
             <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
                 <div className="max-w-5xl mx-auto">

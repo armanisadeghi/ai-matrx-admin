@@ -13,7 +13,7 @@ export default function Layout(
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
     return (
-        <div className="flex flex-col h-[calc(100vh-2.5rem)]">
+        <div className="flex flex-col h-page">
             <ModuleHeader
                 pages={filteredPages}
                 currentPath={currentPath}

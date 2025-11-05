@@ -121,6 +121,17 @@ export function createUtilities({ addUtilities, theme }: any) {
         ".mt-safe": {
             marginTop: "env(safe-area-inset-top, 1rem)",
         },
+        // Page height utilities - automatically accounts for header height
+        // Mobile: 3rem (h-12), Desktop (lg+): 2.5rem (h-10)
+        ".h-page": {
+            height: "calc(100vh - var(--header-height))",
+        },
+        ".min-h-page": {
+            minHeight: "calc(100vh - var(--header-height))",
+        },
+        ".max-h-page": {
+            maxHeight: "calc(100vh - var(--header-height))",
+        },
     };
     addUtilities(utilities, ["responsive", "hover", "focus", "dark"]);
 }

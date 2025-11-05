@@ -100,7 +100,7 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
     }
 
     return (
-        <div className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] flex flex-col bg-textured overflow-hidden">
+        <div className="h-page flex flex-col bg-textured overflow-hidden">
             {/* Render applet controls in main header */}
             <AppletHeader 
                 appId={appId} 
