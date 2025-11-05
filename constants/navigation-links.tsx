@@ -22,6 +22,7 @@ import {
     BookOpen,
     ListTodo,
     ClipboardType,
+    LayoutDashboard,
 } from "lucide-react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
@@ -54,6 +55,15 @@ export interface NavigationLink {
 // All navigation links in the application
 export const allNavigationLinks: NavigationLink[] = [
     // Primary Navigation Links
+    {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        favicon: { color: "#0ea5e9", letter: "D" }, // Sky blue
+    },
     {
         label: "AI Cockpit",
         href: "/ai/cockpit",

@@ -42,6 +42,7 @@ export function PromptCard({
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
+    const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const supabase = createClient();
 
     useEffect(() => {
@@ -148,7 +149,9 @@ export function PromptCard({
 
     const handleCardClick = (e: React.MouseEvent) => {
         // Only open modal if clicking the card itself, not if a modal is already open
-        if (!isDisabled && !isShareModalOpen && !isActionModalOpen) {
+        // Also prevent reopening if modal was just closed (within 300ms) to avoid click-through from overlay
+        const timeSinceClose = Date.now() - lastModalCloseTime;
+        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && timeSinceClose > 300) {
             setIsActionModalOpen(true);
         }
     };
@@ -275,7 +278,10 @@ export function PromptCard({
 
             <PromptActionModal
                 isOpen={isActionModalOpen}
-                onClose={() => setIsActionModalOpen(false)}
+                onClose={() => {
+                    setIsActionModalOpen(false);
+                    setLastModalCloseTime(Date.now());
+                }}
                 promptName={name}
                 promptDescription={description}
                 onRun={handleRun}

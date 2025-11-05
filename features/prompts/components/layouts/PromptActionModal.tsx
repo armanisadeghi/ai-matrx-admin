@@ -66,7 +66,7 @@ export function PromptActionModal({
                         {promptName || "Untitled Prompt"}
                     </DialogTitle>
                     {promptDescription && (
-                        <DialogDescription className="text-center text-muted-foreground pt-2 text-sm">
+                        <DialogDescription className="text-center text-muted-foreground pt-2 text-sm line-clamp-2">
                             {promptDescription}
                         </DialogDescription>
                     )}
@@ -91,9 +91,6 @@ export function PromptActionModal({
                             <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
                                 Run Prompt
                             </h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                                Execute this prompt with AI models
-                            </p>
                         </div>
                     </button>
 
@@ -101,10 +98,10 @@ export function PromptActionModal({
                     <button
                         onClick={(e) => handleAction(e, 'edit', onEdit)}
                         disabled={isAnyActionActive}
-                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-secondary/30 transition-all duration-300 ${
+                        className={`w-full group relative overflow-hidden rounded-lg border-2 border-primary/30 transition-all duration-300 ${
                             isAnyActionActive 
                                 ? 'opacity-50 cursor-not-allowed' 
-                                : 'hover:border-secondary/50 hover:shadow-xl hover:scale-[1.02]'
+                                : 'hover:border-secondary/70 hover:shadow-xl hover:scale-[1.02]'
                         }`}
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 to-accent/10 group-hover:from-secondary/20 group-hover:to-accent/20 transition-all duration-300" />
@@ -115,9 +112,6 @@ export function PromptActionModal({
                             <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
                                 Edit Prompt
                             </h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                                Modify messages, settings, and variables
-                            </p>
                         </div>
                     </button>
                 </div>
@@ -125,9 +119,6 @@ export function PromptActionModal({
                 {/* Additional Actions */}
                 {(showView || showDuplicate || showShare || showDelete) && (
                     <div className="border-t border-border pt-2 sm:pt-3">
-                        <p className="text-xs text-muted-foreground mb-2 text-center font-medium uppercase tracking-wider">
-                            Additional Actions
-                        </p>
                         <div className="grid grid-cols-2 gap-2">
                             {showView && onView && (
                                 <Button
@@ -189,20 +180,6 @@ export function PromptActionModal({
                         </div>
                     </div>
                 )}
-
-                <Button
-                    variant="ghost"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        onClose();
-                    }}
-                    disabled={isAnyActionActive}
-                    className="w-full mt-2 py-2"
-                >
-                    <X className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Cancel</span>
-                </Button>
             </DialogContent>
         </Dialog>
     );

@@ -3,15 +3,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-    Select, 
-    SelectContent, 
-    SelectItem, 
-    SelectTrigger, 
-    SelectValue 
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, X, SlidersHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface Prompt {
     id: string;
@@ -31,10 +24,10 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
 
     // Filter and sort prompts
     const filteredPrompts = useMemo(() => {
-        let filtered = prompts.filter(prompt => {
+        let filtered = prompts.filter((prompt) => {
             // Search filter
             const searchLower = searchTerm.toLowerCase();
-            const matchesSearch = 
+            const matchesSearch =
                 searchTerm === "" ||
                 prompt.name.toLowerCase().includes(searchLower) ||
                 (prompt.description && prompt.description.toLowerCase().includes(searchLower));
@@ -98,7 +91,7 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
                     onClick={() => setShowFilters(!showFilters)}
                     className="h-9 px-3"
                 >
-                    <SlidersHorizontal className="h-4 w-4 sm:mr-2" />
+                    <SlidersHorizontal className="h-4 w-4" />
                     <span className="hidden sm:inline">Filters</span>
                 </Button>
             </div>
@@ -108,9 +101,7 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
                 <div className="p-3 sm:p-4 border rounded-lg bg-muted/30 space-y-3">
                     {/* Sort */}
                     <div>
-                        <label className="text-xs font-medium text-muted-foreground uppercase mb-1.5 block">
-                            Sort By
-                        </label>
+                        <label className="text-xs font-medium text-muted-foreground uppercase mb-1.5 block">Sort By</label>
                         <Select value={sortBy} onValueChange={setSortBy}>
                             <SelectTrigger className="h-9 text-sm">
                                 <SelectValue />
@@ -125,12 +116,7 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
 
                     {/* Clear filters */}
                     {hasActiveFilters && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={clearFilters}
-                            className="w-full text-xs h-8"
-                        >
+                        <Button variant="ghost" size="sm" onClick={clearFilters} className="w-full text-xs h-8">
                             <X className="h-3 w-3 mr-1" />
                             Clear All Filters
                         </Button>
@@ -139,17 +125,14 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
             )}
 
             {/* Results count */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>
-                    Showing {filteredPrompts.length} of {prompts.length} prompts
-                </span>
-                {hasActiveFilters && (
-                    <span className="text-primary">
-                        Filters active
+            {hasActiveFilters && (
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                        Showing {filteredPrompts.length} of {prompts.length} prompts
                     </span>
-                )}
-            </div>
+                    <span className="text-primary">Filters active</span>
+                </div>
+            )}
         </div>
     );
 }
-

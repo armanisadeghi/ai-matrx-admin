@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,31 +8,47 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Bell, Zap, Sun, Moon, MessageSquare, Crown } from 'lucide-react';
+import { StickyNote, CheckSquare, Database, LayoutGrid, Bell, MessageSquare, Crown, LogOut, Sun, Moon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ThemeSwitcherIcon } from '@/styles/themes/ThemeSwitcher';
-import { NotificationDropdown } from '@/components/ui/notifications';
-import { QuickActionsMenu } from '@/features/quick-actions';
+import { useTheme } from 'next-themes';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { RootState } from '@/lib/redux/store';
 import { brokerSelectors } from '@/lib/redux/brokerSlice';
-import { navigationLinks } from '@/constants/navigation-links';
+import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
+import { QuickNotesSheet } from '@/features/notes';
+import { QuickTasksSheet } from '@/features/tasks';
+import { QuickChatSheet } from '@/features/quick-actions/components/QuickChatSheet';
+import { QuickDataSheet } from '@/features/quick-actions/components/QuickDataSheet';
+import { UtilitiesOverlay } from '@/features/quick-actions/components/UtilitiesOverlay';
+import { Notification } from '@/types/notification.types';
 
 export function MobileUnifiedMenu() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const user = useAppSelector((state: RootState) => state.user);
   const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split('@')[0] || 'User';
   const profilePhoto = user.userMetadata.picture || null;
   
   const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, 'APPLET_USER_IS_ADMIN'));
-  const isAdmin = useAppSelector((state) => brokerSelectors.selectValue(state, 'GLOBAL_USER_IS_ADMIN'));
   
-  // Filter to profile menu links
-  const menuLinks = navigationLinks.filter((link) => link.profileMenu);
+  // Quick action sheet states
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isTasksOpen, setIsTasksOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDataOpen, setIsDataOpen] = useState(false);
+  const [isUtilitiesOpen, setIsUtilitiesOpen] = useState(false);
+  
+  // Notifications state (placeholder)
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  
+  const handleThemeToggle = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
@@ -51,80 +67,179 @@ export function MobileUnifiedMenu() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" align="end">
-        {/* User info section */}
-        <div className="px-3 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md">
-          <div className="flex items-center gap-3">
-            {profilePhoto ? (
-              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                <Image src={profilePhoto} width={40} height={40} alt={displayName} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="w-10 h-10 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
-              </div>
-            )}
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{displayName}</span>
-              <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.email}</span>
-              {userIsCreator && (
-                <span className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center mt-1">
-                  <Crown size={12} className="mr-1" /> Creator
-                </span>
+        {/* User info section - Clickable to profile */}
+        <Link href="/dashboard/profile" className="block">
+          <div className="px-3 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+            <div className="flex items-center gap-3">
+              {profilePhoto ? (
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <Image src={profilePhoto} width={40} height={40} alt={displayName} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-10 h-10 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
+                </div>
               )}
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{displayName}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.email}</span>
+                {userIsCreator && (
+                  <span className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center mt-1">
+                    <Crown size={12} className="mr-1" /> Creator
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </Link>
         <DropdownMenuSeparator />
         
-        {/* Quick Actions - Mobile specific */}
-        <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30">
-          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-2">Quick Actions</div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => router.push('/feedback')}
-              className="flex items-center gap-2 px-2 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            >
-              <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-gray-700 dark:text-gray-300">Feedback</span>
-            </button>
-            <ThemeSwitcherIcon className="flex items-center gap-2 px-2 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition justify-start" />
-          </div>
-        </div>
+        {/* Quick Actions */}
+        <DropdownMenuItem onClick={() => setIsNotesOpen(true)}>
+          <StickyNote className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">Quick Note</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={() => setIsTasksOpen(true)}>
+          <CheckSquare className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">Quick Task</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={() => setIsChatOpen(true)}>
+          <MessageSquare className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">Quick Chat</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={() => setIsDataOpen(true)}>
+          <Database className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">Quick Data</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={() => setIsUtilitiesOpen(true)}>
+          <LayoutGrid className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">Utilities Hub</span>
+        </DropdownMenuItem>
+        
         <DropdownMenuSeparator />
         
-        {/* Navigation links */}
-        {menuLinks.map((link) => (
-          <DropdownMenuItem key={link.href} asChild>
-            <Link
-              href={link.href}
-              className="flex items-center gap-3 w-full px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <div className="w-5 h-5 flex items-center justify-center text-gray-600 dark:text-gray-400">{link.icon}</div>
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{link.label}</span>
-            </Link>
-          </DropdownMenuItem>
-        ))}
+        {/* System Actions */}
+        <DropdownMenuItem onClick={() => router.push('/feedback')}>
+          <MessageSquare className="h-4 w-4 mr-3 text-blue-600 dark:text-blue-400" />
+          <span className="text-sm">Feedback</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem>
+          <Bell className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-sm">Notifications</span>
+          {notifications.filter(n => !n.isRead).length > 0 && (
+            <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1.25rem] text-center">
+              {notifications.filter(n => !n.isRead).length}
+            </span>
+          )}
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={handleThemeToggle}>
+          {theme === 'dark' ? (
+            <Sun className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          ) : (
+            <Moon className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
+          )}
+          <span className="text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator />
+        
+        {/* User Settings */}
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/preferences" className="flex items-center gap-3 w-full cursor-pointer">
+            <svg className="h-4 w-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-sm">Preferences</span>
+          </Link>
+        </DropdownMenuItem>
         
         {/* Sign out section */}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link
             href="/sign-out"
-            className="flex items-center gap-3 w-full px-3 py-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+            className="flex items-center gap-3 w-full cursor-pointer text-red-600 dark:text-red-400"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
+            <LogOut className="h-4 w-4" />
             <span className="text-sm font-medium">Sign out</span>
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    
+    {/* Quick Action Sheets */}
+    <FloatingSheet
+      isOpen={isNotesOpen}
+      onClose={() => setIsNotesOpen(false)}
+      title="Quick Notes"
+      description="Quickly capture or retrieve notes without losing focus"
+      position="right"
+      width="xl"
+      height="full"
+      closeOnBackdropClick={true}
+      closeOnEsc={true}
+      showCloseButton={true}
+    >
+      <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
+    </FloatingSheet>
+
+    <FloatingSheet
+      isOpen={isTasksOpen}
+      onClose={() => setIsTasksOpen(false)}
+      title="Quick Tasks"
+      description="Manage tasks and projects without losing context"
+      position="right"
+      width="xl"
+      height="full"
+      closeOnBackdropClick={true}
+      closeOnEsc={true}
+      showCloseButton={true}
+    >
+      <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
+    </FloatingSheet>
+
+    <FloatingSheet
+      isOpen={isChatOpen}
+      onClose={() => setIsChatOpen(false)}
+      title=""
+      position="right"
+      width="xl"
+      height="full"
+      closeOnBackdropClick={true}
+      closeOnEsc={true}
+      showCloseButton={false}
+      contentClassName="p-0"
+    >
+      <QuickChatSheet onClose={() => setIsChatOpen(false)} />
+    </FloatingSheet>
+
+    <FloatingSheet
+      isOpen={isDataOpen}
+      onClose={() => setIsDataOpen(false)}
+      title="Data Tables"
+      description="View and manage your data tables"
+      position="right"
+      width="xl"
+      height="full"
+      closeOnBackdropClick={true}
+      closeOnEsc={true}
+      showCloseButton={true}
+    >
+      <QuickDataSheet onClose={() => setIsDataOpen(false)} />
+    </FloatingSheet>
+
+    <UtilitiesOverlay
+      isOpen={isUtilitiesOpen}
+      onClose={() => setIsUtilitiesOpen(false)}
+    />
+  </>
   );
 }
 

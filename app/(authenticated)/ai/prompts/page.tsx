@@ -33,7 +33,7 @@ export default async function PromptsPage() {
 
     return (
         <>
-            <PromptsPageHeader templateCount={templateCount} />
+            <PromptsPageHeader />
             
             <div className="h-page w-full overflow-auto">
                 <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px]">

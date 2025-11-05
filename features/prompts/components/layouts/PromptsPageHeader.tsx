@@ -18,11 +18,7 @@ import { FaIndent } from "react-icons/fa6";
 import { PromptImporter } from "@/features/prompts";
 import { PromptGenerator } from "../actions/PromptGenerator";
 
-interface PromptsPageHeaderProps {
-    templateCount: number | null;
-}
-
-export function PromptsPageHeader({ templateCount }: PromptsPageHeaderProps) {
+export function PromptsPageHeader() {
     const isMobile = useIsMobile();
     const router = useRouter();
     const [isImportOpen, setIsImportOpen] = useState(false);
@@ -61,11 +57,6 @@ export function PromptsPageHeader({ templateCount }: PromptsPageHeaderProps) {
                                     <Link href="/ai/prompts/templates" className="flex items-center cursor-pointer">
                                         <LayoutPanelTop className="h-4 w-4 mr-2" />
                                         <span>Templates</span>
-                                        {templateCount !== null && templateCount > 0 && (
-                                            <span className="ml-auto px-1.5 py-0.5 bg-secondary/20 rounded-full text-xs">
-                                                {templateCount}
-                                            </span>
-                                        )}
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -99,59 +90,43 @@ export function PromptsPageHeader({ templateCount }: PromptsPageHeaderProps) {
         );
     }
 
-    // Desktop - Show all actions in a row
+    // Desktop - Show all actions centered
     return (
         <PageSpecificHeader>
-            <div className="flex items-center justify-between w-full gap-4">
-                {/* Left - Title */}
-                <div className="flex items-center gap-2.5">
-                    <FaIndent className="h-6 w-6 text-primary" />
-                    <h1 className="text-lg font-bold text-foreground">
-                        Custom AI Prompts
-                    </h1>
-                </div>
-
-                {/* Right - Actions */}
-                <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-full gap-2">
+                <Button
+                    onClick={() => setIsImportOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 border-blue-300 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                >
+                    <Upload className="h-3.5 w-3.5" />
+                    Import
+                </Button>
+                <Button
+                    onClick={() => setIsGenerateOpen(true)}
+                    size="sm"
+                    className="h-8 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                >
+                    <Wand2 className="h-3.5 w-3.5" />
+                    Generate
+                </Button>
+                <Link href="/ai/prompts/templates">
                     <Button
-                        onClick={() => setIsImportOpen(true)}
                         variant="outline"
                         size="sm"
-                        className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                        className="h-8 border-secondary hover:bg-secondary/10 text-secondary-foreground"
                     >
-                        <Upload className="h-4 w-4 mr-1.5" />
-                        Import
+                        <LayoutPanelTop className="h-3.5 w-3.5" />
+                        Templates
                     </Button>
-                    <Button
-                        onClick={() => setIsGenerateOpen(true)}
-                        size="sm"
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                    >
-                        <Wand2 className="h-4 w-4 mr-1.5" />
-                        Generate
+                </Link>
+                <Link href="/ai/prompts/new">
+                    <Button size="sm" className="h-8">
+                        <Plus className="h-3.5 w-3.5" />
+                        New
                     </Button>
-                    <Link href="/ai/prompts/templates">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-secondary hover:bg-secondary/10 text-secondary-foreground"
-                        >
-                            <LayoutPanelTop className="h-4 w-4 mr-1.5" />
-                            <span>Templates</span>
-                            {templateCount !== null && templateCount > 0 && (
-                                <span className="ml-1.5 px-1.5 py-0.5 bg-secondary/20 rounded-full text-xs">
-                                    {templateCount}
-                                </span>
-                            )}
-                        </Button>
-                    </Link>
-                    <Link href="/ai/prompts/new">
-                        <Button size="sm">
-                            <Plus className="h-4 w-4 mr-1.5" />
-                            New
-                        </Button>
-                    </Link>
-                </div>
+                </Link>
             </div>
 
             {/* Modals */}
