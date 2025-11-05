@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { PromptInput } from '@/features/prompts/components/PromptInput';
+import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 
 export default function PromptInputTestPage() {
   const [chatInput, setChatInput] = useState('');
@@ -29,15 +30,19 @@ export default function PromptInputTestPage() {
   };
 
   return (
-    <div className="h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600">
-      {/* Header */}
-      <div className="flex-shrink-0 h-14 bg-purple-700 flex items-center justify-between px-4 shadow-lg">
-        <Link href="/layout-tests" className="text-white flex items-center gap-2">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div className="text-white font-bold">Real PromptInput Test</div>
-        <div className="w-9" />
-      </div>
+    <>
+      <PageSpecificHeader>
+        <div className="flex items-center gap-2">
+          <Link href="/layout-tests" className="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-xs hover:text-gray-900 dark:hover:text-gray-100">
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Link>
+          <span className="text-gray-400 dark:text-gray-600">|</span>
+          <span className="text-xs text-gray-700 dark:text-gray-300 font-semibold">PromptInput Test</span>
+        </div>
+      </PageSpecificHeader>
+      
+      <div className="h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600">
 
       {/* Scrollable Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -108,7 +113,8 @@ export default function PromptInputTestPage() {
           />
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

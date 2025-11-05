@@ -21,13 +21,12 @@ alwaysApply: false
 
 ### Header Height Variables
 ```css
---header-height: 3rem      /* Mobile */
---header-height: 2.5rem    /* Desktop (≥1024px) */
+--header-height: 2.5rem    /* Unified for both mobile and desktop */
 ```
 
 ## Layout Component Heights
 
-- **MobileLayout.tsx**: `h-12` (3rem)
+- **MobileLayout.tsx**: `h-10` (2.5rem)
 - **DesktopLayout.tsx**: `h-10` (2.5rem)
 - **app/layout.tsx**: `h-dvh` on body
 
@@ -58,13 +57,22 @@ alwaysApply: false
 
 ### Content Below Header
 ```tsx
-<div className="h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-2.5rem)]">
-  {/* Or use --header-height */}
+<div className="h-[calc(100dvh-2.5rem)]">
+  {/* Full height minus header */}
 </div>
 
 <div className="h-[calc(100dvh-var(--header-height))]">
-  {/* Responsive to breakpoint */}
+  {/* Using CSS variable (recommended) */}
 </div>
+```
+
+### Header Content Injection
+```tsx
+import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
+
+<PageSpecificHeader>
+  {/* Portaled into #page-specific-header-content */}
+</PageSpecificHeader>
 ```
 
 ## Mandatory Rules
@@ -73,3 +81,6 @@ alwaysApply: false
 2. **All fixed bottom elements require `pb-safe`** → No exceptions
 3. **Never hardcode header heights** → Use Tailwind classes or `--header-height`
 4. **Full-height containers must use `dvh`** → Not `vh`
+5. **Input/textarea font-size must be ≥16px** → Prevents iOS auto-zoom (inline `style={{ fontSize: '16px' }}` or `text-base`)
+6. **Viewport config**: `maximumScale: 1`, `userScalable: false` → In `app/config/viewport.ts`
+7. **Never create custom headers** → Use `PageSpecificHeader` component for header injection

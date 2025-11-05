@@ -290,7 +290,8 @@ export function PromptInput({
                                                         : (variable.defaultValue || "")}
                                                     onChange={(e) => onVariableValueChange(variable.name, e.target.value)}
                                                     placeholder="Enter value..."
-                                                    className="flex-1 text-sm bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
+                                                    className="flex-1 text-base bg-transparent border-none outline-none focus:outline-none text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 min-w-0"
+                                                    style={{ fontSize: '16px' }}
                                                     tabIndex={index + 1}
                                                 />
                                                 <button
@@ -331,8 +332,8 @@ export function PromptInput({
                     onChange={(e) => onChatInputChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={placeholderText}
-                    className="w-full bg-transparent border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                    style={{ minHeight: '40px', maxHeight: '200px' }}
+                    className="w-full bg-transparent border-none outline-none text-base text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    style={{ minHeight: '40px', maxHeight: '200px', fontSize: '16px' }}
                     tabIndex={variableDefaults.length + 1}
                     rows={1}
                     autoFocus={!showVariables || variableDefaults.length === 0 || allVariablesHaveValues}

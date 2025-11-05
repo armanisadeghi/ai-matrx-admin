@@ -20,8 +20,8 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
 @layer base {
     :root {
-        /* Layout Header Heights - Mobile: 3rem (h-12), Desktop: 2.5rem (h-10) */
-        --header-height: 3rem;
+        /* Layout Header Heights - Unified: 2.5rem (h-10) for both mobile and desktop */
+        --header-height: 2.5rem;
         
         /* Base Background - Zinc-100 with texture (rgb 244 244 245) */
         --background: 240 5% 96%;
@@ -134,13 +134,6 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --typography-p-lineHeight: 1.6;
         --typography-p-margin: 1rem;
         --typography-letter-spacing: 0.01em;
-    }
-
-    /* Desktop header height override - lg breakpoint (1024px) matches layout breakpoint */
-    @media (min-width: 1024px) {
-        :root {
-            --header-height: 2.5rem;
-        }
     }
 
     .dark {

@@ -2,18 +2,23 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 
 export default function NoScrollPage() {
   return (
-    <div className="h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden">
-      {/* Header - Red */}
-      <div className="flex-shrink-0 h-16 bg-red-500 flex items-center justify-between px-4">
-        <Link href="/layout-tests" className="text-white flex items-center gap-2">
-          <ArrowLeft className="w-5 h-5" />
+    <>
+      <PageSpecificHeader>
+        <Link href="/layout-tests" className="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-xs hover:text-gray-900 dark:hover:text-gray-100">
+          <ArrowLeft className="w-4 h-4" />
           Back
         </Link>
-        <div className="text-white font-bold">HEADER</div>
-      </div>
+      </PageSpecificHeader>
+      
+      <div className="h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden">
+        {/* Red section at top */}
+        <div className="flex-shrink-0 h-16 bg-red-500 flex items-center justify-center">
+          <div className="text-white font-bold">TOP (Red)</div>
+        </div>
 
       {/* Content - Green - Should fill remaining space exactly */}
       <div className="flex-1 bg-green-500 flex items-center justify-center">
@@ -29,11 +34,12 @@ export default function NoScrollPage() {
         </div>
       </div>
 
-      {/* Footer - Blue */}
-      <div className="flex-shrink-0 h-16 bg-blue-500 flex items-center justify-center pb-safe">
-        <div className="text-white font-bold">FOOTER (with pb-safe)</div>
+        {/* Footer - Blue */}
+        <div className="flex-shrink-0 h-16 bg-blue-500 flex items-center justify-center pb-safe">
+          <div className="text-white font-bold">BOTTOM (Blue with pb-safe)</div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 
 export default function LayoutTestsPage() {
   return (
-    <div className="h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-2.5rem)] flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
+    <div className="h-[calc(100dvh-2.5rem)] flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle>Mobile Layout Tests</CardTitle>

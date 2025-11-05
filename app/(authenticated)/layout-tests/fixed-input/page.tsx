@@ -5,20 +5,25 @@ import Link from 'next/link';
 import { ArrowLeft, Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 
 export default function FixedInputPage() {
   const [message, setMessage] = useState('');
 
   return (
-    <div className="h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-      {/* Header */}
-      <div className="flex-shrink-0 h-14 bg-blue-600 flex items-center justify-between px-4 shadow-lg">
-        <Link href="/layout-tests" className="text-white flex items-center gap-2">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div className="text-white font-bold">Fixed Input Test</div>
-        <div className="w-9" />
-      </div>
+    <>
+      <PageSpecificHeader>
+        <div className="flex items-center gap-2">
+          <Link href="/layout-tests" className="text-gray-700 dark:text-gray-300 flex items-center gap-1 text-xs hover:text-gray-900 dark:hover:text-gray-100">
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Link>
+          <span className="text-gray-400 dark:text-gray-600">|</span>
+          <span className="text-xs text-gray-700 dark:text-gray-300 font-semibold">Fixed Input Test</span>
+        </div>
+      </PageSpecificHeader>
+      
+      <div className="h-[calc(100dvh-2.5rem)] flex flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900">
 
       {/* Scrollable Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -52,7 +57,8 @@ export default function FixedInputPage() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type here and watch - this should never get covered by browser UI..."
-              className="flex-1 min-h-[60px] resize-none"
+              className="flex-1 min-h-[60px] resize-none text-base"
+              style={{ fontSize: '16px' }}
             />
             <Button size="icon" className="self-end bg-blue-600 hover:bg-blue-700">
               <Send className="w-4 h-4" />
@@ -60,7 +66,8 @@ export default function FixedInputPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

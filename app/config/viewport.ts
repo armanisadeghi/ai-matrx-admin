@@ -4,8 +4,8 @@ import { Viewport } from "next"
 export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
+    maximumScale: 1, // Prevent zoom on mobile (iOS auto-zooms inputs < 16px)
+    userScalable: false, // Disable manual zoom to prevent layout issues
     // This tells browsers to resize the content when virtual keyboard appears
     // Supported by iOS Safari 15+, Chrome 108+, and modern in-app browsers like Tesla
     interactiveWidget: "resizes-content",

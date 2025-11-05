@@ -1,13 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Menu, X, Home, ChevronRight } from 'lucide-react';
-import { ThemeSwitcherIcon } from '@/styles/themes/ThemeSwitcher';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, ChevronRight } from 'lucide-react';
 import { NavigationMenu } from '@/components/ui/navigation-menu';
-import { NotificationDropdown } from '@/components/ui/notifications';
-import { Notification } from '@/types/notification.types';
-import { QuickActionsMenu } from '@/features/quick-actions';
-import FeedbackButton from '@/components/layout/FeedbackButton';
 
 interface SidebarLink {
   label: string;
@@ -32,7 +27,6 @@ export default function MobileLayout({
 }: MobileLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeLink, setActiveLink] = useState(primaryLinks[0]?.href || '');
-  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -41,52 +35,40 @@ export default function MobileLayout({
     setIsSidebarOpen(false);
   };
 
+  // Prevent body scroll when sidebar is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarOpen]);
+
   return (
     <div id={uniqueId} className="min-h-dvh bg-textured">
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-textured border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between h-full px-4">
-          {/* Left side - Menu, Logo and page-specific content */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+      <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-textured border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between h-full px-2">
+          {/* Left side - Menu and page-specific content */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <button
               onClick={toggleSidebar}
-              className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
+              aria-label="Open menu"
             >
               <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
-            <Home className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
             
             {/* Page-specific controls will be inserted here */}
             <div id="page-specific-header-content" className="flex-1 min-w-0" />
           </div>
 
-          {/* Right side - Actions */}
-          <div className="flex items-center gap-2">
-            <FeedbackButton className="hover:bg-gray-100 dark:hover:bg-gray-800" />
-            <NotificationDropdown
-              notifications={notifications}
-              isMobile={true}
-              onMarkAsRead={(id) => {
-                setNotifications(prev => 
-                  prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-                );
-              }}
-              onMarkAllAsRead={() => {
-                setNotifications(prev => 
-                  prev.map(n => ({ ...n, isRead: true }))
-                );
-              }}
-              onClearAll={() => {
-                setNotifications([]);
-              }}
-              onNotificationClick={(notification) => {
-                if (notification.link) {
-                  window.location.href = notification.link;
-                }
-              }}
-            />
-            <QuickActionsMenu className="hover:bg-gray-100 dark:hover:bg-gray-800" />
-            <ThemeSwitcherIcon className="hover:bg-gray-100 dark:hover:bg-gray-800" />
+          {/* Right side - Unified menu dropdown */}
+          <div className="flex-shrink-0">
             <NavigationMenu />
           </div>
         </div>
@@ -95,28 +77,29 @@ export default function MobileLayout({
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-[60] bg-black/50 lg:hidden"
           onClick={toggleSidebar}
         />
       )}
 
       {/* Mobile Sidebar */}
-      <aside className={`fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-textured z-50 transform transition-transform duration-300 lg:hidden ${
+      <aside className={`fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-textured z-[70] transform transition-transform duration-300 lg:hidden flex flex-col ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Menu</h2>
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Menu</h2>
           <button
             onClick={toggleSidebar}
-            className="p-2 -mr-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Close menu"
           >
             <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
           </button>
         </div>
 
-        {/* Sidebar Content */}
-        <nav className="p-4 overflow-y-auto">
+        {/* Sidebar Content - Scrollable */}
+        <nav className="flex-1 overflow-y-auto p-4">
           {/* Primary Links */}
           <div className="mb-6">
             <ul className="space-y-1">
@@ -175,7 +158,7 @@ export default function MobileLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="pt-12 min-h-dvh">
+      <main className="pt-10 min-h-dvh">
         {children}
       </main>
     </div>
