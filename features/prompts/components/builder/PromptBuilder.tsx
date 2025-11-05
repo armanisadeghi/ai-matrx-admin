@@ -23,6 +23,9 @@ import { PromptMessageRole, PromptSettings } from "../../types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
 import type { Resource } from "../resource-display";
 import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useVisualViewport } from "@/hooks/use-visual-viewport";
+import { Edit3, Play } from "lucide-react";
 
 
 interface PromptBuilderProps {
@@ -47,6 +50,11 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
     const { formatMessageWithResources } = useResourceMessageFormatter();
+    
+    // Mobile detection and tab state
+    const isMobile = useIsMobile();
+    const visualViewportHeight = useVisualViewport();
+    const [mobileActiveTab, setMobileActiveTab] = useState<'edit' | 'test'>('edit');
 
     
     if (!models || models.length === 0) {
@@ -829,10 +837,279 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         }
     };
 
+    // Render mobile version with tabs
+    if (isMobile) {
+        return (
+            <>
+            <div 
+                className="bg-textured flex flex-col overflow-hidden"
+                style={{ height: `${visualViewportHeight}px` }}
+            >
+                {/* Header */}
+                <PromptHeader
+                    promptName={promptName}
+                    onPromptNameChange={(value) => {
+                        setPromptName(value);
+                        setIsDirty(true);
+                    }}
+                    isDirty={isDirty}
+                    isSaving={isSaving}
+                    onSave={handleSave}
+                    onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
+                    onOpenSettings={() => setIsSettingsModalOpen(true)}
+                    developerMessage={developerMessage}
+                    onDeveloperMessageChange={(value) => {
+                        setDeveloperMessage(value);
+                        setIsDirty(true);
+                    }}
+                />
+
+                {/* Tab Content */}
+                <div className="flex-1 overflow-hidden">
+                    {/* Edit Tab */}
+                    <div className={`h-full ${mobileActiveTab === 'edit' ? 'block' : 'hidden'}`}>
+                        <PromptBuilderLeftPanel
+                            models={models}
+                            model={model}
+                            onModelChange={(value) => {
+                                // value is always the model ID (UUID)
+                                const newModel = models.find(m => m.id === value);
+                                console.log('Model changed to:', value, newModel?.common_name);
+                                setModel(value);
+                                // Update config with new model's defaults while preserving user selections
+                                if (newModel) {
+                                    const defaults = getModelDefaults(newModel);
+                                    setModelConfig((prev) => {
+                                        return {
+                                            ...defaults,
+                                            tools: prev.tools || [] // Always preserve existing tools selection
+                                        };
+                                    });
+                                }
+                                setIsDirty(true);
+                            }}
+                            modelConfig={modelConfig}
+                            onSettingsClick={() => setIsSettingsOpen(true)}
+                            variableDefaults={variableDefaults}
+                            onAddVariable={handleAddVariable}
+                            onUpdateVariable={handleUpdateVariable}
+                            onRemoveVariable={handleRemoveVariable}
+                            selectedTools={modelConfig.tools || []}
+                            availableTools={availableTools}
+                            isAddingTool={isAddingTool}
+                            onIsAddingToolChange={setIsAddingTool}
+                            onAddTool={handleAddTool}
+                            onRemoveTool={handleRemoveTool}
+                            modelSupportsTools={modelSupportsTools}
+                            developerMessage={developerMessage}
+                            onDeveloperMessageChange={(value) => {
+                                setDeveloperMessage(value);
+                                setIsDirty(true);
+                                // Auto-resize will be handled in the component
+                            }}
+                            onDeveloperMessageClear={() => setDeveloperMessage("")}
+                            systemMessageVariablePopoverOpen={systemMessageVariablePopoverOpen}
+                            onSystemMessageVariablePopoverOpenChange={setSystemMessageVariablePopoverOpen}
+                            onInsertVariableIntoSystemMessage={insertVariableIntoSystemMessage}
+                            isEditingSystemMessage={isEditingSystemMessage}
+                            onIsEditingSystemMessageChange={setIsEditingSystemMessage}
+                            messages={messages}
+                            editingMessageIndex={editingMessageIndex}
+                            onEditingMessageIndexChange={setEditingMessageIndex}
+                            variablePopoverOpen={variablePopoverOpen}
+                            onVariablePopoverOpenChange={setVariablePopoverOpen}
+                            onMessageRoleChange={(index, role) => {
+                                const updated = [...messages];
+                                updated[index] = { ...updated[index], role };
+                                setMessages(updated);
+                                setIsDirty(true);
+                            }}
+                            onMessageContentChange={(index, content) => {
+                                updateMessage(index, content);
+                            }}
+                            onClearMessage={clearMessage}
+                            onDeleteMessage={deleteMessage}
+                            onInsertVariable={insertVariableIntoMessage}
+                            onAddMessage={addMessage}
+                            textareaRefs={textareaRefs}
+                            cursorPositions={cursorPositions}
+                            onCursorPositionChange={setCursorPositions}
+                            onOpenFullScreenEditor={(messageIndex) => {
+                                if (messageIndex === -1) {
+                                    setFullScreenEditorInitialSelection({ type: 'system', index: -1 });
+                                } else {
+                                    setFullScreenEditorInitialSelection({ type: 'message', index: messageIndex });
+                                }
+                                setIsFullScreenEditorOpen(true);
+                            }}
+                        />
+                    </div>
+
+                    {/* Test Tab */}
+                    <div className={`h-full ${mobileActiveTab === 'test' ? 'block' : 'hidden'}`}>
+                        <PromptBuilderRightPanel
+                            conversationMessages={conversationMessages}
+                            onClearConversation={() => {
+                                setConversationMessages([]);
+                                setApiConversationHistory([]);
+                                setLastMessageStats(null);
+                            }}
+                            variableDefaults={variableDefaults}
+                            onVariableValueChange={handleUpdateVariableValue}
+                            expandedVariable={expandedVariable}
+                            onExpandedVariableChange={setExpandedVariable}
+                            chatInput={chatInput}
+                            onChatInputChange={setChatInput}
+                            resources={resources}
+                            onResourcesChange={setResources}
+                            onSendMessage={handleSendTestMessage}
+                            isTestingPrompt={isTestingPrompt}
+                            autoClear={autoClear}
+                            onAutoClearChange={setAutoClear}
+                            submitOnEnter={submitOnEnter}
+                            onSubmitOnEnterChange={setSubmitOnEnter}
+                            messages={messages}
+                            isStreamingMessage={isTestingPrompt}
+                            currentTaskId={currentTaskId}
+                            messageStartTime={messageStartTime}
+                            timeToFirstTokenRef={timeToFirstTokenRef}
+                            lastMessageStats={lastMessageStats}
+                            attachmentCapabilities={{
+                                supportsImageUrls: supportsImageUrls,
+                                supportsFileUrls: supportsFileUrls,
+                                supportsYoutubeVideos: supportsYoutubeVideos,
+                            }}
+                            onMessageContentChange={(messageIndex, newContent) => {
+                                setConversationMessages(prevMessages => {
+                                    const updatedMessages = [...prevMessages];
+                                    if (messageIndex >= 0 && messageIndex < updatedMessages.length) {
+                                        updatedMessages[messageIndex] = {
+                                            ...updatedMessages[messageIndex],
+                                            content: newContent
+                                        };
+                                    }
+                                    return updatedMessages;
+                                });
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* Bottom Tab Bar - iOS Style */}
+                <div className="flex-shrink-0 border-t border-border bg-card safe-area-bottom">
+                    <div className="flex items-center justify-around">
+                        <button
+                            onClick={() => setMobileActiveTab('edit')}
+                            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
+                                mobileActiveTab === 'edit'
+                                    ? 'text-primary'
+                                    : 'text-muted-foreground'
+                            }`}
+                        >
+                            <Edit3 size={20} />
+                            <span className="text-xs mt-1 font-medium">Edit</span>
+                        </button>
+                        <button
+                            onClick={() => setMobileActiveTab('test')}
+                            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
+                                mobileActiveTab === 'test'
+                                    ? 'text-primary'
+                                    : 'text-muted-foreground'
+                            }`}
+                        >
+                            <Play size={20} />
+                            <span className="text-xs mt-1 font-medium">Test</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Modals - shared between mobile and desktop */}
+            <ModelSettingsDialog
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                modelId={model}
+                models={models}
+                settings={modelConfig}
+                onSettingsChange={setModelConfig}
+            />
+
+            <FullScreenEditor
+                isOpen={isFullScreenEditorOpen}
+                onClose={() => {
+                    setIsFullScreenEditorOpen(false);
+                    setFullScreenEditorInitialSelection(null);
+                }}
+                developerMessage={developerMessage}
+                onDeveloperMessageChange={(value) => {
+                    setDeveloperMessage(value);
+                    setIsDirty(true);
+                }}
+                messages={messages}
+                onMessageContentChange={(index, content) => {
+                    updateMessage(index, content);
+                }}
+                onMessageRoleChange={(index, role) => {
+                    const updated = [...messages];
+                    updated[index] = { ...updated[index], role };
+                    setMessages(updated);
+                    setIsDirty(true);
+                }}
+                initialSelection={fullScreenEditorInitialSelection}
+                onAddMessage={addMessage}
+                model={model}
+                models={models}
+                modelConfig={modelConfig}
+                onModelChange={(newModel) => {
+                    setModel(newModel);
+                    setIsDirty(true);
+                }}
+                onModelConfigChange={(config) => {
+                    setModelConfig(config);
+                    setIsDirty(true);
+                }}
+                variableDefaults={variableDefaults}
+                onAddVariable={handleAddVariable}
+                onUpdateVariable={handleUpdateVariable}
+                onRemoveVariable={handleRemoveVariable}
+                selectedTools={modelConfig.tools || []}
+                availableTools={availableTools}
+                onAddTool={handleAddTool}
+                onRemoveTool={handleRemoveTool}
+                modelSupportsTools={modelSupportsTools}
+            />
+
+            <PromptSettingsModal
+                isOpen={isSettingsModalOpen}
+                onClose={() => setIsSettingsModalOpen(false)}
+                promptId={initialData?.id}
+                promptName={promptName}
+                promptDescription={promptDescription}
+                variableDefaults={variableDefaults}
+                messages={[{ role: "system", content: developerMessage }, ...messages]}
+                settings={{ model_id: model, ...modelConfig }}
+                models={models}
+                onUpdate={handleSettingsUpdate}
+                onLocalStateUpdate={handleLocalStateUpdate}
+            />
+
+            {initialData?.id && (
+                <PromptRunnerModal
+                    isOpen={isPromptRunnerOpen}
+                    onClose={() => setIsPromptRunnerOpen(false)}
+                    promptId={initialData.id}
+                    mode="manual"
+                />
+            )}
+            </>
+        );
+    }
+
+    // Desktop version
     return (
         <>
         <AdaptiveLayout
-            className="h-[calc(100vh-3rem)] lg:h-[calc(100vh-2.5rem)] bg-textured"
+            className="h-page bg-textured"
             mobileBreakpoint={950}
             leftPanelMaxWidth={640}
             header={
