@@ -22,7 +22,6 @@ import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSideb
 import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
 import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVisualViewport } from "@/hooks/use-visual-viewport";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -52,7 +51,6 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
     
     // Mobile detection using consistent hook
     const isMobile = useIsMobile();
-    const visualViewportHeight = useVisualViewport();
     const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
     const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(false);
     
@@ -654,18 +652,12 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
 
             {/* Mobile Canvas Full Screen View */}
             {isMobile && showCanvasOnMobile && isCanvasOpen ? (
-                <div 
-                    className="bg-textured overflow-hidden"
-                    style={{ height: `${visualViewportHeight}px` }}
-                >
+                <div className="h-page bg-textured overflow-hidden">
                     <CanvasRenderer content={canvasContent} />
                 </div>
             ) : isMobile && showSidebarOnMobile ? (
                 /* Mobile Sidebar Full Screen View */
-                <div 
-                    className="bg-card overflow-hidden"
-                    style={{ height: `${visualViewportHeight}px` }}
-                >
+                <div className="h-page bg-card overflow-hidden">
                     <PromptRunsSidebar
                         promptId={promptData.id}
                         promptName={promptData.name}
@@ -677,128 +669,32 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         }}
                     />
                 </div>
-            ) : isMobile ? (
-                /* Main Layout with visual viewport height for mobile */
-                <div style={{ height: `${visualViewportHeight}px` }}>
-                    <AdaptiveLayout
-                        className="h-full bg-textured"
-                        disableAutoCanvas={true}
-                        leftPanelMaxWidth={280}
-                        leftPanel={undefined}
-                        rightPanel={
-                        <div className="h-full flex flex-col relative overflow-hidden">
-                        {/* Messages Area - Scrollable */}
-                        <div 
-                            ref={messagesContainerRef}
-                            className={`flex-1 overflow-y-auto scrollbar-hide overscroll-contain ${
-                                isMobile ? 'pb-72' : 'pb-64'
-                            }`}
-                            style={{ 
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none',
-                                WebkitOverflowScrolling: 'touch',
-                            }}
-                        >
-                            {isLoadingRun ? (
-                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                                    <p className="text-lg font-medium">Loading run...</p>
-                                </div>
-                            ) : displayMessages.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground">
-                                    <MessageSquare className="w-16 h-16 mb-4" />
-                                    <p className="text-lg font-medium">Ready to run your prompt</p>
-                                    <p className="text-sm mt-2 text-center px-6">
-                                        {variableDefaults.length > 0 
-                                            ? "Fill in the variables below and send your message"
-                                            : "Type your message below to get started"}
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className={`space-y-6 pt-6 ${isMobile ? 'px-3' : 'px-6'}`}>
-                                    {displayMessages.map((msg, idx) => {
-                                        const isLastMessage = idx === displayMessages.length - 1;
-                                        const isStreaming = isLastMessage && msg.role === "assistant" && isTestingPrompt;
-                                        
-                                        return (
-                                            <div key={idx}>
-                                                {msg.role === "user" ? (
-                                                    <PromptUserMessage
-                                                        content={msg.content}
-                                                        messageIndex={idx}
-                                                    />
-                                                ) : (
-                                                    <PromptAssistantMessage
-                                                        content={msg.content}
-                                                        taskId={msg.taskId}
-                                                        messageIndex={idx}
-                                                        isStreamActive={isStreaming}
-                                                        metadata={msg.metadata}
-                                                    />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                    {/* Invisible div for auto-scrolling */}
-                                    <div ref={messagesEndRef} className="h-4" />
-                                </div>
-                            )}
-                        </div>
-                        
-                        {/* Input Area - Fixed at Bottom, within the content wrapper */}
-                        <div className={`absolute bottom-0 left-0 right-0 bg-textured pointer-events-none ${
-                            isMobile 
-                                ? 'pt-4 pb-[env(safe-area-inset-bottom,1rem)] px-3' 
-                                : 'pt-6 pb-4 px-6'
-                        }`}>
-                            <div className={`pointer-events-auto rounded-xl ${
-                                isMobile ? 'w-full' : 'max-w-[800px] mx-auto'
-                            }`}>
-                                <PromptRunnerInput
-                                    variableDefaults={variableDefaults}
-                                    onVariableValueChange={handleVariableValueChange}
-                                    expandedVariable={expandedVariable}
-                                    onExpandedVariableChange={setExpandedVariable}
-                                    chatInput={chatInput}
-                                    onChatInputChange={setChatInput}
-                                    onSendMessage={handleSendTestMessage}
-                                    isTestingPrompt={isTestingPrompt}
-                                    showVariables={!conversationStarted}
-                                    messages={conversationTemplate}
-                                    resources={resources}
-                                    onResourcesChange={setResources}
-                                    enablePasteImages={true}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                }
-            />
-                </div>
             ) : (
-                /* Desktop Layout */
+                /* Main Layout with AdaptiveLayout */
                 <AdaptiveLayout
                     className="h-page bg-textured"
-                    disableAutoCanvas={false}
-                    leftPanelMaxWidth={280}
+                    disableAutoCanvas={isMobile} // Disable auto canvas on mobile
+                    leftPanelMaxWidth={280} // Compact sidebar for runs list
                     leftPanel={
-                        <PromptRunsSidebar
-                            promptId={promptData.id}
-                            promptName={promptData.name}
-                            currentRunId={run?.id}
-                            onRunSelect={handleRunSelect}
-                            footer={
-                                <PromptRunnerModalSidebarTester 
-                                    promptData={{
-                                        id: promptData.id,
-                                        name: promptData.name,
-                                        messages: templateMessages,
-                                        variableDefaults: variableDefaults,
-                                        settings: settings,
-                                    }}
-                                />
-                            }
-                        />
+                        !isMobile ? (
+                            <PromptRunsSidebar
+                                promptId={promptData.id}
+                                promptName={promptData.name}
+                                currentRunId={run?.id}
+                                onRunSelect={handleRunSelect}
+                                footer={
+                                    <PromptRunnerModalSidebarTester 
+                                        promptData={{
+                                            id: promptData.id,
+                                            name: promptData.name,
+                                            messages: templateMessages,
+                                            variableDefaults: variableDefaults,
+                                            settings: settings,
+                                        }}
+                                    />
+                                }
+                            />
+                        ) : undefined
                     }
                     rightPanel={
                         <div className="h-full flex flex-col relative overflow-hidden">

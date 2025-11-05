@@ -24,7 +24,6 @@ import { PromptVariable, VariableCustomComponent } from "@/features/prompts/type
 import type { Resource } from "../resource-display";
 import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useVisualViewport } from "@/hooks/use-visual-viewport";
 import { Edit3, Play } from "lucide-react";
 
 
@@ -53,7 +52,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     
     // Mobile detection and tab state
     const isMobile = useIsMobile();
-    const visualViewportHeight = useVisualViewport();
     const [mobileActiveTab, setMobileActiveTab] = useState<'edit' | 'test'>('edit');
 
     
@@ -841,10 +839,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     if (isMobile) {
         return (
             <>
-            <div 
-                className="bg-textured flex flex-col overflow-hidden"
-                style={{ height: `${visualViewportHeight}px` }}
-            >
+            <div className="h-page bg-textured flex flex-col overflow-hidden">
                 {/* Header */}
                 <PromptHeader
                     promptName={promptName}
