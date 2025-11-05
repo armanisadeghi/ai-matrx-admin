@@ -60,7 +60,7 @@ export function PromptActionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md max-h-[100dvh] overflow-y-auto bg-gradient-to-br from-card to-muted border-border">
+            <DialogContent className="sm:max-w-md max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-2rem)] my-4 overflow-y-auto bg-gradient-to-br from-card to-muted border-border">
                 <DialogHeader>
                     <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-foreground mb-2">
                         {promptName || "Untitled Prompt"}
@@ -72,7 +72,7 @@ export function PromptActionModal({
                     )}
                 </DialogHeader>
                 
-                <div className="space-y-3 sm:space-y-4 py-4 sm:py-6">
+                <div className="space-y-2 sm:space-y-3 py-2 sm:py-4">
                     {/* Run Prompt Option */}
                     <button
                         onClick={(e) => handleAction(e, 'run', onRun)}
@@ -84,11 +84,11 @@ export function PromptActionModal({
                         }`}
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300" />
-                        <div className="relative p-4 sm:p-6 md:p-8 flex flex-col items-center">
-                            <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-primary rounded-full group-hover:bg-primary/90 transition-colors duration-300 group-hover:scale-110 transform">
-                                <Play className="w-6 h-6 sm:w-8 sm:h-8 text-primary-foreground" />
+                        <div className="relative p-3 sm:p-5 md:p-6 flex flex-col items-center">
+                            <div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-primary rounded-full group-hover:bg-primary/90 transition-colors duration-300 group-hover:scale-110 transform">
+                                <Play className="w-5 h-5 sm:w-7 sm:h-7 text-primary-foreground" />
                             </div>
-                            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1 sm:mb-2">
+                            <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
                                 Run Prompt
                             </h3>
                             <p className="text-xs sm:text-sm text-muted-foreground text-center">
@@ -108,11 +108,11 @@ export function PromptActionModal({
                         }`}
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 to-accent/10 group-hover:from-secondary/20 group-hover:to-accent/20 transition-all duration-300" />
-                        <div className="relative p-4 sm:p-6 md:p-8 flex flex-col items-center">
-                            <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-secondary rounded-full group-hover:bg-secondary/90 transition-colors duration-300 group-hover:scale-110 transform">
-                                <Pencil className="w-6 h-6 sm:w-8 sm:h-8 text-secondary-foreground" />
+                        <div className="relative p-3 sm:p-5 md:p-6 flex flex-col items-center">
+                            <div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-secondary rounded-full group-hover:bg-secondary/90 transition-colors duration-300 group-hover:scale-110 transform">
+                                <Pencil className="w-5 h-5 sm:w-7 sm:h-7 text-secondary-foreground" />
                             </div>
-                            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1 sm:mb-2">
+                            <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
                                 Edit Prompt
                             </h3>
                             <p className="text-xs sm:text-sm text-muted-foreground text-center">
@@ -124,11 +124,11 @@ export function PromptActionModal({
 
                 {/* Additional Actions */}
                 {(showView || showDuplicate || showShare || showDelete) && (
-                    <div className="border-t border-border pt-3 sm:pt-4">
-                        <p className="text-xs text-muted-foreground mb-2 sm:mb-3 text-center font-medium uppercase tracking-wider">
+                    <div className="border-t border-border pt-2 sm:pt-3">
+                        <p className="text-xs text-muted-foreground mb-2 text-center font-medium uppercase tracking-wider">
                             Additional Actions
                         </p>
-                        <div className="grid grid-cols-2 gap-2 sm:gap-2">
+                        <div className="grid grid-cols-2 gap-2">
                             {showView && onView && (
                                 <Button
                                     variant="outline"
@@ -198,7 +198,7 @@ export function PromptActionModal({
                         onClose();
                     }}
                     disabled={isAnyActionActive}
-                    className="w-full mt-2 py-2 sm:py-2.5"
+                    className="w-full mt-2 py-2"
                 >
                     <X className="w-4 h-4 mr-2" />
                     <span className="text-sm">Cancel</span>

@@ -697,13 +697,11 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         ) : undefined
                     }
                     rightPanel={
-                        <div className="h-full flex flex-col relative overflow-hidden">
+                        <div className="h-full flex flex-col overflow-hidden">
                         {/* Messages Area - Scrollable */}
                         <div 
                             ref={messagesContainerRef}
-                            className={`flex-1 overflow-y-auto scrollbar-hide overscroll-contain ${
-                                isMobile ? 'pb-72' : 'pb-64'
-                            }`}
+                            className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0"
                             style={{ 
                                 scrollbarWidth: 'none',
                                 msOverflowStyle: 'none',
@@ -726,7 +724,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                                     </p>
                                 </div>
                             ) : (
-                                <div className={`space-y-6 pt-6 ${isMobile ? 'px-3' : 'px-6'}`}>
+                                <div className={`space-y-6 pt-6 pb-4 ${isMobile ? 'px-3' : 'px-6'}`}>
                                     {displayMessages.map((msg, idx) => {
                                         const isLastMessage = idx === displayMessages.length - 1;
                                         const isStreaming = isLastMessage && msg.role === "assistant" && isTestingPrompt;
@@ -756,13 +754,13 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                             )}
                         </div>
                         
-                        {/* Input Area - Fixed at Bottom, within the content wrapper */}
-                        <div className={`absolute bottom-0 left-0 right-0 bg-textured pointer-events-none ${
+                        {/* Input Area - Fixed at Bottom using flex-shrink */}
+                        <div className={`flex-shrink-0 bg-textured ${
                             isMobile 
                                 ? 'pt-4 pb-safe px-3' 
                                 : 'pt-6 pb-4 px-6'
                         }`}>
-                            <div className={`pointer-events-auto rounded-xl ${
+                            <div className={`rounded-xl ${
                                 isMobile ? 'w-full' : 'max-w-[800px] mx-auto'
                             }`}>
                                 <PromptRunnerInput
