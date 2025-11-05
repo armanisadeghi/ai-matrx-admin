@@ -1,0 +1,450 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  ChevronLeft,
+  Calendar,
+  Flag,
+  Folder,
+  Trash2,
+  Plus,
+  X,
+  Loader2,
+  MoreVertical,
+} from 'lucide-react';
+import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import * as taskService from '@/features/tasks/services/taskService';
+
+interface MobileTaskDetailsProps {
+  task: any;
+  onBack: () => void;
+}
+
+export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsProps) {
+  const {
+    updateTaskTitle,
+    updateTaskDescription,
+    updateTaskDueDate,
+    updateTaskProject,
+    toggleTaskComplete,
+    deleteTask,
+    projects,
+    refresh,
+    createSubtask,
+    updateSubtaskStatus,
+    deleteSubtask,
+  } = useTaskContext();
+
+  const [title, setTitle] = useState(task.title || '');
+  const [description, setDescription] = useState(task.description || '');
+  const [dueDate, setDueDate] = useState(task.dueDate || '');
+  const [projectId, setProjectId] = useState<string | null>(task.projectId || null);
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high' | null>(
+    task.priority || null
+  );
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [newSubtask, setNewSubtask] = useState('');
+  const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Update local state when task changes
+  useEffect(() => {
+    setTitle(task.title || '');
+    setDescription(task.description || '');
+    setDueDate(task.dueDate || '');
+    setProjectId(task.projectId || null);
+    setPriority(task.priority || null);
+    setIsDirty(false);
+  }, [task.id, task.title, task.description, task.dueDate, task.projectId, task.priority]);
+
+  const handleSave = async () => {
+    if (!isDirty || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      if (title !== task.title) {
+        await updateTaskTitle(task.projectId, task.id, title);
+      }
+      if (description !== task.description) {
+        await updateTaskDescription(task.projectId, task.id, description);
+      }
+      if (dueDate !== task.dueDate) {
+        await updateTaskDueDate(task.projectId, task.id, dueDate);
+      }
+      if (projectId !== task.projectId) {
+        await updateTaskProject(task.id, projectId);
+      }
+      if (priority !== task.priority) {
+        await taskService.updateTask(task.id, { priority });
+      }
+
+      await refresh();
+      setIsDirty(false);
+    } catch (error) {
+      console.error('Error saving task:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    try {
+      const fakeEvent = { stopPropagation: () => {} } as React.MouseEvent;
+      await deleteTask(task.projectId, task.id, fakeEvent);
+      onBack();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleAddSubtask = async () => {
+    if (!newSubtask.trim() || isAddingSubtask) return;
+
+    setIsAddingSubtask(true);
+    try {
+      await createSubtask(task.id, newSubtask);
+      setNewSubtask('');
+      await refresh();
+    } catch (error) {
+      console.error('Error adding subtask:', error);
+    } finally {
+      setIsAddingSubtask(false);
+    }
+  };
+
+  const handleToggleSubtask = async (subtaskId: string) => {
+    const subtask = task.subtasks?.find((st: any) => st.id === subtaskId);
+    if (!subtask) return;
+
+    try {
+      await updateSubtaskStatus(subtaskId, !subtask.completed);
+      await refresh();
+    } catch (error) {
+      console.error('Error toggling subtask:', error);
+    }
+  };
+
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    try {
+      await deleteSubtask(subtaskId);
+      await refresh();
+    } catch (error) {
+      console.error('Error deleting subtask:', error);
+    }
+  };
+
+  const getPriorityColor = (p: string | null) => {
+    switch (p) {
+      case 'high':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400';
+      case 'medium':
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
+      case 'low':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const subtasks = task.subtasks || [];
+  const completedSubtasks = subtasks.filter((st: any) => st.completed).length;
+  const totalSubtasks = subtasks.length;
+
+  return (
+    <div className="h-full flex flex-col bg-background overflow-hidden">
+      {/* Header */}
+      <div className="flex-shrink-0 border-b border-border bg-card">
+        <div className="flex items-center justify-between p-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0 h-9 w-9">
+              <ChevronLeft size={22} />
+            </Button>
+            <Checkbox
+              checked={task.completed}
+              onCheckedChange={() => toggleTaskComplete(task.projectId, task.id)}
+              className="flex-shrink-0"
+            />
+            <h1
+              className={`text-lg font-semibold flex-1 truncate ${
+                task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+              }`}
+            >
+              {task.title}
+            </h1>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="flex-shrink-0 h-9 w-9">
+                <MoreVertical size={20} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isDirty && (
+                <>
+                  <DropdownMenuItem onClick={handleSave} disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="text-destructive focus:text-destructive"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} className="mr-2" />
+                    Delete Task
+                  </>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="p-4 space-y-5 pb-6">
+          {/* Title */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Title</label>
+            <Input
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                setIsDirty(true);
+              }}
+              onFocus={(e) => {
+                setTimeout(() => {
+                  e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+              }}
+              className="text-base"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Description
+            </label>
+            <Textarea
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                setIsDirty(true);
+              }}
+              onFocus={(e) => {
+                setTimeout(() => {
+                  e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+              }}
+              placeholder="Add details..."
+              className="text-sm resize-y min-h-[100px]"
+            />
+          </div>
+
+          {/* Due Date */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+              <Calendar size={16} />
+              Due Date
+            </label>
+            <Input
+              type="date"
+              value={dueDate}
+              onChange={(e) => {
+                setDueDate(e.target.value);
+                setIsDirty(true);
+              }}
+              className="text-sm"
+            />
+          </div>
+
+          {/* Project */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+              <Folder size={16} />
+              Project
+            </label>
+            <Select
+              value={projectId || 'none'}
+              onValueChange={(val) => {
+                setProjectId(val === 'none' ? null : val);
+                setIsDirty(true);
+              }}
+            >
+              <SelectTrigger className="text-sm">
+                <SelectValue>
+                  {projectId ? projects.find((p) => p.id === projectId)?.name : 'No Project'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  <span className="text-muted-foreground">No Project</span>
+                </SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Priority */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+              <Flag size={16} />
+              Priority
+            </label>
+            <Select
+              value={priority || 'none'}
+              onValueChange={(val) => {
+                setPriority(val === 'none' ? null : (val as any));
+                setIsDirty(true);
+              }}
+            >
+              <SelectTrigger className="text-sm">
+                <SelectValue>
+                  <span className={`px-2 py-1 rounded-md text-xs font-medium ${getPriorityColor(priority)}`}>
+                    {priority ? priority.charAt(0).toUpperCase() + priority.slice(1) : 'None'}
+                  </span>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="high">
+                  <span className="px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                    High
+                  </span>
+                </SelectItem>
+                <SelectItem value="medium">
+                  <span className="px-2 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                    Medium
+                  </span>
+                </SelectItem>
+                <SelectItem value="low">
+                  <span className="px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                    Low
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Subtasks */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Subtasks {totalSubtasks > 0 && `(${completedSubtasks}/${totalSubtasks})`}
+            </label>
+            <div className="space-y-2">
+              {subtasks.map((subtask: any) => (
+                <div key={subtask.id} className="flex items-center gap-2 group py-1">
+                  <Checkbox
+                    checked={subtask.completed}
+                    onCheckedChange={() => handleToggleSubtask(subtask.id)}
+                  />
+                  <span
+                    className={`text-sm flex-1 ${
+                      subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                    }`}
+                  >
+                    {subtask.title}
+                  </span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleDeleteSubtask(subtask.id)}
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X size={14} />
+                  </Button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 mt-2">
+                <Input
+                  value={newSubtask}
+                  onChange={(e) => setNewSubtask(e.target.value)}
+                  placeholder="Add a subtask..."
+                  disabled={isAddingSubtask}
+                  className="text-sm flex-1"
+                  onFocus={(e) => {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                  }}
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleAddSubtask()}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleAddSubtask}
+                  disabled={isAddingSubtask || !newSubtask.trim()}
+                  className="h-10 w-10 flex-shrink-0"
+                >
+                  {isAddingSubtask ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Save Button (Sticky at bottom if dirty) */}
+      {isDirty && (
+        <div className="flex-shrink-0 border-t border-border bg-card p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <Button onClick={handleSave} disabled={isSaving} className="w-full" size="lg">
+            {isSaving ? (
+              <>
+                <Loader2 size={18} className="mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+

@@ -63,16 +63,18 @@ export function QuickNotesSheet({ onClose, className }: QuickNotesSheetProps) {
     // Group notes by folder for the selector - single source of truth
     const notesByFolder = useMemo(() => {
         const grouped: Record<string, Note[]> = {};
+        const seenIds = new Set<string>();
         
         // Initialize all folders (including defaults)
         allFolders.forEach(folder => {
             grouped[folder] = [];
         });
         
-        // Add notes to their folders
+        // Add notes to their folders (deduplicate by ID)
         notes.forEach(note => {
-            if (grouped[note.folder_name]) {
+            if (!seenIds.has(note.id) && grouped[note.folder_name]) {
                 grouped[note.folder_name].push(note);
+                seenIds.add(note.id);
             }
         });
         
