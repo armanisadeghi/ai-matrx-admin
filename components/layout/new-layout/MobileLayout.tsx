@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ChevronRight } from 'lucide-react';
-import { NavigationMenu } from '@/components/ui/navigation-menu';
+import { MobileUnifiedMenu } from './MobileUnifiedMenu';
 
 interface SidebarLink {
   label: string;
@@ -69,7 +69,7 @@ export default function MobileLayout({
 
           {/* Right side - Unified menu dropdown */}
           <div className="flex-shrink-0">
-            <NavigationMenu />
+            <MobileUnifiedMenu />
           </div>
         </div>
       </header>
