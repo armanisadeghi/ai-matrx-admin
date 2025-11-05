@@ -42,7 +42,7 @@ export default function MobileLayout({
   };
 
   return (
-    <div id={uniqueId} className="min-h-screen bg-textured">
+    <div id={uniqueId} className="min-h-dvh bg-textured">
       {/* Mobile Header */}
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-textured border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between h-full px-4">
@@ -175,7 +175,7 @@ export default function MobileLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="pt-12 min-h-screen">
+      <main className="pt-12 min-h-dvh">
         {children}
       </main>
     </div>

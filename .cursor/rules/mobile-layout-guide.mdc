@@ -1,0 +1,187 @@
+---
+description: Mobile Layout Guidelines
+alwaysApply: false
+---
+# AI Matrx Mobile Layout Guidelines
+
+---
+
+## Key Fixes & Current Implementation
+
+### 1. Dynamic Viewport Height (dvh) Usage
+
+- Replace all `h-screen` / `min-h-screen` / `100vh` with dynamic viewport units (`h-dvh`, `min-h-dvh`) to handle mobile browser UI (address bar, toolbars) correctly.
+- Files updated:
+  - `components/layout/new-layout/MobileLayout.tsx`: `min-h-screen` → `min-h-dvh`
+  - `components/layout/new-layout/DesktopLayout.tsx`: `min-h-screen` → `min-h-dvh`
+  - `app/layout.tsx`: `min-h-dvh` → `h-dvh` on `<body>`
+
+**Usage:**
+```tsx
+<div className="h-dvh">...</div>          // full dynamic viewport height
+<div className="min-h-dvh">...</div>      // minimum dynamic viewport height
+```
+
+---
+
+### 2. Safe Area Insets for Bottom Fixed Elements
+
+- Use `pb-safe` and `mb-safe` utility classes to apply padding/margin respecting device safe areas (home indicator, rounded corners).
+- Defined in `globals.css` as:
+  ```css
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+  .mb-safe { margin-bottom: env(safe-area-inset-bottom, 1rem); }
+  ```
+- Always apply on fixed bottom elements (inputs, nav bars, buttons) to avoid being hidden.
+
+**Example:**
+```tsx
+<div className="fixed bottom-0 pb-safe">
+  <input />
+</div>
+```
+
+---
+
+### 3. Header Height Management
+
+- Mobile header height: `3rem` (`h-12`), Desktop header height: `2.5rem` (`h-10`).
+- CSS variable `--header-height` defined in `globals.css`:
+  ```css
+  :root { --header-height: 3rem; }
+  @media (min-width: 1024px) { :root { --header-height: 2.5rem; } }
+  ```
+- Use dynamic viewport units with header height subtraction for full-height containers:
+  ```tsx
+  <div className="h-[calc(100dvh - var(--header-height))]">...</div>
+  ```
+
+---
+
+## Utility Classes in `globals.css`
+
+```css
+/* Dynamic viewport units */
+.h-dvh { height: 100dvh; }
+.min-h-dvh { min-height: 100dvh; }
+.max-h-dvh { max-height: 100dvh; }
+
+/* Safe area insets */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+.mb-safe { margin-bottom: env(safe-area-inset-bottom, 1rem); }
+
+/* Header height variables */
+:root {
+  --header-height: 3rem;
+}
+@media (min-width: 1024px) {
+  :root {
+    --header-height: 2.5rem;
+  }
+}
+```
+
+---
+
+## Recommended Patterns
+
+### Full-Screen Layout (e.g., Chat)
+
+```tsx
+function ChatPage() {
+  return (
+    <div className="h-dvh flex flex-col">
+      <header className="flex-shrink-0">...</header>
+      <main className="flex-1 overflow-y-auto pb-safe">...</main>
+      <footer className="flex-shrink-0 pb-safe fixed bottom-0 left-0 right-0">
+        <input />
+      </footer>
+    </div>
+  );
+}
+```
+
+### Standard Page with Header
+
+```tsx
+function StandardPage() {
+  return (
+    <div className="min-h-dvh">
+      {/* Scrollable content */}
+      {content}
+    </div>
+  );
+}
+```
+
+### Fixed Bottom Elements (e.g., Bottom Navigation)
+
+```tsx
+function BottomNav() {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 pb-safe">
+      {/* Navigation buttons */}
+    </div>
+  );
+}
+```
+
+---
+
+## Testing
+
+- Use `/layout-tests` route for comprehensive mobile layout validation:
+  - Viewport units behavior (`vh` vs `dvh`)
+  - Safe area padding effects
+  - Chat layout with keyboard interaction
+  - Visual indicators for hidden content
+
+- Always test on real devices (iPhone X+ notch, Android navigation gestures) and in landscape orientation.
+
+---
+
+## Browser Support Summary
+
+| Feature               | Supported Browsers                          |
+|-----------------------|--------------------------------------------|
+| Dynamic Viewport Units | iOS Safari 15.4+, Chrome 108+, Firefox 108+, Edge 108+ |
+| Safe Area Insets       | iOS Safari 11+, Chrome Android 69+, all modern mobile browsers |
+
+Fallbacks in CSS ensure graceful degradation:
+```css
+height: 100vh;
+height: 100dvh;
+
+padding-bottom: env(safe-area-inset-bottom, 1rem);
+```
+
+---
+
+## Common Pitfalls to Avoid
+
+- ❌ Using static viewport units (`h-screen`, `100vh`) for full height on mobile.
+- ❌ Omitting safe area padding on fixed bottom elements.
+- ❌ Hardcoding header heights in styles instead of using CSS variables or Tailwind classes.
+- ✅ Always use dynamic viewport units (`h-dvh`, `min-h-dvh`).
+- ✅ Always apply `pb-safe` / `mb-safe` on bottom fixed elements.
+- ✅ Use `var(--header-height)` for header height calculations.
+
+---
+
+## Summary
+
+- Use `h-dvh` / `min-h-dvh` instead of `h-screen` / `min-h-screen`.
+- Apply `pb-safe` / `mb-safe` on fixed bottom elements.
+- Use CSS variable `--header-height` for header height-dependent layouts.
+- Test layouts on real devices and `/layout-tests` route.
+- Follow recommended component patterns for consistent mobile UX.
+
+---
+
+**Files to Reference:**
+
+- `components/layout/new-layout/MobileLayout.tsx`
+- `components/layout/new-layout/DesktopLayout.tsx`
+- `app/layout.tsx`
+- `globals.css`
+- `/layout-tests` route

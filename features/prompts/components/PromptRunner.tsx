@@ -759,7 +759,7 @@ export function PromptRunner({ models, promptData }: PromptRunnerProps) {
                         {/* Input Area - Fixed at Bottom, within the content wrapper */}
                         <div className={`absolute bottom-0 left-0 right-0 bg-textured pointer-events-none ${
                             isMobile 
-                                ? 'pt-4 pb-[env(safe-area-inset-bottom,1rem)] px-3' 
+                                ? 'pt-4 pb-safe px-3' 
                                 : 'pt-6 pb-4 px-6'
                         }`}>
                             <div className={`pointer-events-auto rounded-xl ${

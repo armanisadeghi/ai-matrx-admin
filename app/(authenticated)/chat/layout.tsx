@@ -50,15 +50,15 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                             header={null}
                             rightPanel={
                                 <div className="h-full w-full flex flex-col bg-textured relative">
-                                    {/* Messages - Scrollable area */}
-                                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pb-32">
+                                    {/* Messages - Scrollable area - pb-32 to prevent content hiding under input */}
+                                    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pb-32 lg:pb-32">
                                         <div className="w-full max-w-[800px] mx-auto pt-0">
                                             <ResponseColumn />
                                         </div>
                                     </div>
                                     
-                                    {/* Input Container - Fixed at bottom */}
-                                    <div className="absolute bottom-0 left-0 right-0 bg-textured pb-4 pt-2">
+                                    {/* Input Container - Fixed at bottom with safe area padding */}
+                                    <div className="absolute bottom-0 left-0 right-0 bg-textured pb-safe pt-2">
                                         <div className="w-full max-w-[800px] mx-auto px-4">
                                             {children}
                                         </div>
