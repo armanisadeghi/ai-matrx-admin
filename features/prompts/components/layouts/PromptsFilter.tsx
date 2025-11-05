@@ -72,16 +72,16 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
     const hasActiveFilters = searchTerm !== "" || sortBy !== "updated-desc";
 
     return (
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-4 sm:mb-6">
             {/* Main search and toggle */}
             <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search prompts by name or description..."
+                        placeholder="Search prompts..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 pr-8"
+                        className="pl-9 pr-8 h-9 text-sm"
                     />
                     {searchTerm && (
                         <button
@@ -96,32 +96,31 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
                     variant={showFilters ? "default" : "outline"}
                     size="sm"
                     onClick={() => setShowFilters(!showFilters)}
+                    className="h-9 px-3"
                 >
-                    <SlidersHorizontal className="h-4 w-4 mr-2" />
-                    Filters
+                    <SlidersHorizontal className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Filters</span>
                 </Button>
             </div>
 
             {/* Expanded filters */}
             {showFilters && (
-                <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {/* Sort */}
-                        <div>
-                            <label className="text-xs font-medium text-muted-foreground uppercase mb-1.5 block">
-                                Sort By
-                            </label>
-                            <Select value={sortBy} onValueChange={setSortBy}>
-                                <SelectTrigger className="h-8 text-sm">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="updated-desc">Recently Updated</SelectItem>
-                                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                <div className="p-3 sm:p-4 border rounded-lg bg-muted/30 space-y-3">
+                    {/* Sort */}
+                    <div>
+                        <label className="text-xs font-medium text-muted-foreground uppercase mb-1.5 block">
+                            Sort By
+                        </label>
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                            <SelectTrigger className="h-9 text-sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="updated-desc">Recently Updated</SelectItem>
+                                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Clear filters */}
@@ -130,7 +129,7 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
                             variant="ghost"
                             size="sm"
                             onClick={clearFilters}
-                            className="w-full text-xs"
+                            className="w-full text-xs h-8"
                         >
                             <X className="h-3 w-3 mr-1" />
                             Clear All Filters
