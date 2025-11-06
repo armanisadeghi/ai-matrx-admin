@@ -1,27 +1,24 @@
-// /layout.tsx
-"use client";
+import React from 'react';
+import { createRouteMetadata } from '@/utils/route-metadata';
+import { ClientAdminLayout } from './ClientAdminLayout';
 
-import { ModuleHeader } from '@/components/layout/new-layout/PageSpecificHeader';
-import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
+export const metadata = createRouteMetadata('/administration', {
+  title: 'Administration | AI Matrx',
+  description: 'Administrative tools and system management',
+  additionalMetadata: {
+    keywords: ['administration', 'admin', 'system management', 'database', 'settings'],
+    openGraph: {
+      title: 'Administration | AI Matrx',
+      description: 'Administrative tools and system management',
+      type: 'website',
+    },
+  },
+});
 
-export default function Layout(
-    {
-        children,
-    }: {
-        children: React.ReactNode;
-    }) {
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-    return (
-        <div className="flex flex-col h-page">
-            <ModuleHeader
-                pages={filteredPages}
-                currentPath={currentPath}
-                moduleHome={MODULE_HOME}
-                moduleName={MODULE_NAME}
-            />
-            <main className="w-full flex-1 min-h-0 bg-textured overflow-hidden">
-                {children}
-            </main>
-        </div>
-    );
+export default function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <ClientAdminLayout>{children}</ClientAdminLayout>;
 }

@@ -315,14 +315,17 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
     // Reorder tabs (for drag and drop)
     const reorderTabs = useCallback((newOrder: string[]) => {
-        setOpenTabs(newOrder);
+        // Ensure uniqueness when reordering (safety check)
+        setOpenTabs(Array.from(new Set(newOrder)));
     }, []);
 
-    // Cleanup: Remove deleted notes from tabs
+    // Cleanup: Remove deleted notes from tabs and ensure uniqueness
     useEffect(() => {
         setOpenTabs(prev => {
             const validNoteIds = new Set(notes.map(n => n.id));
-            return prev.filter(id => validNoteIds.has(id));
+            const filtered = prev.filter(id => validNoteIds.has(id));
+            // Deduplicate to prevent the same note appearing multiple times
+            return Array.from(new Set(filtered));
         });
     }, [notes]);
 

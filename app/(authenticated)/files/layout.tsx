@@ -1,29 +1,25 @@
-'use client';
-
 import React from 'react';
-import { FileManagerSidebar } from './components/FileManagerSidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { createRouteMetadata } from '@/utils/route-metadata';
+import { ClientFilesLayout } from './ClientFilesLayout';
+
+export const metadata = createRouteMetadata('/files', {
+  title: 'Files | AI Matrx',
+  description: 'Manage and organize your files with our powerful file management system',
+  additionalMetadata: {
+    keywords: ['files', 'file management', 'storage', 'documents', 'media', 'upload'],
+    openGraph: {
+      title: 'Files | AI Matrx',
+      description: 'Manage and organize your files efficiently',
+      type: 'website',
+    },
+  },
+});
 
 export default function FilesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const isMobile = useIsMobile();
-
-  // On mobile, skip the sidebar layout entirely and let the page handle its own layout
-  if (isMobile) {
-    return <>{children}</>;
-  }
-
-  // Desktop view with sidebar
-  return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-textured">
-      <FileManagerSidebar />
-      <main className="flex-1 overflow-hidden">
-        {children}
-      </main>
-    </div>
-  );
+  return <ClientFilesLayout>{children}</ClientFilesLayout>;
 }
 

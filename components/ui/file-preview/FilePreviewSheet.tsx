@@ -475,7 +475,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{isFullscreen ? "Exit fullscreen" : "Fullscreen"}</p>
+                            {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -491,7 +491,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>File info</p>
+                            File info
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -513,7 +513,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Download</p>
+                            Download
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -531,7 +531,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Copy link</p>
+                            Copy link
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -549,7 +549,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Open in new tab</p>
+                            Open in new tab
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -571,7 +571,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Duplicate</p>
+                            Duplicate
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -593,7 +593,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Delete</p>
+                            Delete
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -613,7 +613,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Close</p>
+                            Close
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
