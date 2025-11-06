@@ -9,22 +9,91 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Loader2, Check } from "lucide-react";
 import { usePromptBuilder } from "@/features/prompts/services/promptBuilderService";
-import { AICustomizationPanel } from "@/app/(authenticated)/ai/prompts/experimental/chatbot-customizer/modular/base-components";
 import { aiCustomizationConfig } from "@/app/(authenticated)/ai/prompts/experimental/chatbot-customizer/modular/aiCustomizationConfig";
-import { ConfigState } from "@/app/(authenticated)/ai/prompts/experimental/chatbot-customizer/modular/types";
+import { ConfigState, SectionConfig } from "@/app/(authenticated)/ai/prompts/experimental/chatbot-customizer/modular/types";
 
 interface AICustomizerPromptBuilderProps {
     onClose: () => void;
 }
+
+// Lightweight Section component that captures changes in real-time
+const Section: React.FC<{
+    section: SectionConfig;
+    state: Record<string, ConfigState>;
+    onChange: (sectionId: string, optionId: string, value: any) => void;
+}> = ({ section, state, onChange }) => {
+    const [isOpen, setIsOpen] = useState(true);
+
+    const handleChange = (optionId: string, value: any) => {
+        onChange(section.id, optionId, value);
+    };
+
+    return (
+        <section className="mb-6 border border-zinc-300 dark:border-zinc-600 rounded-2xl overflow-hidden">
+            <div
+                className="flex flex-col py-2 px-3 bg-zinc-100 dark:bg-zinc-800 cursor-pointer hover:bg-accent/30 transition-colors"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <div className="flex items-center">
+                    <section.icon className="h-4 w-4 mr-2 text-primary flex-shrink-0" />
+                    <h2 className="text-sm font-semibold flex-grow">{section.title}</h2>
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                    >
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </div>
+                {section.description && <p className="text-xs text-muted-foreground mt-1">{section.description}</p>}
+            </div>
+
+            <div
+                className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100 p-3' : 'max-h-0 opacity-0 p-0'} overflow-hidden`}
+            >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {section.cards.map((cardConfig) => {
+                        const CardComponent = cardConfig.component;
+                        const sizeClasses = {
+                            small: "col-span-1",
+                            normal: "col-span-1 md:col-span-1",
+                            medium: "col-span-1 md:col-span-2",
+                            large: "col-span-1 md:col-span-3",
+                        };
+
+                        return (
+                            <div key={cardConfig.id} className={sizeClasses[cardConfig.size || "normal"]}>
+                                <Card className="h-full bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-700 rounded-xl">
+                                    <div className="p-3">
+                                        <div className="flex items-center mb-3 pb-2 border-b border-border">
+                                            <div className="p-1 rounded-lg bg-primary/10 text-primary mr-2">
+                                                <cardConfig.icon className="h-4 w-4" />
+                                            </div>
+                                            <h3 className="text-sm font-semibold text-foreground">{cardConfig.title}</h3>
+                                        </div>
+                                        <CardComponent config={cardConfig} state={state[section.id] || {}} onChange={handleChange} />
+                                    </div>
+                                </Card>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </section>
+    );
+};
 
 export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromptBuilderProps) {
     const router = useRouter();
     const { createPrompt } = usePromptBuilder(router, onClose);
     const [isSaving, setIsSaving] = useState(false);
     const [customizationState, setCustomizationState] = useState<Record<string, ConfigState>>({});
-    const [stateInitialized, setStateInitialized] = useState(false);
 
     // Generate system message from customization state
     const generateSystemMessage = (state: Record<string, ConfigState>): string => {
@@ -129,22 +198,27 @@ export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromp
         return prompt.trim();
     };
 
-    const handleCustomizationSave = (state: Record<string, ConfigState>) => {
-        setCustomizationState(state);
-        setStateInitialized(true);
+    // Capture state changes in real-time (called whenever user changes anything)
+    const handleStateChange = (sectionId: string, optionId: string, value: any) => {
+        setCustomizationState((prevState) => ({
+            ...prevState,
+            [sectionId]: {
+                ...(prevState[sectionId] || {}),
+                [optionId]: value,
+            },
+        }));
     };
 
     const handleCreatePrompt = async () => {
         setIsSaving(true);
         
         try {
-            // If state hasn't been explicitly saved, it means the user hasn't clicked save
-            // But we still want to create with an empty/default system message
+            // Generate system message from current state
             let systemMessage = "You are a helpful AI assistant.";
             let autoName = "AI Assistant";
 
             // If we have customization state, use it
-            if (stateInitialized && Object.keys(customizationState).length > 0) {
+            if (Object.keys(customizationState).length > 0) {
                 systemMessage = generateSystemMessage(customizationState);
                 
                 // Auto-generate name based on personality
@@ -170,21 +244,22 @@ export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromp
 
     return (
         <div className="w-full h-full flex flex-col">
-            {/* Customization Panel */}
-            <div className="flex-1 overflow-auto">
-                <AICustomizationPanel 
-                    config={aiCustomizationConfig} 
-                    onSave={handleCustomizationSave}
-                />
+            {/* Customization Sections - No header, state captured in real-time */}
+            <div className="flex-1 overflow-auto p-3">
+                <div className="max-w-7xl mx-auto">
+                    {aiCustomizationConfig.sections.map((section) => (
+                        <Section 
+                            key={section.id} 
+                            section={section} 
+                            state={customizationState} 
+                            onChange={handleStateChange} 
+                        />
+                    ))}
+                </div>
             </div>
 
-            {/* Create Button */}
+            {/* Create Button - Single action */}
             <div className="flex-shrink-0 p-3 border-t bg-muted/30">
-                {!stateInitialized && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 text-center">
-                        Click "Save My Experience" above to capture your settings before creating
-                    </p>
-                )}
                 <Button
                     onClick={handleCreatePrompt}
                     disabled={isSaving}
@@ -198,7 +273,7 @@ export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromp
                     ) : (
                         <>
                             <Check className="h-4 w-4 mr-2" />
-                            Create Prompt {stateInitialized ? "" : "(Default)"}
+                            Create Prompt
                         </>
                     )}
                 </Button>
