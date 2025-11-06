@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, XIcon } from "lucide-react";
-import { promptTemplateSource } from '../constants';
+import { promptTemplateSource } from './constants';
 
 interface EmphasisContentProps {
   updateContent?: (content: string) => void;

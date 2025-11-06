@@ -25,7 +25,7 @@ import {
     AlertTriangle,
     CheckSquare,
 } from "lucide-react";
-import { promptBuilderTabs, promptTemplateSource } from "./constants";
+import { promptBuilderTabs, promptTemplateSource } from "@/features/prompts/components/tabbed-builder/constants";
 
 // Main PromptBuilder component
 export default function PromptBuilder() {

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { promptBuilderTabs, additionalTabs, promptTemplateSource } from '../constants';
+import { promptBuilderTabs, additionalTabs, promptTemplateSource } from './constants';
 
 // Create a combined tabs array with tabNumber
 const allTabs = [

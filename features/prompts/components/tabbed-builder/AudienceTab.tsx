@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { promptTemplateSource } from '../constants';
+import { promptTemplateSource } from './constants';
 
 interface AudienceContentProps {
   updateContent?: (content: string) => void;

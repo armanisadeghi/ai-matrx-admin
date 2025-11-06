@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { TabBase } from './TabBase';
 import { usePromptBuilder } from './PromptBuilderContext';
-import { promptTemplateSource } from '../constants';
+import { promptTemplateSource } from './constants';
 
 interface ContextContentProps {
   updateContent?: (content: string) => void;

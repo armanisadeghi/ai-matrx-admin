@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Info } from "lucide-react";
-import { tabMetadata } from '../constants';
+import { tabMetadata } from './constants';
 
 interface TabBaseProps {
   id: string;

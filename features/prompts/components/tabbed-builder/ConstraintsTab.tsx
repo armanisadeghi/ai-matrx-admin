@@ -6,7 +6,7 @@ import { usePromptBuilder } from './PromptBuilderContext';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { promptTemplateSource } from '../constants';
+import { promptTemplateSource } from './constants';
 
 interface ConstraintsContentProps {
   updateContent?: (content: string) => void;

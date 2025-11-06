@@ -5,7 +5,7 @@ import { TabBase } from './TabBase';
 import { usePromptBuilder } from './PromptBuilderContext';
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { promptTemplateSource } from '../constants';
+import { promptTemplateSource } from './constants';
 
 interface FormatContentProps {
   updateContent?: (content: string) => void;

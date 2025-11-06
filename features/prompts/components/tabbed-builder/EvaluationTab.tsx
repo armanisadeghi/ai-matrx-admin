@@ -5,7 +5,7 @@ import { TabBase } from './TabBase';
 import { usePromptBuilder } from './PromptBuilderContext';
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { promptTemplateSource } from '../constants';
+import { promptTemplateSource } from './constants';
 
 interface EvaluationContentProps {
   updateContent?: (content: string) => void;
