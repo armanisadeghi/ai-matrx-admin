@@ -448,6 +448,10 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                             "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
                             className
                         )}
+                        style={{ 
+                            overflowWrap: 'anywhere',
+                            wordBreak: 'normal'
+                        }}
                         {...props}
                     >
                         {children}
@@ -496,6 +500,25 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                     /* Increase font size for standalone math paragraphs */
                     .math-content-wrapper p.text-center .katex {
                         font-size: 1.5em;
+                    }
+                    /* Override pre tags that contain inline code (indented text blocks) */
+                    .math-content-wrapper pre:has(> code.bg-blue-100),
+                    .math-content-wrapper pre:has(> code.dark\\:bg-blue-900\\/30) {
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                        overflow-wrap: anywhere;
+                        font-family: inherit;
+                        background: transparent;
+                        padding: 0;
+                        margin: 0;
+                    }
+                    /* Make the code inside these pre tags behave like inline code */
+                    .math-content-wrapper pre:has(> code.bg-blue-100) > code,
+                    .math-content-wrapper pre:has(> code.dark\\:bg-blue-900\\/30) > code {
+                        white-space: normal;
+                        display: inline;
+                        overflow-wrap: anywhere;
+                        word-break: normal;
                     }
                 `
             }} />

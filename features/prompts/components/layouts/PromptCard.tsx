@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
-import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, Sparkles } from "lucide-react";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, LayoutPanelTop } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
@@ -251,7 +251,7 @@ export function PromptCard({
                     />
                     {isSystemAdmin && (
                         <IconButton
-                            icon={isConvertingToTemplate ? Loader2 : Sparkles}
+                            icon={isConvertingToTemplate ? Loader2 : LayoutPanelTop}
                             tooltip={isConvertingToTemplate ? "Converting..." : isDisabled ? "Please wait..." : "Convert to Template"}
                             size="sm"
                             variant="ghost"

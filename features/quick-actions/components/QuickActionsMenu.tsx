@@ -124,7 +124,6 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                 isOpen={isNotesOpen}
                 onClose={() => setIsNotesOpen(false)}
                 title="Quick Notes"
-                description="Quickly capture or retrieve notes without losing focus"
                 position="right"
                 width="xl"
                 height="full"
@@ -140,7 +139,6 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                 isOpen={isTasksOpen}
                 onClose={() => setIsTasksOpen(false)}
                 title="Quick Tasks"
-                description="Manage tasks and projects without losing context"
                 position="right"
                 width="xl"
                 height="full"
@@ -172,7 +170,6 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                 isOpen={isDataOpen}
                 onClose={() => setIsDataOpen(false)}
                 title="Data Tables"
-                description="View and manage your data tables"
                 position="right"
                 width="xl"
                 height="full"
