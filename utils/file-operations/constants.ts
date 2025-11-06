@@ -586,6 +586,9 @@ export type EnhancedFileDetails = Omit<FileTypeDetails, "icon"> & {
     mimetype?: string;
     size?: number;
     localId?: string;
+    // URL expiration tracking for automatic refresh
+    expiresAt?: Date | string;
+    isPublic?: boolean;
 };
 
 export const getFileDetailsByUrl = (url: string, metadata?: StorageMetadata, localId?: string): EnhancedFileDetails => {

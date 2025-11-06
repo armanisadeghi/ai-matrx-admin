@@ -20,8 +20,10 @@ export default function AllFilesPage() {
   const [previewFile, setPreviewFile] = useState<{
     node: FileSystemNode;
     bucket: AvailableBuckets;
+    url?: string;
+    expiresAt?: Date;
+    isPublic?: boolean;
   } | null>(null);
-  const [fileUrl, setFileUrl] = useState<string>('');
   const [isLoadingUrl, setIsLoadingUrl] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -32,8 +34,8 @@ export default function AllFilesPage() {
 
   // Fetch file URL when preview file changes
   useEffect(() => {
-    if (!previewFile) {
-      setFileUrl('');
+    if (!previewFile || previewFile.url) {
+      // If we already have a URL, no need to fetch
       return;
     }
 
@@ -46,7 +48,14 @@ export default function AllFilesPage() {
           previewFile.node.storagePath,
           { expiresIn: 3600 }
         );
-        setFileUrl(urlResult.url);
+        
+        // Update the preview file with URL metadata
+        setPreviewFile(prev => prev ? {
+          ...prev,
+          url: urlResult.url,
+          expiresAt: urlResult.expiresAt,
+          isPublic: urlResult.isPublic
+        } : null);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load file';
         toast({
@@ -61,7 +70,7 @@ export default function AllFilesPage() {
     };
 
     fetchUrl();
-  }, [previewFile, toast]);
+  }, [previewFile?.node.itemId, toast]);
 
   const handleViewFile = useCallback((node: FileSystemNode) => {
     if (node.contentType === 'FOLDER') return;
@@ -73,7 +82,6 @@ export default function AllFilesPage() {
 
   const handleClosePreview = useCallback(() => {
     setPreviewFile(null);
-    setFileUrl('');
   }, []);
 
   // Mobile view - iOS-inspired single-column navigation
@@ -137,9 +145,15 @@ export default function AllFilesPage() {
           isOpen={true}
           onClose={handleClosePreview}
           file={{
-            url: fileUrl || '',
+            url: previewFile.url || '',
             type: previewFile.node.metadata?.mimetype || 'application/octet-stream',
-            details: fileUrl ? getFileDetailsByUrl(fileUrl, previewFile.node.metadata) : undefined,
+            details: previewFile.url ? {
+              ...getFileDetailsByUrl(previewFile.url, previewFile.node.metadata),
+              bucket: previewFile.bucket,
+              path: previewFile.node.storagePath,
+              expiresAt: previewFile.expiresAt,
+              isPublic: previewFile.isPublic,
+            } : undefined,
           }}
         />
       )}

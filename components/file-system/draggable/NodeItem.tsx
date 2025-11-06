@@ -15,6 +15,7 @@ import { FileContextMenu } from '../context-menu/FileContextMenu';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getFileDetailsByExtension, getFolderDetails } from '@/utils/file-operations';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NodeItemProps {
   node: FileSystemNode;
@@ -36,6 +37,7 @@ export function NodeItem({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoadingFolder, setIsLoadingFolder] = useState(false);
+  const isMobile = useIsMobile();
   
   const dispatch = useAppDispatch();
   const { activeBucket } = useFileSystem();
@@ -206,8 +208,14 @@ export function NodeItem({
           <Button
             variant="ghost"
             size="icon"
-            className="h-5 w-5 ml-2 opacity-0 group-hover/node:opacity-100 transition-opacity flex-shrink-0"
-            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              "h-5 w-5 ml-2 transition-opacity flex-shrink-0",
+              isMobile ? "opacity-100" : "opacity-0 group-hover/node:opacity-100"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
           >
             <MoreVertical className="h-3 w-3" />
           </Button>

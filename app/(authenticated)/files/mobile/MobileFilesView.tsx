@@ -12,15 +12,17 @@ export default function MobileFilesView() {
   const [previewFile, setPreviewFile] = useState<{
     node: FileSystemNode;
     bucket: AvailableBuckets;
+    url?: string;
+    expiresAt?: Date;
+    isPublic?: boolean;
   } | null>(null);
-  const [fileUrl, setFileUrl] = useState<string>('');
   const [isLoadingUrl, setIsLoadingUrl] = useState(false);
   const { toast } = useToast();
 
   // Fetch file URL when preview file changes
   useEffect(() => {
-    if (!previewFile) {
-      setFileUrl('');
+    if (!previewFile || previewFile.url) {
+      // If we already have a URL, no need to fetch
       return;
     }
 
@@ -33,7 +35,14 @@ export default function MobileFilesView() {
           previewFile.node.storagePath,
           { expiresIn: 3600 }
         );
-        setFileUrl(urlResult.url);
+        
+        // Update the preview file with URL metadata
+        setPreviewFile(prev => prev ? {
+          ...prev,
+          url: urlResult.url,
+          expiresAt: urlResult.expiresAt,
+          isPublic: urlResult.isPublic
+        } : null);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load file';
         toast({
@@ -48,7 +57,7 @@ export default function MobileFilesView() {
     };
 
     fetchUrl();
-  }, [previewFile, toast]);
+  }, [previewFile?.node.itemId, toast]);
 
   const handleFileSelect = useCallback((node: FileSystemNode, bucket: AvailableBuckets | null) => {
     if (node.contentType === 'FOLDER' || !bucket) return;
@@ -59,7 +68,6 @@ export default function MobileFilesView() {
 
   const handleClosePreview = useCallback(() => {
     setPreviewFile(null);
-    setFileUrl('');
   }, []);
 
   return (
@@ -74,9 +82,15 @@ export default function MobileFilesView() {
           isOpen={true}
           onClose={handleClosePreview}
           file={{
-            url: fileUrl || '',
+            url: previewFile.url || '',
             type: previewFile.node.metadata?.mimetype || 'application/octet-stream',
-            details: fileUrl ? getFileDetailsByUrl(fileUrl, previewFile.node.metadata) : undefined,
+            details: previewFile.url ? {
+              ...getFileDetailsByUrl(previewFile.url, previewFile.node.metadata),
+              bucket: previewFile.bucket,
+              path: previewFile.node.storagePath,
+              expiresAt: previewFile.expiresAt,
+              isPublic: previewFile.isPublic,
+            } : undefined,
           }}
         />
       )}

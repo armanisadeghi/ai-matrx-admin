@@ -53,39 +53,42 @@ export function DirectoryTreePicker({
   const toggleFolder = useCallback(async (folder: FileSystemNode) => {
     const folderId = folder.itemId;
     
-    if (expandedFolders.has(folderId)) {
-      // Collapse folder
-      setExpandedFolders(prev => {
-        const next = new Set(prev);
+    setExpandedFolders(prev => {
+      const isExpanded = prev.has(folderId);
+      const next = new Set(prev);
+      
+      if (isExpanded) {
+        // Collapse folder
         next.delete(folderId);
-        return next;
-      });
-    } else {
-      // Expand folder
-      setExpandedFolders(prev => new Set(prev).add(folderId));
-      
-      // Load contents if not already loaded (check nodeCache)
-      const cache = fileSystemState.nodeCache[folderId];
-      const hasChildren = cache && cache.childNodeIds && cache.childNodeIds.length > 0;
-      
-      if (!hasChildren) {
-        setLoadingFolders(prev => new Set(prev).add(folderId));
-        try {
-          await dispatch(actions.listContents({ 
+      } else {
+        // Expand folder
+        next.add(folderId);
+        
+        // Load contents if not already loaded (check nodeCache)
+        const cache = fileSystemState.nodeCache[folderId];
+        const hasChildren = cache && cache.childNodeIds && cache.childNodeIds.length > 0;
+        
+        if (!hasChildren) {
+          setLoadingFolders(prev => new Set(prev).add(folderId));
+          dispatch(actions.listContents({ 
             forceFetch: false 
-          })).unwrap();
-        } catch (error) {
-          console.error('Failed to load folder contents:', error);
-        } finally {
-          setLoadingFolders(prev => {
-            const next = new Set(prev);
-            next.delete(folderId);
-            return next;
-          });
+          })).unwrap()
+            .catch(error => {
+              console.error('Failed to load folder contents:', error);
+            })
+            .finally(() => {
+              setLoadingFolders(prev => {
+                const next = new Set(prev);
+                next.delete(folderId);
+                return next;
+              });
+            });
         }
       }
-    }
-  }, [expandedFolders, dispatch, actions, fileSystemState.nodeCache]);
+      
+      return next;
+    });
+  }, [dispatch, actions, fileSystemState.nodeCache]);
 
   const handleSelectFolder = useCallback((folder: FileSystemNode) => {
     const path = folder.storagePath || folder.itemId;
@@ -96,7 +99,7 @@ export function DirectoryTreePicker({
     return excludePaths.some(excluded => path.startsWith(excluded) || excluded.startsWith(path));
   }, [excludePaths]);
 
-  const renderFolder = useCallback((folder: FileSystemNode, level: number = 0) => {
+  const renderFolder = (folder: FileSystemNode, level: number = 0): React.ReactNode => {
     const isExpanded = expandedFolders.has(folder.itemId);
     const isLoading = loadingFolders.has(folder.itemId);
     const isSelected = selectedPath === (folder.storagePath || folder.itemId);
@@ -161,7 +164,7 @@ export function DirectoryTreePicker({
         )}
       </div>
     );
-  }, [expandedFolders, loadingFolders, selectedPath, allNodes, fileSystemState.nodeCache, isExcluded, handleSelectFolder, toggleFolder]);
+  };
 
   // Get only folders from root
   const rootFolders = rootNodes.filter(node => 

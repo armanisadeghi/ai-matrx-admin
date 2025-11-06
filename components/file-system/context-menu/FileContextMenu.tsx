@@ -7,6 +7,7 @@ import { useFilePreview } from '@/components/file-system/preview';
 import { createFileSystemSlice } from '@/lib/redux/fileSystem/slice';
 import { createFileSystemSelectors } from '@/lib/redux/fileSystem/selectors';
 import { FileSystemNode, AvailableBuckets } from '@/lib/redux/fileSystem/types';
+import FileSystemManager from '@/utils/file-operations/FileSystemManager';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -31,6 +32,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { FileOperationModals } from './FileOperationModals';
 import {
   File,
@@ -81,23 +85,72 @@ export function FileContextMenu({
   const [isLoading, setIsLoading] = useState(false);
   const [showPublicLinkModal, setShowPublicLinkModal] = useState(false);
   const [showFileInfoModal, setShowFileInfoModal] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
 
   // Get the nodes to operate on (selected nodes if multiple, or just the clicked node)
   const operatingNodes = selectedNodes.length > 1 ? selectedNodes : [node];
   const isMultiSelect = operatingNodes.length > 1;
 
   // Handle rename
-  const handleRename = useCallback(() => {
-    // Trigger inline rename in the tree
-    if (!isMultiSelect) {
+  const handleRenameConfirm = useCallback(async () => {
+    if (isMultiSelect || !renameValue.trim()) return;
+    
+    try {
+      setIsLoading(true);
+      
+      const extension = node.extension;
+      // Add extension back if user didn't include it
+      let finalName = renameValue.trim();
+      const newExtension = finalName.includes('.') ? finalName.split('.').pop() : '';
+      if (extension && !newExtension) {
+        finalName = `${finalName}.${extension}`;
+      }
+      
+      // Select the node first
       dispatch(actions.selectNode({
         nodeId: node.itemId,
         isMultiSelect: false,
         isRangeSelect: false
       }));
-      // The NodeItem component will handle showing the rename editor
+      
+      // Dispatch rename action
+      await dispatch(actions.renameActiveNode({ newName: finalName })).unwrap();
+      
+      // Refresh folder contents
+      await dispatch(actions.listContents({ forceFetch: true })).unwrap();
+      
+      toast({
+        title: "Success",
+        description: "File renamed successfully"
+      });
+      
+      setShowRenameModal(false);
+      setRenameValue('');
+    } catch (error) {
+      console.error('Rename failed:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to rename file",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [dispatch, actions, node.itemId, isMultiSelect]);
+  }, [dispatch, actions, node, isMultiSelect, toast, renameValue]);
+
+  const openRenameModal = useCallback(() => {
+    const currentName = node.name;
+    const extension = node.extension;
+    
+    // Get name without extension for editing
+    const nameWithoutExt = extension && currentName.endsWith(`.${extension}`)
+      ? currentName.substring(0, currentName.length - extension.length - 1)
+      : currentName;
+    
+    setRenameValue(nameWithoutExt);
+    setShowRenameModal(true);
+  }, [node]);
 
   // Handle delete
   const handleDelete = useCallback(async () => {
@@ -144,20 +197,38 @@ export function FileContextMenu({
   const handleDuplicate = useCallback(async (destinationPath: string) => {
     try {
       setIsLoading(true);
+      const fileSystemManager = FileSystemManager.getInstance();
       
-      // Clear selection first to ensure clean state
-      dispatch(actions.clearSelection());
+      // Duplicate each file
+      for (const node of operatingNodes) {
+        if (node.contentType === 'FOLDER') {
+          toast({
+            title: "Warning",
+            description: "Folder duplication is not yet supported",
+            variant: "destructive",
+          });
+          continue;
+        }
+        
+        const sourcePath = node.storagePath || node.itemId;
+        const fileName = node.name;
+        const extension = node.extension;
+        const nameWithoutExt = extension && fileName.endsWith(`.${extension}`)
+          ? fileName.substring(0, fileName.length - extension.length - 1)
+          : fileName;
+        
+        // Create destination path with _copy suffix
+        const newFileName = extension 
+          ? `${nameWithoutExt}_copy.${extension}`
+          : `${nameWithoutExt}_copy`;
+        const destinationFilePath = destinationPath 
+          ? `${destinationPath}/${newFileName}`
+          : newFileName;
+        
+        await fileSystemManager.copyFile(bucketName, sourcePath, destinationFilePath);
+      }
       
-      // Select the nodes we want to duplicate (first without multi-select, rest with multi-select)
-      operatingNodes.forEach((n, index) => {
-        dispatch(actions.selectNode({
-          nodeId: n.itemId,
-          isMultiSelect: index > 0, // First node: false, rest: true
-          isRangeSelect: false
-        }));
-      });
-
-      await dispatch(actions.duplicateSelections({ newPath: destinationPath })).unwrap();
+      // Refresh folder contents
       await dispatch(actions.listContents({ forceFetch: true })).unwrap();
       
       toast({
@@ -170,32 +241,34 @@ export function FileContextMenu({
       console.error('Duplicate failed:', error);
       toast({
         title: "Error",
-        description: "Failed to duplicate item(s)",
+        description: error instanceof Error ? error.message : "Failed to duplicate item(s)",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, actions, operatingNodes, toast]);
+  }, [dispatch, actions, operatingNodes, bucketName, toast]);
 
   // Handle move
   const handleMove = useCallback(async (destinationPath: string) => {
     try {
       setIsLoading(true);
+      const fileSystemManager = FileSystemManager.getInstance();
       
-      // Clear selection first to ensure clean state
-      dispatch(actions.clearSelection());
+      // Move each file
+      for (const node of operatingNodes) {
+        const sourcePath = node.storagePath || node.itemId;
+        const fileName = node.name;
+        
+        // Create destination path
+        const destinationFilePath = destinationPath 
+          ? `${destinationPath}/${fileName}`
+          : fileName;
+        
+        await fileSystemManager.moveFile(bucketName, sourcePath, destinationFilePath);
+      }
       
-      // Select the nodes we want to move (first without multi-select, rest with multi-select)
-      operatingNodes.forEach((n, index) => {
-        dispatch(actions.selectNode({
-          nodeId: n.itemId,
-          isMultiSelect: index > 0, // First node: false, rest: true
-          isRangeSelect: false
-        }));
-      });
-
-      await dispatch(actions.moveSelections({ newPath: destinationPath })).unwrap();
+      // Refresh folder contents
       await dispatch(actions.listContents({ forceFetch: true })).unwrap();
       
       toast({
@@ -208,13 +281,13 @@ export function FileContextMenu({
       console.error('Move failed:', error);
       toast({
         title: "Error",
-        description: "Failed to move item(s)",
+        description: error instanceof Error ? error.message : "Failed to move item(s)",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, actions, operatingNodes, toast]);
+  }, [dispatch, actions, operatingNodes, bucketName, toast]);
 
   // Handle share
   const handleShare = useCallback(async (shareType: 'public' | 'private', expiresIn?: number) => {
@@ -260,13 +333,17 @@ export function FileContextMenu({
   const handleDownload = useCallback(async () => {
     try {
       setIsLoading(true);
+      const fileSystemManager = FileSystemManager.getInstance();
       
-      const result = await dispatch(actions.downloadFile({
-        forceFetch: true,
-      })).unwrap();
+      const filePath = node.storagePath || node.itemId;
+      const blob = await fileSystemManager.downloadFile(bucketName, filePath);
+      
+      if (!blob) {
+        throw new Error('Failed to download file');
+      }
       
       // Create download link
-      const url = URL.createObjectURL(result.blob);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = node.name;
@@ -283,13 +360,13 @@ export function FileContextMenu({
       console.error('Download failed:', error);
       toast({
         title: "Error",
-        description: "Failed to download file",
+        description: error instanceof Error ? error.message : "Failed to download file",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, actions, node, toast]);
+  }, [node, bucketName, toast]);
 
   // Handle view
   const handleView = useCallback(() => {
@@ -302,19 +379,22 @@ export function FileContextMenu({
   const handleCopyPublicLink = useCallback(async (makePublic: boolean, expiresIn?: number) => {
     try {
       setIsLoading(true);
+      const fileSystemManager = FileSystemManager.getInstance();
       
-      const result = await dispatch(actions.getPublicFile({
-        nodeId: node.itemId,
-        expiresIn: makePublic ? undefined : (expiresIn || 3600),
-      })).unwrap();
+      const filePath = node.storagePath || node.itemId;
+      const urlResult = await fileSystemManager.getFileUrl(
+        bucketName,
+        filePath,
+        { expiresIn: makePublic ? 31536000 : (expiresIn || 3600) } // 1 year for "permanent"
+      );
       
-      if (result.url) {
-        await navigator.clipboard.writeText(result.url);
+      if (urlResult.url) {
+        await navigator.clipboard.writeText(urlResult.url);
         toast({
           title: "Success",
           description: makePublic 
             ? "Public link copied to clipboard (permanent)" 
-            : "Temporary link copied to clipboard (expires in 1 hour)",
+            : "Temporary link copied to clipboard",
         });
       }
       
@@ -323,13 +403,13 @@ export function FileContextMenu({
       console.error('Failed to copy link:', error);
       toast({
         title: "Error",
-        description: "Failed to generate link",
+        description: error instanceof Error ? error.message : "Failed to generate link",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, actions, node, toast]);
+  }, [node, bucketName, toast]);
 
   // Handle open (for folders)
   const handleOpen = useCallback(async () => {
@@ -378,7 +458,7 @@ export function FileContextMenu({
       )}
 
       {!isMultiSelect && (
-        <ContextMenuItem onClick={handleRename}>
+        <ContextMenuItem onClick={openRenameModal}>
           <Edit className="h-3.5 w-3.5 mr-2" />
           Rename
           <ContextMenuShortcut>F2</ContextMenuShortcut>
@@ -429,7 +509,7 @@ export function FileContextMenu({
     <>
       {!isMultiSelect && node.contentType === 'FOLDER' && (
         <>
-          <DropdownMenuItem onClick={handleOpen}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpen(); }}>
             <Folder className="h-3.5 w-3.5 mr-2" />
             Open
           </DropdownMenuItem>
@@ -439,15 +519,15 @@ export function FileContextMenu({
       
       {!isMultiSelect && node.contentType === 'FILE' && (
         <>
-          <DropdownMenuItem onClick={handleView}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleView(); }}>
             <Eye className="h-3.5 w-3.5 mr-2" />
             View
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowFileInfoModal(true)}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShowFileInfoModal(true); }}>
             <Info className="h-3.5 w-3.5 mr-2" />
             File Info
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDownload}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownload(); }}>
             <Download className="h-3.5 w-3.5 mr-2" />
             Download
           </DropdownMenuItem>
@@ -456,29 +536,29 @@ export function FileContextMenu({
       )}
 
       {!isMultiSelect && (
-        <DropdownMenuItem onClick={handleRename}>
+        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openRenameModal(); }}>
           <Edit className="h-3.5 w-3.5 mr-2" />
           Rename
         </DropdownMenuItem>
       )}
 
-      <DropdownMenuItem onClick={() => setActiveModal('duplicate')}>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setActiveModal('duplicate'); }}>
         <Copy className="h-3.5 w-3.5 mr-2" />
         Duplicate
       </DropdownMenuItem>
 
-      <DropdownMenuItem onClick={() => setActiveModal('move')}>
+      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setActiveModal('move'); }}>
         <FileInput className="h-3.5 w-3.5 mr-2" />
         Move
       </DropdownMenuItem>
 
       {!isMultiSelect && node.contentType === 'FILE' && (
         <>
-          <DropdownMenuItem onClick={() => setShowPublicLinkModal(true)}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShowPublicLinkModal(true); }}>
             <Link className="h-3.5 w-3.5 mr-2" />
             Copy Public Link
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setActiveModal('share')}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setActiveModal('share'); }}>
             <Share2 className="h-3.5 w-3.5 mr-2" />
             Share
           </DropdownMenuItem>
@@ -488,7 +568,7 @@ export function FileContextMenu({
       <DropdownMenuSeparator />
 
       <DropdownMenuItem 
-        onClick={() => setActiveModal('delete')}
+        onClick={(e) => { e.stopPropagation(); setActiveModal('delete'); }}
         className="text-destructive focus:text-destructive"
       >
         <Trash2 className="h-3.5 w-3.5 mr-2" />
@@ -501,10 +581,13 @@ export function FileContextMenu({
     <>
       {asDropdown ? (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}>
             {children}
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
             {dropdownItems}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -597,6 +680,68 @@ export function FileContextMenu({
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPublicLinkModal(false)} disabled={isLoading}>
               Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename Modal */}
+      <Dialog open={showRenameModal} onOpenChange={setShowRenameModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Rename File
+            </DialogTitle>
+            <DialogDescription>
+              Enter a new name for {node.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="rename-input">File Name</Label>
+              <Input
+                id="rename-input"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                placeholder="Enter new name"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleRenameConfirm();
+                  } else if (e.key === 'Escape') {
+                    setShowRenameModal(false);
+                    setRenameValue('');
+                  }
+                }}
+                autoFocus
+              />
+              {node.extension && (
+                <p className="text-xs text-muted-foreground">
+                  Extension .{node.extension} will be added automatically if not included
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowRenameModal(false);
+                setRenameValue('');
+              }} 
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleRenameConfirm} disabled={isLoading || !renameValue.trim()}>
+              {isLoading ? (
+                <>
+                  <Spinner size="xs" className="mr-2" />
+                  Renaming...
+                </>
+              ) : (
+                'Rename'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -764,7 +909,7 @@ export function FileContextMenu({
                   size="sm"
                   onClick={() => {
                     setShowFileInfoModal(false);
-                    setActiveModal('rename');
+                    openRenameModal();
                   }}
                   className="w-full"
                 >

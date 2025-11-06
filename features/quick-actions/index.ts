@@ -14,4 +14,5 @@ export { UtilitiesOverlay } from './components/UtilitiesOverlay';
 // Quick Sheet Components
 export { QuickChatSheet } from './components/QuickChatSheet';
 export { QuickDataSheet } from './components/QuickDataSheet';
+export { QuickFilesSheet } from './components/QuickFilesSheet';
 

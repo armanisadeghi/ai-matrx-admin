@@ -23,6 +23,7 @@ import {
     ListTodo,
     ClipboardType,
     LayoutDashboard,
+    FolderOpen,
 } from "lucide-react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
@@ -115,6 +116,15 @@ export const allNavigationLinks: NavigationLink[] = [
         profileMenu: true,
         dashboard: true,
         favicon: { color: "#10b981", letter: "T" }, // Green
+    },
+    {
+        label: "Files",
+        href: "/files",
+        icon: <FolderOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        section: "primary",
+        profileMenu: true,
+        dashboard: true,
+        favicon: { color: "#6366f1", letter: "F" }, // Indigo
     },
     {
         label: "Tables",

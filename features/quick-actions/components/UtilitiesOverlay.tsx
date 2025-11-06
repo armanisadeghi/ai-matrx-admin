@@ -7,14 +7,15 @@ import { NotesLayout } from '@/features/notes';
 import TaskApp from '@/features/tasks/components/TaskApp';
 import { QuickChatSheet } from './QuickChatSheet';
 import { QuickDataSheet } from './QuickDataSheet';
+import { QuickFilesSheet } from './QuickFilesSheet';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { StickyNote, CheckSquare, MessageSquare, Database, ExternalLink } from 'lucide-react';
+import { StickyNote, CheckSquare, MessageSquare, Database, FolderOpen, ExternalLink } from 'lucide-react';
 
 interface UtilitiesOverlayProps {
     isOpen: boolean;
     onClose: () => void;
-    initialTab?: 'notes' | 'tasks' | 'chat' | 'data';
+    initialTab?: 'notes' | 'tasks' | 'chat' | 'data' | 'files';
 }
 
 export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: UtilitiesOverlayProps) {
@@ -77,6 +78,20 @@ export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: Util
                 </div>
             ),
         },
+        {
+            id: 'files',
+            label: (
+                <div className="flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4" />
+                    <span>Files</span>
+                </div>
+            ) as any,
+            content: (
+                <div className="h-full">
+                    <QuickFilesSheet />
+                </div>
+            ),
+        },
     ];
 
     // Get the route based on active tab
@@ -88,6 +103,8 @@ export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: Util
                 return '/tasks';
             case 'data':
                 return '/data';
+            case 'files':
+                return '/files';
             default:
                 return null;
         }

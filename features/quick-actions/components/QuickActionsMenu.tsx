@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { StickyNote, Zap, LayoutGrid, CheckSquare, MessageSquare, Database } from 'lucide-react';
+import { StickyNote, Zap, LayoutGrid, CheckSquare, MessageSquare, Database, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -18,6 +18,7 @@ import { QuickNotesSheet } from '@/features/notes';
 import { QuickTasksSheet } from '@/features/tasks';
 import { QuickChatSheet } from './QuickChatSheet';
 import { QuickDataSheet } from './QuickDataSheet';
+import { QuickFilesSheet } from './QuickFilesSheet';
 import { UtilitiesOverlay } from './UtilitiesOverlay';
 
 interface QuickActionsMenuProps {
@@ -29,6 +30,7 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
     const [isTasksOpen, setIsTasksOpen] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isDataOpen, setIsDataOpen] = useState(false);
+    const [isFilesOpen, setIsFilesOpen] = useState(false);
     const [isUtilitiesOpen, setIsUtilitiesOpen] = useState(false);
 
     return (
@@ -98,6 +100,18 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                                 <div className="flex flex-col">
                                     <span>Data</span>
                                     <span className="text-xs text-zinc-500">View & manage tables</span>
+                                </div>
+                            </DropdownMenuItem>
+
+                            {/* Files Option */}
+                            <DropdownMenuItem
+                                onClick={() => setIsFilesOpen(true)}
+                                className="cursor-pointer"
+                            >
+                                <FolderOpen className="h-4 w-4 mr-2" />
+                                <div className="flex flex-col">
+                                    <span>Files</span>
+                                    <span className="text-xs text-zinc-500">Upload & browse files</span>
                                 </div>
                             </DropdownMenuItem>
 
@@ -178,6 +192,22 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                 showCloseButton={true}
             >
                 <QuickDataSheet onClose={() => setIsDataOpen(false)} />
+            </FloatingSheet>
+
+            {/* Files Sheet */}
+            <FloatingSheet
+                isOpen={isFilesOpen}
+                onClose={() => setIsFilesOpen(false)}
+                title=""
+                position="right"
+                width="xl"
+                height="full"
+                closeOnBackdropClick={true}
+                closeOnEsc={true}
+                showCloseButton={false}
+                contentClassName="p-0"
+            >
+                <QuickFilesSheet onClose={() => setIsFilesOpen(false)} />
             </FloatingSheet>
 
             {/* Utilities Hub Overlay */}
