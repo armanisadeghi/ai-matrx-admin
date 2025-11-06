@@ -92,8 +92,11 @@ export function NodeItem({
           setIsLoadingFolder(false);
         }
       }
+    } else if (!isFolder && onViewFile && !isCtrlKey && !isShiftKey) {
+      // Call onViewFile for regular file clicks (not folders, not multi-select)
+      onViewFile(node);
     }
-  }, [dispatch, actions, node.itemId, isFolder, isExpanded, selectionRange.start, onUpdateSelectionRange]);
+  }, [dispatch, actions, node.itemId, isFolder, isExpanded, selectionRange.start, onUpdateSelectionRange, onViewFile, node]);
 
   const handleRename = async (newName: string) => {
     dispatch(actions.selectNode({
