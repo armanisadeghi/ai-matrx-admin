@@ -5,13 +5,14 @@ import { ChevronRight, Database, FolderOpen, FileIcon } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import MultiBucketFileTree from '@/components/file-system/draggable/MultiBucketFileTree';
 import { FileSystemNode, AvailableBuckets } from '@/lib/redux/fileSystem/types';
+import MobileFileUpload from './MobileFileUpload';
 
 interface MobileFilesListProps {
   onFileSelect: (node: FileSystemNode, bucket: AvailableBuckets | null) => void;
 }
 
 export default function MobileFilesList({ onFileSelect }: MobileFilesListProps) {
-  const [selectedBucket, setSelectedBucket] = useState<AvailableBuckets | null>(null);
+  const [selectedBucket, setSelectedBucket] = useState<AvailableBuckets | null>('userContent');
 
   const handleBucketSelect = useCallback((bucket: AvailableBuckets) => {
     setSelectedBucket(bucket);
@@ -21,6 +22,10 @@ export default function MobileFilesList({ onFileSelect }: MobileFilesListProps) 
     onFileSelect(node, selectedBucket);
   }, [onFileSelect, selectedBucket]);
 
+  const handleUploadComplete = useCallback(() => {
+    // Files list will auto-refresh via Redux
+  }, []);
+
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Header */}
@@ -29,6 +34,11 @@ export default function MobileFilesList({ onFileSelect }: MobileFilesListProps) 
           <div className="flex items-center gap-2">
             <Database className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold text-foreground">Files</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {selectedBucket && (
+              <MobileFileUpload bucket={selectedBucket} onUploadComplete={handleUploadComplete} />
+            )}
           </div>
         </div>
         {selectedBucket && (
