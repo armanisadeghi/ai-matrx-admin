@@ -325,7 +325,7 @@ export function PromptInput({
             )}
             
             {/* Text Area */}
-            <div className="px-0.5 pt-1.5">
+            <div className="px-2 pt-1.5">
                 <textarea
                     ref={textareaRef}
                     value={chatInput}

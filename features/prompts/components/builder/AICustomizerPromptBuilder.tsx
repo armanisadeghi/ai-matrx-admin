@@ -24,6 +24,7 @@ export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromp
     const { createPrompt } = usePromptBuilder(router, onClose);
     const [isSaving, setIsSaving] = useState(false);
     const [customizationState, setCustomizationState] = useState<Record<string, ConfigState>>({});
+    const [stateInitialized, setStateInitialized] = useState(false);
 
     // Generate system message from customization state
     const generateSystemMessage = (state: Record<string, ConfigState>): string => {
@@ -130,19 +131,26 @@ export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromp
 
     const handleCustomizationSave = (state: Record<string, ConfigState>) => {
         setCustomizationState(state);
+        setStateInitialized(true);
     };
 
     const handleCreatePrompt = async () => {
         setIsSaving(true);
         
         try {
-            // Generate the system message from customization state
-            const systemMessage = generateSystemMessage(customizationState);
-
-            // Auto-generate name based on personality
+            // If state hasn't been explicitly saved, it means the user hasn't clicked save
+            // But we still want to create with an empty/default system message
+            let systemMessage = "You are a helpful AI assistant.";
             let autoName = "AI Assistant";
-            if (customizationState.communicationStyle?.personality) {
-                autoName = `${customizationState.communicationStyle.personality} Assistant`;
+
+            // If we have customization state, use it
+            if (stateInitialized && Object.keys(customizationState).length > 0) {
+                systemMessage = generateSystemMessage(customizationState);
+                
+                // Auto-generate name based on personality
+                if (customizationState.communicationStyle?.personality) {
+                    autoName = `${customizationState.communicationStyle.personality} Assistant`;
+                }
             }
 
             // Use the prompt builder service
@@ -172,6 +180,11 @@ export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromp
 
             {/* Create Button */}
             <div className="flex-shrink-0 p-3 border-t bg-muted/30">
+                {!stateInitialized && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 text-center">
+                        Click "Save My Experience" above to capture your settings before creating
+                    </p>
+                )}
                 <Button
                     onClick={handleCreatePrompt}
                     disabled={isSaving}
@@ -185,7 +198,7 @@ export default function AICustomizerPromptBuilder({ onClose }: AICustomizerPromp
                     ) : (
                         <>
                             <Check className="h-4 w-4 mr-2" />
-                            Create Prompt
+                            Create Prompt {stateInitialized ? "" : "(Default)"}
                         </>
                     )}
                 </Button>

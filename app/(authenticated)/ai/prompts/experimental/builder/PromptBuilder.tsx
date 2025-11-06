@@ -11,19 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
     CheckIcon,
     CopyIcon,
-    Braces,
-    PenTool,
-    MessageSquare,
-    FileText,
-    Layers,
-    Sliders,
-    Users,
-    AlertTriangle,
-    CheckSquare,
 } from "lucide-react";
 import { promptBuilderTabs, promptTemplateSource } from "@/features/prompts/components/tabbed-builder/constants";
 
