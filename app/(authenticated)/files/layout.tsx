@@ -1,16 +1,22 @@
+'use client';
+
 import React from 'react';
 import { FileManagerSidebar } from './components/FileManagerSidebar';
-
-export const metadata = {
-  title: 'File Manager | AI Matrx',
-  description: 'Manage your files across all storage buckets',
-};
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function FilesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const isMobile = useIsMobile();
+
+  // On mobile, skip the sidebar layout entirely and let the page handle its own layout
+  if (isMobile) {
+    return <>{children}</>;
+  }
+
+  // Desktop view with sidebar
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-textured">
       <FileManagerSidebar />
