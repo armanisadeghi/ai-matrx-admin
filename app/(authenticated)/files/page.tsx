@@ -6,8 +6,11 @@ import MultiBucketFileTree from '@/components/file-system/draggable/MultiBucketF
 import { FileDetailsPanel } from '@/components/file-system/details';
 import { FileSystemNode, AvailableBuckets } from '@/lib/redux/fileSystem/types';
 import { Database } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileFilesView from './mobile/MobileFilesView';
 
 export default function AllFilesPage() {
+  const isMobile = useIsMobile();
   const [selectedBucket, setSelectedBucket] = useState<AvailableBuckets | null>(null);
 
   const handleBucketSelect = useCallback((bucket: AvailableBuckets) => {
@@ -18,6 +21,12 @@ export default function AllFilesPage() {
     console.log('View file:', node);
   }, []);
 
+  // Mobile view - iOS-inspired single-column navigation
+  if (isMobile) {
+    return <MobileFilesView />;
+  }
+
+  // Desktop view - Sidebar + details layout
   return (
     <div className="flex h-page gap-4 p-4">
       {/* File Tree with Multiple Buckets */}

@@ -212,7 +212,7 @@ export function PromptInput({
 
     // Determine placeholder text
     const placeholderText = placeholder || (showVariables 
-        ? "Add a message to the bottom of your prompt..." 
+        ? "Add a message to the bottom of prompt..." 
         : "Type your message...");
 
     // Send button classes based on variant
