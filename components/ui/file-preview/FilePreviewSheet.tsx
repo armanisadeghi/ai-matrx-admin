@@ -1,6 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
-import { Download, ExternalLink, Info, X } from "lucide-react";
+import { Download, ExternalLink, Info, X, Maximize, Minimize } from "lucide-react";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import ImagePreview from "./previews/ImagePreview";
@@ -32,6 +32,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState<boolean>(false);
+    const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
     const { toast } = useToast();
 
     // Get file from local storage or use the public URL
@@ -158,9 +159,9 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
         const fileName = file.details?.filename || "File";
         const Icon = file.details?.icon;
         return (
-            <div className="flex items-center space-x-2">
-                {Icon && <Icon className={file.details?.color ? `${file.details.color}` : ""} />}
-                <span className="font-medium text-ellipsis overflow-hidden">{fileName}</span>
+            <div className="flex items-center gap-2 min-w-0">
+                {Icon && <Icon className={`flex-shrink-0 w-[18px] h-[18px] ${file.details?.color ? `${file.details.color}` : ""}`} />}
+                <span className="font-medium truncate">{fileName}</span>
             </div>
         );
     };
@@ -183,15 +184,15 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     const renderFileDetails = () => {
         if (!file.details) return null;
         return (
-            <div className={`bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 p-4 border-t ${showDetails ? "block" : "hidden"}`}>
-                <h3 className="font-medium mb-2">File Details</h3>
-                <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className={`bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 p-3 border-t ${showDetails ? "block" : "hidden"}`}>
+                <h3 className="font-medium mb-2 text-sm">File Details</h3>
+                <div className="grid grid-cols-3 gap-x-3 gap-y-1.5 text-xs">
                     <div className="text-gray-500 dark:text-gray-400">Type:</div>
                     <div className="col-span-2">{file.details.subCategory || file.details.category}</div>
                     {file.details.mimetype && (
                         <>
-                            <div className="text-gray-500 dark:text-gray-400">MIME Type:</div>
-                            <div className="col-span-2">{file.details.mimetype}</div>
+                            <div className="text-gray-500 dark:text-gray-400">MIME:</div>
+                            <div className="col-span-2 truncate">{file.details.mimetype}</div>
                         </>
                     )}
                     {file.details.size && (
@@ -215,7 +216,7 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     {file.details.bucket && (
                         <>
                             <div className="text-gray-500 dark:text-gray-400">Bucket:</div>
-                            <div className="col-span-2">{file.details.bucket}</div>
+                            <div className="col-span-2 truncate">{file.details.bucket}</div>
                         </>
                     )}
                 </div>
@@ -226,16 +227,32 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
     // Action buttons for the file
     const renderActionButtons = () => {
         return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className="p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                className="p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                onClick={() => setIsFullscreen(!isFullscreen)}
+                                aria-label="Toggle fullscreen"
+                            >
+                                {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{isFullscreen ? "Exit fullscreen" : "Fullscreen"}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div
+                                className="p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                 onClick={() => setShowDetails(!showDetails)}
                                 aria-label="Toggle file details"
                             >
-                                <Info size={22} />
+                                <Info size={20} />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -247,13 +264,13 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className={`p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
                                     !fileBlob ? "opacity-50 cursor-not-allowed" : ""
                                 }`}
                                 onClick={fileBlob ? handleDownload : undefined}
                                 aria-label="Download file"
                             >
-                                <Download size={22} />
+                                <Download size={20} />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -265,13 +282,13 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className={`p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                                className={`p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
                                     !fileUrl ? "opacity-50 cursor-not-allowed" : ""
                                 }`}
                                 onClick={fileUrl ? () => window.open(fileUrl, "_blank") : undefined}
                                 aria-label="Open in new tab"
                             >
-                                <ExternalLink size={22} />
+                                <ExternalLink size={20} />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -283,11 +300,11 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div
-                                className="p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                className="p-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                 onClick={onClose}
                                 aria-label="Close preview"
                             >
-                                <X size={22} />
+                                <X size={20} />
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -303,16 +320,18 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
         <FloatingSheet
             isOpen={isOpen}
             onClose={onClose}
-            position="right"
-            width="3xl"
-            height="xl"
+            position={isFullscreen ? "center" : "right"}
+            width={isFullscreen ? "full" : "3xl"}
+            height={isFullscreen ? "full" : "xl"}
             title={renderTitle()}
-            description={file.details?.subCategory || ""}
+            description=""
             showCloseButton={false}
-            closeOnBackdropClick={true}
-            rounded="lg"
+            closeOnBackdropClick={!isFullscreen}
+            rounded={isFullscreen ? "none" : "lg"}
+            spacing={isFullscreen ? "0" : "0"}
             contentClassName="p-0 flex flex-col w-full"
-            headerClassName="border-b px-2"
+            headerClassName="border-b px-2 py-2 min-h-0"
+            footerClassName="border-t px-2 py-2 min-h-0"
             footerContent={renderActionButtons()}
         >
             <div className="flex-1 overflow-auto relative w-full">{renderPreviewComponent()}</div>

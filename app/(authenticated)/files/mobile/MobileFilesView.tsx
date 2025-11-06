@@ -1,54 +1,86 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import MobileFilesList from './MobileFilesList';
-import MobileFileDetails from './MobileFileDetails';
 import { FileSystemNode, AvailableBuckets } from '@/lib/redux/fileSystem/types';
-
-type MobileView = 'list' | 'details';
+import FilePreviewSheet from '@/components/ui/file-preview/FilePreviewSheet';
+import { getFileDetailsByUrl } from '@/utils/file-operations/constants';
+import { useToast } from '@/components/ui';
+import FileSystemManager from '@/utils/file-operations/FileSystemManager';
 
 export default function MobileFilesView() {
-  const [currentView, setCurrentView] = useState<MobileView>('list');
-  const [selectedNode, setSelectedNode] = useState<FileSystemNode | null>(null);
-  const [selectedBucket, setSelectedBucket] = useState<AvailableBuckets | null>(null);
+  const [previewFile, setPreviewFile] = useState<{
+    node: FileSystemNode;
+    bucket: AvailableBuckets;
+  } | null>(null);
+  const [fileUrl, setFileUrl] = useState<string>('');
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false);
+  const { toast } = useToast();
 
-  const handleFileSelect = (node: FileSystemNode, bucket: AvailableBuckets | null) => {
-    setSelectedNode(node);
-    setSelectedBucket(bucket);
-    setCurrentView('details');
-  };
+  // Fetch file URL when preview file changes
+  useEffect(() => {
+    if (!previewFile) {
+      setFileUrl('');
+      return;
+    }
 
-  const handleBack = () => {
-    setCurrentView('list');
-    setSelectedNode(null);
-  };
+    const fetchUrl = async () => {
+      setIsLoadingUrl(true);
+      try {
+        const fileSystemManager = FileSystemManager.getInstance();
+        const urlResult = await fileSystemManager.getFileUrl(
+          previewFile.bucket,
+          previewFile.node.storagePath,
+          { expiresIn: 3600 }
+        );
+        setFileUrl(urlResult.url);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load file';
+        toast({
+          title: 'Error loading file',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setPreviewFile(null);
+      } finally {
+        setIsLoadingUrl(false);
+      }
+    };
+
+    fetchUrl();
+  }, [previewFile, toast]);
+
+  const handleFileSelect = useCallback((node: FileSystemNode, bucket: AvailableBuckets | null) => {
+    if (node.contentType === 'FOLDER' || !bucket) return;
+    
+    // Immediately set preview file to trigger sheet opening
+    setPreviewFile({ node, bucket });
+  }, []);
+
+  const handleClosePreview = useCallback(() => {
+    setPreviewFile(null);
+    setFileUrl('');
+  }, []);
 
   return (
-    <div className="h-page w-full bg-background overflow-hidden relative touch-pan-y">
-      {/* Files List View */}
-      <div
-        className={`absolute inset-0 transition-transform duration-300 ease-in-out overflow-hidden ${
-          currentView === 'list' ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
+    <>
+      <div className="h-page w-full bg-background overflow-hidden">
         <MobileFilesList onFileSelect={handleFileSelect} />
       </div>
 
-      {/* File Details View */}
-      <div
-        className={`absolute inset-0 transition-transform duration-300 ease-in-out overflow-hidden ${
-          currentView === 'details' ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        {selectedNode && (
-          <MobileFileDetails 
-            selectedNode={selectedNode} 
-            selectedBucket={selectedBucket}
-            onBack={handleBack} 
-          />
-        )}
-      </div>
-    </div>
+      {/* File Preview Sheet */}
+      {previewFile && (
+        <FilePreviewSheet
+          isOpen={true}
+          onClose={handleClosePreview}
+          file={{
+            url: fileUrl || '',
+            type: previewFile.node.metadata?.mimetype || 'application/octet-stream',
+            details: fileUrl ? getFileDetailsByUrl(fileUrl, previewFile.node.metadata) : undefined,
+          }}
+        />
+      )}
+    </>
   );
 }
 

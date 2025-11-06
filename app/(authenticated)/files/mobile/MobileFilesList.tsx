@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { ChevronRight, Database, FolderOpen, FileIcon } from 'lucide-react';
+import { Upload, Database, FolderOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import MultiBucketFileTree from '@/components/file-system/draggable/MultiBucketFileTree';
 import { FileSystemNode, AvailableBuckets } from '@/lib/redux/fileSystem/types';
-import MobileFileUpload from './MobileFileUpload';
+import { FileUploadDialog } from '@/components/file-system/upload/FileUploadDialog';
 
 interface MobileFilesListProps {
   onFileSelect: (node: FileSystemNode, bucket: AvailableBuckets | null) => void;
@@ -13,6 +14,7 @@ interface MobileFilesListProps {
 
 export default function MobileFilesList({ onFileSelect }: MobileFilesListProps) {
   const [selectedBucket, setSelectedBucket] = useState<AvailableBuckets | null>('userContent');
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const handleBucketSelect = useCallback((bucket: AvailableBuckets) => {
     setSelectedBucket(bucket);
@@ -21,10 +23,6 @@ export default function MobileFilesList({ onFileSelect }: MobileFilesListProps) 
   const handleViewFile = useCallback((node: FileSystemNode) => {
     onFileSelect(node, selectedBucket);
   }, [onFileSelect, selectedBucket]);
-
-  const handleUploadComplete = useCallback(() => {
-    // Files list will auto-refresh via Redux
-  }, []);
 
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
@@ -37,7 +35,14 @@ export default function MobileFilesList({ onFileSelect }: MobileFilesListProps) 
           </div>
           <div className="flex items-center gap-2">
             {selectedBucket && (
-              <MobileFileUpload bucket={selectedBucket} onUploadComplete={handleUploadComplete} />
+              <Button
+                variant="default"
+                size="icon"
+                onClick={() => setIsUploadDialogOpen(true)}
+                className="h-9 w-9"
+              >
+                <Upload size={20} />
+              </Button>
             )}
           </div>
         </div>
@@ -77,9 +82,18 @@ export default function MobileFilesList({ onFileSelect }: MobileFilesListProps) 
       {/* Helper text */}
       <div className="flex-shrink-0 border-t border-border bg-card px-4 py-3">
         <p className="text-xs text-muted-foreground text-center">
-          Tap any file to view details
+          Tap any file to preview
         </p>
       </div>
+
+      {/* Upload Dialog */}
+      {selectedBucket && (
+        <FileUploadDialog
+          isOpen={isUploadDialogOpen}
+          onClose={() => setIsUploadDialogOpen(false)}
+          bucket={selectedBucket}
+        />
+      )}
     </div>
   );
 }
