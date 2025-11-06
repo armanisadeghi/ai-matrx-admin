@@ -103,8 +103,8 @@ export function PromptBuilderLeftPanel({
     onOpenFullScreenEditor,
 }: PromptBuilderLeftPanelProps) {
     return (
-        <div className="h-full w-full border-r border-border bg-textured flex flex-col">
-            <div className="flex-1 overflow-y-auto pl-2 pr-1 space-y-3 scrollbar-thin" style={{ scrollbarGutter: "stable" }}>
+        <div className="h-full w-full bg-textured flex flex-col overflow-x-hidden">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden pl-2 pr-1 space-y-3 scrollbar-thin" style={{ scrollbarGutter: "stable" }}>
                 {/* Model Configuration */}
                 <ModelConfiguration
                     models={models}

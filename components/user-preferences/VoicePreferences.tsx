@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 import { availableVoices } from '@/lib/cartesia/voices';
@@ -36,6 +37,10 @@ const VoicePreferences = () => {
 
     const handleSelectChange = (preference: string) => (value: string) => {
         dispatch(setPreference({ module: 'voice', preference, value }));
+    };
+
+    const handleInputChange = (preference: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        dispatch(setPreference({ module: 'voice', preference, value: e.target.value }));
     };
 
     const handleSpeedChange = (value: number[]) => {
@@ -163,6 +168,60 @@ const VoicePreferences = () => {
                     <span>Slower</span>
                     <span>Normal</span>
                     <span>Faster</span>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="emotion">Emotion/Tone</Label>
+                <Input
+                    id="emotion"
+                    type="text"
+                    value={voicePreferences.emotion}
+                    onChange={handleInputChange('emotion')}
+                    placeholder="e.g., cheerful, calm, neutral"
+                />
+                <p className="text-sm text-muted-foreground">
+                    Optional emotion or tone to apply to the voice
+                </p>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="wakeWord">Wake Word</Label>
+                <Input
+                    id="wakeWord"
+                    type="text"
+                    value={voicePreferences.wakeWord}
+                    onChange={handleInputChange('wakeWord')}
+                    placeholder="e.g., Hey Matrix"
+                />
+                <p className="text-sm text-muted-foreground">
+                    Phrase to activate voice assistant
+                </p>
+            </div>
+
+            <div className="grid gap-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                        <Label htmlFor="microphone">Enable Microphone</Label>
+                        <p className="text-sm text-muted-foreground">Allow voice input</p>
+                    </div>
+                    <Switch
+                        id="microphone"
+                        checked={voicePreferences.microphone}
+                        onCheckedChange={handleSwitchChange('microphone')}
+                    />
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                        <Label htmlFor="speaker">Enable Speaker</Label>
+                        <p className="text-sm text-muted-foreground">Allow voice output</p>
+                    </div>
+                    <Switch
+                        id="speaker"
+                        checked={voicePreferences.speaker}
+                        onCheckedChange={handleSwitchChange('speaker')}
+                    />
                 </div>
             </div>
 

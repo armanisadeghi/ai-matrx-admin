@@ -839,7 +839,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     if (isMobile) {
         return (
             <>
-            <div className="h-page bg-textured flex flex-col overflow-hidden">
+            <div className="h-page w-full bg-textured flex flex-col overflow-hidden">
                 {/* Header */}
                 <PromptHeader
                     promptName={promptName}
@@ -857,12 +857,14 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                         setDeveloperMessage(value);
                         setIsDirty(true);
                     }}
+                    mobileActiveTab={mobileActiveTab}
+                    onMobileTabChange={setMobileActiveTab}
                 />
 
                 {/* Tab Content */}
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden w-full">
                     {/* Edit Tab */}
-                    <div className={`h-full ${mobileActiveTab === 'edit' ? 'block' : 'hidden'}`}>
+                    <div className={`h-full w-full overflow-x-hidden ${mobileActiveTab === 'edit' ? 'block' : 'hidden'}`}>
                         <PromptBuilderLeftPanel
                             models={models}
                             model={model}
@@ -941,7 +943,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     </div>
 
                     {/* Test Tab */}
-                    <div className={`h-full ${mobileActiveTab === 'test' ? 'block' : 'hidden'}`}>
+                    <div className={`h-full w-full overflow-x-hidden ${mobileActiveTab === 'test' ? 'block' : 'hidden'}`}>
                         <PromptBuilderRightPanel
                             conversationMessages={conversationMessages}
                             onClearConversation={() => {
@@ -987,34 +989,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                                 });
                             }}
                         />
-                    </div>
-                </div>
-
-                {/* Bottom Tab Bar - iOS Style */}
-                <div className="flex-shrink-0 border-t border-border bg-card safe-area-bottom">
-                    <div className="flex items-center justify-around">
-                        <button
-                            onClick={() => setMobileActiveTab('edit')}
-                            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-                                mobileActiveTab === 'edit'
-                                    ? 'text-primary'
-                                    : 'text-muted-foreground'
-                            }`}
-                        >
-                            <Edit3 size={20} />
-                            <span className="text-xs mt-1 font-medium">Edit</span>
-                        </button>
-                        <button
-                            onClick={() => setMobileActiveTab('test')}
-                            className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors ${
-                                mobileActiveTab === 'test'
-                                    ? 'text-primary'
-                                    : 'text-muted-foreground'
-                            }`}
-                        >
-                            <Play size={20} />
-                            <span className="text-xs mt-1 font-medium">Test</span>
-                        </button>
                     </div>
                 </div>
             </div>

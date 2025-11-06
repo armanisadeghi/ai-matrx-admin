@@ -71,6 +71,9 @@ interface PromptHeaderProps {
   fullPromptObject?: any;
   onAcceptFullPrompt?: (optimizedObject: any) => void;
   onAcceptAsCopy?: (optimizedObject: any) => void;
+  // Mobile tab support
+  mobileActiveTab?: 'edit' | 'test';
+  onMobileTabChange?: (tab: 'edit' | 'test') => void;
 }
 
 export function PromptHeader(props: PromptHeaderProps) {

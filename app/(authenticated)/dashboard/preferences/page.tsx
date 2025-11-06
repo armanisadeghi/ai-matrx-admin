@@ -15,7 +15,7 @@ export default function Preferences() {
                 <span>Back to Dashboard</span>
             </Link>
 
-            <UnderConstructionBanner title="Preferences Preview" message="The preferences system is currently in development. Settings changes may not be saved at this time. Definitely Arman's fault." />
+            {/* <UnderConstructionBanner title="Preferences Preview" message="The preferences system is currently in development. Settings changes may not be saved at this time. Definitely Arman's fault." /> */}
 
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Preferences</h1>

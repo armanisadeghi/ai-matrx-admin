@@ -4,12 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Loader2, Check, AlertCircle, Search, Sparkles, type LucideIcon } from 'lucide-react';
+import { Loader2, Search, Sparkles, type LucideIcon, Check, AlertCircle } from 'lucide-react';
 import { RootState, useAppDispatch } from '@/lib/redux';
-import { setPreference, saveModulePreferencesToDatabase, clearError, UserPreferencesState } from '@/lib/redux/slices/userPreferencesSlice';
+import { setPreference, UserPreferencesState } from '@/lib/redux/slices/userPreferencesSlice';
 import { fetchAIModelsClient } from "@/lib/api/ai-models";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -56,24 +54,6 @@ const AiModelsPreferences = () => {
         loadModels();
     }, []);
 
-    const handleSave = () => {
-        dispatch(saveModulePreferencesToDatabase({ module: 'aiModels', preferences: aiModels }));
-    };
-
-    const handleClearError = () => {
-        dispatch(clearError());
-    };
-
-    // Auto-save after 2 seconds of no changes
-    useEffect(() => {
-        if (meta.hasUnsavedChanges && !meta.isLoading) {
-            const timeout = setTimeout(() => {
-                handleSave();
-            }, 2000);
-
-            return () => clearTimeout(timeout);
-        }
-    }, [aiModels, meta.hasUnsavedChanges, meta.isLoading]);
 
     const toggleModel = (modelId: string, currentlyActive: boolean) => {
         if (currentlyActive) {
@@ -190,55 +170,12 @@ const AiModelsPreferences = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-                <div>
-                    <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">AI Models</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Manage which AI models are available for use
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    {meta.isLoading && (
-                        <div className="flex items-center text-sm text-gray-500">
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                            Saving...
-                        </div>
-                    )}
-                    {meta.lastSaved && !meta.hasUnsavedChanges && !meta.isLoading && (
-                        <div className="flex items-center text-sm text-green-600 dark:text-green-400">
-                            <Check className="h-4 w-4 mr-1" />
-                            Saved
-                        </div>
-                    )}
-                    {meta.hasUnsavedChanges && !meta.isLoading && (
-                        <Button 
-                            onClick={handleSave} 
-                            size="sm" 
-                            variant="outline"
-                            className="text-xs"
-                        >
-                            Save Now
-                        </Button>
-                    )}
-                </div>
+            <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100">AI Models</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Manage which AI models are available for use
+                </p>
             </div>
-
-            {meta.error && (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="flex justify-between items-center">
-                        <span>{meta.error}</span>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={handleClearError}
-                            className="h-6 text-xs"
-                        >
-                            Dismiss
-                        </Button>
-                    </AlertDescription>
-                </Alert>
-            )}
 
             {/* Search */}
             <div className="relative">

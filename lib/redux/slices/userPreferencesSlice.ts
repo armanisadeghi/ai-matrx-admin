@@ -178,16 +178,18 @@ export interface UserPreferencesState extends UserPreferences {
         error: string | null;
         lastSaved: string | null;
         hasUnsavedChanges: boolean;
+        loadedPreferences: UserPreferences | null; // Store original loaded state for reset
     };
 }
 
 // Helper function to ensure preferences have the proper structure
-export const initializeUserPreferencesState = (preferences: Partial<UserPreferences> = {}): UserPreferencesState => {
+export const initializeUserPreferencesState = (preferences: Partial<UserPreferences> = {}, setAsLoaded: boolean = false): UserPreferencesState => {
     const defaultMeta = {
         isLoading: false,
         error: null,
         lastSaved: null,
         hasUnsavedChanges: false,
+        loadedPreferences: null as UserPreferences | null,
     };
 
     const defaultPreferences: UserPreferences = {
@@ -320,6 +322,11 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
         system: { ...defaultPreferences.system, ...preferences.system },
     };
 
+    // If setAsLoaded is true, store the merged preferences as the loaded state
+    if (setAsLoaded) {
+        defaultMeta.loadedPreferences = { ...mergedPreferences };
+    }
+
     return {
         ...mergedPreferences,
         _meta: defaultMeta,
@@ -362,6 +369,27 @@ const userPreferencesSlice = createSlice({
             state._meta.error = null;
         },
         resetAllPreferences: () => initializeUserPreferencesState(),
+        resetToLoadedPreferences: (state) => {
+            if (state._meta.loadedPreferences) {
+                // Restore each module from loaded preferences
+                state.display = { ...state._meta.loadedPreferences.display };
+                state.voice = { ...state._meta.loadedPreferences.voice };
+                state.textToSpeech = { ...state._meta.loadedPreferences.textToSpeech };
+                state.assistant = { ...state._meta.loadedPreferences.assistant };
+                state.email = { ...state._meta.loadedPreferences.email };
+                state.videoConference = { ...state._meta.loadedPreferences.videoConference };
+                state.photoEditing = { ...state._meta.loadedPreferences.photoEditing };
+                state.imageGeneration = { ...state._meta.loadedPreferences.imageGeneration };
+                state.textGeneration = { ...state._meta.loadedPreferences.textGeneration };
+                state.coding = { ...state._meta.loadedPreferences.coding };
+                state.flashcard = { ...state._meta.loadedPreferences.flashcard };
+                state.playground = { ...state._meta.loadedPreferences.playground };
+                state.aiModels = { ...state._meta.loadedPreferences.aiModels };
+                state.system = { ...state._meta.loadedPreferences.system };
+                state._meta.hasUnsavedChanges = false;
+                state._meta.error = null;
+            }
+        },
         clearUnsavedChanges: (state) => {
             state._meta.hasUnsavedChanges = false;
         },
@@ -381,6 +409,9 @@ const userPreferencesSlice = createSlice({
                 state._meta.lastSaved = action.payload.savedAt;
                 state._meta.hasUnsavedChanges = false;
                 state._meta.error = null;
+                // Update loaded preferences to current state after successful save
+                const { _meta, ...currentPreferences } = state;
+                state._meta.loadedPreferences = { ...currentPreferences } as UserPreferences;
             })
             .addCase(savePreferencesToDatabase.rejected, (state, action) => {
                 state._meta.isLoading = false;
@@ -396,8 +427,42 @@ const userPreferencesSlice = createSlice({
                 state._meta.lastSaved = action.payload.savedAt;
                 state._meta.hasUnsavedChanges = false;
                 state._meta.error = null;
+                // Update loaded preferences to current state after successful save
+                const { _meta, ...currentPreferences } = state;
+                state._meta.loadedPreferences = { ...currentPreferences } as UserPreferences;
             })
             .addCase(saveModulePreferencesToDatabase.rejected, (state, action) => {
+                state._meta.isLoading = false;
+                state._meta.error = action.payload as string;
+            })
+            // Load preferences
+            .addCase(loadPreferencesFromDatabase.pending, (state) => {
+                state._meta.isLoading = true;
+                state._meta.error = null;
+            })
+            .addCase(loadPreferencesFromDatabase.fulfilled, (state, action) => {
+                state._meta.isLoading = false;
+                state._meta.error = null;
+                // Load all preferences and store as loaded state
+                const loadedPrefs = action.payload;
+                state.display = { ...loadedPrefs.display };
+                state.voice = { ...loadedPrefs.voice };
+                state.textToSpeech = { ...loadedPrefs.textToSpeech };
+                state.assistant = { ...loadedPrefs.assistant };
+                state.email = { ...loadedPrefs.email };
+                state.videoConference = { ...loadedPrefs.videoConference };
+                state.photoEditing = { ...loadedPrefs.photoEditing };
+                state.imageGeneration = { ...loadedPrefs.imageGeneration };
+                state.textGeneration = { ...loadedPrefs.textGeneration };
+                state.coding = { ...loadedPrefs.coding };
+                state.flashcard = { ...loadedPrefs.flashcard };
+                state.playground = { ...loadedPrefs.playground };
+                state.aiModels = { ...loadedPrefs.aiModels };
+                state.system = { ...loadedPrefs.system };
+                state._meta.loadedPreferences = { ...loadedPrefs };
+                state._meta.hasUnsavedChanges = false;
+            })
+            .addCase(loadPreferencesFromDatabase.rejected, (state, action) => {
                 state._meta.isLoading = false;
                 state._meta.error = action.payload as string;
             });
@@ -409,6 +474,7 @@ export const {
     setModulePreferences, 
     resetModulePreferences, 
     resetAllPreferences,
+    resetToLoadedPreferences,
     clearUnsavedChanges,
     clearError 
 } = userPreferencesSlice.actions;
@@ -488,3 +554,30 @@ export const saveModulePreferencesToDatabase = createAsyncThunk(
     }
 );
 
+export const loadPreferencesFromDatabase = createAsyncThunk(
+    'userPreferences/loadFromDatabase',
+    async (_, { rejectWithValue }) => {
+        try {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const { data, error } = await supabase
+                .from('user_preferences')
+                .select('preferences')
+                .eq('user_id', user.id)
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            return data.preferences as UserPreferences;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to load preferences');
+        }
+    }
+);

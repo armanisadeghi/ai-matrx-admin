@@ -71,18 +71,18 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
         if (insertError) {
             console.error("Error creating default preferences:", insertError);
-            userPreferences = initializeUserPreferencesState(defaultPreferences); // Use helper function
+            userPreferences = initializeUserPreferencesState(defaultPreferences, true); // Use helper function with setAsLoaded
         } else {
             console.log("✅ Created default preferences for new user");
-            userPreferences = initializeUserPreferencesState(defaultPreferences); // Use helper function
+            userPreferences = initializeUserPreferencesState(defaultPreferences, true); // Use helper function with setAsLoaded
         }
     } else if (error) {
         // Some other error occurred
         console.error("Error loading preferences from Supabase:", error);
-        userPreferences = initializeUserPreferencesState(); // Use helper function with defaults
+        userPreferences = initializeUserPreferencesState({}, true); // Use helper function with defaults and setAsLoaded
     } else {
         // Preferences loaded successfully - use helper function to ensure proper structure
-        userPreferences = initializeUserPreferencesState(preferences?.preferences || {});
+        userPreferences = initializeUserPreferencesState(preferences?.preferences || {}, true); // Mark as loaded for reset functionality
     }
 
     const initialReduxState: InitialReduxState = {

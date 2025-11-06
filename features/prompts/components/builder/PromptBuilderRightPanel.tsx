@@ -115,9 +115,9 @@ export function PromptBuilderRightPanel({
     }, [conversationMessages, currentTaskId, streamingText]);
     
     return (
-        <div className="h-full w-full flex flex-col bg-textured">
+        <div className="h-full w-full flex flex-col bg-textured overflow-x-hidden">
             {/* Conversation Preview */}
-            <div className="flex-1 overflow-y-auto p-6" style={{ scrollbarGutter: "stable" }}>
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-6" style={{ scrollbarGutter: "stable" }}>
                 {displayMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                         <MessageSquare className="w-12 h-12 mb-3" />
