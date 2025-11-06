@@ -150,7 +150,7 @@ const PreferencesPage = () => {
                         variant="outline"
                         size="sm"
                         onClick={handleReset}
-                        disabled={!meta.hasUnsavedChanges || meta.isLoading || !meta.loadedPreferences}
+                        disabled={!meta.hasUnsavedChanges || meta.isLoading}
                         className="gap-2"
                     >
                         <RotateCcw className="h-4 w-4" />

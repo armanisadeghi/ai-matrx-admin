@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutPanelTop, MoreVertical, Upload, Wand2 } from "lucide-react";
+import { Plus, LayoutPanelTop, MoreVertical, Upload, Wand2, Wrench } from "lucide-react";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRouter } from "next/navigation";
@@ -17,12 +17,14 @@ import {
 import { FaIndent } from "react-icons/fa6";
 import { PromptImporter } from "@/features/prompts";
 import { PromptGenerator } from "../actions/PromptGenerator";
+import { PromptBuilderModal } from "../actions/PromptBuilderModal";
 
 export function PromptsPageHeader() {
     const isMobile = useIsMobile();
     const router = useRouter();
     const [isImportOpen, setIsImportOpen] = useState(false);
     const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+    const [isBuildOpen, setIsBuildOpen] = useState(false);
 
     if (isMobile) {
         return (
@@ -64,6 +66,10 @@ export function PromptsPageHeader() {
                                     <Upload className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
                                     <span>Import</span>
                                 </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsBuildOpen(true)}>
+                                    <Wrench className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
+                                    <span>Build</span>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsGenerateOpen(true)}>
                                     <Wand2 className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
                                     <span>Generate with AI</span>
@@ -81,6 +87,10 @@ export function PromptsPageHeader() {
                         setIsImportOpen(false);
                         router.refresh();
                     }}
+                />
+                <PromptBuilderModal
+                    isOpen={isBuildOpen}
+                    onClose={() => setIsBuildOpen(false)}
                 />
                 <PromptGenerator
                     isOpen={isGenerateOpen}
@@ -102,6 +112,15 @@ export function PromptsPageHeader() {
                 >
                     <Upload className="h-3.5 w-3.5" />
                     Import
+                </Button>
+                <Button
+                    onClick={() => setIsBuildOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 border-green-300 text-green-600 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950/30"
+                >
+                    <Wrench className="h-3.5 w-3.5" />
+                    Build
                 </Button>
                 <Button
                     onClick={() => setIsGenerateOpen(true)}
@@ -137,6 +156,10 @@ export function PromptsPageHeader() {
                     setIsImportOpen(false);
                     router.refresh();
                 }}
+            />
+            <PromptBuilderModal
+                isOpen={isBuildOpen}
+                onClose={() => setIsBuildOpen(false)}
             />
             <PromptGenerator
                 isOpen={isGenerateOpen}

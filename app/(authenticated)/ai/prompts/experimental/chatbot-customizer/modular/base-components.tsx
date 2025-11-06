@@ -129,18 +129,6 @@ export const AICustomizationPanel: React.FC<AICustomizationProps> = ({ config, i
 
             <main className="flex-1 p-6">
                 <div className="max-w-7xl mx-auto">
-                    {/* Hero Section */}
-                    <div className="mb-8 bg-gradient-to-r from-primary to-primary-foreground rounded-2xl p-6 text-white shadow-lg">
-                        <div className="flex items-center mb-4">
-                            <SiMagic className="h-8 w-8 mr-3" />
-                            <h2 className="text-2xl font-bold">Your Personalized AI Assistant</h2>
-                        </div>
-                        <p className="mb-6 opacity-90 max-w-2xl">
-                            Customize how your AI responds to you by adjusting these settings. Your preferences will be saved and applied to
-                            all your future conversations.
-                        </p>
-                    </div>
-
                     {/* Render all sections */}
                     {config.sections.map((section) => (
                         <Section key={section.id} section={section} state={state} onChange={handleChange} />
