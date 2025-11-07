@@ -43,13 +43,13 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
       {/* Profile Header Card */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            <div className="relative group">
-              <div className="h-24 w-24 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden ring-2 ring-gray-200 dark:ring-zinc-600">
+      <Card className="mb-4 md:mb-6">
+        <CardContent className="pt-4 md:pt-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+            <div className="relative group mx-auto md:mx-0">
+              <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden ring-2 ring-gray-200 dark:ring-zinc-600">
                 {user.userMetadata.picture ? (
                   <Image
                     src={user.userMetadata.picture}
@@ -66,12 +66,12 @@ export default function ProfilePage() {
                 <Upload size={20} className="text-white" />
               </button>
             </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {user.userMetadata.fullName || user.userMetadata.name || 'User'}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mt-1">{user.email}</p>
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
                 {user.emailConfirmedAt && (
                   <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-400">
                     <Check size={12} className="mr-1" />
@@ -83,6 +83,7 @@ export default function ProfilePage() {
             <Button
               variant={isEditing ? 'outline' : 'default'}
               onClick={() => setIsEditing(!isEditing)}
+              className="w-full md:w-auto"
             >
               {isEditing ? 'Cancel' : 'Edit Profile'}
             </Button>
@@ -91,7 +92,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Personal Information */}
-      <Card className="mb-6">
+      <Card className="mb-4 md:mb-6">
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
           <CardDescription>Update your personal details and information</CardDescription>

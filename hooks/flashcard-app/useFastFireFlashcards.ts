@@ -48,23 +48,39 @@ interface UseFastFireSessionReturn {
     totalCards: number;
 }
 
-const voiceConfig = {
-    apiName: 'openai' as ApiName,
-    voiceId: '79a125e8-cd45-4c13-8a67-188112f4dd22',
-    responseType: 'audio',
-    temperature: 0.5,
-    maxTokens: 2000
-};
+// Centralized configuration for fast-fire session
+export const FAST_FIRE_CONFIG = {
+    // Timer settings
+    answerTimerSeconds: 10,
+    bufferTimerSeconds: 3,
+    
+    // Voice AI settings
+    voiceConfig: {
+        apiName: 'openai' as ApiName,
+        voiceId: '79a125e8-cd45-4c13-8a67-188112f4dd22',
+        responseType: 'audio' as const,
+        temperature: 0.5,
+        maxTokens: 2000
+    },
+    
+    // Audio settings
+    startSoundPath: '/sounds/2-second-start-beep-sound.mp3',
+    endSoundPath: '/sounds/end-buzzer-sound.mp3',
+    
+    // Flashcard settings
+    flashcardSet: 'historyFlashcards' as const,
+} as const;
 
 const assistant = getAssistant('flashcardGrader');
-
-const defaultTimer = 10;
 
 export const useFastFireSession = (): UseFastFireSessionReturn => {
     const {toast} = useToast();
 
-    // Fetch flashcards internally
-    const flashcards = getFlashcardSet('historyFlashcards');
+    // Fetch flashcards internally and ensure they have IDs
+    const flashcards = getFlashcardSet(FAST_FIRE_CONFIG.flashcardSet).map((card, index) => ({
+        ...card,
+        id: card.id || `flashcard-${Date.now()}-${index}`
+    }));
     const flashcardsRef = useRef<FlashcardData[]>(flashcards);
 
     const [sessionState, setSessionState] = useState<SessionState>({
@@ -76,8 +92,8 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
     });
 
     const [results, setResults] = useState<FlashcardResult[]>([]);
-    const [timeLeft, setTimeLeft] = useState(defaultTimer);
-    const [bufferTimeLeft, setBufferTimeLeft] = useState(3);
+    const [timeLeft, setTimeLeft] = useState<number>(FAST_FIRE_CONFIG.answerTimerSeconds);
+    const [bufferTimeLeft, setBufferTimeLeft] = useState<number>(FAST_FIRE_CONFIG.bufferTimerSeconds);
     const [isInBufferPhase, setIsInBufferPhase] = useState(true);
     const [audioLevel, setAudioLevel] = useState(0);
 
@@ -100,36 +116,82 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         getCurrentConversation,
         createNewConversation,
         setApiName,
-        setAiCallParams
+        setAiCallParams,
+        setPartialBrokers
     } = useDynamicVoiceAiProcessing(assistant);
 
     const totalCards = flashcardsRef.current.length;
 
     const cleanup = useCallback(async () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-        if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
-        if (audioContext.current && audioContext.current.state !== 'closed') {
-            await audioContext.current.close().catch(() => {});
+        try {
+            // Clear timers
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = undefined;
+            }
+            
+            // Clear animation frames
+            if (animationFrame.current) {
+                cancelAnimationFrame(animationFrame.current);
+                animationFrame.current = undefined;
+            }
+            
+            // Close audio context
+            if (audioContext.current && audioContext.current.state !== 'closed') {
+                await audioContext.current.close().catch(err => {
+                    console.warn('Error closing audio context:', err);
+                });
+            }
+            
+            // Stop media recorder and tracks
+            if (mediaRecorder.current) {
+                if (mediaRecorder.current.state === 'recording') {
+                    mediaRecorder.current.stop();
+                }
+                if (mediaRecorder.current.stream) {
+                    mediaRecorder.current.stream.getTracks().forEach(track => {
+                        try {
+                            track.stop();
+                        } catch (err) {
+                            console.warn('Error stopping track:', err);
+                        }
+                    });
+                }
+                mediaRecorder.current = null;
+            }
+            
+            // Reset refs and state
+            audioContext.current = null;
+            analyser.current = null;
+            audioChunks.current = [];
+            setAudioLevel(0);
+        } catch (error) {
+            console.error('Error during cleanup:', error);
         }
-        if (mediaRecorder.current?.state === 'recording') {
-            mediaRecorder.current.stop();
-            mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
-        }
-        audioContext.current = null;
-        analyser.current = null;
-        setAudioLevel(0);
     }, []);
 
     const stopSession = useCallback(async () => {
-        await cleanup();
-        setSessionState({
-            isActive: false,
-            isPaused: false,
-            isProcessing: false,
-            isRecording: false,
-            currentCardIndex: -1
-        });
-    }, [cleanup]);
+        try {
+            await cleanup();
+            setSessionState({
+                isActive: false,
+                isPaused: false,
+                isProcessing: false,
+                isRecording: false,
+                currentCardIndex: -1
+            });
+            setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
+            setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
+            setIsInBufferPhase(true);
+        } catch (error) {
+            console.error('Error stopping session:', error);
+            toast({
+                title: "Error",
+                description: "There was an error stopping the session. The page may need to be refreshed.",
+                variant: "destructive"
+            });
+        }
+    }, [cleanup, toast]);
 
     const moveToNextCard = useCallback(async () => {
         const currentIndex = sessionState.currentCardIndex;
@@ -148,22 +210,28 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             isProcessing: false,
             isRecording: false
         }));
-        setTimeLeft(defaultTimer);
-        setBufferTimeLeft(3);
+        setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
+        setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
         setIsInBufferPhase(true);
         return true;
-    }, [sessionState.currentCardIndex, stopSession]);
+    }, [sessionState.currentCardIndex, stopSession, toast]);
 
     const handleRecordingComplete = useCallback(async (audioBlob: Blob) => {
         const currentIndex = sessionState.currentCardIndex;
         const currentFlashcard = flashcardsRef.current[currentIndex];
-        if (!currentFlashcard?.id) {
+        if (!currentFlashcard) {
             await stopSession();
             return;
         }
 
         setSessionState(prev => ({...prev, isProcessing: true}));
         try {
+            // Set flashcard context for AI grading
+            setPartialBrokers([
+                { id: 'flashcardFront', value: currentFlashcard.front },
+                { id: 'flashcardBack', value: currentFlashcard.back }
+            ]);
+            
             await submit(audioBlob);
             const conversation = getCurrentConversation();
             const lastResult = conversation?.structuredData?.[conversation.structuredData.length - 1];
@@ -174,7 +242,7 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 correct: lastResult.correct,
                 score: lastResult.score,
                 audioFeedback: lastResult.audioFeedback,
-                cardId: currentFlashcard.id,
+                cardId: currentFlashcard.id || `card-${currentIndex}`,
                 timestamp: Date.now()
             }]);
             await moveToNextCard();
@@ -184,8 +252,8 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 description: error instanceof Error ? error.message : "Failed to process response",
                 variant: "destructive"
             });
-            setTimeLeft(defaultTimer);
-            setBufferTimeLeft(3);
+            setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
+            setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
             setIsInBufferPhase(true);
             setSessionState(prev => ({
                 ...prev,
@@ -196,19 +264,31 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             audioChunks.current = [];
             mediaRecorder.current = null;
         }
-    }, [sessionState.currentCardIndex, submit, getCurrentConversation, moveToNextCard, stopSession, defaultTimer, toast]);
+    }, [sessionState.currentCardIndex, submit, getCurrentConversation, moveToNextCard, stopSession, toast, setPartialBrokers]);
 
     const startRecording = useCallback(async () => {
+        // Check browser support
         if (!navigator.mediaDevices?.getUserMedia) {
             toast({
-                title: "Error",
-                description: "Audio recording is not supported in this browser",
+                title: "Browser Not Supported",
+                description: "Audio recording is not supported in this browser. Please use a modern browser like Chrome, Firefox, or Safari.",
                 variant: "destructive"
             });
+            await stopSession();
             return;
         }
+        
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            // Request microphone access
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+            
+            // Set up audio context for visualization
             if (!audioContext.current || audioContext.current.state === 'closed') {
                 audioContext.current = new AudioContext();
                 analyser.current = audioContext.current.createAnalyser();
@@ -216,22 +296,70 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 const source = audioContext.current.createMediaStreamSource(stream);
                 source.connect(analyser.current);
             }
+            
+            // Create media recorder with best available format
             const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
                              ? 'audio/webm;codecs=opus'
-                             : 'audio/webm';
+                             : MediaRecorder.isTypeSupported('audio/webm')
+                             ? 'audio/webm'
+                             : 'audio/mp4'; // Fallback for Safari
+            
             const recorder = new MediaRecorder(stream, { mimeType });
+            
+            // Handle data chunks
             recorder.ondataavailable = (e) => {
-                if (e.data.size > 0) {
+                if (e.data && e.data.size > 0) {
                     audioChunks.current.push(e.data);
                 }
             };
+            
+            // Handle recording completion
             recorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks.current, {type: 'audio/webm'});
-                await handleRecordingComplete(audioBlob);
+                try {
+                    if (audioChunks.current.length === 0) {
+                        throw new Error('No audio data recorded');
+                    }
+                    const audioBlob = new Blob(audioChunks.current, {type: mimeType});
+                    await handleRecordingComplete(audioBlob);
+                } catch (error) {
+                    console.error('Error processing recording:', error);
+                    toast({
+                        title: "Recording Error",
+                        description: "Failed to process the audio recording. Please try again.",
+                        variant: "destructive"
+                    });
+                    setSessionState(prev => ({
+                        ...prev,
+                        isProcessing: false,
+                        isRecording: false
+                    }));
+                }
             };
+            
+            // Handle recording errors
+            recorder.onerror = (event) => {
+                console.error('MediaRecorder error:', event);
+                toast({
+                    title: "Recording Error",
+                    description: "An error occurred during recording. Please try again.",
+                    variant: "destructive"
+                });
+                stopSession();
+            };
+            
             mediaRecorder.current = recorder;
-            await startSound.current?.play().catch(() => {});
+            
+            // Play start sound
+            try {
+                await startSound.current?.play();
+            } catch (err) {
+                console.warn('Could not play start sound:', err);
+            }
+            
+            // Start recording
             recorder.start();
+            
+            // Set up audio visualization
             const updateAudio = () => {
                 if (!analyser.current) return;
                 const dataArray = new Uint8Array(analyser.current.frequencyBinCount);
@@ -241,13 +369,30 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 animationFrame.current = requestAnimationFrame(updateAudio);
             };
             updateAudio();
+            
+            // Update state
             setSessionState(prev => ({...prev, isRecording: true}));
-        } catch (error) {
+            
+        } catch (error: any) {
+            console.error('Error starting recording:', error);
+            
+            let errorMessage = "Unable to access microphone. ";
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                errorMessage += "Please grant microphone permissions and try again.";
+            } else if (error.name === 'NotFoundError') {
+                errorMessage += "No microphone found. Please connect a microphone.";
+            } else if (error.name === 'NotReadableError') {
+                errorMessage += "Microphone is already in use by another application.";
+            } else {
+                errorMessage += "Please check your microphone settings and try again.";
+            }
+            
             toast({
                 title: "Microphone Error",
-                description: "Unable to access microphone. Please check permissions.",
+                description: errorMessage,
                 variant: "destructive"
             });
+            
             await stopSession();
         }
     }, [handleRecordingComplete, stopSession, toast]);
@@ -278,37 +423,46 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             currentCardIndex: 0
         });
         setResults([]);
-        setTimeLeft(defaultTimer);
-        setBufferTimeLeft(3);
+        setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
+        setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
         setIsInBufferPhase(true);
-    }, [createNewConversation, defaultTimer, toast]);
+    }, [createNewConversation, toast]);
 
     const pauseSession = useCallback(() => {
+        // Save current state before pausing
         setSessionState(prev => ({...prev, isPaused: true}));
+        
+        // Stop recording if active
         if (mediaRecorder.current?.state === 'recording') {
             mediaRecorder.current.stop();
+            mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
         }
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-        }
+        
+        // Timer cleanup happens in useEffect
     }, []);
 
     const resumeSession = useCallback(() => {
-        setSessionState(prev => ({...prev, isPaused: false}));
+        // Resume with current timer values preserved
+        setSessionState(prev => ({
+            ...prev,
+            isPaused: false,
+            isRecording: false // Reset recording state on resume
+        }));
+        // Timer will restart automatically via useEffect
     }, []);
 
     useEffect(() => {
-        setApiName(voiceConfig.apiName);
+        setApiName(FAST_FIRE_CONFIG.voiceConfig.apiName);
         setAiCallParams({
-            temperature: voiceConfig.temperature ?? 0.5,
-            maxTokens: voiceConfig.maxTokens ?? 2000,
+            temperature: FAST_FIRE_CONFIG.voiceConfig.temperature,
+            maxTokens: FAST_FIRE_CONFIG.voiceConfig.maxTokens,
             responseFormat: assistant.responseFormat,
         });
-    }, [assistant, voiceConfig, setApiName, setAiCallParams]);
+    }, [setApiName, setAiCallParams]);
 
     useEffect(() => {
-        startSound.current = new Audio('/sounds/2-second-start-beep-sound.mp3');
-        endSound.current = new Audio('/sounds/end-buzzer-sound.mp3');
+        startSound.current = new Audio(FAST_FIRE_CONFIG.startSoundPath);
+        endSound.current = new Audio(FAST_FIRE_CONFIG.endSoundPath);
         startSound.current.load();
         endSound.current.load();
         return () => {
@@ -317,57 +471,78 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         };
     }, []);
 
-    // Main timer effect
+    // Timer management - cleaner implementation with proper state handling
     useEffect(() => {
-        if (sessionState.isActive && !sessionState.isPaused) {
-            if (isInBufferPhase) {
-                timerRef.current = setInterval(() => {
-                    setBufferTimeLeft(prev => {
-                        const nextVal = prev - 1;
-                        if (nextVal < 1) {
-                            // Buffer ended, start recording next card
-                            setIsInBufferPhase(false);
-                            clearInterval(timerRef.current as NodeJS.Timeout);
-                            timerRef.current = undefined;
-                            startRecording();
-                            return 3;
-                        }
-                        return nextVal;
-                    });
-                }, 1000);
-            } else {
-                // Recording phase
-                timerRef.current = setInterval(() => {
-                    setTimeLeft(prev => {
-                        const nextVal = prev - 1;
-                        if (nextVal < 1) {
-                            // Time ended for this card, stop recording
-                            clearInterval(timerRef.current as NodeJS.Timeout);
-                            timerRef.current = undefined;
-                            stopRecording();
-                            setTimeLeft(defaultTimer);
-                            setIsInBufferPhase(true);
-                            return defaultTimer;
-                        }
-                        return nextVal;
-                    });
-                }, 1000);
-            }
-        } else {
-            // Not active or paused
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = undefined;
-            }
+        // Clear any existing timer when dependencies change
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = undefined;
         }
 
+        // Only run timer if session is active and not paused
+        if (!sessionState.isActive || sessionState.isPaused || sessionState.isProcessing) {
+            return;
+        }
+
+        // Buffer phase timer
+        if (isInBufferPhase) {
+            timerRef.current = setInterval(() => {
+                setBufferTimeLeft(prev => {
+                    if (prev <= 1) {
+                        // Buffer phase complete, transition to recording
+                        clearInterval(timerRef.current!);
+                        timerRef.current = undefined;
+                        setIsInBufferPhase(false);
+                        // Start recording asynchronously without blocking
+                        startRecording().catch(error => {
+                            console.error('Failed to start recording:', error);
+                            toast({
+                                title: "Recording Error",
+                                description: "Failed to start recording. Please try again.",
+                                variant: "destructive"
+                            });
+                        });
+                        return FAST_FIRE_CONFIG.bufferTimerSeconds;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        // Recording phase timer (only if actively recording)
+        else if (sessionState.isRecording) {
+            timerRef.current = setInterval(() => {
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        // Time's up, stop recording
+                        clearInterval(timerRef.current!);
+                        timerRef.current = undefined;
+                        stopRecording().catch(error => {
+                            console.error('Failed to stop recording:', error);
+                        });
+                        return FAST_FIRE_CONFIG.answerTimerSeconds;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+
+        // Cleanup on unmount or dependency change
         return () => {
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = undefined;
             }
         };
-    }, [sessionState.isActive, sessionState.isPaused, isInBufferPhase, startRecording, stopRecording]);
+    }, [
+        sessionState.isActive,
+        sessionState.isPaused,
+        sessionState.isProcessing,
+        sessionState.isRecording,
+        isInBufferPhase,
+        startRecording,
+        stopRecording,
+        toast
+    ]);
 
     const currentCard = flashcardsRef.current[sessionState.currentCardIndex];
 

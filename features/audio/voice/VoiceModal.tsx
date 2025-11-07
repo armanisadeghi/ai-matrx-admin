@@ -6,9 +6,6 @@ import Image from "next/image";
 import {
     Credenza,
     CredenzaContent,
-    CredenzaHeader,
-    CredenzaTitle,
-    CredenzaDescription,
     CredenzaBody,
 } from "@/components/ui/credenza-modal/credenza";
 import { Button } from "@/components/ui/button";
@@ -16,19 +13,11 @@ import { Badge } from "@/components/ui/badge";
 
 import ImageLoader from "./ImageLoader";
 import { useUnsplashGallery } from "@/hooks/images/useUnsplashGallery";
-import { voiceImages, defaultVoiceImage } from "../data/voiceImages";
+import { voiceImages, defaultVoiceImage } from "./voiceImages";
 import { useCartesia } from "@/hooks/tts/useCartesia";
 import {
-    OutputContainer,
-    AudioEncoding,
-    ModelId,
     VoiceOptions,
-    Language,
     VoiceSpeed,
-    Emotion,
-    Intensity,
-    EmotionName,
-    EmotionLevel,
 } from "@/lib/cartesia/cartesia.types";
 import { AiVoice } from "@/types/aiAudioTypes";
 

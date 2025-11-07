@@ -38,12 +38,20 @@ Consolidated all user settings and account management features into a unified `/
 
 ### Layout Features
 - **Shared Header:** Consistent header with back button and title
-- **Sidebar Navigation:** Always visible navigation for quick switching
+- **Responsive Navigation:**
+  - Desktop: Fixed sidebar navigation for quick switching
+  - Mobile: Hamburger menu with slide-out sheet navigation
+  - Current page title shown in mobile header
+- **Mobile-First Design:**
+  - Responsive padding: `p-4 md:p-6 lg:p-8`
+  - Optimized touch targets and spacing
+  - Collapsible sidebar on mobile devices
+  - Profile images scale appropriately (20x20 on mobile, 24x24 on desktop)
 - **Consistent Styling:** 
   - `bg-textured` backgrounds
   - Card-based content areas
-  - Standardized padding: `p-6 md:p-8`
-  - Max width: `max-w-5xl` to `max-w-6xl` depending on content
+  - Standardized responsive padding
+  - Max width: `max-w-5xl` to `max-w-7xl` depending on content
   - Professional, modern UI with proper light/dark theme support
 
 ### Navigation Structure
@@ -104,14 +112,17 @@ Settings (Header)
 ## Benefits
 
 1. **Unified Experience:** All settings in one place with consistent navigation
-2. **Scalability:** Easy to add new settings sections
-3. **Better UX:** Clear hierarchy and organization
-4. **Consistent Design:** All pages follow the same design patterns
-5. **Improved Navigation:** Sidebar allows quick switching between settings
-6. **Future-Proof:** Structure supports additional settings categories
+2. **Mobile-Friendly:** Fully responsive with optimized mobile UI
+3. **Scalability:** Easy to add new settings sections
+4. **Better UX:** Clear hierarchy and organization
+5. **Consistent Design:** All pages follow the same design patterns
+6. **Improved Navigation:** Sidebar on desktop, sheet menu on mobile
+7. **Touch-Optimized:** Proper spacing and touch targets for mobile devices
+8. **Future-Proof:** Structure supports additional settings categories
 
 ## Testing Recommendations
 
+### Desktop Testing
 1. Navigate to `/settings` - should redirect to `/settings/profile`
 2. Test all sidebar navigation links
 3. Verify profile page displays user information correctly
@@ -121,7 +132,18 @@ Settings (Header)
 7. Verify all "Back to Dashboard" links work
 8. Test organization-specific settings back buttons
 9. Verify invitation acceptance redirects to new organizations route
-10. Test mobile responsiveness of all settings pages
+
+### Mobile Testing
+1. Verify sidebar is hidden on mobile
+2. Test hamburger menu opens sheet navigation
+3. Verify current page title shows in header
+4. Test all navigation from mobile menu
+5. Verify proper spacing and touch targets
+6. Test scrolling on all pages
+7. Verify profile image sizing on mobile
+8. Test form inputs and buttons on mobile
+9. Verify cards and content fit properly
+10. Test landscape and portrait orientations
 
 ## Future Enhancements
 

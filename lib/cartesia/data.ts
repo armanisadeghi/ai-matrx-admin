@@ -209,6 +209,10 @@ export const VOICE_SPEEDS = {
       value: "sonic-2-2025-03-07" as ModelId,
       displayName: "Sonic 2",
     },
+    SONIC_3: {
+      value: "sonic-3-2025-10-27" as ModelId,
+      displayName: "Sonic 3",
+    },
   } as const;
   
   export const MODEL_ID_OPTIONS = Object.values(MODEL_IDS);

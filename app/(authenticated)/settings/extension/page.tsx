@@ -60,8 +60,8 @@ export default function ExtensionAuthPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-      <Card className="p-6">
+    <div className="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto space-y-4 md:space-y-6">
+      <Card className="p-4 md:p-6">
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-1">
             Connect Chrome Extension
@@ -150,7 +150,7 @@ export default function ExtensionAuthPage() {
         </div>
       </Card>
 
-      <Card className="p-6 bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800">
+      <Card className="p-4 md:p-6 bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800">
         <h3 className="font-semibold mb-2 flex items-center gap-2">
           <span className="text-yellow-600 dark:text-yellow-500">⚠️</span>
           Security Notice

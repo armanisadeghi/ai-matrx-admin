@@ -44,19 +44,31 @@ Unified settings and account management for AI Matrx.
 
 ## Design Guidelines
 
-- **Container:** Use `p-6 md:p-8` for padding
-- **Max Width:** Use `max-w-5xl` or `max-w-6xl` for content
-- **Cards:** Use shadcn Card components for sections
-- **Spacing:** Use consistent gap spacing (gap-4, gap-6)
+- **Container:** Use responsive padding: `p-4 md:p-6 lg:p-8`
+- **Max Width:** Use `max-w-5xl` to `max-w-7xl` depending on content needs
+- **Cards:** Use shadcn Card components with responsive padding
+- **Spacing:** Use responsive gap spacing (`gap-4 md:gap-6`)
+- **Buttons:** Add `w-full md:w-auto` for full-width mobile buttons
+- **Text:** Use responsive text sizes (`text-xl md:text-2xl`)
+- **Images:** Scale appropriately for mobile (`h-20 w-20 md:h-24 md:w-24`)
 - **Backgrounds:** Rely on layout's `bg-textured` background
+
+### Mobile-First Checklist
+- ✅ Responsive padding and margins
+- ✅ Touch-friendly button sizes (min 44x44px)
+- ✅ Readable text sizes on small screens
+- ✅ Proper spacing between interactive elements
+- ✅ Full-width buttons on mobile where appropriate
+- ✅ Centered content on mobile, left-aligned on desktop
 
 ## Navigation
 
 All settings navigation is handled by the shared `layout.tsx`. The layout provides:
 - Consistent header with back button
-- Sidebar navigation (always visible on desktop)
-- Active state management
-- Responsive mobile layout
+- **Desktop:** Fixed sidebar navigation (always visible)
+- **Mobile:** Hamburger menu with sheet navigation (slide-out drawer)
+- Active state management and current page title display
+- Fully responsive mobile layout with optimized touch targets
 
 ## Related Documentation
 

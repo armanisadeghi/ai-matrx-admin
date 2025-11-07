@@ -270,14 +270,20 @@ export const useDynamicVoiceAiProcessing = (initialAssistant?: Assistant) => {
     };
 
     const playAllAudioFeedback = useCallback(async () => {
+        setIsPlayingFiltered(false);
+        setFilteredAudioQueue([]);
         if (currentAudioIndex === -1 && audioFeedbackQueue.length > 0) {
             setCurrentAudioIndex(0);
         }
     }, [currentAudioIndex, audioFeedbackQueue.length]);
 
+    const [filteredAudioQueue, setFilteredAudioQueue] = useState<AudioFeedbackItem[]>([]);
+    const [isPlayingFiltered, setIsPlayingFiltered] = useState(false);
+
     const playFilteredAudioFeedback = useCallback((filterFn: (item: AudioFeedbackItem) => boolean) => {
         const filteredQueue = audioFeedbackQueue.filter(filterFn);
-        setAudioFeedbackQueue(filteredQueue);
+        setFilteredAudioQueue(filteredQueue);
+        setIsPlayingFiltered(true);
         if (filteredQueue.length > 0) {
             setCurrentAudioIndex(0);
         }
@@ -292,18 +298,24 @@ export const useDynamicVoiceAiProcessing = (initialAssistant?: Assistant) => {
         playFilteredAudioFeedback(item => item.metadata.score >= minScore);
     }, [playFilteredAudioFeedback]);
 
+    // Get the active queue (filtered or full)
+    const activeQueue = isPlayingFiltered && filteredAudioQueue.length > 0 ? filteredAudioQueue : audioFeedbackQueue;
+
     // Handle audio playback completion
     const handleAudioComplete = useCallback(() => {
-        if (currentAudioIndex < audioFeedbackQueue.length - 1) {
+        const queue = isPlayingFiltered && filteredAudioQueue.length > 0 ? filteredAudioQueue : audioFeedbackQueue;
+        if (currentAudioIndex < queue.length - 1) {
             setCurrentAudioIndex(prev => prev + 1);
         } else {
             setCurrentAudioIndex(-1);
+            setIsPlayingFiltered(false);
         }
-    }, [audioFeedbackQueue.length]);
+    }, [currentAudioIndex, audioFeedbackQueue, filteredAudioQueue, isPlayingFiltered]);
 
     useEffect(() => {
-        if (currentAudioIndex >= 0 && audioFeedbackQueue[currentAudioIndex]) {
-            const currentFeedback = audioFeedbackQueue[currentAudioIndex];
+        const queue = isPlayingFiltered && filteredAudioQueue.length > 0 ? filteredAudioQueue : audioFeedbackQueue;
+        if (currentAudioIndex >= 0 && queue[currentAudioIndex]) {
+            const currentFeedback = queue[currentAudioIndex];
             audioPlayerRef.current = (
                 <TextToSpeechPlayer
                     text={currentFeedback.feedback}
@@ -314,7 +326,7 @@ export const useDynamicVoiceAiProcessing = (initialAssistant?: Assistant) => {
         } else {
             audioPlayerRef.current = null;
         }
-    }, [currentAudioIndex, audioFeedbackQueue, handleAudioComplete]);
+    }, [currentAudioIndex, audioFeedbackQueue, filteredAudioQueue, isPlayingFiltered, handleAudioComplete]);
 
 
 

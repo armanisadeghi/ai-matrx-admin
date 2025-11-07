@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -9,30 +9,27 @@ import { Input } from "@/components/ui/input";
 import { RootState } from '@/lib/redux/store';
 import { setPreference } from '@/lib/redux/slices/userPreferencesSlice';
 import { availableVoices } from '@/lib/cartesia/voices';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Mic2 } from 'lucide-react';
 import Link from 'next/link';
+import { VoiceSelectionModal } from '@/features/audio/voice/components/VoiceSelectionModal';
 
 const VoicePreferences = () => {
     const dispatch = useDispatch();
     const voicePreferences = useSelector((state: RootState) => state.userPreferences.voice);
+    const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
-    // Sort voices alphabetically and get popular ones
-    const sortedVoices = useMemo(() => {
-        return [...availableVoices].sort((a, b) => a.name.localeCompare(b.name));
-    }, []);
-
-    const popularVoices = useMemo(() => {
-        const popularIds = [
-            "156fb8d2-335b-4950-9cb3-a2d33befec77", // Default
-            "573e3144-a684-4e72-ac2b-9b2063a50b53", // Teacher Lady
-            "bd9120b6-7761-47a6-a446-77ca49132781", // Tutorial Man
-            "79f8b5fb-2cc8-479a-80df-29f7a7cf1a3e", // Nonfiction Man
-        ];
-        return availableVoices.filter(v => popularIds.includes(v.id));
-    }, []);
+    // Get selected voice name
+    const selectedVoice = useMemo(() => {
+        return availableVoices.find(v => v.id === voicePreferences.voice);
+    }, [voicePreferences.voice]);
 
     const handleSwitchChange = (preference: string) => (checked: boolean) => {
         dispatch(setPreference({ module: 'voice', preference, value: checked }));
+    };
+
+    const handleVoiceSelect = (voiceId: string) => {
+        dispatch(setPreference({ module: 'voice', preference: 'voice', value: voiceId }));
+        setIsVoiceModalOpen(false);
     };
 
     const handleSelectChange = (preference: string) => (value: string) => {
@@ -74,53 +71,41 @@ const VoicePreferences = () => {
                         (Cartesia TTS)
                     </span>
                 </Label>
-                <Select 
-                    value={voicePreferences.voice} 
-                    onValueChange={handleSelectChange('voice')}
+                <Button
+                    id="voice"
+                    variant="outline"
+                    onClick={() => setIsVoiceModalOpen(true)}
+                    className="w-full justify-between h-auto py-3"
                 >
-                    <SelectTrigger id="voice">
-                        <SelectValue placeholder="Select a voice">
-                            {voicePreferences.voice 
-                                ? availableVoices.find(v => v.id === voicePreferences.voice)?.name || 'Unknown Voice'
-                                : 'Select a voice'
-                            }
-                        </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
-                        {/* Popular Voices */}
-                        {popularVoices.length > 0 && (
-                            <>
-                                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                                    Popular Voices
-                                </div>
-                                {popularVoices.map((voice) => (
-                                    <SelectItem key={voice.id} value={voice.id}>
-                                        {voice.name}
-                                        {voice.description && (
-                                            <span className="text-xs text-muted-foreground ml-2">
-                                                - {voice.description.slice(0, 50)}...
-                                            </span>
-                                        )}
-                                    </SelectItem>
-                                ))}
-                                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-2">
-                                    All Voices
-                                </div>
-                            </>
-                        )}
-                        
-                        {/* All Voices */}
-                        {sortedVoices.map((voice) => (
-                            <SelectItem key={voice.id} value={voice.id}>
-                                {voice.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                    <div className="flex items-center gap-3">
+                        <Mic2 className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex flex-col items-start">
+                            <span className="font-medium text-sm">
+                                {selectedVoice?.name || 'Select a voice'}
+                            </span>
+                            {selectedVoice?.description && (
+                                <span className="text-xs text-muted-foreground line-clamp-1">
+                                    {selectedVoice.description}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </Button>
                 <p className="text-sm text-muted-foreground">
-                    Choose a voice for text-to-speech playback. Visit the Voice Playground to test voices.
+                    Browse, test, and select a voice for text-to-speech playback.
                 </p>
             </div>
+
+            {/* Voice Selection Modal */}
+            <VoiceSelectionModal
+                isOpen={isVoiceModalOpen}
+                onClose={() => setIsVoiceModalOpen(false)}
+                voices={availableVoices.map(v => ({ id: v.id, name: v.name, description: v.description }))}
+                selectedVoiceId={voicePreferences.voice}
+                onSelectVoice={handleVoiceSelect}
+                title="Select Your Voice"
+            />
 
             <div className="space-y-2">
                 <Label htmlFor="language">Language</Label>

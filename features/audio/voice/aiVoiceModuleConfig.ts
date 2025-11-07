@@ -1,6 +1,5 @@
 // modules/aiVoice/aiVoiceModuleConfig.ts
 
-import {moduleSystemDefaults} from '@/lib/redux/dynamic/moduleSchema';
 import {AiAudioConfig, AiAudioData, AiAudioSchema, AiAudioUserPreferences} from "@/types/aiAudioTypes";
 
 export const aiAudioConfig: AiAudioConfig = {

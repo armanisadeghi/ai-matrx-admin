@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { aiAudioInitialState } from "../aiVoiceModuleConfig";
+import { aiAudioInitialState } from "./aiVoiceModuleConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VoicesList from "./VoicesList";
 import VoiceActions from "./VoiceActions";

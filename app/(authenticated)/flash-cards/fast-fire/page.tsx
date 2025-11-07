@@ -6,7 +6,7 @@ import {Button} from "@/components/ui/button";
 import {Play, Pause, Ban, Volume2, Award, Mic} from "lucide-react";
 import {Progress} from "@/components/ui/progress";
 import {cn} from "@/lib/utils";
-import {useFastFireSession} from "@/hooks/flashcard-app/useFastFireFlashcards";
+import {useFastFireSession, FAST_FIRE_CONFIG} from "@/hooks/flashcard-app/useFastFireFlashcards";
 
 const FastFirePractice = (
     {
@@ -32,8 +32,6 @@ const FastFirePractice = (
         pauseSession,
         resumeSession,
         stopSession,
-        startRecording,
-        stopRecording,
         playAllAudioFeedback,
         playCorrectAnswersOnly,
         playHighScoresOnly,
@@ -45,6 +43,11 @@ const FastFirePractice = (
     const totalScore = results.reduce((sum, result) => sum + result.score, 0);
     const correctAnswers = results.filter((r) => r.correct).length;
     const overallPercentage = totalCards > 0 ? Math.round((totalScore / (totalCards * 6)) * 100) : 0;
+    const progressPercentage = isInBufferPhase
+                               ? (bufferTimeLeft / FAST_FIRE_CONFIG.bufferTimerSeconds) * 100
+                               : (timeLeft / FAST_FIRE_CONFIG.answerTimerSeconds) * 100;
+    const audioScale = isRecording ? 1 + (audioLevel / 255) * 0.5 : 1;
+    const audioOpacity = isRecording ? 0.3 + (audioLevel / 255) * 0.7 : 1;
 
     const renderSessionControls = () => {
         if (!isActive && !isPaused) {
@@ -109,13 +112,6 @@ const FastFirePractice = (
             </>
         );
     };
-
-    const defaultTimer = 10;
-    const progressPercentage = isInBufferPhase
-                               ? (bufferTimeLeft / 3) * 100
-                               : (timeLeft / defaultTimer) * 100;
-    const audioScale = isRecording ? 1 + (audioLevel / 255) * 0.5 : 1;
-    const audioOpacity = isRecording ? 0.3 + (audioLevel / 255) * 0.7 : 1;
 
     return (
         <div className="container mx-auto py-8 pb-[160px] space-y-8">
@@ -227,40 +223,22 @@ const FastFirePractice = (
                                          )}
                                          {isProcessing && (
                                              <motion.div
-                                                 key="processingPhase"
-                                                 initial={{opacity: 0, y: 10}}
-                                                 animate={{opacity: 1, y: 0}}
-                                                 exit={{opacity: 0, y: -10}}
-                                                 className="text-center mt-4 text-sm text-info"
-                                             >
-                                                 Processing response...
-                                             </motion.div>
-                                         )}
-                                     </AnimatePresence>
-                                     <div className="flex justify-center gap-2 mt-4">
-                                         <Button
-                                             variant="outline"
-                                             size="sm"
-                                             onClick={startRecording}
-                                             disabled={isProcessing || !isActive || isPaused || isRecording}
-                                         >
-                                             Start Recording
-                                         </Button>
-                                         <Button
-                                             variant="outline"
-                                             size="sm"
-                                             onClick={stopRecording}
-                                             disabled={isProcessing || !isRecording}
-                                         >
-                                             Stop Recording
-                                         </Button>
-                                     </div>
-                                 </CardContent>
-                             </Card>
-                         </motion.div>
-                     </AnimatePresence>
-                 </div>
-             )}
+                                                key="processingPhase"
+                                                initial={{opacity: 0, y: 10}}
+                                                animate={{opacity: 1, y: 0}}
+                                                exit={{opacity: 0, y: -10}}
+                                                className="text-center mt-4 text-sm text-info"
+                                            >
+                                                Processing response...
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            )}
 
             <AnimatePresence mode="sync">
                 {audioPlayer && (
@@ -303,10 +281,10 @@ const FastFirePractice = (
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span>Progress</span>
-                                    <span>{Math.max(currentCardIndex + 1, 0)} / {totalCards}</span>
+                                    <span>{isActive ? currentCardIndex + 1 : 0} / {totalCards}</span>
                                 </div>
                                 <Progress
-                                    value={totalCards > 0 ? ((currentCardIndex + 1) / totalCards) * 100 : 0}
+                                    value={totalCards > 0 && isActive ? ((currentCardIndex + 1) / totalCards) * 100 : 0}
                                     className="h-2"
                                 />
                             </div>

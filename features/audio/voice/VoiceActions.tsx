@@ -2,7 +2,7 @@
 
 import { cloneVoiceFromFile, createVoice } from "@/lib/cartesia/cartesiaUtils";
 import { Button, Input, Textarea, FileUpload, RadioGroup, RadioGroupItem, Label, Switch } from "@/components/ui";
-import { useAiAudio } from "@/app/(authenticated)/demo/voice/components/AiVoicePage";
+import { useAiAudio } from "@/features/audio/voice/AiVoicePage";
 import { Language } from "@/lib/cartesia/cartesia.types";
 import { useState } from "react";
 

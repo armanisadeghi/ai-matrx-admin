@@ -5,7 +5,7 @@ import {AiChatSchema} from "@/types/aiChatTypes";
 import {ImageEditorSchema} from "@/types/imageEditorTypes";
 import {
     aiAudioConfig,
-} from "@/app/(authenticated)/demo/voice/aiVoiceModuleConfig";
+} from "@/features/audio/voice/aiVoiceModuleConfig";
 export type ModuleName = 'aiAudio' | 'aiChat' | 'imageEditor';
 
 export interface BaseModuleSchema<C, U, D> {

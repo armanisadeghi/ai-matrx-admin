@@ -32,7 +32,7 @@ export async function processDebate(formData: FormData) {
     if (!transcript) throw new Error('Invalid audio');
 
     const completion = await groq.chat.completions.create({
-        model: 'llama3-8b-8192',
+        model: 'openai/gpt-oss-20b',
         messages: [
             {
                 role: 'system',
@@ -65,7 +65,7 @@ export async function processDebate(formData: FormData) {
             'X-API-Key': process.env.CARTESIA_API_KEY!,
         },
         body: JSON.stringify({
-            modelId: 'sonic-2-2025-03-07',
+            modelId: 'sonic-3-2025-10-27',
             transcript: response,
             voice: {
                 mode: 'id',

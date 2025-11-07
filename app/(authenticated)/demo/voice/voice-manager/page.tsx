@@ -1,7 +1,7 @@
 // app/(authenticated)/demo/aiAudio/hold-hold-page.tsx
 
 import React from 'react';
-import AiVoicePage from "@/app/(authenticated)/demo/voice/components/AiVoicePage";
+import AiVoicePage from "@/features/audio/voice/AiVoicePage";
 
 const AiVoiceDemo = () => {
     return (

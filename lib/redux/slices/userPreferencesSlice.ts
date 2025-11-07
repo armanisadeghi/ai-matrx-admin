@@ -202,8 +202,8 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
             windowMode: 'default',
         },
         voice: {
-            voice: '',
-            language: '',
+            voice: '156fb8d2-335b-4950-9cb3-a2d33befec77',
+            language: 'en',
             speed: 1,
             emotion: '',
             microphone: false,
