@@ -23,6 +23,11 @@ export interface FlashcardResult {
     cardId: string;
 }
 
+export interface FastFireSettings {
+    secondsPerCard: number;
+    numberOfCards: number;
+}
+
 interface UseFastFireSessionReturn {
     isActive: boolean;
     isPaused: boolean;
@@ -33,15 +38,16 @@ interface UseFastFireSessionReturn {
     results: FlashcardResult[];
     audioPlayer: HTMLAudioElement | null;
     timeLeft: number;
-    bufferTimeLeft: number;
-    isInBufferPhase: boolean;
     isInInitialCountdown: boolean;
     initialCountdownLeft: number;
     audioLevel: number;
-    startSession: () => void;
+    processingCount: number;
+    settings: FastFireSettings;
+    availableCardsCount: number;
+    startSession: (customSettings?: Partial<FastFireSettings>) => void;
     pauseSession: () => void;
     resumeSession: () => void;
-    stopSession: () => Promise<void>;
+    stopSession: (preserveResults?: boolean) => Promise<void>;
     startRecording: () => Promise<void>;
     stopRecording: () => Promise<void>;
     playAllAudioFeedback: () => void;
@@ -80,12 +86,13 @@ const assistant = getAssistant('flashcardGrader');
 export const useFastFireSession = (): UseFastFireSessionReturn => {
     const {toast} = useToast();
 
-    // Fetch flashcards internally and ensure they have IDs
-    const flashcards = getFlashcardSet(FAST_FIRE_CONFIG.flashcardSet).map((card, index) => ({
+    // Fetch all available flashcards
+    const allFlashcards = getFlashcardSet(FAST_FIRE_CONFIG.flashcardSet).map((card, index) => ({
         ...card,
         id: card.id || `flashcard-${Date.now()}-${index}`
     }));
-    const flashcardsRef = useRef<FlashcardData[]>(flashcards);
+    const allFlashcardsRef = useRef<FlashcardData[]>(allFlashcards);
+    const sessionFlashcardsRef = useRef<FlashcardData[]>([]);
 
     const [sessionState, setSessionState] = useState<SessionState>({
         isActive: false,
@@ -96,12 +103,15 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         isInInitialCountdown: false
     });
 
+    const [settings, setSettings] = useState<FastFireSettings>({
+        secondsPerCard: FAST_FIRE_CONFIG.answerTimerSeconds,
+        numberOfCards: allFlashcards.length
+    });
     const [results, setResults] = useState<FlashcardResult[]>([]);
-    const [timeLeft, setTimeLeft] = useState<number>(FAST_FIRE_CONFIG.answerTimerSeconds);
-    const [bufferTimeLeft, setBufferTimeLeft] = useState<number>(FAST_FIRE_CONFIG.bufferTimerSeconds);
+    const [timeLeft, setTimeLeft] = useState<number>(settings.secondsPerCard);
     const [initialCountdownLeft, setInitialCountdownLeft] = useState<number>(FAST_FIRE_CONFIG.initialCountdownSeconds);
-    const [isInBufferPhase, setIsInBufferPhase] = useState(true);
     const [audioLevel, setAudioLevel] = useState(0);
+    const [processingCount, setProcessingCount] = useState(0); // Track background processing
 
     const mediaRecorder = useRef<MediaRecorder | null>(null);
     const audioChunks = useRef<Blob[]>([]);
@@ -125,8 +135,6 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         setAiCallParams,
         setPartialBrokers
     } = useDynamicVoiceAiProcessing(assistant);
-
-    const totalCards = flashcardsRef.current.length;
 
     const cleanup = useCallback(async () => {
         try {
@@ -176,7 +184,7 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         }
     }, []);
 
-    const stopSession = useCallback(async () => {
+    const stopSession = useCallback(async (preserveResults: boolean = true) => {
         try {
             await cleanup();
             setSessionState({
@@ -187,10 +195,25 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 currentCardIndex: -1,
                 isInInitialCountdown: false
             });
-            setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
-            setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
+            setTimeLeft(settings.secondsPerCard);
             setInitialCountdownLeft(FAST_FIRE_CONFIG.initialCountdownSeconds);
-            setIsInBufferPhase(true);
+            
+            // Only clear results if explicitly requested
+            if (!preserveResults) {
+                setResults([]);
+                setProcessingCount(0);
+            }
+            
+            // Show what we have so far
+            if (preserveResults && results.length > 0) {
+                setTimeout(() => {
+                    toast({
+                        title: "Session Stopped",
+                        description: `Saved progress for ${results.length} card${results.length !== 1 ? 's' : ''}. You can review your results below.`,
+                        variant: "default"
+                    });
+                }, 300);
+            }
         } catch (error) {
             console.error('Error stopping session:', error);
             toast({
@@ -199,40 +222,45 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 variant: "destructive"
             });
         }
-    }, [cleanup, toast]);
+    }, [cleanup, toast, settings.secondsPerCard, results.length]);
 
     const moveToNextCard = useCallback(async () => {
         const currentIndex = sessionState.currentCardIndex;
-        if (currentIndex >= flashcardsRef.current.length - 1) {
-            toast({
-                title: "Session Complete",
-                description: "You've completed all flashcards!",
-                variant: "success"
-            });
-            await stopSession();
+        
+        // Check if we've completed all cards
+        if (currentIndex >= sessionFlashcardsRef.current.length - 1) {
+            await stopSession(true); // Preserve results
+            
+            // Wait a moment for any background processing to finish
+            setTimeout(() => {
+                toast({
+                    title: "Session Complete!",
+                    description: `You've completed all ${sessionFlashcardsRef.current.length} flashcards! Review your results below.`,
+                    variant: "default"
+                });
+            }, 500);
             return false;
         }
+        
+        // Immediately move to next card - no waiting
         setSessionState(prev => ({
             ...prev,
             currentCardIndex: prev.currentCardIndex + 1,
-            isProcessing: false,
             isRecording: false
         }));
-        setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
-        setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
-        setIsInBufferPhase(true);
+        setTimeLeft(settings.secondsPerCard);
         return true;
-    }, [sessionState.currentCardIndex, stopSession, toast]);
+    }, [sessionState.currentCardIndex, settings.secondsPerCard, stopSession, toast]);
 
-    const handleRecordingComplete = useCallback(async (audioBlob: Blob) => {
-        const currentIndex = sessionState.currentCardIndex;
-        const currentFlashcard = flashcardsRef.current[currentIndex];
+    const handleRecordingComplete = useCallback(async (audioBlob: Blob, cardIndex: number) => {
+        const currentFlashcard = sessionFlashcardsRef.current[cardIndex];
         if (!currentFlashcard) {
-            await stopSession();
             return;
         }
 
-        setSessionState(prev => ({...prev, isProcessing: true}));
+        // Increment processing count
+        setProcessingCount(prev => prev + 1);
+        
         try {
             // Set flashcard context for AI grading
             setPartialBrokers([
@@ -240,39 +268,48 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 { id: 'flashcardBack', value: currentFlashcard.back }
             ]);
             
+            // Process in background - don't block UI
             await submit(audioBlob);
+            
             const conversation = getCurrentConversation();
             const lastResult = conversation?.structuredData?.[conversation.structuredData.length - 1];
-            if (!lastResult) {
-                throw new Error("No response received from AI");
+            
+            if (lastResult) {
+                // Add result when it comes back
+                setResults(prev => {
+                    // Make sure we don't duplicate results
+                    const exists = prev.find(r => r.cardId === currentFlashcard.id);
+                    if (exists) return prev;
+                    
+                    return [...prev, {
+                        correct: lastResult.correct,
+                        score: lastResult.score,
+                        audioFeedback: lastResult.audioFeedback,
+                        cardId: currentFlashcard.id || `card-${cardIndex}`,
+                        timestamp: Date.now()
+                    }];
+                });
             }
-            setResults(prev => [...prev, {
-                correct: lastResult.correct,
-                score: lastResult.score,
-                audioFeedback: lastResult.audioFeedback,
-                cardId: currentFlashcard.id || `card-${currentIndex}`,
-                timestamp: Date.now()
-            }]);
-            await moveToNextCard();
         } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error instanceof Error ? error.message : "Failed to process response",
-                variant: "destructive"
+            console.error('Error processing flashcard:', error);
+            // Add a failed result
+            setResults(prev => {
+                const exists = prev.find(r => r.cardId === currentFlashcard.id);
+                if (exists) return prev;
+                
+                return [...prev, {
+                    correct: false,
+                    score: 0,
+                    audioFeedback: 'Processing failed',
+                    cardId: currentFlashcard.id || `card-${cardIndex}`,
+                    timestamp: Date.now()
+                }];
             });
-            setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
-            setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
-            setIsInBufferPhase(true);
-            setSessionState(prev => ({
-                ...prev,
-                isProcessing: false,
-                isRecording: false
-            }));
         } finally {
-            audioChunks.current = [];
-            mediaRecorder.current = null;
+            // Decrement processing count
+            setProcessingCount(prev => Math.max(0, prev - 1));
         }
-    }, [sessionState.currentCardIndex, submit, getCurrentConversation, moveToNextCard, stopSession, toast, setPartialBrokers]);
+    }, [submit, getCurrentConversation, setPartialBrokers]);
 
     const startRecording = useCallback(async () => {
         // Check browser support
@@ -323,25 +360,23 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             
             // Handle recording completion
             recorder.onstop = async () => {
+                const recordedCardIndex = sessionState.currentCardIndex;
+                
                 try {
                     if (audioChunks.current.length === 0) {
                         throw new Error('No audio data recorded');
                     }
                     const audioBlob = new Blob(audioChunks.current, {type: mimeType});
-                    await handleRecordingComplete(audioBlob);
+                    
+                    // Process in background - don't await
+                    handleRecordingComplete(audioBlob, recordedCardIndex);
+                    
                 } catch (error) {
                     console.error('Error processing recording:', error);
-                    toast({
-                        title: "Recording Error",
-                        description: "Failed to process the audio recording. Please try again.",
-                        variant: "destructive"
-                    });
-                    setSessionState(prev => ({
-                        ...prev,
-                        isProcessing: false,
-                        isRecording: false
-                    }));
                 }
+                
+                // Always clear chunks and move on
+                audioChunks.current = [];
             };
             
             // Handle recording errors
@@ -407,14 +442,26 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
 
     const stopRecording = useCallback(async () => {
         if (mediaRecorder.current?.state === 'recording') {
-            await endSound.current?.play().catch(() => {});
+            // Play buzzer
+            endSound.current?.play().catch(() => {});
+            
+            // Stop recording
             mediaRecorder.current.stop();
+            
+            // Stop all tracks
+            if (mediaRecorder.current.stream) {
+                mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
+            }
+            
             setSessionState(prev => ({...prev, isRecording: false}));
+            
+            // Immediately move to next card (don't wait for processing)
+            await moveToNextCard();
         }
-    }, []);
+    }, [moveToNextCard]);
 
-    const startSession = useCallback(() => {
-        if (flashcardsRef.current.length === 0) {
+    const startSession = useCallback((customSettings?: Partial<FastFireSettings>) => {
+        if (allFlashcardsRef.current.length === 0) {
             toast({
                 title: "No Flashcards",
                 description: "There are no flashcards to practice.",
@@ -422,6 +469,27 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             });
             return;
         }
+        
+        // Update settings if provided
+        const newSettings = {
+            ...settings,
+            ...customSettings
+        };
+        setSettings(newSettings);
+        
+        // Select flashcards based on settings
+        let selectedCards: FlashcardData[];
+        if (newSettings.numberOfCards >= allFlashcardsRef.current.length) {
+            // Use all cards
+            selectedCards = [...allFlashcardsRef.current];
+        } else {
+            // Randomly select the specified number of cards
+            const shuffled = [...allFlashcardsRef.current].sort(() => Math.random() - 0.5);
+            selectedCards = shuffled.slice(0, newSettings.numberOfCards);
+        }
+        
+        sessionFlashcardsRef.current = selectedCards;
+        
         createNewConversation();
         setSessionState({
             isActive: true,
@@ -431,12 +499,19 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             currentCardIndex: -1, // Stay at -1 during initial countdown
             isInInitialCountdown: true
         });
+        
+        // Clear results when starting fresh
         setResults([]);
-        setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
-        setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
+        setTimeLeft(newSettings.secondsPerCard);
         setInitialCountdownLeft(FAST_FIRE_CONFIG.initialCountdownSeconds);
-        setIsInBufferPhase(true);
-    }, [createNewConversation, toast]);
+        setProcessingCount(0);
+        
+        toast({
+            title: "Session Starting",
+            description: `Practicing ${selectedCards.length} card${selectedCards.length !== 1 ? 's' : ''} at ${newSettings.secondsPerCard} seconds each.`,
+            variant: "default"
+        });
+    }, [createNewConversation, toast, settings]);
 
     const pauseSession = useCallback(() => {
         // Save current state before pausing
@@ -481,84 +556,82 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         };
     }, []);
 
-    // Timer management - cleaner implementation with proper state handling
+    // Timer management - simplified and reliable
     useEffect(() => {
-        // Clear any existing timer when dependencies change
+        // Clear any existing timer
         if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = undefined;
         }
 
         // Only run timer if session is active and not paused
-        if (!sessionState.isActive || sessionState.isPaused || sessionState.isProcessing) {
+        if (!sessionState.isActive || sessionState.isPaused) {
             return;
         }
 
-        // Initial countdown phase (before showing any cards)
+        // Phase 1: Initial countdown (before showing any cards)
         if (sessionState.isInInitialCountdown) {
             timerRef.current = setInterval(() => {
                 setInitialCountdownLeft(prev => {
-                    if (prev <= 1) {
-                        // Initial countdown complete, move to first card
+                    const newValue = prev - 1;
+                    if (newValue <= 0) {
+                        // Initial countdown complete, show first card and start recording
                         clearInterval(timerRef.current!);
                         timerRef.current = undefined;
+                        
                         setSessionState(prevState => ({
                             ...prevState,
                             isInInitialCountdown: false,
                             currentCardIndex: 0
                         }));
-                        setInitialCountdownLeft(FAST_FIRE_CONFIG.initialCountdownSeconds);
-                        setIsInBufferPhase(true);
-                        setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
+                        
+                        // Start recording immediately after a brief moment
+                        setTimeout(() => {
+                            startRecording().catch(error => {
+                                console.error('Failed to start recording:', error);
+                                toast({
+                                    title: "Recording Error",
+                                    description: "Failed to start recording. Please try again.",
+                                    variant: "destructive"
+                                });
+                            });
+                        }, 100);
+                        
                         return FAST_FIRE_CONFIG.initialCountdownSeconds;
                     }
-                    return prev - 1;
+                    return newValue;
                 });
             }, 1000);
         }
-        // Buffer phase timer (for each card)
-        else if (isInBufferPhase && sessionState.currentCardIndex >= 0) {
-            timerRef.current = setInterval(() => {
-                setBufferTimeLeft(prev => {
-                    if (prev <= 1) {
-                        // Buffer phase complete, transition to recording
-                        clearInterval(timerRef.current!);
-                        timerRef.current = undefined;
-                        setIsInBufferPhase(false);
-                        // Start recording asynchronously without blocking
-                        startRecording().catch(error => {
-                            console.error('Failed to start recording:', error);
-                            toast({
-                                title: "Recording Error",
-                                description: "Failed to start recording. Please try again.",
-                                variant: "destructive"
-                            });
-                        });
-                        return FAST_FIRE_CONFIG.bufferTimerSeconds;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        }
-        // Recording phase timer (only if actively recording)
-        else if (sessionState.isRecording) {
+        // Phase 2: Card recording timer
+        else if (sessionState.isRecording && sessionState.currentCardIndex >= 0) {
             timerRef.current = setInterval(() => {
                 setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        // Time's up, stop recording
+                    const newValue = prev - 1;
+                    if (newValue <= 0) {
+                        // Time's up - stop recording and move to next card
                         clearInterval(timerRef.current!);
                         timerRef.current = undefined;
+                        
                         stopRecording().catch(error => {
                             console.error('Failed to stop recording:', error);
                         });
-                        return FAST_FIRE_CONFIG.answerTimerSeconds;
+                        
+                        return settings.secondsPerCard;
                     }
-                    return prev - 1;
+                    return newValue;
                 });
             }, 1000);
         }
+        // Phase 3: Waiting to start recording for a new card
+        else if (!sessionState.isRecording && sessionState.currentCardIndex >= 0 && !sessionState.isInInitialCountdown) {
+            // Start recording for this card
+            startRecording().catch(error => {
+                console.error('Failed to start recording:', error);
+            });
+        }
 
-        // Cleanup on unmount or dependency change
+        // Cleanup
         return () => {
             if (timerRef.current) {
                 clearInterval(timerRef.current);
@@ -568,19 +641,19 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
     }, [
         sessionState.isActive,
         sessionState.isPaused,
-        sessionState.isProcessing,
         sessionState.isRecording,
         sessionState.isInInitialCountdown,
         sessionState.currentCardIndex,
-        isInBufferPhase,
         startRecording,
         stopRecording,
         toast
     ]);
 
     const currentCard = sessionState.currentCardIndex >= 0 
-        ? flashcardsRef.current[sessionState.currentCardIndex] 
+        ? sessionFlashcardsRef.current[sessionState.currentCardIndex] 
         : undefined;
+    
+    const totalCards = sessionFlashcardsRef.current.length;
 
     return {
         isActive: sessionState.isActive,
@@ -592,11 +665,12 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         results,
         audioPlayer,
         timeLeft,
-        bufferTimeLeft,
-        isInBufferPhase,
         isInInitialCountdown: sessionState.isInInitialCountdown,
         initialCountdownLeft,
         audioLevel,
+        processingCount,
+        settings,
+        availableCardsCount: allFlashcardsRef.current.length,
         startSession,
         pauseSession,
         resumeSession,
