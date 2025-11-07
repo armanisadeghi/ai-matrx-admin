@@ -29,73 +29,14 @@ export function PromptsPageHeader() {
     if (isMobile) {
         return (
             <PageSpecificHeader>
-                <div className="flex items-center justify-between w-full gap-2">
-                    {/* Left - Title */}
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="flex items-center justify-center w-full">
+                    <div className="flex items-center gap-2">
                         <FaIndent className="h-5 w-5 text-primary flex-shrink-0" />
-                        <h1 className="text-base font-bold text-foreground truncate">
+                        <h1 className="text-base font-bold text-foreground">
                             Prompts
                         </h1>
                     </div>
-
-                    {/* Right - Quick Actions */}
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                        {/* New Button - Primary action */}
-                        <Link href="/ai/prompts/new">
-                            <Button size="sm" className="h-8 px-3">
-                                <Plus className="h-4 w-4" />
-                            </Button>
-                        </Link>
-
-                        {/* More Actions Menu */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem asChild>
-                                    <Link href="/ai/prompts/templates" className="flex items-center cursor-pointer">
-                                        <LayoutPanelTop className="h-4 w-4 mr-2" />
-                                        <span>Templates</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setIsImportOpen(true)}>
-                                    <Upload className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
-                                    <span>Import</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsBuildOpen(true)}>
-                                    <Wrench className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
-                                    <span>Build</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsGenerateOpen(true)}>
-                                    <Wand2 className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
-                                    <span>Generate with AI</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
                 </div>
-
-                {/* Modals */}
-                <PromptImporter
-                    isOpen={isImportOpen}
-                    onClose={() => setIsImportOpen(false)}
-                    onImportSuccess={(promptId) => {
-                        setIsImportOpen(false);
-                        router.refresh();
-                    }}
-                />
-                <PromptBuilderModal
-                    isOpen={isBuildOpen}
-                    onClose={() => setIsBuildOpen(false)}
-                />
-                <PromptGenerator
-                    isOpen={isGenerateOpen}
-                    onClose={() => setIsGenerateOpen(false)}
-                />
             </PageSpecificHeader>
         );
     }

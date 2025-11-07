@@ -15,7 +15,8 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 const nextConfig = {
     // Build performance optimizations
     productionBrowserSourceMaps: false,
-    
+    devIndicators: false,  // disables the indicator entirely
+
     compiler: {
         removeConsole: process.env.NODE_ENV === 'production' ? {
             exclude: ['error', 'warn'],

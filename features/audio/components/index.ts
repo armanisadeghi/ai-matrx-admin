@@ -9,6 +9,7 @@ export { TranscriptionLoader } from './TranscriptionLoader';
 export { RecordingIndicator } from './RecordingIndicator';
 export { VoiceInputButton } from './VoiceInputButton';
 export { AudioLevelIndicator } from './AudioLevelIndicator';
+export { RecordingOverlay } from './RecordingOverlay';
 
 export type { MicrophoneButtonProps } from './MicrophoneButton';
 export type { TranscriptionLoaderProps } from './TranscriptionLoader';
