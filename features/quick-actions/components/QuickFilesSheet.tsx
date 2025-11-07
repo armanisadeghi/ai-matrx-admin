@@ -17,9 +17,10 @@ import { useRouter } from 'next/navigation';
 interface QuickFilesSheetProps {
     onClose?: () => void;
     className?: string;
+    hideHeader?: boolean;
 }
 
-export function QuickFilesSheet({ onClose, className }: QuickFilesSheetProps) {
+export function QuickFilesSheet({ onClose, className, hideHeader = false }: QuickFilesSheetProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'browse' | 'upload'>('browse');
     const [selectedBucket, setSelectedBucket] = useState<AvailableBuckets | null>('userContent');
@@ -90,21 +91,23 @@ export function QuickFilesSheet({ onClose, className }: QuickFilesSheetProps) {
         <>
             <div className={`flex flex-col h-full ${className || ''}`}>
                 {/* Header with Open in New Tab button */}
-                <div className="flex items-center justify-between px-4 py-3 border-b">
-                    <h2 className="text-lg font-semibold">Quick Files</h2>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleOpenFullView}
-                        className="gap-2"
-                    >
-                        <ExternalLink className="h-4 w-4" />
-                        Open Full View
-                    </Button>
-                </div>
+                {!hideHeader && (
+                    <div className="flex items-center justify-between px-4 py-3 border-b">
+                        <h2 className="text-lg font-semibold">Quick Files</h2>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleOpenFullView}
+                            className="gap-2"
+                        >
+                            <ExternalLink className="h-4 w-4" />
+                            Open Full View
+                        </Button>
+                    </div>
+                )}
 
                 {/* Tabs */}
-                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'browse' | 'upload')} className="flex-1 flex flex-col">
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'browse' | 'upload')} className="flex-1 flex flex-col overflow-hidden">
                     <TabsList className="w-full grid grid-cols-2 mx-4 mt-3">
                         <TabsTrigger value="browse" className="gap-2">
                             <FolderOpen className="h-4 w-4" />
@@ -118,9 +121,9 @@ export function QuickFilesSheet({ onClose, className }: QuickFilesSheetProps) {
 
                     {/* Browse Tab */}
                     <TabsContent value="browse" className="flex-1 flex flex-col overflow-hidden mt-0">
-                        <div className="flex-1 p-4 overflow-y-auto">
-                            <Card className="h-full flex flex-col">
-                                <CardHeader className="pb-3 border-b">
+                        <div className="flex-1 flex flex-col p-4 overflow-hidden">
+                            <Card className="flex-1 flex flex-col overflow-hidden">
+                                <CardHeader className="pb-3 border-b shrink-0">
                                     <div className="flex items-center justify-between gap-2">
                                         <CardTitle className="text-base">All Buckets</CardTitle>
                                         {selectedBucket && (
@@ -140,8 +143,8 @@ export function QuickFilesSheet({ onClose, className }: QuickFilesSheetProps) {
                                         </p>
                                     )}
                                 </CardHeader>
-                                <CardContent className="flex-1 overflow-hidden p-0">
-                                    <div className="h-full overflow-y-auto px-2 pb-2">
+                                <CardContent className="flex-1 overflow-y-auto p-0">
+                                    <div className="px-2 pb-2 pt-2">
                                         <MultiBucketFileTree 
                                             defaultExpandedBuckets={['userContent']}
                                             onViewFile={handleViewFile}

@@ -88,7 +88,7 @@ export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: Util
             ) as any,
             content: (
                 <div className="h-full">
-                    <QuickFilesSheet />
+                    <QuickFilesSheet hideHeader />
                 </div>
             ),
         },
