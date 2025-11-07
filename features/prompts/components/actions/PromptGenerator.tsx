@@ -12,9 +12,9 @@ import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThun
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { createClient } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea, CopyTextarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
@@ -252,31 +252,28 @@ export function PromptGenerator({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-7xl h-[95vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+      <DialogContent className="max-w-7xl h-[95dvh] flex flex-col p-0">
+        <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Wand2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
             AI Prompt Generator
           </DialogTitle>
-          <DialogDescription>
-            Describe what you want your prompt to do, and AI will generate a complete prompt configuration
-          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 grid grid-cols-[40%_60%] gap-4 px-6 overflow-hidden min-h-0 mt-4">
+        <div className="flex-1 flex flex-col lg:grid lg:grid-cols-[40%_60%] gap-3 sm:gap-4 px-4 sm:px-6 overflow-y-auto lg:overflow-hidden min-h-0 py-3 sm:py-4">
           {/* Input Section */}
-          <div className="flex flex-col min-h-0 space-y-4">
-            <div className="space-y-4">
+          <div className="flex flex-col min-h-0 space-y-3 sm:space-y-4 overflow-y-auto lg:overflow-visible">
+            <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
                     Prompt Purpose
                     <span className="text-xs text-red-500">*</span>
                   </Label>
                   {!isGenerating && !hasGeneratedPrompt && (
                     <VoiceInputButton
                       variant="button"
-                      buttonText="Explain it Instead"
+                      buttonText="Voice"
                       size="sm"
                       onTranscriptionComplete={(text) => {
                         // Append to existing text or replace
@@ -292,11 +289,12 @@ export function PromptGenerator({
                     />
                   )}
                 </div>
-                <Textarea
+                <CopyTextarea
                   value={promptPurpose}
                   onChange={(e) => setPromptPurpose(e.target.value)}
-                  placeholder="Describe what you want your prompt or agent to do. For example: 'A creative writing assistant that helps users write engaging blog posts with SEO optimization' or 'A code review assistant that provides constructive feedback on code quality'"
-                  className="min-h-[180px] text-sm"
+                  placeholder="Describe what you want your prompt or agent to do..."
+                  className="min-h-[120px] sm:min-h-[180px] text-base"
+                  style={{ fontSize: '16px' }}
                   disabled={isGenerating || hasGeneratedPrompt}
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -305,15 +303,15 @@ export function PromptGenerator({
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Additional Context & Specifications
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="text-xs sm:text-sm font-medium">
+                    Additional Context
                     <span className="text-xs text-gray-500 ml-1">(Optional)</span>
                   </Label>
                   {!isGenerating && !hasGeneratedPrompt && (
                     <VoiceInputButton
                       variant="button"
-                      buttonText="Add Voice Context"
+                      buttonText="Voice"
                       size="sm"
                       onTranscriptionComplete={(text) => {
                         // Append to existing text or replace
@@ -329,11 +327,12 @@ export function PromptGenerator({
                     />
                   )}
                 </div>
-                <Textarea
+                <CopyTextarea
                   value={additionalContext}
                   onChange={(e) => setAdditionalContext(e.target.value)}
-                  placeholder="Add any specific requirements, limitations, tone preferences, output formats, or other details. For example: 'Should use a friendly, conversational tone' or 'Must output JSON format' or 'Should avoid technical jargon'"
-                  className="min-h-[180px] text-sm"
+                  placeholder="Add any specific requirements, tone, formats, or constraints..."
+                  className="min-h-[120px] sm:min-h-[180px] text-base"
+                  style={{ fontSize: '16px' }}
                   disabled={isGenerating || hasGeneratedPrompt}
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -343,7 +342,7 @@ export function PromptGenerator({
 
               {hasGeneratedPrompt && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-2">
+                  <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
                     Prompt Name
                     <span className="text-xs text-red-500">*</span>
                   </Label>
@@ -351,7 +350,8 @@ export function PromptGenerator({
                     value={promptName}
                     onChange={(e) => setPromptName(e.target.value)}
                     placeholder="Enter a name for your new prompt"
-                    className="text-sm"
+                    className="text-base"
+                    style={{ fontSize: '16px' }}
                     disabled={isSaving}
                   />
                 </div>
@@ -360,9 +360,9 @@ export function PromptGenerator({
           </div>
 
           {/* AI Response Section */}
-          <div className="flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Generated Prompt</Label>
+          <div className="flex flex-col min-h-0 flex-1 lg:flex-initial">
+            <div className="flex items-center justify-between mb-2 flex-shrink-0">
+              <Label className="text-xs sm:text-sm font-medium">Generated Prompt</Label>
               {streamingText && !isGenerating && (
                 <div className="flex gap-1">
                   {hasGeneratedPrompt && (
@@ -373,8 +373,8 @@ export function PromptGenerator({
                       className="h-7 px-2 text-xs"
                       title="Copy extracted JSON"
                     >
-                      <Copy className="h-3 w-3 mr-1" />
-                      Copy JSON
+                      <Copy className="h-3 w-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Copy JSON</span>
                     </Button>
                   )}
                   <Button
@@ -384,13 +384,13 @@ export function PromptGenerator({
                     className="h-7 px-2 text-xs"
                     title="Copy raw response"
                   >
-                    <Copy className="h-3 w-3 mr-1" />
-                    Copy Raw
+                    <Copy className="h-3 w-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Copy Raw</span>
                   </Button>
                 </div>
               )}
             </div>
-            <div className="flex-1 bg-textured border-2 border-purple-300 dark:border-purple-700 rounded-lg overflow-hidden">
+            <div className="flex-1 bg-textured border-2 border-purple-300 dark:border-purple-700 rounded-lg overflow-hidden min-h-[300px]">
               {isGenerating ? (
                 <div className="h-full flex flex-col">
                   <div className="flex-none flex items-center gap-2 p-2 border-b border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30">
@@ -438,8 +438,8 @@ export function PromptGenerator({
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center p-6">
-                  <Sparkles className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
+                <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-6">
+                  <Sparkles className="h-10 w-10 sm:h-12 sm:w-12 text-gray-300 dark:text-gray-600 mb-3" />
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                     Ready to generate
                   </p>
@@ -453,8 +453,8 @@ export function PromptGenerator({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50 dark:bg-gray-900">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 px-4 sm:px-6 py-3 sm:py-4 border-t bg-gray-50 dark:bg-gray-900 pb-safe">
+          <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
             {hasGeneratedPrompt && !isGenerating && (
               <span className="flex items-center gap-1">
                 <Check className="h-3 w-3 text-green-600" />
@@ -468,11 +468,12 @@ export function PromptGenerator({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={handleClose}
               disabled={isGenerating || isSaving}
+              className="flex-1 sm:flex-initial"
             >
               <X className="h-4 w-4 mr-2" />
               {hasGeneratedPrompt ? 'Discard' : 'Cancel'}
@@ -487,6 +488,7 @@ export function PromptGenerator({
                     setPromptName('');
                   }}
                   disabled={isSaving}
+                  className="flex-1 sm:flex-initial"
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
                   Regenerate
@@ -494,7 +496,7 @@ export function PromptGenerator({
                 <Button
                   onClick={handleCreatePrompt}
                   disabled={!promptName.trim() || isSaving}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                  className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                 >
                   {isSaving ? (
                     <>
@@ -504,7 +506,7 @@ export function PromptGenerator({
                   ) : (
                     <>
                       <Check className="h-4 w-4 mr-2" />
-                      Create Prompt
+                      Create
                     </>
                   )}
                 </Button>
@@ -513,7 +515,7 @@ export function PromptGenerator({
               <Button
                 onClick={handleGenerate}
                 disabled={!canGenerate || isGenerating}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
               >
                 {isGenerating ? (
                   <>
@@ -523,7 +525,7 @@ export function PromptGenerator({
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Generate Prompt
+                    Generate
                   </>
                 )}
               </Button>

@@ -36,7 +36,7 @@ export default async function PromptsPage() {
             <PromptsPageHeader />
             
             <div className="h-page w-full overflow-auto">
-                <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-[1800px]">
+                <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 max-w-[1800px]">
 
                 {templateCount !== null && templateCount > 0 && prompts?.length === 0 && (
                     <Card className="mb-4 sm:mb-6 p-3 sm:p-4 md:p-6 bg-gradient-to-r from-secondary/10 to-primary/10 border-secondary/30">

@@ -89,8 +89,8 @@ export function TemplatesGrid({ templates }: TemplatesGridProps) {
 
     return (
         <div>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                <TabsList className="bg-muted">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+                <TabsList>
                     <TabsTrigger value="all">All Templates</TabsTrigger>
                     <TabsTrigger value="featured">Featured</TabsTrigger>
                     {categories.map((category) => (

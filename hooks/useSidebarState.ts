@@ -9,7 +9,7 @@ export function useSidebarState() {
 
   useEffect(() => {
     const checkSidebarState = () => {
-      const sidebar = document.querySelector('aside[class*="w-11"], aside[class*="w-64"]');
+      const sidebar = document.querySelector('aside[class*="w-11"], aside[class*="w-48"]');
       if (sidebar) {
         const width = sidebar.getBoundingClientRect().width;
         // If width is less than 60px, it's collapsed
@@ -21,7 +21,7 @@ export function useSidebarState() {
     checkSidebarState();
 
     // Watch for changes using ResizeObserver
-    const sidebar = document.querySelector('aside[class*="w-11"], aside[class*="w-64"]');
+    const sidebar = document.querySelector('aside[class*="w-11"], aside[class*="w-48"]');
     if (sidebar) {
       const resizeObserver = new ResizeObserver(checkSidebarState);
       resizeObserver.observe(sidebar);

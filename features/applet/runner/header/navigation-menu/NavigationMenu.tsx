@@ -127,26 +127,26 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                     )}
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className={`w-56 ${contentClassName} ${creatorAnimClass} max-h-[calc(100vh-4rem)] flex flex-col`} align={position === "right" ? "end" : "start"}>
+            <DropdownMenuContent className={`w-72 ${contentClassName} ${creatorAnimClass} max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden`} align={position === "right" ? "end" : "start"}>
                 {/* User info section - Fixed at top, clickable to profile */}
                 <Link href="/dashboard/profile" className="block flex-shrink-0">
                     <div className="px-2 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                             {profilePhoto ? (
-                                <div className="w-10 h-10 rounded-full overflow-hidden">
+                                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                                     <Image src={profilePhoto} width={40} height={40} alt={displayName} className="w-full h-full object-cover" />
                                 </div>
                             ) : (
-                                <div className="w-10 h-10 bg-gray-500 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                                <div className="w-10 h-10 bg-gray-500 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
                                     <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
                                 </div>
                             )}
-                            <div className="flex flex-col">
-                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{displayName}</span>
-                                <span className="text-xs text-gray-600 dark:text-gray-400">{user.email}</span>
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{displayName}</span>
+                                <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.email}</span>
                                 {userIsCreator && (
                                     <span className="text-xs font-medium text-amber-500 dark:text-amber-400 flex items-center mt-1">
-                                        <Crown size={12} className="mr-1" /> Creator
+                                        <Crown size={12} className="mr-1 flex-shrink-0" /> Creator
                                     </span>
                                 )}
                             </div>
@@ -156,7 +156,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                 <DropdownMenuSeparator className="flex-shrink-0" />
                 
                 {/* Scrollable middle section */}
-                <div className="flex-1 overflow-y-auto min-h-0">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
                     {/* Navigation links */}
                     {menuLinks.map((link, index) => (
                         <DropdownMenuItem key={link.href} asChild>
@@ -164,8 +164,8 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                                 href={link.href}
                                 className={`flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${itemClassName}`}
                             >
-                                <div className="w-5 h-5 flex items-center justify-center">{link.icon}</div>
-                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{link.label}</span>
+                                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">{link.icon}</div>
+                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{link.label}</span>
                             </Link>
                         </DropdownMenuItem>
                     ))}

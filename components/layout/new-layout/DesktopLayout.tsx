@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Menu, Search, Bell } from "lucide-react";
-import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
+import { Menu } from "lucide-react";
 import { NavigationMenu } from "@/features/applet/runner/header/navigation-menu/NavigationMenu";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { NotificationDropdown } from "@/components/ui/notifications";
@@ -13,6 +12,8 @@ import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { QuickActionsMenu } from "@/features/quick-actions";
 import FeedbackButton from "@/components/layout/FeedbackButton";
+import { RootState } from "@/lib/redux/store";
+import Image from "next/image";
 
 interface SidebarLink {
     label: string;
@@ -44,6 +45,11 @@ export default function DesktopLayout({
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const isAdminIndicatorVisible = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
+    
+    // Get user data from Redux
+    const user = useAppSelector((state: RootState) => state.user);
+    const displayName = user.userMetadata?.name || user.userMetadata?.fullName || user.email?.split("@")[0] || "User";
+    const profilePhoto = user.userMetadata?.picture || null;
     
     // Force hide tooltips immediately when sidebar state changes
     useEffect(() => {
@@ -114,6 +120,7 @@ export default function DesktopLayout({
                     </div>
                     {/* Right side - Actions */}
                     <div className="flex items-center gap-1">
+                        <QuickActionsMenu className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <FeedbackButton className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <NotificationDropdown
                             notifications={notifications}
@@ -136,8 +143,6 @@ export default function DesktopLayout({
                                 }
                             }}
                         />
-                        <QuickActionsMenu className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
-                        <ThemeSwitcherIcon className="hover:bg-zinc-200 dark:hover:bg-zinc-700 backdrop-blur-sm text-zinc-700 dark:text-zinc-300 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" />
                         <NavigationMenu />
                     </div>
                 </div>
@@ -145,7 +150,7 @@ export default function DesktopLayout({
 
             {/* Sidebar */}
             <aside 
-                className={`fixed left-0 top-10 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-64"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden`}
+                className={`fixed left-0 top-10 bottom-0 ${isSidebarCollapsed ? "w-11" : "w-56"} bg-zinc-100 dark:bg-zinc-850 transition-all duration-300 z-40 overflow-hidden`}
                 style={{ backgroundImage: BACKGROUND_PATTERN }}
             >
                 <nav 
@@ -275,9 +280,21 @@ export default function DesktopLayout({
                                     href="/dashboard/preferences"
                                     className="relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
                                 >
-                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-medium">
-                                        U
-                                    </div>
+                                    {profilePhoto ? (
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-full overflow-hidden">
+                                            <Image 
+                                                src={profilePhoto} 
+                                                width={24} 
+                                                height={24} 
+                                                alt={displayName}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-medium">
+                                            {displayName.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
                                     <span 
                                         className={`absolute left-9 text-xs whitespace-nowrap transition-all duration-300 ease-in-out ${
                                             isSidebarCollapsed 
@@ -285,7 +302,7 @@ export default function DesktopLayout({
                                                 : "opacity-100 translate-x-0"
                                         }`}
                                     >
-                                        User Settings
+                                        {displayName}
                                     </span>
                                 </Link>
                             </TooltipTrigger>
@@ -294,7 +311,7 @@ export default function DesktopLayout({
                                     side="right" 
                                     className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600"
                                 >
-                                    User Settings
+                                    {displayName}
                                 </TooltipContent>
                             )}
                         </Tooltip>
@@ -303,7 +320,7 @@ export default function DesktopLayout({
             </aside>
 
             {/* Main Content Area */}
-            <main className={`pt-10 ${isSidebarCollapsed ? "pl-11" : "pl-64"} transition-all duration-300`}>
+            <main className={`pt-10 ${isSidebarCollapsed ? "pl-11" : "pl-56"} transition-all duration-300`}>
                 {children}
             </main>
         </div>

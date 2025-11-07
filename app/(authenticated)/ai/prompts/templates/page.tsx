@@ -36,11 +36,8 @@ export default async function PromptTemplatesPage() {
                         </Link>
                         <div className="flex-1 min-w-0">
                             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
-                                Prompt Templates
+                                Templates
                             </h1>
-                            <p className="text-sm sm:text-base text-muted-foreground">
-                                Start with pre-built templates to jumpstart your prompts
-                            </p>
                         </div>
                     </div>
                 </div>

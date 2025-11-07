@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Send, X, Check, PartyPopper } from 'lucide-react';
+import { Bug, Send, X, Check, PartyPopper } from 'lucide-react';
 import { submitFeedback } from '@/actions/feedback.actions';
 import { FeedbackType } from '@/types/feedback.types';
 import { usePathname } from 'next/navigation';
@@ -127,7 +127,7 @@ export default function FeedbackButton({ className = '' }: FeedbackButtonProps) 
                             }
                         }}
                     >
-                        <MessageSquare className="w-5 h-5" />
+                        <Bug className="w-5 h-5" />
                     </button>
                     
                     {/* New Feature Highlight */}
