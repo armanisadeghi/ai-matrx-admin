@@ -144,9 +144,6 @@ export function PromptImporter({ isOpen, onClose, onImportSuccess }: PromptImpor
             <FileJson className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Import Prompts from JSON
           </DialogTitle>
-          <DialogDescription>
-            Paste JSON to create or update prompts programmatically
-          </DialogDescription>
         </DialogHeader>
 
         {!showResults ? (

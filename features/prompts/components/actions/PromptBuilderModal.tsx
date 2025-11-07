@@ -100,9 +100,6 @@ export function PromptBuilderModal({
             <Wrench className="h-5 w-5 text-green-600 dark:text-green-400" />
             Build a Prompt
           </DialogTitle>
-          <DialogDescription>
-            Choose a builder tool to create your prompt with a guided interface
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-4">
@@ -117,8 +114,7 @@ export function PromptBuilderModal({
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-semibold mb-1">Instant Chat Assistant</h3>
                 <p className="text-sm text-muted-foreground">
-                  Build a custom chat assistant by selecting language, persona, tone, cognitive approach, 
-                  and fine-tuning complexity, creativity, and conciseness levels.
+                  Build a custom chat assistant by selecting key options.
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
@@ -142,10 +138,9 @@ export function PromptBuilderModal({
                 <Layout className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-1">Comprehensive Tab-Based Builder</h3>
+                <h3 className="text-base font-semibold mb-1">Comprehensive Builder</h3>
                 <p className="text-sm text-muted-foreground">
-                  Build advanced prompts using multiple tabs covering task, context, tone, format, knowledge, 
-                  examples, constraints, audience, and more.
+                  Build advanced prompts using many different options.
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
@@ -171,8 +166,7 @@ export function PromptBuilderModal({
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-semibold mb-1">AI Experience Customizer</h3>
                 <p className="text-sm text-muted-foreground">
-                  Customize your AI's personality, intelligence capabilities, output preferences, and more 
-                  through an intuitive panel interface.
+                  Customize your AI's personality through an intuitive interface.
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
@@ -185,12 +179,6 @@ export function PromptBuilderModal({
               </div>
             </div>
           </Card>
-        </div>
-
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
