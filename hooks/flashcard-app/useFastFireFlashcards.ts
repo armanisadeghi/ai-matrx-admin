@@ -12,6 +12,7 @@ interface SessionState {
     isRecording: boolean;
     currentCardIndex: number;
     isProcessing: boolean;
+    isInInitialCountdown: boolean;
 }
 
 export interface FlashcardResult {
@@ -34,6 +35,8 @@ interface UseFastFireSessionReturn {
     timeLeft: number;
     bufferTimeLeft: number;
     isInBufferPhase: boolean;
+    isInInitialCountdown: boolean;
+    initialCountdownLeft: number;
     audioLevel: number;
     startSession: () => void;
     pauseSession: () => void;
@@ -53,6 +56,7 @@ export const FAST_FIRE_CONFIG = {
     // Timer settings
     answerTimerSeconds: 10,
     bufferTimerSeconds: 3,
+    initialCountdownSeconds: 3,
     
     // Voice AI settings
     voiceConfig: {
@@ -88,12 +92,14 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         isPaused: false,
         isProcessing: false,
         isRecording: false,
-        currentCardIndex: -1
+        currentCardIndex: -1,
+        isInInitialCountdown: false
     });
 
     const [results, setResults] = useState<FlashcardResult[]>([]);
     const [timeLeft, setTimeLeft] = useState<number>(FAST_FIRE_CONFIG.answerTimerSeconds);
     const [bufferTimeLeft, setBufferTimeLeft] = useState<number>(FAST_FIRE_CONFIG.bufferTimerSeconds);
+    const [initialCountdownLeft, setInitialCountdownLeft] = useState<number>(FAST_FIRE_CONFIG.initialCountdownSeconds);
     const [isInBufferPhase, setIsInBufferPhase] = useState(true);
     const [audioLevel, setAudioLevel] = useState(0);
 
@@ -178,10 +184,12 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
                 isPaused: false,
                 isProcessing: false,
                 isRecording: false,
-                currentCardIndex: -1
+                currentCardIndex: -1,
+                isInInitialCountdown: false
             });
             setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
             setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
+            setInitialCountdownLeft(FAST_FIRE_CONFIG.initialCountdownSeconds);
             setIsInBufferPhase(true);
         } catch (error) {
             console.error('Error stopping session:', error);
@@ -420,11 +428,13 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             isPaused: false,
             isProcessing: false,
             isRecording: false,
-            currentCardIndex: 0
+            currentCardIndex: -1, // Stay at -1 during initial countdown
+            isInInitialCountdown: true
         });
         setResults([]);
         setTimeLeft(FAST_FIRE_CONFIG.answerTimerSeconds);
         setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
+        setInitialCountdownLeft(FAST_FIRE_CONFIG.initialCountdownSeconds);
         setIsInBufferPhase(true);
     }, [createNewConversation, toast]);
 
@@ -484,8 +494,30 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
             return;
         }
 
-        // Buffer phase timer
-        if (isInBufferPhase) {
+        // Initial countdown phase (before showing any cards)
+        if (sessionState.isInInitialCountdown) {
+            timerRef.current = setInterval(() => {
+                setInitialCountdownLeft(prev => {
+                    if (prev <= 1) {
+                        // Initial countdown complete, move to first card
+                        clearInterval(timerRef.current!);
+                        timerRef.current = undefined;
+                        setSessionState(prevState => ({
+                            ...prevState,
+                            isInInitialCountdown: false,
+                            currentCardIndex: 0
+                        }));
+                        setInitialCountdownLeft(FAST_FIRE_CONFIG.initialCountdownSeconds);
+                        setIsInBufferPhase(true);
+                        setBufferTimeLeft(FAST_FIRE_CONFIG.bufferTimerSeconds);
+                        return FAST_FIRE_CONFIG.initialCountdownSeconds;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        // Buffer phase timer (for each card)
+        else if (isInBufferPhase && sessionState.currentCardIndex >= 0) {
             timerRef.current = setInterval(() => {
                 setBufferTimeLeft(prev => {
                     if (prev <= 1) {
@@ -538,13 +570,17 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         sessionState.isPaused,
         sessionState.isProcessing,
         sessionState.isRecording,
+        sessionState.isInInitialCountdown,
+        sessionState.currentCardIndex,
         isInBufferPhase,
         startRecording,
         stopRecording,
         toast
     ]);
 
-    const currentCard = flashcardsRef.current[sessionState.currentCardIndex];
+    const currentCard = sessionState.currentCardIndex >= 0 
+        ? flashcardsRef.current[sessionState.currentCardIndex] 
+        : undefined;
 
     return {
         isActive: sessionState.isActive,
@@ -558,6 +594,8 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
         timeLeft,
         bufferTimeLeft,
         isInBufferPhase,
+        isInInitialCountdown: sessionState.isInInitialCountdown,
+        initialCountdownLeft,
         audioLevel,
         startSession,
         pauseSession,

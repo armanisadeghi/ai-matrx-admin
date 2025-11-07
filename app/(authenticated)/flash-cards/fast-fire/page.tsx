@@ -27,6 +27,8 @@ const FastFirePractice = (
         timeLeft,
         bufferTimeLeft,
         isInBufferPhase,
+        isInInitialCountdown,
+        initialCountdownLeft,
         audioLevel,
         startSession,
         pauseSession,
@@ -143,7 +145,24 @@ const FastFirePractice = (
                 </div>
             </header>
 
-            {!currentCard || !isActive ? (
+            {/* Initial Countdown Overlay */}
+            {isActive && isInInitialCountdown ? (
+                <div className="flex items-center justify-center h-64">
+                    <Card className="w-full max-w-2xl">
+                        <CardContent className="p-12 text-center">
+                            <h2 className="text-xl font-semibold mb-6 text-muted-foreground">
+                                Get Ready!
+                            </h2>
+                            <div className="text-8xl font-bold text-primary mb-4">
+                                {initialCountdownLeft}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                Starting in {initialCountdownLeft} second{initialCountdownLeft !== 1 ? 's' : ''}...
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+            ) : !currentCard || !isActive ? (
                 <div className="flex items-center justify-center h-64">
                     <Card className="w-full max-w-2xl">
                         <CardContent className="p-6 text-center">
