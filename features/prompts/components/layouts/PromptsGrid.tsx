@@ -3,15 +3,12 @@
 import { useState, useTransition, useMemo } from "react";
 import { PromptCard } from "./PromptCard";
 import { FloatingActionBar } from "../actions/FloatingActionBar";
+import { DesktopSearchBar } from "../actions/DesktopSearchBar";
 import { NewPromptModal } from "../actions/NewPromptModal";
 import { FilterModal } from "../actions/FilterModal";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, X, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
     AlertDialog,
@@ -47,7 +44,6 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
     // Search and filter state
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState("updated-desc");
-    const [showFilters, setShowFilters] = useState(false);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isNewModalOpen, setIsNewModalOpen] = useState(false);
 
@@ -188,86 +184,17 @@ export function PromptsGrid({ prompts }: PromptsGridProps) {
         );
     }
 
-    const clearFilters = () => {
-        setSearchTerm("");
-        setSortBy("updated-desc");
-    };
-
     return (
         <>
-            {/* Desktop Search and Filter */}
+            {/* Desktop Search Bar */}
             {!isMobile && (
-                <div className="space-y-3 mb-6">
-                    <div className="flex items-center gap-2">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search prompts..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9 pr-8 h-9 text-sm"
-                            />
-                            {searchTerm && (
-                                <button
-                                    onClick={() => setSearchTerm("")}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
-                                >
-                                    <X className="h-3 w-3" />
-                                </button>
-                            )}
-                        </div>
-                        <Button
-                            variant={showFilters ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="h-9 px-3"
-                        >
-                            <SlidersHorizontal className="h-4 w-4" />
-                            <span className="hidden sm:inline ml-2">Filters</span>
-                        </Button>
-                    </div>
-
-                    {showFilters && (
-                        <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
-                            <div>
-                                <label className="text-xs font-medium text-muted-foreground uppercase mb-1.5 block">
-                                    Sort By
-                                </label>
-                                <Select value={sortBy} onValueChange={setSortBy}>
-                                    <SelectTrigger className="h-9 text-sm">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="updated-desc">Recently Updated</SelectItem>
-                                        <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                                        <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {hasActiveFilters && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={clearFilters}
-                                    className="w-full text-xs h-8"
-                                >
-                                    <X className="h-3 w-3 mr-1" />
-                                    Clear All Filters
-                                </Button>
-                            )}
-                        </div>
-                    )}
-
-                    {hasActiveFilters && (
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>
-                                Showing {filteredPrompts.length} of {prompts.length} prompts
-                            </span>
-                            <span className="text-primary">Filters active</span>
-                        </div>
-                    )}
-                </div>
+                <DesktopSearchBar
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onFilterClick={() => setIsFilterModalOpen(true)}
+                    onNewClick={() => setIsNewModalOpen(true)}
+                    showFilterBadge={hasActiveFilters}
+                />
             )}
 
             {/* Prompts Grid */}

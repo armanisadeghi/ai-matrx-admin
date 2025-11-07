@@ -43,11 +43,15 @@ export function FloatingActionBar({
     // Recording and transcription hook
     const {
         isRecording,
+        isPaused,
         isTranscribing,
         duration,
         audioLevel,
         startRecording,
         stopRecording,
+        pauseRecording,
+        resumeRecording,
+        reset,
     } = useRecordAndTranscribe({
         onTranscriptionComplete: handleTranscriptionComplete,
         onError: (error) => console.error('Voice input error:', error),
@@ -87,7 +91,11 @@ export function FloatingActionBar({
             <RecordingOverlay
                 duration={duration}
                 audioLevel={audioLevel}
+                isPaused={isPaused}
                 onStop={stopRecording}
+                onPause={pauseRecording}
+                onResume={resumeRecording}
+                onCancel={reset}
             />
         );
     }
