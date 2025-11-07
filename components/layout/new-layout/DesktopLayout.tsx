@@ -277,7 +277,7 @@ export default function DesktopLayout({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Link
-                                    href="/dashboard/preferences"
+                                    href="/settings/preferences"
                                     className="relative flex items-center px-2 py-2 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:shadow-sm"
                                 >
                                     {profilePhoto ? (

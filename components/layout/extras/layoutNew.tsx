@@ -59,7 +59,7 @@ export function LayoutWithSidebar({
         },
         {
             label: displayName,
-            href: "/dashboard/profile",
+            href: "/settings/profile",
             icon: <User className="h-5 w-5 text-foreground" />,
         }
     ];

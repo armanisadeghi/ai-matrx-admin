@@ -150,7 +150,7 @@ export default function AcceptInvitationPage() {
     setDeclining(true);
     toast.info('Invitation declined');
     setTimeout(() => {
-      router.push('/organizations');
+      router.push('/settings/organizations');
     }, 1000);
   };
 
@@ -180,7 +180,7 @@ export default function AcceptInvitationPage() {
             </h2>
             <p className="text-red-700 dark:text-red-300">{error}</p>
             <div className="flex gap-3 justify-center pt-4">
-              <Button onClick={() => router.push('/organizations')} variant="outline">
+              <Button onClick={() => router.push('/settings/organizations')} variant="outline">
                 Go to Organizations
               </Button>
               <Button onClick={() => router.push('/dashboard')}>

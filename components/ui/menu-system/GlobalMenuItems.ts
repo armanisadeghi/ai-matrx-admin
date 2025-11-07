@@ -15,7 +15,7 @@ class GlobalMenuItemsClass {
             label: "Profile Settings",
             onClick: () => {
                 if (typeof window !== 'undefined') {
-                    window.location.href = '/dashboard/profile';
+                    window.location.href = '/settings/profile';
                 }
             },
             order: 100

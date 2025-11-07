@@ -129,7 +129,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent className={`w-72 ${contentClassName} ${creatorAnimClass} max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden`} align={position === "right" ? "end" : "start"}>
                 {/* User info section - Fixed at top, clickable to profile */}
-                <Link href="/dashboard/profile" className="block flex-shrink-0">
+                <Link href="/settings/profile" className="block flex-shrink-0">
                     <div className="px-2 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-t-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
                         <div className="flex items-center gap-3 min-w-0">
                             {profilePhoto ? (
@@ -216,7 +216,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                     {/* Preferences */}
                     <DropdownMenuItem asChild>
                         <Link
-                            href="/dashboard/preferences"
+                            href="/settings/preferences"
                             className="flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
                             <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />

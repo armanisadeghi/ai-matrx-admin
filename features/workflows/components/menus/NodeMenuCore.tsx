@@ -80,7 +80,7 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
     };
 
     const handleProfileClick = () => {
-        router.push('/dashboard/profile');
+        router.push('/settings/profile');
     };
 
     const showGeneralItems = !hideProfile || !hideLogout || !hideTheme;

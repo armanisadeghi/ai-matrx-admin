@@ -165,21 +165,21 @@ const DashboardPage = () => {
             description: "View and edit your profile information",
             icon: <User />,
             color: "cyan",
-            path: "/dashboard/profile",
+            path: "/settings/profile",
         },
         {
             title: "Preferences",
             description: "Customize your app experience",
             icon: <Settings />,
             color: "orange",
-            path: "/dashboard/preferences",
+            path: "/settings/preferences",
         },
         {
             title: "Organizations",
             description: "Manage your organizations and team collaboration",
             icon: <Building2 />,
             color: "blue",
-            path: "/organizations",
+            path: "/settings/organizations",
         },
     ];
 
@@ -270,12 +270,12 @@ const DashboardPage = () => {
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
-                                        <Link href="/dashboard/profile">
+                                        <Link href="/settings/profile">
                                             <div className="p-2 rounded-lg text-center bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors text-cyan-700 dark:text-cyan-300 text-sm font-medium">
                                                 Edit Profile
                                             </div>
                                         </Link>
-                                        <Link href="/dashboard/preferences">
+                                        <Link href="/settings/preferences">
                                             <div className="p-2 rounded-lg text-center bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 transition-colors text-orange-700 dark:text-orange-300 text-sm font-medium">
                                                 Preferences
                                             </div>

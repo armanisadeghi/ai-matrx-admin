@@ -60,27 +60,15 @@ export default function ExtensionAuthPage() {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Chrome Extension</h1>
-        <p className="text-muted-foreground">
-          Connect your Chrome extension to access AI Matrx features from anywhere.
-        </p>
-      </div>
-
+    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
       <Card className="p-6">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-            <Chrome className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-1">
-              Connect Chrome Extension
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Generate a code to authenticate your Chrome extension
-            </p>
-          </div>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-1">
+            Connect Chrome Extension
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Generate a code to authenticate your Chrome extension
+          </p>
         </div>
 
         <div className="space-y-4">

@@ -58,7 +58,7 @@ export function DangerZone({ organization }: DangerZoneProps) {
         setIsDeleteDialogOpen(false);
         
         // Redirect to organizations list
-        router.push('/organizations');
+        router.push('/settings/organizations');
       } else {
         toast.error(result.error || 'Failed to delete organization');
       }

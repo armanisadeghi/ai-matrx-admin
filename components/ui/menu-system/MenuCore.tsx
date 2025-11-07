@@ -101,7 +101,7 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
             } else if (item.id === 'profile') {
                 finalItem = {
                     ...finalItem,
-                    onClick: () => router.push('/dashboard/profile'),
+                    onClick: () => router.push('/settings/profile'),
                 };
             }
 

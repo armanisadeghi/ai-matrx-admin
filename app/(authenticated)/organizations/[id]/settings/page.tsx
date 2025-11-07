@@ -53,7 +53,7 @@ export default function OrganizationSettingsPage() {
             <p className="text-red-700 dark:text-red-300 mb-6">
               {orgError || 'The organization you\'re looking for doesn\'t exist or you don\'t have access to it.'}
             </p>
-            <Button onClick={() => router.push('/organizations')} variant="outline">
+            <Button onClick={() => router.push('/settings/organizations')} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Organizations
             </Button>
@@ -75,7 +75,7 @@ export default function OrganizationSettingsPage() {
             <p className="text-amber-700 dark:text-amber-300 mb-6">
               You are not a member of this organization.
             </p>
-            <Button onClick={() => router.push('/organizations')} variant="outline">
+            <Button onClick={() => router.push('/settings/organizations')} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Organizations
             </Button>
@@ -92,7 +92,7 @@ export default function OrganizationSettingsPage() {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => router.push('/organizations')}
+            onClick={() => router.push('/settings/organizations')}
             className="mb-4 -ml-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

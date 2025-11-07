@@ -73,7 +73,7 @@ export function LayoutWithSidebar(
         },
         {
             label: displayName,
-            href: "/dashboard/profile",
+            href: "/settings/profile",
             icon: (<User className="h-5 w-5 text-foreground"/>),
         }
     ];
@@ -308,7 +308,7 @@ function UserProfileDropdown({ userName, userProfilePhoto, open }: {
             </Tooltip>
             <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile" className="flex items-center">
+                    <Link href="/settings/profile" className="flex items-center">
                         <IconUser className="mr-2 h-4 w-4" />
                         <span>Profile Settings</span>
                     </Link>
