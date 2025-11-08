@@ -23,7 +23,7 @@ const ChangesIndicator: React.FC<ChangesIndicatorProps> = ({
   if (variant === 'badge') {
     return (
       <Badge variant="secondary" className={`bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 ${className}`}>
-        <AlertCircle className="h-3 w-3 mr-1" />
+        <AlertCircle className="h-3 w-3" />
         Unsaved Changes
       </Badge>
     );

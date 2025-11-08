@@ -229,7 +229,7 @@ function VoiceCard({ voice, isPlaying, isSelected, onPlay, onSelect, isConnected
                         <CardTitle className="text-base leading-tight">{voice.name}</CardTitle>
                         {isSelected && (
                             <Badge variant="default" className="ml-2 flex-shrink-0">
-                                <Check className="h-3 w-3 mr-1" />
+                                <Check className="h-3 w-3" />
                                 Selected
                             </Badge>
                         )}

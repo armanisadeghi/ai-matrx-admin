@@ -189,7 +189,7 @@ const SchemaBasedJsonEditor = forwardRef<HTMLInputElement, SchemaBasedJsonEditor
                   className="h-7"
                   onClick={() => handleArrayItemAdd(currentPath, field)}
                 >
-                  <Plus className="h-4 w-4 mr-1" /> Add {field.label}
+                  <Plus className="h-4 w-4" /> Add {field.label}
                 </Button>
               )}
             </div>

@@ -117,7 +117,7 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
                     {/* Clear filters */}
                     {hasActiveFilters && (
                         <Button variant="ghost" size="sm" onClick={clearFilters} className="w-full text-xs h-8">
-                            <X className="h-3 w-3 mr-1" />
+                            <X className="h-3 w-3" />
                             Clear All Filters
                         </Button>
                     )}

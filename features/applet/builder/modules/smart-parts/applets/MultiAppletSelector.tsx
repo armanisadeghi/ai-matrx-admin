@@ -406,7 +406,7 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
                   onClick={handleCreateApplet}
                   className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
                 >
-                  <Plus className="h-4 w-4 mr-1" /> New Applet
+                  <Plus className="h-4 w-4" /> New Applet
                 </Button>
               )}
               

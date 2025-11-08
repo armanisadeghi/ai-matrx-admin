@@ -109,11 +109,11 @@ export default function SqlFunctionDetail({ func, onClose, onEdit, onDelete }: S
           </Badge>
           {func.security_type === 'SECURITY DEFINER' ? (
             <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800">
-              <ShieldAlert className="h-3 w-3 mr-1" /> Security Definer
+              <ShieldAlert className="h-3 w-3" /> Security Definer
             </Badge>
           ) : (
             <Badge className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800">
-              <Shield className="h-3 w-3 mr-1" /> Security Invoker
+              <Shield className="h-3 w-3" /> Security Invoker
             </Badge>
           )}
           {func.language && (
@@ -221,12 +221,12 @@ export default function SqlFunctionDetail({ func, onClose, onEdit, onDelete }: S
               >
                 {isCopied ? (
                   <>
-                    <Check className="h-4 w-4 mr-1" />
+                    <Check className="h-4 w-4" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="h-4 w-4 mr-1" />
+                    <Copy className="h-4 w-4" />
                     Copy Code
                   </>
                 )}

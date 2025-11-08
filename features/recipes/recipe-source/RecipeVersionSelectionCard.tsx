@@ -94,7 +94,7 @@ export const RecipeVersionSelectionCard: React.FC<RecipeVersionSelectionCardProp
                                 <span className="text-xs text-gray-500 dark:text-gray-400">Checking...</span>
                             ) : isVersionValid ? (
                                 <span className="flex items-center text-xs text-green-500 dark:text-green-400">
-                                    <CheckCircleIcon className="h-3 w-3 mr-1" /> Version exists
+                                    <CheckCircleIcon className="h-3 w-3" /> Version exists
                                 </span>
                             ) : (
                                 <span className="text-xs text-red-500 dark:text-red-400">Version not found</span>
@@ -265,7 +265,7 @@ export const RecipeVersionSelectionCard: React.FC<RecipeVersionSelectionCardProp
                                 <span className="text-xs text-slate-500 dark:text-slate-400 animate-pulse">Checking version...</span>
                             ) : isVersionValid ? (
                                 <span className="flex items-center text-xs text-emerald-600 dark:text-emerald-500">
-                                    <CheckCircleIcon className="h-3 w-3 mr-1" /> Version exists
+                                    <CheckCircleIcon className="h-3 w-3" /> Version exists
                                 </span>
                             ) : (
                                 <span className="text-xs text-red-500 dark:text-red-400">Version not found</span>

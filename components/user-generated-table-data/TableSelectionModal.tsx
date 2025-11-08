@@ -283,7 +283,7 @@ export default function TableSelectionModal({
                             )}
                           </div>
                           <div className="flex items-center text-xs text-gray-500">
-                            <Calendar className="h-3 w-3 mr-1" />
+                            <Calendar className="h-3 w-3" />
                             {formatDate(table.updated_at)}
                           </div>
                         </div>

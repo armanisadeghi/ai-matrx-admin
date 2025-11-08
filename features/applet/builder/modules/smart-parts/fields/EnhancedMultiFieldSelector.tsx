@@ -394,7 +394,7 @@ const EnhancedMultiFieldSelector: React.FC<MultiFieldSelectorProps> & {
                       className={`text-${color}-600 dark:text-${color}-400 text-xs px-2 py-1 h-auto`}
                       onClick={() => handleRefreshField(field)}
                     >
-                      <RefreshCw className="h-3 w-3 mr-1" />
+                      <RefreshCw className="h-3 w-3" />
                       Refresh
                     </Button>
                     
@@ -404,7 +404,7 @@ const EnhancedMultiFieldSelector: React.FC<MultiFieldSelectorProps> & {
                       className="text-red-500 hover:text-red-600 text-xs px-2 py-1 h-auto"
                       onClick={() => removeField(field.id)}
                     >
-                      <X className="h-3 w-3 mr-1" />
+                      <X className="h-3 w-3" />
                       Remove
                     </Button>
                   </CardFooter>
@@ -656,7 +656,7 @@ const EnhancedMultiFieldSelector: React.FC<MultiFieldSelectorProps> & {
                   onClick={handleCreateField}
                   className="text-purple-600 border-purple-200 hover:bg-purple-50 hover:text-purple-700"
                 >
-                  <Plus className="h-4 w-4 mr-1" /> New Field
+                  <Plus className="h-4 w-4" /> New Field
                 </Button>
               )}
               

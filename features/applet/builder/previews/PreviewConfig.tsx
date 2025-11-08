@@ -386,7 +386,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
                             </>
                           ) : (
                             <>
-                              <RefreshCw className="h-3 w-3 mr-1" />
+                              <RefreshCw className="h-3 w-3" />
                               Refresh Groups
                             </>
                           )}
@@ -487,7 +487,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
                         onClick={() => handleCopyJSON(activeTab === 'app' ? 'app' : activeTab === 'applets' ? 'applets' : 'full')}
                         className="h-8 text-xs border-gray-300 dark:border-gray-600 mr-2"
                       >
-                        <Copy className="h-3 w-3 mr-1" />
+                        <Copy className="h-3 w-3" />
                         Copy
                       </Button>
                       <Button 
@@ -496,7 +496,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCom
                         onClick={() => handleExportConfig(activeTab === 'app' ? 'app' : activeTab === 'applets' ? 'applets' : 'full')}
                         className="h-8 text-xs border-gray-300 dark:border-gray-600"
                       >
-                        <Download className="h-3 w-3 mr-1" />
+                        <Download className="h-3 w-3" />
                         Export
                       </Button>
                     </div>

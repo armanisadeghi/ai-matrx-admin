@@ -125,12 +125,12 @@ export default function ExtensionAuthPage() {
                 >
                   {copied ? (
                     <>
-                      <Check className="h-4 w-4 mr-1" />
+                      <Check className="h-4 w-4" />
                       Copied!
                     </>
                   ) : (
                     <>
-                      <Copy className="h-4 w-4 mr-1" />
+                      <Copy className="h-4 w-4" />
                       Copy
                     </>
                   )}

@@ -173,11 +173,11 @@ export function UnsplashSearch({
         {onViewModeChange && (
           <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="h-9">
             <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
-              <Grid3X3 className="h-4 w-4 mr-1" />
+              <Grid3X3 className="h-4 w-4" />
               <span className="hidden sm:inline">Grid</span>
             </ToggleGroupItem>
             <ToggleGroupItem value="natural" aria-label="Natural view" className="px-3">
-              <Grid className="h-4 w-4 mr-1" />
+              <Grid className="h-4 w-4" />
               <span className="hidden sm:inline">Natural</span>
             </ToggleGroupItem>
           </ToggleGroup>

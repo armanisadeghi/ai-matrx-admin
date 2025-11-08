@@ -370,12 +370,12 @@ const TranscriptViewer = ({
                 >
                   {isCompactView ? (
                     <>
-                      <AlignJustify className="h-3.5 w-3.5 mr-1" />
+                      <AlignJustify className="h-3.5 w-3.5" />
                       Detailed View
                     </>
                   ) : (
                     <>
-                      <ChevronsUpDown className="h-3.5 w-3.5 mr-1" />
+                      <ChevronsUpDown className="h-3.5 w-3.5" />
                       Compact View
                     </>
                   )}
@@ -386,7 +386,7 @@ const TranscriptViewer = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center">
-                      <Clock className="h-3.5 w-3.5 mr-1" />
+                      <Clock className="h-3.5 w-3.5" />
                       <span>{formatTime(stats.totalDuration)}</span>
                     </div>
                   </TooltipTrigger>
@@ -396,7 +396,7 @@ const TranscriptViewer = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center">
-                      <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                      <MessageSquare className="h-3.5 w-3.5" />
                       <span>{stats.segmentCount} segments</span>
                     </div>
                   </TooltipTrigger>
@@ -406,7 +406,7 @@ const TranscriptViewer = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center">
-                      <FileText className="h-3.5 w-3.5 mr-1" />
+                      <FileText className="h-3.5 w-3.5" />
                       <span>{stats.wordCount.toLocaleString()} words</span>
                     </div>
                   </TooltipTrigger>

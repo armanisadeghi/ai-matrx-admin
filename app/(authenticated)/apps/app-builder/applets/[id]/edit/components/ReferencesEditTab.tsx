@@ -54,7 +54,7 @@ export default function ReferencesEditTab({
                 variant="outline" 
                 onClick={() => handleSearchResource('app')}
               >
-                <Search className="h-4 w-4 mr-1" /> Search
+                <Search className="h-4 w-4" /> Search
               </Button>
             </div>
 
@@ -72,7 +72,7 @@ export default function ReferencesEditTab({
                 variant="outline" 
                 onClick={() => handleSearchResource('recipe')}
               >
-                <Search className="h-4 w-4 mr-1" /> Search
+                <Search className="h-4 w-4" /> Search
               </Button>
             </div>
 
@@ -90,7 +90,7 @@ export default function ReferencesEditTab({
                 variant="outline" 
                 onClick={() => handleSearchResource('subcategory')}
               >
-                <Search className="h-4 w-4 mr-1" /> Search
+                <Search className="h-4 w-4" /> Search
               </Button>
             </div>
           </div>

@@ -154,9 +154,9 @@ export default function OfficialComponentsPage() {
                         <Collapsible open={expandedGroups[groupName]} onOpenChange={() => toggleGroup(groupName)}>
                           <CollapsibleTrigger className="flex items-center w-full px-2 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-primary focus:outline-none">
                             {expandedGroups[groupName] ? (
-                              <ChevronDown className="h-4 w-4 mr-1" />
+                              <ChevronDown className="h-4 w-4" />
                             ) : (
-                              <ChevronRight className="h-4 w-4 mr-1" />
+                              <ChevronRight className="h-4 w-4" />
                             )}
                             {groupName}
                           </CollapsibleTrigger>

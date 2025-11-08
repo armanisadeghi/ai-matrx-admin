@@ -101,7 +101,7 @@ function ReferenceCard({ title, id, description, viewPath }: ReferenceCardProps)
           className="mt-2 md:mt-0 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
           onClick={() => router.push(viewPath)}
         >
-          <ExternalLink className="h-4 w-4 mr-1" /> View
+          <ExternalLink className="h-4 w-4" /> View
         </Button>
       </div>
     </Card>

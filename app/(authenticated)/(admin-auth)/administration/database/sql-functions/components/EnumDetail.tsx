@@ -112,7 +112,7 @@ export default function EnumDetail({ enumType, onClose, onEdit, onDelete }: Enum
         </div>
         <div className="flex items-center space-x-2 mt-1">
           <Badge className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800">
-            <Database className="h-3 w-3 mr-1" />
+            <Database className="h-3 w-3" />
             {enumType.schema}
           </Badge>
           <Badge variant="outline" className="text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700">
@@ -251,12 +251,12 @@ export default function EnumDetail({ enumType, onClose, onEdit, onDelete }: Enum
               >
                 {isCopied ? (
                   <>
-                    <Check className="h-4 w-4 mr-1" />
+                    <Check className="h-4 w-4" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="h-4 w-4 mr-1" />
+                    <Copy className="h-4 w-4" />
                     Copy Definition
                   </>
                 )}

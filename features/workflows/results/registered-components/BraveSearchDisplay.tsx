@@ -487,7 +487,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                         <>
                                             <span className="text-gray-400 text-xs">•</span>
                                             <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center flex-shrink-0">
-                                                <Clock className="h-3 w-3 mr-1" />
+                                                <Clock className="h-3 w-3" />
                                                 {result.age}
                                             </span>
                                         </>
@@ -610,7 +610,7 @@ const BraveSearchDisplay: React.FC<BraveSearchDisplayProps> = ({ data }) => {
                                     <>
                                         <span className="text-gray-400">•</span>
                                         <span className="flex items-center">
-                                            <Clock className="h-3 w-3 mr-1" />
+                                            <Clock className="h-3 w-3" />
                                             {video.age}
                                         </span>
                                     </>

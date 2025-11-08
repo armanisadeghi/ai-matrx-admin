@@ -130,7 +130,7 @@ export default function EditTabLayout({ title, subtitle, tabs, id, onSave, hasCh
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm">
-                                    <Menu className="h-4 w-4 mr-1" />
+                                    <Menu className="h-4 w-4" />
                                     <span>Tabs</span>
                                 </Button>
                             </DropdownMenuTrigger>

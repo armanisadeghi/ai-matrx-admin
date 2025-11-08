@@ -103,7 +103,7 @@ const ConnectionForm: React.FC = () => {
             size="sm"
             className="shrink-0 h-8 rounded-3xl"
           >
-            <Plus className="h-4 w-4 mr-1" />
+            <Plus className="h-4 w-4" />
             Add
           </Button>
         </>

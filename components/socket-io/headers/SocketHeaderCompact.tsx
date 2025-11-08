@@ -185,7 +185,7 @@ export function SocketHeaderCompact({
                                         size="sm"
                                         className="h-7 text-xs"
                                     >
-                                        <FiRefreshCw className="h-3 w-3 mr-1" />
+                                        <FiRefreshCw className="h-3 w-3" />
                                         Reset
                                     </Button>
                                 </div>

@@ -100,7 +100,7 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center">
-                    <Hash className="h-3.5 w-3.5 mr-1" />
+                    <Hash className="h-3.5 w-3.5" />
                     <span>{stats.sectionCount} sections</span>
                   </div>
                 </TooltipTrigger>
@@ -110,7 +110,7 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center">
-                    <AlignJustify className="h-3.5 w-3.5 mr-1" />
+                    <AlignJustify className="h-3.5 w-3.5" />
                     <span>{stats.bulletPoints} bullet points</span>
                   </div>
                 </TooltipTrigger>
@@ -120,7 +120,7 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center">
-                    <FileText className="h-3.5 w-3.5 mr-1" />
+                    <FileText className="h-3.5 w-3.5" />
                     <span>{stats.wordCount.toLocaleString()} words</span>
                   </div>
                 </TooltipTrigger>

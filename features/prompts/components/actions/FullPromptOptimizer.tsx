@@ -334,7 +334,7 @@ export function FullPromptOptimizer({
                         onClick={handleCopyOptimized}
                         className="h-6 text-xs ml-auto"
                       >
-                        <Copy className="h-3 w-3 mr-1" />
+                        <Copy className="h-3 w-3" />
                         Copy JSON
                       </Button>
                     </div>

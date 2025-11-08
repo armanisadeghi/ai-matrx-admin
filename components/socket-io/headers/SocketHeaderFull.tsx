@@ -121,7 +121,7 @@ export function SocketHeaderFull({
                     )}
                     
                     <Button onClick={handleReset} disabled={selectedConnectionId === primaryConnectionId} variant="ghost">
-                        <FiRefreshCw className="h-4 w-4 mr-1" />
+                        <FiRefreshCw className="h-4 w-4" />
                         Reset
                     </Button>
                     <Button onClick={() => setShowConnectionManager(!showConnectionManager)} variant="ghost">

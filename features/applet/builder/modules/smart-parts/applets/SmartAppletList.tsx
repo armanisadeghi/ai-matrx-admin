@@ -356,7 +356,7 @@ const SmartAppletList = forwardRef<
 
                         {showCreateButton && (
                             <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" size="sm" onClick={handleLocalCreateApplet}>
-                                <Plus className="h-4 w-4 mr-1" /> New
+                                <Plus className="h-4 w-4" /> New
                             </Button>
                         )}
                     </div>

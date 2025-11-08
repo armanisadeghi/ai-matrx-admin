@@ -344,12 +344,12 @@ export const QueryHistoryOverlay: React.FC<QueryHistoryOverlayProps> = ({
                     </div>
                     <div className="flex items-center mt-2 space-x-4">
                       <span className="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                        <Calendar className="h-3 w-3 mr-1" />
+                        <Calendar className="h-3 w-3" />
                         {formatDate(query.timestamp)}
                       </span>
                       {query.executionTime && (
                         <span className="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                          <Clock className="h-3 w-3 mr-1" />
+                          <Clock className="h-3 w-3" />
                           {(query.executionTime / 1000).toFixed(2)}s
                         </span>
                       )}
@@ -414,7 +414,7 @@ export const QueryHistoryOverlay: React.FC<QueryHistoryOverlayProps> = ({
                           }}
                           className="text-slate-600 dark:text-slate-400"
                         >
-                          <Copy className="h-4 w-4 mr-1" />
+                          <Copy className="h-4 w-4" />
                           Copy
                         </Button>
                         
@@ -427,7 +427,7 @@ export const QueryHistoryOverlay: React.FC<QueryHistoryOverlayProps> = ({
                           }}
                           className="text-slate-600 dark:text-slate-400"
                         >
-                          <Download className="h-4 w-4 mr-1" />
+                          <Download className="h-4 w-4" />
                           Export
                         </Button>
                         
@@ -440,7 +440,7 @@ export const QueryHistoryOverlay: React.FC<QueryHistoryOverlayProps> = ({
                           }}
                           className="text-slate-600 dark:text-slate-400"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
+                          <Edit className="h-4 w-4" />
                           Edit
                         </Button>
                         
@@ -454,7 +454,7 @@ export const QueryHistoryOverlay: React.FC<QueryHistoryOverlayProps> = ({
                           }}
                           className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
-                          <Trash className="h-4 w-4 mr-1" />
+                          <Trash className="h-4 w-4" />
                           Delete
                         </Button>
                         

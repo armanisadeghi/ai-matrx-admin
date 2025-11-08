@@ -176,7 +176,7 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
               onClick={handleViewSettings}
               className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
             >
-              <Settings className="h-4 w-4 mr-1" />
+              <Settings className="h-4 w-4" />
               Settings
             </Button>
           )}

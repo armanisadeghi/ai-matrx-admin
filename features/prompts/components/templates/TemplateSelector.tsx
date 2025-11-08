@@ -48,7 +48,7 @@ export function TemplateSelector({
                             e.preventDefault();
                         }}
                     >
-                        <FileText className="w-3 h-3 mr-1" />
+                        <FileText className="w-3 h-3" />
                         Template
                     </Button>
                 </PopoverTrigger>

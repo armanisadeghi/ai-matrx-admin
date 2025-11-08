@@ -220,7 +220,7 @@ const BusinessIntegrations: React.FC = () => {
                                                         integration.isConnected ? "text-green-500" : "text-gray-500 dark:text-gray-400"
                                                     }`}
                                                 >
-                                                    {integration.isConnected && <Check className="h-4 w-4 mr-1" />}
+                                                    {integration.isConnected && <Check className="h-4 w-4" />}
                                                     {integration.isConnected ? "Connected" : "Not connected"}
                                                 </span>
 

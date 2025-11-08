@@ -160,7 +160,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
                 variant="outline"
                 disabled={savingApplet}
             >
-                {savingApplet ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <SaveIcon className="h-4 w-4 mr-1" />}
+                {savingApplet ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
                 Save Applet
             </Button>
         ) : undefined;

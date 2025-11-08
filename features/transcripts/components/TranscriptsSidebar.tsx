@@ -104,7 +104,7 @@ export function TranscriptsSidebar({ onCreateTranscript }: TranscriptsSidebarPro
                         onClick={onCreateTranscript}
                         className="h-8"
                     >
-                        <Plus className="h-4 w-4 mr-1" />
+                        <Plus className="h-4 w-4" />
                         New
                     </Button>
                 </div>

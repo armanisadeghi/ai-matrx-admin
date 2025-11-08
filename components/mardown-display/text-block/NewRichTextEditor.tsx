@@ -43,7 +43,7 @@ export const EditButton = ({
             className="absolute top-2 right-2 z-10 bg-neutral-100 dark:bg-neutral-800 opacity-50 hover:opacity-100"
             onClick={onClick} // Use the passed handler
         >
-            <Edit className="h-4 w-4 mr-1" />
+            <Edit className="h-4 w-4" />
             Edit
         </Button>
     );
@@ -74,11 +74,11 @@ const TextBlockHeader: React.FC<TextBlockHeaderProps> = ({
             </div>
             <div className="flex items-center space-x-1">
                 <Button variant="ghost" size="sm" onClick={handleCopy} className="text-xs">
-                    <Copy className="h-3.5 w-3.5 mr-1" />
+                    <Copy className="h-3.5 w-3.5" />
                     {isCopied ? "Copied!" : "Copy"}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleDownload} className="text-xs">
-                    <Download className="h-3.5 w-3.5 mr-1" />
+                    <Download className="h-3.5 w-3.5" />
                     Save {/* Consider changing label if download format changes */}
                 </Button>
                 {/* Collapse button logic remains */}
@@ -91,7 +91,7 @@ const TextBlockHeader: React.FC<TextBlockHeaderProps> = ({
                 </Button>
                  {/* Edit button - always shows Edit */}
                 <Button variant="ghost" size="sm" onClick={onEditClick} className="text-xs">
-                    <Edit className="h-3.5 w-3.5 mr-1" />
+                    <Edit className="h-3.5 w-3.5" />
                     Edit
                 </Button>
             </div>

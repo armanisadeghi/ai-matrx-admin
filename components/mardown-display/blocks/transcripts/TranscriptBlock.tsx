@@ -63,7 +63,7 @@ const TranscriptBlock: React.FC<TranscriptBlockProps> = ({ content }) => {
                     }}
                     className="mr-2 h-8 px-3"
                 >
-                    <Upload className="h-4 w-4 mr-1" />
+                    <Upload className="h-4 w-4" />
                     Import
                 </Button>
             </div>

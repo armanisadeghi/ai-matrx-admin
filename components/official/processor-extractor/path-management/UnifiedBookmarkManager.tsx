@@ -462,7 +462,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                         copyToClipboard(bookmark.path);
                                       }}
                                     >
-                                      <CopyIcon className="h-3 w-3 mr-1" />
+                                      <CopyIcon className="h-3 w-3" />
                                       Copy
                                     </Button>
                                   </div>

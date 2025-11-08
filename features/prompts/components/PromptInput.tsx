@@ -369,7 +369,7 @@ export function PromptInput({
                                 onClick={stopRecording}
                                 className="h-7 px-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                             >
-                                <Mic className="h-3.5 w-3.5 mr-1" />
+                                <Mic className="h-3.5 w-3.5" />
                                 <span className="text-xs">Stop ({Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')})</span>
                             </Button>
                         </div>

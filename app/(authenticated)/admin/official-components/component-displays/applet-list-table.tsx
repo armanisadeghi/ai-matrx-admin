@@ -82,7 +82,7 @@ export default function AppletListTableDisplay({ component }: ComponentDisplayPr
         className="bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50"
         onClick={onClick}
       >
-        <Check className="h-3 w-3 mr-1" />
+        <Check className="h-3 w-3" />
         Use
       </Badge>
     );
@@ -170,7 +170,7 @@ const customSelectRender = (applet: AppletBuilder, onClick: (e: React.MouseEvent
     className="bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50"
     onClick={onClick}
   >
-    <Check className="h-3 w-3 mr-1" />
+    <Check className="h-3 w-3" />
     Use
   </Badge>
 );

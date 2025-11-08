@@ -107,7 +107,7 @@ const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({ onAppSelected
                         onClick={handleBackToChoice}
                         className="flex items-center mb-4 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors w-fit"
                     >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <ChevronLeft className="h-4 w-4" />
                         <span>Back to options</span>
                     </div>
                     <SelectAppStep
@@ -125,7 +125,7 @@ const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({ onAppSelected
                         onClick={handleBackToChoice}
                         className="flex items-center mb-4 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors w-fit"
                     >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <ChevronLeft className="h-4 w-4" />
                         <span>Back to options</span>
                     </div>
                     <AppConfigStep appId={selectedAppId} onAppSaved={onAppSaved} onUpdateCompletion={onUpdateCompletion} />
@@ -138,7 +138,7 @@ const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({ onAppSelected
                         onClick={handleBackToChoice}
                         className="flex items-center mb-4 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors w-fit"
                     >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <ChevronLeft className="h-4 w-4" />
                         <span>Back to options</span>
                     </div>
                     <AppConfigStep appId={newAppId} onAppSaved={onAppSaved} onUpdateCompletion={onUpdateCompletion} />

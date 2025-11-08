@@ -112,7 +112,7 @@ export default function JsonConfigEditTab({
               size="sm"
               className={!isValid ? "opacity-50" : ""}
             >
-              <Check className="h-4 w-4 mr-1" /> Apply Changes
+              <Check className="h-4 w-4" /> Apply Changes
             </Button>
           </div>
           

@@ -104,11 +104,11 @@ export const WorkflowsList: React.FC<WorkflowsListProps> = ({
               {/* Metadata */}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center">
-                  <User className="h-3 w-3 mr-1" />
+                  <User className="h-3 w-3" />
                   {workflow.user_id || 'Unknown'}
                 </div>
                 <div className="flex items-center">
-                  <Calendar className="h-3 w-3 mr-1" />
+                  <Calendar className="h-3 w-3" />
                   {new Date(workflow.updated_at).toLocaleDateString()}
                 </div>
               </div>
@@ -132,7 +132,7 @@ export const WorkflowsList: React.FC<WorkflowsListProps> = ({
               <div className="flex items-center space-x-2 pt-2">
                 <Link href={`/workflows-new/${workflow.id}`} className="flex-1">
                   <Button size="sm" variant="outline" className="w-full">
-                    <Edit className="h-3 w-3 mr-1" />
+                    <Edit className="h-3 w-3" />
                     Edit
                   </Button>
                 </Link>

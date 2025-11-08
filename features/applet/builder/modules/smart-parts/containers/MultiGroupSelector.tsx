@@ -418,7 +418,7 @@ const MultiGroupSelector: React.FC<MultiGroupSelectorProps> & {
                   onClick={handleCreateGroup}
                   className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
                 >
-                  <Plus className="h-4 w-4 mr-1" /> New Group
+                  <Plus className="h-4 w-4" /> New Group
                 </Button>
               )}
               

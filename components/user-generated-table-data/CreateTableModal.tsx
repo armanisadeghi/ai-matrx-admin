@@ -227,7 +227,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
                     variant="outline"
                     onClick={addField}
                   >
-                    <Plus className="h-4 w-4 mr-1" />
+                    <Plus className="h-4 w-4" />
                     Add Field
                   </Button>
                 </div>

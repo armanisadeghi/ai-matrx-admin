@@ -178,7 +178,7 @@ const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ nodeData, onNodeUpdate, arg
                                 }}
                                 className="h-7 px-2 text-xs"
                             >
-                                <Wand2 className="h-3 w-3 mr-1" />
+                                <Wand2 className="h-3 w-3" />
                                 Clean JSON
                             </Button>
                         </div>
@@ -287,7 +287,7 @@ const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ nodeData, onNodeUpdate, arg
                                         variant="outline"
                                         className="h-7 px-2 text-xs"
                                     >
-                                        <Plus className="h-3 w-3 mr-1" />
+                                        <Plus className="h-3 w-3" />
                                         Map
                                     </Button>
                                 </div>

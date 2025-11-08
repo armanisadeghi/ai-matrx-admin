@@ -250,7 +250,7 @@ export function RecipesFilter({ recipes, onFilteredRecipesChange }: RecipesFilte
                             onClick={clearFilters}
                             className="w-full text-xs"
                         >
-                            <X className="h-3 w-3 mr-1" />
+                            <X className="h-3 w-3" />
                             Clear All Filters
                         </Button>
                     )}

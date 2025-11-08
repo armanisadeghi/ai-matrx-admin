@@ -65,7 +65,7 @@ export default function ComponentHeader({ title }: ComponentHeaderProps) {
               onClick={() => router.push('/admin/official-components')}
               className="mr-2"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
+              <ChevronLeft className="h-4 w-4" />
               Back
             </Button>
           )}

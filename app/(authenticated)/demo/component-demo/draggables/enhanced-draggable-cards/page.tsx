@@ -78,7 +78,7 @@ const CalendarCard = () => (
           <span className="text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 px-2 py-1 rounded">Today</span>
         </div>
         <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center">
-          <Calendar className="h-3 w-3 mr-1" /> 2:00 PM - 3:30 PM
+          <Calendar className="h-3 w-3" /> 2:00 PM - 3:30 PM
         </div>
       </div>
       <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-textured">
@@ -87,7 +87,7 @@ const CalendarCard = () => (
           <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-1 rounded">Tomorrow</span>
         </div>
         <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center">
-          <Calendar className="h-3 w-3 mr-1" /> 10:00 AM - 11:00 AM
+          <Calendar className="h-3 w-3" /> 10:00 AM - 11:00 AM
         </div>
       </div>
     </div>

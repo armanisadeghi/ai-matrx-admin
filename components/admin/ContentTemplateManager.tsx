@@ -28,6 +28,7 @@ import {
     Globe,
     Lock
 } from 'lucide-react';
+import { PromptEditorContextMenu } from '@/features/prompts/components/PromptEditorContextMenu';
 import {
     ContentTemplateDB,
     CreateContentTemplateInput,
@@ -123,11 +124,15 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [createFormData, setCreateFormData] = useState<Partial<CreateContentTemplateInput>>({});
     const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set(['system', 'user', 'assistant']));
-    const [previewMode, setPreviewMode] = useState<'editor' | 'v1' | 'v2'>('v2');
+    const [previewMode, setPreviewMode] = useState<'editor' | 'preview'>('preview');
     
     // Tag management for forms
     const [editTagInput, setEditTagInput] = useState('');
     const [createTagInput, setCreateTagInput] = useState('');
+    
+    // Textarea refs for context menu
+    const editTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const createTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
     const { toast } = useToast();
 
@@ -513,8 +518,8 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                 {selectedTemplate ? (
                     <>
                         {/* Header with Save/Discard buttons */}
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-textured">
-                            <div className="flex items-center justify-between mb-4">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                                         Edit Template
@@ -664,25 +669,16 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                                     className="flex items-center gap-2"
                                                 >
                                                     <PanelLeft className="w-4 h-4" />
-                                                    Editor
+                                                    Editor Only
                                                 </Button>
                                                 <Button
-                                                    variant={previewMode === 'v2' ? 'default' : 'outline'}
+                                                    variant={previewMode === 'preview' ? 'default' : 'outline'}
                                                     size="sm"
-                                                    onClick={() => setPreviewMode('v2')}
+                                                    onClick={() => setPreviewMode('preview')}
                                                     className="flex items-center gap-2"
                                                 >
                                                     <Columns2 className="w-4 h-4" />
-                                                    Preview
-                                                </Button>
-                                                <Button
-                                                    variant={previewMode === 'v1' ? 'default' : 'outline'}
-                                                    size="sm"
-                                                    onClick={() => setPreviewMode('v1')}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Columns2 className="w-4 h-4" />
-                                                    V1 (Legacy)
+                                                    Split View
                                                 </Button>
                                             </div>
                                         </div>
@@ -691,28 +687,31 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                         <div className={previewMode !== 'editor' ? "flex flex-col lg:flex-row gap-4 items-stretch" : ""}>
                                             {/* Editor Section */}
                                             <div className={previewMode !== 'editor' ? "flex-1 min-w-0" : ""}>
-                                                <AutoResizeTextarea
-                                                    value={editData.content || ''}
-                                                    onChange={(e) => handleEditChange('content', e.target.value)}
-                                                    placeholder="Enter the template content..."
-                                                    className="font-mono text-sm h-full"
-                                                    minHeight={300}
-                                                />
+                                                <PromptEditorContextMenu
+                                                    getTextarea={() => editTextareaRef.current}
+                                                    onContentInserted={() => {}}
+                                                >
+                                                    <AutoResizeTextarea
+                                                        ref={editTextareaRef}
+                                                        value={editData.content || ''}
+                                                        onChange={(e) => handleEditChange('content', e.target.value)}
+                                                        placeholder="Enter the template content..."
+                                                        className="font-mono text-sm h-full"
+                                                        minHeight={300}
+                                                    />
+                                                </PromptEditorContextMenu>
                                             </div>
                                             
                                             {/* Preview Section */}
                                             {previewMode !== 'editor' && (
                                                 <div className="flex-1 min-w-0 min-h-[300px] border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-textured overflow-auto">
-                                                    <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-                                                        <span>PREVIEW</span>
-                                                        <Badge variant={previewMode === 'v2' ? 'default' : 'outline'} className="text-xs">
-                                                            {previewMode === 'v1' ? 'Parser V1 (Legacy)' : 'Parser V2 (Current)'}
-                                                        </Badge>
+                                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                                                        PREVIEW
                                                     </div>
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
                                                         <EnhancedChatMarkdown 
                                                             content={editData.content || ''} 
-                                                            useV2Parser={previewMode !== 'v1'}
+                                                            useV2Parser={true}
                                                         />
                                                     </div>
                                                 </div>
@@ -804,14 +803,20 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
 
                         <div>
                             <Label htmlFor="create-content">Content</Label>
-                            <AutoResizeTextarea
-                                id="create-content"
-                                value={createFormData.content || ''}
-                                onChange={(e) => setCreateFormData({ ...createFormData, content: e.target.value })}
-                                placeholder="Enter the template content..."
-                                className="font-mono"
-                                minHeight={200}
-                            />
+                            <PromptEditorContextMenu
+                                getTextarea={() => createTextareaRef.current}
+                                onContentInserted={() => {}}
+                            >
+                                <AutoResizeTextarea
+                                    ref={createTextareaRef}
+                                    id="create-content"
+                                    value={createFormData.content || ''}
+                                    onChange={(e) => setCreateFormData({ ...createFormData, content: e.target.value })}
+                                    placeholder="Enter the template content..."
+                                    className="font-mono"
+                                    minHeight={200}
+                                />
+                            </PromptEditorContextMenu>
                         </div>
 
                         <div className="flex items-center justify-between">

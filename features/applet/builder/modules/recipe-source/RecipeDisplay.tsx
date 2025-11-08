@@ -87,7 +87,7 @@ export const RecipeSearchFilters: React.FC<RecipeSearchFiltersProps> = ({
                         onClick={onClearFilters}
                         className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
-                        <XIcon className="h-3.5 w-3.5 mr-1" />
+                        <XIcon className="h-3.5 w-3.5" />
                         Clear filters
                     </Button>
                 )}

@@ -453,7 +453,7 @@ className={`
           onClick={handleCreateField}
           className="text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
         >
-          <Plus className="h-4 w-4 mr-1" /> New Field
+          <Plus className="h-4 w-4" /> New Field
         </Button>
       )}
       

@@ -96,7 +96,7 @@ export function SystemMessage({
                                             }
                                         }}
                                     >
-                                        <Plus className="w-3 h-3 mr-1" />
+                                        <Plus className="w-3 h-3" />
                                         Variable
                                     </Button>
                                 </PopoverTrigger>

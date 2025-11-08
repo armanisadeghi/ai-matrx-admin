@@ -207,13 +207,13 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3 text-gray-500 dark:text-gray-400">
                         <div className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
+                            <Calendar className="h-3 w-3" />
                             <span className={compact ? "text-xs" : "text-sm"}>
                                 {eventDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                             </span>
                         </div>
                         <div className="flex items-center">
-                            <Clock className="h-3 w-3 mr-1" />
+                            <Clock className="h-3 w-3" />
                             <span className={compact ? "text-xs" : "text-sm"}>{event.time}</span>
                         </div>
                     </div>
@@ -485,7 +485,7 @@ const EventsViewer: React.FC<ViewerProps> = ({ nodeData, brokerId, keyToDisplay 
                                         <div className="bg-white/10 backdrop-blur-md rounded-lg px-3 py-2 text-center cursor-pointer hover:bg-white/20 transition-all duration-200 shadow-lg">
                                             <div className="text-white/80 text-xs font-medium mb-1">Actions</div>
                                             <div className="text-white text-sm font-bold flex items-center justify-center">
-                                                <ExternalLink className="h-3 w-3 mr-1" />
+                                                <ExternalLink className="h-3 w-3" />
                                                 Full Screen
                                             </div>
                                         </div>

@@ -263,7 +263,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                             metadata: { title: 'Flashcards' }
                         })}
                     >
-                        <ExternalLink className="h-3 w-3 mr-1" />
+                        <ExternalLink className="h-3 w-3" />
                         Side Panel
                     </Button>
                     <Button
@@ -272,7 +272,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({ content }) => {
                         className="h-7 px-2 text-xs"
                         onClick={() => setIsFullscreen(true)}
                     >
-                        <Maximize2 className="h-3 w-3 mr-1" />
+                        <Maximize2 className="h-3 w-3" />
                         Fullscreen
                     </Button>
                 </div>

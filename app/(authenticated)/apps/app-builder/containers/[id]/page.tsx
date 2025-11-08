@@ -119,7 +119,7 @@ export default function ContainerViewPage({ params }: { params: Promise<{ id: st
               
               {container.hideDescription && (
                 <div className="flex items-center text-amber-500 dark:text-amber-400 mt-1 text-sm">
-                  <Info className="h-4 w-4 mr-1" />
+                  <Info className="h-4 w-4" />
                   <span>Description is hidden from users</span>
                 </div>
               )}
@@ -140,33 +140,33 @@ export default function ContainerViewPage({ params }: { params: Promise<{ id: st
             <div className="flex flex-wrap gap-2">
               {container.isPublic ? (
                 <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 py-1">
-                  <Check className="h-3.5 w-3.5 mr-1" />
+                  <Check className="h-3.5 w-3.5" />
                   Public
                 </Badge>
               ) : (
                 <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 py-1">
-                  <Tag className="h-3.5 w-3.5 mr-1" />
+                  <Tag className="h-3.5 w-3.5" />
                   Private
                 </Badge>
               )}
               
               {container.authenticatedRead && (
                 <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 py-1">
-                  <Check className="h-3.5 w-3.5 mr-1" />
+                  <Check className="h-3.5 w-3.5" />
                   Authenticated Read
                 </Badge>
               )}
               
               {container.publicRead && (
                 <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 py-1">
-                  <Check className="h-3.5 w-3.5 mr-1" />
+                  <Check className="h-3.5 w-3.5" />
                   Public Read
                 </Badge>
               )}
               
               {container.isLocal && (
                 <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 py-1">
-                  <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+                  <AlertTriangle className="h-3.5 w-3.5" />
                   Local Only
                 </Badge>
               )}

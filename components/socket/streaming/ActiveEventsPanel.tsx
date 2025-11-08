@@ -106,13 +106,13 @@ export const ActiveEventsPanel = ({ onSelectEvent, selectedListenerId }: ActiveE
                     ) : null}
                     {isEnded ? (
                       <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800">
-                        <CheckCircleIcon className="h-3 w-3 mr-1" />
+                        <CheckCircleIcon className="h-3 w-3" />
                         Complete
                       </Badge>
                     ) : null}
                     {!isEnded ? (
                       <Badge variant="outline" className="bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800">
-                        <XCircleIcon className="h-3 w-3 mr-1" />
+                        <XCircleIcon className="h-3 w-3" />
                         Inactive
                       </Badge>
                     ) : null}

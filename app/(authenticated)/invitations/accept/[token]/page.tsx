@@ -243,7 +243,7 @@ export default function AcceptInvitationPage() {
                 )}
                 <div className="flex items-center gap-2">
                   <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                    <UserPlus className="h-3 w-3 mr-1" />
+                    <UserPlus className="h-3 w-3" />
                     Join as {invitation.role}
                   </Badge>
                   {invitation.organization.website && (

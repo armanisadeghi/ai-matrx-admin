@@ -337,7 +337,7 @@ const SmartAppList = forwardRef<
 
                         {showCreateButton && onCreateApp && (
                             <Button className="bg-blue-500 hover:bg-blue-600 text-white" size="sm" onClick={onCreateApp}>
-                                <Plus className="h-4 w-4 mr-1" /> New
+                                <Plus className="h-4 w-4" /> New
                             </Button>
                         )}
                     </div>

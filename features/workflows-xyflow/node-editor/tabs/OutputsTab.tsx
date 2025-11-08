@@ -103,7 +103,7 @@ export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                 </div>
                 <div className="flex-shrink-0">
                     <Button onClick={addOutput} size="sm" variant="outline" className="h-7 px-2">
-                        <Plus className="h-3 w-3 mr-1" />
+                        <Plus className="h-3 w-3" />
                         Add New Output Variation
                     </Button>
                 </div>
@@ -232,7 +232,7 @@ export const OutputsTab: React.FC<DefaultTabProps> = ({ nodeId }) => {
                                                 variant="ghost"
                                                 className="h-7 px-2 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                             >
-                                                <Plus className="h-3 w-3 mr-1" />
+                                                <Plus className="h-3 w-3" />
                                                 Add Relay
                                             </Button>
                                         </div>

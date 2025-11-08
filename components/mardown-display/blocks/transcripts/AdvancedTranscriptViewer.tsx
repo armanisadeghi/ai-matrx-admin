@@ -724,15 +724,15 @@ const AdvancedTranscriptViewer = ({
                                 >
                                     <TabsList className="h-8">
                                         <TabsTrigger value="detailed" className="h-7 px-2 text-xs">
-                                            <AlignJustify className="h-3.5 w-3.5 mr-1" />
+                                            <AlignJustify className="h-3.5 w-3.5" />
                                             <span className="hidden sm:inline">Detailed</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="compact" className="h-7 px-2 text-xs">
-                                            <ChevronsUpDown className="h-3.5 w-3.5 mr-1" />
+                                            <ChevronsUpDown className="h-3.5 w-3.5" />
                                             <span className="hidden sm:inline">Compact</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="text-only" className="h-7 px-2 text-xs">
-                                            <TextIcon className="h-3.5 w-3.5 mr-1" />
+                                            <TextIcon className="h-3.5 w-3.5" />
                                             <span className="hidden sm:inline">Text Only</span>
                                         </TabsTrigger>
                                     </TabsList>
@@ -746,7 +746,7 @@ const AdvancedTranscriptViewer = ({
                                             className="h-8 px-2 text-xs"
                                             onClick={() => setIsCopyAllOpen(true)}
                                         >
-                                            <CopyCheck className="h-3.5 w-3.5 mr-1" />
+                                            <CopyCheck className="h-3.5 w-3.5" />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>Copy all transcript text</TooltipContent>
@@ -757,7 +757,7 @@ const AdvancedTranscriptViewer = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="flex items-center">
-                                            <Clock className="h-3.5 w-3.5 mr-1" />
+                                            <Clock className="h-3.5 w-3.5" />
                                             <span>{formatTime(stats.totalDuration)}</span>
                                         </div>
                                     </TooltipTrigger>
@@ -767,7 +767,7 @@ const AdvancedTranscriptViewer = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="flex items-center">
-                                            <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                                            <MessageSquare className="h-3.5 w-3.5" />
                                             <span>{stats.segmentCount} segments</span>
                                         </div>
                                     </TooltipTrigger>
@@ -777,7 +777,7 @@ const AdvancedTranscriptViewer = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="flex items-center">
-                                            <FileText className="h-3.5 w-3.5 mr-1" />
+                                            <FileText className="h-3.5 w-3.5" />
                                             <span>{stats.wordCount.toLocaleString()} words</span>
                                         </div>
                                     </TooltipTrigger>

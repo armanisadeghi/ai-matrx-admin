@@ -351,7 +351,7 @@ export default function UtilityTestPage() {
                 size="sm" 
                 onClick={() => setCreateTemplateModalOpen(true)}
               >
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4" />
                 Create New Template
               </Button>
             </div>

@@ -125,14 +125,14 @@ export default function FieldComponentCard({
                       variant={component.required ? "destructive" : "outline"} 
                       className={component.required ? "" : "border-dashed opacity-60"}
                     >
-                      <CheckSquare2 className="h-3 w-3 mr-1" />
+                      <CheckSquare2 className="h-3 w-3" />
                       {component.required ? "Required" : "Optional"}
                     </Badge>
                     <Badge 
                       variant={component.isPublic ? "secondary" : "outline"}
                       className={component.isPublic ? "" : "border-dashed opacity-60"}
                     >
-                      {component.isPublic ? <Eye className="h-3 w-3 mr-1" /> : <EyeOff className="h-3 w-3 mr-1" />}
+                      {component.isPublic ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                       {component.isPublic ? "Public" : "Private"}
                     </Badge>
                 </div>

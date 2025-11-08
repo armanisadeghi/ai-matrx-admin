@@ -190,7 +190,7 @@ export const EnhancedSQLEditor = ({
                     size="sm"
                     className="text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
-                    <FolderOpen className="h-4 w-4 mr-1" /> Templates
+                    <FolderOpen className="h-4 w-4" /> Templates
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -210,7 +210,7 @@ export const EnhancedSQLEditor = ({
                     size="sm"
                     className="text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
-                    <RefreshCw className="h-4 w-4 mr-1" /> Clear Cache
+                    <RefreshCw className="h-4 w-4" /> Clear Cache
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -245,7 +245,7 @@ export const EnhancedSQLEditor = ({
             <div className="absolute bottom-4 right-4 flex space-x-2">
               {isCached && (
                 <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
-                  <History className="h-3 w-3 mr-1" /> Cached
+                  <History className="h-3 w-3" /> Cached
                 </Badge>
               )}
               <Button
@@ -306,7 +306,7 @@ export const EnhancedSQLEditor = ({
                       size="sm"
                       className="text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
-                      <Plus className="h-4 w-4 mr-1" />
+                      <Plus className="h-4 w-4" />
                       Add
                     </Button>
                   </div>

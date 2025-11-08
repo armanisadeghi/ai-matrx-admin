@@ -233,7 +233,7 @@ Right-click for content block templates!"
                     {isAutoMode ? 'Auto' : 'Manual'}
                   </Badge>
                   <Badge variant="secondary" className="text-xs">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    <CheckCircle2 className="h-3 w-3" />
                     {isAutoMode ? 'Real-time' : 'On-demand'}
                   </Badge>
                 </div>

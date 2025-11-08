@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import { createTemplate, clearTemplateCache } from "@/lib/services/content-templates-service";
 import { useToast } from "@/components/ui/use-toast";
+import { PromptEditorContextMenu } from "@/features/prompts/components/PromptEditorContextMenu";
 
 interface SaveTemplateModalProps {
     isOpen: boolean;
@@ -93,6 +94,7 @@ export function SaveTemplateModal({
     const [isSaving, setIsSaving] = useState(false);
     const { toast } = useToast();
     const isMobile = useIsMobile();
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
     // Reset form when modal opens
     useEffect(() => {
@@ -178,130 +180,145 @@ export function SaveTemplateModal({
     };
 
     const content_element = (
-        <div className="flex flex-col h-full">
-            {/* Form Fields */}
-            <div className="p-4 space-y-4 border-b border-border/50">
-                <div>
-                    <Label htmlFor="template-label">Template Name</Label>
-                    <Input
-                        id="template-label"
-                        value={label}
-                        onChange={(e) => setLabel(e.target.value)}
-                        placeholder="e.g., Code Review Assistant"
-                        className="mt-1"
-                    />
-                </div>
-
-                <div>
-                    <Label htmlFor="template-tags">Tags</Label>
-                    <div className="mt-1 space-y-2">
-                        <div className="flex gap-2">
-                            <Input
-                                id="template-tags"
-                                value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                                placeholder="Add a tag..."
-                                className="flex-1"
-                            />
-                            <Button onClick={handleAddTag} disabled={!tagInput.trim()} size="sm">
-                                <Plus className="w-4 h-4" />
-                            </Button>
-                        </div>
-                        {tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {tags.map(tag => (
-                                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                                        <Tag className="w-3 h-3" />
-                                        {tag}
-                                        <X 
-                                            className="w-3 h-3 cursor-pointer hover:text-destructive" 
-                                            onClick={() => handleRemoveTag(tag)}
-                                        />
-                                    </Badge>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                    <Checkbox
-                        id="template-public"
-                        checked={isPublic}
-                        onCheckedChange={(checked) => setIsPublic(checked as boolean)}
-                    />
-                    <Label htmlFor="template-public" className="text-sm">
-                        Make this template public (accessible by all users)
-                    </Label>
-                </div>
-
-                {!isMobile && (
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant={previewMode === 'editor' ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setPreviewMode('editor')}
-                            className="flex items-center gap-2"
-                        >
-                            <PanelLeft className="w-4 h-4" />
-                            Editor Only
-                        </Button>
-                        <Button
-                            variant={previewMode === 'split' ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setPreviewMode('split')}
-                            className="flex items-center gap-2"
-                        >
-                            <Columns2 className="w-4 h-4" />
-                            Split View
-                        </Button>
-                    </div>
-                )}
-            </div>
-
-            {/* Content Editor & Preview */}
-            <div className="flex-1 overflow-hidden">
-                {previewMode === 'split' && !isMobile ? (
-                    <div className="flex h-full">
-                        {/* Editor */}
-                        <div className="flex-1 border-r border-border/50 overflow-y-auto p-4">
-                            <Label className="text-xs text-muted-foreground mb-2 block">Content</Label>
-                            <AutoResizeTextarea
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                placeholder="Enter your template content..."
-                                className="font-mono text-sm"
-                                minHeight={200}
-                            />
-                        </div>
-                        {/* Preview */}
-                        <div className="flex-1 overflow-y-auto p-4 bg-muted/30">
-                            <Label className="text-xs text-muted-foreground mb-2 block">Preview</Label>
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                                <EnhancedChatMarkdown 
-                                    content={content || ''} 
-                                    useV2Parser={true}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="h-full overflow-y-auto p-4">
-                        <Label className="text-xs text-muted-foreground mb-2 block">Content</Label>
-                        <AutoResizeTextarea
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder="Enter your template content..."
-                            className="font-mono text-sm"
-                            minHeight={200}
+        <div className="flex flex-col h-full overflow-hidden">
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+                {/* Form Fields */}
+                <div className="p-4 space-y-4 border-b border-border/50">
+                    <div>
+                        <Label htmlFor="template-label">Template Name</Label>
+                        <Input
+                            id="template-label"
+                            value={label}
+                            onChange={(e) => setLabel(e.target.value)}
+                            placeholder="e.g., Code Review Assistant"
+                            className="mt-1"
                         />
                     </div>
-                )}
+
+                    <div>
+                        <Label htmlFor="template-tags">Tags</Label>
+                        <div className="mt-1 space-y-2">
+                            <div className="flex gap-2">
+                                <Input
+                                    id="template-tags"
+                                    value={tagInput}
+                                    onChange={(e) => setTagInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                                    placeholder="Add a tag..."
+                                    className="flex-1"
+                                />
+                                <Button onClick={handleAddTag} disabled={!tagInput.trim()} size="sm">
+                                    <Plus className="w-4 h-4" />
+                                </Button>
+                            </div>
+                            {tags.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                    {tags.map(tag => (
+                                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                                            <Tag className="w-3 h-3" />
+                                            {tag}
+                                            <X 
+                                                className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                                                onClick={() => handleRemoveTag(tag)}
+                                            />
+                                        </Badge>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="template-public"
+                            checked={isPublic}
+                            onCheckedChange={(checked) => setIsPublic(checked as boolean)}
+                        />
+                        <Label htmlFor="template-public" className="text-sm">
+                            Make this template public (accessible by all users)
+                        </Label>
+                    </div>
+
+                    {!isMobile && (
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant={previewMode === 'editor' ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setPreviewMode('editor')}
+                                className="flex items-center gap-2"
+                            >
+                                <PanelLeft className="w-4 h-4" />
+                                Editor Only
+                            </Button>
+                            <Button
+                                variant={previewMode === 'split' ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setPreviewMode('split')}
+                                className="flex items-center gap-2"
+                            >
+                                <Columns2 className="w-4 h-4" />
+                                Split View
+                            </Button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Content Editor & Preview */}
+                <div className="min-h-[400px]">
+                    {previewMode === 'split' && !isMobile ? (
+                        <div className="flex" style={{ minHeight: '400px' }}>
+                            {/* Editor */}
+                            <div className="flex-1 border-r border-border/50 p-4">
+                                <Label className="text-xs text-muted-foreground mb-2 block">Content</Label>
+                                <PromptEditorContextMenu
+                                    getTextarea={() => textareaRef.current}
+                                    onContentInserted={() => {}}
+                                >
+                                    <AutoResizeTextarea
+                                        ref={textareaRef}
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        placeholder="Enter your template content..."
+                                        className="font-mono text-sm"
+                                        minHeight={300}
+                                    />
+                                </PromptEditorContextMenu>
+                            </div>
+                            {/* Preview */}
+                            <div className="flex-1 p-4 bg-muted/30">
+                                <Label className="text-xs text-muted-foreground mb-2 block">Preview</Label>
+                                <div className="prose prose-sm dark:prose-invert max-w-none">
+                                    <EnhancedChatMarkdown 
+                                        content={content || ''} 
+                                        useV2Parser={true}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="p-4">
+                            <Label className="text-xs text-muted-foreground mb-2 block">Content</Label>
+                            <PromptEditorContextMenu
+                                getTextarea={() => textareaRef.current}
+                                onContentInserted={() => {}}
+                            >
+                                <AutoResizeTextarea
+                                    ref={textareaRef}
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    placeholder="Enter your template content..."
+                                    className="font-mono text-sm"
+                                    minHeight={300}
+                                />
+                            </PromptEditorContextMenu>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="p-4 border-t border-border/50 flex gap-2 justify-end">
+            {/* Fixed Action Buttons */}
+            <div className="flex-shrink-0 p-4 border-t border-border/50 bg-background flex gap-2 justify-end">
                 <Button 
                     variant="outline" 
                     onClick={handleClose}

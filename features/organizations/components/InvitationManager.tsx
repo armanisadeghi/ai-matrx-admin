@@ -273,7 +273,7 @@ export function InvitationManager({
                       onClick={() => handleResendInvitation(invitation.id, invitation.email)}
                       disabled={operationLoading}
                     >
-                      <RefreshCw className="h-4 w-4 mr-1" />
+                      <RefreshCw className="h-4 w-4" />
                       Resend
                     </Button>
                     <Button
@@ -283,7 +283,7 @@ export function InvitationManager({
                       disabled={operationLoading}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
-                      <X className="h-4 w-4 mr-1" />
+                      <X className="h-4 w-4" />
                       Cancel
                     </Button>
                   </div>

@@ -509,11 +509,11 @@ const TaskChecklist = ({
                                 <Button size="xs" variant="outline" onClick={handleReset} className="flex items-center">
                                     {resetSuccess ? (
                                         <>
-                                            <Check className="h-3.5 w-3.5 mr-1" /> Reset
+                                            <Check className="h-3.5 w-3.5" /> Reset
                                         </>
                                     ) : (
                                         <>
-                                            <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
+                                            <RotateCcw className="h-3.5 w-3.5" /> Reset
                                         </>
                                     )}
                                 </Button>
@@ -531,7 +531,7 @@ const TaskChecklist = ({
                                 >
                                     {saveSuccess ? (
                                         <>
-                                            <Check className="h-3.5 w-3.5 mr-1" /> Saved
+                                            <Check className="h-3.5 w-3.5" /> Saved
                                         </>
                                     ) : (
                                         <>
@@ -550,7 +550,7 @@ const TaskChecklist = ({
                                     onClick={() => setIsImportModalOpen(true)}
                                     className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
                                 >
-                                    <Upload className="h-3.5 w-3.5 mr-1" /> Import to Tasks
+                                    <Upload className="h-3.5 w-3.5" /> Import to Tasks
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>Import these tasks into your task manager</TooltipContent>

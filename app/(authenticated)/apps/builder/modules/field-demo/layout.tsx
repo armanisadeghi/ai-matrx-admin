@@ -86,7 +86,7 @@ export default function FieldDemoLayout({ children }: FieldDemoLayoutProps) {
     : [
         hasUnsavedChanges && (
           <div key="status" className="flex items-center text-amber-500 dark:text-amber-400 mr-2 text-sm">
-            <AlertCircle className="h-4 w-4 mr-1" />
+            <AlertCircle className="h-4 w-4" />
             <span>Unsaved changes</span>
           </div>
         )

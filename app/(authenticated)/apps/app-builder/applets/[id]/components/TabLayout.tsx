@@ -68,7 +68,7 @@ export default function TabLayout({ title, subtitle, tabs, id }: TabLayoutProps)
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <Menu className="h-4 w-4 mr-1" />
+                  <Menu className="h-4 w-4" />
                   <span>Tabs</span>
                 </Button>
               </DropdownMenuTrigger>

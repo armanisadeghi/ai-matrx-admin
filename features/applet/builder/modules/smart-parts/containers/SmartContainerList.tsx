@@ -482,7 +482,7 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
               size="sm"
               onClick={onCreateGroup}
             >
-              <Plus className="h-4 w-4 mr-1" /> New
+              <Plus className="h-4 w-4" /> New
             </Button>
           )}
         </div>

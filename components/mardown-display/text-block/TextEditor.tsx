@@ -39,7 +39,7 @@ export const EditButton = ({
             className="absolute top-2 right-2 z-10 bg-neutral-100 dark:bg-neutral-800 opacity-50 hover:opacity-100"
             onClick={toggleEdit}
         >
-            {isEditing ? <Eye className="h-4 w-4 mr-1" /> : <Edit className="h-4 w-4 mr-1" />}
+            {isEditing ? <Eye className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
             {isEditing ? "Preview" : "Edit"}
         </Button>
     );
@@ -74,7 +74,7 @@ const TextBlockHeader: React.FC<TextBlockHeaderProps> = ({
                     onClick={handleCopy}
                     className="text-xs"
                 >
-                    <Copy className="h-3.5 w-3.5 mr-1" />
+                    <Copy className="h-3.5 w-3.5" />
                     {isCopied ? "Copied!" : "Copy"}
                 </Button>
                 <Button
@@ -83,7 +83,7 @@ const TextBlockHeader: React.FC<TextBlockHeaderProps> = ({
                     onClick={handleDownload}
                     className="text-xs"
                 >
-                    <Download className="h-3.5 w-3.5 mr-1" />
+                    <Download className="h-3.5 w-3.5" />
                     Save
                 </Button>
                 {!isEditing && (
@@ -114,7 +114,7 @@ const TextBlockHeader: React.FC<TextBlockHeaderProps> = ({
                     onClick={toggleEdit}
                     className="text-xs"
                 >
-                    {isEditing ? <Eye className="h-3.5 w-3.5 mr-1" /> : <Edit className="h-3.5 w-3.5 mr-1" />}
+                    {isEditing ? <Eye className="h-3.5 w-3.5" /> : <Edit className="h-3.5 w-3.5" />}
                     {isEditing ? "Preview" : "Edit"}
                 </Button>
             </div>

@@ -249,19 +249,19 @@ export function CategoryNotesModal({
                         <div className="flex items-center gap-2">
                             {viewMode !== 'list' && (
                                 <Button onClick={() => setViewMode('list')} variant="ghost" size="sm">
-                                    <ChevronLeft className="h-4 w-4 mr-1" />
+                                    <ChevronLeft className="h-4 w-4" />
                                     Back
                                 </Button>
                             )}
                             {allowCreate && viewMode === 'list' && (
                                 <Button onClick={() => {setViewMode('create'); setSelectedNoteId(null);}} size="sm">
-                                    <Plus className="h-4 w-4 mr-1" />
+                                    <Plus className="h-4 w-4" />
                                     New
                                 </Button>
                             )}
                             {allowImport && viewMode === 'list' && (
                                 <Button onClick={() => {setViewMode('import'); setSelectedNoteId(null);}} variant="outline" size="sm">
-                                    <FileText className="h-4 w-4 mr-1" />
+                                    <FileText className="h-4 w-4" />
                                     Import
                                 </Button>
                             )}
