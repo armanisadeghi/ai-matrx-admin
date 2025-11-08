@@ -239,8 +239,7 @@ export function PromptBuilderHeaderCompact({
                         size="sm"
                         className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 ml-1 text-xs"
                     >
-                        <Save className="h-3 w-3 mr-1" />
-                        Save
+                        <Save className="h-3 w-3" />
                     </Button>
                 </div>
             </div>

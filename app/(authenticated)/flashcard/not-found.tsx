@@ -1,10 +1,6 @@
 // app/(authenticated)/flashcard/not-found.tsx
+import { NotFoundContent } from '@/components/NotFoundContent'
+
 export default function NotFound() {
-    // Removed console.log to clean up build logs
-    return (
-        <div>
-            <h2>Page Not Found</h2>
-            <p>Could not find requested resource</p>
-        </div>
-    );
+    return <NotFoundContent message="This flashcard page couldn't be found" />
 }

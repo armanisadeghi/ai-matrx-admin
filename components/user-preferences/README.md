@@ -1,239 +1,246 @@
-# User Preferences System
+# User Preferences System - Technical Documentation
 
-A comprehensive system for managing user preferences with URL navigation support and modal access.
+## Architecture Overview
 
-## Features
+### State Management
+- **Redux Store**: `lib/redux/slices/userPreferencesSlice.ts`
+- **Server-Side Loading**: `app/(authenticated)/layout.tsx` (loads before any page renders)
+- **Selectors**: `lib/redux/selectors/usePreferenceSelectors.ts`
+- **Middleware**: Syncs with Supabase on changes
 
-✅ **14 Preference Modules**: Display, Prompts, Voice, TTS, Assistant, Email, Video, Photo, Images, Text, Coding, Flashcards, Playground, AI Models  
-✅ **URL Parameter Support**: Direct navigation to specific tabs  
-✅ **Modal System**: Access preferences from anywhere in the app  
-✅ **Mobile Optimized**: iOS-friendly bottom sheet style on mobile  
-✅ **Auto-Save**: Changes tracked with save/reset functionality  
-✅ **Type-Safe**: Full TypeScript support  
-
----
-
-## Usage
-
-### 1. URL Navigation (Page-Based)
-
-Navigate users directly to specific preference tabs:
-
-```tsx
-import Link from 'next/link';
-
-// Link to specific tab
-<Link href="/settings/preferences?tab=prompts">
-  Prompts Settings
-</Link>
-
-// Or using router
-import { useRouter } from 'next/navigation';
-
-const router = useRouter();
-router.push('/settings/preferences?tab=prompts');
+### Available Modules
+```typescript
+type PreferenceTab = 'display' | 'prompts' | 'voice' | 'textToSpeech' | 'assistant' 
+  | 'email' | 'videoConference' | 'photoEditing' | 'imageGeneration' 
+  | 'textGeneration' | 'coding' | 'flashcard' | 'playground' | 'aiModels';
 ```
 
-**Available Tab Values:**
-- `display` - Display preferences
-- `prompts` - Prompts preferences ⭐ NEW
-- `voice` - Voice preferences
-- `textToSpeech` - Text-to-speech preferences
-- `assistant` - Assistant preferences
-- `email` - Email preferences
-- `videoConference` - Video conference preferences
-- `photoEditing` - Photo editing preferences
-- `imageGeneration` - Image generation preferences
-- `textGeneration` - Text generation preferences
-- `coding` - Coding preferences
-- `flashcard` - Flashcard preferences
-- `playground` - Playground preferences
-- `aiModels` - AI Models preferences
-
 ---
 
-### 2. Modal System
+## Core Components
 
-Open preferences as a modal from anywhere in your app:
+### 1. PreferencesPage (`PreferencesPage.tsx`)
+Full-page preferences with URL parameter support.
 
+**URL Navigation**: `/settings/preferences?tab=prompts`
+
+**Features**:
+- Syncs active tab with URL
+- Save/reset all preferences
+- Mobile responsive
+
+### 2. PreferencesModal (`PreferencesModal.tsx`)
+Modal wrapper for preferences.
+
+**Usage**:
 ```tsx
-'use client';
-
-import React from 'react';
-import { Button } from '@/components/ui/button';
 import PreferencesModal from '@/components/user-preferences/PreferencesModal';
 import { usePreferencesModal } from '@/hooks/user-preferences/usePreferencesModal';
 
-export function MyComponent() {
-    const { isOpen, activeTab, openPreferences, closePreferences } = usePreferencesModal();
+const { isOpen, activeTab, openPreferences, closePreferences } = usePreferencesModal();
 
-    return (
-        <>
-            {/* Open to default tab */}
-            <Button onClick={() => openPreferences()}>
-                Open Preferences
-            </Button>
+openPreferences('prompts'); // Open to specific tab
 
-            {/* Open to specific tab */}
-            <Button onClick={() => openPreferences('prompts')}>
-                Prompts Settings
-            </Button>
+<PreferencesModal isOpen={isOpen} onClose={closePreferences} initialTab={activeTab} />
+```
 
-            {/* The modal component */}
-            <PreferencesModal 
-                isOpen={isOpen} 
-                onClose={closePreferences}
-                initialTab={activeTab}
-            />
-        </>
-    );
-}
+**Mobile**: Responsive dialog (bottom sheet style < 768px)
+
+### 3. PreferenceModuleWrapper (`PreferenceModuleWrapper.tsx`)
+Wraps individual modules with save/cancel functionality. **Only saves that specific module**.
+
+**Usage**:
+```tsx
+import PreferenceModuleWrapper from '@/components/user-preferences/PreferenceModuleWrapper';
+import PromptsPreferences from '@/components/user-preferences/PromptsPreferences';
+
+<PreferenceModuleWrapper 
+  module="prompts"
+  onSaveSuccess={() => console.log('Saved')}
+  onCancel={() => closeModal()}
+>
+  <PromptsPreferences />
+</PreferenceModuleWrapper>
+```
+
+**Props**:
+- `module`: Which preference module to save
+- `showFooter`: Show/hide save/cancel buttons (default: true)
+- `onSaveSuccess`: Callback after successful save
+- `onCancel`: Callback when cancel is clicked
+
+### 4. StandalonePromptsPreferences (`standalone/StandalonePromptsPreferences.tsx`)
+Pre-wrapped prompts preferences with save/cancel. Use in modals or dedicated sections.
+
+```tsx
+import StandalonePromptsPreferences from '@/components/user-preferences/standalone/StandalonePromptsPreferences';
+
+<StandalonePromptsPreferences 
+  onSaveSuccess={() => toast.success('Saved!')}
+  onCancel={() => closeModal()}
+/>
 ```
 
 ---
 
-### 3. Accessing Preference Values
+## Hooks
 
-Use Redux selectors to access preference values in your components:
+### usePreferencesModal
+Manages modal state.
+
+```tsx
+const { isOpen, activeTab, openPreferences, closePreferences } = usePreferencesModal();
+```
+
+### useModulePreferences
+Direct control over saving/resetting specific modules.
+
+```tsx
+import { useModulePreferences } from '@/hooks/user-preferences/useModulePreferences';
+
+const { save, reset, modulePreferences, isLoading, hasChanges, error } = useModulePreferences('prompts');
+
+await save(); // Only saves prompts module
+reset(); // Reset to defaults
+```
+
+---
+
+## Redux Actions
+
+### Save All Preferences
+```tsx
+import { savePreferencesToDatabase } from '@/lib/redux/slices/userPreferencesSlice';
+
+dispatch(savePreferencesToDatabase(preferencesWithoutMeta));
+```
+
+### Save Single Module
+```tsx
+import { saveModulePreferencesToDatabase } from '@/lib/redux/slices/userPreferencesSlice';
+
+dispatch(saveModulePreferencesToDatabase({ 
+  module: 'prompts', 
+  preferences: promptsPreferences 
+}));
+```
+
+### Reset Module
+```tsx
+import { resetModulePreferences } from '@/lib/redux/slices/userPreferencesSlice';
+
+dispatch(resetModulePreferences('prompts'));
+```
+
+---
+
+## Selectors
 
 ```tsx
 import { useAppSelector } from '@/lib/redux';
 import { selectPromptsPreferences } from '@/lib/redux/selectors/usePreferenceSelectors';
 
-function MyComponent() {
-    const promptsPrefs = useAppSelector(selectPromptsPreferences);
-    
-    // Access values
-    const defaultModel = promptsPrefs.defaultModel;
-    const temperature = promptsPrefs.defaultTemperature;
-    const submitOnEnter = promptsPrefs.submitOnEnter;
-    
-    // Use them in your logic
-    if (submitOnEnter) {
-        // Handle enter key submission
-    }
-}
+const promptsPrefs = useAppSelector(selectPromptsPreferences);
+const defaultModel = promptsPrefs.defaultModel;
 ```
 
-**Available Selectors:**
-```typescript
-import {
-    selectDisplayPreferences,
-    selectPromptsPreferences,
-    selectVoicePreferences,
-    selectTextToSpeechPreferences,
-    selectAssistantPreferences,
-    selectEmailPreferences,
-    selectVideoConferencePreferences,
-    selectPhotoEditingPreferences,
-    selectImageGenerationPreferences,
-    selectTextGenerationPreferences,
-    selectCodingPreferences,
-    selectFlashcardPreferences,
-    selectPlaygroundPreferences,
-    selectAiModelsPreferences,
-    selectSystemPreferences,
-} from '@/lib/redux/selectors/usePreferenceSelectors';
+**Available Selectors**: `selectDisplayPreferences`, `selectPromptsPreferences`, `selectVoicePreferences`, etc.
+
+---
+
+## Prompts Preferences Module
+
+Located: `components/user-preferences/PromptsPreferences.tsx`
+
+**Settings**:
+1. `showSettingsOnMainPage` (boolean) - Default: false
+2. `defaultModel` (string) - Default: GPT-4.1 Mini ID
+3. `defaultTemperature` (number: 0-2) - Default: 1.0
+4. `alwaysIncludeInternalWebSearch` (boolean) - Default: true
+5. `includeThinkingInAutoPrompts` ('none' | 'simple' | 'deep') - Default: 'none'
+6. `submitOnEnter` (boolean) - Default: true
+7. `autoClearResponsesInEditMode` (boolean) - Default: true
+
+---
+
+## Common Use Cases
+
+### 1. Add Preferences Tab to Existing Modal
+```tsx
+<Tabs>
+  <TabsTrigger value="preferences">Preferences</TabsTrigger>
+  <TabsContent value="preferences">
+    <StandalonePromptsPreferences onSaveSuccess={() => toast.success('Saved!')} />
+  </TabsContent>
+</Tabs>
+```
+
+### 2. Link to Specific Preference Tab
+```tsx
+<Link href="/settings/preferences?tab=prompts">Prompts Settings</Link>
+```
+
+### 3. Open Modal to Specific Tab
+```tsx
+const { openPreferences } = usePreferencesModal();
+openPreferences('prompts');
+```
+
+### 4. Custom Save Logic
+```tsx
+const { save, hasChanges } = useModulePreferences('prompts');
+if (hasChanges) await save();
 ```
 
 ---
 
-## Prompts Preferences
+## File Structure
 
-The new Prompts preferences module includes:
+```
+components/user-preferences/
+├── PreferencesPage.tsx          # Full page with URL support
+├── PreferencesModal.tsx         # Modal wrapper
+├── PreferenceModuleWrapper.tsx  # Individual module wrapper
+├── PromptsPreferences.tsx       # Prompts settings
+├── DisplayPreferences.tsx       # Display settings
+├── [other modules...]
+└── standalone/
+    └── StandalonePromptsPreferences.tsx  # Pre-wrapped prompts
 
-1. **Show Settings on Main Page** (boolean) - Toggle settings visibility
-2. **Default Model** (string) - Select from active AI models
-3. **Default Temperature** (number: 0-2) - Control creativity/randomness
-4. **Always Include Internal Web Search** (boolean) - Auto-enable web search
-5. **Include "Thinking" in Auto-Generated Prompts** (none | simple | deep)
-6. **Submit on Enter** (boolean) - Enter key behavior
-7. **Auto Clear Responses in Edit Mode** (boolean) - Clear previous responses
+hooks/user-preferences/
+├── usePreferencesModal.ts       # Modal state management
+├── useModulePreferences.ts      # Module save/reset
+└── usePreferenceValue.ts        # Get/set individual values
 
-### Example: Using Prompts Preferences
+lib/redux/
+├── slices/userPreferencesSlice.ts     # State + actions
+└── selectors/usePreferenceSelectors.ts # Selectors
+```
+
+---
+
+## Key Technical Details
+
+- **Module Isolation**: `saveModulePreferencesToDatabase` only updates specified module
+- **Type Safety**: Full TypeScript with `PreferenceTab` type
+- **Mobile Optimized**: Responsive with iOS-style bottom sheet < 768px
+- **Change Tracking**: `_meta.hasUnsavedChanges` tracks unsaved state
+- **Error Handling**: `_meta.error` for error states
+- **Server-Side Init**: Preferences loaded in layout before any page renders
+
+---
+
+## Creating Additional Standalone Modules
+
+Copy pattern from `StandalonePromptsPreferences.tsx`:
 
 ```tsx
-import { useAppSelector } from '@/lib/redux';
-import { selectPromptsPreferences } from '@/lib/redux/selectors/usePreferenceSelectors';
+import PreferenceModuleWrapper from '../PreferenceModuleWrapper';
+import VoicePreferences from '../VoicePreferences';
 
-function PromptInput() {
-    const promptsPrefs = useAppSelector(selectPromptsPreferences);
-    
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            if (promptsPrefs.submitOnEnter) {
-                e.preventDefault();
-                // Submit message
-            }
-            // Otherwise, allow new line
-        }
-    };
-    
-    return <textarea onKeyDown={handleKeyDown} />;
-}
+const StandaloneVoicePreferences = ({ onSaveSuccess, onCancel, showFooter = true }) => (
+  <PreferenceModuleWrapper module="voice" showFooter={showFooter} onSaveSuccess={onSaveSuccess} onCancel={onCancel}>
+    <VoicePreferences />
+  </PreferenceModuleWrapper>
+);
 ```
-
----
-
-## Mobile Behavior
-
-The modal automatically adapts to mobile devices:
-
-- **Desktop**: Centered dialog with max-width
-- **Mobile**: Bottom sheet (iOS-style) taking 90% of viewport height
-- **Smooth Animations**: Fade and slide transitions
-- **Touch-Friendly**: Larger tap targets and spacing
-- **Scroll Optimization**: Proper scroll behavior within modal
-
----
-
-## Architecture
-
-### Components
-
-- **`PreferencesPage.tsx`** - Full-page preferences with URL support
-- **`PreferencesModal.tsx`** - Modal wrapper with all tabs
-- **`Prompts Preferences.tsx`** - Prompts-specific settings (and 13 other modules)
-
-### Hooks
-
-- **`usePreferencesModal.ts`** - Manage modal state
-- **`usePreferenceValue.ts`** - Get/set individual preference values
-
-### Redux
-
-- **State**: `lib/redux/slices/userPreferencesSlice.ts`
-- **Selectors**: `lib/redux/selectors/usePreferenceSelectors.ts`
-- **Loaded**: Server-side in `app/(authenticated)/layout.tsx`
-
----
-
-## Best Practices
-
-1. **Always use selectors** - Don't access state directly
-2. **Link to specific tabs** - Provide direct links for better UX
-3. **Use modals for quick access** - Don't force users to navigate to settings page
-4. **Test on mobile** - Ensure touch targets are adequate
-5. **Handle unsaved changes** - Modal warns users before closing
-
----
-
-## Adding New Preference Modules
-
-To add a new preference module:
-
-1. Add interface to `userPreferencesSlice.ts`
-2. Create component in `components/user-preferences/`
-3. Add to `PreferencesPage.tsx` and `PreferencesModal.tsx`
-4. Create selector in `usePreferenceSelectors.ts`
-5. Update `PreferenceTab` type
-
----
-
-## Support
-
-For questions or issues, check:
-- Type definitions in `lib/redux/slices/userPreferencesSlice.ts`
-- Examples in `PreferencesModalExample.tsx`
-- Selector usage in `lib/redux/selectors/usePreferenceSelectors.ts`
-

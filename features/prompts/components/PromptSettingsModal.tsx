@@ -14,7 +14,7 @@ import { VariableEditor } from "./configuration/VariableEditor";
 import { ModelSettings } from "./configuration/ModelSettings";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import { FullPromptOptimizer } from "@/features/prompts/components/actions/FullPromptOptimizer";
-import PromptsPreferences from "@/components/user-preferences/PromptsPreferences";
+import StandalonePromptsPreferences from "@/components/user-preferences/StandalonePromptsPreferences";
 
 interface PromptSettingsModalProps {
     isOpen: boolean;
@@ -277,28 +277,28 @@ export function PromptSettingsModal({
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-4 pb-4">
                         <TabsContent value="overview" className="h-full overflow-y-auto mt-3 space-y-3">
                             {/* AI Optimization Feature */}
-                            <Card className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-800">
+                            <Card className="p-4 bg-gradient-to-br from-blue-50 to-orange-50 dark:from-blue-950/30 dark:to-orange-950/30 border-blue-200 dark:border-blue-800">
                                 <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
-                                        <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                                        <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                                            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
                                                 AI-Powered Prompt Optimization
                                             </h3>
-                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-medium">
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-200 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 font-medium">
                                                 BETA
                                             </span>
                                         </div>
-                                        <p className="text-xs text-amber-800 dark:text-amber-200/90 mb-3">
+                                        <p className="text-xs text-blue-800 dark:text-blue-200/90 mb-3">
                                             Let AI analyze and enhance your entire prompt configuration including messages, variables, and settings for optimal performance.
                                         </p>
                                         <Button
                                             variant="default"
                                             size="sm"
                                             onClick={() => setIsFullOptimizerOpen(true)}
-                                            className="h-8 text-xs bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 text-white"
+                                            className="h-8 text-xs bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
                                         >
                                             <Sparkles className="h-3.5 w-3.5 mr-1.5" />
                                             Optimize All Settings
@@ -704,20 +704,13 @@ export function PromptSettingsModal({
                         </TabsContent>
 
                         {/* Preferences Tab */}
-                        <TabsContent value="preferences" className="h-full overflow-y-auto mt-3">
-                            <div className="space-y-3">                               
-                                <Card className="p-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                                    <div className="mb-3">
-                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                                            Prompts Preferences
-                                        </h3>
-                                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                                            Configure your default settings for working with prompts. These preferences will apply across all prompts unless overridden.
-                                        </p>
-                                    </div>
-                                    <PromptsPreferences />
-                                </Card>
-                            </div>
+                        <TabsContent value="preferences" className="h-full overflow-hidden mt-3 flex flex-col">
+                            <StandalonePromptsPreferences 
+                                onSaveSuccess={() => {
+                                    // Optional: add success toast
+                                    console.log('Prompts preferences saved!');
+                                }}
+                            />
                         </TabsContent>
                     </div>
                 </Tabs>

@@ -1,1 +1,5 @@
-export { NotFound as default }  from '@/components/next-js/loading-error-not-found';
+import { NotFoundContent } from '@/components/NotFoundContent'
+
+export default function NotFound() {
+    return <NotFoundContent message="This folder couldn't be found" />
+}
