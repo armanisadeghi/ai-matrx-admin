@@ -27,14 +27,14 @@ interface PromptInputProps {
     onSendMessage: () => void;
     isTestingPrompt: boolean;
     submitOnEnter: boolean;
-    onSubmitOnEnterChange: (value: boolean) => void;
+    onSubmitOnEnterChange?: (value: boolean) => void; // Optional - if not provided, toggle will be hidden
     messages: Array<{ role: string; content: string }>;
     
     // Optional props for customization
     showVariables?: boolean;
-    showAutoClear?: boolean;
-    autoClear?: boolean;
-    onAutoClearChange?: (value: boolean) => void;
+    showAutoClear?: boolean; // Controls visibility of the auto-clear toggle
+    autoClear?: boolean; // The current state of auto-clear (clears conversation before submit)
+    onAutoClearChange?: (value: boolean) => void; // Handler to change auto-clear state
     showAttachments?: boolean;
     attachmentCapabilities?: {
         supportsImageUrls: boolean;
@@ -397,19 +397,21 @@ export function PromptInput({
                 </div>
 
                 <div className="flex items-center gap-1">
-                    {/* Submit on Enter toggle - Always shown */}
-                    <PromptInputButton
-                        icon={CornerDownLeft}
-                        tooltip={submitOnEnter ? "Submit on Enter (Click to disable)" : "New line on Enter (Click to enable Submit on Enter)"}
-                        onClick={() => onSubmitOnEnterChange(!submitOnEnter)}
-                        active={submitOnEnter}
-                    />
+                    {/* Submit on Enter toggle - Only shown if callback provided */}
+                    {onSubmitOnEnterChange && (
+                        <PromptInputButton
+                            icon={CornerDownLeft}
+                            tooltip={submitOnEnter ? "Submit on Enter (Click to disable)" : "New line on Enter (Click to enable Submit on Enter)"}
+                            onClick={() => onSubmitOnEnterChange(!submitOnEnter)}
+                            active={submitOnEnter}
+                        />
+                    )}
 
-                    {/* Auto-clear toggle - Conditional */}
+                    {/* Auto-clear toggle - Conditional (clears entire conversation before each submit) */}
                     {showAutoClear && onAutoClearChange && (
                         <PromptInputButton
                             icon={RefreshCw}
-                            tooltip={autoClear ? "Auto-clear enabled (Click to disable)" : "Auto-clear disabled (Click to enable)"}
+                            tooltip={autoClear ? "Auto-clear conversation enabled (Click to disable)" : "Auto-clear conversation disabled (Click to enable)"}
                             onClick={() => onAutoClearChange(!autoClear)}
                             active={autoClear}
                         />

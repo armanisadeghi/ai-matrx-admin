@@ -15,9 +15,19 @@ export const selectDisplayPreferences = createSelector(
   (state) => state.display
 );
 
+export const selectPromptsPreferences = createSelector(
+  selectUserPreferences,
+  (state) => state.prompts
+);
+
 export const selectVoicePreferences = createSelector(
   selectUserPreferences,
   (state) => state.voice
+);
+
+export const selectTextToSpeechPreferences = createSelector(
+  selectUserPreferences,
+  (state) => state.textToSpeech
 );
 
 export const selectAssistantPreferences = createSelector(
@@ -58,4 +68,14 @@ export const selectCodingPreferences = createSelector(
 export const selectFlashcardPreferences = createSelector(
   selectUserPreferences,
   (state) => state.flashcard
+);
+
+export const selectAiModelsPreferences = createSelector(
+  selectUserPreferences,
+  (state) => state.aiModels
+);
+
+export const selectSystemPreferences = createSelector(
+  selectUserPreferences,
+  (state) => state.system
 );

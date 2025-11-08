@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -48,17 +48,66 @@ export function VariableEditor({
     const [min, setMin] = useState<number | undefined>(customComponent?.min);
     const [max, setMax] = useState<number | undefined>(customComponent?.max);
     const [step, setStep] = useState<number>(customComponent?.step || 1);
+    
+    // Flag to prevent update loop during sync
+    const isSyncingRef = useRef(false);
 
-    // Sync component type changes
+    // Sync all customComponent changes when it updates
     useEffect(() => {
-        if (customComponent?.type !== componentType) {
-            setComponentType(customComponent?.type || "textarea");
+        isSyncingRef.current = true;
+        
+        if (!customComponent) {
+            setComponentType("textarea");
+            setOptions([]);
+            setAllowOther(false);
+            setToggleOffLabel("No");
+            setToggleOnLabel("Yes");
+            setMin(undefined);
+            setMax(undefined);
+            setStep(1);
+            // Use setTimeout to ensure sync flag is reset after state updates
+            setTimeout(() => {
+                isSyncingRef.current = false;
+            }, 0);
+            return;
         }
-    }, [customComponent?.type]);
+
+        // Sync component type
+        setComponentType(customComponent.type || "textarea");
+
+        // Sync options-based components
+        if (customComponent.options) {
+            setOptions([...customComponent.options]);
+        } else {
+            setOptions([]);
+        }
+
+        // Sync allowOther
+        setAllowOther(customComponent.allowOther || false);
+
+        // Sync toggle labels
+        if (customComponent.toggleValues) {
+            setToggleOffLabel(customComponent.toggleValues[0] || "No");
+            setToggleOnLabel(customComponent.toggleValues[1] || "Yes");
+        } else {
+            setToggleOffLabel("No");
+            setToggleOnLabel("Yes");
+        }
+
+        // Sync number settings
+        setMin(customComponent.min);
+        setMax(customComponent.max);
+        setStep(customComponent.step || 1);
+        
+        // Use setTimeout to ensure sync flag is reset after state updates
+        setTimeout(() => {
+            isSyncingRef.current = false;
+        }, 0);
+    }, [customComponent]);
 
     // Update custom component when any setting changes
     useEffect(() => {
-        if (readonly || !onCustomComponentChange) return;
+        if (readonly || !onCustomComponentChange || isSyncingRef.current) return;
 
         let newCustomComponent: VariableCustomComponent | undefined;
 

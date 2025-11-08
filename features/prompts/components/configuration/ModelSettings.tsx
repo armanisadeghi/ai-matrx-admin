@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -18,6 +19,7 @@ interface ModelSettingsProps {
     models: any[];
     settings: PromptSettings;
     onSettingsChange: (settings: PromptSettings) => void;
+    availableTools?: any[]; // Array of database tool objects
 }
 
 export function ModelSettings({
@@ -25,6 +27,7 @@ export function ModelSettings({
     models,
     settings,
     onSettingsChange,
+    availableTools = [],
 }: ModelSettingsProps) {
     // Get normalized controls for the selected model
     const { normalizedControls, error } = useModelControls(models, modelId);
@@ -542,6 +545,78 @@ export function ModelSettings({
                 </button>
                 </div>
             </div>
+
+            {/* Tools Section */}
+            {availableTools.length > 0 && normalizedControls.tools && (
+                <>
+                    <div className="pt-1 border-t border-gray-200 dark:border-gray-800" />
+                    
+                    <div className="space-y-2">
+                        <Label className="text-xs text-gray-700 dark:text-gray-300">
+                            Tools {!normalizedControls.tools && <span className="text-[10px] ml-1 opacity-60">(N/A)</span>}
+                        </Label>
+                        
+                        {/* Add Tool Dropdown */}
+                        {availableTools.filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name)).length > 0 && (
+                            <div className="flex gap-2">
+                                <Select
+                                    value=""
+                                    onValueChange={(toolName) => {
+                                        if (toolName) {
+                                            const newTools = [...(settings.tools || []), toolName];
+                                            handleSettingChange("tools", newTools);
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger className="h-7 text-xs flex-1">
+                                        <SelectValue placeholder="Select a tool to add..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="text-xs max-h-[200px]">
+                                        {availableTools
+                                            .filter(tool => !settings.tools?.includes(typeof tool === 'string' ? tool : tool.name))
+                                            .map((tool, index) => {
+                                                const toolName = typeof tool === 'string' ? tool : tool.name;
+                                                return (
+                                                    <SelectItem key={index} value={toolName} className="text-xs py-1">
+                                                        {toolName}
+                                                    </SelectItem>
+                                                );
+                                            })}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                        
+                        {/* Selected Tools List */}
+                        {settings.tools && settings.tools.length > 0 ? (
+                            <div className="space-y-1">
+                                {settings.tools.map((toolName, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between px-2 py-1.5 rounded text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                                    >
+                                        <span className="text-green-700 dark:text-green-300 font-medium">{toolName}</span>
+                                        <button
+                                            onClick={() => {
+                                                const newTools = settings.tools?.filter((_, i) => i !== index) || [];
+                                                handleSettingChange("tools", newTools);
+                                            }}
+                                            className="text-green-600 dark:text-green-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                            title="Remove tool"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center py-2">
+                                No tools selected
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 }

@@ -10,7 +10,7 @@ import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
 import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
-import { AiModelsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
+import { AiModelsPreferences, PromptsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
@@ -24,8 +24,7 @@ import { PromptVariable, VariableCustomComponent } from "@/features/prompts/type
 import type { Resource } from "../resource-display";
 import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Edit3, Play } from "lucide-react";
-
+import { selectPromptsPreferences } from "@/lib/redux/selectors/usePreferenceSelectors";
 
 interface PromptBuilderProps {
     models: any[];
@@ -49,6 +48,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const { createPrompt, updatePrompt } = usePromptsWithFetch();
     const modelPreferences = useAppSelector((state: RootState) => state.userPreferences.aiModels as AiModelsPreferences);
     const { formatMessageWithResources } = useResourceMessageFormatter();
+    const promptsPreferences: PromptsPreferences = useAppSelector(selectPromptsPreferences);
     
     // Mobile detection and tab state
     const isMobile = useIsMobile();
@@ -175,8 +175,14 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     }>>([]);
     // Track the actual API conversation history (separate from template and display)
     const [apiConversationHistory, setApiConversationHistory] = useState<PromptMessage[]>([]);
-    const [autoClear, setAutoClear] = useState(true);
-    const [submitOnEnter, setSubmitOnEnter] = useState(false);
+    
+    // Session state initialized from Redux preferences (users can toggle during session)
+    const [submitOnEnter, setSubmitOnEnter] = useState(promptsPreferences?.submitOnEnter ?? false);
+    const [autoClearResponsesInEditMode, setAutoClearResponsesInEditMode] = useState(promptsPreferences?.autoClearResponsesInEditMode ?? false);
+    
+    // UI preference from Redux (read-only)
+    const showSettingsOnMainPage = promptsPreferences?.showSettingsOnMainPage ?? true;
+    
     const [isTestingPrompt, setIsTestingPrompt] = useState(false);
     const [lastMessageStats, setLastMessageStats] = useState<{
         timeToFirstToken?: number;
@@ -207,29 +213,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     
     // Refs for textarea elements (including system message at index -1)
     const textareaRefs = useRef<Record<number, HTMLTextAreaElement | null>>({});
-
-    // Load preferences from localStorage on mount
-    useEffect(() => {
-        const savedAutoClear = localStorage.getItem('promptBuilder_autoClear');
-        const savedSubmitOnEnter = localStorage.getItem('promptBuilder_submitOnEnter');
-        
-        if (savedAutoClear !== null) {
-            setAutoClear(savedAutoClear === 'true');
-        }
-        if (savedSubmitOnEnter !== null) {
-            setSubmitOnEnter(savedSubmitOnEnter === 'true');
-        }
-    }, []);
-
-    // Save autoClear preference to localStorage
-    useEffect(() => {
-        localStorage.setItem('promptBuilder_autoClear', String(autoClear));
-    }, [autoClear]);
-
-    // Save submitOnEnter preference to localStorage
-    useEffect(() => {
-        localStorage.setItem('promptBuilder_submitOnEnter', String(submitOnEnter));
-    }, [submitOnEnter]);
 
     // Check for autoRun query parameter and open prompt runner modal
     useEffect(() => {
@@ -525,6 +508,13 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const handleSendTestMessage = async () => {
         if (isTestingPrompt) return;
 
+        // If autoClearResponsesInEditMode is enabled, clear the conversation first
+        if (autoClearResponsesInEditMode) {
+            setConversationMessages([]);
+            setApiConversationHistory([]);
+            setLastMessageStats(null);
+        }
+
         // Determine if this is the first message in the conversation
         const isFirstMessage = apiConversationHistory.length === 0;
 
@@ -570,9 +560,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         // Also update display message to include resources for UI rendering
         displayUserMessage = formattedMessage;
 
-        if (autoClear) {
-            setChatInput("");
-        }
+        // Always clear input after sending (this is different from autoClearResponsesInEditMode)
+        setChatInput("");
         setResources([]); // Clear resources after sending
 
         // Replace variables in the display message before showing it
@@ -677,7 +666,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         variableDefaults?: PromptVariable[];
         messages?: PromptMessage[];
         settings?: Record<string, any>;
-    }) => {
+    }, isFromSave: boolean = false) => {
         // Update local state to reflect changes immediately
         if (updates.name !== undefined) {
             setPromptName(updates.name);
@@ -713,7 +702,10 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             }
         }
         
-        setIsDirty(true);
+        // Only mark as dirty if this is NOT from a save operation
+        if (!isFromSave) {
+            setIsDirty(true);
+        }
     };
 
     // Build full prompt object for the experimental full prompt optimizer
@@ -898,6 +890,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                             onAddTool={handleAddTool}
                             onRemoveTool={handleRemoveTool}
                             modelSupportsTools={modelSupportsTools}
+                            showSettingsOnMainPage={showSettingsOnMainPage}
                             developerMessage={developerMessage}
                             onDeveloperMessageChange={(value) => {
                                 setDeveloperMessage(value);
@@ -961,10 +954,10 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                             onResourcesChange={setResources}
                             onSendMessage={handleSendTestMessage}
                             isTestingPrompt={isTestingPrompt}
-                            autoClear={autoClear}
-                            onAutoClearChange={setAutoClear}
                             submitOnEnter={submitOnEnter}
                             onSubmitOnEnterChange={setSubmitOnEnter}
+                            autoClearResponsesInEditMode={autoClearResponsesInEditMode}
+                            onAutoClearResponsesInEditModeChange={setAutoClearResponsesInEditMode}
                             messages={messages}
                             isStreamingMessage={isTestingPrompt}
                             currentTaskId={currentTaskId}
@@ -1001,6 +994,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 models={models}
                 settings={modelConfig}
                 onSettingsChange={setModelConfig}
+                availableTools={availableTools}
             />
 
             <FullScreenEditor
@@ -1058,6 +1052,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 messages={[{ role: "system", content: developerMessage }, ...messages]}
                 settings={{ model_id: model, ...modelConfig }}
                 models={models}
+                availableTools={availableTools}
                 onUpdate={handleSettingsUpdate}
                 onLocalStateUpdate={handleLocalStateUpdate}
             />
@@ -1139,6 +1134,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     onAddTool={handleAddTool}
                     onRemoveTool={handleRemoveTool}
                     modelSupportsTools={modelSupportsTools}
+                    showSettingsOnMainPage={showSettingsOnMainPage}
                     developerMessage={developerMessage}
                     onDeveloperMessageChange={(value) => {
                         setDeveloperMessage(value);
@@ -1200,10 +1196,10 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     onResourcesChange={setResources}
                     onSendMessage={handleSendTestMessage}
                     isTestingPrompt={isTestingPrompt}
-                    autoClear={autoClear}
-                    onAutoClearChange={setAutoClear}
                     submitOnEnter={submitOnEnter}
                     onSubmitOnEnterChange={setSubmitOnEnter}
+                    autoClearResponsesInEditMode={autoClearResponsesInEditMode}
+                    onAutoClearResponsesInEditModeChange={setAutoClearResponsesInEditMode}
                     messages={messages}
                     isStreamingMessage={isTestingPrompt}
                     currentTaskId={currentTaskId}
@@ -1239,6 +1235,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             models={models}
             settings={modelConfig}
             onSettingsChange={setModelConfig}
+            availableTools={availableTools}
         />
 
         {/* Full Screen Editor */}
@@ -1298,6 +1295,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             messages={[{ role: "system", content: developerMessage }, ...messages]}
             settings={{ model_id: model, ...modelConfig }}
             models={models}
+            availableTools={availableTools}
             onUpdate={handleSettingsUpdate}
             onLocalStateUpdate={handleLocalStateUpdate}
         />

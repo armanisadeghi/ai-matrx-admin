@@ -32,6 +32,7 @@ interface ModelSettingsDialogProps {
     models: any[];
     settings: ModelSettingsType;
     onSettingsChange: (settings: ModelSettingsType) => void;
+    availableTools?: any[]; // Array of database tool objects
 }
 
 export function ModelSettingsDialog({
@@ -41,6 +42,7 @@ export function ModelSettingsDialog({
     models,
     settings,
     onSettingsChange,
+    availableTools = [],
 }: ModelSettingsDialogProps) {
     if (!isOpen) return null;
 
@@ -72,6 +74,7 @@ export function ModelSettingsDialog({
                         models={models}
                         settings={settings}
                         onSettingsChange={onSettingsChange}
+                        availableTools={availableTools}
                     />
                 </div>
 

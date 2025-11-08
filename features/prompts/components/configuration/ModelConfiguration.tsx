@@ -11,9 +11,10 @@ interface ModelConfigurationProps {
     onModelChange: (value: string) => void;
     modelConfig: PromptSettings;
     onSettingsClick: () => void;
+    showSettingsDetails?: boolean; // Controls visibility of settings badges
 }
 
-export function ModelConfiguration({ models, model, onModelChange, modelConfig, onSettingsClick }: ModelConfigurationProps) {
+export function ModelConfiguration({ models, model, onModelChange, modelConfig, onSettingsClick, showSettingsDetails = true }: ModelConfigurationProps) {
     return (
         <div className="space-y-3">
             <div className="flex items-center justify-between pt-2">
@@ -45,6 +46,8 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
                 </Button>
             </div>
 
+            {/* Settings details badges - conditionally shown */}
+            {showSettingsDetails && (
             <div className="flex flex-wrap gap-1.5 text-xs">
                 {/* Output Format */}
                 {modelConfig.output_format && (
@@ -153,6 +156,7 @@ export function ModelConfiguration({ models, model, onModelChange, modelConfig, 
                     </span>
                 )}
             </div>
+            )}
         </div>
     );
 }

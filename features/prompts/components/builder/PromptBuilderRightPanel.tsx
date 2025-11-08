@@ -32,10 +32,10 @@ interface PromptBuilderRightPanelProps {
     onResourcesChange: (resources: Resource[] | ((prev: Resource[]) => Resource[])) => void;
     onSendMessage: () => void;
     isTestingPrompt: boolean;
-    autoClear: boolean;
-    onAutoClearChange: (value: boolean) => void;
     submitOnEnter: boolean;
     onSubmitOnEnterChange: (value: boolean) => void;
+    autoClearResponsesInEditMode: boolean;
+    onAutoClearResponsesInEditModeChange: (value: boolean) => void;
     messages: Array<{ role: string; content: string }>;
     isStreamingMessage?: boolean;
     currentTaskId?: string | null;
@@ -67,10 +67,10 @@ export function PromptBuilderRightPanel({
     onResourcesChange,
     onSendMessage,
     isTestingPrompt,
-    autoClear,
-    onAutoClearChange,
     submitOnEnter,
     onSubmitOnEnterChange,
+    autoClearResponsesInEditMode,
+    onAutoClearResponsesInEditModeChange,
     messages,
     isStreamingMessage = false,
     currentTaskId = null,
@@ -189,8 +189,8 @@ export function PromptBuilderRightPanel({
                     isTestingPrompt={isTestingPrompt}
                     submitOnEnter={submitOnEnter}
                     onSubmitOnEnterChange={onSubmitOnEnterChange}
-                    autoClear={autoClear}
-                    onAutoClearChange={onAutoClearChange}
+                    autoClear={autoClearResponsesInEditMode}
+                    onAutoClearChange={onAutoClearResponsesInEditModeChange}
                     messages={messages}
                     attachmentCapabilities={attachmentCapabilities}
                     resources={resources}

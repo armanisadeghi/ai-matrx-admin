@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import {
     clearError
 } from '@/lib/redux/slices/userPreferencesSlice';
 import DisplayPreferences from './DisplayPreferences';
+import PromptsPreferences from './PromptsPreferences';
 import VoicePreferences from './VoicePreferences';
 import TextToSpeechPreferences from './TextToSpeechPreferences';
 import AssistantPreferences from './AssistantPreferences';
@@ -29,11 +31,58 @@ import FlashcardPreferences from './FlashcardPreferences';
 import PlaygroundPreferences from './PlaygroundPreferences';
 import AiModelsPreferences from './AiModelsPreferences';
 
+export type PreferenceTab = 
+    | 'display'
+    | 'prompts'
+    | 'voice'
+    | 'textToSpeech'
+    | 'assistant'
+    | 'email'
+    | 'videoConference'
+    | 'photoEditing'
+    | 'imageGeneration'
+    | 'textGeneration'
+    | 'coding'
+    | 'flashcard'
+    | 'playground'
+    | 'aiModels';
+
 const PreferencesPage = () => {
     const dispatch = useAppDispatch();
-    const [activeTab, setActiveTab] = useState('display');
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const preferences = useSelector((state: RootState) => state.userPreferences as UserPreferencesState);
     const { _meta } = preferences;
+
+    // Get tab from URL parameter or default to 'display'
+    const tabParam = searchParams.get('tab') as PreferenceTab | null;
+    const validTabs: PreferenceTab[] = [
+        'display', 'prompts', 'voice', 'textToSpeech', 'assistant', 
+        'email', 'videoConference', 'photoEditing', 'imageGeneration', 
+        'textGeneration', 'coding', 'flashcard', 'playground', 'aiModels'
+    ];
+    
+    const initialTab = tabParam && validTabs.includes(tabParam) ? tabParam : 'display';
+    const [activeTab, setActiveTab] = useState<PreferenceTab>(initialTab);
+
+    // Sync URL with active tab
+    useEffect(() => {
+        if (tabParam && validTabs.includes(tabParam) && tabParam !== activeTab) {
+            setActiveTab(tabParam);
+        }
+    }, [tabParam]);
+
+    // Update URL when tab changes
+    const handleTabChange = (value: string) => {
+        const newTab = value as PreferenceTab;
+        setActiveTab(newTab);
+        
+        // Update URL without causing a full page reload
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('tab', newTab);
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
 
     // Safety check for _meta
     const meta = _meta || {
@@ -46,6 +95,7 @@ const PreferencesPage = () => {
 
     const tabContent = {
         display: <DisplayPreferences />,
+        prompts: <PromptsPreferences />,
         voice: <VoicePreferences />,
         textToSpeech: <TextToSpeechPreferences />,
         assistant: <AssistantPreferences />,
@@ -93,9 +143,10 @@ const PreferencesPage = () => {
                     </Alert>
                 )}
 
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <Tabs value={activeTab} onValueChange={handleTabChange}>
                     <TabsList className="flex-wrap h-auto gap-1">
                         <TabsTrigger value="display">Display</TabsTrigger>
+                        <TabsTrigger value="prompts">Prompts</TabsTrigger>
                         <TabsTrigger value="voice">Voice</TabsTrigger>
                         <TabsTrigger value="textToSpeech">TTS</TabsTrigger>
                         <TabsTrigger value="assistant">Assistant</TabsTrigger>

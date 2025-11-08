@@ -33,6 +33,9 @@ interface PromptBuilderLeftPanelProps {
     onRemoveTool: (tool: string) => void;
     modelSupportsTools: boolean;
 
+    // Preferences
+    showSettingsOnMainPage: boolean;
+
     // System Message
     developerMessage: string;
     onDeveloperMessageChange: (value: string) => void;
@@ -78,6 +81,7 @@ export function PromptBuilderLeftPanel({
     onAddTool,
     onRemoveTool,
     modelSupportsTools,
+    showSettingsOnMainPage,
     developerMessage,
     onDeveloperMessageChange,
     onDeveloperMessageClear,
@@ -105,13 +109,14 @@ export function PromptBuilderLeftPanel({
     return (
         <div className="h-full w-full bg-textured flex flex-col overflow-x-hidden">
             <div className="flex-1 overflow-y-auto overflow-x-hidden pl-2 pr-1 space-y-3 scrollbar-thin" style={{ scrollbarGutter: "stable" }}>
-                {/* Model Configuration */}
+                {/* Model Configuration - Always visible, but details conditionally shown */}
                 <ModelConfiguration
                     models={models}
                     model={model}
                     onModelChange={onModelChange}
                     modelConfig={modelConfig}
                     onSettingsClick={onSettingsClick}
+                    showSettingsDetails={showSettingsOnMainPage}
                 />
                 {/* Variables */}
                 <VariablesManager
@@ -120,16 +125,18 @@ export function PromptBuilderLeftPanel({
                     onUpdateVariable={onUpdateVariable}
                     onRemoveVariable={onRemoveVariable}
                 />
-                {/* Tools */}
-                <ToolsManager
-                    selectedTools={selectedTools}
-                    availableTools={availableTools}
-                    isAddingTool={isAddingTool}
-                    onIsAddingToolChange={onIsAddingToolChange}
-                    onAddTool={onAddTool}
-                    onRemoveTool={onRemoveTool}
-                    modelSupportsTools={modelSupportsTools}
-                />
+                {/* Tools - Conditionally shown with settings */}
+                {showSettingsOnMainPage && (
+                    <ToolsManager
+                        selectedTools={selectedTools}
+                        availableTools={availableTools}
+                        isAddingTool={isAddingTool}
+                        onIsAddingToolChange={onIsAddingToolChange}
+                        onAddTool={onAddTool}
+                        onRemoveTool={onRemoveTool}
+                        modelSupportsTools={modelSupportsTools}
+                    />
+                )}
                 {/* System Message */}
                 <SystemMessage
                     developerMessage={developerMessage}

@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { CopyTextarea, Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle, X, Sparkles } from "lucide-react";
+import { Check, Info, FileJson, Settings2, Variable, Plus, RefreshCw, AlertCircle, X, Sparkles, Wrench, Sliders } from "lucide-react";
 import { PromptVariable, PromptMessage, VariableCustomComponent } from "@/features/prompts/types/core";
 import { VariableEditor } from "./configuration/VariableEditor";
 import { ModelSettings } from "./configuration/ModelSettings";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import { FullPromptOptimizer } from "@/features/prompts/components/actions/FullPromptOptimizer";
+import PromptsPreferences from "@/components/user-preferences/PromptsPreferences";
 
 interface PromptSettingsModalProps {
     isOpen: boolean;
@@ -25,6 +26,7 @@ interface PromptSettingsModalProps {
     messages: PromptMessage[];
     settings: Record<string, any>;
     models: any[];
+    availableTools?: any[]; // Array of database tool objects
     onUpdate: (id: string, data: { 
         name: string; 
         description?: string; 
@@ -38,7 +40,7 @@ interface PromptSettingsModalProps {
         variableDefaults?: PromptVariable[];
         messages?: PromptMessage[];
         settings?: Record<string, any>;
-    }) => void;
+    }, isFromSave?: boolean) => void;
 }
 
 export function PromptSettingsModal({
@@ -51,6 +53,7 @@ export function PromptSettingsModal({
     messages,
     settings,
     models,
+    availableTools = [],
     onUpdate,
     onLocalStateUpdate,
 }: PromptSettingsModalProps) {
@@ -81,9 +84,13 @@ export function PromptSettingsModal({
         if (isOpen) {
             setLocalName(promptName);
             setLocalDescription(promptDescription);
-            setLocalVariables([...variableDefaults]);
+            // Deep clone to preserve customComponent structure
+            setLocalVariables(JSON.parse(JSON.stringify(variableDefaults)));
             setLocalMessages([...messages]);
             setLocalSettings({ ...settings });
+            // Reset variable selection
+            setSelectedVariableIndex(null);
+            setIsAddingVariable(false);
         }
     }, [isOpen, promptName, promptDescription, variableDefaults, messages, settings]);
 
@@ -97,9 +104,12 @@ export function PromptSettingsModal({
             const variable = localVariables[selectedVariableIndex];
             setEditingVariableName(variable.name);
             setEditingVariableDefaultValue(variable.defaultValue);
-            setEditingVariableCustomComponent(variable.customComponent);
+            // Deep clone to ensure we get the full structure
+            setEditingVariableCustomComponent(
+                variable.customComponent ? JSON.parse(JSON.stringify(variable.customComponent)) : undefined
+            );
         }
-    }, [isAddingVariable, selectedVariableIndex, localVariables]);
+    }, [isAddingVariable, selectedVariableIndex]);
 
     // Build the complete prompt object
     const promptObject = useMemo(() => {
@@ -198,8 +208,8 @@ export function PromptSettingsModal({
             // Update the database
             onUpdate(promptId, updateData);
 
-            // Update local state in PromptBuilder
-            onLocalStateUpdate(updateData);
+            // Update local state in PromptBuilder (with isFromSave=true to NOT mark as dirty)
+            onLocalStateUpdate(updateData, true);
 
             onClose();
         } catch (error) {
@@ -227,27 +237,13 @@ export function PromptSettingsModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-5xl h-[95vh] flex flex-col bg-textured p-0">
                 <DialogHeader className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <div className="flex items-center justify-between">
-                        <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            Prompt Settings
-                        </DialogTitle>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsFullOptimizerOpen(true)}
-                            className="h-7 text-xs border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
-                        >
-                            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                            Optimize All
-                            <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30">
-                                BETA
-                            </span>
-                        </Button>
-                    </div>
+                    <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Prompt Settings
+                    </DialogTitle>
                 </DialogHeader>
 
                 <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
-                    <TabsList className="mx-4 mt-3 grid w-auto grid-cols-5 gap-1 bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                    <TabsList>
                         <TabsTrigger value="overview" className="text-xs sm:text-sm">
                             <Info className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             Overview
@@ -255,6 +251,10 @@ export function PromptSettingsModal({
                         <TabsTrigger value="variables" className="text-xs sm:text-sm">
                             <Variable className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             Variables
+                        </TabsTrigger>
+                        <TabsTrigger value="tools" className="text-xs sm:text-sm">
+                            <Wrench className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            Tools
                         </TabsTrigger>
                         <TabsTrigger value="messages" className="text-xs sm:text-sm">
                             <FileJson className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
@@ -264,6 +264,10 @@ export function PromptSettingsModal({
                             <Settings2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             Settings
                         </TabsTrigger>
+                        <TabsTrigger value="preferences" className="text-xs sm:text-sm">
+                            <Sliders className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            Preferences
+                        </TabsTrigger>
                         <TabsTrigger value="json" className="text-xs sm:text-sm">
                             <FileJson className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             JSON
@@ -272,6 +276,37 @@ export function PromptSettingsModal({
 
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-4 pb-4">
                         <TabsContent value="overview" className="h-full overflow-y-auto mt-3 space-y-3">
+                            {/* AI Optimization Feature */}
+                            <Card className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-800">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                                        <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                                                AI-Powered Prompt Optimization
+                                            </h3>
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-medium">
+                                                BETA
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-amber-800 dark:text-amber-200/90 mb-3">
+                                            Let AI analyze and enhance your entire prompt configuration including messages, variables, and settings for optimal performance.
+                                        </p>
+                                        <Button
+                                            variant="default"
+                                            size="sm"
+                                            onClick={() => setIsFullOptimizerOpen(true)}
+                                            className="h-8 text-xs bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 text-white"
+                                        >
+                                            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                                            Optimize All Settings
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card>
+
                             {/* Basic Info */}
                             <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Basic Information</h3>
@@ -477,6 +512,82 @@ export function PromptSettingsModal({
                             </div>
                         </TabsContent>
 
+                        <TabsContent value="tools" className="h-full overflow-y-auto mt-3 space-y-3">
+                            <div className="max-w-3xl mx-auto">
+                                <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Selected Tools</h3>
+                                    {localSettings?.tools && Array.isArray(localSettings.tools) && localSettings.tools.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {localSettings.tools.map((toolName: string, index: number) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded"
+                                                >
+                                                    <span className="text-sm font-mono text-gray-900 dark:text-gray-100">{toolName}</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            setLocalSettings(prev => ({
+                                                                ...prev,
+                                                                tools: (prev.tools || []).filter((_: string, i: number) => i !== index)
+                                                            }));
+                                                        }}
+                                                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                                        title="Remove tool"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No tools selected</p>
+                                    )}
+                                </Card>
+
+                                {availableTools.length > 0 && (
+                                    <Card className="p-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Available Tools</h3>
+                                        <div className="space-y-2">
+                                            {availableTools.map((tool, index) => {
+                                                const toolName = typeof tool === 'string' ? tool : tool.name;
+                                                const isSelected = localSettings?.tools?.includes(toolName);
+                                                return (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => {
+                                                            if (isSelected) {
+                                                                setLocalSettings(prev => ({
+                                                                    ...prev,
+                                                                    tools: (prev.tools || []).filter((t: string) => t !== toolName)
+                                                                }));
+                                                            } else {
+                                                                setLocalSettings(prev => ({
+                                                                    ...prev,
+                                                                    tools: [...(prev.tools || []), toolName]
+                                                                }));
+                                                            }
+                                                        }}
+                                                        className={`w-full text-left p-2 rounded transition-colors ${
+                                                            isSelected
+                                                                ? 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-900 dark:text-cyan-100'
+                                                                : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100'
+                                                        }`}
+                                                    >
+                                                        <span className="text-sm font-mono">{toolName}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </Card>
+                                )}
+
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
+                                    <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                                    <span>Tools allow the AI model to perform specific actions during conversation. Only models that support function calling can use tools.</span>
+                                </div>
+                            </div>
+                        </TabsContent>
+
                         <TabsContent value="messages" className="h-full overflow-y-auto mt-3 space-y-2">
                             {localMessages.length === 0 ? (
                                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">No messages defined</p>
@@ -589,6 +700,23 @@ export function PromptSettingsModal({
                                     wrapLines={true}
                                     fontSize={14}
                                 />
+                            </div>
+                        </TabsContent>
+
+                        {/* Preferences Tab */}
+                        <TabsContent value="preferences" className="h-full overflow-y-auto mt-3">
+                            <div className="space-y-3">                               
+                                <Card className="p-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                    <div className="mb-3">
+                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                                            Prompts Preferences
+                                        </h3>
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                            Configure your default settings for working with prompts. These preferences will apply across all prompts unless overridden.
+                                        </p>
+                                    </div>
+                                    <PromptsPreferences />
+                                </Card>
                             </div>
                         </TabsContent>
                     </div>

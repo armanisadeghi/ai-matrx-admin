@@ -153,9 +153,22 @@ export interface SystemPreferences {
     feedbackFeatureViewCount: number; // Number of times user has seen the new feedback feature highlight
 }
 
+export type ThinkingMode = 'none' | 'simple' | 'deep';
+
+export interface PromptsPreferences {
+    showSettingsOnMainPage: boolean;
+    defaultModel: string; // ID of the default model from active models
+    defaultTemperature: number; // 0-2 in 0.01 increments
+    alwaysIncludeInternalWebSearch: boolean;
+    includeThinkingInAutoPrompts: ThinkingMode;
+    submitOnEnter: boolean;
+    autoClearResponsesInEditMode: boolean;
+}
+
 // Combine all module preferences into one interface
 export interface UserPreferences {
     display: DisplayPreferences;
+    prompts: PromptsPreferences;
     voice: VoicePreferences;
     textToSpeech: TextToSpeechPreferences;
     assistant: AssistantPreferences;
@@ -200,6 +213,15 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
             sidebarLayout: 'default',
             headerLayout: 'default',
             windowMode: 'default',
+        },
+        prompts: {
+            showSettingsOnMainPage: false,
+            defaultModel: '548126f2-714a-4562-9001-0c31cbeea375', // GPT-4.1 Mini
+            defaultTemperature: 1.0,
+            alwaysIncludeInternalWebSearch: true,
+            includeThinkingInAutoPrompts: 'none',
+            submitOnEnter: true,
+            autoClearResponsesInEditMode: true,
         },
         voice: {
             voice: '156fb8d2-335b-4950-9cb3-a2d33befec77',
@@ -307,6 +329,7 @@ export const initializeUserPreferencesState = (preferences: Partial<UserPreferen
     // Merge with defaults to ensure all properties exist
     const mergedPreferences: UserPreferences = {
         display: { ...defaultPreferences.display, ...preferences.display },
+        prompts: { ...defaultPreferences.prompts, ...preferences.prompts },
         voice: { ...defaultPreferences.voice, ...preferences.voice },
         textToSpeech: { ...defaultPreferences.textToSpeech, ...preferences.textToSpeech },
         assistant: { ...defaultPreferences.assistant, ...preferences.assistant },
@@ -373,6 +396,7 @@ const userPreferencesSlice = createSlice({
             if (state._meta.loadedPreferences) {
                 // Restore each module from loaded preferences
                 state.display = { ...state._meta.loadedPreferences.display };
+                state.prompts = { ...state._meta.loadedPreferences.prompts };
                 state.voice = { ...state._meta.loadedPreferences.voice };
                 state.textToSpeech = { ...state._meta.loadedPreferences.textToSpeech };
                 state.assistant = { ...state._meta.loadedPreferences.assistant };
@@ -446,6 +470,7 @@ const userPreferencesSlice = createSlice({
                 // Load all preferences and store as loaded state
                 const loadedPrefs = action.payload;
                 state.display = { ...loadedPrefs.display };
+                state.prompts = { ...loadedPrefs.prompts };
                 state.voice = { ...loadedPrefs.voice };
                 state.textToSpeech = { ...loadedPrefs.textToSpeech };
                 state.assistant = { ...loadedPrefs.assistant };
