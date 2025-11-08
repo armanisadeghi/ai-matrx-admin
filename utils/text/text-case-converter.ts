@@ -241,6 +241,14 @@ export const DEFAULT_WORD_REPLACEMENTS: ReplacementMap = {
   'aka': 'aka',
   'vs': 'vs.',
   'v': 'v.',
+
+  // Client abbreviations
+  'CIC': 'CIC',
+  'AGR': 'AGR',
+  'AGER': 'AGER',
+  'DD': 'DD',
+  'TS': 'TS',
+  'TM': 'TM',
 };
 
 /**

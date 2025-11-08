@@ -179,160 +179,151 @@ export function SaveTemplateModal({
         }
     };
 
-    const content_element = (
-        <div className="flex flex-col h-full overflow-hidden">
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
-                {/* Form Fields */}
-                <div className="p-4 space-y-4 border-b border-border/50">
-                    <div>
-                        <Label htmlFor="template-label">Template Name</Label>
-                        <Input
-                            id="template-label"
-                            value={label}
-                            onChange={(e) => setLabel(e.target.value)}
-                            placeholder="e.g., Code Review Assistant"
-                            className="mt-1"
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="template-tags">Tags</Label>
-                        <div className="mt-1 space-y-2">
-                            <div className="flex gap-2">
-                                <Input
-                                    id="template-tags"
-                                    value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                                    placeholder="Add a tag..."
-                                    className="flex-1"
-                                />
-                                <Button onClick={handleAddTag} disabled={!tagInput.trim()} size="sm">
-                                    <Plus className="w-4 h-4" />
-                                </Button>
-                            </div>
-                            {tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {tags.map(tag => (
-                                        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                                            <Tag className="w-3 h-3" />
-                                            {tag}
-                                            <X 
-                                                className="w-3 h-3 cursor-pointer hover:text-destructive" 
-                                                onClick={() => handleRemoveTag(tag)}
-                                            />
-                                        </Badge>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="template-public"
-                            checked={isPublic}
-                            onCheckedChange={(checked) => setIsPublic(checked as boolean)}
-                        />
-                        <Label htmlFor="template-public" className="text-sm">
-                            Make this template public (accessible by all users)
-                        </Label>
-                    </div>
-
-                    {!isMobile && (
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant={previewMode === 'editor' ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setPreviewMode('editor')}
-                                className="flex items-center gap-2"
-                            >
-                                <PanelLeft className="w-4 h-4" />
-                                Editor Only
-                            </Button>
-                            <Button
-                                variant={previewMode === 'split' ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setPreviewMode('split')}
-                                className="flex items-center gap-2"
-                            >
-                                <Columns2 className="w-4 h-4" />
-                                Split View
-                            </Button>
-                        </div>
-                    )}
+    // Shared form fields - compact version
+    const formFields = (
+        <div className="p-3 space-y-2.5 border-b border-border/50">
+            <div className="flex gap-2 pr-10">
+                <div className="flex-1">
+                    <Input
+                        id="template-label"
+                        value={label}
+                        onChange={(e) => setLabel(e.target.value)}
+                        placeholder="Template name..."
+                        className="h-9"
+                    />
                 </div>
-
-                {/* Content Editor & Preview */}
-                <div className="min-h-[400px]">
-                    {previewMode === 'split' && !isMobile ? (
-                        <div className="flex" style={{ minHeight: '400px' }}>
-                            {/* Editor */}
-                            <div className="flex-1 border-r border-border/50 p-4">
-                                <Label className="text-xs text-muted-foreground mb-2 block">Content</Label>
-                                <PromptEditorContextMenu
-                                    getTextarea={() => textareaRef.current}
-                                    onContentInserted={() => {}}
-                                >
-                                    <AutoResizeTextarea
-                                        ref={textareaRef}
-                                        value={content}
-                                        onChange={(e) => setContent(e.target.value)}
-                                        placeholder="Enter your template content..."
-                                        className="font-mono text-sm"
-                                        minHeight={300}
-                                    />
-                                </PromptEditorContextMenu>
-                            </div>
-                            {/* Preview */}
-                            <div className="flex-1 p-4 bg-muted/30">
-                                <Label className="text-xs text-muted-foreground mb-2 block">Preview</Label>
-                                <div className="prose prose-sm dark:prose-invert max-w-none">
-                                    <EnhancedChatMarkdown 
-                                        content={content || ''} 
-                                        useV2Parser={true}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="p-4">
-                            <Label className="text-xs text-muted-foreground mb-2 block">Content</Label>
-                            <PromptEditorContextMenu
-                                getTextarea={() => textareaRef.current}
-                                onContentInserted={() => {}}
-                            >
-                                <AutoResizeTextarea
-                                    ref={textareaRef}
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
-                                    placeholder="Enter your template content..."
-                                    className="font-mono text-sm"
-                                    minHeight={300}
-                                />
-                            </PromptEditorContextMenu>
-                        </div>
-                    )}
+                <div className="flex items-center gap-1.5">
+                    <Checkbox
+                        id="template-public"
+                        checked={isPublic}
+                        onCheckedChange={(checked) => setIsPublic(checked as boolean)}
+                    />
+                    <Label htmlFor="template-public" className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap">
+                        Public
+                    </Label>
                 </div>
             </div>
 
-            {/* Fixed Action Buttons */}
-            <div className="flex-shrink-0 p-4 border-t border-border/50 bg-background flex gap-2 justify-end">
-                <Button 
-                    variant="outline" 
-                    onClick={handleClose}
-                    disabled={isSaving}
-                >
-                    Cancel
+            <div className="flex gap-2">
+                <Input
+                    id="template-tags"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                    placeholder="Add tags..."
+                    className="flex-1 h-9"
+                />
+                <Button onClick={handleAddTag} disabled={!tagInput.trim()} size="sm" className="h-9">
+                    <Plus className="w-4 h-4" />
                 </Button>
-                <Button 
-                    onClick={handleSave}
-                    disabled={isSaving || !label.trim() || !content.trim()}
-                >
-                    {isSaving ? 'Saving...' : 'Save Template'}
-                </Button>
+                {!isMobile && (
+                    <>
+                        <Button
+                            variant={previewMode === 'editor' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPreviewMode('editor')}
+                            className="h-9"
+                        >
+                            <PanelLeft className="w-4 h-4" />
+                        </Button>
+                        <Button
+                            variant={previewMode === 'split' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPreviewMode('split')}
+                            className="h-9"
+                        >
+                            <Columns2 className="w-4 h-4" />
+                        </Button>
+                    </>
+                )}
             </div>
+
+            {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                    {tags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="flex items-center gap-1 h-6 px-2 py-0">
+                            <Tag className="w-3 h-3" />
+                            <span className="text-xs">{tag}</span>
+                            <X 
+                                className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                                onClick={() => handleRemoveTag(tag)}
+                            />
+                        </Badge>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    // Shared content editor - compact version
+    const contentEditor = (
+        <div className="flex-1 min-h-0">
+            {previewMode === 'split' && !isMobile ? (
+                <div className="flex h-full">
+                    {/* Editor */}
+                    <div className="flex-1 border-r border-border/50 p-3">
+                        <PromptEditorContextMenu
+                            getTextarea={() => textareaRef.current}
+                            onContentInserted={() => {}}
+                        >
+                            <AutoResizeTextarea
+                                ref={textareaRef}
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                placeholder="Enter template content..."
+                                className="font-mono text-sm"
+                                minHeight={200}
+                            />
+                        </PromptEditorContextMenu>
+                    </div>
+                    {/* Preview */}
+                    <div className="flex-1 p-3 bg-muted/30 overflow-y-auto">
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <EnhancedChatMarkdown 
+                                content={content || ''} 
+                                useV2Parser={true}
+                            />
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="p-3 h-full">
+                    <PromptEditorContextMenu
+                        getTextarea={() => textareaRef.current}
+                        onContentInserted={() => {}}
+                    >
+                        <AutoResizeTextarea
+                            ref={textareaRef}
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            placeholder="Enter template content..."
+                            className="font-mono text-sm"
+                            minHeight={200}
+                        />
+                    </PromptEditorContextMenu>
+                </div>
+            )}
+        </div>
+    );
+
+    // Shared action buttons - compact
+    const actionButtons = (
+        <div className="flex-shrink-0 p-2.5 border-t border-border/50 bg-background flex gap-2 justify-end">
+            <Button 
+                variant="outline" 
+                onClick={handleClose}
+                disabled={isSaving}
+                size="sm"
+            >
+                Cancel
+            </Button>
+            <Button 
+                onClick={handleSave}
+                disabled={isSaving || !label.trim() || !content.trim()}
+                size="sm"
+            >
+                {isSaving ? 'Saving...' : 'Save'}
+            </Button>
         </div>
     );
 
@@ -341,27 +332,29 @@ export function SaveTemplateModal({
             <MobileOverlayWrapper
                 isOpen={isOpen}
                 onClose={handleClose}
-                title="Save as Template"
-                description={`Create a ${role} message template`}
                 maxHeight="xl"
             >
-                {content_element}
+                {/* Content flows naturally, MobileOverlayWrapper handles scrolling */}
+                {formFields}
+                {contentEditor}
+                {/* Sticky buttons at bottom */}
+                <div className="sticky bottom-0 z-10">
+                    {actionButtons}
+                </div>
             </MobileOverlayWrapper>
         );
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
-                <DialogHeader className="px-6 py-4 border-b border-border/50">
-                    <DialogTitle>Save as Template</DialogTitle>
-                    <p className="text-sm text-muted-foreground">
-                        Create a {role} message template for future use
-                    </p>
-                </DialogHeader>
-                <div className="flex-1 overflow-hidden">
-                    {content_element}
+            <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden flex flex-col gap-0">
+                {formFields}
+                {/* Scrollable content */}
+                <div className="flex-1 overflow-y-auto min-h-0">
+                    {contentEditor}
                 </div>
+                {/* Fixed buttons */}
+                {actionButtons}
             </DialogContent>
         </Dialog>
     );

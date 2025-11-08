@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -121,7 +121,7 @@ export function RecipesFilter({ recipes, onFilteredRecipesChange }: RecipesFilte
     }, [recipes, searchTerm, selectedStatus, selectedTags, sortBy]);
 
     // Update parent whenever filtered recipes change
-    useMemo(() => {
+    useEffect(() => {
         onFilteredRecipesChange(filteredRecipes);
     }, [filteredRecipes, onFilteredRecipesChange]);
 
