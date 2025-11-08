@@ -157,6 +157,12 @@ export const adminCategories = [
                 link: "/administration/content-blocks",
             },
             {
+                title: "Content Templates Manager",
+                description: "Manage message templates for prompts including system, user, assistant, and tool messages",
+                icon: <MessageSquare />,
+                link: "/administration/content-templates",
+            },
+            {
                 title: "Markdown Content Tester",
                 description: "Test and debug EnhancedChatMarkdown rendering with live split-screen preview. Perfect for testing diagrams, quizzes, tables, and other content formats.",
                 icon: <IconCode />,

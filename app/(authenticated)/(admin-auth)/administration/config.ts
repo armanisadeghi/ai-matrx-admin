@@ -14,6 +14,12 @@ export const pages: ModulePage[] = [
         description: 'Manage content blocks and context menu items'
     },
     {
+        title: 'Content Templates',
+        path: 'content-templates',
+        relative: true,
+        description: 'Manage message templates for prompts'
+    },
+    {
         title: 'Server Cache',
         path: 'server-cache',
         relative: true,

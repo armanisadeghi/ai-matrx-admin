@@ -8,6 +8,8 @@ import { PromptMessage } from "@/features/prompts/types/core";
 import { HighlightedText } from "../HighlightedText";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { PromptVariable } from "@/features/prompts/types/core";
+import { TemplateSelector } from "../templates/TemplateSelector";
+import { MessageRole } from "@/types/content-templates-db";
 
 interface PromptMessagesProps {
     // Messages
@@ -143,6 +145,13 @@ export function PromptMessages({
                                                 </div>
                                             </PopoverContent>
                                         </Popover>
+                                        <TemplateSelector
+                                            role={message.role as MessageRole}
+                                            currentContent={message.content}
+                                            onTemplateSelected={(content) => onMessageContentChange(index, content)}
+                                            onSaveTemplate={() => {}}
+                                            messageIndex={index}
+                                        />
                                         {onOpenFullScreenEditor && (
                                             <Button
                                                 variant="ghost"

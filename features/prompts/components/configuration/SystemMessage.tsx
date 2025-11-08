@@ -7,6 +7,7 @@ import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { HighlightedText } from "../HighlightedText";
 import { PromptVariable } from "@/features/prompts/types/core";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/SystemPromptOptimizer";
+import { TemplateSelector } from "../templates/TemplateSelector";
 
 interface SystemMessageProps {
     developerMessage: string;
@@ -131,6 +132,13 @@ export function SystemMessage({
                                 </PopoverContent>
                             </Popover>
                         )}
+                        <TemplateSelector
+                            role="system"
+                            currentContent={developerMessage}
+                            onTemplateSelected={(content) => onDeveloperMessageChange(content)}
+                            onSaveTemplate={() => {}}
+                            messageIndex={systemMessageIndex}
+                        />
                         <Button
                             variant="ghost"
                             size="sm"
