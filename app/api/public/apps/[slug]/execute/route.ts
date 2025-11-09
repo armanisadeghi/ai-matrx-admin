@@ -271,13 +271,61 @@ export async function POST(
             console.error('Failed to record execution:', executionError);
         }
 
-        // 10. Return task ID for client to start streaming
-        // The client will submit the task to Socket.IO using this task_id
-        // and the chat_config
+        // 10. Create task in ai_tasks table (for polling to retrieve results)
+        const { error: taskError } = await supabase
+            .from('ai_tasks')
+            .insert({
+                id: taskId,
+                user_id: user?.id,
+                task_id: taskId,
+                service: 'chat_service',
+                task_name: 'direct_chat',
+                model_id,
+                request_data: chatConfig,
+                status: 'pending',
+                metadata: {
+                    app_id: app.id,
+                    fingerprint,
+                    source: 'prompt_app'
+                }
+            });
+
+        if (taskError) {
+            console.error('Failed to create ai_task:', taskError);
+            return NextResponse.json({
+                success: false,
+                rate_limit: rateLimitResult,
+                error: {
+                    type: 'execution_error',
+                    message: 'Failed to initialize task'
+                }
+            }, { status: 500 });
+        }
+
+        // 11. Submit task to Socket.IO backend
+        try {
+            const { submitTaskToBackend } = await import('../../lib/submit-task-to-backend');
+            await submitTaskToBackend({
+                task_id: taskId,
+                service: 'chat_service',
+                task_name: 'direct_chat',
+                task_data: { chat_config: chatConfig },
+                user_id: user?.id,
+                metadata: {
+                    app_id: app.id,
+                    fingerprint,
+                    source: 'prompt_app'
+                }
+            });
+        } catch (submitError) {
+            console.error('Failed to submit to backend:', submitError);
+            // Don't fail the request - task is in database, polling will show pending state
+        }
+
+        // 12. Return task ID for client polling
         return NextResponse.json({
             success: true,
             task_id: taskId,
-            chat_config: chatConfig, // Client needs this to submit to Socket.IO
             rate_limit: rateLimitResult
         });
 

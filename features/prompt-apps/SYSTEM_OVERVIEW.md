@@ -43,11 +43,16 @@ Transform prompts into public, shareable web apps with custom AI-generated UIs. 
 **Flow**: 
 1. Server fetches app by slug (published only)
 2. Client renders form instantly (pure React)
-3. User submits → POST `/api/public/apps/[slug]/execute` → gets `task_id`
+3. User submits → POST `/api/public/apps/[slug]/execute`:
+   - Creates `ai_task` in database with status 'pending'
+   - Submits to Python backend via Socket.IO (server-side)
+   - Returns `task_id` for polling
 4. Poll `/api/public/apps/response/[taskId]` every 1s until complete
-5. Display response via local state
+5. Python backend streams → updates `ai_tasks` → polling retrieves results
+6. Display response via local state
 
-**Performance**: Minimal bundle, fast initial render, no providers needed
+**Performance**: Minimal bundle, fast initial render, no providers needed  
+**Backend Communication**: Server-side Socket.IO (client never touches Socket.IO)
 
 ### Authenticated Preview (With Redux)
 **URL**: `/preview/[id]`  
@@ -153,9 +158,12 @@ export default function MyApp({ onExecute, response, isStreaming }) {
 1. Fetch app + prompt
 2. Check rate limits (RLS + triggers handle)
 3. Replace variables in prompt messages
-4. Create `ai_task` + `ai_run`
-5. Submit to Socket.IO backend
-6. Return `task_id` for polling
+4. Build `chat_config` with model + messages
+5. Create `ai_task` in database (status: 'pending')
+6. Submit to Socket.IO backend via server-side client (`submitTaskToBackend`)
+7. Return `task_id` for polling
+
+**Helper**: `app/api/public/apps/lib/submit-task-to-backend.ts` - Server-side Socket.IO submission
 
 ### Poll Response (Public)
 **GET** `/api/public/apps/response/[taskId]`  
@@ -219,6 +227,7 @@ Invalid imports throw errors, preventing arbitrary code execution.
 ### API
 - `app/api/public/apps/[slug]/execute/route.ts` - Execute endpoint
 - `app/api/public/apps/response/[taskId]/route.ts` - Polling endpoint
+- `app/api/public/apps/lib/submit-task-to-backend.ts` - Server-side Socket.IO submission
 
 ### Database
 - `supabase/migrations/create_prompt_apps_system.sql` - Schema
@@ -291,6 +300,13 @@ Editor page → "Publish App" → Now live at `/p/[slug]`
 - Check browser console for errors
 - Verify `onExecute` is being called with correct variable structure
 - Ensure all required props are defined in custom component
+
+**Submission works but no response**
+- Check terminal logs for `[Public App] Socket connected` and `Task submitted`
+- Verify task created in `ai_tasks` table (should have status 'pending' → 'processing' → 'completed')
+- Check Python backend logs for task processing
+- Confirm Socket.IO backend is running (`https://server.app.matrxserver.com`)
+- Test polling endpoint directly: `/api/public/apps/response/[task_id]`
 
 ### Performance Issues
 
