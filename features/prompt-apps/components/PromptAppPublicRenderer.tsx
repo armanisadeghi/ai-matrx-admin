@@ -165,74 +165,80 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                 filename: 'custom-app.tsx'
             });
             
+            console.log('Transformed code (first 500 chars):', code?.substring(0, 500));
+            
             const React = require('react');
             const { useState, useEffect, useMemo, useCallback } = React;
             const lucideReact = require('lucide-react');
             
-            const allowedImports: Record<string, any> = {
-                'react': React,
-                'lucide-react': lucideReact,
-            };
-            
-            if (app.allowed_imports.includes('lucide-react')) {
-                Object.assign(allowedImports, lucideReact);
-            }
-            
-            if (app.allowed_imports.includes('@/components/ui/button')) {
-                const { Button } = require('@/components/ui/button');
-                allowedImports['Button'] = Button;
-            }
-            if (app.allowed_imports.includes('@/components/ui/input')) {
-                const { Input } = require('@/components/ui/input');
-                allowedImports['Input'] = Input;
-            }
-            if (app.allowed_imports.includes('@/components/ui/textarea')) {
-                const { Textarea } = require('@/components/ui/textarea');
-                allowedImports['Textarea'] = Textarea;
-            }
-            if (app.allowed_imports.includes('@/components/ui/card')) {
-                const cardExports = require('@/components/ui/card');
-                Object.assign(allowedImports, cardExports);
-            }
-            if (app.allowed_imports.includes('@/components/ui/label')) {
-                const { Label } = require('@/components/ui/label');
-                allowedImports['Label'] = Label;
-            }
-            if (app.allowed_imports.includes('@/components/ui/select')) {
-                const selectExports = require('@/components/ui/select');
-                Object.assign(allowedImports, selectExports);
-            }
-            if (app.allowed_imports.includes('@/components/ui/slider')) {
-                const { Slider } = require('@/components/ui/slider');
-                allowedImports['Slider'] = Slider;
-            }
-            
-            const componentFunction = new Function(
-                'React',
-                'useState',
-                'useEffect',
-                'useMemo',
-                'useCallback',
-                'EnhancedChatMarkdown',
-                ...Object.keys(allowedImports),
-                `
-                ${code}
-                
-                return typeof exports !== 'undefined' && exports.default 
-                    ? exports.default 
-                    : (typeof Component !== 'undefined' ? Component : null);
-                `
-            );
-            
-            return componentFunction(
+            // Build scope with only valid JS identifiers (no special chars)
+            const scope: Record<string, any> = {
                 React,
                 useState,
                 useEffect,
                 useMemo,
                 useCallback,
                 EnhancedChatMarkdown,
-                ...Object.values(allowedImports)
+            };
+            
+            // Add all Lucide icons directly to scope
+            if (app.allowed_imports.includes('lucide-react')) {
+                Object.assign(scope, lucideReact);
+            }
+            
+            // Add UI components
+            if (app.allowed_imports.includes('@/components/ui/button')) {
+                const { Button } = require('@/components/ui/button');
+                scope.Button = Button;
+            }
+            if (app.allowed_imports.includes('@/components/ui/input')) {
+                const { Input } = require('@/components/ui/input');
+                scope.Input = Input;
+            }
+            if (app.allowed_imports.includes('@/components/ui/textarea')) {
+                const { Textarea } = require('@/components/ui/textarea');
+                scope.Textarea = Textarea;
+            }
+            if (app.allowed_imports.includes('@/components/ui/card')) {
+                const cardExports = require('@/components/ui/card');
+                Object.assign(scope, cardExports);
+            }
+            if (app.allowed_imports.includes('@/components/ui/label')) {
+                const { Label } = require('@/components/ui/label');
+                scope.Label = Label;
+            }
+            if (app.allowed_imports.includes('@/components/ui/select')) {
+                const selectExports = require('@/components/ui/select');
+                Object.assign(scope, selectExports);
+            }
+            if (app.allowed_imports.includes('@/components/ui/slider')) {
+                const { Slider } = require('@/components/ui/slider');
+                scope.Slider = Slider;
+            }
+            
+            // Get valid parameter names (filter out invalid JS identifiers)
+            const paramNames = Object.keys(scope).filter(key => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key));
+            const paramValues = paramNames.map(key => scope[key]);
+            
+            console.log('Creating component with params:', paramNames);
+            
+            // Wrap in function that captures exports
+            const wrappedCode = `
+                const exports = {};
+                const module = { exports };
+                
+                ${code}
+                
+                // Try multiple ways to get the component
+                return exports.default || module.exports.default || module.exports || null;
+            `;
+            
+            const componentFunction = new Function(
+                ...paramNames,
+                wrappedCode
             );
+            
+            return componentFunction(...paramValues);
             
         } catch (err) {
             console.error('Component render error:', err);

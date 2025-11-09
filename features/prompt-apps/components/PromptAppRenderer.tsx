@@ -190,33 +190,38 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
             }
             
             // Create component function with controlled scope
-            const componentFunction = new Function(
-                'React',
-                'useState',
-                'useEffect',
-                'useMemo',
-                'useCallback',
-                'EnhancedChatMarkdown',
-                ...Object.keys(allowedImports),
-                `
-                ${code}
-                
-                // Return the default export or the component
-                return typeof exports !== 'undefined' && exports.default 
-                    ? exports.default 
-                    : (typeof Component !== 'undefined' ? Component : null);
-                `
-            );
-            
-            return componentFunction(
+            // Build scope with only valid JS identifiers
+            const scope: Record<string, any> = {
                 React,
                 useState,
                 useEffect,
                 useMemo,
                 useCallback,
                 EnhancedChatMarkdown,
-                ...Object.values(allowedImports)
+                ...allowedImports
+            };
+            
+            // Get valid parameter names (filter out invalid JS identifiers)
+            const paramNames = Object.keys(scope).filter(key => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key));
+            const paramValues = paramNames.map(key => scope[key]);
+            
+            // Wrap in function that captures exports
+            const wrappedCode = `
+                const exports = {};
+                const module = { exports };
+                
+                ${code}
+                
+                // Try multiple ways to get the component
+                return exports.default || module.exports.default || module.exports || null;
+            `;
+            
+            const componentFunction = new Function(
+                ...paramNames,
+                wrappedCode
             );
+            
+            return componentFunction(...paramValues);
             
         } catch (err) {
             console.error('Component render error:', err);
