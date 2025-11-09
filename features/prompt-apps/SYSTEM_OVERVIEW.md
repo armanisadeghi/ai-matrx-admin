@@ -83,10 +83,11 @@ export default function MyApp({ onExecute, response, isStreaming }) {
 ### Transformation
 1. **Strip imports**: Regex removes `import` statements (provided via scope)
 2. **Babel transform**: JSX/TSX → vanilla JS (presets: `['react', 'typescript']`)
-3. **Scope injection**: Build object with allowed modules/components
-4. **Filter params**: Only valid JS identifiers (regex: `/^[a-zA-Z_$][a-zA-Z0-9_$]*$/`)
-5. **new Function()**: Create component with filtered scope
-6. **Execute**: Return default export or Component
+3. **Strip exports**: Replace `export default` with `return` to make code executable in `new Function()`
+4. **Scope injection**: Build object with allowed modules/components
+5. **Filter params**: Only valid JS identifiers (regex: `/^[a-zA-Z_$][a-zA-Z0-9_$]*$/`)
+6. **new Function()**: Create component with filtered scope
+7. **Execute**: Directly returns the component function
 
 ### Props Provided to Custom UI
 ```typescript
@@ -267,6 +268,41 @@ Editor page → "Publish App" → Now live at `/p/[slug]`
 **Authenticated**: Higher limit (100/24h by default)  
 **Override**: Adjust `rate_limit_per_ip` / `rate_limit_authenticated` per app  
 **Enforcement**: Database triggers + `prompt_app_rate_limits` table
+
+---
+
+## Troubleshooting
+
+### Component Render Errors
+
+**"Unexpected token 'export'"**
+- Cause: Babel transformed code contains `export` statements incompatible with `new Function()`
+- Fix: Automatically handled - `export default` is replaced with `return` before execution
+
+**"Arg string terminates parameters early"**
+- Cause: Invalid JavaScript identifiers (e.g., `@/components/ui/button`, `lucide-react`) used as function parameters
+- Fix: Automatically handled - parameter names filtered to valid JS identifiers only
+
+**"Cannot find [ComponentName]"**
+- Cause: Component not provided in allowed imports
+- Fix: Add to `allowed_imports` array in database or update allowlist
+
+**Component renders but interactions don't work**
+- Check browser console for errors
+- Verify `onExecute` is being called with correct variable structure
+- Ensure all required props are defined in custom component
+
+### Performance Issues
+
+**Slow initial load on public routes**
+- Public routes should NOT use Redux
+- Verify `/p/[slug]` uses `PromptAppPublicRenderer`, not `PromptAppRenderer`
+- Check `app/(public)/PublicProviders.tsx` does NOT include `StoreProvider`
+
+**Polling not updating**
+- Check network tab for `/api/public/apps/response/[taskId]` requests
+- Verify task_id is valid and task exists in database
+- Check for CORS or authentication issues
 
 ---
 

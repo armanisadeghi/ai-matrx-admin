@@ -211,20 +211,10 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
             const paramNames = Object.keys(scope).filter(key => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key));
             const paramValues = paramNames.map(key => scope[key]);
             
-            // Wrap in function that captures exports
-            const wrappedCode = `
-                const exports = {};
-                const module = { exports };
-                
-                ${code}
-                
-                // Try multiple ways to get the component
-                return exports.default || module.exports.default || module.exports || null;
-            `;
-            
+            // Code now starts with 'return function...' so it will return the component directly
             const componentFunction = new Function(
                 ...paramNames,
-                wrappedCode
+                code
             );
             
             return componentFunction(...paramValues);

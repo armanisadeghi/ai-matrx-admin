@@ -165,8 +165,6 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
                 filename: 'custom-app.tsx'
             });
             
-            console.log('Transformed code (first 500 chars):', code?.substring(0, 500));
-            
             // Remove export statements and prepend return for function declarations
             if (code) {
                 code = code.replace(/^export\s+default\s+/m, 'return ');
@@ -225,8 +223,6 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             // Get valid parameter names (filter out invalid JS identifiers)
             const paramNames = Object.keys(scope).filter(key => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key));
             const paramValues = paramNames.map(key => scope[key]);
-            
-            console.log('Creating component with params:', paramNames);
             
             // Code now starts with 'return function...' so it will return the component directly
             const componentFunction = new Function(
