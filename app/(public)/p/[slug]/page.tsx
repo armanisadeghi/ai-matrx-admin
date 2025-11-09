@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
-import { PromptAppRenderer } from '@/features/prompt-apps/components/PromptAppRenderer';
+import { PromptAppPublicRenderer } from '@/features/prompt-apps/components/PromptAppPublicRenderer';
 import type { Metadata } from 'next';
 
 export const revalidate = 3600; // Revalidate every hour
@@ -64,7 +64,7 @@ export default async function PromptAppPage({
     }
 
     return (
-        <PromptAppRenderer
+        <PromptAppPublicRenderer
             app={app}
             slug={slug}
         />

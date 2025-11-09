@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import { PromptAppRenderer } from '@/features/prompt-apps/components/PromptAppRenderer';
+import { PromptAppPreview } from '@/features/prompt-apps/components/PromptAppPreview';
 
 interface PreviewPageProps {
   params: Promise<{ id: string }>;
@@ -40,16 +40,6 @@ export default async function PromptAppPreviewPage({ params }: PreviewPageProps)
     );
   }
 
-  return (
-    <div className="relative">
-      {/* Preview Banner */}
-      {app.status !== 'published' && (
-        <div className="bg-warning text-warning-foreground px-4 py-2 text-center text-sm font-medium">
-          ⚠️ PREVIEW MODE - This app is not published yet
-        </div>
-      )}
-      <PromptAppRenderer app={app} slug={app.slug} />
-    </div>
-  );
+  return <PromptAppPreview app={app} slug={app.slug} isDraft={app.status !== 'published'} />;
 }
 
