@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Play, Pencil, X, Eye, Copy, Share2, Trash2, Loader2 } from "lucide-react";
+import { Play, Pencil, X, Eye, Copy, Share2, Trash2, Loader2, AppWindow } from "lucide-react";
 
 interface PromptActionModalProps {
     isOpen: boolean;
@@ -16,11 +16,13 @@ interface PromptActionModalProps {
     onDuplicate?: () => void;
     onShare?: () => void;
     onDelete?: () => void;
+    onCreateApp?: () => void;
     // Control which actions are shown
     showView?: boolean;
     showDuplicate?: boolean;
     showShare?: boolean;
     showDelete?: boolean;
+    showCreateApp?: boolean;
     // External loading states
     isDeleting?: boolean;
     isDuplicating?: boolean;
@@ -37,10 +39,12 @@ export function PromptActionModal({
     onDuplicate,
     onShare,
     onDelete,
+    onCreateApp,
     showView = true,
     showDuplicate = true,
     showShare = true,
     showDelete = true,
+    showCreateApp = true,
     isDeleting = false,
     isDuplicating = false,
 }: PromptActionModalProps) {
@@ -114,6 +118,32 @@ export function PromptActionModal({
                             </h3>
                         </div>
                     </button>
+
+                    {/* Create App Option */}
+                    {showCreateApp && onCreateApp && (
+                        <button
+                            onClick={(e) => handleAction(e, 'create-app', onCreateApp)}
+                            disabled={isAnyActionActive}
+                            className={`w-full group relative overflow-hidden rounded-lg border-2 border-accent/30 transition-all duration-300 ${
+                                isAnyActionActive 
+                                    ? 'opacity-50 cursor-not-allowed' 
+                                    : 'hover:border-accent/70 hover:shadow-xl hover:scale-[1.02]'
+                            }`}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-accent/10 to-primary/10 group-hover:from-accent/20 group-hover:to-primary/20 transition-all duration-300" />
+                            <div className="relative p-3 sm:p-5 md:p-6 flex flex-col items-center">
+                                <div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-accent rounded-full group-hover:bg-accent/90 transition-colors duration-300 group-hover:scale-110 transform">
+                                    <AppWindow className="w-5 h-5 sm:w-7 sm:h-7 text-accent-foreground" />
+                                </div>
+                                <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
+                                    Create App
+                                </h3>
+                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                    Turn into shareable web app
+                                </p>
+                            </div>
+                        </button>
+                    )}
                 </div>
 
                 {/* Additional Actions */}

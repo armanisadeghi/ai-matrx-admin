@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, ExternalLink, Calendar, BarChart3 } from "lucide-react";
 import type { PromptApp } from "@/features/prompt-apps/types";
 
-export default async function AppsListPage() {
+export default async function PromptAppsListPage() {
   const supabase = await createClient();
   
   // Check authentication
@@ -17,7 +17,7 @@ export default async function AppsListPage() {
     redirect('/sign-in');
   }
   
-  // Fetch user's apps
+  // Fetch user's prompt apps
   const { data: apps } = await supabase
     .from('prompt_apps')
     .select('*')
@@ -143,3 +143,4 @@ export default async function AppsListPage() {
     </div>
   );
 }
+

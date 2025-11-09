@@ -8,6 +8,7 @@ import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
+import { CreatePromptAppModal } from "@/features/prompt-apps/components";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "@/lib/toast-service";
@@ -41,6 +42,7 @@ export function PromptCard({
     const [isOwner, setIsOwner] = useState(true);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+    const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const supabase = createClient();
@@ -107,6 +109,12 @@ export function PromptCard({
         setIsShareModalOpen(true);
     };
 
+    const handleCreateApp = () => {
+        // Close action modal and open create app modal
+        setIsActionModalOpen(false);
+        setIsCreateAppModalOpen(true);
+    };
+
     const handleShareClickInline = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!isDisabled) {
@@ -151,7 +159,7 @@ export function PromptCard({
         // Only open modal if clicking the card itself, not if a modal is already open
         // Also prevent reopening if modal was just closed (within 300ms) to avoid click-through from overlay
         const timeSinceClose = Date.now() - lastModalCloseTime;
-        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && timeSinceClose > 300) {
+        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && !isCreateAppModalOpen && timeSinceClose > 300) {
             setIsActionModalOpen(true);
         }
     };
@@ -290,6 +298,7 @@ export function PromptCard({
                 onDuplicate={handleDuplicate}
                 onShare={handleShareClick}
                 onDelete={handleDelete}
+                onCreateApp={handleCreateApp}
                 isDeleting={isDeleting}
                 isDuplicating={isDuplicating}
             />
@@ -301,6 +310,15 @@ export function PromptCard({
                 resourceId={id}
                 resourceName={name}
                 isOwner={isOwner}
+            />
+
+            <CreatePromptAppModal
+                isOpen={isCreateAppModalOpen}
+                onClose={() => {
+                    setIsCreateAppModalOpen(false);
+                    setLastModalCloseTime(Date.now());
+                }}
+                promptId={id}
             />
         </Card>
     );
