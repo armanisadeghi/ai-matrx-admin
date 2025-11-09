@@ -132,10 +132,16 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
             processedCode = processedCode.replace(/^import\s+['"].*['"];?\s*$/gm, '');
             
             // Transform JSX/TSX to JavaScript using Babel
-            const { code } = transform(processedCode, {
+            let { code } = transform(processedCode, {
                 presets: ['react', 'typescript'],
                 filename: 'custom-app.tsx'
             });
+            
+            // Remove export statements and prepend return for function declarations
+            if (code) {
+                code = code.replace(/^export\s+default\s+/m, 'return ');
+                code = code.replace(/^export\s+\{[^}]+\}\s*;?\s*$/gm, '');
+            }
             
             // Create safe imports object with only allowed dependencies
             const React = require('react');

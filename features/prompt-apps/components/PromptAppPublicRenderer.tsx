@@ -160,12 +160,18 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             processedCode = processedCode.replace(/^import\s+.*from\s+['"].*['"];?\s*$/gm, '');
             processedCode = processedCode.replace(/^import\s+['"].*['"];?\s*$/gm, '');
             
-            const { code } = transform(processedCode, {
+            let { code } = transform(processedCode, {
                 presets: ['react', 'typescript'],
                 filename: 'custom-app.tsx'
             });
             
             console.log('Transformed code (first 500 chars):', code?.substring(0, 500));
+            
+            // Remove export statements and prepend return for function declarations
+            if (code) {
+                code = code.replace(/^export\s+default\s+/m, 'return ');
+                code = code.replace(/^export\s+\{[^}]+\}\s*;?\s*$/gm, '');
+            }
             
             const React = require('react');
             const { useState, useEffect, useMemo, useCallback } = React;
@@ -222,20 +228,10 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             
             console.log('Creating component with params:', paramNames);
             
-            // Wrap in function that captures exports
-            const wrappedCode = `
-                const exports = {};
-                const module = { exports };
-                
-                ${code}
-                
-                // Try multiple ways to get the component
-                return exports.default || module.exports.default || module.exports || null;
-            `;
-            
+            // Code now starts with 'return function...' so it will return the component directly
             const componentFunction = new Function(
                 ...paramNames,
-                wrappedCode
+                code
             );
             
             return componentFunction(...paramValues);
