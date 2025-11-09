@@ -20,6 +20,7 @@
     "@ai-sdk/google": "^2.0.23",
     "@ai-sdk/openai": "^2.0.53",
     "@anthropic-ai/sdk": "latest",
+    "@babel/standalone": "^7.28.5",
     "@cartesia/cartesia-js": "^2.2.3",
     "@cerebras/cerebras_cloud_sdk": "latest",
     "@deepgram/sdk": "latest",
