@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ExternalLink, Calendar, BarChart3 } from "lucide-react";
+import { Plus, ExternalLink, Calendar, BarChart3, Edit } from "lucide-react";
 import type { PromptApp } from "@/features/prompt-apps/types";
 
 export default async function AppsListPage() {
@@ -121,17 +121,16 @@ export default async function AppsListPage() {
                     <div className="flex gap-2 pt-2">
                       <Link href={`/prompt-apps/${app.id}`} className="flex-1">
                         <Button variant="outline" className="w-full">
+                          <Edit className="w-4 h-4 mr-2" />
                           Edit
                         </Button>
                       </Link>
-                      {app.status === 'published' && (
-                        <Link href={`/p/${app.slug}`} target="_blank" className="flex-1">
-                          <Button className="w-full">
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            View
-                          </Button>
-                        </Link>
-                      )}
+                      <Link href={app.status === 'published' ? `/p/${app.slug}` : `/preview/${app.id}`} target="_blank" className="flex-1">
+                        <Button className="w-full">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {app.status === 'published' ? 'Run' : 'Test'}
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>

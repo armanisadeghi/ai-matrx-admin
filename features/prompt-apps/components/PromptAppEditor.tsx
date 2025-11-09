@@ -102,6 +102,14 @@ export function PromptAppEditor({ app }: PromptAppEditorProps) {
             </div>
             
             <div className="flex gap-2">
+              {/* Test/Preview Button - always available */}
+              <Link href={`/preview/${app.id}`} target="_blank">
+                <Button variant="outline">
+                  <Eye className="w-4 h-4 mr-2" />
+                  {app.status === 'published' ? 'Preview' : 'Test App'}
+                </Button>
+              </Link>
+              
               {app.status === 'published' ? (
                 <>
                   <Link href={`/p/${app.slug}`} target="_blank">

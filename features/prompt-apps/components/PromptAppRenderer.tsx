@@ -124,39 +124,69 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
     // Dynamically load and render custom component
     const CustomComponent = useMemo(() => {
         try {
+            // Strip import statements since we'll provide them via scope
+            let processedCode = app.component_code;
+            
+            // Remove all import statements
+            processedCode = processedCode.replace(/^import\s+.*from\s+['"].*['"];?\s*$/gm, '');
+            processedCode = processedCode.replace(/^import\s+['"].*['"];?\s*$/gm, '');
+            
             // Transform JSX/TSX to JavaScript using Babel
-            const { code } = transform(app.component_code, {
+            const { code } = transform(processedCode, {
                 presets: ['react', 'typescript'],
                 filename: 'custom-app.tsx'
             });
             
             // Create safe imports object with only allowed dependencies
+            const React = require('react');
+            const { useState, useEffect, useMemo, useCallback } = React;
+            const lucideReact = require('lucide-react');
+            
             const allowedImports: Record<string, any> = {
-                'react': require('react'),
-                'lucide-react': require('lucide-react'),
+                'react': React,
+                'lucide-react': lucideReact,
             };
+            
+            // Add all Lucide icons to scope if allowed
+            if (app.allowed_imports.includes('lucide-react')) {
+                Object.assign(allowedImports, lucideReact);
+            }
             
             // Add UI components if allowed
             if (app.allowed_imports.includes('@/components/ui/button')) {
-                allowedImports['@/components/ui/button'] = require('@/components/ui/button');
+                const { Button } = require('@/components/ui/button');
+                allowedImports['Button'] = Button;
+                allowedImports['@/components/ui/button'] = { Button };
             }
             if (app.allowed_imports.includes('@/components/ui/input')) {
-                allowedImports['@/components/ui/input'] = require('@/components/ui/input');
+                const { Input } = require('@/components/ui/input');
+                allowedImports['Input'] = Input;
+                allowedImports['@/components/ui/input'] = { Input };
             }
             if (app.allowed_imports.includes('@/components/ui/textarea')) {
-                allowedImports['@/components/ui/textarea'] = require('@/components/ui/textarea');
+                const { Textarea } = require('@/components/ui/textarea');
+                allowedImports['Textarea'] = Textarea;
+                allowedImports['@/components/ui/textarea'] = { Textarea };
             }
             if (app.allowed_imports.includes('@/components/ui/card')) {
-                allowedImports['@/components/ui/card'] = require('@/components/ui/card');
+                const cardExports = require('@/components/ui/card');
+                Object.assign(allowedImports, cardExports);
+                allowedImports['@/components/ui/card'] = cardExports;
             }
             if (app.allowed_imports.includes('@/components/ui/label')) {
-                allowedImports['@/components/ui/label'] = require('@/components/ui/label');
+                const { Label } = require('@/components/ui/label');
+                allowedImports['Label'] = Label;
+                allowedImports['@/components/ui/label'] = { Label };
             }
             if (app.allowed_imports.includes('@/components/ui/select')) {
-                allowedImports['@/components/ui/select'] = require('@/components/ui/select');
+                const selectExports = require('@/components/ui/select');
+                Object.assign(allowedImports, selectExports);
+                allowedImports['@/components/ui/select'] = selectExports;
             }
             if (app.allowed_imports.includes('@/components/ui/slider')) {
-                allowedImports['@/components/ui/slider'] = require('@/components/ui/slider');
+                const { Slider } = require('@/components/ui/slider');
+                allowedImports['Slider'] = Slider;
+                allowedImports['@/components/ui/slider'] = { Slider };
             }
             
             // Create component function with controlled scope
@@ -167,27 +197,16 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 'useMemo',
                 'useCallback',
                 'EnhancedChatMarkdown',
-                'allowedImports',
+                ...Object.keys(allowedImports),
                 `
-                // Helper to import from allowed list
-                const require = (path) => {
-                    if (!allowedImports[path]) {
-                        throw new Error('Import "' + path + '" is not allowed');
-                    }
-                    return allowedImports[path];
-                };
-                
                 ${code}
                 
                 // Return the default export or the component
                 return typeof exports !== 'undefined' && exports.default 
                     ? exports.default 
-                    : Component;
+                    : (typeof Component !== 'undefined' ? Component : null);
                 `
             );
-            
-            const React = require('react');
-            const { useState, useEffect, useMemo, useCallback } = React;
             
             return componentFunction(
                 React,
@@ -196,7 +215,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
                 useMemo,
                 useCallback,
                 EnhancedChatMarkdown,
-                allowedImports
+                ...Object.values(allowedImports)
             );
             
         } catch (err) {
