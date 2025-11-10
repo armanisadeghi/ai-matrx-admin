@@ -12,8 +12,8 @@ export async function GET(
         // Query the ai_tasks table for the response
         const { data: task, error } = await supabase
             .from('ai_tasks')
-            .select('status, result, error')
-            .eq('id', taskId)
+            .select('status, response_text, response_data, response_errors')
+            .eq('task_id', taskId)
             .single();
 
         if (error) {
@@ -24,7 +24,7 @@ export async function GET(
             });
         }
 
-        // Extract response from result
+        // Extract response
         let response = '';
         let completed = false;
         let taskError = null;
@@ -35,24 +35,28 @@ export async function GET(
             }
 
             if (task.status === 'failed') {
-                taskError = task.error || 'Task failed';
+                taskError = task.response_errors 
+                    ? (typeof task.response_errors === 'string' ? task.response_errors : JSON.stringify(task.response_errors))
+                    : 'Task failed';
             }
 
-            // Try to extract the response text from result
-            if (task.result) {
+            // Use response_text as primary response
+            if (task.response_text) {
+                response = task.response_text;
+            } else if (task.response_data) {
+                // Fallback to response_data if no response_text
                 try {
-                    const result = typeof task.result === 'string' 
-                        ? JSON.parse(task.result) 
-                        : task.result;
+                    const data = typeof task.response_data === 'string' 
+                        ? JSON.parse(task.response_data) 
+                        : task.response_data;
                     
-                    // Different possible structures
-                    response = result.response 
-                        || result.text 
-                        || result.content 
-                        || result.message 
-                        || (typeof result === 'string' ? result : '');
+                    response = data.response 
+                        || data.text 
+                        || data.content 
+                        || data.message 
+                        || (typeof data === 'string' ? data : '');
                 } catch {
-                    response = typeof task.result === 'string' ? task.result : '';
+                    response = typeof task.response_data === 'string' ? task.response_data : '';
                 }
             }
         }

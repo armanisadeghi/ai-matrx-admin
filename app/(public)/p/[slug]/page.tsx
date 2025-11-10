@@ -5,6 +5,12 @@ import type { Metadata } from 'next';
 
 export const revalidate = 3600; // Revalidate every hour
 
+// Helper to check if string is a valid UUID
+function isUUID(str: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+}
+
 export async function generateMetadata({
     params
 }: {
@@ -13,10 +19,14 @@ export async function generateMetadata({
     const { slug } = await params;
     const supabase = await createClient();
 
+    // Determine if we're searching by ID or slug
+    const isId = isUUID(slug);
+    const column = isId ? 'id' : 'slug';
+
     const { data: app } = await supabase
         .from('prompt_apps')
         .select('name, tagline, description, preview_image_url')
-        .eq('slug', slug)
+        .eq(column, slug)
         .eq('status', 'published')
         .single();
 
@@ -51,11 +61,15 @@ export default async function PromptAppPage({
     const { slug } = await params;
     const supabase = await createClient();
 
-    // Fetch app with component code (service role required)
+    // Determine if we're searching by ID or slug
+    const isId = isUUID(slug);
+    const column = isId ? 'id' : 'slug';
+
+    // Fetch app with component code
     const { data: app, error } = await supabase
         .from('prompt_apps')
         .select('*')
-        .eq('slug', slug)
+        .eq(column, slug)
         .eq('status', 'published')
         .single();
 
@@ -66,7 +80,7 @@ export default async function PromptAppPage({
     return (
         <PromptAppPublicRenderer
             app={app}
-            slug={slug}
+            slug={app.slug}
         />
     );
 }

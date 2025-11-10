@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { transform } from '@babel/standalone';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { AlertCircle } from 'lucide-react';
@@ -9,6 +9,11 @@ import type { PromptApp } from '../types';
 interface ExecuteAppResponse {
     success: boolean;
     task_id?: string;
+    socket_config?: {
+        service: string;
+        task_name: string;
+        task_data: Record<string, any>;
+    };
     error?: {
         type: string;
         message: string;
@@ -50,61 +55,167 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
     const [fingerprint, setFingerprint] = useState('');
     const [response, setResponse] = useState<string>('');
     const [isStreamComplete, setIsStreamComplete] = useState(false);
+    const [socket, setSocket] = useState<any>(null);
+    const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
     // Generate fingerprint on mount
     useEffect(() => {
         setFingerprint(generateFingerprint());
     }, []);
     
-    // Poll for response updates when we have a taskId
-    useEffect(() => {
-        if (!taskId || isStreamComplete) return;
-        
-        let pollInterval: NodeJS.Timeout;
-        let attempts = 0;
-        const maxAttempts = 120; // 2 minutes max (120 * 1000ms)
-        
-        const pollResponse = async () => {
+    // Handle Socket.IO streaming when we have socket config
+    const connectToSocket = useCallback(async (taskId: string, socketConfig: any) => {
+        try {
+            // Dynamically import socket.io-client (client-side only)
+            const { io } = await import('socket.io-client');
+            const { createClient } = await import('@/utils/supabase/client');
+            
+            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://server.app.matrxserver.com';
+            const SOCKET_NAMESPACE = '/UserSession';
+            const PUBLIC_USER_ID = '00000000-0000-0000-0000-000000000001';
+            
+            // Try to get auth token if user is logged in
+            let authToken: string | null = null;
+            let isAuthenticated = false;
+            
             try {
-                const res = await fetch(`/api/public/apps/response/${taskId}`);
-                const data = await res.json();
+                const supabase = createClient();
+                const { data: { session } } = await supabase.auth.getSession();
+                authToken = session?.access_token || null;
+                isAuthenticated = !!authToken;
+                console.log('🔑 User authenticated:', isAuthenticated);
+            } catch (err) {
+                console.log('⚠️ No auth session, using public access');
+            }
+            
+            const socketOptions: any = {
+                transports: ['websocket', 'polling'],
+                reconnection: false,
+                timeout: 10000,
+                withCredentials: true,
+            };
+            
+            if (isAuthenticated && authToken) {
+                // Authenticated user: use their token
+                socketOptions.auth = { token: authToken };
+                console.log('✅ Using authenticated user token');
+            } else {
+                // Public/anonymous user: use public system user + fingerprint for tracking
+                socketOptions.auth = { 
+                    user_id: PUBLIC_USER_ID,
+                    public_access: true,
+                    fingerprint: fingerprint
+                };
+                console.log('🌐 Using public system user with fingerprint:', fingerprint.substring(0, 8) + '...');
+            }
+            
+            const newSocket = io(`${BACKEND_URL}${SOCKET_NAMESPACE}`, socketOptions);
+            
+            setSocket(newSocket);
+            
+            newSocket.on('connect', () => {
+                console.log('✅ Socket connected for public app');
                 
-                if (data.response) {
-                    setResponse(data.response);
-                }
-                
-                if (data.completed || data.error) {
-                    setIsStreamComplete(true);
-                    clearInterval(pollInterval);
-                    
-                    if (data.error) {
-                        setError({
-                            type: 'execution_error',
-                            message: data.error
+                // Submit the task
+                newSocket.emit(
+                    socketConfig.service,
+                    {
+                        taskName: socketConfig.task_name,
+                        taskData: socketConfig.task_data,
+                    },
+                    (response: { response_listener_events?: string[] }) => {
+                        const eventNames = response?.response_listener_events || [];
+                        
+                        if (!eventNames.length) {
+                            setError({
+                                type: 'execution_error',
+                                message: 'No response received from server'
+                            });
+                            setIsExecuting(false);
+                            setIsStreamComplete(true);
+                            // Clear timeout on error
+                            if (executionTimeoutRef.current) {
+                                clearTimeout(executionTimeoutRef.current);
+                                executionTimeoutRef.current = null;
+                            }
+                            newSocket.disconnect();
+                            return;
+                        }
+                        
+                        console.log('📡 Listening to events:', eventNames);
+                        
+                        // Listen to all response events
+                        eventNames.forEach((eventName: string) => {
+                            newSocket.on(eventName, (data: any) => {
+                                if (typeof data === 'string') {
+                                    // Stream text chunks
+                                    setResponse(prev => prev + data);
+                                } else if (data?.end) {
+                                    // Stream ended
+                                    console.log('✅ Stream complete');
+                                    setIsExecuting(false);
+                                    setIsStreamComplete(true);
+                                    // Clear timeout on completion
+                                    if (executionTimeoutRef.current) {
+                                        clearTimeout(executionTimeoutRef.current);
+                                        executionTimeoutRef.current = null;
+                                    }
+                                    newSocket.off(eventName);
+                                    newSocket.disconnect();
+                                } else if (data?.error) {
+                                    // Error received
+                                    setError({
+                                        type: 'execution_error',
+                                        message: data.error.message || 'Error during execution'
+                                    });
+                                    setIsExecuting(false);
+                                    setIsStreamComplete(true);
+                                    // Clear timeout on error
+                                    if (executionTimeoutRef.current) {
+                                        clearTimeout(executionTimeoutRef.current);
+                                        executionTimeoutRef.current = null;
+                                    }
+                                    newSocket.off(eventName);
+                                    newSocket.disconnect();
+                                }
+                            });
                         });
                     }
-                }
-                
-                attempts++;
-                if (attempts >= maxAttempts) {
-                    clearInterval(pollInterval);
-                    setIsStreamComplete(true);
-                    setError({
-                        type: 'timeout',
-                        message: 'Request timed out'
-                    });
-                }
-            } catch (err) {
-                console.error('Polling error:', err);
+                );
+            });
+            
+            newSocket.on('connect_error', (err) => {
+                console.error('❌ Socket connection error:', err);
+                setError({
+                    type: 'connection_error',
+                    message: 'Failed to connect to AI service'
+                });
+                setIsExecuting(false);
+                setIsStreamComplete(true);
+            });
+            
+        } catch (err) {
+            console.error('Socket setup error:', err);
+            setError({
+                type: 'execution_error',
+                message: 'Failed to initialize connection'
+            });
+            setIsExecuting(false);
+            setIsStreamComplete(true);
+        }
+    }, [isStreamComplete, fingerprint]);
+    
+    // Cleanup socket and timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (socket) {
+                socket.disconnect();
+            }
+            if (executionTimeoutRef.current) {
+                clearTimeout(executionTimeoutRef.current);
             }
         };
-        
-        // Poll every second
-        pollInterval = setInterval(pollResponse, 1000);
-        pollResponse(); // Initial call
-        
-        return () => clearInterval(pollInterval);
-    }, [taskId, isStreamComplete]);
+    }, [socket]);
     
     // Execute handler
     const handleExecute = useCallback(async (variables: Record<string, any>) => {
@@ -112,6 +223,17 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
         setError(null);
         setResponse('');
         setIsStreamComplete(false);
+        
+        // Clear any existing timeout
+        if (executionTimeoutRef.current) {
+            clearTimeout(executionTimeoutRef.current);
+            executionTimeoutRef.current = null;
+        }
+        
+        // Disconnect any existing socket
+        if (socket) {
+            socket.disconnect();
+        }
         
         try {
             const res = await fetch(`/api/public/apps/${slug}/execute`, {
@@ -131,7 +253,7 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             
             setRateLimitInfo(data.rate_limit);
             
-            if (!data.success || !data.task_id) {
+            if (!data.success || !data.task_id || !data.socket_config) {
                 setError(data.error || {
                     type: 'execution_error',
                     message: 'Execution failed'
@@ -142,16 +264,32 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             
             setTaskId(data.task_id);
             
+            // Connect to Socket.IO and start streaming
+            await connectToSocket(data.task_id, data.socket_config);
+            
+            // Set execution timeout (2 minutes)
+            executionTimeoutRef.current = setTimeout(() => {
+                console.error('⏱️ Execution timed out');
+                setError({
+                    type: 'timeout',
+                    message: 'Request timed out. Please try again.'
+                });
+                setIsExecuting(false);
+                setIsStreamComplete(true);
+                if (socket) {
+                    socket.disconnect();
+                }
+            }, 120000); // 2 minute timeout
+            
         } catch (err) {
             console.error('Execution error:', err);
             setError({
                 type: 'execution_error',
                 message: err instanceof Error ? err.message : 'Unknown error occurred'
             });
-        } finally {
             setIsExecuting(false);
         }
-    }, [slug, fingerprint]);
+    }, [slug, fingerprint, socket, connectToSocket]);
     
     // Dynamically load custom component
     const CustomComponent = useMemo(() => {

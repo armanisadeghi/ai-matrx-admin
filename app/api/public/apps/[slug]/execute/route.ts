@@ -47,6 +47,11 @@ export async function POST(
 
         // Get current user (if authenticated)
         const { data: { user } } = await supabase.auth.getUser();
+        
+        // Use public system user for anonymous requests
+        const PUBLIC_USER_ID = '00000000-0000-0000-0000-000000000001';
+        const effectiveUserId = user?.id || PUBLIC_USER_ID;
+        const isPublicAccess = !user?.id;
 
         // 1. Fetch the app (published only)
         const { data: app, error: appError } = await supabase
@@ -78,7 +83,7 @@ export async function POST(
         const rateLimitResult = await checkRateLimit(
             supabase,
             app.id,
-            user?.id,
+            isPublicAccess ? undefined : user?.id, // Only pass user_id for authenticated users
             fingerprint,
             ip_address
         );
@@ -87,7 +92,7 @@ export async function POST(
             // Track failed execution due to rate limit
             await supabase.from('prompt_app_executions').insert({
                 app_id: app.id,
-                user_id: user?.id,
+                user_id: effectiveUserId,
                 fingerprint,
                 ip_address,
                 user_agent,
@@ -119,7 +124,7 @@ export async function POST(
         await updateRateLimitCounter(
             supabase,
             app.id,
-            user?.id,
+            isPublicAccess ? undefined : user?.id, // Only pass user_id for authenticated users
             fingerprint,
             ip_address,
             app.rate_limit_window_hours
@@ -137,7 +142,7 @@ export async function POST(
             // Track failed execution
             await supabase.from('prompt_app_executions').insert({
                 app_id: app.id,
-                user_id: user?.id,
+                user_id: effectiveUserId,
                 fingerprint,
                 ip_address,
                 user_agent,
@@ -174,7 +179,7 @@ export async function POST(
             
             await supabase.from('prompt_app_executions').insert({
                 app_id: app.id,
-                user_id: user?.id,
+                user_id: effectiveUserId,
                 fingerprint,
                 ip_address,
                 user_agent,
@@ -212,7 +217,7 @@ export async function POST(
             
             await supabase.from('prompt_app_executions').insert({
                 app_id: app.id,
-                user_id: user?.id,
+                user_id: effectiveUserId,
                 fingerprint,
                 ip_address,
                 user_agent,
@@ -251,7 +256,7 @@ export async function POST(
             .from('prompt_app_executions')
             .insert({
                 app_id: app.id,
-                user_id: user?.id,
+                user_id: effectiveUserId,
                 fingerprint,
                 ip_address,
                 user_agent,
@@ -263,7 +268,8 @@ export async function POST(
                 metadata: {
                     ...metadata,
                     model_id,
-                    message_count: resolvedMessages.length
+                    message_count: resolvedMessages.length,
+                    is_public_access: isPublicAccess
                 }
             });
 
@@ -271,61 +277,16 @@ export async function POST(
             console.error('Failed to record execution:', executionError);
         }
 
-        // 10. Create task in ai_tasks table (for polling to retrieve results)
-        const { error: taskError } = await supabase
-            .from('ai_tasks')
-            .insert({
-                id: taskId,
-                user_id: user?.id,
-                task_id: taskId,
-                service: 'chat_service',
-                task_name: 'direct_chat',
-                model_id,
-                request_data: chatConfig,
-                status: 'pending',
-                metadata: {
-                    app_id: app.id,
-                    fingerprint,
-                    source: 'prompt_app'
-                }
-            });
-
-        if (taskError) {
-            console.error('Failed to create ai_task:', taskError);
-            return NextResponse.json({
-                success: false,
-                rate_limit: rateLimitResult,
-                error: {
-                    type: 'execution_error',
-                    message: 'Failed to initialize task'
-                }
-            }, { status: 500 });
-        }
-
-        // 11. Submit task to Socket.IO backend
-        try {
-            const { submitTaskToBackend } = await import('../../lib/submit-task-to-backend');
-            await submitTaskToBackend({
-                task_id: taskId,
-                service: 'chat_service',
-                task_name: 'direct_chat',
-                task_data: { chat_config: chatConfig },
-                user_id: user?.id,
-                metadata: {
-                    app_id: app.id,
-                    fingerprint,
-                    source: 'prompt_app'
-                }
-            });
-        } catch (submitError) {
-            console.error('Failed to submit to backend:', submitError);
-            // Don't fail the request - task is in database, polling will show pending state
-        }
-
-        // 12. Return task ID for client polling
+        // 10. Return task ID and socket config for client-side Socket.IO connection
+        // Client will connect to Socket.IO directly (can't use socket.io-client on server)
         return NextResponse.json({
             success: true,
             task_id: taskId,
+            socket_config: {
+                service: 'chat_service',
+                task_name: 'direct_chat',
+                task_data: { chat_config: chatConfig }
+            },
             rate_limit: rateLimitResult
         });
 
