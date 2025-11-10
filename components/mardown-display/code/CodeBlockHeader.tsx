@@ -1,9 +1,14 @@
-import React  from "react";
-import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, WrapText, Hash, Globe, Loader2 } from "lucide-react";
+import React, { useState }  from "react";
+import { Copy, Check, Download, Expand, Eye, Minimize, Edit2, ChevronDown, ChevronUp, Globe, Loader2, Wand2, RotateCcw, WrapText, Maximize2, ListOrdered, FileText } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
 import LanguageDisplay from "../LanguageDisplay";
-import { BsChevronBarContract, BsChevronBarExpand } from "react-icons/bs";
-import { FaEdit } from "react-icons/fa";
+import IconButton from "@/components/official/IconButton";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface CodeBlockHeaderProps {
     language: string;
@@ -12,7 +17,7 @@ interface CodeBlockHeaderProps {
     isFullScreen: boolean;
     isCollapsed: boolean;
     code: string;
-    handleCopy: (e: React.MouseEvent) => void;
+    handleCopy: (e: React.MouseEvent, withLineNumbers?: boolean) => void;
     handleDownload: (e: React.MouseEvent) => void;
     toggleEdit?: (e: React.MouseEvent) => void;
     toggleFullScreen?: (e: React.MouseEvent) => void;
@@ -24,6 +29,12 @@ interface CodeBlockHeaderProps {
     isCompleteHTML?: boolean;
     handleViewHTML?: () => void;
     isCreatingPage?: boolean;
+    showWrapLines?: boolean;
+    handleFormat?: (e: React.MouseEvent) => void;
+    handleReset?: (e: React.MouseEvent) => void;
+    minimapEnabled?: boolean;
+    toggleMinimap?: (e: React.MouseEvent) => void;
+    showLineNumbers?: boolean;
 }
 
 export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
@@ -45,6 +56,12 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
     isCompleteHTML = false,
     handleViewHTML,
     isCreatingPage = false,
+    showWrapLines = true,
+    handleFormat,
+    handleReset,
+    minimapEnabled = false,
+    toggleMinimap,
+    showLineNumbers = false,
 }) => {
     // Determine if collapse functionality should be available
     const canCollapse = linesCount > 5;
@@ -118,6 +135,12 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
                 toggleWrapLines={toggleWrapLines}
                 toggleCollapse={toggleCollapse}
                 isMobile={isMobile}
+                showWrapLines={showWrapLines}
+                handleFormat={handleFormat}
+                handleReset={handleReset}
+                minimapEnabled={minimapEnabled}
+                toggleMinimap={toggleMinimap}
+                showLineNumbers={showLineNumbers}
             />
         </div>
     );
@@ -131,7 +154,7 @@ interface CodeBlockButtonsProps {
     isCopied: boolean;
     canCollapse: boolean;
     isCollapsed: boolean;
-    handleCopy: (e: React.MouseEvent) => void;
+    handleCopy: (e: React.MouseEvent, withLineNumbers?: boolean) => void;
     handleDownload: (e: React.MouseEvent) => void;
     toggleEdit?: (e: React.MouseEvent) => void;
     toggleFullScreen?: (e: React.MouseEvent) => void;
@@ -139,6 +162,12 @@ interface CodeBlockButtonsProps {
     toggleWrapLines?: (e: React.MouseEvent) => void;
     toggleCollapse?: (e?: React.MouseEvent) => void;
     isMobile: boolean;
+    showWrapLines?: boolean;
+    handleFormat?: (e: React.MouseEvent) => void;
+    handleReset?: (e: React.MouseEvent) => void;
+    minimapEnabled?: boolean;
+    toggleMinimap?: (e: React.MouseEvent) => void;
+    showLineNumbers?: boolean;
 }
 
 const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
@@ -155,61 +184,182 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
     toggleFullScreen,
     toggleCollapse,
     isMobile,
+    showWrapLines = true,
+    handleFormat,
+    handleReset,
+    minimapEnabled = false,
+    toggleMinimap,
+    showLineNumbers = false,
 }) => {
-    const buttonClass =
-        "py-3 px-2 rounded-xl text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors flex items-center gap-1";
-
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     return (
-        <div className="flex items-center space-x-1">
-            {/* Fullscreen - Always visible */}
+        <div className="flex items-center gap-0.5 pr-2">
+            {/* Fullscreen - Always visible on desktop */}
             {toggleFullScreen && !isMobile && (
-                <button onClick={toggleFullScreen} className={buttonClass} title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}>
-                    {isFullScreen ? <Minimize size={16} /> : <Expand size={16} />}
-                    <span>{isFullScreen ? "Exit" : "Fullscreen"}</span>
-                </button>
+                <IconButton
+                    icon={isFullScreen ? Minimize : Expand}
+                    tooltip={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}
+                    size="sm"
+                    variant="ghost"
+                    onClick={toggleFullScreen}
+                    tooltipSide="bottom"
+                />
             )}
 
-            {/* Collapse - Only when not editing and can collapse */}
-            {toggleCollapse && !isEditing && canCollapse && (
-                <button onClick={toggleCollapse} className={buttonClass} title={isCollapsed ? "Expand" : "Collapse"}>
-                    {isCollapsed ? <BsChevronBarContract size={16} /> : <BsChevronBarExpand size={16} />}
-                    <span>{isCollapsed ? "Expand" : "Collapse"}</span>
-                </button>
+            {/* Collapse - Always rendered to prevent shifting, disabled when not applicable */}
+            {toggleCollapse && !isMobile && (
+                <IconButton
+                    icon={isCollapsed ? ChevronDown : ChevronUp}
+                    tooltip={
+                        !canCollapse 
+                            ? "Too few lines to collapse" 
+                            : isEditing 
+                                ? "Cannot collapse in edit mode" 
+                                : isCollapsed 
+                                    ? "Expand code" 
+                                    : "Collapse code"
+                    }
+                    size="sm"
+                    variant="ghost"
+                    onClick={toggleCollapse}
+                    tooltipSide="bottom"
+                    disabled={isEditing || !canCollapse}
+                    className={cn(isEditing || !canCollapse ? "opacity-40 cursor-not-allowed" : "")}
+                />
             )}
 
-            {/* Download - Always visible */}
+            {/* Word Wrap Toggle - Available in both modes */}
+            {toggleWrapLines && !isMobile && (
+                <IconButton
+                    icon={WrapText}
+                    tooltip={showWrapLines ? "Disable word wrap" : "Enable word wrap"}
+                    size="sm"
+                    variant={showWrapLines ? "default" : "ghost"}
+                    onClick={toggleWrapLines}
+                    tooltipSide="bottom"
+                />
+            )}
+
+            {/* Minimap Toggle - Only works in edit mode (Monaco Editor feature) */}
+            {toggleMinimap && !isMobile && (
+                <IconButton
+                    icon={Maximize2}
+                    tooltip={
+                        !isEditing 
+                            ? "Minimap only available in edit mode" 
+                            : minimapEnabled 
+                                ? "Hide minimap" 
+                                : "Show minimap"
+                    }
+                    size="sm"
+                    variant={minimapEnabled && isEditing ? "default" : "ghost"}
+                    onClick={toggleMinimap}
+                    tooltipSide="bottom"
+                    disabled={!isEditing}
+                    className={cn(!isEditing ? "opacity-40 cursor-not-allowed" : "")}
+                />
+            )}
+
+            {/* Format - Always rendered, disabled in view mode */}
+            {handleFormat && !isMobile && (
+                <IconButton
+                    icon={Wand2}
+                    tooltip={isEditing ? "Format code (Shift+Alt+F)" : "Format only available in edit mode"}
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleFormat}
+                    tooltipSide="bottom"
+                    disabled={!isEditing}
+                    className={cn(!isEditing ? "opacity-40 cursor-not-allowed" : "")}
+                />
+            )}
+
+            {/* Reset - Always rendered, disabled in view mode */}
+            {handleReset && !isMobile && (
+                <IconButton
+                    icon={RotateCcw}
+                    tooltip={isEditing ? "Reset to original code" : "Reset only available in edit mode"}
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleReset}
+                    tooltipSide="bottom"
+                    disabled={!isEditing}
+                    className={cn(!isEditing ? "opacity-40 cursor-not-allowed" : "")}
+                />
+            )}
+
+            {/* Download - Always visible on desktop */}
             {!isMobile && (
-                <button onClick={handleDownload} className={buttonClass} title="Download code">
-                    <Download size={16} />
-                    <span>Download</span>
-                </button>
+                <IconButton
+                    icon={Download}
+                    tooltip="Download code"
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleDownload}
+                    tooltipSide="bottom"
+                />
             )}
 
-            {/* Copy - Always visible */}
-            <button onClick={handleCopy} className={buttonClass} title={isCopied ? "Copied!" : "Copy code"}>
-                {isCopied ? <Check size={16} /> : <Copy size={16} />}
-                <span>Copy</span>
-            </button>
+            {/* Copy - Always visible with dropdown for line numbers option */}
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                    <div>
+                        <IconButton
+                            icon={isCopied ? Check : Copy}
+                            tooltip={isCopied ? "Copied!" : "Copy code (right-click for options)"}
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (e.button === 0) { // Left click - default copy
+                                    handleCopy(e);
+                                }
+                            }}
+                            onContextMenu={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsDropdownOpen(true);
+                            }}
+                            tooltipSide="bottom"
+                        />
+                    </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="z-[9999]">
+                    <DropdownMenuItem
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(e as any, false);
+                            setIsDropdownOpen(false);
+                        }}
+                        className="flex items-center gap-2 cursor-pointer"
+                    >
+                        <FileText className="h-4 w-4" />
+                        <span>Copy code only</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(e as any, true);
+                            setIsDropdownOpen(false);
+                        }}
+                        className="flex items-center gap-2 cursor-pointer"
+                    >
+                        <ListOrdered className="h-4 w-4" />
+                        <span>Copy with line numbers</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
-            {/* Edit/View Toggle - Always visible, LAST to prevent shifting */}
+            {/* Edit/View Toggle - Always visible on desktop, icon switches based on mode */}
             {toggleEdit && !isMobile && (
-                <button 
-                    onClick={toggleEdit} 
-                    className={buttonClass} 
-                    title={isEditing ? "Exit edit mode" : "Edit code"}
-                >
-                    {isEditing ? (
-                        <>
-                            <Eye size={16} />
-                            <span>View</span>
-                        </>
-                    ) : (
-                        <>
-                            <Edit2 size={16} />
-                            <span>Edit</span>
-                        </>
-                    )}
-                </button>
+                <IconButton
+                    icon={isEditing ? Eye : Edit2}
+                    tooltip={isEditing ? "Exit edit mode" : "Edit code"}
+                    size="sm"
+                    variant="ghost"
+                    onClick={toggleEdit}
+                    tooltipSide="bottom"
+                />
             )}
         </div>
     );
@@ -219,18 +369,17 @@ export const EditButton = ({ isEditing, toggleEdit }) => {
     if (isEditing || !toggleEdit) return null;
 
     return (
-        <button
-            onClick={toggleEdit}
-            className={cn(
-                "absolute top-4 right-2 z-10 p-1 rounded-md bg-transparent backdrop-blur-sm",
-                "hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors shadow-sm",
-                "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100",
-                ""
-            )}
-            title="Edit code"
-        >
-            <FaEdit size={16} />
-        </button>
+        <div className="absolute top-4 right-2 z-10 backdrop-blur-sm rounded-md">
+            <IconButton
+                icon={Edit2}
+                tooltip="Edit code"
+                size="sm"
+                variant="ghost"
+                onClick={toggleEdit}
+                tooltipSide="bottom"
+                className="shadow-sm hover:bg-neutral-200 dark:hover:bg-neutral-700"
+            />
+        </div>
     );
 };
 

@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useMonaco } from "@monaco-editor/react";
 import Editor from "@monaco-editor/react";
@@ -27,6 +28,8 @@ interface CodeEditorProps {
     height?: string;
     readOnly?: boolean;
     formatTrigger?: number; // Increment this to trigger formatting externally
+    controlledWordWrap?: "on" | "off"; // Controlled word wrap from parent
+    controlledMinimap?: boolean; // Controlled minimap from parent
 }
 
 const SmallCodeEditor = ({ 
@@ -45,15 +48,35 @@ const SmallCodeEditor = ({
     defaultWordWrap = "off",
     height: customHeight,
     readOnly = false,
-    formatTrigger = 0
+    formatTrigger = 0,
+    controlledWordWrap,
+    controlledMinimap
 }: CodeEditorProps) => {
     const [ref, { width, height }] = useMeasure();
+    const monaco = useMonaco();
     const isDark = useMonacoTheme();
     const [output, setOutput] = useState<string>("");
     const [copied, setCopied] = useState(false);
-    const [wordWrap, setWordWrap] = useState<"off" | "on">(defaultWordWrap);
-    const [minimapEnabled, setMinimapEnabled] = useState(false);
+    const [internalWordWrap, setInternalWordWrap] = useState<"off" | "on">(defaultWordWrap);
+    const [internalMinimapEnabled, setInternalMinimapEnabled] = useState(false);
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+    
+    // Use controlled props if provided, otherwise use internal state
+    const wordWrap = controlledWordWrap !== undefined ? controlledWordWrap : internalWordWrap;
+    const minimapEnabled = controlledMinimap !== undefined ? controlledMinimap : internalMinimapEnabled;
+    
+    // Get the appropriate theme based on mode (fallback to vs-dark/vs if custom themes not ready)
+    const [editorTheme, setEditorTheme] = useState<string>(mode === "dark" ? "vs-dark" : "vs");
+    
+    // Update theme when monaco is ready and mode changes
+    useEffect(() => {
+        if (monaco) {
+            const theme = mode === "dark" ? "customDark" : "customLight";
+            setEditorTheme(theme);
+        } else {
+            setEditorTheme(mode === "dark" ? "vs-dark" : "vs");
+        }
+    }, [monaco, mode]);
 
     // Sync external changes to initialCode (for multi-model support)
     useEffect(() => {
@@ -212,7 +235,7 @@ const SmallCodeEditor = ({
 
     const handleToggleWordWrap = useCallback(() => {
         const newWrap = wordWrap === "off" ? "on" : "off";
-        setWordWrap(newWrap);
+        setInternalWordWrap(newWrap);
         if (editorRef.current) {
             editorRef.current.updateOptions({ wordWrap: newWrap });
         }
@@ -220,13 +243,26 @@ const SmallCodeEditor = ({
 
     const handleToggleMinimap = useCallback(() => {
         const newMinimapEnabled = !minimapEnabled;
-        setMinimapEnabled(newMinimapEnabled);
+        setInternalMinimapEnabled(newMinimapEnabled);
         if (editorRef.current) {
             editorRef.current.updateOptions({ 
                 minimap: { enabled: newMinimapEnabled } 
             });
         }
     }, [minimapEnabled]);
+    
+    // Update editor when controlled props change
+    React.useEffect(() => {
+        if (editorRef.current && controlledWordWrap !== undefined) {
+            editorRef.current.updateOptions({ wordWrap: controlledWordWrap });
+        }
+    }, [controlledWordWrap]);
+    
+    React.useEffect(() => {
+        if (editorRef.current && controlledMinimap !== undefined) {
+            editorRef.current.updateOptions({ minimap: { enabled: controlledMinimap } });
+        }
+    }, [controlledMinimap]);
 
     return (
         <div ref={ref} className="flex flex-col w-full h-full">
@@ -356,7 +392,7 @@ const SmallCodeEditor = ({
                     defaultLanguage={language}
                     language={language}
                     defaultValue={initialCode}
-                    theme={isDark ? "customDark" : "customLight"}
+                    theme={editorTheme}
                     onChange={onChange}
                     onMount={handleEditorDidMount}
                     loading={<CodeEditorLoading />}

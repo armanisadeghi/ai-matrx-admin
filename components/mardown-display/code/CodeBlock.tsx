@@ -56,7 +56,47 @@ const mapLanguageForPrism = (lang: string): string => {
     return languageMap[lang.toLowerCase()] || lang;
 };
 
-const CodeBlock: React.FC<CodeBlockProps> = ({
+/**
+ * Map language identifiers to Monaco Editor-compatible language names
+ */
+const mapLanguageForMonaco = (lang: string): string => {
+    const languageMap: Record<string, string> = {
+        'react': 'typescriptreact',  // React components → TypeScript React
+        'jsx': 'javascriptreact',    // JavaScript JSX
+        'tsx': 'typescriptreact',    // TypeScript JSX
+        'typescript': 'typescript',
+        'javascript': 'javascript',
+        'js': 'javascript',
+        'ts': 'typescript',
+        'html': 'html',
+        'css': 'css',
+        'scss': 'scss',
+        'json': 'json',
+        'markdown': 'markdown',
+        'md': 'markdown',
+        'bash': 'shell',
+        'shell': 'shell',
+        'sh': 'shell',
+        'sql': 'sql',
+        'python': 'python',
+        'py': 'python',
+        'diff': 'diff',
+        'java': 'java',
+        'csharp': 'csharp',
+        'cs': 'csharp',
+        'php': 'php',
+        'ruby': 'ruby',
+        'go': 'go',
+        'rust': 'rust',
+        'yaml': 'yaml',
+        'yml': 'yaml',
+        'xml': 'xml',
+    };
+    
+    return languageMap[lang.toLowerCase()] || lang;
+};
+
+git addconst CodeBlock: React.FC<CodeBlockProps> = ({
     code: initialCode,
     language: rawLanguage,
     fontSize = 16,
@@ -67,8 +107,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     inline = false,
     isStreamActive = false,
 }) => {
-    // Map language to Prism.js-compatible identifier
-    const language = mapLanguageForPrism(rawLanguage);
+    // Map language for respective editors
+    const prismLanguage = mapLanguageForPrism(rawLanguage);
+    const monacoLanguage = mapLanguageForMonaco(rawLanguage);
     
     const [editedCode, setEditedCode] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
@@ -77,12 +118,15 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const [isEditing, setIsEditing] = useState(false);
     const [lineNumbers, setLineNumbers] = useState(showLineNumbers);
     const [showWrapLines, setShowWrapLines] = useState(wrapLines);
+    const [minimapEnabled, setMinimapEnabled] = useState(false);
     const [isTopInView, setIsTopInView] = useState(false);
     const [isBottomInView, setIsBottomInView] = useState(false);
     const [isCreatingPage, setIsCreatingPage] = useState(false);
+    const [formatTrigger, setFormatTrigger] = useState(0);
     const bottomRef = useRef<HTMLDivElement>(null);
     const topRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const editorRef = useRef<any>(null);
     const showStickyButtons = isBottomInView && !isTopInView && !isEditing;
     const { mode } = useTheme();
     const isMobile = useIsMobile();
@@ -94,7 +138,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
     // Function to detect if code is a complete HTML document
     const isCompleteHTMLDocument = (htmlCode: string): boolean => {
-        if (!htmlCode || language !== 'html') return false;
+        if (!htmlCode || prismLanguage !== 'html') return false;
         
         const trimmedCode = htmlCode.trim();
         const hasDoctype = /^\s*<!DOCTYPE\s+html/i.test(trimmedCode);
@@ -187,9 +231,21 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         };
     }, [isFullScreen]);
 
-    const handleCopy = async (e: React.MouseEvent) => {
+    const handleCopy = async (e: React.MouseEvent, withLineNumbers: boolean = false) => {
         e.stopPropagation();
-        await navigator.clipboard.writeText(code);
+        let textToCopy = code;
+        
+        if (withLineNumbers) {
+            // Add line numbers to each line
+            const lines = code.split('\n');
+            const paddedLines = lines.map((line, index) => {
+                const lineNumber = (index + 1).toString().padStart(lines.length.toString().length, ' ');
+                return `${lineNumber} | ${line}`;
+            });
+            textToCopy = paddedLines.join('\n');
+        }
+        
+        await navigator.clipboard.writeText(textToCopy);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     };
@@ -200,7 +256,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `code.${language}`;
+        a.download = `code.${rawLanguage || 'txt'}`;
         a.click();
         window.URL.revokeObjectURL(url);
     };
@@ -259,6 +315,26 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         }
     };
 
+    const handleFormat = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isEditing) return;
+        // Trigger format in the editor
+        setFormatTrigger(prev => prev + 1);
+    };
+
+    const handleReset = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isEditing) return;
+        // Reset code to initial value
+        setEditedCode(initialCode);
+        onCodeChange?.(initialCode);
+    };
+
+    const toggleMinimap = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMinimapEnabled(!minimapEnabled);
+    };
+
     return (
         <div
             ref={containerRef}
@@ -275,7 +351,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             }}
         >
             <CodeBlockHeader
-                language={language}
+                language={rawLanguage}
                 linesCount={code.split("\n").length}
                 isEditing={isEditing}
                 isFullScreen={isFullScreen}
@@ -286,11 +362,19 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 toggleEdit={toggleEdit}
                 toggleFullScreen={toggleFullScreen}
                 toggleCollapse={toggleCollapse}
+                toggleLineNumbers={toggleLineNumbers}
+                toggleWrapLines={toggleWrapLines}
                 isCopied={isCopied}
                 isMobile={isMobile}
                 isCompleteHTML={isCompleteHTMLDocument(code)}
                 handleViewHTML={handleViewHTML}
                 isCreatingPage={isCreatingPage}
+                showWrapLines={showWrapLines}
+                handleFormat={handleFormat}
+                handleReset={handleReset}
+                minimapEnabled={minimapEnabled}
+                toggleMinimap={toggleMinimap}
+                showLineNumbers={lineNumbers}
             />
             {showStickyButtons && (
                 <StickyButtons
@@ -306,11 +390,19 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 {isEditing ? (
                     <div className="w-full">
                         <SmallCodeEditor 
-                            language={language} 
+                            language={monacoLanguage}
                             initialCode={code} 
                             onChange={handleCodeChange} 
                             mode={mode}
                             height={isFullScreen ? "calc(100vh - 15rem)" : `${Math.max(400, code.split("\n").length * 20 + 100)}px`}
+                            showCopyButton={false}
+                            showFormatButton={false}
+                            showResetButton={false}
+                            showWordWrapToggle={false}
+                            showMinimapToggle={false}
+                            formatTrigger={formatTrigger}
+                            controlledWordWrap={showWrapLines ? "on" : "off"}
+                            controlledMinimap={minimapEnabled}
                         />
                     </div>
                 ) : (
@@ -322,11 +414,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                             className={cn(
                                 "transition-all duration-300 ease-in-out relative",
                                 isCollapsed ? "max-h-[150px]" : "max-h-none",
-                                isFullScreen ? "h-full overflow-auto" : "overflow-hidden"
+                                isFullScreen ? "h-full overflow-auto" : "overflow-hidden",
+                                showWrapLines && "overflow-x-hidden"
                             )}
                         >
                             <SyntaxHighlighter
-                                language={language}
+                                language={prismLanguage}
                                 style={mode === "dark" ? vscDarkPlus : vs}
                                 showLineNumbers={lineNumbers}
                                 wrapLines={showWrapLines}
@@ -339,6 +432,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                                     fontSize: `${fontSize}px`,
                                     height: "auto",
                                     minHeight: "auto",
+                                    maxWidth: "100%",
+                                    overflowX: showWrapLines ? "hidden" : "auto",
+                                    margin: 0,
                                 }}
                             >
                                 {code}
