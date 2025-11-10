@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
 import { checkGuestLimit, type GuestLimitStatus } from '@/lib/services/guest-limit-service';
 
@@ -52,7 +52,6 @@ export function useGuestLimit() {
 
     // Get current user on mount
     useEffect(() => {
-        const supabase = createClient();
         
         // Get initial user
         supabase.auth.getUser().then(({ data }) => {

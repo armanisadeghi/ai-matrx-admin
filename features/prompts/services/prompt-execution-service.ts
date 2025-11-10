@@ -7,7 +7,7 @@
  * Uses Socket.IO for execution (same as PromptRunner)
  */
 
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import {
   PromptExecutionConfig,
@@ -164,7 +164,6 @@ export class PromptExecutionService {
    * Fetch prompt data from database
    */
   private async fetchPromptData(promptId: string): Promise<PromptExecutionData> {
-    const supabase = createClient();
     
     const { data: prompt, error } = await supabase
       .from('prompts')

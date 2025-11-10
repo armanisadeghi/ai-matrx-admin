@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import FullScreenOverlay, { TabDefinition } from '@/components/official/FullScreenOverlay';
 import { CreatePromptAppForm } from './CreatePromptAppForm';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 interface CreatePromptAppModalProps {
@@ -29,7 +29,6 @@ export function CreatePromptAppModal({ isOpen, onClose, promptId }: CreatePrompt
     setIsLoading(true);
     setError(null);
 
-    const supabase = createClient();
 
     try {
       // Get user

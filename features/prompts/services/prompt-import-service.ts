@@ -5,7 +5,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import type { PromptImportResult, PromptBatchImportResult } from '../types/prompt-json';
 import { PromptsData, PromptsBatchData } from '@/features/prompts/types/core';
 
@@ -75,8 +75,6 @@ export async function importPrompt(promptData: PromptsData): Promise<PromptImpor
         error: validation.error
       };
     }
-
-    const supabase = createClient();
 
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -200,7 +198,6 @@ export async function importPromptBatch(batchJSON: PromptsBatchData): Promise<Pr
  */
 export async function exportPromptAsJSON(promptId: string): Promise<PromptsData | null> {
   try {
-    const supabase = createClient();
     
     const { data: prompt, error } = await supabase
       .from('prompts')

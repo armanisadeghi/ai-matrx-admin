@@ -11,7 +11,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThunk';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -99,7 +99,6 @@ export function FullPromptOptimizer({
     
     try {
       // 1. Fetch prompt
-      const supabase = createClient();
       const { data: prompt, error: promptError } = await supabase
         .from('prompts')
         .select('*')

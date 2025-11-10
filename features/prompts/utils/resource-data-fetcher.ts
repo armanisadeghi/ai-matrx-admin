@@ -7,7 +7,7 @@
  */
 
 import { Resource, TableResourceData } from '../types/resources';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 // ===========================
 // Table Data Fetching
@@ -26,7 +26,6 @@ async function fetchTableDataByReference(tableRef: TableResourceData): Promise<{
     referenceType: string;
 } | null> {
     try {
-        const supabase = createClient();
         const referenceType = tableRef.type;
         
         switch (referenceType) {

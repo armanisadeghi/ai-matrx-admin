@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUserId } from '@/lib/redux/selectors/userSelectors';
@@ -27,7 +27,6 @@ type EditorMode = 'view' | 'edit' | 'run';
 
 export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const router = useRouter();
-  const supabase = createClient();
   const userId = useAppSelector(selectUserId);
   
   const [app, setApp] = useState(initialApp);

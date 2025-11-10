@@ -10,7 +10,7 @@
  * Based on specifications from docs/pending/org-management.md
  */
 
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import {
   Organization,
   OrganizationWithRole,
@@ -30,8 +30,6 @@ import {
   validateEmail,
   generateSlug,
 } from './types';
-
-const supabase = createClient();
 
 // ============================================================================
 // Organization CRUD Operations

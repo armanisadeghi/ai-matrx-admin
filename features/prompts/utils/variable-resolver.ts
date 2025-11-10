@@ -6,7 +6,6 @@
  */
 
 import { VariableSource, VariableSourceMap } from '../types/execution';
-import { createClient } from '@/utils/supabase/client';
 
 /**
  * Resolve all variables from their sources

@@ -5,7 +5,7 @@
  * Communicates with Supabase functions for global tracking
  */
 
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 export interface GuestLimitStatus {
     allowed: boolean;
@@ -37,10 +37,10 @@ export async function checkGuestLimit(
     try {
         // Support both client-side and server-side usage
         const isServerSide = typeof supabaseOrFingerprint === 'object' && supabaseOrFingerprint !== null;
-        const supabase = isServerSide ? supabaseOrFingerprint : createClient();
+        const supabaseClient = isServerSide ? supabaseOrFingerprint : supabase;
         const fp = isServerSide ? fingerprint! : supabaseOrFingerprint;
         
-        const { data, error } = await supabase.rpc('check_guest_execution_limit', {
+        const { data, error } = await supabaseClient.rpc('check_guest_execution_limit', {
             p_fingerprint: fp,
             p_max_executions: maxExecutions
         });
@@ -100,10 +100,10 @@ export async function recordGuestExecution(
     try {
         // Support both client-side and server-side usage
         const isServerSide = params !== undefined;
-        const supabase = isServerSide ? supabaseOrParams : createClient();
+        const supabaseClient = isServerSide ? supabaseOrParams : supabase;
         const execParams = isServerSide ? params! : supabaseOrParams;
         
-        const { data, error } = await supabase.rpc('record_guest_execution', {
+        const { data, error } = await supabaseClient.rpc('record_guest_execution', {
             p_fingerprint: execParams.fingerprint,
             p_resource_type: execParams.resourceType,
             p_resource_id: execParams.resourceId || null,
@@ -142,10 +142,10 @@ export async function recordGuestExecution(
  */
 export async function getGuestHistory(fingerprint: string) {
     try {
-        const supabase = createClient();
+        const supabaseClient = supabase;
         
         // First get guest record
-        const { data: guest, error: guestError } = await supabase
+        const { data: guest, error: guestError } = await supabaseClient
             .from('guest_executions')
             .select('*')
             .eq('fingerprint', fingerprint)
@@ -156,7 +156,7 @@ export async function getGuestHistory(fingerprint: string) {
         }
 
         // Get execution log
-        const { data: logs, error: logsError } = await supabase
+        const { data: logs, error: logsError } = await supabaseClient
             .from('guest_execution_log')
             .select('*')
             .eq('guest_id', guest.id)
@@ -164,7 +164,7 @@ export async function getGuestHistory(fingerprint: string) {
             .limit(50);
 
         if (logsError) {
-            console.error('Error fetching guest logs:', error);
+            console.error('Error fetching guest logs:', logsError);
             return { guest, logs: [] };
         }
 
@@ -180,9 +180,9 @@ export async function getGuestHistory(fingerprint: string) {
  */
 export async function getGuestStatus(fingerprint: string) {
     try {
-        const supabase = createClient();
+        const supabaseClient = supabase;
         
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('guest_executions')
             .select('*')
             .eq('fingerprint', fingerprint)

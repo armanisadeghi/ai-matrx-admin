@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useAppSelector } from '@/lib/redux';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 export function usePreferenceSync() {
     const userId = useAppSelector((state) => state.user.id);
@@ -13,7 +13,6 @@ export function usePreferenceSync() {
         if (!userId) return;
 
         return () => {
-            const supabase = createClient();
             supabase.from('user_preferences').upsert({
                 user_id: userId,
                 preferences,

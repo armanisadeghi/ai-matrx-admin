@@ -11,8 +11,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Code, Settings, Eye, Sparkles, Plus, X, Loader2, CheckCircle } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
+import { Code, Settings, Sparkles, Plus, X, Loader2, CheckCircle } from 'lucide-react';
+import { supabase } from '@/utils/supabase/client';
 
 interface CreatePromptAppFormProps {
   prompts: Array<{
@@ -48,7 +48,6 @@ const DEFAULT_ALLOWED_IMPORTS = [
 
 export function CreatePromptAppForm({ prompts, categories, preselectedPromptId, onSuccess }: CreatePromptAppFormProps) {
   const router = useRouter();
-  const supabase = createClient();
   const [isPending, startTransition] = useTransition();
   
   // Form state

@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { RootState, useAppDispatch } from '@/lib/redux';
 import { setPreference, ThinkingMode } from '@/lib/redux/slices/userPreferencesSlice';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 type AIModel = {
@@ -33,7 +33,6 @@ const PromptsPreferences = () => {
         const loadActiveModels = async () => {
             try {
                 setIsLoadingModels(true);
-                const supabase = createClient();
                 const { data: models, error } = await supabase
                     .from('ai_model')
                     .select('*')

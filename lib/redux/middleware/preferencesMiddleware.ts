@@ -1,10 +1,8 @@
 // lib/redux/middleware/preferencesMiddleware.ts
 
 import { Middleware, Action } from 'redux';
-import { createClient } from "@/utils/supabase/client";
-import type { AppDispatch, RootState, AppThunk } from '../store';
-
-const supabase = createClient();
+import { supabase } from "@/utils/supabase/client";
+import type { RootState, AppThunk } from '../store';
 
 export const preferencesMiddleware: Middleware<{}, RootState> = store => next => (action: Action) => {
     const result = next(action);

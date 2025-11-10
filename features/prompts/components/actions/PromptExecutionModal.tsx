@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, Loader2, Copy, Check, Database, FileText, Link } from 'lucide-react';
 import { usePromptExecution } from '../../hooks/usePromptExecution';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { extractVariablesFromMessages } from '../../utils/variable-resolver';
@@ -85,7 +85,6 @@ export function PromptExecutionModal({
   const loadPromptData = async () => {
     setIsLoadingPrompt(true);
     try {
-      const supabase = createClient();
       const { data: prompt, error } = await supabase
         .from('prompts')
         .select('id, name, messages')
@@ -192,7 +191,6 @@ export function PromptExecutionModal({
   };
 
   const fetchTableData = async (bookmark: TableBookmark): Promise<string> => {
-    const supabase = createClient();
     
     try {
       switch (bookmark.type) {

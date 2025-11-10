@@ -4,7 +4,7 @@
  * Functions to search for users in the auth.users table
  */
 
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 export interface UserSearchResult {
   id: string;
@@ -19,8 +19,6 @@ export interface UserSearchResult {
  */
 export async function searchUserByEmail(email: string): Promise<UserSearchResult> {
   try {
-    const supabase = createClient();
-    
     // Query auth.users table (requires service role or RLS policy)
     // Note: This might need to be done server-side if auth.users isn't accessible
     const { data, error } = await supabase

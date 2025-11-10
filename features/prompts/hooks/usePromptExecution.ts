@@ -11,7 +11,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux';
 import { createAndSubmitTask } from '@/lib/redux/socket-io/thunks/submitTaskThunk';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { PromptExecutionConfig, ExecutionResult } from '../types/execution';
 
@@ -44,7 +44,6 @@ export function usePromptExecution() {
 
     try {
       // 1. Fetch prompt data
-      const supabase = createClient();
       const { data: prompt, error: promptError } = await supabase
         .from('prompts')
         .select('*')

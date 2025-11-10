@@ -6,7 +6,7 @@ import { CiYoutube } from "react-icons/ci";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import type { Resource } from "../../types/resources";
 import FilePreviewSheet from "@/components/ui/file-preview/FilePreviewSheet";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
 
 interface ResourcePreviewSheetProps {
@@ -19,7 +19,6 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
     const [tableData, setTableData] = useState<any>(null);
     const [tableLoading, setTableLoading] = useState(false);
     const [tableError, setTableError] = useState<string | null>(null);
-    const supabase = createClient();
 
     // Fetch table data when resource is a table
     useEffect(() => {

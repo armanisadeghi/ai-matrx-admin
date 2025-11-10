@@ -17,7 +17,7 @@ export interface CodeEditorPrompt {
 export const CODE_EDITOR_PROMPTS = {
   PROMPT_APP_UI: {
     id: 'f6649577-aa9e-4b81-afef-47f11a6bef1b',
-    name: 'Prompt App Code Editor',
+    name: 'Prompt App Editor',
     description: 'Specialized for editing React components for Prompt Apps',
     useCase: 'prompt-app-ui',
   },

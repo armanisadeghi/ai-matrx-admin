@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -39,6 +38,12 @@ import { getCodeEditorPromptId, CODE_EDITOR_PROMPTS } from '@/utils/code-editor/
 import CodeBlock from '@/components/mardown-display/code/CodeBlock';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { DiffView } from './DiffView';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectPromptsPreferences } from '@/lib/redux/selectors/userPreferenceSelectors';
+import { PromptInput } from '@/features/prompts/components/PromptInput';
+import { PromptVariable } from '@/features/prompts/types/core';
+import { createClient } from '@/utils/supabase/client';
+import type { Resource } from '@/features/prompts/components/resource-display';
 
 export interface AICodeEditorModalProps {
   open: boolean;
@@ -112,6 +117,10 @@ export function AICodeEditorModal({
   description = '',
   allowPromptSelection = false,
 }: AICodeEditorModalProps) {
+  // Get user preferences
+  const promptsPreferences = useAppSelector(selectPromptsPreferences);
+  const supabase = createClient();
+  
   // Normalize the language for consistent syntax highlighting
   const language = normalizeLanguage(rawLanguage);
   
@@ -121,7 +130,21 @@ export function AICodeEditorModal({
   // State for prompt selection
   const [selectedPromptId, setSelectedPromptId] = useState(defaultPromptId);
   
+  // State for submit on enter (defaults to user preference)
+  const [submitOnEnter, setSubmitOnEnter] = useState(promptsPreferences.submitOnEnter);
+  
+  // Prompt data state
+  const [promptData, setPromptData] = useState<{variables: PromptVariable[]} | null>(null);
+  const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
+  
+  // Variables and input
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
   const [userInstructions, setUserInstructions] = useState('');
+  const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
+  
+  // Resources
+  const [resources, setResources] = useState<Resource[]>([]);
+  
   const [state, setState] = useState<EditorState>('input');
   const [parsedEdits, setParsedEdits] = useState<ReturnType<typeof parseCodeEdits> | null>(null);
   const [modifiedCode, setModifiedCode] = useState('');
@@ -130,19 +153,67 @@ export function AICodeEditorModal({
 
   const { execute, isExecuting, streamingText, error: execError, reset } = usePromptExecution();
 
+  // Fetch prompt data when modal opens or prompt changes
+  useEffect(() => {
+    if (open && selectedPromptId) {
+      const fetchPromptData = async () => {
+        setIsLoadingPrompt(true);
+        try {
+          const { data: prompt, error } = await supabase
+            .from('prompts')
+            .select('variable_defaults')
+            .eq('id', selectedPromptId)
+            .single();
+
+          if (error || !prompt) {
+            console.error('Failed to fetch prompt:', error);
+            setPromptData({ variables: [] });
+            return;
+          }
+
+          // Filter out current_code from displayed variables
+          const displayVariables = (prompt.variable_defaults || []).filter(
+            (v: PromptVariable) => v.name !== 'current_code'
+          );
+
+          setPromptData({ variables: displayVariables });
+          
+          // Initialize variable values
+          const initialValues: Record<string, string> = {};
+          displayVariables.forEach((v: PromptVariable) => {
+            initialValues[v.name] = v.defaultValue || '';
+          });
+          setVariableValues(initialValues);
+        } catch (err) {
+          console.error('Error loading prompt:', err);
+          setPromptData({ variables: [] });
+        } finally {
+          setIsLoadingPrompt(false);
+        }
+      };
+
+      fetchPromptData();
+    }
+  }, [open, selectedPromptId, supabase]);
+
   // Reset state when modal closes or when defaultPromptId changes
   useEffect(() => {
     if (!open) {
       setUserInstructions('');
+      setVariableValues({});
+      setResources([]);
+      setExpandedVariable(null);
       setState('input');
       setParsedEdits(null);
       setModifiedCode('');
       setErrorMessage('');
       setRawAIResponse('');
       setSelectedPromptId(defaultPromptId);
+      setSubmitOnEnter(promptsPreferences.submitOnEnter);
+      setPromptData(null);
       reset();
     }
-  }, [open, reset, defaultPromptId]);
+  }, [open, reset, defaultPromptId, promptsPreferences.submitOnEnter]);
   
   // Update selected prompt when default changes (e.g., when modal reopens with different context)
   useEffect(() => {
@@ -236,20 +307,52 @@ export function AICodeEditorModal({
   }, [streamingText, isExecuting, state, currentCode]);
 
   const handleSubmit = async () => {
-    if (!userInstructions.trim()) return;
-
     setState('processing');
 
     try {
+      // Combine automatic current_code variable with user variables
+      const allVariables: Record<string, { type: 'hardcoded'; value: string }> = {
+        current_code: {
+          type: 'hardcoded',
+          value: currentCode,
+        },
+      };
+
+      // Add user-provided variables
+      Object.entries(variableValues).forEach(([key, value]) => {
+        allVariables[key] = { type: 'hardcoded', value };
+      });
+
+      // Prepare user input with resources if any
+      let finalUserInput = userInstructions.trim();
+      if (resources.length > 0) {
+        // Add resources as context in the user message
+        const resourceContext = resources.map((resource, index) => {
+          if (resource.type === 'file') {
+            const filename = resource.data.filename || resource.data.details?.filename || 'file';
+            return `[Attachment ${index + 1}: ${filename}]`;
+          } else if (resource.type === 'image_url') {
+            return `[Image ${index + 1}: ${resource.data.url}]`;
+          } else if (resource.type === 'file_url') {
+            const filename = resource.data.filename || 'file';
+            return `[File URL ${index + 1}: ${filename}]`;
+          } else if (resource.type === 'webpage') {
+            return `[Webpage ${index + 1}: ${resource.data.title || resource.data.url}]`;
+          } else if (resource.type === 'youtube') {
+            return `[YouTube ${index + 1}: ${resource.data.title || resource.data.videoId}]`;
+          }
+          return `[Resource ${index + 1}]`;
+        }).filter(Boolean).join('\n');
+
+        if (resourceContext) {
+          finalUserInput = resourceContext + (finalUserInput ? '\n\n' + finalUserInput : '');
+        }
+      }
+
       await execute({
         promptId: selectedPromptId,
-        variables: {
-          current_code: {
-            type: 'hardcoded',
-            value: currentCode,
-          },
-        },
-        userInput: userInstructions, // Add user's instructions as additional message
+        variables: allVariables,
+        userInput: finalUserInput || undefined,
         modelConfig: {
           stream: true,
         },
@@ -263,6 +366,15 @@ export function AICodeEditorModal({
       setErrorMessage(err instanceof Error ? err.message : 'Unknown error');
     }
   };
+  
+  // Handlers for PromptInput
+  const handleVariableValueChange = useCallback((variableName: string, value: string) => {
+    setVariableValues(prev => ({ ...prev, [variableName]: value }));
+  }, []);
+
+  const handleSubmitOnEnterChange = useCallback((value: boolean) => {
+    setSubmitOnEnter(value);
+  }, []);
 
   const handleApplyChanges = () => {
     setState('applying');
@@ -296,26 +408,28 @@ export function AICodeEditorModal({
       <DialogContent className="max-w-6xl h-[90vh] p-0 flex flex-col overflow-hidden">
         {/* Fixed Header */}
         <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 pr-8">
             <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
               <span className="truncate">{title}</span>
             </DialogTitle>
             
-            {allowPromptSelection && (
-              <Select value={selectedPromptId} onValueChange={setSelectedPromptId}>
-                <SelectTrigger className="w-[180px] h-8 text-xs">
-                  <SelectValue placeholder="Select mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availablePrompts.map((prompt) => (
-                    <SelectItem key={prompt.id} value={prompt.id} className="text-xs">
-                      {prompt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <div className="flex items-center gap-2">
+              {allowPromptSelection && (
+                <Select value={selectedPromptId} onValueChange={setSelectedPromptId} disabled={isLoadingPrompt}>
+                  <SelectTrigger className="w-[180px] h-8 text-xs">
+                    <SelectValue placeholder="Select mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availablePrompts.map((prompt) => (
+                      <SelectItem key={prompt.id} value={prompt.id} className="text-xs">
+                        {prompt.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
           </div>
         </DialogHeader>
 
@@ -325,19 +439,52 @@ export function AICodeEditorModal({
           {/* Input Stage */}
           {state === 'input' && (
             <div className="space-y-3 sm:space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="instructions" className="text-xs sm:text-sm">
-                  What changes would you like to make?
-                </Label>
-                <Textarea
-                  id="instructions"
-                  value={userInstructions}
-                  onChange={(e) => setUserInstructions(e.target.value)}
-                  placeholder="Example: Add a loading spinner to the submit button and disable it while processing"
-                  rows={4}
-                  className="resize-none text-xs sm:text-sm"
-                />
-              </div>
+              {isLoadingPrompt ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <p className="ml-2 text-sm text-muted-foreground">Loading prompt...</p>
+                </div>
+              ) : promptData ? (
+                <>
+                  {/* Prepare variables with their values */}
+                  {(() => {
+                    const variablesWithValues = promptData.variables.map(v => ({
+                      ...v,
+                      defaultValue: variableValues[v.name] || v.defaultValue || ''
+                    }));
+
+                    return (
+                      <PromptInput
+                        variableDefaults={variablesWithValues}
+                        onVariableValueChange={handleVariableValueChange}
+                        expandedVariable={expandedVariable}
+                        onExpandedVariableChange={setExpandedVariable}
+                        chatInput={userInstructions}
+                        onChatInputChange={setUserInstructions}
+                        onSendMessage={handleSubmit}
+                        isTestingPrompt={isExecuting}
+                        submitOnEnter={submitOnEnter}
+                        onSubmitOnEnterChange={handleSubmitOnEnterChange}
+                        messages={[]}
+                        showVariables={variablesWithValues.length > 0}
+                        showAttachments={true}
+                        attachmentCapabilities={{
+                          supportsImageUrls: true,
+                          supportsFileUrls: true,
+                          supportsYoutubeVideos: true,
+                        }}
+                        placeholder="What changes would you like to make? (e.g., Add error handling, improve performance, etc.)"
+                        sendButtonVariant="blue"
+                        resources={resources}
+                        onResourcesChange={setResources}
+                        enablePasteImages={true}
+                        uploadBucket="userContent"
+                        uploadPath="code-editor-attachments"
+                      />
+                    );
+                  })()}
+                </>
+              ) : null}
             </div>
           )}
 
@@ -529,27 +676,8 @@ export function AICodeEditorModal({
 
         {/* Fixed Footer */}
         <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t shrink-0 flex-row justify-end gap-2 sm:gap-3">
-          {state === 'input' && (
-            <>
-              <Button 
-                variant="outline" 
-                onClick={handleCancel}
-                className="text-xs sm:text-sm px-3 sm:px-4"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSubmit} 
-                disabled={!userInstructions.trim() || isExecuting}
-                className="text-xs sm:text-sm px-3 sm:px-4"
-              >
-                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Generate Changes</span>
-                <span className="sm:hidden">Generate</span>
-              </Button>
-            </>
-          )}
-
+          {/* Input stage footer is now handled by PromptInput component */}
+          
           {state === 'processing' && (
             <Button 
               variant="outline" 

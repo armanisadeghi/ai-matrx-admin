@@ -24,7 +24,7 @@ import { PromptVariable, VariableCustomComponent } from "@/features/prompts/type
 import type { Resource } from "../resource-display";
 import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { selectPromptsPreferences } from "@/lib/redux/selectors/usePreferenceSelectors";
+import { selectPromptsPreferences } from "@/lib/redux/selectors/userPreferenceSelectors";
 
 interface PromptBuilderProps {
     models: any[];

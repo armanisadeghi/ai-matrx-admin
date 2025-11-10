@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { AIProvider } from '@/lib/ai/aiChat.types';
 import { MatrxRecordId } from '@/types';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 // Define types for each module's preferences
 export interface DisplayPreferences {
@@ -511,7 +511,6 @@ export const savePreferencesToDatabase = createAsyncThunk(
     'userPreferences/saveToDatabase',
     async (preferences: UserPreferences, { rejectWithValue }) => {
         try {
-            const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
@@ -553,7 +552,6 @@ export const saveModulePreferencesToDatabase = createAsyncThunk(
                 [module]: { ...currentPreferences[module], ...preferences }
             };
 
-            const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
@@ -583,7 +581,6 @@ export const loadPreferencesFromDatabase = createAsyncThunk(
     'userPreferences/loadFromDatabase',
     async (_, { rejectWithValue }) => {
         try {
-            const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
