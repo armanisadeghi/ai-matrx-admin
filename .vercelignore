@@ -19,7 +19,7 @@ coverage
 .idea
 *.sw
 
-p
+# p  # REMOVED: This was blocking app/(public)/p/ from deploying
 .DS_Store
 
 # Temporary files
