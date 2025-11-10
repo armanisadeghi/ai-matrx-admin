@@ -1,28 +1,49 @@
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ExternalLink, Calendar, BarChart3, Edit } from "lucide-react";
+import { Plus, ExternalLink, Calendar, BarChart3, Edit, Loader2 } from "lucide-react";
+import { supabase } from "@/utils/supabase/client";
 import type { PromptApp } from "@/features/prompt-apps/types";
 
-export default async function PromptAppsListPage() {
-  const supabase = await createClient();
-  
-  // Check authentication
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error || !user) {
-    redirect('/sign-in');
+export default function PromptAppsListPage() {
+  const [apps, setApps] = useState<PromptApp[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchApps() {
+      try {
+        // RLS ensures user only sees their own apps
+        const { data, error } = await supabase
+          .from('prompt_apps')
+          .select('*')
+          .order('updated_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching prompt apps:', error);
+        } else {
+          setApps(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching prompt apps:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchApps();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-page flex items-center justify-center bg-textured">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
-  
-  // Fetch user's prompt apps
-  const { data: apps } = await supabase
-    .from('prompt_apps')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false });
   
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
@@ -32,14 +53,11 @@ export default async function PromptAppsListPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">My Prompt Apps</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage your public shareable AI apps
-              </p>
             </div>
             <Link href="/prompt-apps/new">
               <Button size="lg">
                 <Plus className="w-4 h-4 mr-2" />
-                Create New App
+                New
               </Button>
             </Link>
           </div>
@@ -70,7 +88,7 @@ export default async function PromptAppsListPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(apps as PromptApp[]).map(app => (
-                <Card key={app.id} className="hover:shadow-lg transition-shadow">
+                <Card key={app.id} className="hover:shadow-lg transition-shadow flex flex-col">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg">{app.name}</CardTitle>
@@ -88,7 +106,7 @@ export default async function PromptAppsListPage() {
                       </p>
                     )}
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="flex flex-col flex-1 space-y-4">
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center gap-2 text-muted-foreground">
@@ -118,7 +136,7 @@ export default async function PromptAppsListPage() {
                     )}
                     
                     {/* Actions */}
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-2 mt-auto">
                       <Link href={`/prompt-apps/${app.id}`} className="flex-1">
                         <Button variant="outline" className="w-full">
                           <Edit className="w-4 h-4 mr-2" />
