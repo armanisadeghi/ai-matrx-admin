@@ -28,9 +28,37 @@ interface CodeBlockProps {
     isStreamActive?: boolean;
 }
 
+/**
+ * Map language identifiers to Prism.js-compatible language names
+ */
+const mapLanguageForPrism = (lang: string): string => {
+    const languageMap: Record<string, string> = {
+        'react': 'tsx',          // React components → TypeScript JSX
+        'jsx': 'jsx',            // JavaScript JSX
+        'tsx': 'tsx',            // TypeScript JSX
+        'typescript': 'typescript',
+        'javascript': 'javascript',
+        'js': 'javascript',
+        'ts': 'typescript',
+        'html': 'html',
+        'css': 'css',
+        'json': 'json',
+        'markdown': 'markdown',
+        'md': 'markdown',
+        'bash': 'bash',
+        'shell': 'bash',
+        'sql': 'sql',
+        'python': 'python',
+        'py': 'python',
+        'diff': 'diff',
+    };
+    
+    return languageMap[lang.toLowerCase()] || lang;
+};
+
 const CodeBlock: React.FC<CodeBlockProps> = ({
     code: initialCode,
-    language,
+    language: rawLanguage,
     fontSize = 16,
     showLineNumbers = false,
     wrapLines = true,
@@ -39,6 +67,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     inline = false,
     isStreamActive = false,
 }) => {
+    // Map language to Prism.js-compatible identifier
+    const language = mapLanguageForPrism(rawLanguage);
+    
     const [editedCode, setEditedCode] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);

@@ -9,34 +9,13 @@ import {
     selectPrimaryResponseEndedByTaskId
 } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import { getFingerprint } from '@/lib/services/fingerprint-service';
 import type { PromptApp, ExecuteAppResponse, RateLimitInfo, ExecutionErrorType } from '../types';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 interface PromptAppRendererProps {
     app: PromptApp;
     slug: string;
-}
-
-// Generate browser fingerprint (simple version)
-function generateFingerprint(): string {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-        ctx.textBaseline = 'top';
-        ctx.font = '14px Arial';
-        ctx.fillText('fingerprint', 2, 2);
-    }
-    const dataURL = canvas.toDataURL();
-    
-    const fingerprint = {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        platform: navigator.platform,
-        canvasHash: dataURL.slice(-50),
-        screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
-    };
-    
-    return btoa(JSON.stringify(fingerprint));
 }
 
 export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
@@ -59,9 +38,9 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
     
     const isStreaming = !isStreamComplete;
     
-    // Generate fingerprint on mount
+    // Generate fingerprint on mount using centralized service
     useEffect(() => {
-        setFingerprint(generateFingerprint());
+        getFingerprint().then(fp => setFingerprint(fp));
     }, []);
     
     // Execute handler that custom UI will call

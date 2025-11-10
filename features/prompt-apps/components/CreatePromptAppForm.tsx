@@ -186,7 +186,7 @@ export function CreatePromptAppForm({ prompts, categories, preselectedPromptId, 
             category: category || null,
             tags,
             component_code: componentCode,
-            component_language: 'react',
+            component_language: 'tsx', // TypeScript + JSX for React components
             variable_schema: parsedSchema,
             allowed_imports: allowedImports,
             rate_limit_per_ip: rateLimitPerIp,

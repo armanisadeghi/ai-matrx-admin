@@ -1,0 +1,155 @@
+/**
+ * Centralized Fingerprint Service
+ * 
+ * Handles robust guest identification for all non-authenticated routes.
+ * Uses FingerprintJS for reliable, cross-session identification.
+ * 
+ * CRITICAL: This service MUST be used for ANY AI interaction from guests.
+ */
+
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
+
+let fpPromise: Promise<any> | null = null;
+let cachedFingerprint: string | null = null;
+
+/**
+ * Initialize FingerprintJS
+ */
+function initFingerprint() {
+    if (!fpPromise) {
+        fpPromise = FingerprintJS.load({
+            monitoring: false // Disable monitoring in production for privacy
+        });
+    }
+    return fpPromise;
+}
+
+/**
+ * Get visitor fingerprint
+ * 
+ * @returns Unique visitor ID that persists across sessions
+ */
+export async function getFingerprint(): Promise<string> {
+    // Return cached if available
+    if (cachedFingerprint) {
+        return cachedFingerprint;
+    }
+
+    try {
+        const fp = await initFingerprint();
+        const result = await fp.get();
+        
+        // Use visitor ID as primary fingerprint
+        cachedFingerprint = result.visitorId;
+        
+        // Store in sessionStorage for faster subsequent calls
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem('guest_fingerprint', cachedFingerprint);
+        }
+        
+        return cachedFingerprint;
+    } catch (error) {
+        console.error('❌ Fingerprint generation failed:', error);
+        
+        // Fallback: Try to get from sessionStorage
+        if (typeof window !== 'undefined') {
+            const stored = sessionStorage.getItem('guest_fingerprint');
+            if (stored) {
+                cachedFingerprint = stored;
+                return stored;
+            }
+        }
+        
+        // Last resort: Generate temporary ID (will be different per session)
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        console.warn('⚠️ Using temporary fingerprint:', tempId);
+        return tempId;
+    }
+}
+
+/**
+ * Get or retrieve cached fingerprint synchronously
+ * Use only after calling getFingerprint() at least once
+ */
+export function getCachedFingerprint(): string | null {
+    if (cachedFingerprint) {
+        return cachedFingerprint;
+    }
+    
+    // Try sessionStorage
+    if (typeof window !== 'undefined') {
+        const stored = sessionStorage.getItem('guest_fingerprint');
+        if (stored) {
+            cachedFingerprint = stored;
+            return stored;
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * Clear cached fingerprint (for testing)
+ */
+export function clearCachedFingerprint(): void {
+    cachedFingerprint = null;
+    if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('guest_fingerprint');
+    }
+}
+
+/**
+ * Get detailed visitor information
+ * Use for debugging or advanced tracking
+ */
+export async function getDetailedFingerprint(): Promise<{
+    visitorId: string;
+    confidence: number;
+    components: Record<string, any>;
+}> {
+    try {
+        const fp = await initFingerprint();
+        const result = await fp.get();
+        
+        return {
+            visitorId: result.visitorId,
+            confidence: result.confidence?.score || 0,
+            components: result.components || {}
+        };
+    } catch (error) {
+        console.error('Failed to get detailed fingerprint:', error);
+        throw error;
+    }
+}
+
+/**
+ * Validate that a fingerprint string looks legitimate
+ * Helps prevent bypassing via fake fingerprints
+ */
+export function isValidFingerprint(fingerprint: string): boolean {
+    if (!fingerprint || typeof fingerprint !== 'string') {
+        return false;
+    }
+    
+    // FingerprintJS visitor IDs are typically alphanumeric, 20+ chars
+    if (fingerprint.length < 16) {
+        return false;
+    }
+    
+    // Check if it's a temp ID (our fallback)
+    if (fingerprint.startsWith('temp_')) {
+        return true; // Allow temps but flag them
+    }
+    
+    // Should be alphanumeric
+    return /^[a-zA-Z0-9]+$/.test(fingerprint);
+}
+
+/**
+ * Check if fingerprint is a temporary one (fallback)
+ * These should be flagged for monitoring
+ */
+export function isTempFingerprint(fingerprint: string): boolean {
+    return fingerprint?.startsWith('temp_') || false;
+}
+

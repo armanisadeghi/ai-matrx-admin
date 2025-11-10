@@ -57,6 +57,7 @@ function normalizeLanguage(lang: string): string {
     'ts': 'typescript',
     'jsx': 'jsx',
     'tsx': 'tsx',
+    'react': 'typescript',
     'typescript': 'typescript',
     'javascript': 'javascript',
     'py': 'python',

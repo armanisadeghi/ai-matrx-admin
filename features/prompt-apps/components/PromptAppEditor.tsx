@@ -340,7 +340,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                   <CardContent>
                     <CodeBlock
                       code={app.component_code}
-                      language={app.component_language || 'jsx'}
+                      language={app.component_language || 'tsx'}
                       showLineNumbers={true}
                     />
                   </CardContent>
@@ -481,7 +481,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                 <CardContent>
                   <CodeBlock
                     code={editComponentCode}
-                    language={app.component_language || 'jsx'}
+                    language={app.component_language || 'tsx'}
                     showLineNumbers={true}
                     onCodeChange={(newCode) => setEditComponentCode(newCode)}
                   />
@@ -549,7 +549,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         open={showAIEditor}
         onOpenChange={setShowAIEditor}
         currentCode={editComponentCode}
-        language={app.component_language || 'jsx'}
+        language={app.component_language || 'tsx'}
         promptContext="prompt-app-ui"
         onCodeChange={(newCode) => setEditComponentCode(newCode)}
         title="AI Code Editor"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { v4 as uuidv4 } from 'uuid';
+import { checkGuestLimit, recordGuestExecution } from '@/lib/services/guest-limit-service';
 
 /**
  * Public API endpoint for executing prompt apps
@@ -9,17 +10,17 @@ import { v4 as uuidv4 } from 'uuid';
  * 
  * Body: {
  *   variables: Record<string, any>
- *   fingerprint?: string  // Browser fingerprint for rate limiting
+ *   fingerprint: string    // REQUIRED - Browser fingerprint from FingerprintJS
  *   metadata?: Record<string, any>
  * }
  * 
  * Returns: {
  *   success: boolean
  *   task_id?: string       // Use this to stream results
- *   rate_limit: {
+ *   guest_limit?: {        // For non-authenticated users
  *     allowed: boolean
  *     remaining: number
- *     reset_at: string
+ *     total_used: number
  *     is_blocked: boolean
  *   }
  *   error?: { type, message, details }
@@ -48,10 +49,17 @@ export async function POST(
         // Get current user (if authenticated)
         const { data: { user } } = await supabase.auth.getUser();
         
-        // Use public system user for anonymous requests
-        const PUBLIC_USER_ID = '00000000-0000-0000-0000-000000000001';
-        const effectiveUserId = user?.id || PUBLIC_USER_ID;
+        // REQUIRE fingerprint for non-authenticated users
         const isPublicAccess = !user?.id;
+        if (isPublicAccess && !fingerprint) {
+            return NextResponse.json({
+                success: false,
+                error: {
+                    type: 'invalid_request',
+                    message: 'Fingerprint is required for guest access'
+                }
+            }, { status: 400 });
+        }
 
         // 1. Fetch the app (published only)
         const { data: app, error: appError } = await supabase
@@ -79,56 +87,60 @@ export async function POST(
             }, { status: 404 });
         }
 
-        // 2. Check rate limit
-        const rateLimitResult = await checkRateLimit(
-            supabase,
-            app.id,
-            isPublicAccess ? undefined : user?.id, // Only pass user_id for authenticated users
-            fingerprint,
-            ip_address
-        );
+        // 2. Check global guest limit (for non-authenticated users only)
+        let guestLimitResult = null;
+        if (isPublicAccess) {
+            try {
+                guestLimitResult = await checkGuestLimit(supabase, fingerprint!);
+                
+                if (!guestLimitResult.allowed || guestLimitResult.is_blocked) {
+                    // Track failed execution due to guest limit
+                    await supabase.from('prompt_app_executions').insert({
+                        app_id: app.id,
+                        user_id: null,
+                        fingerprint,
+                        ip_address,
+                        user_agent,
+                        task_id: uuidv4(),
+                        variables_provided: variables,
+                        variables_used: {},
+                        success: false,
+                        error_type: 'rate_limit_exceeded',
+                        error_message: 'Guest execution limit reached. Please sign up to continue.',
+                        referer,
+                        metadata: {
+                            ...metadata,
+                            guest_limit_hit: true,
+                            total_used: guestLimitResult.total_used
+                        }
+                    });
 
-        if (!rateLimitResult.allowed) {
-            // Track failed execution due to rate limit
-            await supabase.from('prompt_app_executions').insert({
-                app_id: app.id,
-                user_id: effectiveUserId,
-                fingerprint,
-                ip_address,
-                user_agent,
-                task_id: uuidv4(), // Dummy task ID
-                variables_provided: variables,
-                variables_used: {},
-                success: false,
-                error_type: 'rate_limit_exceeded',
-                error_message: 'Rate limit exceeded. Please try again later.',
-                referer,
-                metadata
-            });
-
-            return NextResponse.json({
-                success: false,
-                rate_limit: rateLimitResult,
-                error: {
-                    type: 'rate_limit_exceeded',
-                    message: `Rate limit exceeded. ${rateLimitResult.remaining} executions remaining. Resets at ${rateLimitResult.reset_at}.`,
-                    details: {
-                        reset_at: rateLimitResult.reset_at,
-                        is_blocked: rateLimitResult.is_blocked
-                    }
+                    return NextResponse.json({
+                        success: false,
+                        guest_limit: guestLimitResult,
+                        error: {
+                            type: 'guest_limit_exceeded',
+                            message: 'You have reached the maximum number of free executions. Please sign up to continue.',
+                            details: {
+                                remaining: guestLimitResult.remaining,
+                                total_used: guestLimitResult.total_used,
+                                is_blocked: guestLimitResult.is_blocked
+                            }
+                        }
+                    }, { status: 429 });
                 }
-            }, { status: 429 });
+            } catch (error) {
+                console.error('Guest limit check failed:', error);
+                // Fail closed - reject guest access if limit check fails
+                return NextResponse.json({
+                    success: false,
+                    error: {
+                        type: 'service_error',
+                        message: 'Unable to verify guest access. Please try again or sign up.'
+                    }
+                }, { status: 503 });
+            }
         }
-
-        // 3. Update rate limit counter
-        await updateRateLimitCounter(
-            supabase,
-            app.id,
-            isPublicAccess ? undefined : user?.id, // Only pass user_id for authenticated users
-            fingerprint,
-            ip_address,
-            app.rate_limit_window_hours
-        );
 
         // 4. Validate and prepare variables
         const { validVariables, validationErrors } = validateVariables(
@@ -142,8 +154,8 @@ export async function POST(
             // Track failed execution
             await supabase.from('prompt_app_executions').insert({
                 app_id: app.id,
-                user_id: effectiveUserId,
-                fingerprint,
+                user_id: user?.id || null,
+                fingerprint: isPublicAccess ? fingerprint : null,
                 ip_address,
                 user_agent,
                 task_id: taskId,
@@ -158,7 +170,7 @@ export async function POST(
 
             return NextResponse.json({
                 success: false,
-                rate_limit: rateLimitResult,
+                guest_limit: guestLimitResult,
                 error: {
                     type: 'invalid_variables',
                     message: 'Variable validation failed',
@@ -179,8 +191,8 @@ export async function POST(
             
             await supabase.from('prompt_app_executions').insert({
                 app_id: app.id,
-                user_id: effectiveUserId,
-                fingerprint,
+                user_id: user?.id || null,
+                fingerprint: isPublicAccess ? fingerprint : null,
                 ip_address,
                 user_agent,
                 task_id: taskId,
@@ -195,7 +207,7 @@ export async function POST(
 
             return NextResponse.json({
                 success: false,
-                rate_limit: rateLimitResult,
+                guest_limit: guestLimitResult,
                 error: {
                     type: 'execution_error',
                     message: 'Prompt configuration error'
@@ -217,8 +229,8 @@ export async function POST(
             
             await supabase.from('prompt_app_executions').insert({
                 app_id: app.id,
-                user_id: effectiveUserId,
-                fingerprint,
+                user_id: user?.id || null,
+                fingerprint: isPublicAccess ? fingerprint : null,
                 ip_address,
                 user_agent,
                 task_id: taskId,
@@ -233,7 +245,7 @@ export async function POST(
 
             return NextResponse.json({
                 success: false,
-                rate_limit: rateLimitResult,
+                guest_limit: guestLimitResult,
                 error: {
                     type: 'execution_error',
                     message: 'Prompt configuration error: no model specified'
@@ -256,8 +268,8 @@ export async function POST(
             .from('prompt_app_executions')
             .insert({
                 app_id: app.id,
-                user_id: effectiveUserId,
-                fingerprint,
+                user_id: user?.id || null,
+                fingerprint: isPublicAccess ? fingerprint : null,
                 ip_address,
                 user_agent,
                 task_id: taskId,
@@ -277,8 +289,26 @@ export async function POST(
             console.error('Failed to record execution:', executionError);
         }
 
-        // 10. Return task ID and socket config for client-side Socket.IO connection
-        // Client will connect to Socket.IO directly (can't use socket.io-client on server)
+        // 10. Record guest execution for tracking (non-authenticated only)
+        if (isPublicAccess) {
+            try {
+                await recordGuestExecution(supabase, {
+                    fingerprint: fingerprint!,
+                    resourceType: 'prompt_app',
+                    resourceId: app.id,
+                    resourceName: app.name,
+                    taskId: taskId,
+                    ipAddress: ip_address,
+                    userAgent: user_agent,
+                    referer
+                });
+            } catch (error) {
+                console.error('Failed to record guest execution:', error);
+                // Continue anyway - tracking failure shouldn't break the execution
+            }
+        }
+
+        // 11. Return task ID and socket config for client-side Socket.IO connection
         return NextResponse.json({
             success: true,
             task_id: taskId,
@@ -287,7 +317,7 @@ export async function POST(
                 task_name: 'direct_chat',
                 task_data: { chat_config: chatConfig }
             },
-            rate_limit: rateLimitResult
+            guest_limit: guestLimitResult
         });
 
     } catch (error) {
@@ -306,111 +336,6 @@ export async function POST(
 // ============================================================================
 // Helper Functions
 // ============================================================================
-
-async function checkRateLimit(
-    supabase: any,
-    appId: string,
-    userId?: string,
-    fingerprint?: string,
-    ipAddress?: string
-) {
-    const { data, error } = await supabase
-        .rpc('check_rate_limit', {
-            p_app_id: appId,
-            p_user_id: userId || null,
-            p_fingerprint: fingerprint || null,
-            p_ip_address: ipAddress || null
-        });
-
-    if (error || !data || data.length === 0) {
-        console.error('Rate limit check error:', error);
-        // Default to allowing on error (fail open)
-        return {
-            allowed: true,
-            remaining: 5,
-            reset_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            is_blocked: false
-        };
-    }
-
-    return data[0];
-}
-
-async function updateRateLimitCounter(
-    supabase: any,
-    appId: string,
-    userId?: string,
-    fingerprint?: string,
-    ipAddress?: string,
-    windowHours: number = 24
-) {
-    // Find or create rate limit record
-    let record;
-
-    if (userId) {
-        const { data } = await supabase
-            .from('prompt_app_rate_limits')
-            .select('*')
-            .eq('app_id', appId)
-            .eq('user_id', userId)
-            .single();
-        record = data;
-    } else if (fingerprint) {
-        const { data } = await supabase
-            .from('prompt_app_rate_limits')
-            .select('*')
-            .eq('app_id', appId)
-            .eq('fingerprint', fingerprint)
-            .single();
-        record = data;
-    } else if (ipAddress) {
-        const { data } = await supabase
-            .from('prompt_app_rate_limits')
-            .select('*')
-            .eq('app_id', appId)
-            .eq('ip_address', ipAddress)
-            .single();
-        record = data;
-    }
-
-    if (!record) {
-        // Create new record
-        await supabase.from('prompt_app_rate_limits').insert({
-            app_id: appId,
-            user_id: userId || null,
-            fingerprint: fingerprint || null,
-            ip_address: ipAddress || null,
-            execution_count: 1,
-            window_start_at: new Date().toISOString()
-        });
-    } else {
-        // Check if window expired
-        const windowStart = new Date(record.window_start_at);
-        const windowEnd = new Date(windowStart.getTime() + windowHours * 60 * 60 * 1000);
-        const now = new Date();
-
-        if (now > windowEnd) {
-            // Reset window
-            await supabase
-                .from('prompt_app_rate_limits')
-                .update({
-                    execution_count: 1,
-                    window_start_at: now.toISOString(),
-                    last_execution_at: now.toISOString()
-                })
-                .eq('id', record.id);
-        } else {
-            // Increment counter
-            await supabase
-                .from('prompt_app_rate_limits')
-                .update({
-                    execution_count: record.execution_count + 1,
-                    last_execution_at: now.toISOString()
-                })
-                .eq('id', record.id);
-        }
-    }
-}
 
 function validateVariables(
     providedVariables: Record<string, any>,

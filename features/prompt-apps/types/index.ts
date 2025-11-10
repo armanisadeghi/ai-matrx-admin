@@ -5,7 +5,16 @@
 // ============================================================================
 
 export type AppStatus = 'draft' | 'published' | 'archived' | 'suspended';
-export type ComponentLanguage = 'react' | 'html';
+
+// Component languages for syntax highlighting
+// Note: 'react' is legacy (mapped to 'tsx' for backward compatibility)
+export type ComponentLanguage = 
+  | 'tsx'        // TypeScript + JSX (React) - PREFERRED
+  | 'jsx'        // JavaScript + JSX (React)
+  | 'typescript' // Pure TypeScript
+  | 'javascript' // Pure JavaScript
+  | 'html'       // HTML
+  | 'react';     // LEGACY - use 'tsx' instead (kept for backward compatibility)
 
 export type ErrorType =
   | 'missing_variable'

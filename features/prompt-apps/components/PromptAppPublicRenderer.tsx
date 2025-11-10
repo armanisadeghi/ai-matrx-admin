@@ -4,6 +4,10 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { transform } from '@babel/standalone';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { AlertCircle } from 'lucide-react';
+import { getFingerprint } from '@/lib/services/fingerprint-service';
+import { useGuestLimit } from '@/hooks/useGuestLimit';
+import { GuestLimitWarning } from '@/components/guest/GuestLimitWarning';
+import { SignupConversionModal } from '@/components/guest/SignupConversionModal';
 import type { PromptApp } from '../types';
 
 interface ExecuteAppResponse {
@@ -18,10 +22,11 @@ interface ExecuteAppResponse {
         type: string;
         message: string;
     };
-    rate_limit?: {
+    guest_limit?: {
+        allowed: boolean;
         remaining: number;
-        total: number;
-        reset_at: string;
+        total_used: number;
+        is_blocked: boolean;
     };
 }
 
@@ -30,37 +35,23 @@ interface PromptAppPublicRendererProps {
     slug: string;
 }
 
-function generateFingerprint(): string {
-    try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const txt = 'fingerprint';
-        if (ctx) {
-            ctx.textBaseline = 'top';
-            ctx.font = '14px Arial';
-            ctx.fillText(txt, 2, 2);
-        }
-        return canvas.toDataURL().slice(-50);
-    } catch {
-        return Math.random().toString(36).substring(7);
-    }
-}
-
 export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererProps) {
     // Simple local state - NO Redux!
     const [taskId, setTaskId] = useState<string | null>(null);
     const [isExecuting, setIsExecuting] = useState(false);
     const [error, setError] = useState<any>(null);
-    const [rateLimitInfo, setRateLimitInfo] = useState<any>(null);
     const [fingerprint, setFingerprint] = useState('');
     const [response, setResponse] = useState<string>('');
     const [isStreamComplete, setIsStreamComplete] = useState(false);
     const [socket, setSocket] = useState<any>(null);
     const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
-    // Generate fingerprint on mount
+    // Use guest limit hook for tracking and UI
+    const guestLimit = useGuestLimit();
+    
+    // Generate fingerprint on mount using centralized service
     useEffect(() => {
-        setFingerprint(generateFingerprint());
+        getFingerprint().then(fp => setFingerprint(fp));
     }, []);
     
     // Handle Socket.IO streaming when we have socket config
@@ -255,7 +246,10 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             
             const data: ExecuteAppResponse = await res.json();
             
-            setRateLimitInfo(data.rate_limit);
+            // Update guest limit state
+            if (data.guest_limit) {
+                await guestLimit.refresh();
+            }
             
             if (!data.success || !data.task_id || !data.socket_config) {
                 setError(data.error || {
@@ -406,14 +400,30 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
     }
     
     return (
-        <CustomComponent
-            onExecute={handleExecute}
-            response={response}
-            isStreaming={!isStreamComplete && !!taskId}
-            isExecuting={isExecuting}
-            error={error}
-            rateLimitInfo={rateLimitInfo}
-        />
+        <>
+            {/* Guest limit warning (shows after 3 executions) */}
+            {guestLimit.showWarning && (
+                <GuestLimitWarning
+                    remaining={guestLimit.remaining}
+                    onDismiss={guestLimit.dismissWarning}
+                />
+            )}
+            
+            {/* Signup conversion modal (shows at 5 executions) */}
+            <SignupConversionModal
+                isOpen={guestLimit.showSignupModal}
+                onClose={guestLimit.dismissSignupModal}
+                totalUsed={guestLimit.totalUsed}
+            />
+            
+            <CustomComponent
+                onExecute={handleExecute}
+                response={response}
+                isStreaming={!isStreamComplete && !!taskId}
+                isExecuting={isExecuting}
+                error={error}
+            />
+        </>
     );
 }
 
