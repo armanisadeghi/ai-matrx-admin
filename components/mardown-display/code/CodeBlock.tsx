@@ -96,7 +96,7 @@ const mapLanguageForMonaco = (lang: string): string => {
     return languageMap[lang.toLowerCase()] || lang;
 };
 
-git addconst CodeBlock: React.FC<CodeBlockProps> = ({
+const CodeBlock: React.FC<CodeBlockProps> = ({
     code: initialCode,
     language: rawLanguage,
     fontSize = 16,
