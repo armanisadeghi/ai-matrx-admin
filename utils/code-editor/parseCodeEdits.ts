@@ -38,6 +38,11 @@ export interface ParseResult {
 
 /**
  * Parse the AI response to extract SEARCH/REPLACE blocks
+ * 
+ * NEW STRICT PARSING:
+ * - Delimiters MUST be on their own line
+ * - Opening and closing delimiters must match (<<<...>>> or <<...>> or <...>)
+ * - Everything between matching delimiters is treated as code (no partial matches)
  */
 export function parseCodeEdits(response: string): ParseResult {
   const warnings: string[] = [];
@@ -54,184 +59,121 @@ export function parseCodeEdits(response: string): ParseResult {
     console.log(response);
     console.log('=== END RAW RESPONSE ===');
     
-    // Remove markdown code fences if present
+    // Remove markdown code fences if present (but keep the content)
     let cleanedResponse = response.replace(/```[\s\S]*?```/g, (match) => {
       // Extract content inside code fence
       return match.replace(/```[a-z]*\n?/g, '').replace(/\n?```/g, '');
     });
 
-    // Try multiple delimiter variations
-    const searchDelimiters = [
-      /SEARCH:\s*\n?<<<\s*\n?/gi,
-      /SEARCH:\s*\n?<<\s*\n?/gi,
-      /SEARCH:\s*\n?<\s*\n?/gi,
-      /SEARCH:\s*\n/gi,
-    ];
+    // Use regex to extract SEARCH/REPLACE blocks with STRICT line-based matching
+    // Delimiters MUST be on their own lines
+    // We match <<< with >>>, << with >>, and < with >
+    const blockPattern = /SEARCH:\s*\n\s*(<<<|<<|<)\s*\n([\s\S]*?)\n\s*(>>>|>>|>)\s*\n\s*REPLACE:\s*\n\s*(<<<|<<|<)\s*\n([\s\S]*?)\n\s*(>>>|>>|>)\s*/gi;
     
-    const replaceDelimiters = [
-      />>>\s*\n?\s*REPLACE:\s*\n?<<<\s*\n?/gi,
-      />>>\s*\n?\s*REPLACE:\s*\n?<<\s*\n?/gi,
-      />>>\s*\n?\s*REPLACE:\s*\n?<\s*\n?/gi,
-      />>\s*\n?\s*REPLACE:\s*\n?<<<\s*\n?/gi,
-      />>\s*\n?\s*REPLACE:\s*\n?<<\s*\n?/gi,
-      />\s*\n?\s*REPLACE:\s*\n?<<<\s*\n?/gi,
-      />\s*\n?\s*REPLACE:\s*\n?<\s*\n?/gi,
-      /REPLACE:\s*\n?<<<\s*\n?/gi,
-      /REPLACE:\s*\n?<<\s*\n?/gi,
-      /REPLACE:\s*\n?<\s*\n?/gi,
-    ];
+    let match;
+    let blockIndex = 0;
+    const explanation = cleanedResponse.split(/SEARCH:/i)[0].trim();
     
-    const endDelimiters = [
-      />>>/g,
-      />>/g,
-      />/g,
-    ];
-
-    // Try to split by SEARCH: blocks with different delimiters
-    let searchBlocks: string[] = [];
-    let usedDelimiter = '';
+    console.log('\n=== Starting to parse SEARCH/REPLACE blocks ===');
+    console.log('Cleaned response length:', cleanedResponse.length);
+    console.log('First 500 chars:', cleanedResponse.substring(0, 500));
     
-    for (const delimiter of searchDelimiters) {
-      const blocks = cleanedResponse.split(delimiter);
-      if (blocks.length > 1) {
-        searchBlocks = blocks;
-        usedDelimiter = delimiter.toString();
-        console.log(`Found ${blocks.length - 1} SEARCH blocks using delimiter: ${usedDelimiter}`);
-        break;
-      }
-    }
-    
-    if (searchBlocks.length <= 1) {
-      return {
-        success: false,
-        edits: [],
-        error: `No SEARCH: blocks found in response. Expected format:
-        
-SEARCH:
-<<<
-[code to find]
->>>
-
-REPLACE:
-<<<
-[replacement code]
->>>
-
-Response preview: ${response.substring(0, 200)}...`,
-        rawResponse,
-        parseDetails: {
-          foundSearchBlocks: 0,
-          foundReplaceBlocks: 0,
-          skippedBlocks: [],
-          warnings: ['No SEARCH: delimiter found in response'],
-        },
-      };
-    }
-    
-    // Skip first element (text before first SEARCH)
-    const explanation = searchBlocks[0].trim();
-    let foundReplaceBlocks = 0;
-    
-    for (let i = 1; i < searchBlocks.length; i++) {
-      const block = searchBlocks[i];
-      const blockPreview = block.substring(0, 100).replace(/\n/g, '\\n');
+    while ((match = blockPattern.exec(cleanedResponse)) !== null) {
+      blockIndex++;
       
-      console.log(`\n--- Processing SEARCH block ${i} ---`);
-      console.log('Block preview:', blockPreview);
+      const searchOpenDelim = match[1]; // Opening delimiter for SEARCH (<<<, <<, or <)
+      const searchContent = match[2].trim();
+      const searchCloseDelim = match[3]; // Closing delimiter for SEARCH (>>>, >>, or >)
+      const replaceOpenDelim = match[4]; // Opening delimiter for REPLACE
+      const replaceContent = match[5].trim();
+      const replaceCloseDelim = match[6]; // Closing delimiter for REPLACE
       
-      // Try different REPLACE delimiters
-      let parts: string[] = [];
-      let usedReplaceDelimiter = '';
+      console.log(`\n--- Parsed SEARCH/REPLACE block ${blockIndex} ---`);
+      console.log('Search delimiters:', `${searchOpenDelim}...${searchCloseDelim}`);
+      console.log('Search content length:', searchContent.length);
+      console.log('Search content preview:', searchContent.substring(0, 100).replace(/\n/g, '\\n'));
+      console.log('Replace delimiters:', `${replaceOpenDelim}...${replaceCloseDelim}`);
+      console.log('Replace content length:', replaceContent.length);
+      console.log('Replace content preview:', replaceContent.substring(0, 100).replace(/\n/g, '\\n'));
       
-      for (const replaceDelim of replaceDelimiters) {
-        const testParts = block.split(replaceDelim);
-        if (testParts.length >= 2) {
-          parts = testParts;
-          usedReplaceDelimiter = replaceDelim.toString();
-          console.log(`Found REPLACE using delimiter: ${usedReplaceDelimiter}`);
-          foundReplaceBlocks++;
-          break;
-        }
-      }
+      // Validate delimiter matching
+      const searchDelimMatch = 
+        (searchOpenDelim === '<<<' && searchCloseDelim === '>>>') ||
+        (searchOpenDelim === '<<' && searchCloseDelim === '>>') ||
+        (searchOpenDelim === '<' && searchCloseDelim === '>');
       
-      if (parts.length < 2) {
-        const warning = `Block ${i}: No REPLACE: section found. Block preview: "${blockPreview}"`;
+      const replaceDelimMatch = 
+        (replaceOpenDelim === '<<<' && replaceCloseDelim === '>>>') ||
+        (replaceOpenDelim === '<<' && replaceCloseDelim === '>>') ||
+        (replaceOpenDelim === '<' && replaceCloseDelim === '>');
+      
+      if (!searchDelimMatch) {
+        const warning = `Block ${blockIndex}: SEARCH delimiters don't match (${searchOpenDelim} vs ${searchCloseDelim})`;
         warnings.push(warning);
-        skippedBlocks.push(blockPreview);
         console.warn(warning);
         continue;
       }
       
-      // Extract search content (before REPLACE)
-      let searchContent = parts[0];
-      
-      // Try different end delimiters for search
-      for (const endDelim of endDelimiters) {
-        const endMatch = searchContent.match(endDelim);
-        if (endMatch) {
-          searchContent = searchContent.substring(0, endMatch.index);
-          break;
-        }
+      if (!replaceDelimMatch) {
+        const warning = `Block ${blockIndex}: REPLACE delimiters don't match (${replaceOpenDelim} vs ${replaceCloseDelim})`;
+        warnings.push(warning);
+        console.warn(warning);
+        continue;
       }
-      
-      searchContent = searchContent.trim();
-      
-      // Extract replace content (after REPLACE)
-      let replaceContent = parts[1];
-      
-      // Try different end delimiters for replace
-      for (const endDelim of endDelimiters) {
-        const endMatch = replaceContent.match(endDelim);
-        if (endMatch) {
-          replaceContent = replaceContent.substring(0, endMatch.index);
-          break;
-        }
-      }
-      
-      replaceContent = replaceContent.trim();
       
       if (!searchContent) {
-        const warning = `Block ${i}: Empty SEARCH content after parsing. Block preview: "${blockPreview}"`;
+        const warning = `Block ${blockIndex}: Empty SEARCH content`;
         warnings.push(warning);
-        skippedBlocks.push(blockPreview);
+        skippedBlocks.push(`Empty SEARCH at position ${match.index}`);
         console.warn(warning);
         continue;
       }
       
-      console.log(`Block ${i} parsed successfully:`);
-      console.log('- Search length:', searchContent.length);
-      console.log('- Replace length:', replaceContent.length);
-      console.log('- Search preview:', searchContent.substring(0, 50).replace(/\n/g, '\\n'));
-      
       edits.push({
-        id: `edit-${i}`,
+        id: `edit-${blockIndex}`,
         search: searchContent,
-        replace: replaceContent,
+        replace: replaceContent, // Can be empty (deletion)
       });
     }
     
+    console.log(`\n=== Parsing complete: Found ${blockIndex} blocks ===`);
+    
     const parseDetails = {
-      foundSearchBlocks: searchBlocks.length - 1,
-      foundReplaceBlocks,
+      foundSearchBlocks: blockIndex,
+      foundReplaceBlocks: blockIndex,
       skippedBlocks,
       warnings,
     };
     
     if (edits.length === 0) {
-      let errorMsg = `No valid SEARCH/REPLACE blocks could be parsed.\n\n`;
-      errorMsg += `Analysis:\n`;
-      errorMsg += `- Found ${parseDetails.foundSearchBlocks} SEARCH: blocks\n`;
-      errorMsg += `- Found ${parseDetails.foundReplaceBlocks} REPLACE: blocks\n`;
+      // Try to provide helpful debugging info
+      const hasSearchKeyword = /SEARCH:/i.test(cleanedResponse);
+      const hasReplaceKeyword = /REPLACE:/i.test(cleanedResponse);
+      const hasDelimiters = /<{1,3}/.test(cleanedResponse) && />{1,3}/.test(cleanedResponse);
+      
+      let errorMsg = `No valid SEARCH/REPLACE blocks found.\n\n`;
+      errorMsg += `Diagnostics:\n`;
+      errorMsg += `- Contains "SEARCH:": ${hasSearchKeyword ? '✓' : '❌'}\n`;
+      errorMsg += `- Contains "REPLACE:": ${hasReplaceKeyword ? '✓' : '❌'}\n`;
+      errorMsg += `- Contains delimiters: ${hasDelimiters ? '✓' : '❌'}\n`;
+      errorMsg += `- Parsed blocks: ${blockIndex}\n`;
       
       if (warnings.length > 0) {
-        errorMsg += `\nIssues found:\n`;
+        errorMsg += `\nWarnings:\n`;
         warnings.forEach((w, idx) => {
           errorMsg += `${idx + 1}. ${w}\n`;
         });
       }
       
-      errorMsg += `\nExpected format:\n`;
-      errorMsg += `SEARCH:\n<<<\n[code]\n>>>\n\nREPLACE:\n<<<\n[code]\n>>>`;
+      errorMsg += `\nRequired format (delimiters MUST be on their own lines):\n\n`;
+      errorMsg += `SEARCH:\n`;
+      errorMsg += `<<<\n`;
+      errorMsg += `[exact code to find]\n`;
+      errorMsg += `>>>\n\n`;
+      errorMsg += `REPLACE:\n`;
+      errorMsg += `<<<\n`;
+      errorMsg += `[replacement code]\n`;
+      errorMsg += `>>>\n`;
       
       return {
         success: false,
@@ -241,6 +183,8 @@ Response preview: ${response.substring(0, 200)}...`,
         parseDetails,
       };
     }
+    
+    console.log(`\n=== Successfully parsed ${edits.length} edit(s) ===`);
     
     return {
       success: true,

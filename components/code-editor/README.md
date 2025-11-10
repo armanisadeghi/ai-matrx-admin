@@ -108,7 +108,7 @@ To add more contexts, edit `utils/code-editor/codeEditorPrompts.ts`
 
 ## AI Response Format
 
-The AI must return responses in this format:
+The AI must return responses in this **STRICT** format:
 
 ```
 SEARCH:
@@ -121,6 +121,23 @@ REPLACE:
 [replacement code]
 >>>
 ```
+
+### ⚠️ CRITICAL FORMATTING RULES
+
+1. **Delimiters MUST be on their own lines**
+   - ✅ Correct: `<<<` on its own line, then code on next line
+   - ❌ Wrong: `<<< code here` or `code here <<<`
+
+2. **Opening and closing delimiters must match**
+   - Use `<<<...>>>` OR `<<...>>` OR `<...>`
+   - ❌ Don't mix: `<<<...>>` or `<<...>>>`
+
+3. **No extra text after delimiters**
+   - ✅ Correct: Line with only `>>>`
+   - ❌ Wrong: `>>> end of block` or `>>> </div>`
+
+4. **Each SEARCH must have a matching REPLACE**
+   - Even for deletions, include an empty REPLACE block
 
 ### Multiple Changes
 
@@ -165,7 +182,8 @@ You are a code editor assistant. When the user requests changes:
 2. Provide changes in SEARCH/REPLACE format
 3. Explain each change briefly
 
-Format:
+FORMAT (CRITICAL - MUST FOLLOW EXACTLY):
+
 SEARCH:
 <<<
 [exact code to find - must match perfectly including whitespace]
@@ -176,11 +194,23 @@ REPLACE:
 [complete replacement code]
 >>>
 
-Rules:
+STRICT FORMATTING RULES:
+- Delimiters (<<<, >>>) MUST be on their own lines
+- No text before or after delimiters on the same line
+- Opening and closing delimiters must match (<<< pairs with >>>)
 - Include enough context to make searches unique
-- Match whitespace exactly
+- Match whitespace exactly (or use natural indentation)
 - One change per SEARCH/REPLACE block
-- Separate multiple blocks with ---
+- Separate multiple blocks with blank lines
+
+WRONG ❌:
+  <<< const foo = 1; >>>  (delimiter not on own line)
+  code >>> more code      (text after delimiter)
+  
+CORRECT ✅:
+  <<<
+  const foo = 1;
+  >>>
 ```
 
 ### 2. Add to Configuration

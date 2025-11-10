@@ -1,5 +1,51 @@
 # AI Code Editor - Debugging Guide
 
+## 🚨 Most Common Issue: Parsing Failures
+
+### Problem: "No valid SEARCH/REPLACE blocks found"
+
+**Symptom**: The AI responds, but the parser can't extract any code changes. AI explanatory text gets mixed into the code.
+
+**Root Cause**: Delimiters (`<<<`, `>>>`) are not on their own lines, or the AI is putting text after delimiters.
+
+**Examples of WRONG formatting** ❌:
+
+```
+SEARCH: <<< const foo = 1; >>>       // Delimiters on same line as code
+REPLACE: <<< const foo = 2; >>>
+
+SEARCH:
+<<<
+const bar = 1;
+>>> This is the end                  // Text after delimiter
+
+SEARCH:
+<<<
+function test() { }
+>>                                   // Wrong delimiter (should be >>>)
+```
+
+**CORRECT formatting** ✅:
+
+```
+SEARCH:
+<<<
+const foo = 1;
+>>>
+
+REPLACE:
+<<<
+const foo = 2;
+>>>
+```
+
+**Solution**: Update your AI prompt to emphasize:
+1. Delimiters MUST be on their own lines
+2. No text before/after delimiters
+3. Opening and closing delimiters must match (`<<<` pairs with `>>>`)
+
+---
+
 ## Understanding Validation Errors
 
 When the AI generates code changes that don't match your current code, you'll now see **extremely detailed** error messages that help you understand exactly what went wrong.

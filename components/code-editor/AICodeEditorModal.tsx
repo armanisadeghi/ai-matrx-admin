@@ -320,27 +320,33 @@ export function AICodeEditorModal({
                 </TabsList>
 
                 <TabsContent value="diff" className="space-y-2">
-                  <CodeBlock
-                    code={formatDiff(currentCode, modifiedCode)}
-                    language="diff"
-                    showLineNumbers={true}
-                  />
+                  <div className="w-full max-w-full overflow-hidden">
+                    <CodeBlock
+                      code={formatDiff(currentCode, modifiedCode)}
+                      language="diff"
+                      showLineNumbers={true}
+                    />
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="before">
-                  <CodeBlock
-                    code={currentCode}
-                    language={language}
-                    showLineNumbers={true}
-                  />
+                  <div className="w-full max-w-full overflow-hidden">
+                    <CodeBlock
+                      code={currentCode}
+                      language={language}
+                      showLineNumbers={true}
+                    />
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="after">
-                  <CodeBlock
-                    code={modifiedCode}
-                    language={language}
-                    showLineNumbers={true}
-                  />
+                  <div className="w-full max-w-full overflow-hidden">
+                    <CodeBlock
+                      code={modifiedCode}
+                      language={language}
+                      showLineNumbers={true}
+                    />
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
@@ -381,7 +387,7 @@ export function AICodeEditorModal({
               {rawAIResponse && (
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Full AI Response (for debugging):</Label>
-                  <div className="border rounded-lg bg-muted/50 max-h-[400px] overflow-y-auto">
+                  <div className="w-full max-w-full overflow-hidden border rounded-lg bg-muted/50 max-h-[400px] overflow-y-auto">
                     <CodeBlock
                       code={rawAIResponse}
                       language="markdown"
