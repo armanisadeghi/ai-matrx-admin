@@ -9,13 +9,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2 } from 'lucide-react';
+import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUserId } from '@/lib/redux/selectors/userSelectors';
 import CodeBlock from '@/components/mardown-display/code/CodeBlock';
+import { AICodeEditorModal } from '@/components/code-editor/AICodeEditorModal';
 import type { PromptApp } from '../types';
 
 interface PromptAppEditorProps {
@@ -33,6 +34,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [mode, setMode] = useState<EditorMode>('view');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAIEditor, setShowAIEditor] = useState(false);
   
   // Editable fields
   const [editName, setEditName] = useState(app.name);
@@ -464,8 +466,17 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
               </Card>
 
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Component Code</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAIEditor(true)}
+                    className="ml-auto"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    AI Edit
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <CodeBlock
@@ -532,6 +543,18 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
           )}
         </div>
       </div>
+
+      {/* AI Code Editor Modal */}
+      <AICodeEditorModal
+        open={showAIEditor}
+        onOpenChange={setShowAIEditor}
+        currentCode={editComponentCode}
+        language={app.component_language || 'jsx'}
+        promptContext="prompt-app-ui"
+        onCodeChange={(newCode) => setEditComponentCode(newCode)}
+        title="AI Code Editor"
+        description="Describe the changes you want to make to your prompt app component"
+      />
     </div>
   );
 }

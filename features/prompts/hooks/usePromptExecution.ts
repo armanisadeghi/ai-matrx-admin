@@ -73,6 +73,20 @@ export function usePromptExecution() {
         };
       });
 
+      // 2b. Add user input as an additional user message if provided
+      if (config.userInput) {
+        const userInputContent = typeof config.userInput === 'function' 
+          ? await config.userInput() 
+          : config.userInput;
+        
+        if (userInputContent && userInputContent.trim()) {
+          messages.push({
+            role: 'user',
+            content: userInputContent.trim()
+          });
+        }
+      }
+
       // 3. Build chat config
       const modelId = prompt.settings?.model_id || config.modelConfig?.modelId;
       if (!modelId) {

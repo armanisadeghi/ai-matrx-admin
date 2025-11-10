@@ -1,3 +1,5 @@
+You are an expert next.js, react developer. You specialize in building custom UIs to run "Prompts" within our special system.
+
 # AI UI Builder Guidelines
 ## Instructions for AI Agents Building Custom Prompt App UIs
 
@@ -154,6 +156,21 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Slider } from '@/components/ui/slider';
 ```
 
+### Enhanced Markdown Renderer (No Import Needed!)
+```typescript
+// EnhancedChatMarkdown is AUTOMATICALLY AVAILABLE
+// No import needed - just use it directly!
+<EnhancedChatMarkdown content={response} />
+```
+
+**EnhancedChatMarkdown** renders:
+- ✅ Markdown (headings, lists, bold, italic, links)
+- ✅ Code blocks with syntax highlighting
+- ✅ Tables
+- ✅ Math equations (LaTeX)
+- ✅ JSON formatting
+- ✅ Automatic dark/light theme support
+
 ### ❌ NOT Allowed
 - No `next/router` or `next/navigation`
 - No `axios` or custom HTTP libraries
@@ -210,11 +227,32 @@ const handleSubmit = async (e?: React.FormEvent) => {
 
 ### 5. Response Display
 
+**Option A: Using EnhancedChatMarkdown (Recommended for most cases)**
+```typescript
+{response && (
+  <Card>
+    <CardHeader>
+      <CardTitle>Result</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <EnhancedChatMarkdown content={response} />
+      {isStreaming && (
+        <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Generating...
+        </div>
+      )}
+    </CardContent>
+  </Card>
+)}
+```
+
+**Option B: Plain text (only if you know response is plain text)**
 ```typescript
 {response && (
   <div className="mt-6 p-6 bg-card border border-border rounded-lg">
     <h3 className="text-lg font-semibold mb-3">Result</h3>
-    <div className="prose max-w-none dark:prose-invert">
+    <div className="whitespace-pre-wrap">
       {response}
     </div>
   </div>
@@ -266,6 +304,119 @@ All styling must use Tailwind classes:
 - Stacks: `space-y-4` or `space-x-4`
 - Gaps: `gap-4`
 - Max width: `max-w-2xl` or `max-w-4xl`
+
+---
+
+## Response Rendering Strategy
+
+Choose your approach based on the AI response structure:
+
+### Strategy 1: Use EnhancedChatMarkdown (Default - Recommended)
+
+**When to use:**
+- ✅ Response structure is unknown or varies
+- ✅ AI returns markdown-formatted text
+- ✅ Response includes code blocks, lists, or tables
+- ✅ You want automatic formatting without extra work
+- ✅ Response might include JSON or structured data
+
+**Example:**
+```typescript
+{response && (
+  <Card>
+    <CardContent className="pt-6">
+      <EnhancedChatMarkdown content={response} />
+    </CardContent>
+  </Card>
+)}
+```
+
+**Benefits:**
+- Automatic markdown rendering
+- Syntax-highlighted code blocks
+- Beautiful table formatting
+- JSON pretty-printing
+- Math equation support
+- Dark/light theme support
+
+### Strategy 2: Custom Parsed Component (Advanced)
+
+**When to use:**
+- ✅ You KNOW the exact response structure (e.g., always JSON)
+- ✅ You want highly interactive, custom-designed result display
+- ✅ Response needs special formatting (e.g., comparison tables, charts)
+- ✅ You want to extract specific data for interactive features
+
+**Example:**
+```typescript
+{response && (
+  <Card>
+    <CardContent className="pt-6">
+      {(() => {
+        try {
+          // Parse structured response
+          const data = JSON.parse(response);
+          
+          // Custom render based on structure
+          return (
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold">{data.title}</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {data.items.map((item, i) => (
+                  <div key={i} className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-semibold">{item.name}</h4>
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        } catch (e) {
+          // Fallback to EnhancedChatMarkdown if parsing fails
+          return <EnhancedChatMarkdown content={response} />;
+        }
+      })()}
+    </CardContent>
+  </Card>
+)}
+```
+
+### Strategy 3: Hybrid Approach
+
+**When to use:**
+- ✅ Response has predictable sections you want to highlight
+- ✅ You want some custom UI with markdown rendering for details
+
+**Example:**
+```typescript
+{response && (
+  <Card>
+    <CardContent className="pt-6">
+      {(() => {
+        // Extract key-value pairs from markdown
+        const lines = response.split('\n');
+        const summary = lines[0]; // First line as summary
+        const details = lines.slice(1).join('\n');
+        
+        return (
+          <div className="space-y-4">
+            {/* Custom header */}
+            <div className="p-4 bg-primary/10 rounded-lg">
+              <p className="font-semibold text-primary">{summary}</p>
+            </div>
+            
+            {/* Markdown body */}
+            <EnhancedChatMarkdown content={details} />
+          </div>
+        );
+      })()}
+    </CardContent>
+  </Card>
+)}
+```
+
+**⚠️ Important:** If you're uncertain about the response format, **always use EnhancedChatMarkdown**. It handles everything gracefully and provides a professional result display without any parsing logic.
 
 ---
 
@@ -450,7 +601,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Loader2, Sparkles, AlertCircle, Edit2 } from 'lucide-react';
 
 export default function StoryGenerator({
   onExecute,
@@ -467,131 +618,178 @@ export default function StoryGenerator({
     conflict: '',
     length: 3
   });
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [showFullForm, setShowFullForm] = useState(true);
   
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    setHasSubmitted(true);
+    setShowFullForm(false);
     await onExecute(variables);
+  };
+  
+  const handleEdit = () => {
+    setShowFullForm(true);
   };
   
   const isFormValid = variables.protagonist && variables.setting && variables.conflict;
   
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Rate Limit Warning */}
-      {rateLimitInfo && rateLimitInfo.remaining <= 2 && rateLimitInfo.remaining > 0 && (
-        <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg">
-          <p className="text-sm text-warning">
+    <div className="max-w-4xl mx-auto px-6 pb-6">
+      {/* Rate Limit Warning - Only show if not submitted yet */}
+      {!hasSubmitted && rateLimitInfo && rateLimitInfo.remaining <= 2 && rateLimitInfo.remaining > 0 && (
+        <div className="p-3 mb-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-800">
             ⚠️ Only {rateLimitInfo.remaining} free generations remaining.
             <a href="/sign-up" className="underline ml-1 font-semibold">Sign up</a> for unlimited access.
           </p>
         </div>
       )}
       
-      {/* Input Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            Story Generator
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Genre */}
-            <div className="space-y-2">
-              <Label>Genre</Label>
-              <Select 
-                value={variables.genre}
-                onValueChange={(value) => setVariables({...variables, genre: value})}
-                disabled={isExecuting}
+      {/* Full Form - Before submission or when editing */}
+      {(!hasSubmitted || showFullForm) && (
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Sparkles className="w-5 h-5 text-violet-600" />
+              Story Generator
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Genre</Label>
+                <Select 
+                  value={variables.genre}
+                  onValueChange={(value) => setVariables({...variables, genre: value})}
+                  disabled={isExecuting}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fantasy">Fantasy</SelectItem>
+                    <SelectItem value="scifi">Sci-Fi</SelectItem>
+                    <SelectItem value="mystery">Mystery</SelectItem>
+                    <SelectItem value="romance">Romance</SelectItem>
+                    <SelectItem value="thriller">Thriller</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="protagonist">Protagonist *</Label>
+                <Input
+                  id="protagonist"
+                  value={variables.protagonist}
+                  onChange={(e) => setVariables({...variables, protagonist: e.target.value})}
+                  placeholder="e.g., A young wizard discovering their powers"
+                  disabled={isExecuting}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="setting">Setting *</Label>
+                <Input
+                  id="setting"
+                  value={variables.setting}
+                  onChange={(e) => setVariables({...variables, setting: e.target.value})}
+                  placeholder="e.g., A mystical academy hidden in the mountains"
+                  disabled={isExecuting}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="conflict">Main Conflict *</Label>
+                <Textarea
+                  id="conflict"
+                  value={variables.conflict}
+                  onChange={(e) => setVariables({...variables, conflict: e.target.value})}
+                  placeholder="e.g., Must save the academy from an ancient evil awakening"
+                  rows={3}
+                  disabled={isExecuting}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Story Length: {variables.length} paragraphs</Label>
+                <Slider
+                  value={[variables.length]}
+                  onValueChange={([value]) => setVariables({...variables, length: value})}
+                  min={1}
+                  max={10}
+                  step={1}
+                  disabled={isExecuting}
+                />
+              </div>
+              
+              <Button 
+                onClick={handleSubmit}
+                disabled={!isFormValid || isExecuting || isStreaming}
+                className="w-full"
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fantasy">Fantasy</SelectItem>
-                  <SelectItem value="scifi">Sci-Fi</SelectItem>
-                  <SelectItem value="mystery">Mystery</SelectItem>
-                  <SelectItem value="romance">Romance</SelectItem>
-                  <SelectItem value="thriller">Thriller</SelectItem>
-                </SelectContent>
-              </Select>
+                {isExecuting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {isExecuting ? 'Generating Story...' : 'Generate Story'}
+              </Button>
             </div>
-            
-            {/* Protagonist */}
-            <div className="space-y-2">
-              <Label htmlFor="protagonist">Protagonist *</Label>
-              <Input
-                id="protagonist"
-                value={variables.protagonist}
-                onChange={(e) => setVariables({...variables, protagonist: e.target.value})}
-                placeholder="e.g., A young wizard discovering their powers"
-                disabled={isExecuting}
-                required
-              />
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Collapsed Summary - After submission */}
+      {hasSubmitted && !showFullForm && (
+        <Card className="mb-4">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground capitalize">{variables.genre}</span> story • 
+                  <span className="ml-1">{variables.protagonist}</span>
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleEdit}
+                disabled={isExecuting || isStreaming}
+                className="ml-3 shrink-0"
+              >
+                <Edit2 className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
             </div>
-            
-            {/* Setting */}
-            <div className="space-y-2">
-              <Label htmlFor="setting">Setting *</Label>
-              <Input
-                id="setting"
-                value={variables.setting}
-                onChange={(e) => setVariables({...variables, setting: e.target.value})}
-                placeholder="e.g., A mystical academy hidden in the mountains"
-                disabled={isExecuting}
-                required
-              />
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Loading State */}
+      {isExecuting && !response && (
+        <Card>
+          <CardContent className="py-12">
+            <div className="flex flex-col items-center justify-center text-center space-y-4">
+              <div className="relative">
+                <Sparkles className="w-12 h-12 text-violet-600 animate-pulse" />
+                <Loader2 className="w-12 h-12 text-violet-600 animate-spin absolute inset-0" />
+              </div>
+              <div>
+                <p className="font-medium text-lg">Creating your story...</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This may take a moment
+                </p>
+              </div>
             </div>
-            
-            {/* Conflict */}
-            <div className="space-y-2">
-              <Label htmlFor="conflict">Main Conflict *</Label>
-              <Textarea
-                id="conflict"
-                value={variables.conflict}
-                onChange={(e) => setVariables({...variables, conflict: e.target.value})}
-                placeholder="e.g., Must save the academy from an ancient evil awakening"
-                rows={3}
-                disabled={isExecuting}
-                required
-              />
-            </div>
-            
-            {/* Length */}
-            <div className="space-y-2">
-              <Label>Story Length: {variables.length} paragraphs</Label>
-              <Slider
-                value={[variables.length]}
-                onValueChange={([value]) => setVariables({...variables, length: value})}
-                min={1}
-                max={10}
-                step={1}
-                disabled={isExecuting}
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              disabled={!isFormValid || isExecuting || isStreaming}
-              className="w-full"
-            >
-              {isExecuting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {isExecuting ? 'Generating Story...' : 'Generate Story'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
       
       {/* Error Display */}
       {error && (
-        <Card className="border-destructive">
+        <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
               <div>
-                <p className="font-semibold text-destructive">{error.type}</p>
-                <p className="text-sm text-destructive/80 mt-1">{error.message}</p>
+                <p className="font-semibold text-red-900">{error.type}</p>
+                <p className="text-sm text-red-700 mt-1">{error.message}</p>
               </div>
             </div>
           </CardContent>
@@ -601,15 +799,16 @@ export default function StoryGenerator({
       {/* Response Display */}
       {response && (
         <Card>
-          <CardHeader>
-            <CardTitle>Your Story</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Your Story</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="prose max-w-none dark:prose-invert">
+            <div className="prose prose-sm max-w-none">
               {response}
             </div>
+            
             {isStreaming && (
-              <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t text-sm text-muted-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Streaming...</span>
               </div>
@@ -664,12 +863,16 @@ const { response, isStreaming, error } = props;
 ---
 
 ## Final Notes
-
 - **Keep it simple**: Focus on collecting variables and displaying results
 - **Mobile-first**: Use responsive Tailwind classes (`sm:`, `md:`, `lg:`)
 - **Accessibility**: Use proper labels, ARIA attributes when needed
 - **Performance**: Avoid heavy computations, keep renders fast
 - **User Experience**: Clear instructions, helpful placeholders, good error messages
+- **Efficient use of space**: The page already has a header, so keep the top clean without excessive spacing. Use a nice icon and title with a concise description only when it adds value
+- **Progressive UI states**: Once the user submits, transition the input into a more minimal style since their focus shifts to viewing results
+- **Smart result display**: 
+  - **Default to EnhancedChatMarkdown** - It handles markdown, code, tables, JSON, and more automatically
+  - Only create custom parsers if you KNOW the exact response structure and want highly interactive features
+  - When in doubt, use EnhancedChatMarkdown - it provides professional formatting without any extra work
 
-Your component is the **face of the AI app** - make it beautiful, intuitive, and reliable! 🎨✨
-
+Your component is the **face of the AI app** - make it beautiful, intuitive, and reliable!
