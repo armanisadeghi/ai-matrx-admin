@@ -242,6 +242,18 @@ export const adminCategories = [
             },
         ],
     },
+    {
+        name: "Prompt Apps Administration",
+        icon: <IconRobot className="w-6 h-6" />,
+        features: [
+            {
+                title: "Prompt Apps Admin",
+                description: "Manage prompt app categories, view errors, monitor analytics, moderate apps, and manage rate limits.",
+                icon: <IconRobot />,
+                link: "/administration/prompt-apps",
+            },
+        ],
+    },
     // {
     //     name: "*** DevOps & Deployment",
     //     icon: <IconGitBranch className="w-6 h-6" />,

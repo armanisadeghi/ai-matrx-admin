@@ -147,12 +147,17 @@ export interface UpdateAppAdminInput {
 
 export async function fetchCategories(): Promise<PromptAppCategory[]> {
     const supabase = getClient();
+    console.log('Fetching categories...');
     const { data, error } = await supabase
         .from('prompt_app_categories')
         .select('*')
         .order('sort_order', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+    }
+    console.log('Categories fetched:', data?.length || 0);
     return data as PromptAppCategory[];
 }
 
@@ -232,10 +237,7 @@ export async function fetchErrors(filters?: {
     const supabase = getClient();
     let query = supabase
         .from('prompt_app_errors')
-        .select(`
-            *,
-            prompt_apps!inner(name, slug)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
     if (filters?.app_id) query = query.eq('app_id', filters.app_id);
@@ -244,14 +246,29 @@ export async function fetchErrors(filters?: {
     if (filters?.limit) query = query.limit(filters.limit);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+        console.error('Error fetching errors:', error);
+        throw error;
+    }
 
-    return (data as any[]).map(item => ({
-        ...item,
-        app_name: item.prompt_apps?.name,
-        app_slug: item.prompt_apps?.slug,
-        prompt_apps: undefined
-    })) as PromptAppError[];
+    // Fetch app names separately if we have errors
+    if (data && data.length > 0) {
+        const appIds = [...new Set(data.map(e => e.app_id))];
+        const { data: apps } = await supabase
+            .from('prompt_apps')
+            .select('id, name, slug')
+            .in('id', appIds);
+
+        const appMap = new Map(apps?.map(app => [app.id, app]) || []);
+
+        return data.map(item => ({
+            ...item,
+            app_name: appMap.get(item.app_id)?.name,
+            app_slug: appMap.get(item.app_id)?.slug
+        })) as PromptAppError[];
+    }
+
+    return data as PromptAppError[];
 }
 
 export async function resolveError(input: ResolveErrorInput): Promise<PromptAppError> {
@@ -305,10 +322,7 @@ export async function fetchExecutions(filters?: {
     const supabase = getClient();
     let query = supabase
         .from('prompt_app_executions')
-        .select(`
-            *,
-            prompt_apps!inner(name, slug)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
     if (filters?.app_id) query = query.eq('app_id', filters.app_id);
@@ -316,14 +330,29 @@ export async function fetchExecutions(filters?: {
     if (filters?.limit) query = query.limit(filters.limit);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+        console.error('Error fetching executions:', error);
+        throw error;
+    }
 
-    return (data as any[]).map(item => ({
-        ...item,
-        app_name: item.prompt_apps?.name,
-        app_slug: item.prompt_apps?.slug,
-        prompt_apps: undefined
-    })) as PromptAppExecution[];
+    // Fetch app names separately if we have executions
+    if (data && data.length > 0) {
+        const appIds = [...new Set(data.map(e => e.app_id))];
+        const { data: apps } = await supabase
+            .from('prompt_apps')
+            .select('id, name, slug')
+            .in('id', appIds);
+
+        const appMap = new Map(apps?.map(app => [app.id, app]) || []);
+
+        return data.map(item => ({
+            ...item,
+            app_name: appMap.get(item.app_id)?.name,
+            app_slug: appMap.get(item.app_id)?.slug
+        })) as PromptAppExecution[];
+    }
+
+    return data as PromptAppExecution[];
 }
 
 // ============================================================================
@@ -338,10 +367,7 @@ export async function fetchRateLimits(filters?: {
     const supabase = getClient();
     let query = supabase
         .from('prompt_app_rate_limits')
-        .select(`
-            *,
-            prompt_apps!inner(name, slug)
-        `)
+        .select('*')
         .order('updated_at', { ascending: false });
 
     if (filters?.app_id) query = query.eq('app_id', filters.app_id);
@@ -349,14 +375,29 @@ export async function fetchRateLimits(filters?: {
     if (filters?.limit) query = query.limit(filters.limit);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+        console.error('Error fetching rate limits:', error);
+        throw error;
+    }
 
-    return (data as any[]).map(item => ({
-        ...item,
-        app_name: item.prompt_apps?.name,
-        app_slug: item.prompt_apps?.slug,
-        prompt_apps: undefined
-    })) as PromptAppRateLimit[];
+    // Fetch app names separately if we have rate limits
+    if (data && data.length > 0) {
+        const appIds = [...new Set(data.map(e => e.app_id))];
+        const { data: apps } = await supabase
+            .from('prompt_apps')
+            .select('id, name, slug')
+            .in('id', appIds);
+
+        const appMap = new Map(apps?.map(app => [app.id, app]) || []);
+
+        return data.map(item => ({
+            ...item,
+            app_name: appMap.get(item.app_id)?.name,
+            app_slug: appMap.get(item.app_id)?.slug
+        })) as PromptAppRateLimit[];
+    }
+
+    return data as PromptAppRateLimit[];
 }
 
 export async function unblockRateLimit(id: string): Promise<PromptAppRateLimit> {
@@ -409,10 +450,7 @@ export async function fetchAppsAdmin(filters?: {
     const supabase = getClient();
     let query = supabase
         .from('prompt_apps')
-        .select(`
-            *,
-            users:user_id(email)
-        `)
+        .select('*')
         .order('updated_at', { ascending: false });
 
     if (filters?.status) query = query.eq('status', filters.status);
@@ -422,13 +460,30 @@ export async function fetchAppsAdmin(filters?: {
     if (filters?.limit) query = query.limit(filters.limit);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+        console.error('Error fetching apps:', error);
+        throw error;
+    }
 
-    return (data as any[]).map(item => ({
-        ...item,
-        creator_email: item.users?.email,
-        users: undefined
-    })) as PromptAppAdminView[];
+    // Fetch user emails separately if we have apps
+    if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(app => app.user_id))];
+        const { data: users } = await supabase
+            .from('users')
+            .select('id, email')
+            .in('id', userIds);
+
+        if (users && users.length > 0) {
+            const userMap = new Map(users.map(user => [user.id, user]));
+
+            return data.map(item => ({
+                ...item,
+                creator_email: userMap.get(item.user_id)?.email
+            })) as PromptAppAdminView[];
+        }
+    }
+
+    return data.map(item => ({ ...item, creator_email: undefined })) as PromptAppAdminView[];
 }
 
 export async function updateAppAdmin(input: UpdateAppAdminInput): Promise<PromptAppAdminView> {
@@ -472,7 +527,11 @@ export async function fetchAnalytics(filters?: {
     if (filters?.limit) query = query.limit(filters.limit);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+        console.error('Error fetching analytics:', error);
+        // Return empty array if view doesn't exist yet
+        return [];
+    }
     return data || [];
 }
 

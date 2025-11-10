@@ -48,14 +48,16 @@ export function CategoriesAdmin() {
         try {
             setLoading(true);
             const data = await fetchCategories();
-            setCategories(data);
-        } catch (error) {
+            setCategories(data || []);
+        } catch (error: any) {
             console.error('Error loading categories:', error);
             toast({
                 title: "Error",
-                description: "Failed to load categories",
+                description: error?.message || "Failed to load categories",
                 variant: "destructive"
             });
+            // Set empty array so UI can render
+            setCategories([]);
         } finally {
             setLoading(false);
         }
