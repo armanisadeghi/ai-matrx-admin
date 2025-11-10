@@ -49,6 +49,12 @@ export const pages: ModulePage[] = [
         relative: true,
         description: 'Database management'
     },
+    {
+        title: 'Prompt Apps',
+        path: 'prompt-apps',
+        relative: true,
+        description: 'Manage prompt app categories, errors, and analytics'
+    },
 
 ];
 

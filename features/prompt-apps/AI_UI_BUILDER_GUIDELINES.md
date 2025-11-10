@@ -46,7 +46,7 @@ export default function CustomPromptApp({
   };
   
   return (
-    <div className="p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Your custom UI here */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -278,16 +278,26 @@ const handleSubmit = async (e?: React.FormEvent) => {
 
 ### Use Tailwind CSS
 
-All styling must use Tailwind classes:
+All styling must use Tailwind classes. **Important**: The page already has a header and layout, so **avoid `min-h-screen`** and excessive top padding.
 
 ```typescript
-<div className="p-6 space-y-4 max-w-2xl mx-auto">
+<div className="max-w-4xl mx-auto p-6 space-y-6">
   <Card className="bg-card border-border">
     <CardContent className="pt-6">
       {/* Content */}
     </CardContent>
   </Card>
 </div>
+```
+
+**❌ Don't do this:**
+```typescript
+<div className="min-h-screen pt-8 pb-4">  // Causes scrolling issues
+```
+
+**✅ Do this:**
+```typescript
+<div className="max-w-4xl mx-auto p-6 space-y-6">  // Clean, no scroll issues
 ```
 
 ### Color Classes
@@ -300,10 +310,11 @@ All styling must use Tailwind classes:
 
 ### Spacing
 
-- Container: `p-4` to `p-6`
-- Stacks: `space-y-4` or `space-x-4`
-- Gaps: `gap-4`
-- Max width: `max-w-2xl` or `max-w-4xl`
+- **Container**: `p-6` (avoid `pt-8` - it's too much)
+- **Stacks**: `space-y-4` or `space-y-6`
+- **Gaps**: `gap-4` or `gap-6`
+- **Max width**: `max-w-2xl`, `max-w-4xl`, or `max-w-5xl`
+- **⚠️ Avoid**: `min-h-screen` (page has header), excessive padding like `pt-8 pb-4`
 
 ---
 
@@ -634,7 +645,7 @@ export default function StoryGenerator({
   const isFormValid = variables.protagonist && variables.setting && variables.conflict;
   
   return (
-    <div className="max-w-4xl mx-auto px-6 pb-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Rate Limit Warning - Only show if not submitted yet */}
       {!hasSubmitted && rateLimitInfo && rateLimitInfo.remaining <= 2 && rateLimitInfo.remaining > 0 && (
         <div className="p-3 mb-4 bg-amber-50 border border-amber-200 rounded-lg">
@@ -868,7 +879,11 @@ const { response, isStreaming, error } = props;
 - **Accessibility**: Use proper labels, ARIA attributes when needed
 - **Performance**: Avoid heavy computations, keep renders fast
 - **User Experience**: Clear instructions, helpful placeholders, good error messages
-- **Efficient use of space**: The page already has a header, so keep the top clean without excessive spacing. Use a nice icon and title with a concise description only when it adds value
+- **Efficient use of space**: 
+  - ⚠️ **Never use `min-h-screen`** - the page has a header and this causes scrolling
+  - Use `max-w-4xl mx-auto p-6` for your container
+  - Avoid excessive top padding (`pt-8`) - use consistent padding like `p-6`
+  - The page already has a clean header, so your content should flow naturally
 - **Progressive UI states**: Once the user submits, transition the input into a more minimal style since their focus shifts to viewing results
 - **Smart result display**: 
   - **Default to EnhancedChatMarkdown** - It handles markdown, code, tables, JSON, and more automatically
