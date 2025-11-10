@@ -2,7 +2,7 @@
 
 import { Middleware, Action } from 'redux';
 import { createClient } from "@/utils/supabase/client";
-import { AppDispatch, RootState, AppThunk } from '../store';
+import type { AppDispatch, RootState, AppThunk } from '../store';
 
 const supabase = createClient();
 

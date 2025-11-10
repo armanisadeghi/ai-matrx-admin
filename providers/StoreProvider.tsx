@@ -7,7 +7,6 @@ import {Provider} from 'react-redux';
 import {AppStore, makeStore} from '@/lib/redux/store';
 import {loadPreferences} from '@/lib/redux/middleware/preferencesMiddleware';
 import {InitialReduxState} from '@/types/reduxTypes';
-import { useSocketInit } from '@/lib/redux/socket-io/connection/useSocketInit';
 
 export default function StoreProvider(
     {

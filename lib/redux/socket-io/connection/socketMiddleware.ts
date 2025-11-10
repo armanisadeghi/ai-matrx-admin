@@ -9,7 +9,7 @@ import {
   setIsAuthenticated,
 } from '../slices/socketConnectionsSlice';
 import { updateErrorResponse } from '../slices/socketResponseSlice';
-import { AppDispatch, RootState } from '@/lib/redux/store';
+import type { AppDispatch, RootState } from '@/lib/redux/store';
 
 interface SocketAction {
   type: string;

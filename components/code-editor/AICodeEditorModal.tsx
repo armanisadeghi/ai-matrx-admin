@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -23,13 +22,16 @@ import {
   Code2,
   Eye,
   FileCode,
+  FileText,
 } from 'lucide-react';
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
 import { parseCodeEdits, validateEdits } from '@/utils/code-editor/parseCodeEdits';
 import { applyCodeEdits } from '@/utils/code-editor/applyCodeEdits';
-import { formatDiff, getDiffStats } from '@/utils/code-editor/generateDiff';
+import { getDiffStats } from '@/utils/code-editor/generateDiff';
 import { getCodeEditorPromptId } from '@/utils/code-editor/codeEditorPrompts';
 import CodeBlock from '@/components/mardown-display/code/CodeBlock';
+import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import { DiffView } from './DiffView';
 
 export interface AICodeEditorModalProps {
   open: boolean;
@@ -45,17 +47,64 @@ export interface AICodeEditorModalProps {
 
 type EditorState = 'input' | 'processing' | 'review' | 'applying' | 'complete' | 'error';
 
+// Normalize language for better syntax highlighting
+function normalizeLanguage(lang: string): string {
+  const langLower = lang.toLowerCase();
+  
+  // Map common variations to standard language identifiers
+  const languageMap: Record<string, string> = {
+    'js': 'javascript',
+    'ts': 'typescript',
+    'jsx': 'jsx',
+    'tsx': 'tsx',
+    'typescript': 'typescript',
+    'javascript': 'javascript',
+    'py': 'python',
+    'python': 'python',
+    'rb': 'ruby',
+    'ruby': 'ruby',
+    'go': 'go',
+    'rust': 'rust',
+    'java': 'java',
+    'cpp': 'cpp',
+    'c': 'c',
+    'cs': 'csharp',
+    'csharp': 'csharp',
+    'php': 'php',
+    'swift': 'swift',
+    'kotlin': 'kotlin',
+    'html': 'html',
+    'css': 'css',
+    'scss': 'scss',
+    'json': 'json',
+    'yaml': 'yaml',
+    'yml': 'yaml',
+    'xml': 'xml',
+    'sql': 'sql',
+    'bash': 'bash',
+    'sh': 'bash',
+    'shell': 'bash',
+    'markdown': 'markdown',
+    'md': 'markdown',
+  };
+  
+  return languageMap[langLower] || lang;
+}
+
 export function AICodeEditorModal({
   open,
   onOpenChange,
   currentCode,
-  language,
+  language: rawLanguage,
   promptId,
   promptContext = 'generic',
   onCodeChange,
   title = 'AI Code Editor',
   description = 'Describe the changes you want to make to the code',
 }: AICodeEditorModalProps) {
+  // Normalize the language for consistent syntax highlighting
+  const language = normalizeLanguage(rawLanguage);
+  
   // Use explicit promptId if provided, otherwise use context
   const effectivePromptId = promptId || getCodeEditorPromptId(promptContext);
   const [userInstructions, setUserInstructions] = useState('');
@@ -219,34 +268,38 @@ export function AICodeEditorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            {title}
+      <DialogContent className="max-w-6xl h-[90vh] p-0 flex flex-col overflow-hidden">
+        {/* Fixed Header */}
+        <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+            <span className="truncate">{title}</span>
           </DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0">
+          <div className="space-y-4">
           {/* Input Stage */}
           {state === 'input' && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="instructions">What changes would you like to make?</Label>
+                <Label htmlFor="instructions" className="text-xs sm:text-sm">
+                  What changes would you like to make?
+                </Label>
                 <Textarea
                   id="instructions"
                   value={userInstructions}
                   onChange={(e) => setUserInstructions(e.target.value)}
                   placeholder="Example: Add a loading spinner to the submit button and disable it while processing"
                   rows={4}
-                  className="resize-none"
+                  className="resize-none text-xs sm:text-sm"
                 />
               </div>
 
               <Alert>
-                <Code2 className="w-4 h-4" />
-                <AlertDescription>
+                <Code2 className="w-4 h-4 shrink-0" />
+                <AlertDescription className="text-xs sm:text-sm">
                   The AI will analyze your code and provide precise changes using SEARCH/REPLACE blocks.
                   You'll be able to review all changes before applying them.
                 </AlertDescription>
@@ -256,20 +309,22 @@ export function AICodeEditorModal({
 
           {/* Processing Stage */}
           {state === 'processing' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center space-y-3">
-                  <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-                  <p className="text-sm text-muted-foreground">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-center py-6 sm:py-8">
+                <div className="text-center space-y-2 sm:space-y-3">
+                  <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-primary mx-auto" />
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     AI is analyzing your code and generating changes...
                   </p>
                 </div>
               </div>
 
               {streamingText && (
-                <div className="border rounded-lg p-4 bg-muted/50 max-h-[400px] overflow-y-auto">
+                <div className="border rounded-lg p-3 sm:p-4 bg-muted/50 overflow-hidden">
                   <p className="text-xs text-muted-foreground mb-2">Live Response:</p>
-                  <pre className="text-sm whitespace-pre-wrap">{streamingText}</pre>
+                  <div className="max-h-[300px] overflow-y-auto overflow-x-auto">
+                    <pre className="text-xs sm:text-sm whitespace-pre-wrap break-words">{streamingText}</pre>
+                  </div>
                 </div>
               )}
             </div>
@@ -277,20 +332,20 @@ export function AICodeEditorModal({
 
           {/* Review Stage */}
           {state === 'review' && parsedEdits && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
-                  <h3 className="text-lg font-semibold">Review Changes</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="text-base sm:text-lg font-semibold">Review Changes</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {parsedEdits.edits.length} change{parsedEdits.edits.length !== 1 ? 's' : ''} proposed
                   </p>
                 </div>
                 {diffStats && (
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className="text-green-600 border-green-600">
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
                       +{diffStats.additions} additions
                     </Badge>
-                    <Badge variant="outline" className="text-red-600 border-red-600">
+                    <Badge variant="outline" className="text-red-600 border-red-600 text-xs">
                       -{diffStats.deletions} deletions
                     </Badge>
                   </div>
@@ -299,38 +354,41 @@ export function AICodeEditorModal({
 
               {parsedEdits.explanation && (
                 <Alert>
-                  <AlertDescription>{parsedEdits.explanation}</AlertDescription>
+                  <AlertDescription className="text-xs sm:text-sm">{parsedEdits.explanation}</AlertDescription>
                 </Alert>
               )}
 
               <Tabs defaultValue="diff" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="diff">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Diff View
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+                  <TabsTrigger value="diff" className="text-xs sm:text-sm py-2">
+                    <Eye className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Diff</span>
                   </TabsTrigger>
-                  <TabsTrigger value="before">
-                    <FileCode className="w-4 h-4 mr-2" />
-                    Before
+                  <TabsTrigger value="before" className="text-xs sm:text-sm py-2">
+                    <FileCode className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Before</span>
                   </TabsTrigger>
-                  <TabsTrigger value="after">
-                    <FileCode className="w-4 h-4 mr-2" />
-                    After
+                  <TabsTrigger value="after" className="text-xs sm:text-sm py-2">
+                    <FileCode className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">After</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="response" className="text-xs sm:text-sm py-2">
+                    <FileText className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Full Response</span>
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="diff" className="space-y-2">
-                  <div className="w-full max-w-full overflow-hidden">
-                    <CodeBlock
-                      code={formatDiff(currentCode, modifiedCode)}
-                      language="diff"
-                      showLineNumbers={true}
-                    />
-                  </div>
+                <TabsContent value="diff" className="mt-4 overflow-hidden">
+                  <DiffView
+                    originalCode={currentCode}
+                    modifiedCode={modifiedCode}
+                    language={language}
+                    showLineNumbers={true}
+                  />
                 </TabsContent>
 
-                <TabsContent value="before">
-                  <div className="w-full max-w-full overflow-hidden">
+                <TabsContent value="before" className="mt-4 overflow-hidden">
+                  <div className="w-full overflow-x-auto">
                     <CodeBlock
                       code={currentCode}
                       language={language}
@@ -339,12 +397,25 @@ export function AICodeEditorModal({
                   </div>
                 </TabsContent>
 
-                <TabsContent value="after">
-                  <div className="w-full max-w-full overflow-hidden">
+                <TabsContent value="after" className="mt-4 overflow-hidden">
+                  <div className="w-full overflow-x-auto">
                     <CodeBlock
                       code={modifiedCode}
                       language={language}
                       showLineNumbers={true}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="response" className="mt-4 overflow-hidden">
+                  <div className="w-full overflow-x-auto prose prose-sm dark:prose-invert max-w-none">
+                    <EnhancedChatMarkdown
+                      content={rawAIResponse}
+                      type="message"
+                      role="assistant"
+                      className="text-xs sm:text-sm"
+                      hideCopyButton={false}
+                      allowFullScreenEditor={false}
                     />
                   </div>
                 </TabsContent>
@@ -354,54 +425,40 @@ export function AICodeEditorModal({
 
           {/* Applying Stage */}
           {state === 'applying' && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center space-y-3">
-                <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-                <p className="text-sm text-muted-foreground">Applying changes...</p>
+            <div className="flex items-center justify-center py-6 sm:py-8">
+              <div className="text-center space-y-2 sm:space-y-3">
+                <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-primary mx-auto" />
+                <p className="text-xs sm:text-sm text-muted-foreground">Applying changes...</p>
               </div>
             </div>
           )}
 
           {/* Complete Stage */}
           {state === 'complete' && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center space-y-3">
-                <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto" />
-                <p className="text-sm font-medium">Changes applied successfully!</p>
+            <div className="flex items-center justify-center py-6 sm:py-8">
+              <div className="text-center space-y-2 sm:space-y-3">
+                <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-green-600 mx-auto" />
+                <p className="text-xs sm:text-sm font-medium">Changes applied successfully!</p>
               </div>
             </div>
           )}
 
           {/* Error Stage */}
           {state === 'error' && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <Alert variant="destructive">
-                <AlertCircle className="w-4 h-4" />
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <AlertDescription>
-                  <p className="font-semibold">Error Parsing AI Response</p>
-                  <pre className="text-xs mt-2 whitespace-pre-wrap">{errorMessage}</pre>
+                  <p className="font-semibold text-xs sm:text-sm">Error Parsing AI Response</p>
+                  <pre className="text-xs mt-2 whitespace-pre-wrap overflow-x-auto">{errorMessage}</pre>
                 </AlertDescription>
               </Alert>
 
-              {/* Always show raw AI response on error */}
-              {rawAIResponse && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Full AI Response (for debugging):</Label>
-                  <div className="w-full max-w-full overflow-hidden border rounded-lg bg-muted/50 max-h-[400px] overflow-y-auto">
-                    <CodeBlock
-                      code={rawAIResponse}
-                      language="markdown"
-                      showLineNumbers={false}
-                    />
-                  </div>
-                </div>
-              )}
-
               {parsedEdits?.parseDetails && (
                 <Alert>
-                  <Code2 className="w-4 h-4" />
+                  <Code2 className="w-4 h-4 shrink-0" />
                   <AlertDescription>
-                    <p className="font-semibold text-sm">Parse Details:</p>
+                    <p className="font-semibold text-xs sm:text-sm">Parse Details:</p>
                     <ul className="text-xs mt-2 space-y-1">
                       <li>• SEARCH blocks detected: {parsedEdits.parseDetails.foundSearchBlocks}</li>
                       <li>• REPLACE blocks detected: {parsedEdits.parseDetails.foundReplaceBlocks}</li>
@@ -412,51 +469,97 @@ export function AICodeEditorModal({
                   </AlertDescription>
                 </Alert>
               )}
+
+              {/* Always show raw AI response on error */}
+              {rawAIResponse && (
+                <div className="space-y-2">
+                  <Label className="text-xs sm:text-sm font-semibold">Full AI Response (for debugging):</Label>
+                  <div className="w-full overflow-hidden border rounded-lg bg-muted/50">
+                    <div className="max-h-[300px] overflow-y-auto overflow-x-auto">
+                      <EnhancedChatMarkdown
+                        content={rawAIResponse}
+                        type="message"
+                        role="assistant"
+                        className="text-xs"
+                        hideCopyButton={false}
+                        allowFullScreenEditor={false}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+          </div>
         </div>
 
-        <DialogFooter>
+        {/* Fixed Footer */}
+        <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t shrink-0 flex-row justify-end gap-2 sm:gap-3">
           {state === 'input' && (
             <>
-              <Button variant="outline" onClick={handleCancel}>
+              <Button 
+                variant="outline" 
+                onClick={handleCancel}
+                className="text-xs sm:text-sm px-3 sm:px-4"
+              >
                 Cancel
               </Button>
               <Button 
                 onClick={handleSubmit} 
                 disabled={!userInstructions.trim() || isExecuting}
+                className="text-xs sm:text-sm px-3 sm:px-4"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate Changes
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Generate Changes</span>
+                <span className="sm:hidden">Generate</span>
               </Button>
             </>
           )}
 
           {state === 'processing' && (
-            <Button variant="outline" disabled>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Button 
+              variant="outline" 
+              disabled
+              className="text-xs sm:text-sm px-3 sm:px-4"
+            >
+              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2 animate-spin" />
               Processing...
             </Button>
           )}
 
           {state === 'review' && (
             <>
-              <Button variant="outline" onClick={handleCancel}>
+              <Button 
+                variant="outline" 
+                onClick={handleCancel}
+                className="text-xs sm:text-sm px-3 sm:px-4"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleApplyChanges}>
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                Apply Changes
+              <Button 
+                onClick={handleApplyChanges}
+                className="text-xs sm:text-sm px-3 sm:px-4"
+              >
+                <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Apply Changes</span>
+                <span className="sm:hidden">Apply</span>
               </Button>
             </>
           )}
 
           {state === 'error' && (
             <>
-              <Button variant="outline" onClick={handleCancel}>
+              <Button 
+                variant="outline" 
+                onClick={handleCancel}
+                className="text-xs sm:text-sm px-3 sm:px-4"
+              >
                 Close
               </Button>
-              <Button onClick={() => setState('input')}>
+              <Button 
+                onClick={() => setState('input')}
+                className="text-xs sm:text-sm px-3 sm:px-4"
+              >
                 Try Again
               </Button>
             </>
