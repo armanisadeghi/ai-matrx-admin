@@ -14,6 +14,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   Loader2, 
   Sparkles, 
@@ -28,7 +35,7 @@ import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution'
 import { parseCodeEdits, validateEdits } from '@/utils/code-editor/parseCodeEdits';
 import { applyCodeEdits } from '@/utils/code-editor/applyCodeEdits';
 import { getDiffStats } from '@/utils/code-editor/generateDiff';
-import { getCodeEditorPromptId } from '@/utils/code-editor/codeEditorPrompts';
+import { getCodeEditorPromptId, CODE_EDITOR_PROMPTS } from '@/utils/code-editor/codeEditorPrompts';
 import CodeBlock from '@/components/mardown-display/code/CodeBlock';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { DiffView } from './DiffView';
@@ -43,6 +50,7 @@ export interface AICodeEditorModalProps {
   onCodeChange: (newCode: string) => void;
   title?: string;
   description?: string;
+  allowPromptSelection?: boolean; // Whether to show the prompt selector dropdown
 }
 
 type EditorState = 'input' | 'processing' | 'review' | 'applying' | 'complete' | 'error';
@@ -101,13 +109,18 @@ export function AICodeEditorModal({
   promptContext = 'generic',
   onCodeChange,
   title = 'AI Code Editor',
-  description = 'Describe the changes you want to make to the code',
+  description = '',
+  allowPromptSelection = false,
 }: AICodeEditorModalProps) {
   // Normalize the language for consistent syntax highlighting
   const language = normalizeLanguage(rawLanguage);
   
   // Use explicit promptId if provided, otherwise use context
-  const effectivePromptId = promptId || getCodeEditorPromptId(promptContext);
+  const defaultPromptId = promptId || getCodeEditorPromptId(promptContext);
+  
+  // State for prompt selection
+  const [selectedPromptId, setSelectedPromptId] = useState(defaultPromptId);
+  
   const [userInstructions, setUserInstructions] = useState('');
   const [state, setState] = useState<EditorState>('input');
   const [parsedEdits, setParsedEdits] = useState<ReturnType<typeof parseCodeEdits> | null>(null);
@@ -117,7 +130,7 @@ export function AICodeEditorModal({
 
   const { execute, isExecuting, streamingText, error: execError, reset } = usePromptExecution();
 
-  // Reset state when modal closes
+  // Reset state when modal closes or when defaultPromptId changes
   useEffect(() => {
     if (!open) {
       setUserInstructions('');
@@ -126,9 +139,17 @@ export function AICodeEditorModal({
       setModifiedCode('');
       setErrorMessage('');
       setRawAIResponse('');
+      setSelectedPromptId(defaultPromptId);
       reset();
     }
-  }, [open, reset]);
+  }, [open, reset, defaultPromptId]);
+  
+  // Update selected prompt when default changes (e.g., when modal reopens with different context)
+  useEffect(() => {
+    if (open) {
+      setSelectedPromptId(defaultPromptId);
+    }
+  }, [open, defaultPromptId]);
 
   // Parse response when streaming completes
   useEffect(() => {
@@ -221,7 +242,7 @@ export function AICodeEditorModal({
 
     try {
       await execute({
-        promptId: effectivePromptId,
+        promptId: selectedPromptId,
         variables: {
           current_code: {
             type: 'hardcoded',
@@ -267,15 +288,35 @@ export function AICodeEditorModal({
 
   const diffStats = modifiedCode ? getDiffStats(currentCode, modifiedCode) : null;
 
+  // Get available prompts for the selector
+  const availablePrompts = Object.values(CODE_EDITOR_PROMPTS);
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl h-[90vh] p-0 flex flex-col overflow-hidden">
         {/* Fixed Header */}
         <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
-            <span className="truncate">{title}</span>
-          </DialogTitle>
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+              <span className="truncate">{title}</span>
+            </DialogTitle>
+            
+            {allowPromptSelection && (
+              <Select value={selectedPromptId} onValueChange={setSelectedPromptId}>
+                <SelectTrigger className="w-[180px] h-8 text-xs">
+                  <SelectValue placeholder="Select mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePrompts.map((prompt) => (
+                    <SelectItem key={prompt.id} value={prompt.id} className="text-xs">
+                      {prompt.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </DialogHeader>
 
         {/* Scrollable Content */}
@@ -297,14 +338,6 @@ export function AICodeEditorModal({
                   className="resize-none text-xs sm:text-sm"
                 />
               </div>
-
-              <Alert>
-                <Code2 className="w-4 h-4 shrink-0" />
-                <AlertDescription className="text-xs sm:text-sm">
-                  The AI will analyze your code and provide precise changes using SEARCH/REPLACE blocks.
-                  You'll be able to review all changes before applying them.
-                </AlertDescription>
-              </Alert>
             </div>
           )}
 

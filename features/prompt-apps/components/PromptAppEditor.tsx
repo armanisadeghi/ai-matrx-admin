@@ -553,7 +553,7 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
         promptContext="prompt-app-ui"
         onCodeChange={(newCode) => setEditComponentCode(newCode)}
         title="AI Code Editor"
-        description="Describe the changes you want to make to your prompt app component"
+        allowPromptSelection={true}
       />
     </div>
   );
