@@ -74,6 +74,8 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             const SOCKET_NAMESPACE = '/UserSession';
             const PUBLIC_USER_ID = '00000000-0000-0000-0000-000000000001';
             
+            console.log('🔌 Connecting to Socket.IO:', { BACKEND_URL, SOCKET_NAMESPACE });
+            
             // Try to get auth token if user is logged in
             let authToken: string | null = null;
             let isAuthenticated = false;
@@ -186,9 +188,11 @@ export function PromptAppPublicRenderer({ app, slug }: PromptAppPublicRendererPr
             
             newSocket.on('connect_error', (err) => {
                 console.error('❌ Socket connection error:', err);
+                console.error('❌ Backend URL was:', BACKEND_URL);
+                console.error('❌ Error details:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
                 setError({
                     type: 'connection_error',
-                    message: 'Failed to connect to AI service'
+                    message: `Failed to connect to AI service: ${err.message || 'Unknown error'}`
                 });
                 setIsExecuting(false);
                 setIsStreamComplete(true);
