@@ -28,7 +28,7 @@ import {
     applyMultipleDiffs,
 } from '@/lib/redux/features/textDiff';
 import type { ParsedDiff } from '@/lib/redux/features/textDiff';
-import { useNotes } from '@/features/notes/context/NotesContext';
+import { useNotesContext } from '@/features/notes/context/NotesContext';
 
 interface UseTextDiffOptions {
     noteId: string;
@@ -38,7 +38,7 @@ interface UseTextDiffOptions {
 
 export function useTextDiff({ noteId, content, onContentChange }: UseTextDiffOptions) {
     const dispatch = useAppDispatch();
-    const { updateNote } = useNotes();
+    const { updateNote } = useNotesContext();
 
     const session = useAppSelector((state) => selectSession(state, noteId));
     const isDirty = useAppSelector((state) => selectIsDirty(state, noteId));
