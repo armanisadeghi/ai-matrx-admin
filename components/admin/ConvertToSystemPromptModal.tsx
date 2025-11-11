@@ -22,6 +22,7 @@ import {
     getCategoryVariableDescription,
     type SystemPromptCategory 
 } from '@/types/system-prompt-categories';
+import { cn } from '@/utils';
 
 interface ConvertToSystemPromptModalProps {
     isOpen: boolean;
