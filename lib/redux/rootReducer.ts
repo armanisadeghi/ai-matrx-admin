@@ -46,6 +46,7 @@ import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlic
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
 import canvasReducer from "./slices/canvasSlice";
+import textDiffReducer from "./features/textDiff/textDiffSlice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -137,6 +138,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         workflowNodes: workflowNodeSlice,
 
         canvas: canvasReducer,
+        textDiff: textDiffReducer,
 
     });
 };
