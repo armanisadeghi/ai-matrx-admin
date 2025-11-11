@@ -1,779 +1,592 @@
+/**
+ * SystemPromptsManager
+ * 
+ * Comprehensive admin interface for managing system prompts.
+ * Features:
+ * - Sidebar with placement types and categories
+ * - View all placeholders and their mapping status
+ * - Assign prompts to placeholders
+ * - Manage functionalities
+ * - Enable/disable prompts
+ */
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import {
-    Plus,
-    Trash2,
-    Eye,
-    EyeOff,
-    Search,
-    Save,
-    X,
-    Edit2,
-    Settings,
-    CheckCircle2,
-    Circle,
-    Sparkles,
-    Menu,
-    LayoutGrid,
-    Mouse,
-    Star,
-    AlertCircle,
-    RefreshCw,
-    Copy,
-    ExternalLink
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
+  Lock,
+  Sparkles,
+  LayoutGrid,
+  Menu,
+  Code2,
+  Link as LinkIcon,
+  Zap,
+  Loader2,
 } from 'lucide-react';
+import { useAllSystemPrompts } from '@/hooks/useSystemPrompts';
+import { SYSTEM_FUNCTIONALITIES } from '@/types/system-prompt-functionalities';
 import type { SystemPromptDB } from '@/types/system-prompts-db';
-import { useSystemPrompts } from '@/hooks/useSystemPrompts';
+import { cn } from '@/lib/utils';
 
-interface SystemPromptsManagerProps {
-    className?: string;
+type PlacementType = 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
+
+interface CategoryGroup {
+  [category: string]: SystemPromptDB[];
 }
 
-export function SystemPromptsManager({ className }: SystemPromptsManagerProps) {
-    const { systemPrompts, loading, error, refetch } = useSystemPrompts({ autoFetch: true });
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState<'all' | 'draft' | 'published' | 'archived'>('all');
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
-    const [selectedPrompt, setSelectedPrompt] = useState<SystemPromptDB | null>(null);
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+const PLACEMENT_ICONS = {
+  'context-menu': Menu,
+  'card': LayoutGrid,
+  'button': Zap,
+  'modal': Sparkles,
+  'link': LinkIcon,
+  'action': Code2,
+};
 
-    // Edit form state
-    const [editData, setEditData] = useState<Partial<SystemPromptDB>>({});
+export function SystemPromptsManager() {
+  const { systemPrompts, loading, refetch } = useAllSystemPrompts();
+  const [selectedPlacementType, setSelectedPlacementType] = useState<PlacementType | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
+  const [selectedPrompt, setSelectedPrompt] = useState<SystemPromptDB | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'placeholders' | 'functionalities'>('placeholders');
 
-    // Filter prompts
-    const filteredPrompts = React.useMemo(() => {
-        return systemPrompts.filter(prompt => {
-            // Search filter
-            if (searchQuery) {
-                const search = searchQuery.toLowerCase();
-                if (
-                    !prompt.name.toLowerCase().includes(search) &&
-                    !prompt.system_prompt_id.toLowerCase().includes(search) &&
-                    !prompt.description?.toLowerCase().includes(search)
-                ) {
-                    return false;
-                }
-            }
-
-            // Status filter
-            if (selectedStatus !== 'all' && prompt.status !== selectedStatus) {
-                return false;
-            }
-
-            // Category filter
-            if (selectedCategory !== 'all' && prompt.category !== selectedCategory) {
-                return false;
-            }
-
-            return true;
-        });
-    }, [systemPrompts, searchQuery, selectedStatus, selectedCategory]);
-
-    // Get unique categories
-    const categories = React.useMemo(() => {
-        const cats = new Set(systemPrompts.map(p => p.category));
-        return Array.from(cats).sort();
-    }, [systemPrompts]);
-
-    // Load edit data when selecting a prompt
-    useEffect(() => {
-        if (selectedPrompt) {
-            setEditData(selectedPrompt);
-            setHasUnsavedChanges(false);
-        }
-    }, [selectedPrompt]);
-
-    const handlePromptSelect = (prompt: SystemPromptDB) => {
-        if (hasUnsavedChanges) {
-            if (!confirm('You have unsaved changes. Discard them?')) {
-                return;
-            }
-        }
-        setSelectedPrompt(prompt);
-        setIsEditDialogOpen(true);
+  // Group prompts by placement type and category
+  const groupedPrompts = useMemo(() => {
+    const groups: Record<PlacementType, CategoryGroup> = {
+      'context-menu': {},
+      'card': {},
+      'button': {},
+      'modal': {},
+      'link': {},
+      'action': {},
     };
 
-    const handleEditChange = (field: keyof SystemPromptDB, value: any) => {
-        setEditData(prev => ({ ...prev, [field]: value }));
-        setHasUnsavedChanges(true);
+    systemPrompts.forEach((prompt) => {
+      const type = prompt.placement_type;
+      const category = prompt.category || 'uncategorized';
+
+      if (!groups[type][category]) {
+        groups[type][category] = [];
+      }
+      groups[type][category].push(prompt);
+    });
+
+    return groups;
+  }, [systemPrompts]);
+
+  // Get counts
+  const counts = useMemo(() => {
+    const result: Record<PlacementType | 'all', { total: number; active: number; placeholders: number }> = {
+      all: { total: 0, active: 0, placeholders: 0 },
+      'context-menu': { total: 0, active: 0, placeholders: 0 },
+      'card': { total: 0, active: 0, placeholders: 0 },
+      'button': { total: 0, active: 0, placeholders: 0 },
+      'modal': { total: 0, active: 0, placeholders: 0 },
+      'link': { total: 0, active: 0, placeholders: 0 },
+      'action': { total: 0, active: 0, placeholders: 0 },
     };
 
-    const handleSaveChanges = async () => {
-        if (!selectedPrompt || !editData.id) return;
+    systemPrompts.forEach((prompt) => {
+      const type = prompt.placement_type;
+      const isPlaceholder = prompt.prompt_snapshot?.placeholder;
 
-        try {
-            setIsSaving(true);
+      result[type].total++;
+      result.all.total++;
 
-            const response = await fetch(`/api/system-prompts/${editData.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: editData.name,
-                    description: editData.description,
-                    display_config: editData.display_config,
-                    placement_config: editData.placement_config,
-                    category: editData.category,
-                    subcategory: editData.subcategory,
-                    tags: editData.tags,
-                    sort_order: editData.sort_order,
-                    is_active: editData.is_active,
-                    is_featured: editData.is_featured,
-                    status: editData.status,
-                    update_notes: `Updated via admin interface at ${new Date().toISOString()}`
-                })
-            });
+      if (prompt.is_active) {
+        result[type].active++;
+        result.all.active++;
+      }
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.details || 'Failed to update system prompt');
-            }
+      if (isPlaceholder) {
+        result[type].placeholders++;
+        result.all.placeholders++;
+      }
+    });
 
-            toast.success('System prompt updated successfully');
-            setHasUnsavedChanges(false);
-            await refetch();
-        } catch (error) {
-            console.error('Error saving changes:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to save changes');
-        } finally {
-            setIsSaving(false);
-        }
-    };
+    return result;
+  }, [systemPrompts]);
 
-    const handleDelete = async (promptId: string) => {
-        if (!confirm('Are you sure you want to delete this system prompt? This action cannot be undone.')) {
-            return;
-        }
+  // Filter prompts
+  const filteredPrompts = useMemo(() => {
+    let filtered = systemPrompts;
 
-        try {
-            const response = await fetch(`/api/system-prompts/${promptId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete system prompt');
-            }
-
-            toast.success('System prompt deleted successfully');
-            if (selectedPrompt?.id === promptId) {
-                setSelectedPrompt(null);
-                setIsEditDialogOpen(false);
-            }
-            await refetch();
-        } catch (error) {
-            console.error('Error deleting prompt:', error);
-            toast.error('Failed to delete system prompt');
-        }
-    };
-
-    const handleDuplicate = async (prompt: SystemPromptDB) => {
-        try {
-            const response = await fetch('/api/system-prompts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    system_prompt_id: `${prompt.system_prompt_id}-copy`,
-                    name: `${prompt.name} (Copy)`,
-                    description: prompt.description,
-                    prompt_snapshot: prompt.prompt_snapshot,
-                    display_config: prompt.display_config,
-                    placement_config: prompt.placement_config,
-                    category: prompt.category,
-                    subcategory: prompt.subcategory,
-                    tags: prompt.tags,
-                    sort_order: prompt.sort_order,
-                    required_variables: prompt.required_variables,
-                    optional_variables: prompt.optional_variables,
-                    variable_mappings: prompt.variable_mappings,
-                    is_active: false, // Start as inactive
-                    status: 'draft', // Start as draft
-                    metadata: { ...prompt.metadata, duplicated_from: prompt.id }
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || 'Failed to duplicate');
-            }
-
-            toast.success('System prompt duplicated successfully');
-            await refetch();
-        } catch (error) {
-            console.error('Error duplicating:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to duplicate');
-        }
-    };
-
-    if (error) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <Card className="p-6 max-w-md">
-                    <div className="flex items-center gap-3 text-destructive">
-                        <AlertCircle className="h-6 w-6" />
-                        <div>
-                            <h3 className="font-semibold">Error Loading System Prompts</h3>
-                            <p className="text-sm text-muted-foreground">{error.message}</p>
-                        </div>
-                    </div>
-                    <Button onClick={() => refetch()} className="mt-4 w-full" variant="outline">
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Retry
-                    </Button>
-                </Card>
-            </div>
-        );
+    if (selectedPlacementType !== 'all') {
+      filtered = filtered.filter((p) => p.placement_type === selectedPlacementType);
     }
 
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter((p) => p.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.system_prompt_id.toLowerCase().includes(query) ||
+          p.description?.toLowerCase().includes(query) ||
+          p.functionality_id?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [systemPrompts, selectedPlacementType, selectedCategory, searchQuery]);
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    systemPrompts.forEach((p) => {
+      if (p.category) cats.add(p.category);
+    });
+    return Array.from(cats).sort();
+  }, [systemPrompts]);
+
+  const handleToggleActive = async (promptId: string, currentState: boolean) => {
+    try {
+      const response = await fetch(`/api/system-prompts/${promptId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !currentState }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update');
+
+      toast.success(`Prompt ${!currentState ? 'activated' : 'deactivated'}`);
+      refetch();
+    } catch (error) {
+      toast.error('Failed to update prompt');
+    }
+  };
+
+  const handleDelete = async (promptId: string) => {
+    if (!confirm('Are you sure you want to delete this system prompt?')) return;
+
+    try {
+      const response = await fetch(`/api/system-prompts/${promptId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete');
+
+      toast.success('Prompt deleted');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to delete prompt');
+    }
+  };
+
+  if (loading) {
     return (
-        <div className={`h-full flex flex-col ${className}`}>
-            {/* Header */}
-            <div className="flex-none border-b border-border bg-card p-4">
-                <div className="flex items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold flex items-center gap-2">
-                            <Sparkles className="h-6 w-6 text-primary" />
-                            System Prompts Manager
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            Manage global system prompts available throughout the application
-                        </p>
-                    </div>
-                    <Button onClick={() => refetch()} disabled={loading}>
-                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh
-                    </Button>
-                </div>
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-[calc(100vh-8rem)] gap-4">
+      {/* LEFT SIDEBAR */}
+      <div className="w-64 flex-shrink-0 border-r bg-card">
+        <ScrollArea className="h-full">
+          <div className="p-4 space-y-4">
+            {/* View Mode Toggle */}
+            <div className="space-y-2">
+              <Button
+                variant={viewMode === 'placeholders' ? 'default' : 'outline'}
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => setViewMode('placeholders')}
+              >
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Placeholders
+              </Button>
+              <Button
+                variant={viewMode === 'functionalities' ? 'default' : 'outline'}
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => setViewMode('functionalities')}
+              >
+                <Code2 className="h-4 w-4 mr-2" />
+                Functionalities
+              </Button>
             </div>
 
-            {/* Filters */}
-            <div className="flex-none border-b border-border bg-muted/30 p-4">
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex-1 min-w-[200px]">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search prompts..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9"
-                            />
-                        </div>
-                    </div>
+            <Separator />
 
-                    <Select value={selectedStatus} onValueChange={(v: any) => setSelectedStatus(v)}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="published">Published</SelectItem>
-                            <SelectItem value="archived">Archived</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {categories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    <Badge variant="secondary" className="ml-auto">
-                        {filteredPrompts.length} of {systemPrompts.length} prompts
+            {viewMode === 'placeholders' && (
+              <>
+                {/* Placement Types */}
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold mb-2">Placement Type</h4>
+                  <Button
+                    variant={selectedPlacementType === 'all' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="w-full justify-between"
+                    onClick={() => setSelectedPlacementType('all')}
+                  >
+                    <span>All</span>
+                    <Badge variant="outline" className="ml-auto">
+                      {counts.all.total}
                     </Badge>
+                  </Button>
+
+                  {(Object.keys(PLACEMENT_ICONS) as PlacementType[]).map((type) => {
+                    const Icon = PLACEMENT_ICONS[type];
+                    const count = counts[type];
+                    if (count.total === 0) return null;
+
+                    return (
+                      <Button
+                        key={type}
+                        variant={selectedPlacementType === type ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="w-full justify-between"
+                        onClick={() => {
+                          setSelectedPlacementType(type);
+                          setSelectedCategory('all');
+                        }}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          {type.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                        </span>
+                        <Badge variant="outline" className="ml-auto">
+                          {count.active}/{count.total}
+                        </Badge>
+                      </Button>
+                    );
+                  })}
                 </div>
-            </div>
 
-            {/* Prompts Grid */}
-            <ScrollArea className="flex-1">
-                <div className="p-6">
-                    {loading && systemPrompts.length === 0 ? (
-                        <div className="flex items-center justify-center h-64">
-                            <div className="text-center">
-                                <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Loading system prompts...</p>
-                            </div>
-                        </div>
-                    ) : filteredPrompts.length === 0 ? (
-                        <div className="flex items-center justify-center h-64">
-                            <div className="text-center">
-                                <Search className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                                <h3 className="text-lg font-semibold mb-1">No prompts found</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    {searchQuery
-                                        ? 'Try adjusting your search or filters'
-                                        : 'Convert a prompt to a system prompt to get started'}
-                                </p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {filteredPrompts.map(prompt => (
-                                <Card
-                                    key={prompt.id}
-                                    className="cursor-pointer hover:shadow-md transition-shadow"
-                                    onClick={() => handlePromptSelect(prompt)}
-                                >
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="flex-1">
-                                                <CardTitle className="text-lg flex items-center gap-2">
-                                                    {prompt.is_featured && (
-                                                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                                                    )}
-                                                    {prompt.name}
-                                                </CardTitle>
-                                                <CardDescription className="text-xs mt-1">
-                                                    {prompt.system_prompt_id}
-                                                </CardDescription>
-                                            </div>
-                                            {prompt.is_active ? (
-                                                <Eye className="h-4 w-4 text-green-500" />
-                                            ) : (
-                                                <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                            )}
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-3">
-                                        {prompt.description && (
-                                            <p className="text-sm text-muted-foreground line-clamp-2">
-                                                {prompt.description}
-                                            </p>
-                                        )}
+                <Separator />
 
-                                        <div className="flex flex-wrap gap-2">
-                                            <Badge variant={prompt.status === 'published' ? 'default' : 'secondary'}>
-                                                {prompt.status}
-                                            </Badge>
-                                            <Badge variant="outline">{prompt.category}</Badge>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            {prompt.placement_config?.contextMenu?.enabled && (
-                                                <Badge variant="outline" className="text-xs">
-                                                    <Mouse className="h-3 w-3 mr-1" />
-                                                    Menu
-                                                </Badge>
-                                            )}
-                                            {prompt.placement_config?.card?.enabled && (
-                                                <Badge variant="outline" className="text-xs">
-                                                    <LayoutGrid className="h-3 w-3 mr-1" />
-                                                    Card
-                                                </Badge>
-                                            )}
-                                            {prompt.placement_config?.button?.enabled && (
-                                                <Badge variant="outline" className="text-xs">
-                                                    <Menu className="h-3 w-3 mr-1" />
-                                                    Button
-                                                </Badge>
-                                            )}
-                                        </div>
-
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
-                                            <span>v{prompt.version}</span>
-                                            <span>{prompt.total_executions} executions</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </ScrollArea>
-
-            {/* Edit Dialog */}
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5" />
-                            Edit System Prompt
-                        </DialogTitle>
-                        <DialogDescription>
-                            Configure how and where this prompt appears in the application
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <Tabs defaultValue="general" className="flex-1 overflow-hidden flex flex-col">
-                        <TabsList className="grid w-full grid-cols-4">
-                            <TabsTrigger value="general">General</TabsTrigger>
-                            <TabsTrigger value="placement">Placement</TabsTrigger>
-                            <TabsTrigger value="display">Display</TabsTrigger>
-                            <TabsTrigger value="advanced">Advanced</TabsTrigger>
-                        </TabsList>
-
-                        <ScrollArea className="flex-1 mt-4">
-                            {/* General Tab */}
-                            <TabsContent value="general" className="space-y-4 pr-4">
-                                <div className="space-y-2">
-                                    <Label>Name</Label>
-                                    <Input
-                                        value={editData.name || ''}
-                                        onChange={(e) => handleEditChange('name', e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Description</Label>
-                                    <textarea
-                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                        value={editData.description || ''}
-                                        onChange={(e) => handleEditChange('description', e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Category</Label>
-                                        <Select
-                                            value={editData.category}
-                                            onValueChange={(v) => handleEditChange('category', v)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="general">General</SelectItem>
-                                                <SelectItem value="content">Content</SelectItem>
-                                                <SelectItem value="coding">Coding</SelectItem>
-                                                <SelectItem value="analysis">Analysis</SelectItem>
-                                                <SelectItem value="creative">Creative</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label>Sort Order</Label>
-                                        <Input
-                                            type="number"
-                                            value={editData.sort_order || 0}
-                                            onChange={(e) => handleEditChange('sort_order', parseInt(e.target.value))}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Status</Label>
-                                        <Select
-                                            value={editData.status}
-                                            onValueChange={(v) => handleEditChange('status', v)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="draft">Draft</SelectItem>
-                                                <SelectItem value="published">Published</SelectItem>
-                                                <SelectItem value="archived">Archived</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 pt-7">
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <Checkbox
-                                                checked={editData.is_active}
-                                                onCheckedChange={(checked) => handleEditChange('is_active', checked)}
-                                            />
-                                            <span className="text-sm">Active</span>
-                                        </label>
-
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <Checkbox
-                                                checked={editData.is_featured}
-                                                onCheckedChange={(checked) => handleEditChange('is_featured', checked)}
-                                            />
-                                            <span className="text-sm">Featured</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </TabsContent>
-
-                            {/* Placement Tab */}
-                            <TabsContent value="placement" className="space-y-6 pr-4">
-                                <PlacementSection
-                                    title="Context Menu"
-                                    description="Right-click menu in text areas"
-                                    icon={Mouse}
-                                    enabled={editData.placement_config?.contextMenu?.enabled || false}
-                                    onEnabledChange={(enabled) => {
-                                        handleEditChange('placement_config', {
-                                            ...editData.placement_config,
-                                            contextMenu: { ...editData.placement_config?.contextMenu, enabled }
-                                        });
-                                    }}
-                                >
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Group</Label>
-                                            <Input
-                                                value={editData.placement_config?.contextMenu?.group || ''}
-                                                onChange={(e) => {
-                                                    handleEditChange('placement_config', {
-                                                        ...editData.placement_config,
-                                                        contextMenu: {
-                                                            ...editData.placement_config?.contextMenu,
-                                                            group: e.target.value
-                                                        }
-                                                    });
-                                                }}
-                                                placeholder="e.g., content, editing"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Priority</Label>
-                                            <Input
-                                                type="number"
-                                                value={editData.placement_config?.contextMenu?.priority || 0}
-                                                onChange={(e) => {
-                                                    handleEditChange('placement_config', {
-                                                        ...editData.placement_config,
-                                                        contextMenu: {
-                                                            ...editData.placement_config?.contextMenu,
-                                                            priority: parseInt(e.target.value)
-                                                        }
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </PlacementSection>
-
-                                <PlacementSection
-                                    title="Execution Card"
-                                    description="Clickable card component"
-                                    icon={LayoutGrid}
-                                    enabled={editData.placement_config?.card?.enabled || false}
-                                    onEnabledChange={(enabled) => {
-                                        handleEditChange('placement_config', {
-                                            ...editData.placement_config,
-                                            card: { ...editData.placement_config?.card, enabled }
-                                        });
-                                    }}
-                                >
-                                    <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label>Mode</Label>
-                                            <Select
-                                                value={editData.placement_config?.card?.mode || 'one-shot'}
-                                                onValueChange={(v) => {
-                                                    handleEditChange('placement_config', {
-                                                        ...editData.placement_config,
-                                                        card: { ...editData.placement_config?.card, mode: v }
-                                                    });
-                                                }}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="one-shot">One-Shot</SelectItem>
-                                                    <SelectItem value="chat">Chat</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-                                </PlacementSection>
-
-                                <PlacementSection
-                                    title="Button"
-                                    description="Button component"
-                                    icon={Menu}
-                                    enabled={editData.placement_config?.button?.enabled || false}
-                                    onEnabledChange={(enabled) => {
-                                        handleEditChange('placement_config', {
-                                            ...editData.placement_config,
-                                            button: { ...editData.placement_config?.button, enabled }
-                                        });
-                                    }}
-                                />
-                            </TabsContent>
-
-                            {/* Display Tab */}
-                            <TabsContent value="display" className="space-y-4 pr-4">
-                                <div className="space-y-2">
-                                    <Label>Icon</Label>
-                                    <Input
-                                        value={editData.display_config?.icon || ''}
-                                        onChange={(e) => {
-                                            handleEditChange('display_config', {
-                                                ...editData.display_config,
-                                                icon: e.target.value
-                                            });
-                                        }}
-                                        placeholder="Lucide icon name (e.g., Sparkles)"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Label</Label>
-                                    <Input
-                                        value={editData.display_config?.label || ''}
-                                        onChange={(e) => {
-                                            handleEditChange('display_config', {
-                                                ...editData.display_config,
-                                                label: e.target.value
-                                            });
-                                        }}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Tooltip</Label>
-                                    <Input
-                                        value={editData.display_config?.tooltip || ''}
-                                        onChange={(e) => {
-                                            handleEditChange('display_config', {
-                                                ...editData.display_config,
-                                                tooltip: e.target.value
-                                            });
-                                        }}
-                                    />
-                                </div>
-                            </TabsContent>
-
-                            {/* Advanced Tab */}
-                            <TabsContent value="advanced" className="space-y-4 pr-4">
-                                <div className="space-y-2">
-                                    <Label>System Prompt ID</Label>
-                                    <Input value={editData.system_prompt_id || ''} disabled />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Version</Label>
-                                    <Input value={editData.version || 1} disabled />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Required Variables</Label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {editData.required_variables?.map(v => (
-                                            <Badge key={v} variant="secondary">{v}</Badge>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                <div className="space-y-2">
-                                    <Label className="text-destructive">Danger Zone</Label>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => editData.id && handleDuplicate(editData as SystemPromptDB)}
-                                        >
-                                            <Copy className="h-4 w-4 mr-2" />
-                                            Duplicate
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            onClick={() => editData.id && handleDelete(editData.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4 mr-2" />
-                                            Delete
-                                        </Button>
-                                    </div>
-                                </div>
-                            </TabsContent>
-                        </ScrollArea>
-                    </Tabs>
-
-                    <div className="flex items-center justify-between pt-4 border-t">
-                        <div className="text-sm text-muted-foreground">
-                            {hasUnsavedChanges && (
-                                <span className="text-yellow-600 flex items-center gap-1">
-                                    <AlertCircle className="h-4 w-4" />
-                                    Unsaved changes
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={handleSaveChanges}
-                                disabled={!hasUnsavedChanges || isSaving}
-                            >
-                                {isSaving ? (
-                                    <>
-                                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </div>
-    );
-}
-
-// Placement Section Component
-interface PlacementSectionProps {
-    title: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string }>;
-    enabled: boolean;
-    onEnabledChange: (enabled: boolean) => void;
-    children?: React.ReactNode;
-}
-
-function PlacementSection({
-    title,
-    description,
-    icon: Icon,
-    enabled,
-    onEnabledChange,
-    children
-}: PlacementSectionProps) {
-    return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Icon className="h-5 w-5 text-primary" />
-                        <div>
-                            <CardTitle className="text-base">{title}</CardTitle>
-                            <CardDescription>{description}</CardDescription>
-                        </div>
-                    </div>
-                    <Checkbox checked={enabled} onCheckedChange={onEnabledChange} />
-                </div>
-            </CardHeader>
-            {enabled && children && (
-                <CardContent className="pt-0">
-                    {children}
-                </CardContent>
+                {/* Categories */}
+                {categories.length > 0 && (
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-semibold mb-2">Category</h4>
+                    <Button
+                      variant={selectedCategory === 'all' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => setSelectedCategory('all')}
+                    >
+                      All Categories
+                    </Button>
+                    {categories.map((cat) => (
+                      <Button
+                        key={cat}
+                        variant={selectedCategory === cat ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => setSelectedCategory(cat)}
+                      >
+                        {cat}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
-        </Card>
-    );
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex-shrink-0 p-6 space-y-4 border-b bg-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">System Prompts Manager</h2>
+              <p className="text-sm text-muted-foreground">
+                {viewMode === 'placeholders'
+                  ? 'Manage system prompt placeholders and assignments'
+                  : 'View functionality definitions and requirements'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {counts.all.active} Active
+              </Badge>
+              <Badge variant="secondary">
+                {counts.all.placeholders} Placeholders
+              </Badge>
+            </div>
+          </div>
+
+          {viewMode === 'placeholders' && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, ID, or functionality..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Content Area */}
+        <ScrollArea className="flex-1">
+          <div className="p-6">
+            {viewMode === 'placeholders' ? (
+              <PlaceholdersView
+                prompts={filteredPrompts}
+                onToggleActive={handleToggleActive}
+                onDelete={handleDelete}
+                onSelect={setSelectedPrompt}
+              />
+            ) : (
+              <FunctionalitiesView />
+            )}
+          </div>
+        </ScrollArea>
+      </div>
+    </div>
+  );
 }
 
+// Placeholders View Component
+function PlaceholdersView({
+  prompts,
+  onToggleActive,
+  onDelete,
+  onSelect,
+}: {
+  prompts: SystemPromptDB[];
+  onToggleActive: (id: string, currentState: boolean) => void;
+  onDelete: (id: string) => void;
+  onSelect: (prompt: SystemPromptDB) => void;
+}) {
+  if (prompts.length === 0) {
+    return (
+      <Card className="p-12">
+        <div className="text-center space-y-2">
+          <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground" />
+          <p className="text-muted-foreground">No system prompts found</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {prompts.map((prompt) => {
+        const isPlaceholder = prompt.prompt_snapshot?.placeholder;
+        const Icon = PLACEMENT_ICONS[prompt.placement_type];
+        const functionality = prompt.functionality_id
+          ? SYSTEM_FUNCTIONALITIES[prompt.functionality_id]
+          : null;
+
+        return (
+          <Card
+            key={prompt.id}
+            className={cn(
+              'relative group hover:shadow-lg transition-shadow',
+              isPlaceholder && 'opacity-75 border-dashed'
+            )}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{prompt.name}</span>
+                  </CardTitle>
+                  <CardDescription className="text-xs mt-1">
+                    {prompt.system_prompt_id}
+                  </CardDescription>
+                </div>
+                {isPlaceholder ? (
+                  <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-3">
+              {/* Status Badges */}
+              <div className="flex flex-wrap gap-1">
+                <Badge variant={prompt.is_active ? 'default' : 'secondary'} className="text-xs">
+                  {prompt.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {prompt.placement_type}
+                </Badge>
+                {prompt.category && (
+                  <Badge variant="outline" className="text-xs">
+                    {prompt.category}
+                  </Badge>
+                )}
+                {isPlaceholder && (
+                  <Badge variant="destructive" className="text-xs">
+                    Placeholder
+                  </Badge>
+                )}
+              </div>
+
+              {/* Functionality */}
+              {functionality && (
+                <div className="text-xs space-y-1">
+                  <p className="font-medium">{functionality.name}</p>
+                  <p className="text-muted-foreground">{functionality.description}</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {functionality.requiredVariables.map((v) => (
+                      <Badge key={v} variant="secondary" className="text-[10px] px-1 py-0">
+                        {v}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {prompt.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {prompt.description}
+                </p>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-1 pt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => onToggleActive(prompt.id, prompt.is_active)}
+                >
+                  {prompt.is_active ? (
+                    <EyeOff className="h-3 w-3" />
+                  ) : (
+                    <Eye className="h-3 w-3" />
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onSelect(prompt)}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onDelete(prompt.id)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// Functionalities View Component
+function FunctionalitiesView() {
+  const functionalities = Object.values(SYSTEM_FUNCTIONALITIES);
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4 bg-blue-50 dark:bg-blue-950/30 border-blue-200">
+        <div className="flex gap-3">
+          <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="space-y-1 text-sm">
+            <p className="font-semibold text-blue-900 dark:text-blue-100">
+              What are Functionalities?
+            </p>
+            <p className="text-blue-800 dark:text-blue-200">
+              Functionalities are hardcoded definitions in your codebase that define what variables
+              a system prompt must have to work with specific UI components (cards, buttons, menus).
+              You cannot create new functionalities here - they must be added to the code.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {functionalities.map((func) => (
+          <Card key={func.id}>
+            <CardHeader>
+              <CardTitle className="text-base">{func.name}</CardTitle>
+              <CardDescription>{func.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-xs font-medium mb-1">ID:</p>
+                <code className="text-xs bg-muted px-2 py-1 rounded">{func.id}</code>
+              </div>
+
+              <div>
+                <p className="text-xs font-medium mb-1">Required Variables:</p>
+                <div className="flex flex-wrap gap-1">
+                  {func.requiredVariables.map((v) => (
+                    <Badge key={v} variant="default" className="text-xs">
+                      {v}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {func.optionalVariables && func.optionalVariables.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium mb-1">Optional Variables:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {func.optionalVariables.map((v) => (
+                      <Badge key={v} variant="secondary" className="text-xs">
+                        {v}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-medium mb-1">Placement Types:</p>
+                <div className="flex flex-wrap gap-1">
+                  {func.placementTypes.map((type) => (
+                    <Badge key={type} variant="outline" className="text-xs">
+                      {type}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {func.examples && func.examples.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium mb-1">Examples:</p>
+                  <ul className="text-xs text-muted-foreground space-y-0.5 ml-4 list-disc">
+                    {func.examples.map((ex, i) => (
+                      <li key={i}>{ex}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
