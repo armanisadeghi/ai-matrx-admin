@@ -30,8 +30,15 @@ interface CodeBlockProps {
 
 /**
  * Map language identifiers to Prism.js-compatible language names
+ * @param lang - The language identifier (may be undefined, null, or invalid)
+ * @returns A valid Prism.js language name, defaulting to 'text' if invalid
  */
 const mapLanguageForPrism = (lang: string): string => {
+    // Defensive: Handle undefined, null, empty, or non-string values
+    if (!lang || typeof lang !== 'string') {
+        return 'text';
+    }
+
     const languageMap: Record<string, string> = {
         'react': 'tsx',          // React components → TypeScript JSX
         'jsx': 'jsx',            // JavaScript JSX
@@ -51,15 +58,25 @@ const mapLanguageForPrism = (lang: string): string => {
         'python': 'python',
         'py': 'python',
         'diff': 'diff',
+        'text': 'text',
+        'plaintext': 'text',
     };
     
-    return languageMap[lang.toLowerCase()] || lang;
+    const normalizedLang = lang.trim().toLowerCase();
+    return languageMap[normalizedLang] || normalizedLang || 'text';
 };
 
 /**
  * Map language identifiers to Monaco Editor-compatible language names
+ * @param lang - The language identifier (may be undefined, null, or invalid)
+ * @returns A valid Monaco language name, defaulting to 'plaintext' if invalid
  */
 const mapLanguageForMonaco = (lang: string): string => {
+    // Defensive: Handle undefined, null, empty, or non-string values
+    if (!lang || typeof lang !== 'string') {
+        return 'plaintext';
+    }
+
     const languageMap: Record<string, string> = {
         'react': 'typescriptreact',  // React components → TypeScript React
         'jsx': 'javascriptreact',    // JavaScript JSX
@@ -91,14 +108,17 @@ const mapLanguageForMonaco = (lang: string): string => {
         'yaml': 'yaml',
         'yml': 'yaml',
         'xml': 'xml',
+        'text': 'plaintext',
+        'plaintext': 'plaintext',
     };
     
-    return languageMap[lang.toLowerCase()] || lang;
+    const normalizedLang = lang.trim().toLowerCase();
+    return languageMap[normalizedLang] || normalizedLang || 'plaintext';
 };
 
 const CodeBlock: React.FC<CodeBlockProps> = ({
     code: initialCode,
-    language: rawLanguage,
+    language: rawLanguage = 'text',
     fontSize = 16,
     showLineNumbers = false,
     wrapLines = true,
@@ -107,7 +127,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     inline = false,
     isStreamActive = false,
 }) => {
-    // Map language for respective editors
+    // Map language for respective editors (with additional safety checks)
     const prismLanguage = mapLanguageForPrism(rawLanguage);
     const monacoLanguage = mapLanguageForMonaco(rawLanguage);
     

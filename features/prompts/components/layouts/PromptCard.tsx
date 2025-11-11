@@ -9,6 +9,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
+import { ConvertToSystemPromptModal } from "@/components/admin/ConvertToSystemPromptModal";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "@/lib/toast-service";
@@ -50,6 +51,7 @@ export function PromptCard({
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
     const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
+    const [isConvertToSystemPromptModalOpen, setIsConvertToSystemPromptModalOpen] = useState(false);
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
@@ -164,7 +166,10 @@ export function PromptCard({
     };
 
     const handleMakeGlobalSystemPrompt = () => {
-        console.log('Make Global System Prompt clicked for prompt:', { id, name });
+        if (!isSystemAdmin) return;
+        
+        setIsAdminMenuOpen(false);
+        setIsConvertToSystemPromptModalOpen(true);
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -366,6 +371,17 @@ export function PromptCard({
                     setLastModalCloseTime(Date.now());
                 }}
                 promptId={id}
+            />
+
+            <ConvertToSystemPromptModal
+                isOpen={isConvertToSystemPromptModalOpen}
+                onClose={() => {
+                    setIsConvertToSystemPromptModalOpen(false);
+                    setLastModalCloseTime(Date.now());
+                }}
+                promptId={id}
+                promptName={name}
+                promptDescription={description}
             />
         </Card>
     );

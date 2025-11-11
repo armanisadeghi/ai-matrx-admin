@@ -163,6 +163,12 @@ export const adminCategories = [
                 link: "/administration/content-templates",
             },
             {
+                title: "System Prompts Manager",
+                description: "Manage global system prompts for context menus, execution cards, and other UI components throughout the application",
+                icon: <IconRobot />,
+                link: "/administration/system-prompts",
+            },
+            {
                 title: "Markdown Content Tester",
                 description: "Test and debug EnhancedChatMarkdown rendering with live split-screen preview. Perfect for testing diagrams, quizzes, tables, and other content formats.",
                 icon: <IconCode />,

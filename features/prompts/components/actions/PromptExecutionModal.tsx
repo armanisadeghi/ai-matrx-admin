@@ -28,9 +28,14 @@ interface PromptExecutionModalProps {
   onClose: () => void;
   promptId: string;
   promptName?: string;
+  modalTitle?: string;
   onResult?: (result: string) => void;
+  onExecutionComplete?: (result: any) => void;
   defaultValues?: Record<string, string>;
+  hiddenVariables?: Record<string, string>;
   hideUserInput?: boolean;
+  allowInitialMessage?: boolean;
+  allowChat?: boolean;
 }
 
 interface PromptData {
@@ -45,9 +50,14 @@ export function PromptExecutionModal({
   onClose,
   promptId,
   promptName: externalPromptName,
+  modalTitle,
   onResult,
+  onExecutionComplete,
   defaultValues = {},
-  hideUserInput = false
+  hiddenVariables = {},
+  hideUserInput = false,
+  allowInitialMessage = true,
+  allowChat = false
 }: PromptExecutionModalProps) {
   const [promptData, setPromptData] = useState<PromptData | null>(null);
   const [isLoadingPrompt, setIsLoadingPrompt] = useState(true);
@@ -66,21 +76,61 @@ export function PromptExecutionModal({
     }
   }, [isOpen, promptId]);
 
-  // Initialize default values
+  // Initialize default values and hidden variables (only once when modal opens)
   useEffect(() => {
-    if (promptData && Object.keys(defaultValues).length > 0) {
-      const initialized: Record<string, VariableDataSource> = {};
-      promptData.variables.forEach(varName => {
-        if (defaultValues[varName]) {
-          initialized[varName] = {
-            type: 'text',
-            value: defaultValues[varName]
-          };
-        }
-      });
-      setVariableValues(prev => ({ ...initialized, ...prev }));
+    if (!isOpen || !promptData) return;
+    
+    const initialized: Record<string, VariableDataSource> = {};
+    
+    // Process defaultValues
+    Object.keys(defaultValues).forEach(varName => {
+      if (promptData.variables.includes(varName) && defaultValues[varName]) {
+        initialized[varName] = {
+          type: 'text',
+          value: defaultValues[varName]
+        };
+      }
+    });
+    
+    // Process hiddenVariables (takes precedence)
+    Object.keys(hiddenVariables).forEach(varName => {
+      if (promptData.variables.includes(varName) && hiddenVariables[varName]) {
+        initialized[varName] = {
+          type: 'text',
+          value: hiddenVariables[varName]
+        };
+      }
+    });
+    
+    if (Object.keys(initialized).length > 0) {
+      setVariableValues(initialized);
     }
-  }, [promptData, defaultValues]);
+    
+    // Only run once when modal opens with new prompt data
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, promptData?.id]);
+
+  // Auto-execute if all variables are provided and no user input needed
+  useEffect(() => {
+    if (!isOpen || !promptData || isExecuting || result) return;
+    
+    const visibleVars = promptData.variables.filter(v => !hiddenVariables[v]);
+    const hasAllVariables = promptData.variables.every(v => {
+      const varValue = variableValues[v];
+      if (!varValue) return false;
+      if (varValue.type === 'text') return !!varValue.value;
+      return true; // Other types are considered valid if present
+    });
+    const shouldAutoExecute = hasAllVariables && visibleVars.length === 0 && !allowInitialMessage;
+    
+    if (shouldAutoExecute && Object.keys(variableValues).length > 0) {
+      // Small delay to ensure state is fully set
+      setTimeout(() => {
+        handleExecute();
+      }, 100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, promptData?.id, variableValues, isExecuting, result]);
 
   const loadPromptData = async () => {
     setIsLoadingPrompt(true);
@@ -169,7 +219,7 @@ export function PromptExecutionModal({
         variables[varName] = { type: 'hardcoded', value };
       }
 
-      await execute({
+      const executionResult = await execute({
         promptId,
         variables,
         userInput: userInput.trim() || undefined,
@@ -182,6 +232,10 @@ export function PromptExecutionModal({
 
       if (onResult && result) {
         onResult(result);
+      }
+      
+      if (onExecutionComplete && executionResult) {
+        onExecutionComplete(executionResult);
       }
     } catch (error) {
       toast.error('Execution failed', {
@@ -257,11 +311,15 @@ export function PromptExecutionModal({
   const handleClose = () => {
     setResult('');
     setUserInput('');
+    setVariableValues({});
     setActiveTab('input');
     onClose();
   };
 
-  const promptName = externalPromptName || promptData?.name || 'Execute Prompt';
+  const promptName = modalTitle || externalPromptName || promptData?.name || 'Execute Prompt';
+  const visibleVariables = promptData?.variables.filter(varName => !hiddenVariables[varName]) || [];
+  const hasVisibleVariables = visibleVariables.length > 0;
+  const shouldShowUserInput = allowInitialMessage && !hideUserInput;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -273,7 +331,7 @@ export function PromptExecutionModal({
           </DialogTitle>
           <DialogDescription>
             {isLoadingPrompt ? 'Loading prompt...' : 
-             promptData ? `${promptData.variables.length} variable(s)` : 'Ready to execute'}
+             hasVisibleVariables ? `${visibleVariables.length} variable(s)` : 'Ready to execute'}
           </DialogDescription>
         </DialogHeader>
 
@@ -293,13 +351,13 @@ export function PromptExecutionModal({
             <TabsContent value="input" className="flex-1 overflow-hidden">
               <ScrollArea className="h-[500px] pr-4">
                 <div className="space-y-4">
-                  {/* Variable Inputs */}
-                  {promptData.variables.length > 0 && (
+                  {/* Variable Inputs (only show non-hidden variables) */}
+                  {hasVisibleVariables && (
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                         Variables
                       </h3>
-                      {promptData.variables.map((varName) => (
+                      {visibleVariables.map((varName) => (
                         <VariableInput
                           key={varName}
                           variableName={varName}
@@ -311,7 +369,7 @@ export function PromptExecutionModal({
                   )}
 
                   {/* Optional User Input */}
-                  {!hideUserInput && (
+                  {shouldShowUserInput && (
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">
                         Additional Input (Optional)

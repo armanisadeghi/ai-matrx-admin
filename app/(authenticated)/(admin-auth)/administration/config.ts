@@ -1,64 +1,40 @@
 // config.ts
+// This file extracts navigation data from categories.tsx for use in the ModuleHeader
 
-import {ModulePage} from "@/components/matrx/navigation/types";
+import { ModulePage } from "@/components/matrx/navigation/types";
+import { adminCategories } from "./categories";
 
+/**
+ * Transforms admin categories into ModulePage format for navigation
+ * Extracts all features with 'link' property and converts them to pages
+ */
+function extractPagesFromCategories(): ModulePage[] {
+    const pages: ModulePage[] = [];
+    
+    adminCategories.forEach(category => {
+        category.features.forEach(feature => {
+            // Only include features that have a link (actual pages)
+            if (feature.link) {
+                pages.push({
+                    title: feature.title,
+                    path: feature.link.replace('/administration/', ''), // Make path relative
+                    relative: true,
+                    description: feature.description,
+                    icon: feature.icon,
+                });
+            }
+        });
+    });
+    
+    return pages;
+}
 
-// IMPORTANT: All must be added here to work: app\(authenticated)\(admin-auth)\constants\categories.tsx
-// This is only for the menu at the top, not the page rendering logic.
+// Export the extracted pages
+export const pages = extractPagesFromCategories();
 
-export const pages: ModulePage[] = [
-    {
-        title: 'Content Blocks',
-        path: 'content-blocks',
-        relative: true,
-        description: 'Manage content blocks and context menu items'
-    },
-    {
-        title: 'Content Templates',
-        path: 'content-templates',
-        relative: true,
-        description: 'Manage message templates for prompts'
-    },
-    {
-        title: 'Server Cache',
-        path: 'server-cache',
-        relative: true,
-        description: 'Manage server-side caches'
-    },
-    {
-        title: 'TypeScript Errors',
-        path: 'typescript-errors',
-        relative: true,
-        description: 'View TypeScript compilation errors'
-    },
-    {
-        title: 'SQL Functions',
-        path: 'database/sql-functions',
-        relative: true,
-        description: 'Manage SQL functions'
-    },
-    {
-        title: 'SQL Queries',
-        path: 'database/sql-queries',
-        relative: true,
-        description: 'Execute SQL queries'
-    },
-    {
-        title: 'Database',
-        path: 'database',
-        relative: true,
-        description: 'Database management'
-    },
-    {
-        title: 'Prompt Apps',
-        path: 'prompt-apps',
-        relative: true,
-        description: 'Manage prompt app categories, errors, and analytics'
-    },
-
-];
-
+// Filter out any invalid pages (legacy support)
 export const filteredPages = pages.filter(page => page.path !== 'link-here');
 
+// Module configuration
 export const MODULE_HOME = '/administration';
 export const MODULE_NAME = 'Administration';

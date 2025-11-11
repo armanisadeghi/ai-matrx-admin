@@ -8,11 +8,11 @@ import FeatureSectionLinkComponent
     from "@/components/animated/my-custom-demos/feature-section-link-component";
 import {useRouter} from "next/navigation";
 import ErrorBoundary from "@/app/(authenticated)/admin/components/shared/ErrorBoundary";
-import {adminCategories} from "@/app/(authenticated)/(admin-auth)/constants/categories";
+import {adminCategories} from "@/app/(authenticated)/(admin-auth)/administration/categories";
 
 
-// IMPORTANT: All routes must be added here to work: app\(authenticated)\(admin-auth)\constants\categories.tsx
-// Add here for proper menu navigation at the top: app\(authenticated)\(admin-auth)\administration\config.ts
+// IMPORTANT: All features and routes are defined in: app\(authenticated)\(admin-auth)\administration\categories.tsx
+// The top navigation menu automatically extracts routes from categories.tsx via config.ts
 
 
 

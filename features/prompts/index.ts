@@ -104,3 +104,6 @@ export { PromptRunnerModal } from './components/modal/PromptRunnerModal';
 export { PromptRunnerModalTester } from './components/modal/PromptRunnerModalTester';
 export { PromptRunnerModalSidebarTester } from './components/modal/PromptRunnerModalSidebarTester';
 
+// System Prompts Components
+export { PromptExecutionCard, PromptExecutionCardsGrid, createPromptCard } from './components/cards/PromptExecutionCard';
+

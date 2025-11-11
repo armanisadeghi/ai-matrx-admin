@@ -11,16 +11,31 @@ import {
   ContextMenuExample
 } from "@/features/prompts/examples";
 import { PromptImporter } from "@/features/prompts";
+import { PromptExecutionCard } from "@/features/prompts";
 import { MatrxActionsDemo } from "@/features/matrx-actions/examples/MatrxActionsDemo";
-import { Code2, Sparkles, FileText, Upload, Zap } from "lucide-react";
+import { Code2, Sparkles, FileText, Upload, Zap, Grid3x3, Menu, AlertCircle } from "lucide-react";
 import DEMO_PROMPTS from "@/features/prompts/DEMO_PROMPTS.json";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { useSystemPrompts } from '@/hooks/useSystemPrompts';
 
 export default function PromptExecutionDemoPage() {
   const [isImporterOpen, setIsImporterOpen] = useState(false);
+  const { systemPrompts, loading: isLoadingSystemPrompts } = useSystemPrompts({
+    is_active: true,
+    status: 'published'
+  });
   
   const handleOpenImporter = () => {
     setIsImporterOpen(true);
   };
+
+  // Example context data for demonstration
+  const exampleCodeContext = `function calculateTotal(items: Item[]) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}`;
+
+  const exampleTextContext = `The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet at least once. It's commonly used for testing fonts and keyboards.`;
   
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
@@ -53,70 +68,44 @@ export default function PromptExecutionDemoPage() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6 space-y-6">
-          {/* Setup Instructions */}
-          <Card className="p-6 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-            <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Setup Required
-            </h2>
-            <div className="space-y-3 text-sm text-blue-800 dark:text-blue-200">
-              <p>
-                These demos require specific prompts to be created in the database. 
-                Create the following prompts in the AI Prompts section:
-              </p>
-              
-              <div className="space-y-4 mt-4">
-                <div className="p-4 bg-white dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
-                  <div className="font-mono text-xs text-blue-600 dark:text-blue-300 mb-2">
-                    Prompt ID: text-analyzer
-                  </div>
-                  <div className="font-semibold mb-2">Text Analyzer</div>
-                  <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Variables:</span> text</div>
-                    <div><span className="font-semibold">Purpose:</span> Analyze text for sentiment, tone, and themes</div>
-                    <div className="pt-2 italic text-blue-700 dark:text-blue-300">
-                      System Message: "You are an expert text analyst. Analyze the provided text 
-                      for sentiment, tone, key themes, and important insights. Be concise but thorough."
-                    </div>
-                    <div className="pt-2 italic text-blue-700 dark:text-blue-300">
-                      User Message: "Analyze this text:\n\n{'{'}{'{'} text {'}'}{'}'}'"
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-white dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
-                  <div className="font-mono text-xs text-blue-600 dark:text-blue-300 mb-2">
-                    Prompt ID: demo-prompt
-                  </div>
-                  <div className="font-semibold mb-2">Demo Prompt (Multi-Variable)</div>
-                  <div className="space-y-1 text-xs">
-                    <div><span className="font-semibold">Variables:</span> topic, style, detail_level</div>
-                    <div><span className="font-semibold">Purpose:</span> Flexible demo prompt for testing the modal</div>
-                    <div className="pt-2 italic text-blue-700 dark:text-blue-300">
-                      System Message: "You are a helpful AI assistant. Generate content based on 
-                      the user's specifications. Match the requested style and detail level."
-                    </div>
-                    <div className="pt-2 italic text-blue-700 dark:text-blue-300">
-                      User Message: "Create content about: {'{'}{'{'} topic {'}'}{'}'}
-                      {'\n'}Style: {'{'}{'{'} style {'}'}{'}'}
-                      {'\n'}Detail level: {'{'}{'{'} detail_level {'}'}{'}'}'"
-                    </div>
-                  </div>
-                </div>
+          {/* System Prompts Overview */}
+          <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-purple-200 dark:border-purple-800">
+            <div className="flex items-start gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600">
+                <Sparkles className="h-6 w-6 text-white" />
               </div>
-
-              <div className="pt-3 text-xs">
-                <strong>Note:</strong> The System Prompt Optimizer already works with prompt ID 
-                <code className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 rounded mx-1">
-                  6e4e6335-dc04-4946-9435-561352db5b26
-                </code>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-2">
+                  System Prompts Manager
+                </h2>
+                <p className="text-sm text-purple-800 dark:text-purple-200 mb-3">
+                  Admins can convert any prompt into a global system prompt that can be triggered throughout the application 
+                  via execution cards, context menus, buttons, and other UI components.
+                </p>
+                <div className="flex items-center gap-4">
+                  <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/50">
+                    {systemPrompts.length} System Prompts Active
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open('/administration/system-prompts', '_blank')}
+                    className="border-purple-300 hover:bg-purple-100 dark:border-purple-700 dark:hover:bg-purple-900/50"
+                  >
+                    Manage System Prompts
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>
 
           {/* Demo Tabs */}
-          <Tabs defaultValue="matrx-actions" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+          <Tabs defaultValue="system-prompts" className="w-full">
+            <TabsList className="grid w-full grid-cols-5 max-w-4xl">
+              <TabsTrigger value="system-prompts" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                System Prompts
+              </TabsTrigger>
               <TabsTrigger value="matrx-actions" className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
                 Matrx Actions
@@ -130,11 +119,131 @@ export default function PromptExecutionDemoPage() {
                 Modal Demo
               </TabsTrigger>
               <TabsTrigger value="context-menu" className="flex items-center gap-2">
-                <Code2 className="h-4 w-4" />
+                <Menu className="h-4 w-4" />
                 Context Menu
               </TabsTrigger>
             </TabsList>
 
+            {/* System Prompts Tab */}
+            <TabsContent value="system-prompts" className="mt-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">System Prompt Execution Cards</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    These cards demonstrate the new system prompts feature. Admins can create these prompts from the 
+                    admin interface and configure them to appear as cards, in context menus, or as buttons throughout the app.
+                  </p>
+                </div>
+
+                {isLoadingSystemPrompts ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {[1, 2, 3].map((i) => (
+                      <Card key={i} className="p-6 h-48 animate-pulse bg-muted/50" />
+                    ))}
+                  </div>
+                ) : systemPrompts.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {systemPrompts
+                      .filter((sp) => sp.placement_config?.card?.enabled)
+                      .map((systemPrompt) => (
+                        <PromptExecutionCard
+                          key={systemPrompt.id}
+                          systemPrompt={systemPrompt}
+                          title={systemPrompt.display_config?.label || systemPrompt.name}
+                          description={systemPrompt.description || ''}
+                          context={exampleCodeContext}
+                        />
+                      ))}
+                  </div>
+                ) : (
+                  <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/30">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-900 dark:text-blue-100">
+                      <div className="space-y-3">
+                        <p>No active system prompts configured for cards yet.</p>
+                        <div className="text-sm">
+                          <p className="font-semibold mb-2">To create system prompt cards:</p>
+                          <ol className="list-decimal list-inside space-y-1 ml-2">
+                            <li>Go to AI Prompts and create a prompt with variables</li>
+                            <li>Click the admin menu (three dots) on the prompt card</li>
+                            <li>Select "Convert to System Prompt"</li>
+                            <li>Configure the prompt in the System Prompts Manager</li>
+                            <li>Enable "Card" placement and set it as active</li>
+                          </ol>
+                        </div>
+                        <Button 
+                          size="sm"
+                          onClick={() => window.open('/ai/prompts', '_blank')}
+                          className="mt-2"
+                        >
+                          Go to AI Prompts
+                        </Button>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <Separator />
+
+                {/* Example Cards with Hardcoded Data */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Example: Manual Execution Cards</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    These are example cards showing how developers can create custom execution cards 
+                    programmatically by providing a system prompt configuration.
+                  </p>
+                  
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Card className="p-6 space-y-3 hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-gray-300 dark:border-gray-700">
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600">
+                          <Code2 className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">Code Analyzer</h4>
+                          <p className="text-xs text-muted-foreground">
+                            Analyze code for best practices, potential bugs, and improvements
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">Example - Not Active</Badge>
+                    </Card>
+
+                    <Card className="p-6 space-y-3 hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-gray-300 dark:border-gray-700">
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600">
+                          <FileText className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">Content Generator</h4>
+                          <p className="text-xs text-muted-foreground">
+                            Generate high-quality content based on your specifications
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">Example - Not Active</Badge>
+                    </Card>
+
+                    <Card className="p-6 space-y-3 hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-gray-300 dark:border-gray-700">
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-orange-600 to-red-600">
+                          <Sparkles className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">Quick Refactor</h4>
+                          <p className="text-xs text-muted-foreground">
+                            Refactor and optimize your code with AI assistance
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">Example - Not Active</Badge>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Matrx Actions Tab */}
             <TabsContent value="matrx-actions" className="mt-6">
               <div className="space-y-4">
                 <div>
@@ -148,6 +257,7 @@ export default function PromptExecutionDemoPage() {
               </div>
             </TabsContent>
 
+            {/* Text Analyzer Tab */}
             <TabsContent value="text-analyzer" className="mt-6">
               <div className="space-y-4">
                 <div>
@@ -162,6 +272,7 @@ export default function PromptExecutionDemoPage() {
               </div>
             </TabsContent>
 
+            {/* Modal Demo Tab */}
             <TabsContent value="modal" className="mt-6">
               <div className="space-y-4">
                 <div>
@@ -176,12 +287,14 @@ export default function PromptExecutionDemoPage() {
               </div>
             </TabsContent>
 
+            {/* Context Menu Tab */}
             <TabsContent value="context-menu" className="mt-6">
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Context Menu Demo</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Right-click on text to see AI prompt options. Demonstrates <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">
+                    Right-click on text to see AI prompt options. System prompts configured for context menus 
+                    will appear dynamically in the menu. Demonstrates <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">
                       TextSelectionPromptMenu
                     </code> with multiple grouped actions
                   </p>
@@ -193,58 +306,64 @@ export default function PromptExecutionDemoPage() {
 
           <Separator className="my-8" />
 
-          {/* Coming Soon / Disabled Examples */}
-          <Card className="p-6 bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              Additional Examples (Coming Soon)
-            </h2>
-            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-gray-400" />
-                <span>Content Generator - Hardcoded variables demo</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-gray-400" />
-                <span>Context Menu - Right-click text selection demo</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-gray-400" />
-                <span>Chained Prompts - Sequential execution workflow</span>
-              </div>
-              <p className="text-xs mt-4 italic">
-                These require additional prompts to be created. Enable them as needed by adding 
-                the required prompts and uncommenting the examples in this file.
-              </p>
-            </div>
-          </Card>
-
           {/* Technical Info */}
           <Card className="p-6 border-purple-200 dark:border-purple-800">
-            <h2 className="text-lg font-semibold mb-3">How It Works</h2>
-            <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+            <h2 className="text-lg font-semibold mb-3">How System Prompts Work</h2>
+            <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <div className="font-semibold text-purple-600 dark:text-purple-400">
                     Core Components
                   </div>
-                  <ul className="space-y-1 text-xs">
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">usePromptExecution</code> - Hook for execution</li>
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">PromptExecutionButton</code> - Button component</li>
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">PromptExecutionModal</code> - Universal modal</li>
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">usePromptModal</code> - Modal state hook</li>
+                  <ul className="space-y-1 text-sm">
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">SystemPromptsManager</code> - Admin management UI</li>
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">PromptExecutionCard</code> - Clickable card component</li>
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">PromptContextMenu</code> - Dynamic context menu</li>
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">useSystemPrompts</code> - Data fetching hook</li>
                   </ul>
                 </div>
                 <div className="space-y-2">
                   <div className="font-semibold text-purple-600 dark:text-purple-400">
                     Key Features
                   </div>
-                  <ul className="space-y-1 text-xs">
-                    <li>• Socket.IO streaming (same as PromptRunner)</li>
-                    <li>• Automatic variable detection & replacement</li>
-                    <li>• Redux integration for state management</li>
-                    <li>• Flexible variable sources (hardcoded, context, etc.)</li>
+                  <ul className="space-y-1 text-sm">
+                    <li>• Admin-managed global system prompts</li>
+                    <li>• Dynamic placement configuration (cards, menus, buttons)</li>
+                    <li>• Variable mapping and context passing</li>
+                    <li>• Versioning and update tracking</li>
+                    <li>• Category-based organization</li>
                   </ul>
                 </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <div className="font-semibold text-purple-600 dark:text-purple-400">
+                  Admin Workflow
+                </div>
+                <ol className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Badge className="flex-none mt-0.5">1</Badge>
+                    <span>Create a prompt in AI Prompts with variables (e.g., <code>{'{{text}}'}</code>, <code>{'{{code}}'}</code>)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge className="flex-none mt-0.5">2</Badge>
+                    <span>Convert to System Prompt via the admin menu</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge className="flex-none mt-0.5">3</Badge>
+                    <span>Configure display settings (icon, label, tooltip)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge className="flex-none mt-0.5">4</Badge>
+                    <span>Enable placement options (cards, context menus, buttons)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge className="flex-none mt-0.5">5</Badge>
+                    <span>Set as active and published to make it available</span>
+                  </li>
+                </ol>
               </div>
             </div>
           </Card>

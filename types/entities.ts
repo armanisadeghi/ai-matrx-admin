@@ -842,6 +842,39 @@ export type Prompts = {
     description?: string;
 }
 
+export type SystemPrompts = {
+    id: string;
+    systemPromptId: string;
+    name: string;
+    description?: string;
+    sourcePromptId?: string;
+    version: number;
+    promptSnapshot: Record<string, unknown>;
+    displayConfig: Record<string, unknown>;
+    placementConfig: Record<string, unknown>;
+    category: string;
+    subcategory?: string;
+    tags: string[];
+    sortOrder: number;
+    requiredVariables: string[];
+    optionalVariables: string[];
+    variableMappings: Record<string, unknown>;
+    isActive: boolean;
+    isFeatured: boolean;
+    status: string;
+    totalExecutions: number;
+    uniqueUsersCount: number;
+    lastExecutedAt?: Date;
+    publishedBy?: string;
+    publishedAt: Date;
+    lastUpdatedBy?: string;
+    lastUpdatedAt?: Date;
+    updateNotes?: string;
+    metadata: Record<string, unknown>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export type QuizSessions = {
     id: string;
     userId: string;
