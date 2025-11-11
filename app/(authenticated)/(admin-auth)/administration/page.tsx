@@ -14,27 +14,15 @@ import {adminCategories} from "@/app/(authenticated)/(admin-auth)/administration
 // IMPORTANT: All features and routes are defined in: app\(authenticated)\(admin-auth)\administration\categories.tsx
 // The top navigation menu automatically extracts routes from categories.tsx via config.ts
 
-
-
-
-// List of verified features
-// This would ideally come from a database or configuration
-const verifiedFeatures = [
-  // Add verified feature titles here once they're verified
-  "TypeScript Error Analyzer"
-];
-
 const AdminPage = () => {
-    const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const router = useRouter();
 
     React.useEffect(() => {
-        if (selectedComponent || selectedCategory) {
+        if (selectedCategory) {
             window.history.pushState(
                 {
-                    selectedComponent,
                     selectedCategory
                 },
                 '',
@@ -44,10 +32,8 @@ const AdminPage = () => {
 
         const handlePopState = (event: PopStateEvent) => {
             if (event.state === null) {
-                setSelectedComponent(null);
                 setSelectedCategory(null);
             } else {
-                setSelectedComponent(event.state.selectedComponent);
                 setSelectedCategory(event.state.selectedCategory);
             }
         };
@@ -57,16 +43,13 @@ const AdminPage = () => {
         return () => {
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [selectedComponent, selectedCategory]);
+    }, [selectedCategory]);
 
     const handleSelectComponent = (title: string) => {
-        // If this is a link-based feature, don't set the selected component
         const feature = adminCategories.flatMap(cat => cat.features).find(f => f.title === title);
         if (feature?.link) {
             router.push(feature.link);
-            return;
         }
-        setSelectedComponent(title);
     };
 
     const handleSelectCategory = (name: string) => {
@@ -78,45 +61,22 @@ const AdminPage = () => {
         return features.slice(0, 3);
     };
 
-    const handleBackToSelection = () => {
-        if (selectedComponent) {
-            setSelectedComponent(null);
-            window.history.pushState(
-                {selectedCategory, selectedComponent: null},
-                '',
-                window.location.pathname
-            );
-        } else if (selectedCategory) {
-            setSelectedCategory(null);
-            window.history.pushState(
-                {selectedCategory: null, selectedComponent: null},
-                '',
-                window.location.pathname
-            );
-        }
+    const getCategoryBgClass = (iconColor?: string) => {
+        const colorMap: Record<string, string> = {
+            'text-amber-600': 'bg-amber-100 dark:bg-amber-900/20',
+            'text-blue-600': 'bg-blue-100 dark:bg-blue-900/20',
+            'text-indigo-600': 'bg-indigo-100 dark:bg-indigo-900/20',
+            'text-purple-600': 'bg-purple-100 dark:bg-purple-900/20',
+            'text-green-600': 'bg-green-100 dark:bg-green-900/20',
+            'text-cyan-600': 'bg-cyan-100 dark:bg-cyan-900/20',
+            'text-pink-600': 'bg-pink-100 dark:bg-pink-900/20',
+            'text-orange-600': 'bg-orange-100 dark:bg-orange-900/20',
+            'text-red-600': 'bg-red-100 dark:bg-red-900/20',
+            'text-teal-600': 'bg-teal-100 dark:bg-teal-900/20',
+            'text-violet-600': 'bg-violet-100 dark:bg-violet-900/20',
+        };
+        return colorMap[iconColor || 'text-blue-600'] || 'bg-blue-100 dark:bg-blue-900/20';
     };
-
-    const isFeatureVerified = (title: string) => {
-        return verifiedFeatures.includes(title);
-    };
-
-    if (selectedComponent) {
-        const selectedFeature = adminCategories
-            .flatMap(cat => cat.features)
-            .find(f => f.title === selectedComponent);
-
-        return (
-            <ErrorBoundary>
-                <div className="h-full w-full overflow-auto">
-                    <div className="min-h-screen py-2 bg-matrx-card w-full">
-                        <div className="w-full">
-                            {selectedFeature?.component}
-                        </div>
-                    </div>
-                </div>
-            </ErrorBoundary>
-        );
-    }
     if (selectedCategory) {
         const category = adminCategories.find(c => c.name === selectedCategory);
         return (
@@ -125,24 +85,15 @@ const AdminPage = () => {
                     <div className="w-full px-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {category?.features.map((feature, index) => (
-                            feature.link ? (
-                                <FeatureSectionLinkComponent
-                                    key={feature.title}
-                                    title={feature.title}
-                                    description={feature.description}
-                                    icon={feature.icon}
-                                    index={index}
-                                    link={feature.link}
-                                    isVerified={isFeatureVerified(feature.title)}
-                                />
-                            ) : (
-                                <FeatureSectionAnimatedGradientComponents
-                                    key={feature.title}
-                                    {...feature}
-                                    index={index}
-                                    onClick={() => handleSelectComponent(feature.title)}
-                                />
-                            )
+                            <FeatureSectionLinkComponent
+                                key={feature.title}
+                                title={feature.title}
+                                description={feature.description}
+                                icon={feature.icon}
+                                index={index}
+                                link={feature.link}
+                                isNew={feature.isNew}
+                            />
                         ))}
                     </div>
                 </div>
@@ -166,7 +117,7 @@ const AdminPage = () => {
                                      cursor-pointer relative group"
                         >
                             <div className="flex items-center space-x-4 mb-4">
-                                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                                <div className={`p-3 rounded-lg ${category.iconColor || 'text-blue-600'} ${getCategoryBgClass(category.iconColor)}`}>
                                     {category.icon}
                                 </div>
                                 <h3 className="text-xl font-semibold">{category.name}</h3>
@@ -181,12 +132,10 @@ const AdminPage = () => {
                                                 handleSelectComponent(feature.title);
                                             }}
                                             className={`flex items-center h-6 
-                                                ${feature.link && !isFeatureVerified(feature.title) 
+                                                ${feature.isNew 
                                                     ? 'text-amber-600 dark:text-amber-400 font-semibold' 
                                                     : 'text-gray-600 dark:text-gray-300'}
-                                                ${feature.link 
-                                                    ? 'hover:text-blue-700 dark:hover:text-blue-500' 
-                                                    : 'hover:text-blue-600 dark:hover:text-blue-400'}
+                                                hover:text-blue-700 dark:hover:text-blue-500
                                                 cursor-pointer transition-colors duration-200`}
                                         >
                                             <div className="flex items-center min-w-[28px]">
@@ -196,7 +145,7 @@ const AdminPage = () => {
                                             </div>
                                             <span className="text-sm font-medium">
                                                 {feature.title}
-                                                {feature.link && !isFeatureVerified(feature.title) && (
+                                                {feature.isNew && (
                                                     <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 dark:text-amber-400">
                                                         New
                                                     </span>

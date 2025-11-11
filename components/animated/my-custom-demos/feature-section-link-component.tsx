@@ -11,7 +11,7 @@ interface FeatureSectionLinkProps {
   icon: React.ReactNode;
   index: number;
   link: string;
-  isVerified?: boolean;
+  isNew?: boolean;
 }
 
 const FeatureSectionLinkComponent = ({
@@ -20,7 +20,7 @@ const FeatureSectionLinkComponent = ({
   icon,
   index,
   link,
-  isVerified = false
+  isNew = false
 }: FeatureSectionLinkProps) => {
   return (
     <Link href={link} passHref className="group/link relative block">
@@ -39,10 +39,10 @@ const FeatureSectionLinkComponent = ({
         Route
       </div>
       
-      {/* Verification status */}
-      {!isVerified && (
+      {/* New indicator */}
+      {isNew && (
         <span className="absolute z-20 top-0 left-10 transform -translate-y-1/2 text-amber-500 dark:text-amber-400 font-bold text-sm px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30">
-          Not verified
+          New
         </span>
       )}
     </Link>
