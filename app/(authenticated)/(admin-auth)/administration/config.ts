@@ -20,6 +20,12 @@ export const pages: ModulePage[] = [
         description: 'Manage message templates for prompts'
     },
     {
+        title: 'System Prompts',
+        path: 'system-prompts',
+        relative: true,
+        description: 'Manage system-wide prompts for context menus and cards'
+    },
+    {
         title: 'Server Cache',
         path: 'server-cache',
         relative: true,

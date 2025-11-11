@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal, Edit3, Play } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal, Edit3, Play, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
@@ -20,6 +20,7 @@ interface PromptBuilderHeaderCompactProps {
     fullPromptObject?: any;
     onAcceptFullPrompt?: (optimizedObject: any) => void;
     onAcceptAsCopy?: (optimizedObject: any) => void;
+    onPublishAsSystem?: () => void; // Admin-only: Publish as System Prompt
     // Mobile tab support
     mobileActiveTab?: 'edit' | 'test';
     onMobileTabChange?: (tab: 'edit' | 'test') => void;
@@ -38,6 +39,7 @@ export function PromptBuilderHeaderCompact({
     fullPromptObject,
     onAcceptFullPrompt,
     onAcceptAsCopy,
+    onPublishAsSystem,
     mobileActiveTab = 'edit',
     onMobileTabChange,
 }: PromptBuilderHeaderCompactProps) {
@@ -82,6 +84,15 @@ export function PromptBuilderHeaderCompact({
                         </DropdownMenuItem>
                         {isAdminMode && (
                             <>
+                                {onPublishAsSystem && (
+                                    <>
+                                        <DropdownMenuItem onClick={onPublishAsSystem}>
+                                            <Upload className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
+                                            <span className="text-purple-600 dark:text-purple-400">Publish as System</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                    </>
+                                )}
                                 <DropdownMenuItem>
                                     <GitCompare className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
                                     <span className="text-amber-600 dark:text-amber-400">Compare</span>
@@ -212,17 +223,28 @@ export function PromptBuilderHeaderCompact({
                         </Button>
                         {isAdminMode && (
                             <>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
+                                {onPublishAsSystem && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-950"
+                                        onClick={onPublishAsSystem}
+                                        title="Publish as System Prompt (Admin Only)"
+                                    >
+                                        <Upload className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     className="h-7 w-7 p-0 hover:bg-amber-50 dark:hover:bg-amber-950"
                                     title="Compare (Admin Only)"
                                 >
                                     <GitCompare className="h-3 w-3 text-amber-600 dark:text-amber-400" />
                                 </Button>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     className="h-7 w-7 p-0 hover:bg-amber-50 dark:hover:bg-amber-950"
                                     title="Evaluate (Admin Only)"
                                 >
