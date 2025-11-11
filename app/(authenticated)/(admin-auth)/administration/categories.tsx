@@ -42,9 +42,23 @@ import {
     IconUsers,
 } from "@tabler/icons-react";
 import React from "react";
-import { Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain } from "lucide-react";
+import { Database, DatabaseBackup, DatabaseZap, MessageSquare, Megaphone, Layout, Brain, Beaker } from "lucide-react";
 
 export const adminCategories = [
+    {
+        name: "Experimental",
+        icon: <Beaker className="w-6 h-6" />,
+        iconColor: "text-fuchsia-600",
+        features: [
+            {
+                title: "Experimental Routes",
+                description: "Access all experimental, demo, and test routes organized by feature area for easy testing and development",
+                icon: <Beaker />,
+                link: "/administration/experimental-routes",
+                isNew: true,
+            },
+        ],
+    },
     {
         name: "Internal AI",
         icon: <Brain className="w-6 h-6" />,

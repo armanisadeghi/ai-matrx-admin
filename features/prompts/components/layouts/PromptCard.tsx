@@ -55,6 +55,7 @@ export function PromptCard({
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+    const [promptVariables, setPromptVariables] = useState<string[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
@@ -165,10 +166,45 @@ export function PromptCard({
         }
     };
 
-    const handleMakeGlobalSystemPrompt = () => {
+    const handleMakeGlobalSystemPrompt = async () => {
         if (!isSystemAdmin) return;
         
         setIsAdminMenuOpen(false);
+        
+        // Fetch prompt data to extract variables
+        try {
+            const { data: promptData, error } = await supabase
+                .from('prompts')
+                .select('messages')
+                .eq('id', id)
+                .single();
+            
+            if (error) throw error;
+            
+            // Extract variables from messages
+            const extractVariables = (messages: any[]): string[] => {
+                const variableRegex = /\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}/g;
+                const variablesSet = new Set<string>();
+                
+                messages?.forEach((message: any) => {
+                    if (message.content) {
+                        let match;
+                        while ((match = variableRegex.exec(message.content)) !== null) {
+                            variablesSet.add(match[1]);
+                        }
+                    }
+                });
+                
+                return Array.from(variablesSet);
+            };
+            
+            const variables = extractVariables(promptData?.messages || []);
+            setPromptVariables(variables);
+        } catch (error) {
+            console.error('Error fetching prompt variables:', error);
+            setPromptVariables([]);
+        }
+        
         setIsConvertToSystemPromptModalOpen(true);
     };
 
@@ -382,6 +418,7 @@ export function PromptCard({
                 promptId={id}
                 promptName={name}
                 promptDescription={description}
+                promptVariables={promptVariables}
             />
         </Card>
     );

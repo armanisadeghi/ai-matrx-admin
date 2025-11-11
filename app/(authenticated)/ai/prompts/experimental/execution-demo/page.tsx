@@ -13,6 +13,7 @@ import {
 import { PromptImporter } from "@/features/prompts";
 import { PromptExecutionCard } from "@/features/prompts";
 import { MatrxActionsDemo } from "@/features/matrx-actions/examples/MatrxActionsDemo";
+import { DynamicContextMenu, DynamicCards, DynamicButtons } from "@/components/dynamic";
 import { Code2, Sparkles, FileText, Upload, Zap, Grid3x3, Menu, AlertCircle } from "lucide-react";
 import DEMO_PROMPTS from "@/features/prompts/DEMO_PROMPTS.json";
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -36,6 +37,26 @@ export default function PromptExecutionDemoPage() {
 }`;
 
   const exampleTextContext = `The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet at least once. It's commonly used for testing fonts and keyboards.`;
+
+  const sampleContent = `
+Artificial Intelligence and Machine Learning
+
+Artificial Intelligence (AI) has transformed the way we interact with technology. 
+From voice assistants to autonomous vehicles, AI systems are becoming increasingly 
+sophisticated and integrated into our daily lives.
+
+Machine learning, a subset of AI, enables computers to learn from data without being 
+explicitly programmed. These systems can identify patterns, make decisions, and improve 
+their performance over time.
+
+Key Benefits:
+• Automation of repetitive tasks
+• Enhanced decision-making with data analysis
+• Personalized user experiences
+• Improved efficiency and productivity
+
+Try selecting some text and right-clicking to see available actions!
+  `;
   
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
@@ -247,13 +268,42 @@ export default function PromptExecutionDemoPage() {
             <TabsContent value="matrx-actions" className="mt-6">
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Matrx Actions System (New!)</h3>
+                  <h3 className="text-lg font-semibold mb-2">Database-Driven Context Menus</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Demonstrating the new hierarchical action system with separation of concerns. 
-                    Actions are defined separately from where they appear in menus.
+                    All menu items now load from the database. Right-click on the text below to see 
+                    all available actions. Items marked "Coming Soon" are placeholders waiting for prompts.
                   </p>
                 </div>
-                <MatrxActionsDemo />
+                
+                {/* Database-driven context menu */}
+                <Card className="p-6">
+                  <DynamicContextMenu
+                    uiContext={{
+                      selection: '',
+                      editorContent: exampleCodeContext,
+                      currentCode: exampleCodeContext,
+                    }}
+                  >
+                    <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 min-h-[300px]">
+                      <div className="prose dark:prose-invert max-w-none">
+                        <h4 className="text-lg font-semibold mb-4">Try it: Right-click anywhere!</h4>
+                        <div className="whitespace-pre-line text-sm leading-relaxed select-text">
+                          {sampleContent}
+                        </div>
+                      </div>
+                    </div>
+                  </DynamicContextMenu>
+                </Card>
+
+                {/* Old demo for comparison */}
+                <details className="mt-6">
+                  <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                    Show old hardcoded demo (for comparison)
+                  </summary>
+                  <div className="mt-4">
+                    <MatrxActionsDemo />
+                  </div>
+                </details>
               </div>
             </TabsContent>
 

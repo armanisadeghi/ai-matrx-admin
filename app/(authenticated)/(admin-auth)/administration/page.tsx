@@ -63,19 +63,20 @@ const AdminPage = () => {
 
     const getCategoryBgClass = (iconColor?: string) => {
         const colorMap: Record<string, string> = {
-            'text-amber-600': 'bg-amber-100 dark:bg-amber-900/20',
-            'text-blue-600': 'bg-blue-100 dark:bg-blue-900/20',
-            'text-indigo-600': 'bg-indigo-100 dark:bg-indigo-900/20',
-            'text-purple-600': 'bg-purple-100 dark:bg-purple-900/20',
-            'text-green-600': 'bg-green-100 dark:bg-green-900/20',
-            'text-cyan-600': 'bg-cyan-100 dark:bg-cyan-900/20',
-            'text-pink-600': 'bg-pink-100 dark:bg-pink-900/20',
-            'text-orange-600': 'bg-orange-100 dark:bg-orange-900/20',
-            'text-red-600': 'bg-red-100 dark:bg-red-900/20',
-            'text-teal-600': 'bg-teal-100 dark:bg-teal-900/20',
-            'text-violet-600': 'bg-violet-100 dark:bg-violet-900/20',
+            'text-amber-600': 'bg-amber-500 dark:bg-amber-600',
+            'text-blue-600': 'bg-blue-500 dark:bg-blue-600',
+            'text-indigo-600': 'bg-indigo-500 dark:bg-indigo-600',
+            'text-purple-600': 'bg-purple-500 dark:bg-purple-600',
+            'text-green-600': 'bg-green-500 dark:bg-green-600',
+            'text-cyan-600': 'bg-cyan-500 dark:bg-cyan-600',
+            'text-pink-600': 'bg-pink-500 dark:bg-pink-600',
+            'text-orange-600': 'bg-orange-500 dark:bg-orange-600',
+            'text-red-600': 'bg-red-500 dark:bg-red-600',
+            'text-teal-600': 'bg-teal-500 dark:bg-teal-600',
+            'text-violet-600': 'bg-violet-500 dark:bg-violet-600',
+            'text-fuchsia-600': 'bg-fuchsia-500 dark:bg-fuchsia-600',
         };
-        return colorMap[iconColor || 'text-blue-600'] || 'bg-blue-100 dark:bg-blue-900/20';
+        return colorMap[iconColor || 'text-blue-600'] || 'bg-blue-500 dark:bg-blue-600';
     };
     if (selectedCategory) {
         const category = adminCategories.find(c => c.name === selectedCategory);
@@ -117,7 +118,7 @@ const AdminPage = () => {
                                      cursor-pointer relative group"
                         >
                             <div className="flex items-center space-x-4 mb-4">
-                                <div className={`p-3 rounded-lg ${category.iconColor || 'text-blue-600'} ${getCategoryBgClass(category.iconColor)}`}>
+                                <div className={`p-3 rounded-lg text-white ${getCategoryBgClass(category.iconColor)}`}>
                                     {category.icon}
                                 </div>
                                 <h3 className="text-xl font-semibold">{category.name}</h3>

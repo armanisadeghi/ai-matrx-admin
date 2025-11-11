@@ -26,8 +26,20 @@ export async function fetchSystemPrompts(options: SystemPromptQueryOptions = {})
     .select('*');
   
   // Apply filters
+  if (options.placement_type) {
+    query = query.eq('placement_type', options.placement_type);
+  }
+  
+  if (options.functionality_id) {
+    query = query.eq('functionality_id', options.functionality_id);
+  }
+  
   if (options.category) {
     query = query.eq('category', options.category);
+  }
+  
+  if (options.subcategory) {
+    query = query.eq('subcategory', options.subcategory);
   }
   
   if (options.status) {
@@ -46,16 +58,8 @@ export async function fetchSystemPrompts(options: SystemPromptQueryOptions = {})
     query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%,system_prompt_id.ilike.%${options.search}%`);
   }
   
-  // Filter by trigger type (check placement_config)
-  if (options.trigger_type) {
-    const triggerField = options.trigger_type === 'context-menu' 
-      ? 'contextMenu' 
-      : options.trigger_type;
-    
-    query = query.not('placement_config', 'is', null);
-  }
-  
-  // Order by sort_order, then by name
+  // Order by category, then sort_order, then name
+  query = query.order('category', { ascending: true });
   query = query.order('sort_order', { ascending: true });
   query = query.order('name', { ascending: true });
   

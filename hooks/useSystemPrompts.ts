@@ -151,36 +151,50 @@ export function useSystemPrompt(
 /**
  * Hook specifically for context menu prompts
  */
-export function useContextMenuPrompts() {
+export function useContextMenuPrompts(category?: string, subcategory?: string) {
   return useSystemPrompts({
+    placement_type: 'context-menu',
     is_active: true,
     status: 'published',
-    trigger_type: 'context-menu',
-    cacheKey: 'context-menu-prompts'
+    category,
+    subcategory,
+    cacheKey: `context-menu-prompts-${category || 'all'}-${subcategory || 'all'}`
   });
 }
 
 /**
  * Hook specifically for card prompts
  */
-export function useCardPrompts() {
+export function useCardPrompts(category?: string) {
   return useSystemPrompts({
+    placement_type: 'card',
     is_active: true,
     status: 'published',
-    trigger_type: 'card',
-    cacheKey: 'card-prompts'
+    category,
+    cacheKey: `card-prompts-${category || 'all'}`
   });
 }
 
 /**
  * Hook specifically for button prompts
  */
-export function useButtonPrompts() {
+export function useButtonPrompts(category?: string) {
   return useSystemPrompts({
+    placement_type: 'button',
     is_active: true,
     status: 'published',
-    trigger_type: 'button',
-    cacheKey: 'button-prompts'
+    category,
+    cacheKey: `button-prompts-${category || 'all'}`
+  });
+}
+
+/**
+ * Hook to fetch ALL system prompts (including inactive/draft) for admin
+ */
+export function useAllSystemPrompts(placementType?: string) {
+  return useSystemPrompts({
+    placement_type: placementType as 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action',
+    cacheKey: `all-system-prompts-${placementType || 'all'}`
   });
 }
 

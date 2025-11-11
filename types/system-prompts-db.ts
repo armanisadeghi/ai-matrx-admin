@@ -17,29 +17,20 @@ export interface SystemPromptDB {
   // Display configuration
   display_config: DisplayConfig;
   
-  // Placement configuration
-  placement_config: PlacementConfig;
-  
-  // Organization
+  // CRITICAL: Where and what this is for
+  placement_type: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
+  functionality_id: string | null; // Ties to REAL CODE (e.g., 'content-expander-card')
   category: string;
   subcategory: string | null;
+  placement_settings: Record<string, any>; // Simple flags ONLY (requiresSelection, allowChat, etc.)
+  
   tags: string[];
   sort_order: number;
-  
-  // Variables
-  required_variables: string[];
-  optional_variables: string[];
-  variable_mappings: Record<string, any>;
   
   // Status
   is_active: boolean;
   is_featured: boolean;
   status: SystemPromptStatus;
-  
-  // Usage stats
-  total_executions: number;
-  unique_users_count: number;
-  last_executed_at: string | null;
   
   // Publishing metadata
   published_by: string | null;
@@ -73,6 +64,7 @@ export interface PromptSnapshot {
     defaultValue: string;
   }>;
   variables: string[];
+  placeholder?: boolean; // For seed placeholders that don't have actual prompts yet
 }
 
 /**
@@ -160,14 +152,13 @@ export interface CreateSystemPromptInput {
   source_prompt_id?: string;
   prompt_snapshot: PromptSnapshot;
   display_config?: DisplayConfig;
-  placement_config?: PlacementConfig;
-  category?: string;
+  placement_type: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
+  functionality_id: string | null;
+  category: string;
   subcategory?: string;
+  placement_settings?: Record<string, any>;
   tags?: string[];
   sort_order?: number;
-  required_variables?: string[];
-  optional_variables?: string[];
-  variable_mappings?: Record<string, any>;
   is_active?: boolean;
   is_featured?: boolean;
   status?: SystemPromptStatus;
@@ -181,14 +172,13 @@ export interface UpdateSystemPromptInput {
   name?: string;
   description?: string;
   display_config?: Partial<DisplayConfig>;
-  placement_config?: Partial<PlacementConfig>;
+  placement_type?: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
+  functionality_id?: string | null;
   category?: string;
   subcategory?: string;
+  placement_settings?: Record<string, any>;
   tags?: string[];
   sort_order?: number;
-  required_variables?: string[];
-  optional_variables?: string[];
-  variable_mappings?: Record<string, any>;
   is_active?: boolean;
   is_featured?: boolean;
   status?: SystemPromptStatus;
@@ -208,10 +198,12 @@ export interface PublishSystemPromptUpdateInput {
  * Query options for fetching system prompts
  */
 export interface SystemPromptQueryOptions {
+  placement_type?: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
+  functionality_id?: string;
   category?: string;
+  subcategory?: string;
   status?: SystemPromptStatus;
   is_active?: boolean;
-  trigger_type?: 'context-menu' | 'card' | 'button';
   tags?: string[];
   search?: string;
 }

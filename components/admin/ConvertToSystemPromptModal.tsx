@@ -1,526 +1,634 @@
+/**
+ * ConvertToSystemPromptModal
+ * 
+ * 3-Step Wizard for converting a regular prompt to a system prompt:
+ * 1. Select Functionality (e.g., "Content Expander Card")
+ * 2. Configure Placement (type, category, settings)
+ * 3. Confirm and Create
+ */
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { Loader2, AlertCircle, CheckCircle, Sparkles, Info } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/utils/supabase/client';
-import { 
-    getAllCategories, 
-    getCategoryById, 
-    validatePromptVariables,
-    getCategoryVariableDescription,
-    type SystemPromptCategory 
-} from '@/types/system-prompt-categories';
-import { cn } from '@/utils';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SYSTEM_FUNCTIONALITIES, validatePromptForFunctionality } from '@/types/system-prompt-functionalities';
+import type { PromptSnapshot } from '@/types/system-prompts-db';
 
 interface ConvertToSystemPromptModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    promptId: string;
-    promptName: string;
-    promptDescription?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  promptId: string;
+  promptName: string;
+  promptDescription?: string;
+  promptVariables: string[];
+  onSuccess?: () => void;
 }
 
-interface PromptDiff {
-    hasChanges: boolean;
-    oldVersion?: any;
-    newVersion?: any;
-    differences?: string[];
+type WizardStep = 'functionality' | 'placement' | 'confirm';
+
+interface FunctionalityValidation {
+  valid: boolean;
+  missing: string[];
+  extra: string[];
 }
 
 export function ConvertToSystemPromptModal({
-    isOpen,
-    onClose,
-    promptId,
-    promptName,
-    promptDescription = '',
+  isOpen,
+  onClose,
+  promptId,
+  promptName,
+  promptDescription,
+  promptVariables,
+  onSuccess,
 }: ConvertToSystemPromptModalProps) {
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-    const [isCheckingExisting, setIsCheckingExisting] = useState(false);
-    const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
-    const [existingSystemPrompt, setExistingSystemPrompt] = useState<any>(null);
-    const [diff, setDiff] = useState<PromptDiff | null>(null);
-    
-    // Prompt data
-    const [promptVariables, setPromptVariables] = useState<string[]>([]);
-    
-    // Form state
-    const [name, setName] = useState(promptName);
-    const [description, setDescription] = useState(promptDescription);
-    const [categoryId, setCategoryId] = useState<string>('content-expander');
-    const [systemPromptId, setSystemPromptId] = useState('');
-    
-    const categories = getAllCategories();
-    const selectedCategory = getCategoryById(categoryId);
-    const validation = selectedCategory ? validatePromptVariables(promptVariables, selectedCategory) : null;
+  const [currentStep, setCurrentStep] = useState<WizardStep>('functionality');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-    // Generate kebab-case ID from name
-    const generateSystemPromptId = (inputName: string): string => {
-        return inputName
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-    };
+  // Step 1: Functionality
+  const [selectedFunctionalityId, setSelectedFunctionalityId] = useState<string>('');
+  const [functionalityValidation, setFunctionalityValidation] = useState<FunctionalityValidation | null>(null);
 
-    // Update system_prompt_id when name changes
-    useEffect(() => {
-        if (name) {
-            setSystemPromptId(generateSystemPromptId(name));
+  // Step 2: Placement
+  const [systemPromptId, setSystemPromptId] = useState('');
+  const [name, setName] = useState(promptName);
+  const [description, setDescription] = useState(promptDescription || '');
+  const [placementType, setPlacementType] = useState<'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action'>('card');
+  const [category, setCategory] = useState('general');
+  const [subcategory, setSubcategory] = useState('');
+  const [requiresSelection, setRequiresSelection] = useState(false);
+  const [allowChat, setAllowChat] = useState(true);
+  const [allowInitialMessage, setAllowInitialMessage] = useState(false);
+
+  // Reset on close
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep('functionality');
+      setSelectedFunctionalityId('');
+      setFunctionalityValidation(null);
+      setName(promptName);
+      setDescription(promptDescription || '');
+      setSystemPromptId('');
+      setPlacementType('card');
+      setCategory('general');
+      setSubcategory('');
+      setRequiresSelection(false);
+      setAllowChat(true);
+      setAllowInitialMessage(false);
+      setError('');
+      setIsSubmitting(false);
+    }
+  }, [isOpen, promptName, promptDescription]);
+
+  // Generate system_prompt_id when name changes
+  useEffect(() => {
+    if (name) {
+      const generated = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+      setSystemPromptId(generated);
+    }
+  }, [name]);
+
+  // Validate functionality when selected
+  useEffect(() => {
+    if (selectedFunctionalityId) {
+      const functionality = SYSTEM_FUNCTIONALITIES[selectedFunctionalityId];
+      if (functionality) {
+        // Check if prompt variables match
+        const required = new Set(functionality.requiredVariables);
+        const optional = new Set(functionality.optionalVariables || []);
+        const promptVars = new Set(promptVariables);
+
+        const missing = Array.from(required).filter((v) => !promptVars.has(v));
+        const extra = Array.from(promptVars).filter(
+          (v) => !required.has(v) && !optional.has(v)
+        );
+
+        setFunctionalityValidation({
+          valid: missing.length === 0,
+          missing,
+          extra,
+        });
+
+        // Auto-set placement type if only one option
+        if (functionality.placementTypes.length === 1) {
+          setPlacementType(functionality.placementTypes[0] as any);
         }
-    }, [name]);
+      }
+    }
+  }, [selectedFunctionalityId, promptVariables]);
 
-    // Load prompt data and check for existing when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            loadPromptData();
-            checkForExistingSystemPrompt();
-        }
-    }, [isOpen, promptId]);
-    
-    const loadPromptData = async () => {
-        setIsLoadingPrompt(true);
-        try {
-            const { data: prompt, error } = await supabase
-                .from('prompts')
-                .select('messages')
-                .eq('id', promptId)
-                .single();
-            
-            if (error || !prompt) {
-                toast.error('Failed to load prompt details');
-                return;
-            }
-            
-            // Extract variables from messages
-            const variableRegex = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g;
-            const variables = new Set<string>();
-            
-            prompt.messages?.forEach((msg: any) => {
-                if (msg.content) {
-                    let match;
-                    while ((match = variableRegex.exec(msg.content)) !== null) {
-                        variables.add(match[1]);
-                    }
-                }
-            });
-            
-            setPromptVariables(Array.from(variables));
-        } catch (error) {
-            console.error('Error loading prompt:', error);
-            toast.error('Error loading prompt details');
-        } finally {
-            setIsLoadingPrompt(false);
-        }
-    };
+  const handleNext = () => {
+    if (currentStep === 'functionality') {
+      if (!selectedFunctionalityId) {
+        setError('Please select a functionality');
+        return;
+      }
+      if (functionalityValidation && !functionalityValidation.valid) {
+        setError('Your prompt variables do not match the selected functionality requirements');
+        return;
+      }
+      setError('');
+      setCurrentStep('placement');
+    } else if (currentStep === 'placement') {
+      if (!systemPromptId.trim()) {
+        setError('System Prompt ID is required');
+        return;
+      }
+      if (!name.trim()) {
+        setError('Name is required');
+        return;
+      }
+      setError('');
+      setCurrentStep('confirm');
+    }
+  };
 
-    const checkForExistingSystemPrompt = async () => {
-        setIsCheckingExisting(true);
-        try {
-            const generatedId = generateSystemPromptId(promptName);
-            const response = await fetch(`/api/system-prompts?system_prompt_id=${generatedId}`);
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.system_prompts && data.system_prompts.length > 0) {
-                    const existing = data.system_prompts[0];
-                    setExistingSystemPrompt(existing);
-                    
-                    // Fetch the current prompt to compare
-                    const promptResponse = await fetch(`/api/prompts/${promptId}`);
-                    if (promptResponse.ok) {
-                        const currentPrompt = await promptResponse.json();
-                        setDiff({
-                            hasChanges: true,
-                            oldVersion: existing.prompt_snapshot,
-                            newVersion: currentPrompt,
-                            differences: calculateDifferences(existing.prompt_snapshot, currentPrompt)
-                        });
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error checking for existing system prompt:', error);
-        } finally {
-            setIsCheckingExisting(false);
-        }
-    };
+  const handleBack = () => {
+    setError('');
+    if (currentStep === 'confirm') {
+      setCurrentStep('placement');
+    } else if (currentStep === 'placement') {
+      setCurrentStep('functionality');
+    }
+  };
 
-    const calculateDifferences = (oldPrompt: any, newPrompt: any): string[] => {
-        const differences: string[] = [];
-        
-        // Compare messages
-        if (JSON.stringify(oldPrompt?.messages) !== JSON.stringify(newPrompt?.messages)) {
-            differences.push('Messages content has changed');
-        }
-        
-        // Compare settings
-        if (JSON.stringify(oldPrompt?.settings) !== JSON.stringify(newPrompt?.settings)) {
-            differences.push('Settings have changed');
-        }
-        
-        // Compare variables
-        if (JSON.stringify(oldPrompt?.variables) !== JSON.stringify(newPrompt?.variables)) {
-            differences.push('Variables have changed');
-        }
-        
-        return differences;
-    };
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError('');
 
-    const handleConvert = async () => {
-        if (!name.trim()) {
-            toast.error('Please enter a name for the system prompt');
-            return;
-        }
+    try {
+      const response = await fetch(`/api/prompts/${promptId}/convert-to-system-prompt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_prompt_id: systemPromptId,
+          name: name || promptName,
+          description: description || promptDescription,
+          functionality_id: selectedFunctionalityId,
+          placement_type: placementType,
+          category,
+          subcategory: subcategory || undefined,
+          placement_settings: {
+            requiresSelection,
+            allowChat,
+            allowInitialMessage,
+          },
+        }),
+      });
 
-        setIsLoading(true);
-        try {
-            const response = await fetch(`/api/prompts/${promptId}/convert-to-system-prompt`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name,
-                    system_prompt_id: systemPromptId,
-                    category: categoryId,
-                }),
-            });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to convert (${response.status})`);
+      }
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                const errorMessage = errorData.details
-                    ? `${errorData.error}: ${errorData.details}`
-                    : errorData.error || `Failed to convert (${response.status})`;
-                throw new Error(errorMessage);
-            }
+      const data = await response.json();
+      console.log('System prompt created:', data);
 
-            const data = await response.json();
-            toast.success(`Successfully converted "${name}" to a system prompt!`);
-            
-            // Close modal and redirect to admin page
-            onClose();
-            router.push(`/administration/system-prompts?highlight=${data.system_prompt.id}`);
-        } catch (error) {
-            console.error('Error converting prompt:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to convert prompt to system prompt. Please try again.';
-            toast.error(errorMessage);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+      // Success
+      onSuccess?.();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    const handleUpdate = async () => {
-        if (!existingSystemPrompt) return;
+  const selectedFunctionality = selectedFunctionalityId
+    ? SYSTEM_FUNCTIONALITIES[selectedFunctionalityId]
+    : null;
 
-        setIsLoading(true);
-        try {
-            const response = await fetch(`/api/system-prompts/${existingSystemPrompt.id}/publish-update`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    prompt_id: promptId,
-                    update_notes: 'Updated from source prompt',
-                }),
-            });
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Convert to System Prompt</DialogTitle>
+          <DialogDescription>
+            Step {currentStep === 'functionality' ? '1' : currentStep === 'placement' ? '2' : '3'} of 3
+          </DialogDescription>
+        </DialogHeader>
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                throw new Error(errorData.error || 'Failed to update system prompt');
-            }
-
-            toast.success('Successfully updated system prompt!');
-            onClose();
-            router.refresh();
-        } catch (error) {
-            console.error('Error updating system prompt:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to update system prompt';
-            toast.error(errorMessage);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const renderNewPromptForm = () => (
-        <div className="space-y-4">
-            <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/30">
-                <CheckCircle className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-900 dark:text-blue-100">
-                    This will create a new global system prompt that can be used throughout the application.
-                </AlertDescription>
+        <div className="space-y-6 py-4">
+          {/* Error Display */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
+          )}
 
+          {/* Step 1: Functionality */}
+          {currentStep === 'functionality' && (
             <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Select Functionality</h3>
+                <p className="text-sm text-muted-foreground">
+                  Choose the functionality this prompt will power. The variables in your prompt must 
+                  match the functionality's requirements.
+                </p>
+              </div>
+
+              {/* Prompt Info */}
+              <Card className="p-4 bg-muted/50">
                 <div className="space-y-2">
-                    <Label htmlFor="name">System Prompt Name</Label>
-                    <Input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter a descriptive name"
-                    />
+                  <div>
+                    <span className="text-sm font-medium">Prompt:</span>
+                    <span className="text-sm ml-2">{promptName}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium">Variables:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {promptVariables.length > 0 ? (
+                        promptVariables.map((v) => (
+                          <Badge key={v} variant="outline" className="text-xs">
+                            {v}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground">None</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
+              </Card>
 
-                <div className="space-y-2">
-                    <Label htmlFor="system-prompt-id">System Prompt ID (Auto-generated)</Label>
-                    <Input
-                        id="system-prompt-id"
-                        value={systemPromptId}
-                        onChange={(e) => setSystemPromptId(e.target.value)}
-                        placeholder="kebab-case-id"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                        This ID will be used to reference the prompt programmatically
-                    </p>
-                </div>
+              {/* Functionality Selection */}
+              <div className="space-y-3">
+                <Label>Functionality</Label>
+                <Select value={selectedFunctionalityId} onValueChange={setSelectedFunctionalityId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a functionality..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(SYSTEM_FUNCTIONALITIES).map((func) => (
+                      <SelectItem key={func.id} value={func.id}>
+                        {func.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Describe what this prompt does"
-                        rows={3}
-                    />
-                </div>
+              {/* Functionality Details & Validation */}
+              {selectedFunctionality && (
+                <Card className="p-4">
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-semibold">{selectedFunctionality.name}</h4>
+                      <p className="text-sm text-muted-foreground">{selectedFunctionality.description}</p>
+                    </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="category">Prompt Category</Label>
-                    <Select value={categoryId} onValueChange={setCategoryId}>
-                        <SelectTrigger id="category">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {categories.map((cat) => (
-                                <SelectItem key={cat.id} value={cat.id}>
-                                    {cat.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {selectedCategory && (
-                        <p className="text-xs text-muted-foreground">
-                            {selectedCategory.description}
-                        </p>
-                    )}
-                </div>
+                    <div>
+                      <span className="text-sm font-medium">Required Variables:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedFunctionality.requiredVariables.map((v) => (
+                          <Badge
+                            key={v}
+                            variant={functionalityValidation?.missing.includes(v) ? 'destructive' : 'default'}
+                            className="text-xs"
+                          >
+                            {v}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Variable Validation */}
-                {selectedCategory && validation && (
-                    <Card className={cn(
-                        "p-4",
-                        validation.valid ? "bg-green-50 border-green-200 dark:bg-green-950/30" : "bg-orange-50 border-orange-200 dark:bg-orange-950/30"
-                    )}>
-                        <div className="space-y-3">
-                            <div className="flex items-start gap-2">
-                                {validation.valid ? (
-                                    <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                ) : (
-                                    <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                                )}
-                                <div className="flex-1">
-                                    <div className="font-semibold text-sm mb-1">
-                                        {validation.valid ? 'Variables Match!' : 'Variable Mismatch'}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {getCategoryVariableDescription(selectedCategory)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <Separator />
-
-                            <div className="space-y-2 text-xs">
-                                <div>
-                                    <div className="font-semibold mb-1">Prompt Variables:</div>
-                                    <div className="flex flex-wrap gap-1">
-                                        {promptVariables.length > 0 ? (
-                                            promptVariables.map(v => (
-                                                <Badge key={v} variant="secondary" className="text-xs">
-                                                    {'{{'}{v}{'}}'}
-                                                </Badge>
-                                            ))
-                                        ) : (
-                                            <span className="text-muted-foreground">None</span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {validation.missing.length > 0 && (
-                                    <div>
-                                        <div className="font-semibold text-orange-600 mb-1">Missing Required:</div>
-                                        <div className="flex flex-wrap gap-1">
-                                            {validation.missing.map(v => (
-                                                <Badge key={v} variant="destructive" className="text-xs">
-                                                    {'{{'}{v}{'}}'}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {validation.extra.length > 0 && (
-                                    <div>
-                                        <div className="font-semibold text-orange-600 mb-1">Unexpected Variables:</div>
-                                        <div className="flex flex-wrap gap-1">
-                                            {validation.extra.map(v => (
-                                                <Badge key={v} variant="outline" className="text-xs border-orange-400">
-                                                    {'{{'}{v}{'}}'}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {!validation.valid && selectedCategory.id !== 'custom' && (
-                                <Alert className="border-orange-300 bg-orange-100 dark:bg-orange-950/50">
-                                    <Info className="h-4 w-4" />
-                                    <AlertDescription className="text-xs">
-                                        This prompt's variables don't match the category requirements. 
-                                        Either modify your prompt or select the "Custom" category.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
+                    {selectedFunctionality.optionalVariables && selectedFunctionality.optionalVariables.length > 0 && (
+                      <div>
+                        <span className="text-sm font-medium">Optional Variables:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {selectedFunctionality.optionalVariables.map((v) => (
+                            <Badge key={v} variant="secondary" className="text-xs">
+                              {v}
+                            </Badge>
+                          ))}
                         </div>
-                    </Card>
-                )}
+                      </div>
+                    )}
+
+                    <div>
+                      <span className="text-sm font-medium">Placement Types:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedFunctionality.placementTypes.map((type) => (
+                          <Badge key={type} variant="outline" className="text-xs">
+                            {type}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Validation Status */}
+                    {functionalityValidation && (
+                      <Alert variant={functionalityValidation.valid ? 'default' : 'destructive'}>
+                        {functionalityValidation.valid ? (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <AlertDescription>
+                              ✅ Your prompt variables match this functionality!
+                            </AlertDescription>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                              <div className="space-y-1">
+                                <p className="font-semibold">Variable mismatch:</p>
+                                {functionalityValidation.missing.length > 0 && (
+                                  <p className="text-sm">
+                                    Missing: <code>{functionalityValidation.missing.join(', ')}</code>
+                                  </p>
+                                )}
+                                {functionalityValidation.extra.length > 0 && (
+                                  <p className="text-sm">
+                                    Extra: <code>{functionalityValidation.extra.join(', ')}</code>
+                                  </p>
+                                )}
+                              </div>
+                            </AlertDescription>
+                          </>
+                        )}
+                      </Alert>
+                    )}
+                  </div>
+                </Card>
+              )}
             </div>
-        </div>
-    );
+          )}
 
-    const renderExistingPromptDiff = () => (
-        <div className="space-y-4">
-            <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-950/30">
-                <AlertCircle className="h-4 w-4 text-orange-600" />
-                <AlertDescription className="text-orange-900 dark:text-orange-100">
-                    <strong>Warning:</strong> A system prompt with this ID already exists. 
-                    Updating it will immediately affect all places where it's used.
-                </AlertDescription>
-            </Alert>
+          {/* Step 2: Placement */}
+          {currentStep === 'placement' && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Configure Placement</h3>
+                <p className="text-sm text-muted-foreground">
+                  Define where and how this system prompt will appear in the application.
+                </p>
+              </div>
 
-            <Card className="p-4 bg-muted/50">
+              {/* System Prompt ID */}
+              <div className="space-y-2">
+                <Label htmlFor="system-prompt-id">System Prompt ID*</Label>
+                <Input
+                  id="system-prompt-id"
+                  value={systemPromptId}
+                  onChange={(e) => setSystemPromptId(e.target.value)}
+                  placeholder="e.g., content-expander-educational"
+                />
+                <p className="text-xs text-muted-foreground">
+                  A unique identifier. Use kebab-case (lowercase with dashes).
+                </p>
+              </div>
+
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="name">Display Name*</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Content Expander"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of what this system prompt does..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Placement Type */}
+              <div className="space-y-2">
+                <Label htmlFor="placement-type">Placement Type*</Label>
+                <Select
+                  value={placementType}
+                  onValueChange={(value: any) => setPlacementType(value)}
+                >
+                  <SelectTrigger id="placement-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedFunctionality?.placementTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-2">
+                <Label htmlFor="category">Category*</Label>
+                <Input
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="e.g., educational, text-tools, code-helpers"
+                />
+              </div>
+
+              {/* Subcategory */}
+              <div className="space-y-2">
+                <Label htmlFor="subcategory">Subcategory (Optional)</Label>
+                <Input
+                  id="subcategory"
+                  value={subcategory}
+                  onChange={(e) => setSubcategory(e.target.value)}
+                  placeholder="e.g., vocabulary, grammar"
+                />
+              </div>
+
+              {/* Placement Settings */}
+              <Card className="p-4">
+                <h4 className="font-medium mb-3">Placement Settings</h4>
                 <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="font-semibold">{existingSystemPrompt?.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Version {existingSystemPrompt?.version}
-                            </div>
-                        </div>
-                        <Badge variant={existingSystemPrompt?.is_active ? 'default' : 'secondary'}>
-                            {existingSystemPrompt?.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                    </div>
-                    
-                    <Separator />
-                    
-                    {diff && diff.differences && diff.differences.length > 0 ? (
-                        <div>
-                            <div className="text-sm font-semibold mb-2">Detected Changes:</div>
-                            <ul className="space-y-1">
-                                {diff.differences.map((change, index) => (
-                                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                                        <span className="text-orange-500">•</span>
-                                        <span>{change}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : (
-                        <div className="text-sm text-muted-foreground">
-                            No significant changes detected
-                        </div>
-                    )}
-                </div>
-            </Card>
-
-            <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/30">
-                <AlertDescription className="text-sm text-blue-900 dark:text-blue-100">
-                    After updating, you'll be redirected to the admin interface where you can configure 
-                    placement, display settings, and other options.
-                </AlertDescription>
-            </Alert>
-        </div>
-    );
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600">
-                            <Sparkles className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                            <DialogTitle>
-                                {existingSystemPrompt ? 'Update System Prompt' : 'Convert to System Prompt'}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {existingSystemPrompt 
-                                    ? 'Review changes and update the existing system prompt'
-                                    : 'Configure and create a new global system prompt'
-                                }
-                            </DialogDescription>
-                        </div>
-                    </div>
-                </DialogHeader>
-
-        {isCheckingExisting || isLoadingPrompt ? (
-            <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                        {isLoadingPrompt ? 'Loading prompt details...' : 'Checking for existing system prompt...'}
-                    </p>
-                </div>
-            </div>
-        ) : (
-            <>
-                {existingSystemPrompt ? renderExistingPromptDiff() : renderNewPromptForm()}
-            </>
-        )}
-
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose} disabled={isLoading}>
-                        Cancel
-                    </Button>
-                    {existingSystemPrompt ? (
-                        <Button 
-                            onClick={handleUpdate} 
-                            disabled={isLoading || isCheckingExisting}
-                            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
-                        >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Update System Prompt
-                        </Button>
-                    ) : (
-                    <Button 
-                        onClick={handleConvert} 
-                        disabled={isLoading || isCheckingExisting || !name.trim() || (validation && !validation.valid)}
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="requires-selection"
+                      checked={requiresSelection}
+                      onCheckedChange={(checked) => setRequiresSelection(checked as boolean)}
+                    />
+                    <Label
+                      htmlFor="requires-selection"
+                      className="text-sm font-normal cursor-pointer"
                     >
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Create System Prompt
-                    </Button>
-                    )}
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
+                      Requires Text Selection (for context menus)
+                    </Label>
+                  </div>
 
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="allow-chat"
+                      checked={allowChat}
+                      onCheckedChange={(checked) => setAllowChat(checked as boolean)}
+                    />
+                    <Label
+                      htmlFor="allow-chat"
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Allow Chat Mode (conversational responses)
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="allow-initial-message"
+                      checked={allowInitialMessage}
+                      onCheckedChange={(checked) => setAllowInitialMessage(checked as boolean)}
+                    />
+                    <Label
+                      htmlFor="allow-initial-message"
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Allow Initial User Message (prompt user before executing)
+                    </Label>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Step 3: Confirm */}
+          {currentStep === 'confirm' && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Confirm & Create</h3>
+                <p className="text-sm text-muted-foreground">
+                  Review your configuration before creating the system prompt.
+                </p>
+              </div>
+
+              <Card className="p-4">
+                <div className="space-y-3 text-sm">
+                  <div className="grid grid-cols-2 gap-2">
+                    <span className="font-medium">System Prompt ID:</span>
+                    <span className="text-muted-foreground">{systemPromptId}</span>
+
+                    <span className="font-medium">Name:</span>
+                    <span className="text-muted-foreground">{name}</span>
+
+                    <span className="font-medium">Functionality:</span>
+                    <span className="text-muted-foreground">{selectedFunctionality?.name}</span>
+
+                    <span className="font-medium">Placement Type:</span>
+                    <span className="text-muted-foreground capitalize">{placementType.replace('-', ' ')}</span>
+
+                    <span className="font-medium">Category:</span>
+                    <span className="text-muted-foreground">{category}</span>
+
+                    {subcategory && (
+                      <>
+                        <span className="font-medium">Subcategory:</span>
+                        <span className="text-muted-foreground">{subcategory}</span>
+                      </>
+                    )}
+                  </div>
+
+                  {description && (
+                    <div>
+                      <span className="font-medium block mb-1">Description:</span>
+                      <p className="text-muted-foreground">{description}</p>
+                    </div>
+                  )}
+
+                  <div>
+                    <span className="font-medium block mb-1">Settings:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {requiresSelection && <Badge variant="secondary">Requires Selection</Badge>}
+                      {allowChat && <Badge variant="secondary">Chat Mode</Badge>}
+                      {allowInitialMessage && <Badge variant="secondary">Prompt User</Badge>}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  The system prompt will be created in <strong>DRAFT</strong> mode. 
+                  You can activate it later from the System Prompts Manager.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-between pt-4 border-t">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={currentStep === 'functionality' ? onClose : handleBack}
+            disabled={isSubmitting}
+          >
+            {currentStep === 'functionality' ? (
+              'Cancel'
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Back
+              </>
+            )}
+          </Button>
+
+          {currentStep === 'confirm' ? (
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create System Prompt'
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleNext}
+              disabled={
+                (currentStep === 'functionality' && (!selectedFunctionalityId || (functionalityValidation && !functionalityValidation.valid))) ||
+                (currentStep === 'placement' && (!systemPromptId.trim() || !name.trim()))
+              }
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
