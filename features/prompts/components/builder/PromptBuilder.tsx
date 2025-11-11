@@ -18,7 +18,6 @@ import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId }
 import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
 import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
 import { PromptRunnerModal } from "@/features/prompts/components/modal/PromptRunnerModal";
-import { PublishSystemPromptModal } from "@/features/prompts/components/actions/PublishSystemPromptModal";
 import { toast } from "sonner";
 import { PromptMessageRole, PromptSettings } from "../../types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
@@ -161,9 +160,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
 
     // Prompt runner modal state
     const [isPromptRunnerOpen, setIsPromptRunnerOpen] = useState(false);
-
-    // Publish system prompt modal state
-    const [isPublishSystemPromptModalOpen, setIsPublishSystemPromptModalOpen] = useState(false);
 
     const [chatInput, setChatInput] = useState("");
     const [resources, setResources] = useState<Resource[]>([]);
@@ -848,7 +844,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     onSave={handleSave}
                     onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
                     onOpenSettings={() => setIsSettingsModalOpen(true)}
-                    onPublishAsSystem={initialData?.id ? () => setIsPublishSystemPromptModalOpen(true) : undefined}
                     developerMessage={developerMessage}
                     onDeveloperMessageChange={(value) => {
                         setDeveloperMessage(value);
@@ -1071,17 +1066,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 />
             )}
 
-            {initialData?.id && fullPromptObject && (
-                <PublishSystemPromptModal
-                    isOpen={isPublishSystemPromptModalOpen}
-                    onClose={() => setIsPublishSystemPromptModalOpen(false)}
-                    prompt={fullPromptObject}
-                    onSuccess={() => {
-                        toast.success('System prompt published successfully');
-                        setIsPublishSystemPromptModalOpen(false);
-                    }}
-                />
-            )}
             </>
         );
     }
@@ -1105,7 +1089,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     onSave={handleSave}
                     onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
                     onOpenSettings={() => setIsSettingsModalOpen(true)}
-                    onPublishAsSystem={initialData?.id ? () => setIsPublishSystemPromptModalOpen(true) : undefined}
                     developerMessage={developerMessage}
                     onDeveloperMessageChange={(value) => {
                         setDeveloperMessage(value);

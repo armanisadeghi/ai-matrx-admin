@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal, Edit3, Play, Upload } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal, Edit3, Play, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useAppSelector } from "@/lib/redux";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/SystemPromptOptimizer";
+import { AdminActionsModal } from "@/features/prompts/components/actions/AdminActionsModal";
 
 interface PromptBuilderHeaderCompactProps {
     promptName: string;
@@ -20,7 +21,6 @@ interface PromptBuilderHeaderCompactProps {
     fullPromptObject?: any;
     onAcceptFullPrompt?: (optimizedObject: any) => void;
     onAcceptAsCopy?: (optimizedObject: any) => void;
-    onPublishAsSystem?: () => void; // Admin-only: Publish as System Prompt
     // Mobile tab support
     mobileActiveTab?: 'edit' | 'test';
     onMobileTabChange?: (tab: 'edit' | 'test') => void;
@@ -39,11 +39,11 @@ export function PromptBuilderHeaderCompact({
     fullPromptObject,
     onAcceptFullPrompt,
     onAcceptAsCopy,
-    onPublishAsSystem,
     mobileActiveTab = 'edit',
     onMobileTabChange,
 }: PromptBuilderHeaderCompactProps) {
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
+    const [isAdminActionsOpen, setIsAdminActionsOpen] = useState(false);
     const isAdminMode = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
 
     return (
@@ -82,17 +82,13 @@ export function PromptBuilderHeaderCompact({
                             <Sparkles className="h-4 w-4 mr-2" />
                             Optimize
                         </DropdownMenuItem>
-                        {isAdminMode && (
+                        {isAdminMode && fullPromptObject && (
                             <>
-                                {onPublishAsSystem && (
-                                    <>
-                                        <DropdownMenuItem onClick={onPublishAsSystem}>
-                                            <Upload className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
-                                            <span className="text-purple-600 dark:text-purple-400">Publish as System</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                    </>
-                                )}
+                                <DropdownMenuItem onClick={() => setIsAdminActionsOpen(true)}>
+                                    <ShieldCheck className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
+                                    <span className="text-purple-600 dark:text-purple-400">Admin Actions</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem>
                                     <GitCompare className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
                                     <span className="text-amber-600 dark:text-amber-400">Compare</span>
@@ -221,19 +217,17 @@ export function PromptBuilderHeaderCompact({
                         >
                             <Sparkles className="h-3 w-3" />
                         </Button>
-                        {isAdminMode && (
+                        {isAdminMode && fullPromptObject && (
                             <>
-                                {onPublishAsSystem && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-950"
-                                        onClick={onPublishAsSystem}
-                                        title="Publish as System Prompt (Admin Only)"
-                                    >
-                                        <Upload className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                                    </Button>
-                                )}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 hover:bg-purple-50 dark:hover:bg-purple-950"
+                                    onClick={() => setIsAdminActionsOpen(true)}
+                                    title="Admin Actions (Admin Only)"
+                                >
+                                    <ShieldCheck className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                </Button>
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -278,6 +272,14 @@ export function PromptBuilderHeaderCompact({
             onAcceptFullPrompt={onAcceptFullPrompt}
             onAcceptAsCopy={onAcceptAsCopy}
         />
+
+        {fullPromptObject && (
+            <AdminActionsModal
+                isOpen={isAdminActionsOpen}
+                onClose={() => setIsAdminActionsOpen(false)}
+                prompt={fullPromptObject}
+            />
+        )}
         </>
     );
 }
