@@ -5,7 +5,7 @@
  * from anywhere in the application with flexible input and output handling.
  */
 
-import { PromptMessage } from "@/features/prompts/types/core";
+import { PromptMessage, PromptsData } from "@/features/prompts/types/core";
 
 // ============================================================================
 // Variable Input Sources
@@ -54,8 +54,11 @@ export type OutputHandler =
  * Configuration for executing a prompt programmatically
  */
 export interface PromptExecutionConfig {
-  /** ID of the prompt to execute */
-  promptId: string;
+  /** ID of the prompt to execute (will fetch from database) */
+  promptId?: string;
+  
+  /** Full prompt data object (skips fetch if provided) - accepts PromptsData or PromptExecutionData */
+  promptData?: PromptsData | PromptExecutionData;
   
   /** Variable value sources */
   variables?: VariableSourceMap;
@@ -72,8 +75,10 @@ export interface PromptExecutionConfig {
   /** Model overrides */
   modelConfig?: {
     modelId?: string;
+    model_id?: string;
     temperature?: number;
     maxTokens?: number;
+    max_tokens?: number;
     [key: string]: any;
   };
   
@@ -246,20 +251,29 @@ export interface UsePromptExecutionReturn {
   /** Current execution state */
   isExecuting: boolean;
   
+  /** Streaming text from current execution */
+  streamingText: string;
+  
+  /** Current task ID */
+  currentTaskId: string | null;
+  
+  /** Whether the response has ended */
+  isResponseEnded: boolean;
+  
   /** Current progress */
-  progress: ExecutionProgress | null;
+  progress?: ExecutionProgress | null;
   
   /** Latest result */
-  result: ExecutionResult | null;
+  result?: ExecutionResult | null;
   
   /** Latest error */
-  error: ExecutionError | null;
+  error: string | null;
   
   /** Reset state */
   reset: () => void;
   
   /** Cancel current execution */
-  cancel: () => void;
+  cancel?: () => void;
 }
 
 // ============================================================================
@@ -273,7 +287,7 @@ export interface PromptExecutionData {
   id: string;
   name: string;
   messages: PromptMessage[];
-  variables: string[]; // Extracted variable names
+  variables?: string[]; // Extracted variable names (optional - extracted from messages if not provided)
   settings: Record<string, any>;
   variableDefaults?: Array<{ name: string; defaultValue: string }>;
 }

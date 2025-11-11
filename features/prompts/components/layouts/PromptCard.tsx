@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
-import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, LayoutPanelTop } from "lucide-react";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, LayoutPanelTop, Settings, Globe } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
@@ -12,6 +12,13 @@ import { CreatePromptAppModal } from "@/features/prompt-apps/components";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "@/lib/toast-service";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface PromptCardProps {
     id: string;
@@ -45,6 +52,7 @@ export function PromptCard({
     const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
+    const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -155,6 +163,10 @@ export function PromptCard({
         }
     };
 
+    const handleMakeGlobalSystemPrompt = () => {
+        console.log('Make Global System Prompt clicked for prompt:', { id, name });
+    };
+
     const handleCardClick = (e: React.MouseEvent) => {
         // Only open modal if clicking the card itself, not if a modal is already open
         // Also prevent reopening if modal was just closed (within 300ms) to avoid click-through from overlay
@@ -258,17 +270,52 @@ export function PromptCard({
                         disabled={isDisabled}
                     />
                     {isSystemAdmin && (
-                        <IconButton
-                            icon={isConvertingToTemplate ? Loader2 : LayoutPanelTop}
-                            tooltip={isConvertingToTemplate ? "Converting..." : isDisabled ? "Please wait..." : "Convert to Template"}
-                            size="sm"
-                            variant="ghost"
-                            tooltipSide="top"
-                            tooltipAlign="center"
-                            onClick={handleConvertToTemplate}
-                            disabled={isConvertingToTemplate || isDisabled}
-                            iconClassName={isConvertingToTemplate ? "animate-spin" : ""}
-                        />
+                        <DropdownMenu open={isAdminMenuOpen} onOpenChange={setIsAdminMenuOpen}>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                <div>
+                                    <IconButton
+                                        icon={Settings}
+                                        tooltip="Admin Actions"
+                                        size="sm"
+                                        variant="ghost"
+                                        tooltipSide="top"
+                                        tooltipAlign="center"
+                                        disabled={isDisabled}
+                                    />
+                                </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuItem
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsAdminMenuOpen(false);
+                                        handleConvertToTemplate();
+                                    }}
+                                    disabled={isConvertingToTemplate || isDisabled}
+                                    className="cursor-pointer"
+                                >
+                                    {isConvertingToTemplate ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <LayoutPanelTop className="mr-2 h-4 w-4" />
+                                    )}
+                                    <span>Convert to Template</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsAdminMenuOpen(false);
+                                        handleMakeGlobalSystemPrompt();
+                                    }}
+                                    disabled={isDisabled}
+                                    className="cursor-pointer"
+                                >
+                                    <Globe className="mr-2 h-4 w-4" />
+                                    <span>Make Global System Prompt</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                     <IconButton
                         icon={isDeleting ? Loader2 : Trash2}
