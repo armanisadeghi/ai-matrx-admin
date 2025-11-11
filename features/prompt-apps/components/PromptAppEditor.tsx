@@ -13,8 +13,6 @@ import { ExternalLink, Eye, Trash2, ArrowLeft, Save, Play, Code2, Sparkles } fro
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/lib/toast-service';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectUserId } from '@/lib/redux/selectors/userSelectors';
 import CodeBlock from '@/components/mardown-display/code/CodeBlock';
 import { AICodeEditorModal } from '@/components/code-editor/AICodeEditorModal';
 import type { PromptApp } from '../types';
@@ -27,7 +25,6 @@ type EditorMode = 'view' | 'edit' | 'run';
 
 export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const router = useRouter();
-  const userId = useAppSelector(selectUserId);
   
   const [app, setApp] = useState(initialApp);
   const [mode, setMode] = useState<EditorMode>('view');

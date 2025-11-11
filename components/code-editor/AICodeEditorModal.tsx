@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/utils/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -42,7 +43,6 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPromptsPreferences } from '@/lib/redux/selectors/userPreferenceSelectors';
 import { PromptInput } from '@/features/prompts/components/PromptInput';
 import { PromptVariable } from '@/features/prompts/types/core';
-import { createClient } from '@/utils/supabase/client';
 import type { Resource } from '@/features/prompts/components/resource-display';
 
 export interface AICodeEditorModalProps {
@@ -119,7 +119,7 @@ export function AICodeEditorModal({
 }: AICodeEditorModalProps) {
   // Get user preferences
   const promptsPreferences = useAppSelector(selectPromptsPreferences);
-  const supabase = createClient();
+  const submitOnEnterPreference = promptsPreferences.submitOnEnter;
   
   // Normalize the language for consistent syntax highlighting
   const language = normalizeLanguage(rawLanguage);
@@ -196,7 +196,7 @@ export function AICodeEditorModal({
     }
   }, [open, selectedPromptId, supabase]);
 
-  // Reset state when modal closes or when defaultPromptId changes
+  // Reset state when modal closes
   useEffect(() => {
     if (!open) {
       setUserInstructions('');
@@ -209,11 +209,13 @@ export function AICodeEditorModal({
       setErrorMessage('');
       setRawAIResponse('');
       setSelectedPromptId(defaultPromptId);
-      setSubmitOnEnter(promptsPreferences.submitOnEnter);
+      setSubmitOnEnter(submitOnEnterPreference);
       setPromptData(null);
       reset();
     }
-  }, [open, reset, defaultPromptId, promptsPreferences.submitOnEnter]);
+    // Don't include 'reset' in dependencies as it changes on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultPromptId, submitOnEnterPreference]);
   
   // Update selected prompt when default changes (e.g., when modal reopens with different context)
   useEffect(() => {
