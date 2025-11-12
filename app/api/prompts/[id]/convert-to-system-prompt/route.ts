@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminUser } from "@/config/admin.config";
-import { getCategoryById, validatePromptVariables } from "@/types/system-prompt-categories";
+import { SYSTEM_FUNCTIONALITIES, validatePromptForFunctionality } from "@/types/system-prompt-functionalities";
 
 /**
  * Convert a prompt to a system prompt
@@ -105,28 +105,7 @@ export async function POST(
 
         const variables = extractVariables(originalPrompt.messages || []);
 
-        // Validate category if provided
-        if (body.category && body.category !== 'custom') {
-            const category = getCategoryById(body.category);
-            if (!category) {
-                return NextResponse.json(
-                    { error: "Invalid category" },
-                    { status: 400 }
-                );
-            }
-
-            const validation = validatePromptVariables(variables, category);
-            if (!validation.valid) {
-                return NextResponse.json(
-                    { 
-                        error: "Prompt variables don't match category requirements",
-                        details: `Missing: ${validation.missing.join(', ') || 'none'}. Extra: ${validation.extra.join(', ') || 'none'}`,
-                        validation
-                    },
-                    { status: 400 }
-                );
-            }
-        }
+        // Category is now just a string for organization, no old-style validation needed
 
         // Build prompt snapshot
         const promptSnapshot = {
@@ -145,45 +124,57 @@ export async function POST(
             tooltip: originalPrompt.description || `Execute ${originalPrompt.name}`
         };
 
-        // Default placement config (disabled by default)
-        const defaultPlacementConfig = {
-            contextMenu: {
-                enabled: false,
-                group: 'general',
-                priority: 0
-            },
-            card: {
-                enabled: false,
-                cardTitle: originalPrompt.name,
-                cardDescription: originalPrompt.description || '',
-                mode: 'one-shot' as const
-            },
-            button: {
-                enabled: false,
-                variant: 'default',
-                size: 'default'
-            }
-        };
+        // Validate functionality_id
+        if (!body.functionality_id || !SYSTEM_FUNCTIONALITIES[body.functionality_id]) {
+            console.error('Invalid functionality_id:', body.functionality_id);
+            return NextResponse.json(
+                { error: "Invalid functionality_id provided" },
+                { status: 400 }
+            );
+        }
 
-        // Create the system prompt
+        const validation = validatePromptForFunctionality(promptSnapshot, body.functionality_id);
+        if (!validation.valid) {
+            console.error('Validation failed:', validation);
+            return NextResponse.json(
+                { 
+                    error: "Prompt variables don't match functionality requirements",
+                    details: `Missing: ${validation.missing.join(', ') || 'none'}. Extra: ${validation.extra.join(', ') || 'none'}`,
+                    validation
+                },
+                { status: 400 }
+            );
+        }
+
+        // Create the system prompt with NEW structure
+        console.log('Inserting system prompt:', {
+            system_prompt_id: systemPromptId,
+            name: body.name || originalPrompt.name,
+            placement_type: body.placement_type,
+            functionality_id: body.functionality_id,
+            category: body.category,
+        });
+
         const { data: newSystemPrompt, error: insertError } = await supabase
             .from("system_prompts")
             .insert({
                 system_prompt_id: systemPromptId,
                 name: body.name || originalPrompt.name,
-                description: originalPrompt.description || `System prompt created from: ${originalPrompt.name}`,
+                description: body.description || originalPrompt.description || `System prompt created from: ${originalPrompt.name}`,
                 source_prompt_id: id,
                 version: 1,
                 prompt_snapshot: promptSnapshot,
                 display_config: body.display_config || defaultDisplayConfig,
-                placement_config: body.placement_config || defaultPlacementConfig,
+                
+                // NEW STRUCTURE FIELDS
+                placement_type: body.placement_type || 'card',
+                functionality_id: body.functionality_id,
                 category: body.category || 'general',
-                subcategory: null,
-                tags: [],
-                sort_order: 0,
-                required_variables: variables,
-                optional_variables: [],
-                variable_mappings: {},
+                subcategory: body.subcategory || null,
+                placement_settings: body.placement_settings || {},
+                
+                tags: body.tags || [],
+                sort_order: body.sort_order || 0,
                 is_active: false,  // Start as inactive - admin must enable
                 is_featured: false,
                 status: 'draft',   // Start as draft
@@ -191,16 +182,22 @@ export async function POST(
                     created_from_prompt_id: id,
                     created_from_prompt_name: originalPrompt.name
                 },
-                published_by: user.id
+                published_by: user.id,
+                published_at: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             })
             .select()
             .single();
 
         if (insertError) {
+            console.error('Insert error:', insertError);
             return NextResponse.json(
                 { 
                     error: "Failed to create system prompt",
-                    details: insertError.message || "Database error"
+                    details: insertError.message || "Database error",
+                    code: insertError.code,
+                    hint: insertError.hint
                 },
                 { status: 500 }
             );
@@ -212,9 +209,14 @@ export async function POST(
             message: `Successfully converted "${originalPrompt.name}" to system prompt`,
             note: "System prompt created as draft. Enable and configure it in the admin interface."
         });
-    } catch (error) {
+    } catch (error: any) {
+        console.error('Convert to system prompt error:', error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { 
+                error: "Internal server error",
+                details: error?.message || 'Unknown error',
+                stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+            },
             { status: 500 }
         );
     }

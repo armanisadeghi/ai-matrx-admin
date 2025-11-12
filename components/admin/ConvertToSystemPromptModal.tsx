@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -35,6 +35,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SYSTEM_FUNCTIONALITIES, validatePromptForFunctionality } from '@/types/system-prompt-functionalities';
 import type { PromptSnapshot } from '@/types/system-prompts-db';
+import { cn } from '@/utils';
 
 interface ConvertToSystemPromptModalProps {
   isOpen: boolean;
@@ -115,26 +116,56 @@ export function ConvertToSystemPromptModal({
     }
   }, [name]);
 
+  // Calculate compatibility for all functionalities
+  const functionalityCompatibility = useMemo(() => {
+    const promptVars = new Set(promptVariables);
+    const compatible: Array<{ id: string; functionality: any; validation: FunctionalityValidation }> = [];
+    const incompatible: Array<{ id: string; functionality: any; validation: FunctionalityValidation }> = [];
+
+    Object.values(SYSTEM_FUNCTIONALITIES).forEach((func) => {
+      const required = new Set(func.requiredVariables);
+      const optional = new Set(func.optionalVariables || []);
+
+      const missing = Array.from(required).filter((v) => !promptVars.has(v));
+      const extra = Array.from(promptVars).filter(
+        (v) => !required.has(v) && !optional.has(v)
+      );
+
+      const validation: FunctionalityValidation = {
+        valid: missing.length === 0,
+        missing,
+        extra,
+      };
+
+      const item = { id: func.id, functionality: func, validation };
+
+      if (validation.valid) {
+        compatible.push(item);
+      } else {
+        incompatible.push(item);
+      }
+    });
+
+    return { compatible, incompatible };
+  }, [promptVariables]);
+
   // Validate functionality when selected
   useEffect(() => {
     if (selectedFunctionalityId) {
       const functionality = SYSTEM_FUNCTIONALITIES[selectedFunctionalityId];
       if (functionality) {
-        // Check if prompt variables match
-        const required = new Set(functionality.requiredVariables);
-        const optional = new Set(functionality.optionalVariables || []);
-        const promptVars = new Set(promptVariables);
-
-        const missing = Array.from(required).filter((v) => !promptVars.has(v));
-        const extra = Array.from(promptVars).filter(
-          (v) => !required.has(v) && !optional.has(v)
+        // Find validation from compatibility check
+        const compatibleItem = functionalityCompatibility.compatible.find(
+          (item) => item.id === selectedFunctionalityId
+        );
+        const incompatibleItem = functionalityCompatibility.incompatible.find(
+          (item) => item.id === selectedFunctionalityId
         );
 
-        setFunctionalityValidation({
-          valid: missing.length === 0,
-          missing,
-          extra,
-        });
+        const validationItem = compatibleItem || incompatibleItem;
+        if (validationItem) {
+          setFunctionalityValidation(validationItem.validation);
+        }
 
         // Auto-set placement type if only one option
         if (functionality.placementTypes.length === 1) {
@@ -142,7 +173,7 @@ export function ConvertToSystemPromptModal({
         }
       }
     }
-  }, [selectedFunctionalityId, promptVariables]);
+  }, [selectedFunctionalityId, functionalityCompatibility]);
 
   const handleNext = () => {
     if (currentStep === 'functionality') {
@@ -184,6 +215,13 @@ export function ConvertToSystemPromptModal({
     setError('');
 
     try {
+      console.log('Submitting system prompt conversion:', {
+        system_prompt_id: systemPromptId,
+        functionality_id: selectedFunctionalityId,
+        placement_type: placementType,
+        category,
+      });
+
       const response = await fetch(`/api/prompts/${promptId}/convert-to-system-prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -205,16 +243,21 @@ export function ConvertToSystemPromptModal({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to convert (${response.status})`);
+        console.error('Conversion failed:', errorData);
+        const errorMessage = errorData.details 
+          ? `${errorData.error}: ${errorData.details}` 
+          : errorData.error || `Failed to convert (${response.status})`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log('System prompt created:', data);
+      console.log('System prompt created successfully:', data);
 
       // Success
       onSuccess?.();
       onClose();
     } catch (err: any) {
+      console.error('Submit error:', err);
       setError(err.message || 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
@@ -227,15 +270,23 @@ export function ConvertToSystemPromptModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Convert to System Prompt</DialogTitle>
-          <DialogDescription>
-            Step {currentStep === 'functionality' ? '1' : currentStep === 'placement' ? '2' : '3'} of 3
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onMouseUp={(e) => e.stopPropagation()}
+      >
+        <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>Convert to System Prompt</DialogTitle>
+            <DialogDescription>
+              Step {currentStep === 'functionality' ? '1' : currentStep === 'placement' ? '2' : '3'} of 3
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-6 py-4">
+          <div className="space-y-6 py-4">
           {/* Error Display */}
           {error && (
             <Alert variant="destructive">
@@ -281,19 +332,120 @@ export function ConvertToSystemPromptModal({
 
               {/* Functionality Selection */}
               <div className="space-y-3">
-                <Label>Functionality</Label>
-                <Select value={selectedFunctionalityId} onValueChange={setSelectedFunctionalityId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a functionality..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(SYSTEM_FUNCTIONALITIES).map((func) => (
-                      <SelectItem key={func.id} value={func.id}>
-                        {func.name}
-                      </SelectItem>
+                <div className="flex items-center justify-between">
+                  <Label>Select Functionality</Label>
+                  <Badge variant="outline" className="text-xs">
+                    {functionalityCompatibility.compatible.length} compatible
+                  </Badge>
+                </div>
+
+                {/* Compatible Functionalities */}
+                {functionalityCompatibility.compatible.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      ✅ These functionalities match your prompt's variables
+                    </p>
+                    {functionalityCompatibility.compatible.map((item) => (
+                      <Card
+                        key={item.id}
+                        className={cn(
+                          'p-3 cursor-pointer transition-all',
+                          selectedFunctionalityId === item.id
+                            ? 'border-primary bg-primary/5'
+                            : 'hover:border-primary/50'
+                        )}
+                        onClick={() => setSelectedFunctionalityId(item.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-sm">{item.functionality.name}</h4>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {item.functionality.description}
+                            </p>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {item.functionality.requiredVariables.map((v) => (
+                                <Badge key={v} variant="secondary" className="text-[10px] px-1.5 py-0">
+                                  {v}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                ) : (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      <p className="font-semibold">No compatible functionalities found</p>
+                      <p className="text-sm mt-1">
+                        Your prompt's variables don't match any existing functionality requirements.
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Incompatible Functionalities (Collapsible) */}
+                {functionalityCompatibility.incompatible.length > 0 && (
+                  <details className="mt-4">
+                    <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground flex items-center gap-2">
+                      <span>Show incompatible functionalities ({functionalityCompatibility.incompatible.length})</span>
+                    </summary>
+                    <div className="space-y-2 mt-3">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        ❌ These functionalities require variables your prompt doesn't have
+                      </p>
+                      {functionalityCompatibility.incompatible.map((item) => (
+                        <Card
+                          key={item.id}
+                          className="p-3 opacity-60 border-dashed"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 mt-0.5">
+                              <AlertCircle className="h-5 w-5 text-red-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-sm">{item.functionality.name}</h4>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {item.functionality.description}
+                              </p>
+                              
+                              {/* Missing Variables */}
+                              {item.validation.missing.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-xs font-medium text-red-600">Missing variables:</p>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {item.validation.missing.map((v) => (
+                                      <Badge key={v} variant="destructive" className="text-[10px] px-1.5 py-0">
+                                        {v}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Required Variables */}
+                              <div className="mt-2">
+                                <p className="text-xs font-medium">Requires:</p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {item.functionality.requiredVariables.map((v) => (
+                                    <Badge key={v} variant="outline" className="text-[10px] px-1.5 py-0">
+                                      {v}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </details>
+                )}
               </div>
 
               {/* Functionality Details & Validation */}
@@ -452,12 +604,25 @@ export function ConvertToSystemPromptModal({
               {/* Category */}
               <div className="space-y-2">
                 <Label htmlFor="category">Category*</Label>
-                <Input
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="e.g., educational, text-tools, code-helpers"
-                />
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select a category..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="educational">Educational</SelectItem>
+                    <SelectItem value="text-tools">Text Tools</SelectItem>
+                    <SelectItem value="code-helpers">Code Helpers</SelectItem>
+                    <SelectItem value="content-generation">Content Generation</SelectItem>
+                    <SelectItem value="analysis">Analysis</SelectItem>
+                    <SelectItem value="translation">Translation</SelectItem>
+                    <SelectItem value="formatting">Formatting</SelectItem>
+                    <SelectItem value="custom">Custom/Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Used to organize and filter system prompts in the admin interface
+                </p>
               </div>
 
               {/* Subcategory */}
@@ -584,10 +749,10 @@ export function ConvertToSystemPromptModal({
               </Alert>
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Actions */}
-        <div className="flex justify-between pt-4 border-t">
+          {/* Actions */}
+          <div className="flex justify-between pt-4 border-t">
           <Button
             type="button"
             variant="ghost"
@@ -627,6 +792,7 @@ export function ConvertToSystemPromptModal({
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

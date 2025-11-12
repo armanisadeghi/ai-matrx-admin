@@ -212,7 +212,7 @@ export function PromptCard({
         // Only open modal if clicking the card itself, not if a modal is already open
         // Also prevent reopening if modal was just closed (within 300ms) to avoid click-through from overlay
         const timeSinceClose = Date.now() - lastModalCloseTime;
-        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && !isCreateAppModalOpen && timeSinceClose > 300) {
+        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && !isCreateAppModalOpen && !isConvertToSystemPromptModalOpen && timeSinceClose > 300) {
             setIsActionModalOpen(true);
         }
     };
