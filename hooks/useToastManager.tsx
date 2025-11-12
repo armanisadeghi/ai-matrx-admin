@@ -3,7 +3,7 @@
 
 import { useContext } from "react";
 import { toast } from "@/lib/toast-service";
-import { ToastContext } from "@/providers";
+import { ToastContext } from "@/providers/toast-context";
 import type { ToastOptions, ToastDefaults } from "@/types";
 
 export const useToastManager = (moduleKey?: string) => {

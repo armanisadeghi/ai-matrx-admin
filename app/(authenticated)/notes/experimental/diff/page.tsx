@@ -186,9 +186,6 @@ export default function DiffExperimentalPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">AI Text Diff System</h1>
-                <p className="text-sm text-muted-foreground">
-                  Experimental collaborative editing environment
-                </p>
               </div>
             </div>
             
