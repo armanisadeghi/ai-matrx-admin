@@ -61,6 +61,7 @@ const textDiffSlice = createSlice({
       state.error = null;
       
       const newPendingDiffs: PendingDiff[] = [];
+      const failedDiffs: string[] = [];
       
       for (const diff of action.payload) {
         // Generate preview
@@ -79,8 +80,19 @@ const textDiffSlice = createSlice({
             createdAt: new Date().toISOString(),
           });
         } else {
-          console.error(`Failed to preview diff ${diff.id}:`, preview.error);
-          state.error = `Failed to preview diff: ${preview.error}`;
+          // Collect failed diffs for user-facing error message
+          failedDiffs.push(`${diff.id}: ${preview.error || 'Unknown error'}`);
+        }
+      }
+      
+      // Set user-friendly error if any diffs failed
+      if (failedDiffs.length > 0) {
+        if (failedDiffs.length === action.payload.length) {
+          // All failed
+          state.error = `All ${failedDiffs.length} diff(s) failed to match the current text. The AI's suggested changes may not match your content exactly.`;
+        } else {
+          // Some failed
+          state.error = `${failedDiffs.length} of ${action.payload.length} diff(s) could not be matched. Successfully loaded ${newPendingDiffs.length} change(s).`;
         }
       }
       

@@ -4,6 +4,7 @@
 export { NotesLayout } from './NotesLayout';
 export { NotesSidebar } from './NotesSidebar';
 export { NoteEditor } from './NoteEditor';
+export { NoteDiffEditor } from './NoteDiffEditor';
 export { NoteToolbar } from './NoteToolbar';
 export { NoteTabs } from './NoteTabs';
 export { CreateFolderDialog } from './CreateFolderDialog';
