@@ -1,51 +1,14 @@
 // Database types for system prompts system
 
 /**
- * Main system prompt database record
+ * System prompt status
  */
-export interface SystemPromptDB {
-  id: string;
-  system_prompt_id: string;
-  name: string;
-  description: string | null;
-  
-  // Prompt reference & versioning
-  source_prompt_id: string | null;
-  version: number;
-  prompt_snapshot: PromptSnapshot;
-  
-  // Display configuration
-  display_config: DisplayConfig;
-  
-  // CRITICAL: Where and what this is for
-  placement_type: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
-  functionality_id: string | null; // Ties to REAL CODE (e.g., 'content-expander-card')
-  category: string;
-  subcategory: string | null;
-  placement_settings: Record<string, any>; // Simple flags ONLY (requiresSelection, allowChat, etc.)
-  
-  tags: string[];
-  sort_order: number;
-  
-  // Status
-  is_active: boolean;
-  is_featured: boolean;
-  status: SystemPromptStatus;
-  
-  // Publishing metadata
-  published_by: string | null;
-  published_at: string;
-  last_updated_by: string | null;
-  last_updated_at: string | null;
-  update_notes: string | null;
-  
-  // Metadata
-  metadata: Record<string, any>;
-  
-  // Timestamps
-  created_at: string;
-  updated_at: string;
-}
+export type SystemPromptStatus = 'draft' | 'published' | 'archived';
+
+/**
+ * Trigger type for execution tracking
+ */
+export type SystemPromptTriggerType = 'context-menu' | 'card' | 'button' | 'api' | 'other';
 
 /**
  * Prompt snapshot stored in system_prompts
@@ -79,16 +42,6 @@ export interface DisplayConfig {
 }
 
 /**
- * Placement configuration defining where prompt appears
- */
-export interface PlacementConfig {
-  contextMenu?: ContextMenuPlacement;
-  card?: CardPlacement;
-  button?: ButtonPlacement;
-  customPlacements?: Record<string, any>;
-}
-
-/**
  * Context menu placement configuration
  */
 export interface ContextMenuPlacement {
@@ -117,14 +70,64 @@ export interface ButtonPlacement {
 }
 
 /**
- * System prompt status
+ * Placement configuration defining where prompt appears
  */
-export type SystemPromptStatus = 'draft' | 'published' | 'archived';
+export interface PlacementConfig {
+  contextMenu?: ContextMenuPlacement;
+  card?: CardPlacement;
+  button?: ButtonPlacement;
+  customPlacements?: Record<string, any>;
+}
 
 /**
- * Trigger type for execution tracking
+ * Main system prompt database record
  */
-export type SystemPromptTriggerType = 'context-menu' | 'card' | 'button' | 'api' | 'other';
+export interface SystemPromptDB {
+  id: string;
+  system_prompt_id: string;
+  name: string;
+  description: string | null;
+  
+  // Prompt reference & versioning
+  source_prompt_id: string | null;
+  version: number;
+  prompt_snapshot: PromptSnapshot;
+  
+  // Display configuration
+  display_config: DisplayConfig;
+  
+  // Placement configuration
+  placement_config?: PlacementConfig;
+  
+  // CRITICAL: Where and what this is for
+  placement_type: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
+  functionality_id: string | null; // Ties to REAL CODE (e.g., 'content-expander-card')
+  category: string;
+  subcategory: string | null;
+  placement_settings: Record<string, any>; // Simple flags ONLY (requiresSelection, allowChat, etc.)
+  
+  tags: string[];
+  sort_order: number;
+  
+  // Status
+  is_active: boolean;
+  is_featured: boolean;
+  status: SystemPromptStatus;
+  
+  // Publishing metadata
+  published_by: string | null;
+  published_at: string;
+  last_updated_by: string | null;
+  last_updated_at: string | null;
+  update_notes: string | null;
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+}
 
 /**
  * System prompt execution record
@@ -216,4 +219,3 @@ export interface SystemPromptWithStats extends SystemPromptDB {
   published_by_email?: string;
   last_updated_by_email?: string;
 }
-

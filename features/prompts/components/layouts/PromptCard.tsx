@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import IconButton from "@/components/official/IconButton";
-import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, LayoutPanelTop, Settings, Globe } from "lucide-react";
+import { Eye, Pencil, Play, Copy, Trash2, Loader2, MessageSquare, Share2, LayoutPanelTop, Settings, Globe, AppWindow } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { RootState, useAppSelector } from "@/lib/redux";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
@@ -308,6 +308,16 @@ export function PromptCard({
                         tooltipSide="top"
                         tooltipAlign="center"
                         onClick={handleShareClickInline}
+                        disabled={isDisabled}
+                    />
+                    <IconButton
+                        icon={AppWindow}
+                        tooltip={isDisabled ? "Please wait..." : "Create App"}
+                        size="sm"
+                        variant="ghost"
+                        tooltipSide="top"
+                        tooltipAlign="center"
+                        onClick={handleCreateApp}
                         disabled={isDisabled}
                     />
                     {isSystemAdmin && (
