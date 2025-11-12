@@ -1,15 +1,10 @@
-'use client';
+"use client";
 
-import React, {useState} from 'react';
-import {IconChevronRight} from "@tabler/icons-react";
-import FeatureSectionAnimatedGradientComponents
-    from "@/components/animated/my-custom-demos/feature-section-animated-gradient-component";
-import FeatureSectionLinkComponent
-    from "@/components/animated/my-custom-demos/feature-section-link-component";
-import {useRouter} from "next/navigation";
-import ErrorBoundary from "@/app/(authenticated)/admin/components/shared/ErrorBoundary";
-import {adminCategories} from "@/app/(authenticated)/(admin-auth)/administration/categories";
-
+import React, { useState } from "react";
+import { IconChevronRight } from "@tabler/icons-react";
+import FeatureSectionLinkComponent from "@/components/animated/my-custom-demos/feature-section-link-component";
+import { useRouter } from "next/navigation";
+import { adminCategories } from "@/app/(authenticated)/(admin-auth)/administration/categories";
 
 // IMPORTANT: All features and routes are defined in: app\(authenticated)\(admin-auth)\administration\categories.tsx
 // The top navigation menu automatically extracts routes from categories.tsx via config.ts
@@ -23,9 +18,9 @@ const AdminPage = () => {
         if (selectedCategory) {
             window.history.pushState(
                 {
-                    selectedCategory
+                    selectedCategory,
                 },
-                '',
+                "",
                 window.location.pathname
             );
         }
@@ -38,15 +33,15 @@ const AdminPage = () => {
             }
         };
 
-        window.addEventListener('popstate', handlePopState);
+        window.addEventListener("popstate", handlePopState);
 
         return () => {
-            window.removeEventListener('popstate', handlePopState);
+            window.removeEventListener("popstate", handlePopState);
         };
     }, [selectedCategory]);
 
     const handleSelectComponent = (title: string) => {
-        const feature = adminCategories.flatMap(cat => cat.features).find(f => f.title === title);
+        const feature = adminCategories.flatMap((cat) => cat.features).find((f) => f.title === title);
         if (feature?.link) {
             router.push(feature.link);
         }
@@ -63,118 +58,118 @@ const AdminPage = () => {
 
     const getCategoryBgClass = (iconColor?: string) => {
         const colorMap: Record<string, string> = {
-            'text-amber-600': 'bg-amber-500 dark:bg-amber-600',
-            'text-blue-600': 'bg-blue-500 dark:bg-blue-600',
-            'text-indigo-600': 'bg-indigo-500 dark:bg-indigo-600',
-            'text-purple-600': 'bg-purple-500 dark:bg-purple-600',
-            'text-green-600': 'bg-green-500 dark:bg-green-600',
-            'text-cyan-600': 'bg-cyan-500 dark:bg-cyan-600',
-            'text-pink-600': 'bg-pink-500 dark:bg-pink-600',
-            'text-orange-600': 'bg-orange-500 dark:bg-orange-600',
-            'text-red-600': 'bg-red-500 dark:bg-red-600',
-            'text-teal-600': 'bg-teal-500 dark:bg-teal-600',
-            'text-violet-600': 'bg-violet-500 dark:bg-violet-600',
-            'text-fuchsia-600': 'bg-fuchsia-500 dark:bg-fuchsia-600',
+            "text-amber-600": "bg-amber-500 dark:bg-amber-600",
+            "text-blue-600": "bg-blue-500 dark:bg-blue-600",
+            "text-indigo-600": "bg-indigo-500 dark:bg-indigo-600",
+            "text-purple-600": "bg-purple-500 dark:bg-purple-600",
+            "text-green-600": "bg-green-500 dark:bg-green-600",
+            "text-cyan-600": "bg-cyan-500 dark:bg-cyan-600",
+            "text-pink-600": "bg-pink-500 dark:bg-pink-600",
+            "text-orange-600": "bg-orange-500 dark:bg-orange-600",
+            "text-red-600": "bg-red-500 dark:bg-red-600",
+            "text-teal-600": "bg-teal-500 dark:bg-teal-600",
+            "text-violet-600": "bg-violet-500 dark:bg-violet-600",
+            "text-fuchsia-600": "bg-fuchsia-500 dark:bg-fuchsia-600",
         };
-        return colorMap[iconColor || 'text-blue-600'] || 'bg-blue-500 dark:bg-blue-600';
+        return colorMap[iconColor || "text-blue-600"] || "bg-blue-500 dark:bg-blue-600";
     };
     if (selectedCategory) {
-        const category = adminCategories.find(c => c.name === selectedCategory);
+        const category = adminCategories.find((c) => c.name === selectedCategory);
         return (
-            <div className="h-full w-full overflow-auto">
-                <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
+            <div className="h-full w-full overflow-y-auto">
+                <div className="py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
                     <div className="w-full px-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {category?.features.map((feature, index) => (
-                            <FeatureSectionLinkComponent
-                                key={feature.title}
-                                title={feature.title}
-                                description={feature.description}
-                                icon={feature.icon}
-                                index={index}
-                                link={feature.link}
-                                isNew={feature.isNew}
-                            />
-                        ))}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {category?.features.map((feature, index) => (
+                                <FeatureSectionLinkComponent
+                                    key={feature.title}
+                                    title={feature.title}
+                                    description={feature.description}
+                                    icon={feature.icon}
+                                    index={index}
+                                    link={feature.link}
+                                    isNew={feature.isNew}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
             </div>
         );
     }
 
     return (
-        <div className="h-full w-full overflow-auto">
-            <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
-                <div className="w-full mx-2">
-                <h1 className="text-xl font-bold text-center mb-4">Admin Dashboard Home</h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {adminCategories.map((category, index) => (
-                        <div
-                            key={category.name}
-                            onClick={() => handleSelectCategory(category.name)}
-                            className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-4
+        <div className="h-full w-full overflow-y-auto">
+            <div className="py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
+                <div className="w-full px-4">
+                    <h1 className="text-xl font-bold text-center mb-4">Admin Dashboard Home</h1>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {adminCategories.map((category, index) => (
+                            <div
+                                key={category.name}
+                                onClick={() => handleSelectCategory(category.name)}
+                                className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-4
                                      transform transition-all duration-200 hover:scale-105 hover:shadow-xl
                                      cursor-pointer relative group"
-                        >
-                            <div className="flex items-center space-x-4 mb-4">
-                                <div className={`p-3 rounded-lg text-white ${getCategoryBgClass(category.iconColor)}`}>
-                                    {category.icon}
+                            >
+                                <div className="flex items-center space-x-4 mb-4">
+                                    <div className={`p-3 rounded-lg text-white ${getCategoryBgClass(category.iconColor)}`}>
+                                        {category.icon}
+                                    </div>
+                                    <h3 className="text-xl font-semibold">{category.name}</h3>
                                 </div>
-                                <h3 className="text-xl font-semibold">{category.name}</h3>
-                            </div>
-                            <div className="h-32 flex flex-col justify-between">
-                                <div className="space-y-2">
-                                    {getPreviewFeatures(category.features).map((feature) => (
-                                        <div
-                                            key={feature.title}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSelectComponent(feature.title);
-                                            }}
-                                            className={`flex items-center h-6 
-                                                ${feature.isNew 
-                                                    ? 'text-amber-600 dark:text-amber-400 font-semibold' 
-                                                    : 'text-gray-600 dark:text-gray-300'}
+                                <div className="h-32 flex flex-col justify-between">
+                                    <div className="space-y-2">
+                                        {getPreviewFeatures(category.features).map((feature) => (
+                                            <div
+                                                key={feature.title}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSelectComponent(feature.title);
+                                                }}
+                                                className={`flex items-center h-6 
+                                                ${
+                                                    feature.isNew
+                                                        ? "text-amber-600 dark:text-amber-400 font-semibold"
+                                                        : "text-gray-600 dark:text-gray-300"
+                                                }
                                                 hover:text-blue-700 dark:hover:text-blue-500
                                                 cursor-pointer transition-colors duration-200`}
-                                        >
-                                            <div className="flex items-center min-w-[28px]">
-                                                <div className="w-4 h-4">
-                                                    {feature.icon}
+                                            >
+                                                <div className="flex items-center min-w-[28px]">
+                                                    <div className="w-4 h-4">{feature.icon}</div>
                                                 </div>
+                                                <span className="text-sm font-medium">
+                                                    {feature.title}
+                                                    {feature.isNew && (
+                                                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 dark:text-amber-400">
+                                                            New
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </div>
-                                            <span className="text-sm font-medium">
-                                                {feature.title}
-                                                {feature.isNew && (
-                                                    <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 dark:text-amber-400">
-                                                        New
-                                                    </span>
-                                                )}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                                {category.features.length > 3 && (
-                                    <div
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleSelectCategory(category.name);
-                                        }}
-                                        className="flex items-center text-sm text-blue-600 dark:text-blue-400
+                                        ))}
+                                    </div>
+                                    {category.features.length > 3 && (
+                                        <div
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSelectCategory(category.name);
+                                            }}
+                                            className="flex items-center text-sm text-blue-600 dark:text-blue-400
                                                  hover:text-blue-800 dark:hover:text-blue-300
                                                  cursor-pointer transition-colors duration-200
                                                  mt-2 pl-7"
-                                    >
-                                        <span>See all {category.features.length} features</span>
-                                        <IconChevronRight className="w-4 h-4 ml-1"/>
-                                    </div>
-                                )}
+                                        >
+                                            <span>See all {category.features.length} features</span>
+                                            <IconChevronRight className="w-4 h-4 ml-1" />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     );

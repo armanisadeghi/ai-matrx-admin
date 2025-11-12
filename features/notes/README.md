@@ -2,6 +2,14 @@
 
 A simple, fast notes system with folder organization, tags, and auto-labeling.
 
+## Auto-Save Behavior
+
+- **Debounce Time**: 3 seconds (reduced frequency for less intrusive autosave)
+- **Title/Label**: Debounced with 800ms delay, saves immediately on blur
+- **Content**: Autosaves after 3 seconds of inactivity
+- **Manual Save**: Always available via Save button in the active tab
+- **Tab Switch**: Automatically saves pending changes when switching between notes
+
 ## Programmatic Usage
 
 Use `NotesAPI` to interact with notes from anywhere in your app:

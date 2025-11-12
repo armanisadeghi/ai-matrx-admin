@@ -40,6 +40,15 @@ export const SYSTEM_FUNCTIONALITIES: Record<string, FunctionalityDefinition> = {
     optionalVariables: ['context'],
     examples: ['Explain selection', 'What is this?', 'Clarify concept']
   },
+  'update-text': {
+    id: 'update-text',
+    name: 'Update Text',
+    description: 'Update selected text or concept in simple terms',
+    placementTypes: ['context-menu', 'button', 'modal'],
+    requiredVariables: ['current_text'],
+    optionalVariables: ['user_feedback','context'],
+    examples: ['Update selection', 'What is this?', 'Clarify concept', 'Update text with feedback']
+  },
 
   'summarize-text': {
     id: 'summarize-text',
@@ -60,6 +69,15 @@ export const SYSTEM_FUNCTIONALITIES: Record<string, FunctionalityDefinition> = {
     optionalVariables: ['target_language', 'source_language'],
     examples: ['Translate to Spanish', 'Translate to French', 'Translate to German']
   },
+  'translate-to-persian': {
+    id: 'translate-to-persian',
+    name: 'Translate to Persian',
+    description: 'Translate selected or provided text to Persian',
+    placementTypes: ['context-menu', 'button'],
+    requiredVariables: ['text_to_translate'],
+    examples: ['Translate to Persian']
+  },
+
 
   'improve-writing': {
     id: 'improve-writing',

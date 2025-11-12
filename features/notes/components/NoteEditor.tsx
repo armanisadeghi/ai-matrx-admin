@@ -48,14 +48,17 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const [localContent, setLocalContent] = useState(note?.content || '');
     const [localFolder, setLocalFolder] = useState(note?.folder_name || 'Draft');
     const [localTags, setLocalTags] = useState<string[]>(note?.tags || []);
+    const [localLabel, setLocalLabel] = useState(note?.label || '');
     const [editorMode, setEditorMode] = useState<EditorMode>('plain');
     const tuiEditorRef = useRef<any>(null);
+    const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const toast = useToastManager('notes');
     
     // Use refs to avoid callback dependencies
     const localContentRef = useRef(localContent);
     const localFolderRef = useRef(localFolder);
     const localTagsRef = useRef(localTags);
+    const localLabelRef = useRef(localLabel);
     const editorModeRef = useRef(editorMode);
     const noteRef = useRef(note);
     
@@ -64,9 +67,10 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         localContentRef.current = localContent;
         localFolderRef.current = localFolder;
         localTagsRef.current = localTags;
+        localLabelRef.current = localLabel;
         editorModeRef.current = editorMode;
         noteRef.current = note;
-    }, [localContent, localFolder, localTags, editorMode, note]);
+    }, [localContent, localFolder, localTags, localLabel, editorMode, note]);
 
     // Get all folders (default + custom) - optimized to only recalculate when folder names change
     const availableFolders = useAllFolders(allNotes);
@@ -82,12 +86,12 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
 
     const { isDirty, isSaving, lastSaved, updateWithAutoSave, forceSave } = useAutoSave({
         noteId: note?.id || null,
-        debounceMs: 1000,
+        debounceMs: 3000, // Increased from 1000ms to 3000ms for less aggressive autosave
         onSaveSuccess: () => {
             // Notify parent with all updated fields + editor mode
             if (note) {
                 onUpdate?.(note.id, { 
-                    label: note.label, 
+                    label: localLabel, 
                     content: localContent, 
                     folder_name: localFolder, 
                     tags: localTags,
@@ -110,14 +114,14 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             if (currentNote && (currentMode === 'wysiwyg' || currentMode === 'markdown') && tuiEditorRef.current?.getCurrentMarkdown) {
                 const markdown = tuiEditorRef.current.getCurrentMarkdown();
                 if (markdown !== localContentRef.current) {
-                    // Update content immediately before switch
-                    updateWithAutoSave({
-                        label: currentNote.label,
-                        content: markdown,
-                        folder_name: localFolderRef.current,
-                        tags: localTagsRef.current,
-                        metadata: { ...currentNote.metadata, lastEditorMode: currentMode }
-                    });
+                // Update content immediately before switch
+                updateWithAutoSave({
+                    label: localLabelRef.current,
+                    content: markdown,
+                    folder_name: localFolderRef.current,
+                    tags: localTagsRef.current,
+                    metadata: { ...currentNote.metadata, lastEditorMode: currentMode }
+                });
                 }
             }
             
@@ -132,8 +136,18 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             setLocalContent(note.content);
             setLocalFolder(note.folder_name || 'Draft');
             setLocalTags(note.tags || []);
+            setLocalLabel(note.label);
         }
     }, [note?.id]); // Only reset when note ID changes
+    
+    // Cleanup label timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (labelSaveTimeoutRef.current) {
+                clearTimeout(labelSaveTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Expose forceSave to parent (called when user clicks Save button)
     useEffect(() => {
@@ -149,7 +163,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 
                 // Update the auto-save queue with all current data
                 updateWithAutoSave({
-                    label: note.label,
+                    label: localLabelRef.current,
                     content: currentContent,
                     folder_name: localFolderRef.current,
                     tags: localTagsRef.current,
@@ -191,7 +205,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         setLocalContent(value);
         if (note) {
             updateWithAutoSave({ 
-                label: note.label, 
+                label: localLabel, 
                 content: value, 
                 folder_name: localFolder, 
                 tags: localTags,
@@ -205,7 +219,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         const currentNote = noteRef.current;
         if (currentNote) {
             updateWithAutoSave({ 
-                label: currentNote.label, 
+                label: localLabelRef.current, 
                 content: value, 
                 folder_name: localFolderRef.current, 
                 tags: localTagsRef.current,
@@ -218,7 +232,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         setLocalFolder(value);
         if (note) {
             updateWithAutoSave({ 
-                label: note.label, 
+                label: localLabel, 
                 content: localContent, 
                 folder_name: value, 
                 tags: localTags,
@@ -233,7 +247,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         setLocalTags(tags);
         if (note) {
             updateWithAutoSave({ 
-                label: note.label, 
+                label: localLabel, 
                 content: localContent, 
                 folder_name: localFolder, 
                 tags,
@@ -244,17 +258,48 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
         }
     };
 
+    // Debounced label change - only updates local state immediately, saves after pause
     const handleLabelChange = (newLabel: string) => {
-        if (note) {
+        // Update local state immediately for responsive UI
+        setLocalLabel(newLabel);
+        
+        // Clear existing timeout
+        if (labelSaveTimeoutRef.current) {
+            clearTimeout(labelSaveTimeoutRef.current);
+        }
+        
+        // Schedule save after 800ms of no typing (slightly longer than content for smoother UX)
+        labelSaveTimeoutRef.current = setTimeout(() => {
+            if (note) {
+                updateWithAutoSave({ 
+                    label: newLabel, 
+                    content: localContent, 
+                    folder_name: localFolder, 
+                    tags: localTags,
+                    metadata: { ...note.metadata, lastEditorMode: editorMode }
+                });
+            }
+            labelSaveTimeoutRef.current = null;
+        }, 800);
+    };
+    
+    // Save label immediately on blur
+    const handleLabelBlur = () => {
+        if (labelSaveTimeoutRef.current) {
+            clearTimeout(labelSaveTimeoutRef.current);
+            labelSaveTimeoutRef.current = null;
+        }
+        
+        if (note && localLabel !== note.label) {
+            // Force immediate save with forceSave
             updateWithAutoSave({ 
-                label: newLabel, 
+                label: localLabel, 
                 content: localContent, 
                 folder_name: localFolder, 
                 tags: localTags,
                 metadata: { ...note.metadata, lastEditorMode: editorMode }
             });
-            // Immediate update to parent for selector refresh
-            onUpdate?.(note.id, { label: newLabel });
+            forceSave();
         }
     };
 
@@ -281,8 +326,9 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 <div className="px-3 pt-3 pb-2">
                     <input
                         type="text"
-                        value={note.label}
+                        value={localLabel}
                         onChange={(e) => handleLabelChange(e.target.value)}
+                        onBlur={handleLabelBlur}
                         className="w-full bg-transparent border-0 text-lg font-semibold focus:outline-none focus:ring-0 placeholder:text-muted-foreground"
                         placeholder="Untitled Note"
                     />
