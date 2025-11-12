@@ -37,6 +37,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
@@ -59,6 +67,9 @@ import {
   Menu,
   Code2,
   Zap,
+  Filter,
+  X,
+  ArrowUpDown,
 } from 'lucide-react';
 import { useAllSystemPrompts } from '@/hooks/useSystemPrompts';
 import { SYSTEM_FUNCTIONALITIES } from '@/types/system-prompt-functionalities';
@@ -66,8 +77,19 @@ import type { SystemPromptDB } from '@/types/system-prompts-db';
 import { cn } from '@/lib/utils';
 
 type PlacementType = 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
-type SortField = 'name' | 'category' | 'functionality' | 'status' | 'placement';
+type SortField = 'name' | 'category' | 'functionality' | 'status' | 'placement' | 'connection';
 type SortDirection = 'asc' | 'desc';
+
+interface ColumnFilters {
+  status: 'all' | 'connected' | 'placeholder';
+  name: string;
+  systemId: string;
+  functionality: Set<string>;
+  placement: Set<PlacementType>;
+  category: Set<string>;
+  sourcePrompt: 'all' | 'connected' | 'none';
+  active: 'all' | 'active' | 'inactive';
+}
 
 const PLACEMENT_ICONS = {
   'context-menu': Menu,
@@ -80,40 +102,93 @@ const PLACEMENT_ICONS = {
 
 export function SystemPromptsManager() {
   const { systemPrompts, loading, refetch } = useAllSystemPrompts();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'connected' | 'placeholder'>('all');
-  const [placementFilter, setPlacementFilter] = useState<PlacementType | 'all'>('all');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [assigningPrompt, setAssigningPrompt] = useState<SystemPromptDB | null>(null);
+  
+  // Column filters
+  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
+    status: 'all',
+    name: '',
+    systemId: '',
+    functionality: new Set<string>(),
+    placement: new Set<PlacementType>(),
+    category: new Set<string>(),
+    sourcePrompt: 'all',
+    active: 'all',
+  });
+
+  // Get unique values for dropdown filters
+  const uniqueValues = useMemo(() => {
+    const functionalities = new Set<string>();
+    const placements = new Set<PlacementType>();
+    const categories = new Set<string>();
+
+    systemPrompts.forEach((p) => {
+      if (p.functionality_id) functionalities.add(p.functionality_id);
+      if (p.placement_type) placements.add(p.placement_type);
+      if (p.category) categories.add(p.category);
+    });
+
+    return {
+      functionalities: Array.from(functionalities).sort(),
+      placements: Array.from(placements).sort(),
+      categories: Array.from(categories).sort(),
+    };
+  }, [systemPrompts]);
 
   // Filter and sort prompts
   const filteredAndSortedPrompts = useMemo(() => {
     let filtered = [...systemPrompts];
 
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query) ||
-          p.system_prompt_id.toLowerCase().includes(query) ||
-          p.description?.toLowerCase().includes(query) ||
-          p.functionality_id?.toLowerCase().includes(query) ||
-          p.category?.toLowerCase().includes(query)
-      );
-    }
-
-    // Status filter
-    if (statusFilter === 'connected') {
+    // Status filter (placeholder vs connected)
+    if (columnFilters.status === 'connected') {
       filtered = filtered.filter((p) => !p.prompt_snapshot?.placeholder);
-    } else if (statusFilter === 'placeholder') {
+    } else if (columnFilters.status === 'placeholder') {
       filtered = filtered.filter((p) => p.prompt_snapshot?.placeholder);
     }
 
+    // Name filter
+    if (columnFilters.name) {
+      const query = columnFilters.name.toLowerCase();
+      filtered = filtered.filter((p) => p.name.toLowerCase().includes(query));
+    }
+
+    // System ID filter
+    if (columnFilters.systemId) {
+      const query = columnFilters.systemId.toLowerCase();
+      filtered = filtered.filter((p) => p.system_prompt_id.toLowerCase().includes(query));
+    }
+
+    // Functionality filter
+    if (columnFilters.functionality.size > 0) {
+      filtered = filtered.filter((p) => 
+        p.functionality_id && columnFilters.functionality.has(p.functionality_id)
+      );
+    }
+
     // Placement filter
-    if (placementFilter !== 'all') {
-      filtered = filtered.filter((p) => p.placement_type === placementFilter);
+    if (columnFilters.placement.size > 0) {
+      filtered = filtered.filter((p) => columnFilters.placement.has(p.placement_type));
+    }
+
+    // Category filter
+    if (columnFilters.category.size > 0) {
+      filtered = filtered.filter((p) => p.category && columnFilters.category.has(p.category));
+    }
+
+    // Source prompt filter
+    if (columnFilters.sourcePrompt === 'connected') {
+      filtered = filtered.filter((p) => p.source_prompt_id);
+    } else if (columnFilters.sourcePrompt === 'none') {
+      filtered = filtered.filter((p) => !p.source_prompt_id);
+    }
+
+    // Active filter
+    if (columnFilters.active === 'active') {
+      filtered = filtered.filter((p) => p.is_active);
+    } else if (columnFilters.active === 'inactive') {
+      filtered = filtered.filter((p) => !p.is_active);
     }
 
     // Sort
@@ -141,6 +216,10 @@ export function SystemPromptsManager() {
           aVal = a.placement_type;
           bVal = b.placement_type;
           break;
+        case 'connection':
+          aVal = a.source_prompt_id ? 1 : 0;
+          bVal = b.source_prompt_id ? 1 : 0;
+          break;
         default:
           return 0;
       }
@@ -151,7 +230,7 @@ export function SystemPromptsManager() {
     });
 
     return filtered;
-  }, [systemPrompts, searchQuery, statusFilter, placementFilter, sortField, sortDirection]);
+  }, [systemPrompts, columnFilters, sortField, sortDirection]);
 
   // Stats
   const stats = useMemo(() => {
@@ -170,6 +249,50 @@ export function SystemPromptsManager() {
       setSortDirection('asc');
     }
   };
+
+  // Helper functions for filter management
+  const updateTextFilter = (field: 'name' | 'systemId', value: string) => {
+    setColumnFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleSetFilter = <T extends string>(field: 'functionality' | 'placement' | 'category', value: T) => {
+    setColumnFilters((prev) => {
+      const newSet = new Set(prev[field]);
+      if (newSet.has(value)) {
+        newSet.delete(value);
+      } else {
+        newSet.add(value);
+      }
+      return { ...prev, [field]: newSet };
+    });
+  };
+
+  const updateDropdownFilter = (field: 'status' | 'sourcePrompt' | 'active', value: any) => {
+    setColumnFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const clearAllFilters = () => {
+    setColumnFilters({
+      status: 'all',
+      name: '',
+      systemId: '',
+      functionality: new Set<string>(),
+      placement: new Set<PlacementType>(),
+      category: new Set<string>(),
+      sourcePrompt: 'all',
+      active: 'all',
+    });
+  };
+
+  const hasActiveFilters = 
+    columnFilters.status !== 'all' ||
+    columnFilters.name || 
+    columnFilters.systemId || 
+    columnFilters.functionality.size > 0 || 
+    columnFilters.placement.size > 0 || 
+    columnFilters.category.size > 0 || 
+    columnFilters.sourcePrompt !== 'all' || 
+    columnFilters.active !== 'all';
 
   const handleToggleActive = async (promptId: string, currentState: boolean) => {
     try {
@@ -226,125 +349,439 @@ export function SystemPromptsManager() {
     <TooltipProvider>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex-shrink-0 p-6 border-b bg-card space-y-4">
+        <div className="flex-shrink-0 p-4 border-b bg-card space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">System Prompts Manager</h2>
-              <p className="text-sm text-muted-foreground">
-                Manage system prompt assignments and configurations
-              </p>
+              <h2 className="text-2xl pl-2 font-bold">System Prompts Manager</h2>
             </div>
-            <Button onClick={() => refetch()} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
+            <div className="flex gap-2">
+              {hasActiveFilters && (
+                <Button onClick={clearAllFilters} variant="outline" size="sm">
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+              <Button onClick={() => refetch()} variant="outline" size="sm">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-4 gap-4">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="text-2xl font-bold">{stats.total}</div>
                 <div className="text-xs text-muted-foreground">Total</div>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="text-2xl font-bold text-green-600">{stats.connected}</div>
                 <div className="text-xs text-muted-foreground">Connected</div>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="text-2xl font-bold text-orange-600">{stats.placeholders}</div>
                 <div className="text-xs text-muted-foreground">Placeholders</div>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
                 <div className="text-xs text-muted-foreground">Active</div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, ID, functionality, category..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+          {/* Active Filters Display */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap gap-2 items-center text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground">Active filters:</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="h-5 w-5 p-0 hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              {columnFilters.status !== 'all' && (
+                <Badge variant="secondary">Status: {columnFilters.status}</Badge>
+              )}
+              {columnFilters.name && (
+                <Badge variant="secondary">Name: {columnFilters.name}</Badge>
+              )}
+              {columnFilters.systemId && (
+                <Badge variant="secondary">ID: {columnFilters.systemId}</Badge>
+              )}
+              {columnFilters.functionality.size > 0 && (
+                <Badge variant="secondary">Functionality ({columnFilters.functionality.size})</Badge>
+              )}
+              {columnFilters.placement.size > 0 && (
+                <Badge variant="secondary">Placement ({columnFilters.placement.size})</Badge>
+              )}
+              {columnFilters.category.size > 0 && (
+                <Badge variant="secondary">Category ({columnFilters.category.size})</Badge>
+              )}
+              {columnFilters.sourcePrompt !== 'all' && (
+                <Badge variant="secondary">Source: {columnFilters.sourcePrompt}</Badge>
+              )}
+              {columnFilters.active !== 'all' && (
+                <Badge variant="secondary">Active: {columnFilters.active}</Badge>
+              )}
             </div>
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-3 py-2 border rounded-md text-sm"
-            >
-              <option value="all">All Status</option>
-              <option value="connected">Connected Only</option>
-              <option value="placeholder">Placeholders Only</option>
-            </select>
-
-            <select
-              value={placementFilter}
-              onChange={(e) => setPlacementFilter(e.target.value as any)}
-              className="px-3 py-2 border rounded-md text-sm"
-            >
-              <option value="all">All Types</option>
-              <option value="card">Cards</option>
-              <option value="context-menu">Context Menus</option>
-              <option value="button">Buttons</option>
-              <option value="modal">Modals</option>
-              <option value="link">Links</option>
-              <option value="action">Actions</option>
-            </select>
-          </div>
+          )}
         </div>
 
         {/* Table */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 pr-4">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow>
-                <TableHead className="w-12">Status</TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleSort('name')}
-                >
-                  Name <SortIcon field="name" />
+                {/* Status Column - Dropdown filter */}
+                <TableHead className="min-w-[40px]">
+                  <div className="space-y-1">
+                    <span className="font-semibold">Status</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 w-full justify-between text-xs">
+                          <span className="truncate">{
+                            columnFilters.status === 'all' ? 'All' :
+                            columnFilters.status === 'connected' ? 'Connected' : 'Placeholder'
+                          }</span>
+                          <Filter className="h-3 w-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-16">
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.status === 'all'}
+                          onCheckedChange={() => updateDropdownFilter('status', 'all')}
+                        >
+                          All
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.status === 'connected'}
+                          onCheckedChange={() => updateDropdownFilter('status', 'connected')}
+                        >
+                          Connected
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.status === 'placeholder'}
+                          onCheckedChange={() => updateDropdownFilter('status', 'placeholder')}
+                        >
+                          Placeholder
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableHead>
-                <TableHead>System ID</TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleSort('functionality')}
-                >
-                  Functionality <SortIcon field="functionality" />
+                
+                {/* Name Column - Text filter + Sort */}
+                <TableHead className="min-w-[180px]">
+                  <div className="space-y-1">
+                    <div 
+                      className="flex items-center gap-1 cursor-pointer hover:text-primary"
+                      onClick={() => handleSort('name')}
+                    >
+                      <span className="font-semibold">Name</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="name" />
+                    </div>
+                    <Input
+                      placeholder="Filter..."
+                      value={columnFilters.name}
+                      onChange={(e) => updateTextFilter('name', e.target.value)}
+                      className="h-7 text-xs"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
                 </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleSort('placement')}
-                >
-                  Placement <SortIcon field="placement" />
+
+                {/* System ID Column - Text filter */}
+                <TableHead className="min-w-[160px]">
+                  <div className="space-y-1">
+                    <span className="font-semibold">System ID</span>
+                    <Input
+                      placeholder="Filter..."
+                      value={columnFilters.systemId}
+                      onChange={(e) => updateTextFilter('systemId', e.target.value)}
+                      className="h-7 text-xs"
+                    />
+                  </div>
                 </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleSort('category')}
-                >
-                  Category <SortIcon field="category" />
+
+                {/* Functionality Column - Dropdown filter + Sort */}
+                <TableHead className="min-w-[150px]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className="font-semibold cursor-pointer hover:text-primary"
+                        onClick={() => handleSort('functionality')}
+                      >
+                        Functionality
+                      </span>
+                      <ArrowUpDown className="h-3 w-3 cursor-pointer" onClick={() => handleSort('functionality')} />
+                      <SortIcon field="functionality" />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 w-full justify-between text-xs">
+                          <span className="truncate">
+                            {columnFilters.functionality.size > 0 
+                              ? `${columnFilters.functionality.size} selected`
+                              : 'All'}
+                          </span>
+                          <Filter className="h-3 w-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56">
+                        <DropdownMenuLabel className="flex items-center justify-between">
+                          <span>Filter by Functionality</span>
+                          {columnFilters.functionality.size > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setColumnFilters(prev => ({ ...prev, functionality: new Set() }))}
+                              className="h-5 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              Clear
+                            </Button>
+                          )}
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {uniqueValues.functionalities.map((func) => (
+                          <DropdownMenuCheckboxItem
+                            key={func}
+                            checked={columnFilters.functionality.has(func)}
+                            onCheckedChange={() => toggleSetFilter('functionality', func)}
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            {SYSTEM_FUNCTIONALITIES[func]?.name || func}
+                          </DropdownMenuCheckboxItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableHead>
-                <TableHead>Source Prompt</TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleSort('status')}
-                >
-                  Active <SortIcon field="status" />
+
+                {/* Placement Column - Dropdown filter + Sort */}
+                <TableHead className="min-w-[140px]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className="font-semibold cursor-pointer hover:text-primary"
+                        onClick={() => handleSort('placement')}
+                      >
+                        Placement
+                      </span>
+                      <ArrowUpDown className="h-3 w-3 cursor-pointer" onClick={() => handleSort('placement')} />
+                      <SortIcon field="placement" />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 w-full justify-between text-xs">
+                          <span className="truncate">
+                            {columnFilters.placement.size > 0 
+                              ? `${columnFilters.placement.size} selected`
+                              : 'All'}
+                          </span>
+                          <Filter className="h-3 w-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-48">
+                        <DropdownMenuLabel className="flex items-center justify-between">
+                          <span>Filter by Placement</span>
+                          {columnFilters.placement.size > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setColumnFilters(prev => ({ ...prev, placement: new Set() }))}
+                              className="h-5 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              Clear
+                            </Button>
+                          )}
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {uniqueValues.placements.map((placement) => (
+                          <DropdownMenuCheckboxItem
+                            key={placement}
+                            checked={columnFilters.placement.has(placement)}
+                            onCheckedChange={() => toggleSetFilter('placement', placement)}
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            {placement}
+                          </DropdownMenuCheckboxItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+
+                {/* Category Column - Dropdown filter + Sort */}
+                <TableHead className="min-w-[130px]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className="font-semibold cursor-pointer hover:text-primary"
+                        onClick={() => handleSort('category')}
+                      >
+                        Category
+                      </span>
+                      <ArrowUpDown className="h-3 w-3 cursor-pointer" onClick={() => handleSort('category')} />
+                      <SortIcon field="category" />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 w-full justify-between text-xs">
+                          <span className="truncate">
+                            {columnFilters.category.size > 0 
+                              ? `${columnFilters.category.size} selected`
+                              : 'All'}
+                          </span>
+                          <Filter className="h-3 w-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-48">
+                        <DropdownMenuLabel className="flex items-center justify-between">
+                          <span>Filter by Category</span>
+                          {columnFilters.category.size > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setColumnFilters(prev => ({ ...prev, category: new Set() }))}
+                              className="h-5 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              Clear
+                            </Button>
+                          )}
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {uniqueValues.categories.map((category) => (
+                          <DropdownMenuCheckboxItem
+                            key={category}
+                            checked={columnFilters.category.has(category)}
+                            onCheckedChange={() => toggleSetFilter('category', category)}
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            {category}
+                          </DropdownMenuCheckboxItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TableHead>
+
+                {/* Source Prompt Column - Dropdown filter + Sort */}
+                <TableHead className="min-w-[140px]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className="font-semibold cursor-pointer hover:text-primary"
+                        onClick={() => handleSort('connection')}
+                      >
+                        Source Prompt
+                      </span>
+                      <ArrowUpDown className="h-3 w-3 cursor-pointer" onClick={() => handleSort('connection')} />
+                      <SortIcon field="connection" />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 w-full justify-between text-xs">
+                          <span className="truncate">{
+                            columnFilters.sourcePrompt === 'all' ? 'All' :
+                            columnFilters.sourcePrompt === 'connected' ? 'Connected' : 'None'
+                          }</span>
+                          <Filter className="h-3 w-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-40">
+                        <DropdownMenuLabel>Filter by Source</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.sourcePrompt === 'all'}
+                          onCheckedChange={() => updateDropdownFilter('sourcePrompt', 'all')}
+                        >
+                          All
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.sourcePrompt === 'connected'}
+                          onCheckedChange={() => updateDropdownFilter('sourcePrompt', 'connected')}
+                        >
+                          Connected Only
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.sourcePrompt === 'none'}
+                          onCheckedChange={() => updateDropdownFilter('sourcePrompt', 'none')}
+                        >
+                          None
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TableHead>
+
+                {/* Active Column - Dropdown filter + Sort */}
+                <TableHead className="min-w-[110px]">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className="font-semibold cursor-pointer hover:text-primary"
+                        onClick={() => handleSort('status')}
+                      >
+                        Active
+                      </span>
+                      <ArrowUpDown className="h-3 w-3 cursor-pointer" onClick={() => handleSort('status')} />
+                      <SortIcon field="status" />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 w-full justify-between text-xs">
+                          <span className="truncate">{
+                            columnFilters.active === 'all' ? 'All' :
+                            columnFilters.active === 'active' ? 'Active' : 'Inactive'
+                          }</span>
+                          <Filter className="h-3 w-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-40">
+                        <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.active === 'all'}
+                          onCheckedChange={() => updateDropdownFilter('active', 'all')}
+                        >
+                          All
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.active === 'active'}
+                          onCheckedChange={() => updateDropdownFilter('active', 'active')}
+                        >
+                          Active Only
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={columnFilters.active === 'inactive'}
+                          onCheckedChange={() => updateDropdownFilter('active', 'inactive')}
+                        >
+                          Inactive Only
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TableHead>
+
+                {/* Actions Column - No filter/sort */}
+                <TableHead className="text-right min-w-[140px] pr-4">
+                  <div className="space-y-1">
+                    <span className="font-semibold">Actions</span>
+                    <div className="h-7" />
+                  </div>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
