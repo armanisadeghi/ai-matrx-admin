@@ -193,17 +193,29 @@ export function SelectPromptModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-3xl max-h-[85vh]">
         <DialogHeader>
-          <DialogTitle>
-            {mode === 'select' ? 'Select' : 'Change'} AI Prompt for "{systemPrompt.name}"
-          </DialogTitle>
-          <DialogDescription>
-            Choose a compatible AI prompt to power this system prompt. 
-            {data?.functionality && (
-              <span className="block mt-1">
-                Required variables: <code className="text-xs">{data.functionality.required_variables.join(', ')}</code>
-              </span>
-            )}
-          </DialogDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <DialogTitle>
+                {mode === 'select' ? 'Select' : 'Change'} AI Prompt for "{systemPrompt.name}"
+              </DialogTitle>
+              <DialogDescription>
+                Choose a compatible AI prompt to power this system prompt. 
+                {data?.functionality && (
+                  <span className="block mt-1">
+                    Required variables: <code className="text-xs">{data.functionality.required_variables.join(', ')}</code>
+                  </span>
+                )}
+              </DialogDescription>
+            </div>
+            <Button
+              onClick={() => setShowGenerateModal(true)}
+              className="flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white mr-6"
+              size="sm"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate New
+            </Button>
+          </div>
         </DialogHeader>
 
         {loading ? (

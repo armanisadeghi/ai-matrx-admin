@@ -192,9 +192,20 @@ export function useButtonPrompts(category?: string) {
  * Hook to fetch ALL system prompts (including inactive/draft) for admin
  */
 export function useAllSystemPrompts(placementType?: string) {
-  return useSystemPrompts({
+  const result = useSystemPrompts({
     placement_type: placementType as 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action',
     cacheKey: `all-system-prompts-${placementType || 'all'}`
   });
+  
+  // Enhance refetch to also clear cache
+  const enhancedRefetch = async () => {
+    result.clearCache();
+    await result.refetch();
+  };
+  
+  return {
+    ...result,
+    refetch: enhancedRefetch
+  };
 }
 

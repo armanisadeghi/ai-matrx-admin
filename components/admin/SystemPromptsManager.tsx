@@ -853,19 +853,23 @@ export function SystemPromptsManager() {
                         <div className="flex items-center gap-1">
                           <Tooltip>
                             <TooltipTrigger>
-                              <Badge variant="secondary" className="text-xs">
-                                <Link2 className="h-3 w-3 mr-1" />
-                                Connected
-                              </Badge>
+                              <div className="flex items-center gap-1">
+                                <Link2 className="h-3 w-3 text-green-600" />
+                                <span className="text-xs font-medium">
+                                  {prompt.prompt_snapshot?.name || 'Connected'}
+                                </span>
+                              </div>
                             </TooltipTrigger>
                             <TooltipContent>
                               <div className="space-y-1">
-                                <p className="font-semibold">Source Prompt ID:</p>
+                                <p className="font-semibold">Linked AI Prompt:</p>
+                                <p className="text-xs">{prompt.prompt_snapshot?.name}</p>
+                                <p className="font-semibold mt-2">Prompt ID:</p>
                                 <p className="text-xs font-mono">{prompt.source_prompt_id}</p>
-                                {prompt.prompt_snapshot?.name && (
+                                {prompt.prompt_snapshot?.description && (
                                   <>
-                                    <p className="font-semibold mt-2">Prompt Name:</p>
-                                    <p className="text-xs">{prompt.prompt_snapshot.name}</p>
+                                    <p className="font-semibold mt-2">Description:</p>
+                                    <p className="text-xs">{prompt.prompt_snapshot.description}</p>
                                   </>
                                 )}
                               </div>
@@ -873,10 +877,15 @@ export function SystemPromptsManager() {
                           </Tooltip>
                         </div>
                       ) : (
-                        <Badge variant="outline" className="text-xs">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-muted-foreground hover:text-primary"
+                          onClick={() => setSelectingPromptFor({ prompt, mode: 'select' })}
+                        >
                           <Unlink className="h-3 w-3 mr-1" />
-                          None
-                        </Badge>
+                          Select Prompt
+                        </Button>
                       )}
                     </TableCell>
                     <TableCell>
