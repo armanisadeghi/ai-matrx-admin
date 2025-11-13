@@ -70,13 +70,22 @@ export function DynamicButtons({
       const allowInitialMessage = settings.allowInitialMessage ?? false;
 
       // Open modal with the prompt
-      setModalConfig({
+      // Use source_prompt_id if available, otherwise pass promptData directly
+      const config = systemPrompt.source_prompt_id ? {
+        promptId: systemPrompt.source_prompt_id,
+        variables,
+        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+        title: systemPrompt.name,
+        initialMessage: allowInitialMessage ? undefined : '',
+      } : {
         promptData: systemPrompt.prompt_snapshot,
         variables,
         mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
         title: systemPrompt.name,
         initialMessage: allowInitialMessage ? undefined : '',
-      });
+      };
+      
+      setModalConfig(config);
       setModalOpen(true);
       setExecutingId(null);
     } catch (error) {
@@ -150,6 +159,7 @@ export function DynamicButtons({
         <PromptRunnerModal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
+          promptId={modalConfig.promptId}
           promptData={modalConfig.promptData}
           variables={modalConfig.variables}
           mode={modalConfig.mode}

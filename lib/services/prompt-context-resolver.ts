@@ -5,6 +5,7 @@
  * 1. The functionality_id (what the CODE expects)
  * 2. The placement_type (where it's being used)
  * 3. The available UI context
+ * 4. Default values defined in the prompt
  */
 
 import { extractVariablesFromPrompt } from '@/types/system-prompt-functionalities';
@@ -36,40 +37,67 @@ export interface UIContext {
   [key: string]: any;
 }
 
+interface PromptSnapshot {
+  messages?: any[];
+  variables?: string[];
+  variableDefaults?: Array<{
+    name: string;
+    defaultValue?: any;
+    customComponent?: any;
+  }>;
+  [key: string]: any;
+}
+
 export class PromptContextResolver {
   /**
    * Extract variables from prompt snapshot
    */
-  static getVariables(promptSnapshot: any): string[] {
+  static getVariables(promptSnapshot: PromptSnapshot): string[] {
     return extractVariablesFromPrompt(promptSnapshot);
   }
 
   /**
-   * Resolve all variables for a prompt based on functionality and context
+   * Resolve all variables for a prompt based on functionality and context.
+   * Falls back to default values when context doesn't provide them.
    */
   static resolve(
-    promptSnapshot: any,
+    promptSnapshot: PromptSnapshot,
     functionalityId: string,
     placementType: string,
     uiContext: UIContext
   ): Record<string, any> {
     const variables = this.getVariables(promptSnapshot);
+    const variableDefaults = promptSnapshot.variableDefaults || [];
     const resolved: Record<string, any> = {};
 
+    // Create a map of defaults for quick lookup
+    const defaultsMap = new Map(
+      variableDefaults.map(vd => [vd.name, vd.defaultValue])
+    );
+
     for (const varName of variables) {
-      resolved[varName] = this.resolveVariable(
-        varName,
-        functionalityId,
-        placementType,
-        uiContext
-      );
+      // Try to resolve from UI context first
+      const contextValue = this.resolveVariable(varName, functionalityId, placementType, uiContext);
+      
+      if (contextValue !== undefined && contextValue !== null && contextValue !== '') {
+        // Use value from context
+        resolved[varName] = contextValue;
+      } else if (defaultsMap.has(varName)) {
+        // Use default value
+        const defaultValue = defaultsMap.get(varName);
+        if (defaultValue !== undefined && defaultValue !== null) {
+          resolved[varName] = defaultValue;
+        }
+      }
+      // If neither context nor default, variable is simply not included
     }
 
     return resolved;
   }
 
   /**
-   * Checks if all required variables can be resolved from the UI context.
+   * Checks if all required variables can be resolved from the UI context OR have defaults.
+   * Variables with defaults are always considered resolvable.
    * 
    * @param promptSnapshot - The prompt snapshot
    * @param functionalityId - The functionality ID
@@ -78,17 +106,38 @@ export class PromptContextResolver {
    * @returns Object with canResolve boolean and list of missing variables
    */
   static canResolve(
-    promptSnapshot: any,
+    promptSnapshot: PromptSnapshot,
     functionalityId: string,
     placementType: string,
     uiContext: UIContext
-  ): { canResolve: boolean; missingVariables: string[] } {
+  ): { canResolve: boolean; missingVariables: string[]; resolvedVariables: string[] } {
     const variables = this.getVariables(promptSnapshot);
+    const variableDefaults = promptSnapshot.variableDefaults || [];
+    
+    // Create a map of variables with defaults for quick lookup
+    const defaultsMap = new Map(
+      variableDefaults.map(vd => [vd.name, vd.defaultValue])
+    );
+
+    const resolved: string[] = [];
     const missing: string[] = [];
 
     for (const varName of variables) {
+      // Check if variable has a default value
+      const hasDefault = defaultsMap.has(varName);
+      const defaultValue = defaultsMap.get(varName);
+      
+      // Try to resolve from UI context
       const value = this.resolveVariable(varName, functionalityId, placementType, uiContext);
-      if (value === undefined || value === null || value === '') {
+      
+      if (value !== undefined && value !== null && value !== '') {
+        // Successfully resolved from context
+        resolved.push(varName);
+      } else if (hasDefault && defaultValue !== undefined && defaultValue !== null) {
+        // Has a default value - this is OK, will use default
+        resolved.push(varName);
+      } else {
+        // No value from context AND no default - this is missing
         missing.push(varName);
       }
     }
@@ -96,6 +145,7 @@ export class PromptContextResolver {
     return {
       canResolve: missing.length === 0,
       missingVariables: missing,
+      resolvedVariables: resolved,
     };
   }
 
@@ -131,6 +181,7 @@ export class PromptContextResolver {
         if (varName === 'text') {
           return uiContext.selection || uiContext.highlightedText || uiContext.editorContent;
         }
+        if (varName === 'output_format') return uiContext.output_format;
         if (varName === 'style') return uiContext.style || 'concise';
         break;
 
@@ -160,10 +211,15 @@ export class PromptContextResolver {
         if (varName === 'topic') {
           return uiContext.topic || uiContext.selection || uiContext.query;
         }
+        if (varName === 'topic_or_data') {
+          return uiContext.topic || uiContext.selection || uiContext.query || uiContext.editorContent;
+        }
         if (varName === 'tone') return uiContext.tone;
         if (varName === 'length') return uiContext.length;
         if (varName === 'style') return uiContext.style;
         if (varName === 'audience') return uiContext.audience;
+        if (varName === 'creativity_level') return uiContext.creativity_level;
+        if (varName === 'idea_count') return uiContext.idea_count;
         break;
 
       case 'create-flashcards':
@@ -171,8 +227,13 @@ export class PromptContextResolver {
         if (varName === 'content') {
           return uiContext.selection || uiContext.editorContent || uiContext.content;
         }
+        if (varName === 'topic_or_data') {
+          return uiContext.topic || uiContext.selection || uiContext.editorContent;
+        }
         if (varName === 'difficulty') return uiContext.difficulty;
-        if (varName === 'question_count') return uiContext.questionCount || uiContext.question_count;
+        if (varName === 'question_count' || varName === 'count') {
+          return uiContext.questionCount || uiContext.question_count || uiContext.count;
+        }
         break;
 
       // ===== UTILITIES =====
@@ -189,7 +250,7 @@ export class PromptContextResolver {
           return uiContext[varName];
         }
         // Common fallbacks
-        if (varName === 'text' || varName === 'content') {
+        if (varName === 'text' || varName === 'content' || varName === 'selected_text') {
           return uiContext.selection || uiContext.editorContent || uiContext.text || uiContext.content;
         }
         if (varName === 'code' || varName === 'current_code') {
@@ -204,7 +265,7 @@ export class PromptContextResolver {
     }
 
     // Common variable name fallbacks
-    if (varName === 'text' || varName === 'content') {
+    if (varName === 'text' || varName === 'content' || varName === 'selected_text') {
       return uiContext.selection || uiContext.editorContent;
     }
     if (varName === 'code' || varName === 'current_code') {
@@ -215,4 +276,3 @@ export class PromptContextResolver {
     return undefined;
   }
 }
-

@@ -134,11 +134,11 @@ The Persian Empire was one of the largest empires in the ancient world, demonstr
                 <div>
                   <h3 className="text-lg font-semibold">Editable Text Area</h3>
                   <p className="text-sm text-muted-foreground">
-                    Select text and right-click for AI actions
+                    Select text and right-click for AI actions with Replace/Insert options
                   </p>
                 </div>
-                <Badge>
-                  With Replace/Insert Options (Coming Soon)
+                <Badge className="bg-green-600">
+                  Replace/Insert Enabled ✓
                 </Badge>
               </div>
 
@@ -148,13 +148,69 @@ The Persian Empire was one of the largest empires in the ancient world, demonstr
                   context: textareaContent,
                   editable: true,
                 }}
+                isEditable={true}
+                onTextReplace={(newText) => {
+                  // Replace selected text with AI result
+                  // Get current selection from the textarea
+                  const textarea = document.querySelector('textarea[data-editor="demo"]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const before = textareaContent.substring(0, start);
+                    const after = textareaContent.substring(end);
+                    const updatedContent = before + newText + after;
+                    setTextareaContent(updatedContent);
+                    
+                    // Restore focus and set cursor after replaced text
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start, start + newText.length);
+                    }, 0);
+                  }
+                }}
+                onTextInsertBefore={(text) => {
+                  // Insert AI result before selected text
+                  const textarea = document.querySelector('textarea[data-editor="demo"]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const start = textarea.selectionStart;
+                    const before = textareaContent.substring(0, start);
+                    const after = textareaContent.substring(start);
+                    const insertText = text + '\n\n';
+                    setTextareaContent(before + insertText + after);
+                    
+                    // Restore focus and set cursor after inserted text
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start + insertText.length, start + insertText.length);
+                    }, 0);
+                  }
+                }}
+                onTextInsertAfter={(text) => {
+                  // Insert AI result after selected text
+                  const textarea = document.querySelector('textarea[data-editor="demo"]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const end = textarea.selectionEnd;
+                    const before = textareaContent.substring(0, end);
+                    const after = textareaContent.substring(end);
+                    const insertText = '\n\n' + text;
+                    setTextareaContent(before + insertText + after);
+                    
+                    // Restore focus and set cursor after inserted text
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(end + insertText.length, end + insertText.length);
+                    }, 0);
+                  }
+                }}
               >
                 <Card className="p-0 overflow-hidden">
                   <textarea
+                    data-editor="demo"
                     className="w-full p-6 bg-card min-h-[500px] resize-y font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg"
                     value={textareaContent}
                     onChange={(e) => setTextareaContent(e.target.value)}
-                    placeholder="Start typing or paste content here..."
+                    placeholder="Start typing or paste content here... Select text and right-click for AI actions."
+                    spellCheck={false}
                   />
                 </Card>
               </DynamicContextMenu>

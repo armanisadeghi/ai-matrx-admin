@@ -8,7 +8,7 @@
 
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,6 +22,11 @@ import {
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
 import { PromptRunnerModal } from '@/features/prompts/components/modal/PromptRunnerModal';
+import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
+import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
+import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
+import { useAppSelector } from '@/lib/redux';
+import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +36,12 @@ interface DynamicContextMenuProps {
   category?: string;
   subcategory?: string;
   className?: string;
+  /** For text editors: callbacks to modify text */
+  onTextReplace?: (newText: string) => void;
+  onTextInsertBefore?: (text: string) => void;
+  onTextInsertAfter?: (text: string) => void;
+  /** Set to true if this is wrapping an editable element */
+  isEditable?: boolean;
 }
 
 interface GroupedPrompts {
@@ -52,12 +63,23 @@ export function DynamicContextMenu({
   category,
   subcategory,
   className,
+  onTextReplace,
+  onTextInsertBefore,
+  onTextInsertAfter,
+  isEditable = false,
 }: DynamicContextMenuProps) {
   const { systemPrompts, loading } = useContextMenuPrompts(category, subcategory);
   const [executingId, setExecutingId] = useState<string | null>(null);
   const [selectedText, setSelectedText] = useState<string>('');
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<any>(null);
+  const [debugModalOpen, setDebugModalOpen] = useState(false);
+  const [debugData, setDebugData] = useState<any>(null);
+  const [textResultModalOpen, setTextResultModalOpen] = useState(false);
+  const [textResultData, setTextResultData] = useState<{ original: string; result: string; promptName: string } | null>(null);
+  const isDebugMode = useAppSelector(selectIsDebugMode);
+  const { execute, streamingText, isExecuting } = usePromptExecution();
 
   // Track selected text on selection change
   useEffect(() => {
@@ -72,10 +94,43 @@ export function DynamicContextMenu({
   }, []);
 
   const handleContextMenu = (e: React.MouseEvent) => {
-    // Capture text on context menu open
+    // CRITICAL: Capture text AND selection range IMMEDIATELY before menu opens
     const selection = window.getSelection();
     const text = selection?.toString().trim() || '';
+    
+    // Store the target element and its selection range for later use
+    const target = e.target as HTMLElement;
+    let start = 0;
+    let end = 0;
+    let element: HTMLElement | null = null;
+
+    if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
+      start = target.selectionStart || 0;
+      end = target.selectionEnd || 0;
+      element = target;
+    } else {
+      // For contenteditable or regular elements with selection
+      const range = selection?.getRangeAt(0);
+      if (range) {
+        start = range.startOffset;
+        end = range.endOffset;
+        element = target;
+      }
+    }
+    
+    // Store both text and range (for later reference in Replace/Insert operations)
     setSelectedText(text);
+    setSelectionRange({ start, end, element });
+    
+    console.log('[DynamicContextMenu] Captured selection on right-click:', {
+      length: text.length,
+      preview: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+      range: { start, end },
+      elementType: element?.tagName,
+    });
+
+    // DON'T try to restore selection - let the browser handle it naturally
+    // The selection data is captured for use in Replace/Insert operations
   };
 
   // Group prompts by category and subcategory
@@ -159,6 +214,21 @@ export function DynamicContextMenu({
 
       console.log('[DynamicContextMenu] Can resolve check:', canResolve);
 
+      // Show debug modal if debug mode is enabled
+      if (isDebugMode) {
+        setDebugData({
+          systemPromptName: systemPrompt.name,
+          functionalityId: systemPrompt.functionality_id,
+          placementType: 'context-menu',
+          uiContext: contextWithSelection,
+          resolvedVariables: variables,
+          canResolve,
+          promptSnapshot: systemPrompt.prompt_snapshot,
+          selectedText,
+        });
+        setDebugModalOpen(true);
+      }
+
       if (!canResolve.canResolve) {
         console.warn(`[DynamicContextMenu] Cannot resolve variables for ${systemPrompt.name}:`, canResolve.missingVariables);
         alert(`Cannot execute: Missing variables - ${canResolve.missingVariables.join(', ')}`);
@@ -176,19 +246,49 @@ export function DynamicContextMenu({
         variableCount: Object.keys(variables).length,
       });
 
-      // Open modal with the prompt
-      const config = {
-        promptData: systemPrompt.prompt_snapshot,
-        variables,
-        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
-        title: systemPrompt.name,
-        initialMessage: allowInitialMessage ? undefined : '',
-      };
+      // If this is an editable context (textarea) and has text replace callbacks
+      // Execute directly and show replace modal instead of chat modal
+      if (isEditable && (onTextReplace || onTextInsertBefore || onTextInsertAfter) && selectedText) {
+        console.log('[DynamicContextMenu] Editable context detected - executing for text replacement');
+        
+        // Execute the prompt
+        const result = await execute({
+          promptId: systemPrompt.source_prompt_id,
+          promptData: !systemPrompt.source_prompt_id ? systemPrompt.prompt_snapshot : undefined,
+          variables,
+        });
+
+        // Wait for streaming to complete
+        // The streamingText will be updated via the hook
+        // For now, show a simple result modal
+        // TODO: Integrate with actual streaming result
+        setTextResultData({
+          original: selectedText,
+          result: 'Processing...', // Will be updated by streaming
+          promptName: systemPrompt.name,
+        });
+        setTextResultModalOpen(true);
+      } else {
+        // Regular modal with chat
+        const config = systemPrompt.source_prompt_id ? {
+          promptId: systemPrompt.source_prompt_id,
+          variables,
+          mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+          title: systemPrompt.name,
+          initialMessage: allowInitialMessage ? undefined : '',
+        } : {
+          promptData: systemPrompt.prompt_snapshot,
+          variables,
+          mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+          title: systemPrompt.name,
+          initialMessage: allowInitialMessage ? undefined : '',
+        };
+        
+        setModalConfig(config);
+        setModalOpen(true);
+      }
       
-      setModalConfig(config);
-      setModalOpen(true);
-      
-      console.log('[DynamicContextMenu] Modal state set - modalOpen should be true');
+      console.log('[DynamicContextMenu] Modal state set');
     } catch (error) {
       console.error('[DynamicContextMenu] Error executing system prompt:', error);
       alert(`Error: ${error.message}`);
@@ -368,7 +468,11 @@ export function DynamicContextMenu({
           console.log('[DynamicContextMenu] Closing modal');
           setModalOpen(false);
           setModalConfig(null);
+          // Clear selection range when modal closes
+          setSelectionRange(null);
+          setSelectedText('');
         }}
+        promptId={modalConfig.promptId}
         promptData={modalConfig.promptData}
         variables={modalConfig.variables}
         mode={modalConfig.mode}
@@ -376,6 +480,57 @@ export function DynamicContextMenu({
         initialMessage={modalConfig.initialMessage}
       />
     ) : null}
+
+    {/* Debug Modal */}
+    {isDebugMode && (
+      <SystemPromptDebugModal
+        isOpen={debugModalOpen}
+        onClose={() => {
+          setDebugModalOpen(false);
+          // Keep selection when closing debug modal (don't clear it)
+          // User might want to proceed with the action
+        }}
+        debugData={debugData}
+      />
+    )}
+
+    {/* Text Action Result Modal (for text editors with replace/insert) */}
+    {textResultModalOpen && textResultData && (
+      <TextActionResultModal
+        isOpen={textResultModalOpen}
+        onClose={() => {
+          setTextResultModalOpen(false);
+          setTextResultData(null);
+          // Clear selection range when operation completes or is cancelled
+          setSelectionRange(null);
+          setSelectedText('');
+        }}
+        originalText={textResultData.original}
+        aiResponse={streamingText || textResultData.result}
+        promptName={textResultData.promptName}
+        onReplace={(newText) => {
+          onTextReplace?.(newText);
+          // Clear selection after replacement
+          setSelectionRange(null);
+          setSelectedText('');
+          setTextResultModalOpen(false);
+        }}
+        onInsertBefore={(text) => {
+          onTextInsertBefore?.(text);
+          // Clear selection after insertion
+          setSelectionRange(null);
+          setSelectedText('');
+          setTextResultModalOpen(false);
+        }}
+        onInsertAfter={(text) => {
+          onTextInsertAfter?.(text);
+          // Clear selection after insertion
+          setSelectionRange(null);
+          setSelectedText('');
+          setTextResultModalOpen(false);
+        }}
+      />
+    )}
   </>
   );
 }
