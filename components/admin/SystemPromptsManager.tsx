@@ -70,11 +70,15 @@ import {
   Filter,
   X,
   ArrowUpDown,
+  ArrowLeftRight,
+  Download,
 } from 'lucide-react';
 import { useAllSystemPrompts } from '@/hooks/useSystemPrompts';
 import { SYSTEM_FUNCTIONALITIES } from '@/types/system-prompt-functionalities';
 import type { SystemPromptDB } from '@/types/system-prompts-db';
 import { cn } from '@/lib/utils';
+import { SelectPromptModal } from './SelectPromptModal';
+import { UpdatePromptModal } from './UpdatePromptModal';
 
 type PlacementType = 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
 type SortField = 'name' | 'category' | 'functionality' | 'status' | 'placement' | 'connection';
@@ -105,6 +109,8 @@ export function SystemPromptsManager() {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [assigningPrompt, setAssigningPrompt] = useState<SystemPromptDB | null>(null);
+  const [selectingPromptFor, setSelectingPromptFor] = useState<{ prompt: SystemPromptDB; mode: 'select' | 'change' } | null>(null);
+  const [updatingPrompt, setUpdatingPrompt] = useState<SystemPromptDB | null>(null);
   
   // Column filters
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
@@ -844,15 +850,28 @@ export function SystemPromptsManager() {
                     </TableCell>
                     <TableCell>
                       {prompt.source_prompt_id ? (
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Badge variant="secondary" className="text-xs">
-                              <Link2 className="h-3 w-3 mr-1" />
-                              Connected
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>Source: {prompt.source_prompt_id}</TooltipContent>
-                        </Tooltip>
+                        <div className="flex items-center gap-1">
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Badge variant="secondary" className="text-xs">
+                                <Link2 className="h-3 w-3 mr-1" />
+                                Connected
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="space-y-1">
+                                <p className="font-semibold">Source Prompt ID:</p>
+                                <p className="text-xs font-mono">{prompt.source_prompt_id}</p>
+                                {prompt.prompt_snapshot?.name && (
+                                  <>
+                                    <p className="font-semibold mt-2">Prompt Name:</p>
+                                    <p className="text-xs">{prompt.prompt_snapshot.name}</p>
+                                  </>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
                       ) : (
                         <Badge variant="outline" className="text-xs">
                           <Unlink className="h-3 w-3 mr-1" />
@@ -867,20 +886,52 @@ export function SystemPromptsManager() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        {isPlaceholder ? (
+                        {/* Prompt Connection Actions */}
+                        {!prompt.source_prompt_id ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setAssigningPrompt(prompt)}
+                                onClick={() => setSelectingPromptFor({ prompt, mode: 'select' })}
                               >
                                 <Link2 className="h-3 w-3" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Assign a prompt</TooltipContent>
+                            <TooltipContent>Select AI Prompt</TooltipContent>
                           </Tooltip>
                         ) : (
+                          <>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectingPromptFor({ prompt, mode: 'change' })}
+                                >
+                                  <ArrowLeftRight className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Change AI Prompt</TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setUpdatingPrompt(prompt)}
+                                >
+                                  <Download className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Update to Latest</TooltipContent>
+                            </Tooltip>
+                          </>
+                        )}
+
+                        {/* Toggle Active */}
+                        {!isPlaceholder && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -938,13 +989,40 @@ export function SystemPromptsManager() {
           )}
         </ScrollArea>
 
-        {/* Assign Prompt Modal */}
+        {/* Assign Prompt Modal (Legacy - kept for compatibility) */}
         {assigningPrompt && (
           <AssignPromptModal
             systemPrompt={assigningPrompt}
             onClose={() => setAssigningPrompt(null)}
             onSuccess={() => {
               setAssigningPrompt(null);
+              refetch();
+            }}
+          />
+        )}
+
+        {/* Select/Change Prompt Modal */}
+        {selectingPromptFor && (
+          <SelectPromptModal
+            isOpen={true}
+            onClose={() => setSelectingPromptFor(null)}
+            systemPrompt={selectingPromptFor.prompt}
+            mode={selectingPromptFor.mode}
+            onSuccess={() => {
+              setSelectingPromptFor(null);
+              refetch();
+            }}
+          />
+        )}
+
+        {/* Update to Latest Modal */}
+        {updatingPrompt && (
+          <UpdatePromptModal
+            isOpen={true}
+            onClose={() => setUpdatingPrompt(null)}
+            systemPrompt={updatingPrompt}
+            onSuccess={() => {
+              setUpdatingPrompt(null);
               refetch();
             }}
           />

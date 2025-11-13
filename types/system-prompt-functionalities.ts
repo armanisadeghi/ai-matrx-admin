@@ -144,7 +144,7 @@ export const SYSTEM_FUNCTIONALITIES: Record<string, FunctionalityDefinition> = {
     name: 'Create Flashcards',
     description: 'Generate flashcards from content',
     placementTypes: ['context-menu', 'button'],
-    requiredVariables: ['content'],
+    requiredVariables: ['topic_or_data'],
     examples: ['Make flashcards', 'Study cards']
   },
 
@@ -153,7 +153,7 @@ export const SYSTEM_FUNCTIONALITIES: Record<string, FunctionalityDefinition> = {
     name: 'Create Quiz',
     description: 'Generate quiz questions from content',
     placementTypes: ['context-menu', 'button'],
-    requiredVariables: ['content'],
+    requiredVariables: ['topic_or_data'],
     optionalVariables: ['difficulty', 'question_count'],
     examples: ['Make quiz', 'Test questions']
   },
@@ -209,6 +209,9 @@ export function extractVariablesFromPrompt(promptSnapshot: any): string[] {
 
 /**
  * Validate that a prompt's variables match a functionality's requirements
+ * 
+ * A prompt is valid if it contains ALL required variables.
+ * Extra variables are allowed since they may have default values.
  */
 export function validatePromptForFunctionality(
   promptSnapshot: any,
@@ -225,17 +228,14 @@ export function validatePromptForFunctionality(
   // Check required variables
   const missing = functionality.requiredVariables.filter(v => !variables.includes(v));
   
-  // For custom, allow anything
-  if (functionalityId === 'custom') {
-    return { valid: missing.length === 0, missing, extra: [] };
-  }
-  
-  // Check for extra variables
+  // Calculate extra variables for informational purposes
   const allowed = [...functionality.requiredVariables, ...(functionality.optionalVariables || [])];
   const extra = variables.filter(v => !allowed.includes(v));
   
+  // A prompt is valid if it has ALL required variables
+  // Extra variables are allowed (they may have defaults)
   return {
-    valid: missing.length === 0 && extra.length === 0,
+    valid: missing.length === 0,
     missing,
     extra
   };

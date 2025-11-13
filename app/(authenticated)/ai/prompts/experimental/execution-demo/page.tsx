@@ -5,17 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { 
-  TextAnalyzerExample,
-  PromptModalExample,
-  ContextMenuExample
-} from "@/features/prompts/examples";
 import { PromptImporter } from "@/features/prompts";
-import { PromptExecutionCard } from "@/features/prompts";
-import { MatrxActionsDemo } from "@/features/matrx-actions/examples/MatrxActionsDemo";
 import { DynamicContextMenu, DynamicCards, DynamicButtons } from "@/components/dynamic";
 import { Code2, Sparkles, FileText, Upload, Zap, Grid3x3, Menu, AlertCircle } from "lucide-react";
-import DEMO_PROMPTS from "@/features/prompts/DEMO_PROMPTS.json";
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useSystemPrompts } from '@/hooks/useSystemPrompts';
@@ -24,7 +16,6 @@ export default function PromptExecutionDemoPage() {
   const [isImporterOpen, setIsImporterOpen] = useState(false);
   const { systemPrompts, loading: isLoadingSystemPrompts } = useSystemPrompts({
     is_active: true,
-    status: 'published'
   });
   
   const handleOpenImporter = () => {
@@ -36,10 +27,7 @@ export default function PromptExecutionDemoPage() {
   return items.reduce((sum, item) => sum + item.price, 0);
 }`;
 
-  const exampleTextContext = `The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet at least once. It's commonly used for testing fonts and keyboards.`;
-
-  const sampleContent = `
-Artificial Intelligence and Machine Learning
+  const sampleContent = `Artificial Intelligence and Machine Learning
 
 Artificial Intelligence (AI) has transformed the way we interact with technology. 
 From voice assistants to autonomous vehicles, AI systems are becoming increasingly 
@@ -55,8 +43,7 @@ Key Benefits:
 • Personalized user experiences
 • Improved efficiency and productivity
 
-Try selecting some text and right-clicking to see available actions!
-  `;
+Try selecting some text and right-clicking to see available actions!`;
   
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
@@ -69,10 +56,10 @@ Try selecting some text and right-clicking to see available actions!
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Prompt Execution System Demo
+                  System Prompts Demo
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Live examples of the programmatic prompt execution system
+                  100% database-driven AI prompt system
                 </p>
               </div>
             </div>
@@ -89,7 +76,7 @@ Try selecting some text and right-clicking to see available actions!
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6 space-y-6">
-          {/* System Prompts Overview */}
+          {/* System Overview */}
           <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-purple-200 dark:border-purple-800">
             <div className="flex items-start gap-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600">
@@ -97,15 +84,15 @@ Try selecting some text and right-clicking to see available actions!
               </div>
               <div className="flex-1">
                 <h2 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-2">
-                  System Prompts Manager
+                  Database-Driven System Prompts
                 </h2>
                 <p className="text-sm text-purple-800 dark:text-purple-200 mb-3">
-                  Admins can convert any prompt into a global system prompt that can be triggered throughout the application 
-                  via execution cards, context menus, buttons, and other UI components.
+                  All AI interactions on this page are powered by system prompts stored in the database. 
+                  Admins can create, manage, and assign prompts without touching code.
                 </p>
                 <div className="flex items-center gap-4">
                   <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/50">
-                    {systemPrompts.length} System Prompts Active
+                    {systemPrompts.length} System Prompts Configured
                   </Badge>
                   <Button 
                     variant="outline" 
@@ -121,267 +108,186 @@ Try selecting some text and right-clicking to see available actions!
           </Card>
 
           {/* Demo Tabs */}
-          <Tabs defaultValue="system-prompts" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 max-w-4xl">
-              <TabsTrigger value="system-prompts" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                System Prompts
-              </TabsTrigger>
-              <TabsTrigger value="matrx-actions" className="flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Matrx Actions
-              </TabsTrigger>
-              <TabsTrigger value="text-analyzer" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Text Analyzer
-              </TabsTrigger>
-              <TabsTrigger value="modal" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Modal Demo
+          <Tabs defaultValue="cards" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+              <TabsTrigger value="cards" className="flex items-center gap-2">
+                <Grid3x3 className="h-4 w-4" />
+                Execution Cards
               </TabsTrigger>
               <TabsTrigger value="context-menu" className="flex items-center gap-2">
                 <Menu className="h-4 w-4" />
                 Context Menu
               </TabsTrigger>
+              <TabsTrigger value="buttons" className="flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Action Buttons
+              </TabsTrigger>
             </TabsList>
 
-            {/* System Prompts Tab */}
-            <TabsContent value="system-prompts" className="mt-6">
+            {/* Cards Tab - 100% Database Driven */}
+            <TabsContent value="cards" className="mt-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">System Prompt Execution Cards</h3>
+                  <h3 className="text-lg font-semibold mb-2">Dynamic Execution Cards</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    These cards demonstrate the new system prompts feature. Admins can create these prompts from the 
-                    admin interface and configure them to appear as cards, in context menus, or as buttons throughout the app.
+                    All cards below are loaded from the database. Placeholders show "Coming Soon" until a prompt is assigned.
                   </p>
                 </div>
 
-                {isLoadingSystemPrompts ? (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {[1, 2, 3].map((i) => (
-                      <Card key={i} className="p-6 h-48 animate-pulse bg-muted/50" />
-                    ))}
-                  </div>
-                ) : systemPrompts.length > 0 ? (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {systemPrompts
-                      .filter((sp) => sp.placement_config?.card?.enabled)
-                      .map((systemPrompt) => (
-                        <PromptExecutionCard
-                          key={systemPrompt.id}
-                          systemPrompt={systemPrompt}
-                          title={systemPrompt.display_config?.label || systemPrompt.name}
-                          description={systemPrompt.description || ''}
-                          context={exampleCodeContext}
-                        />
-                      ))}
-                  </div>
-                ) : (
-                  <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/30">
-                    <AlertCircle className="h-4 w-4 text-blue-600" />
-                    <AlertDescription className="text-blue-900 dark:text-blue-100">
-                      <div className="space-y-3">
-                        <p>No active system prompts configured for cards yet.</p>
-                        <div className="text-sm">
-                          <p className="font-semibold mb-2">To create system prompt cards:</p>
-                          <ol className="list-decimal list-inside space-y-1 ml-2">
-                            <li>Go to AI Prompts and create a prompt with variables</li>
-                            <li>Click the admin menu (three dots) on the prompt card</li>
-                            <li>Select "Convert to System Prompt"</li>
-                            <li>Configure the prompt in the System Prompts Manager</li>
-                            <li>Enable "Card" placement and set it as active</li>
-                          </ol>
-                        </div>
-                        <Button 
-                          size="sm"
-                          onClick={() => window.open('/ai/prompts', '_blank')}
-                          className="mt-2"
-                        >
-                          Go to AI Prompts
-                        </Button>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
+                <DynamicCards
+                  context={sampleContent}
+                  category="general"
+                />
 
-                <Separator />
-
-                {/* Example Cards with Hardcoded Data */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Example: Manual Execution Cards</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    These are example cards showing how developers can create custom execution cards 
-                    programmatically by providing a system prompt configuration.
-                  </p>
-                  
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Card className="p-6 space-y-3 hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-gray-300 dark:border-gray-700">
-                      <div className="flex items-start gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600">
-                          <Code2 className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Code Analyzer</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Analyze code for best practices, potential bugs, and improvements
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">Example - Not Active</Badge>
-                    </Card>
-
-                    <Card className="p-6 space-y-3 hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-gray-300 dark:border-gray-700">
-                      <div className="flex items-start gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600">
-                          <FileText className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Content Generator</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Generate high-quality content based on your specifications
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">Example - Not Active</Badge>
-                    </Card>
-
-                    <Card className="p-6 space-y-3 hover:shadow-lg transition-shadow cursor-pointer border-2 border-dashed border-gray-300 dark:border-gray-700">
-                      <div className="flex items-start gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-orange-600 to-red-600">
-                          <Sparkles className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Quick Refactor</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Refactor and optimize your code with AI assistance
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">Example - Not Active</Badge>
-                    </Card>
-                  </div>
-                </div>
+                <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 mt-6">
+                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-900 dark:text-blue-100">
+                    <div className="space-y-2">
+                      <p className="font-semibold">How to add new cards:</p>
+                      <ol className="list-decimal list-inside space-y-1 ml-2 text-sm">
+                        <li>Create a prompt with variables like <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{{title}}'}</code>, <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{{description}}'}</code>, <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">{'{{context}}'}</code></li>
+                        <li>Click "Convert to System Prompt" from the prompt's admin menu</li>
+                        <li>Choose functionality: "Content Expander Card"</li>
+                        <li>Set placement type: "card"</li>
+                        <li>Activate it in the System Prompts Manager</li>
+                      </ol>
+                      <Button 
+                        size="sm"
+                        onClick={() => window.open('/ai/prompts', '_blank')}
+                        className="mt-2"
+                      >
+                        Go to AI Prompts
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
               </div>
             </TabsContent>
 
-            {/* Matrx Actions Tab */}
-            <TabsContent value="matrx-actions" className="mt-6">
-              <div className="space-y-4">
+            {/* Context Menu Tab - 100% Database Driven */}
+            <TabsContent value="context-menu" className="mt-6">
+              <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Database-Driven Context Menus</h3>
+                  <h3 className="text-lg font-semibold mb-2">Dynamic Context Menu</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    All menu items now load from the database. Right-click on the text below to see 
-                    all available actions. Items marked "Coming Soon" are placeholders waiting for prompts.
+                    <strong>Try it:</strong> Select any text below and right-click. All menu options are loaded from the database.
+                    Items marked "Coming Soon" are placeholders waiting for prompts.
                   </p>
                 </div>
                 
-                {/* Database-driven context menu */}
+                {/* Database-driven context menu with text selection */}
                 <Card className="p-6">
                   <DynamicContextMenu
                     uiContext={{
-                      selection: '',
-                      editorContent: exampleCodeContext,
+                      editorContent: sampleContent,
                       currentCode: exampleCodeContext,
                     }}
                   >
-                    <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 min-h-[300px]">
+                    <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 min-h-[400px]">
                       <div className="prose dark:prose-invert max-w-none">
-                        <h4 className="text-lg font-semibold mb-4">Try it: Right-click anywhere!</h4>
+                        <h4 className="text-lg font-semibold mb-4">Interactive Demo Content</h4>
                         <div className="whitespace-pre-line text-sm leading-relaxed select-text">
                           {sampleContent}
+                        </div>
+                        <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded font-mono text-xs">
+                          <div className="text-muted-foreground mb-2">// Example code block</div>
+                          {exampleCodeContext}
                         </div>
                       </div>
                     </div>
                   </DynamicContextMenu>
                 </Card>
 
-                {/* Old demo for comparison */}
-                <details className="mt-6">
-                  <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                    Show old hardcoded demo (for comparison)
-                  </summary>
-                  <div className="mt-4">
-                    <MatrxActionsDemo />
+                <Alert className="border-green-200 bg-green-50 dark:bg-green-950/30">
+                  <AlertCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-900 dark:text-green-100">
+                    <div className="space-y-2">
+                      <p className="font-semibold">Selected text is automatically passed as variables:</p>
+                      <ul className="list-disc list-inside space-y-1 ml-2 text-sm">
+                        <li><code className="bg-green-100 dark:bg-green-900 px-1 rounded">{'{{selection}}'}</code> - The highlighted text</li>
+                        <li><code className="bg-green-100 dark:bg-green-900 px-1 rounded">{'{{text}}'}</code> - Alias for selection</li>
+                        <li><code className="bg-green-100 dark:bg-green-900 px-1 rounded">{'{{content}}'}</code> - Alias for selection</li>
+                        <li><code className="bg-green-100 dark:bg-green-900 px-1 rounded">{'{{editorContent}}'}</code> - Full page content</li>
+                        <li><code className="bg-green-100 dark:bg-green-900 px-1 rounded">{'{{currentCode}}'}</code> - Code context</li>
+                      </ul>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </TabsContent>
+
+            {/* Buttons Tab - 100% Database Driven */}
+            <TabsContent value="buttons" className="mt-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Dynamic Action Buttons</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Buttons loaded from system prompts configured with placement type "button".
+                  </p>
+                </div>
+
+                <Card className="p-6">
+                  <div className="flex flex-col gap-4">
+                    <p className="text-sm text-muted-foreground">
+                      Dynamic buttons configured for "button" placement type:
+                    </p>
+                    <DynamicButtons
+                      uiContext={{
+                        pageContent: sampleContent,
+                        currentCode: exampleCodeContext,
+                      }}
+                      category="general"
+                      className="flex flex-wrap gap-3"
+                    />
                   </div>
-                </details>
-              </div>
-            </TabsContent>
+                </Card>
 
-            {/* Text Analyzer Tab */}
-            <TabsContent value="text-analyzer" className="mt-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Text Analyzer Hook Demo</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Demonstrates using <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">
-                      usePromptExecution
-                    </code> hook with streaming responses
-                  </p>
-                </div>
-                <TextAnalyzerExample />
-              </div>
-            </TabsContent>
-
-            {/* Modal Demo Tab */}
-            <TabsContent value="modal" className="mt-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Universal Modal Demo</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Demonstrates <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">
-                      PromptExecutionModal
-                    </code> with automatic variable detection
-                  </p>
-                </div>
-                <PromptModalExample />
-              </div>
-            </TabsContent>
-
-            {/* Context Menu Tab */}
-            <TabsContent value="context-menu" className="mt-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Context Menu Demo</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Right-click on text to see AI prompt options. System prompts configured for context menus 
-                    will appear dynamically in the menu. Demonstrates <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">
-                      TextSelectionPromptMenu
-                    </code> with multiple grouped actions
-                  </p>
-                </div>
-                <ContextMenuExample />
+                <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-950/30">
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-900 dark:text-orange-100">
+                    <div className="space-y-2">
+                      <p className="font-semibold">How to add action buttons:</p>
+                      <ol className="list-decimal list-inside space-y-1 ml-2 text-sm">
+                        <li>Create a prompt with the variables your button needs</li>
+                        <li>Convert to system prompt and select appropriate functionality</li>
+                        <li>Set placement type to "button"</li>
+                        <li>Configure button style and category</li>
+                        <li>Activate in System Prompts Manager</li>
+                      </ol>
+                    </div>
+                  </AlertDescription>
+                </Alert>
               </div>
             </TabsContent>
           </Tabs>
 
           <Separator className="my-8" />
 
-          {/* Technical Info */}
+          {/* Technical Architecture */}
           <Card className="p-6 border-purple-200 dark:border-purple-800">
-            <h2 className="text-lg font-semibold mb-3">How System Prompts Work</h2>
+            <h2 className="text-lg font-semibold mb-3">System Architecture</h2>
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <div className="font-semibold text-purple-600 dark:text-purple-400">
-                    Core Components
+                    🎯 Core Concepts
                   </div>
                   <ul className="space-y-1 text-sm">
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">SystemPromptsManager</code> - Admin management UI</li>
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">PromptExecutionCard</code> - Clickable card component</li>
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">PromptContextMenu</code> - Dynamic context menu</li>
-                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">useSystemPrompts</code> - Data fetching hook</li>
+                    <li>• <strong>Functionality</strong>: What the prompt does (defined in code)</li>
+                    <li>• <strong>Placement</strong>: Where it appears (cards, menus, buttons)</li>
+                    <li>• <strong>Variables</strong>: Dynamic data injected at runtime</li>
+                    <li>• <strong>Context Resolution</strong>: Smart mapping of UI state to variables</li>
                   </ul>
                 </div>
                 <div className="space-y-2">
                   <div className="font-semibold text-purple-600 dark:text-purple-400">
-                    Key Features
+                    ⚡ Key Components
                   </div>
                   <ul className="space-y-1 text-sm">
-                    <li>• Admin-managed global system prompts</li>
-                    <li>• Dynamic placement configuration (cards, menus, buttons)</li>
-                    <li>• Variable mapping and context passing</li>
-                    <li>• Versioning and update tracking</li>
-                    <li>• Category-based organization</li>
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">DynamicCards</code> - Renders card placements</li>
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">DynamicContextMenu</code> - Renders context menus</li>
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">DynamicButtons</code> - Renders button placements</li>
+                    <li>• <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">PromptContextResolver</code> - Resolves variables</li>
                   </ul>
                 </div>
               </div>
@@ -390,30 +296,48 @@ Try selecting some text and right-clicking to see available actions!
 
               <div className="space-y-2">
                 <div className="font-semibold text-purple-600 dark:text-purple-400">
-                  Admin Workflow
+                  📋 Admin Workflow
                 </div>
-                <ol className="space-y-2 text-sm">
-                  <li className="flex items-start gap-2">
-                    <Badge className="flex-none mt-0.5">1</Badge>
-                    <span>Create a prompt in AI Prompts with variables (e.g., <code>{'{{text}}'}</code>, <code>{'{{code}}'}</code>)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Badge className="flex-none mt-0.5">2</Badge>
-                    <span>Convert to System Prompt via the admin menu</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Badge className="flex-none mt-0.5">3</Badge>
-                    <span>Configure display settings (icon, label, tooltip)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Badge className="flex-none mt-0.5">4</Badge>
-                    <span>Enable placement options (cards, context menus, buttons)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Badge className="flex-none mt-0.5">5</Badge>
-                    <span>Set as active and published to make it available</span>
-                  </li>
-                </ol>
+                <div className="grid gap-3 md:grid-cols-5 text-xs">
+                  <div className="flex items-start gap-2">
+                    <Badge className="flex-none">1</Badge>
+                    <span>Create prompt with <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{'{{variables}}'}</code></span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge className="flex-none">2</Badge>
+                    <span>Convert to system prompt via admin menu</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge className="flex-none">3</Badge>
+                    <span>Select functionality (validates variables)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge className="flex-none">4</Badge>
+                    <span>Choose placement type & category</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge className="flex-none">5</Badge>
+                    <span>Activate in manager - done! 🎉</span>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <div className="font-semibold text-purple-600 dark:text-purple-400">
+                  🔄 Two-Way System
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 text-sm">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+                    <div className="font-semibold mb-1">From Prompts → System</div>
+                    <p className="text-xs">Convert existing prompts into system prompts via the "Convert to System Prompt" button on any prompt card.</p>
+                  </div>
+                  <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+                    <div className="font-semibold mb-1">From System → Prompts</div>
+                    <p className="text-xs">Assign prompts to placeholders via the System Prompts Manager by clicking the link icon on any placeholder row.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </Card>

@@ -182,7 +182,7 @@ export function ConvertToSystemPromptModal({
         return;
       }
       if (functionalityValidation && !functionalityValidation.valid) {
-        setError('Your prompt variables do not match the selected functionality requirements');
+        setError(`Your prompt is missing required variables: ${functionalityValidation.missing.join(', ')}`);
         return;
       }
       setError('');
@@ -514,12 +514,12 @@ export function ConvertToSystemPromptModal({
                                 <p className="font-semibold">Variable mismatch:</p>
                                 {functionalityValidation.missing.length > 0 && (
                                   <p className="text-sm">
-                                    Missing: <code>{functionalityValidation.missing.join(', ')}</code>
+                                    Missing Required: <code>{functionalityValidation.missing.join(', ')}</code>
                                   </p>
                                 )}
                                 {functionalityValidation.extra.length > 0 && (
-                                  <p className="text-sm">
-                                    Extra: <code>{functionalityValidation.extra.join(', ')}</code>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Additional variables (OK if they have defaults): <code>{functionalityValidation.extra.join(', ')}</code>
                                   </p>
                                 )}
                               </div>

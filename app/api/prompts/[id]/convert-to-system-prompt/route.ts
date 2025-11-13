@@ -138,9 +138,12 @@ export async function POST(
             console.error('Validation failed:', validation);
             return NextResponse.json(
                 { 
-                    error: "Prompt variables don't match functionality requirements",
-                    details: `Missing: ${validation.missing.join(', ') || 'none'}. Extra: ${validation.extra.join(', ') || 'none'}`,
-                    validation
+                    error: "Prompt missing required variables",
+                    details: `Missing required variables: ${validation.missing.join(', ')}. Note: Extra variables are allowed (may have defaults).`,
+                    validation: {
+                        ...validation,
+                        note: "Extra variables are allowed as long as all required variables are present"
+                    }
                 },
                 { status: 400 }
             );

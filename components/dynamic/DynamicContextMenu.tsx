@@ -56,6 +56,14 @@ export function DynamicContextMenu({
   const { systemPrompts, loading } = useContextMenuPrompts(category, subcategory);
   const { execute, isExecuting } = usePromptExecution();
   const [executingId, setExecutingId] = React.useState<string | null>(null);
+  const [selectedText, setSelectedText] = React.useState<string>('');
+
+  // Capture selected text when context menu opens
+  const handleContextMenu = (e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    const text = selection?.toString().trim() || '';
+    setSelectedText(text);
+  };
 
   // Group prompts by category and subcategory
   const groupedPrompts = useMemo(() => {
@@ -101,12 +109,20 @@ export function DynamicContextMenu({
     try {
       setExecutingId(systemPrompt.id);
 
+      // Merge selected text with UI context
+      const contextWithSelection = {
+        ...uiContext,
+        selection: selectedText,
+        text: selectedText,
+        content: selectedText,
+      };
+
       // Resolve variables using the CODE
       const variables = PromptContextResolver.resolve(
         systemPrompt.prompt_snapshot,
         systemPrompt.functionality_id,
         'context-menu',
-        uiContext
+        contextWithSelection
       );
 
       // Check if can resolve
@@ -114,7 +130,7 @@ export function DynamicContextMenu({
         systemPrompt.prompt_snapshot,
         systemPrompt.functionality_id,
         'context-menu',
-        uiContext
+        contextWithSelection
       );
 
       if (!canResolve.canResolve) {
@@ -143,14 +159,14 @@ export function DynamicContextMenu({
     }
 
     // If requires selection but none available
-    if (settings.requiresSelection && !uiContext.selection) {
+    if (settings.requiresSelection && !selectedText) {
       return true; // disabled
     }
 
     // If requires minimum selection length
     if (
       settings.minSelectionLength &&
-      (!uiContext.selection || uiContext.selection.length < settings.minSelectionLength)
+      (!selectedText || selectedText.length < settings.minSelectionLength)
     ) {
       return true; // disabled
     }
@@ -186,7 +202,9 @@ export function DynamicContextMenu({
   if (loading) {
     return (
       <ContextMenu>
-        <ContextMenuTrigger className={className}>{children}</ContextMenuTrigger>
+        <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
+          {children}
+        </ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuItem disabled>
             <Loader2 className="h-3 w-3 animate-spin mr-2" />
@@ -200,7 +218,9 @@ export function DynamicContextMenu({
   if (systemPrompts.length === 0) {
     return (
       <ContextMenu>
-        <ContextMenuTrigger className={className}>{children}</ContextMenuTrigger>
+        <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
+          {children}
+        </ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuItem disabled>No actions available</ContextMenuItem>
         </ContextMenuContent>
@@ -210,7 +230,9 @@ export function DynamicContextMenu({
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger className={className}>{children}</ContextMenuTrigger>
+      <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
+        {children}
+      </ContextMenuTrigger>
       <ContextMenuContent className="w-64">
         {Object.entries(groupedPrompts).map(([categoryKey, categoryData], index) => {
           const hasSubcategories =
