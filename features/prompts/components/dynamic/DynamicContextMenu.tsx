@@ -8,7 +8,7 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/context-menu';
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
-import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
+import { PromptRunnerModal } from '@/features/prompts/components/modal/PromptRunnerModal';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -54,12 +54,25 @@ export function DynamicContextMenu({
   className,
 }: DynamicContextMenuProps) {
   const { systemPrompts, loading } = useContextMenuPrompts(category, subcategory);
-  const { execute, isExecuting } = usePromptExecution();
-  const [executingId, setExecutingId] = React.useState<string | null>(null);
-  const [selectedText, setSelectedText] = React.useState<string>('');
+  const [executingId, setExecutingId] = useState<string | null>(null);
+  const [selectedText, setSelectedText] = useState<string>('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState<any>(null);
 
-  // Capture selected text when context menu opens
+  // Track selected text on selection change
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      const text = selection?.toString().trim() || '';
+      setSelectedText(text);
+    };
+
+    document.addEventListener('selectionchange', handleSelection);
+    return () => document.removeEventListener('selectionchange', handleSelection);
+  }, []);
+
   const handleContextMenu = (e: React.MouseEvent) => {
+    // Capture text on context menu open
     const selection = window.getSelection();
     const text = selection?.toString().trim() || '';
     setSelectedText(text);
@@ -101,21 +114,30 @@ export function DynamicContextMenu({
   }, [systemPrompts]);
 
   const handleActionTrigger = async (systemPrompt: any) => {
+    console.log('[DynamicContextMenu] Action triggered:', systemPrompt.name);
+    
     // Check if placeholder
     if (systemPrompt.prompt_snapshot?.placeholder) {
+      console.log('[DynamicContextMenu] Skipping placeholder:', systemPrompt.name);
       return; // Disabled
     }
 
     try {
-      setExecutingId(systemPrompt.id);
-
       // Merge selected text with UI context
       const contextWithSelection = {
         ...uiContext,
         selection: selectedText,
         text: selectedText,
         content: selectedText,
+        selected_text: selectedText,
+        content_to_explain: selectedText,
+        current_code: selectedText,
       };
+
+      console.log('[DynamicContextMenu] Context with selection:', {
+        selectedTextLength: selectedText.length,
+        contextKeys: Object.keys(contextWithSelection),
+      });
 
       // Resolve variables using the CODE
       const variables = PromptContextResolver.resolve(
@@ -125,6 +147,8 @@ export function DynamicContextMenu({
         contextWithSelection
       );
 
+      console.log('[DynamicContextMenu] Resolved variables:', variables);
+
       // Check if can resolve
       const canResolve = PromptContextResolver.canResolve(
         systemPrompt.prompt_snapshot,
@@ -133,20 +157,41 @@ export function DynamicContextMenu({
         contextWithSelection
       );
 
+      console.log('[DynamicContextMenu] Can resolve check:', canResolve);
+
       if (!canResolve.canResolve) {
-        console.warn(`Cannot resolve variables for ${systemPrompt.name}:`, canResolve.missingVariables);
+        console.warn(`[DynamicContextMenu] Cannot resolve variables for ${systemPrompt.name}:`, canResolve.missingVariables);
+        alert(`Cannot execute: Missing variables - ${canResolve.missingVariables.join(', ')}`);
         return;
       }
 
-      // Execute with resolved variables
-      await execute({
+      // Get placement settings
+      const settings = systemPrompt.placement_settings || {};
+      const allowChat = settings.allowChat ?? true;
+      const allowInitialMessage = settings.allowInitialMessage ?? false;
+
+      console.log('[DynamicContextMenu] Opening modal with config:', {
+        title: systemPrompt.name,
+        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+        variableCount: Object.keys(variables).length,
+      });
+
+      // Open modal with the prompt
+      const config = {
         promptData: systemPrompt.prompt_snapshot,
         variables,
-      });
+        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+        title: systemPrompt.name,
+        initialMessage: allowInitialMessage ? undefined : '',
+      };
+      
+      setModalConfig(config);
+      setModalOpen(true);
+      
+      console.log('[DynamicContextMenu] Modal state set - modalOpen should be true');
     } catch (error) {
-      console.error('Error executing system prompt:', error);
-    } finally {
-      setExecutingId(null);
+      console.error('[DynamicContextMenu] Error executing system prompt:', error);
+      alert(`Error: ${error.message}`);
     }
   };
 
@@ -229,11 +274,12 @@ export function DynamicContextMenu({
   }
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
-        {children}
-      </ContextMenuTrigger>
-      <ContextMenuContent className="w-64">
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
+          {children}
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-64">
         {Object.entries(groupedPrompts).map(([categoryKey, categoryData], index) => {
           const hasSubcategories =
             categoryData.subcategories && Object.keys(categoryData.subcategories).length > 0;
@@ -313,6 +359,24 @@ export function DynamicContextMenu({
         })}
       </ContextMenuContent>
     </ContextMenu>
+
+    {/* Modal for execution */}
+    {modalOpen && modalConfig ? (
+      <PromptRunnerModal
+        isOpen={modalOpen}
+        onClose={() => {
+          console.log('[DynamicContextMenu] Closing modal');
+          setModalOpen(false);
+          setModalConfig(null);
+        }}
+        promptData={modalConfig.promptData}
+        variables={modalConfig.variables}
+        mode={modalConfig.mode}
+        title={modalConfig.title}
+        initialMessage={modalConfig.initialMessage}
+      />
+    ) : null}
+  </>
   );
 }
 

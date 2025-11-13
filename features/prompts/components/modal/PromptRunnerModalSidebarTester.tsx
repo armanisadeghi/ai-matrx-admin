@@ -21,7 +21,7 @@ interface PromptRunnerModalSidebarTesterProps {
  * Compact sidebar testing component for PromptRunnerModal
  * Fits in the PromptRunsSidebar footer
  */
-export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModalSidebarTesterProps) {
+export function usePromptRunnerModalSidebarTester({ promptData }: PromptRunnerModalSidebarTesterProps) {
     const promptModal = usePromptRunnerModal();
     const [isOpen, setIsOpen] = useState(false);
     
