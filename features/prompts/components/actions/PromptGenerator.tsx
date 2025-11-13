@@ -23,6 +23,8 @@ import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/Enh
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { useRouter } from 'next/navigation';
 import { VoiceInputButton } from '@/features/audio';
+import { PromptJsonDisplay } from './PromptJsonDisplay';
+import { extractNonJsonContent } from './progressive-json-parser';
 
 interface PromptGeneratorProps {
   isOpen: boolean;
@@ -395,12 +397,11 @@ export function PromptGenerator({
                     <Loader2 className="h-4 w-4 animate-spin text-purple-600 dark:text-purple-400" />
                     <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Generating your prompt...</span>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-2">
+                  <div className="flex-1 overflow-y-auto p-3">
                     {streamingText ? (
-                      <EnhancedChatMarkdown
+                      <StreamingResponseDisplay
                         content={streamingText}
                         isStreamActive={true}
-                        hideCopyButton={true}
                       />
                     ) : null}
                   </div>
@@ -427,11 +428,10 @@ export function PromptGenerator({
                   )}
                   
                   {/* Simple clean display of the response */}
-                  <div className="flex-1 overflow-y-auto p-2">
-                    <EnhancedChatMarkdown
+                  <div className="flex-1 overflow-y-auto p-3">
+                    <StreamingResponseDisplay
                       content={streamingText}
                       isStreamActive={false}
-                      hideCopyButton={false}
                     />
                   </div>
                 </div>
@@ -532,6 +532,65 @@ export function PromptGenerator({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * StreamingResponseDisplay Component
+ * 
+ * Splits the response into markdown and JSON sections
+ * Renders markdown normally and JSON with the special display
+ */
+function StreamingResponseDisplay({
+  content,
+  isStreamActive,
+}: {
+  content: string;
+  isStreamActive: boolean;
+}) {
+  // Check if content contains a JSON block
+  const hasJsonBlock = content.includes('```json');
+  
+  if (!hasJsonBlock) {
+    // No JSON block, render as normal markdown
+    return (
+      <EnhancedChatMarkdown
+        content={content}
+        isStreamActive={isStreamActive}
+        hideCopyButton={true}
+      />
+    );
+  }
+  
+  // Split content into before/after JSON
+  const { before, after } = extractNonJsonContent(content);
+  
+  return (
+    <div className="space-y-4">
+      {/* Before JSON content */}
+      {before && (
+        <EnhancedChatMarkdown
+          content={before}
+          isStreamActive={false}
+          hideCopyButton={true}
+        />
+      )}
+      
+      {/* JSON Display */}
+      <PromptJsonDisplay
+        content={content}
+        isStreamActive={isStreamActive}
+      />
+      
+      {/* After JSON content */}
+      {after && (
+        <EnhancedChatMarkdown
+          content={after}
+          isStreamActive={false}
+          hideCopyButton={true}
+        />
+      )}
+    </div>
   );
 }
 
