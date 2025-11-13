@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PromptImporter } from "@/features/prompts";
 import { DynamicContextMenu, DynamicCards, DynamicButtons } from "@/features/prompts/components/dynamic";
+import { UnifiedContextMenu } from "@/components/unified";
 import { FileText, Zap, Grid3x3, Menu } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 
@@ -132,17 +133,17 @@ The Persian Empire was one of the largest empires in the ancient world, demonstr
             <TabsContent value="text-editor" className="space-y-4 mt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold">Editable Text Area</h3>
+                  <h3 className="text-lg font-semibold">Unified Context Menu (NEW!)</h3>
                   <p className="text-sm text-muted-foreground">
-                    Select text and right-click for AI actions with Replace/Insert options
+                    Right-click for Content Blocks, AI Tools, and Quick Actions - all in one menu
                   </p>
                 </div>
-                <Badge className="bg-green-600">
-                  Replace/Insert Enabled ✓
+                <Badge className="bg-gradient-to-r from-purple-600 to-blue-600">
+                  3-in-1 Menu ✓
                 </Badge>
               </div>
 
-              <DynamicContextMenu
+              <UnifiedContextMenu
                 uiContext={{
                   fullContent: textareaContent,
                   context: textareaContent,
@@ -213,7 +214,7 @@ The Persian Empire was one of the largest empires in the ancient world, demonstr
                     spellCheck={false}
                   />
                 </Card>
-              </DynamicContextMenu>
+              </UnifiedContextMenu>
             </TabsContent>
 
             {/* Cards Demo */}

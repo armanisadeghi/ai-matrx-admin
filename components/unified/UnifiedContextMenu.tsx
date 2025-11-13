@@ -1,0 +1,492 @@
+/**
+ * UnifiedContextMenu
+ * 
+ * App-wide context menu that combines:
+ * - Content Blocks (insert templates)
+ * - AI Tools (system prompts for text manipulation)
+ * - Quick Actions (notes, tasks, chat, data, files)
+ * 
+ * Use this anywhere text is displayed or editable.
+ */
+
+'use client';
+
+import React, { useState } from 'react';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+  ContextMenuLabel,
+} from '@/components/ui/context-menu';
+import {
+  StickyNote,
+  CheckSquare,
+  MessageSquare,
+  Database,
+  FolderOpen,
+  Sparkles,
+  FileText,
+  Zap,
+} from 'lucide-react';
+import { useContentBlocks } from '@/hooks/useContentBlocks';
+import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
+import { DynamicContextMenuSection } from '@/features/rich-text-editor/components/DynamicContextMenuSection';
+import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
+import { PromptRunnerModal } from '@/features/prompts/components/modal/PromptRunnerModal';
+import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
+import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
+import { useAppSelector } from '@/lib/redux';
+import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
+import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
+import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
+import { QuickNotesSheet } from '@/features/notes';
+import { QuickTasksSheet } from '@/features/tasks';
+import { QuickChatSheet } from '@/features/quick-actions/components/QuickChatSheet';
+import { QuickDataSheet } from '@/features/quick-actions/components/QuickDataSheet';
+import { QuickFilesSheet } from '@/features/quick-actions/components/QuickFilesSheet';
+import contentBlocksConfig from '@/config/content-blocks';
+import { ContentBlock } from '@/features/rich-text-editor/config/contentBlocks';
+
+interface UnifiedContextMenuProps {
+  children: React.ReactNode;
+  /** For rich text editors: provide editor ID */
+  editorId?: string;
+  /** For textareas: provide getter function */
+  getTextarea?: () => HTMLTextAreaElement | null;
+  /** For both: UI context for AI tools */
+  uiContext?: UIContext;
+  /** Callback after content block inserted */
+  onContentInserted?: () => void;
+  /** For text editors: text replacement callbacks */
+  onTextReplace?: (newText: string) => void;
+  onTextInsertBefore?: (text: string) => void;
+  onTextInsertAfter?: (text: string) => void;
+  /** Is this wrapping an editable element? */
+  isEditable?: boolean;
+  /** Enable/disable specific sections */
+  enableContentBlocks?: boolean;
+  enableAITools?: boolean;
+  enableQuickActions?: boolean;
+  className?: string;
+}
+
+export function UnifiedContextMenu({
+  children,
+  editorId,
+  getTextarea,
+  uiContext = {},
+  onContentInserted,
+  onTextReplace,
+  onTextInsertBefore,
+  onTextInsertAfter,
+  isEditable = false,
+  enableContentBlocks = true,
+  enableAITools = true,
+  enableQuickActions = true,
+  className,
+}: UnifiedContextMenuProps) {
+  // Content Blocks state
+  const { contentBlocks, categoryConfigs, loading: loadingBlocks } = useContentBlocks({
+    useDatabase: contentBlocksConfig.useDatabase,
+    autoRefresh: contentBlocksConfig.useDatabase,
+  });
+
+  // AI Tools state
+  const { systemPrompts, loading: loadingAITools } = useContextMenuPrompts();
+  const [selectedText, setSelectedText] = useState<string>('');
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState<any>(null);
+  const [textResultModalOpen, setTextResultModalOpen] = useState(false);
+  const [textResultData, setTextResultData] = useState<{ original: string; result: string; promptName: string } | null>(null);
+  const isDebugMode = useAppSelector(selectIsDebugMode);
+  const { execute, streamingText } = usePromptExecution();
+  const [debugModalOpen, setDebugModalOpen] = useState(false);
+  const [debugData, setDebugData] = useState<any>(null);
+
+  // Quick Actions state
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isTasksOpen, setIsTasksOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDataOpen, setIsDataOpen] = useState(false);
+  const [isFilesOpen, setIsFilesOpen] = useState(false);
+
+  // Track selection
+  React.useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      const text = selection?.toString().trim() || '';
+      setSelectedText(text);
+    };
+
+    document.addEventListener('selectionchange', handleSelection);
+    return () => document.removeEventListener('selectionchange', handleSelection);
+  }, []);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    const text = selection?.toString().trim() || '';
+
+    const target = e.target as HTMLElement;
+    let start = 0;
+    let end = 0;
+    let element: HTMLElement | null = null;
+
+    if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
+      start = target.selectionStart || 0;
+      end = target.selectionEnd || 0;
+      element = target;
+    } else {
+      const range = selection?.getRangeAt(0);
+      if (range) {
+        start = range.startOffset;
+        end = range.endOffset;
+        element = target;
+      }
+    }
+
+    setSelectedText(text);
+    setSelectionRange({ start, end, element });
+  };
+
+  // Content Blocks handlers
+  const handleInsertBlock = (block: ContentBlock) => {
+    if (editorId) {
+      // Use editor insertion
+      const { insertTextAtCursor } = require('@/features/rich-text-editor/utils/insertTextUtils');
+      const success = insertTextAtCursor(editorId, block.template);
+      if (success) onContentInserted?.();
+    } else if (getTextarea) {
+      // Use textarea insertion
+      const { insertTextAtTextareaCursor } = require('@/features/prompts/utils/textareaInsertUtils');
+      const textarea = getTextarea();
+      if (textarea) {
+        const success = insertTextAtTextareaCursor(textarea, block.template);
+        if (success) onContentInserted?.();
+      }
+    }
+  };
+
+  // AI Tools handlers
+  const handleAIToolTrigger = async (systemPrompt: any) => {
+    if (systemPrompt.prompt_snapshot?.placeholder) return;
+
+    try {
+      const contextWithSelection = {
+        ...uiContext,
+        selection: selectedText,
+        text: selectedText,
+        content: selectedText,
+        selected_text: selectedText,
+        content_to_explain: selectedText,
+        current_code: selectedText,
+      };
+
+      const variables = PromptContextResolver.resolve(
+        systemPrompt.prompt_snapshot,
+        systemPrompt.functionality_id,
+        'context-menu',
+        contextWithSelection
+      );
+
+      const canResolve = PromptContextResolver.canResolve(
+        systemPrompt.prompt_snapshot,
+        systemPrompt.functionality_id,
+        'context-menu',
+        contextWithSelection
+      );
+
+      if (isDebugMode) {
+        setDebugData({
+          systemPromptName: systemPrompt.name,
+          functionalityId: systemPrompt.functionality_id,
+          placementType: 'context-menu',
+          uiContext: contextWithSelection,
+          resolvedVariables: variables,
+          canResolve,
+          promptSnapshot: systemPrompt.prompt_snapshot,
+          selectedText,
+        });
+        setDebugModalOpen(true);
+      }
+
+      if (!canResolve.canResolve) {
+        alert(`Cannot execute: Missing variables - ${canResolve.missingVariables.join(', ')}`);
+        return;
+      }
+
+      const settings = systemPrompt.placement_settings || {};
+      const allowChat = settings.allowChat ?? true;
+      const allowInitialMessage = settings.allowInitialMessage ?? false;
+
+      // If editable with replace/insert callbacks, use text result modal
+      if (isEditable && (onTextReplace || onTextInsertBefore || onTextInsertAfter) && selectedText) {
+        const result = await execute({
+          promptId: systemPrompt.source_prompt_id,
+          promptData: !systemPrompt.source_prompt_id ? systemPrompt.prompt_snapshot : undefined,
+          variables,
+        });
+
+        setTextResultData({
+          original: selectedText,
+          result: 'Processing...',
+          promptName: systemPrompt.name,
+        });
+        setTextResultModalOpen(true);
+      } else {
+        // Regular modal with chat
+        const config = systemPrompt.source_prompt_id ? {
+          promptId: systemPrompt.source_prompt_id,
+          variables,
+          mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+          title: systemPrompt.name,
+          initialMessage: allowInitialMessage ? undefined : '',
+        } : {
+          promptData: systemPrompt.prompt_snapshot,
+          variables,
+          mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+          title: systemPrompt.name,
+          initialMessage: allowInitialMessage ? undefined : '',
+        };
+
+        setModalConfig(config);
+        setModalOpen(true);
+      }
+    } catch (error) {
+      console.error('[UnifiedContextMenu] Error executing AI tool:', error);
+      alert(`Error: ${(error as Error).message}`);
+    }
+  };
+
+  // Group AI Tools by category
+  const groupedAITools = React.useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    systemPrompts.forEach((prompt) => {
+      const cat = prompt.category || 'other';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(prompt);
+    });
+    return groups;
+  }, [systemPrompts]);
+
+  return (
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger asChild onContextMenu={handleContextMenu}>
+          {children}
+        </ContextMenuTrigger>
+
+        <ContextMenuContent className={`w-64 ${className}`}>
+          {/* Content Blocks Section */}
+          {enableContentBlocks && (
+            <>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Content Blocks
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent className="w-64">
+                  {loadingBlocks ? (
+                    <ContextMenuLabel className="text-xs text-muted-foreground">Loading...</ContextMenuLabel>
+                  ) : (
+                    <>
+                      {categoryConfigs.map((category) => (
+                        <DynamicContextMenuSection
+                          key={category.id}
+                          category={category}
+                          onBlockSelect={handleInsertBlock}
+                        />
+                      ))}
+                    </>
+                  )}
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+              <ContextMenuSeparator />
+            </>
+          )}
+
+          {/* AI Tools Section */}
+          {enableAITools && (
+            <>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Tools
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent className="w-64">
+                  {loadingAITools ? (
+                    <ContextMenuLabel className="text-xs text-muted-foreground">Loading...</ContextMenuLabel>
+                  ) : systemPrompts.length === 0 ? (
+                    <ContextMenuLabel className="text-xs text-muted-foreground">No AI tools available</ContextMenuLabel>
+                  ) : (
+                    <>
+                      {Object.entries(groupedAITools).map(([categoryName, prompts]) => (
+                        <React.Fragment key={categoryName}>
+                          <ContextMenuLabel className="text-xs text-muted-foreground">
+                            {categoryName.charAt(0).toUpperCase() + categoryName.slice(1).replace('-', ' ')}
+                          </ContextMenuLabel>
+                          {prompts.map((prompt) => (
+                            <ContextMenuItem
+                              key={prompt.id}
+                              onSelect={() => handleAIToolTrigger(prompt)}
+                              disabled={prompt.prompt_snapshot?.placeholder || !prompt.is_active}
+                            >
+                              {prompt.display_config?.label || prompt.name}
+                              {prompt.prompt_snapshot?.placeholder && (
+                                <span className="ml-auto text-xs text-muted-foreground">Coming Soon</span>
+                              )}
+                            </ContextMenuItem>
+                          ))}
+                          <ContextMenuSeparator />
+                        </React.Fragment>
+                      ))}
+                    </>
+                  )}
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+              <ContextMenuSeparator />
+            </>
+          )}
+
+          {/* Quick Actions Section */}
+          {enableQuickActions && (
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>
+                <Zap className="h-4 w-4 mr-2" />
+                Quick Actions
+              </ContextMenuSubTrigger>
+              <ContextMenuSubContent className="w-56">
+                <ContextMenuItem onSelect={() => setIsNotesOpen(true)}>
+                  <StickyNote className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Notes</span>
+                    <span className="text-xs text-muted-foreground">Quick capture</span>
+                  </div>
+                </ContextMenuItem>
+
+                <ContextMenuItem onSelect={() => setIsTasksOpen(true)}>
+                  <CheckSquare className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Tasks</span>
+                    <span className="text-xs text-muted-foreground">Manage tasks</span>
+                  </div>
+                </ContextMenuItem>
+
+                <ContextMenuItem onSelect={() => setIsChatOpen(true)}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Chat</span>
+                    <span className="text-xs text-muted-foreground">AI assistant</span>
+                  </div>
+                </ContextMenuItem>
+
+                <ContextMenuItem onSelect={() => setIsDataOpen(true)}>
+                  <Database className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Data</span>
+                    <span className="text-xs text-muted-foreground">View tables</span>
+                  </div>
+                </ContextMenuItem>
+
+                <ContextMenuItem onSelect={() => setIsFilesOpen(true)}>
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Files</span>
+                    <span className="text-xs text-muted-foreground">Browse files</span>
+                  </div>
+                </ContextMenuItem>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
+
+      {/* Modals for AI Tools */}
+      {modalOpen && modalConfig && (
+        <PromptRunnerModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setModalConfig(null);
+            setSelectionRange(null);
+            setSelectedText('');
+          }}
+          promptId={modalConfig.promptId}
+          promptData={modalConfig.promptData}
+          variables={modalConfig.variables}
+          mode={modalConfig.mode}
+          title={modalConfig.title}
+          initialMessage={modalConfig.initialMessage}
+        />
+      )}
+
+      {isDebugMode && (
+        <SystemPromptDebugModal
+          isOpen={debugModalOpen}
+          onClose={() => setDebugModalOpen(false)}
+          debugData={debugData}
+        />
+      )}
+
+      {textResultModalOpen && textResultData && (
+        <TextActionResultModal
+          isOpen={textResultModalOpen}
+          onClose={() => {
+            setTextResultModalOpen(false);
+            setTextResultData(null);
+            setSelectionRange(null);
+            setSelectedText('');
+          }}
+          originalText={textResultData.original}
+          aiResponse={streamingText || textResultData.result}
+          promptName={textResultData.promptName}
+          onReplace={(newText) => {
+            onTextReplace?.(newText);
+            setSelectionRange(null);
+            setSelectedText('');
+            setTextResultModalOpen(false);
+          }}
+          onInsertBefore={(text) => {
+            onTextInsertBefore?.(text);
+            setSelectionRange(null);
+            setSelectedText('');
+            setTextResultModalOpen(false);
+          }}
+          onInsertAfter={(text) => {
+            onTextInsertAfter?.(text);
+            setSelectionRange(null);
+            setSelectedText('');
+            setTextResultModalOpen(false);
+          }}
+        />
+      )}
+
+      {/* Floating Sheets for Quick Actions */}
+      <FloatingSheet isOpen={isNotesOpen} onClose={() => setIsNotesOpen(false)} title="Quick Notes" position="right" width="xl" height="full">
+        <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
+      </FloatingSheet>
+
+      <FloatingSheet isOpen={isTasksOpen} onClose={() => setIsTasksOpen(false)} title="Quick Tasks" position="right" width="xl" height="full">
+        <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
+      </FloatingSheet>
+
+      <FloatingSheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
+        <QuickChatSheet onClose={() => setIsChatOpen(false)} />
+      </FloatingSheet>
+
+      <FloatingSheet isOpen={isDataOpen} onClose={() => setIsDataOpen(false)} title="Data Tables" position="right" width="xl" height="full">
+        <QuickDataSheet onClose={() => setIsDataOpen(false)} />
+      </FloatingSheet>
+
+      <FloatingSheet isOpen={isFilesOpen} onClose={() => setIsFilesOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
+        <QuickFilesSheet onClose={() => setIsFilesOpen(false)} />
+      </FloatingSheet>
+    </>
+  );
+}
+

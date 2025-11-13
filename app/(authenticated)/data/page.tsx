@@ -27,8 +27,7 @@ export default function UserGeneratedDataPage() {
     <div className="w-full h-page bg-gray-100 dark:bg-gray-900 p-4 rounded-lg space-y-4 overflow-y-auto scrollbar-none">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Your Data Tables</h1>
-          <p className="text-gray-500 dark:text-gray-400">View and manage your data tables</p>
+          <h1 className="text-2xl font-bold">Data Tables</h1>
         </div>
         <div className="flex space-x-2">
           <Button 
@@ -37,7 +36,7 @@ export default function UserGeneratedDataPage() {
             className="flex items-center bg-textured text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700"
           >
             <FcTemplate className="h-4 w-4 mr-2" />
-            Create From Template
+            Templates
           </Button>
           <Button 
             variant="outline"
@@ -45,14 +44,14 @@ export default function UserGeneratedDataPage() {
             className="flex items-center bg-textured text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Import CSV/Excel
+            Import/Paste
           </Button>
           <Button 
             onClick={() => setIsCreateModalOpen(true)}
             className="flex items-center bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Create Table
+            Create
           </Button>
         </div>
       </div>

@@ -20,6 +20,7 @@ import { useAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import { UnifiedContextMenu } from '@/components/unified';
 
 // Dynamic import for TUI editor (only loads when needed)
 const TuiEditorContent = dynamic(
@@ -51,6 +52,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
     const [localLabel, setLocalLabel] = useState(note?.label || '');
     const [editorMode, setEditorMode] = useState<EditorMode>('plain');
     const tuiEditorRef = useRef<any>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const toast = useToastManager('notes');
     
@@ -420,54 +422,189 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
             {/* Editor Area */}
             <div className="flex-1 relative overflow-hidden bg-textured">
 
-                {/* Editor Content */}
+                {/* Editor Content with Unified Context Menu */}
                 {editorMode === 'plain' && (
-                    <Textarea
-                        value={localContent}
-                        onChange={(e) => handleContentChange(e.target.value)}
-                        placeholder="Start typing your note..."
-                        className="absolute inset-0 w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3"
-                    />
+                    <UnifiedContextMenu
+                        getTextarea={() => textareaRef.current}
+                        uiContext={{
+                            context: localContent,
+                            editorContent: localContent,
+                            fullContent: localContent,
+                        }}
+                        isEditable={true}
+                        onTextReplace={(newText) => {
+                            const textarea = textareaRef.current;
+                            if (textarea) {
+                                const start = textarea.selectionStart;
+                                const end = textarea.selectionEnd;
+                                const before = localContent.substring(0, start);
+                                const after = localContent.substring(end);
+                                const updatedContent = before + newText + after;
+                                handleContentChange(updatedContent);
+                                
+                                // Restore focus and select replaced text
+                                setTimeout(() => {
+                                    textarea.focus();
+                                    textarea.setSelectionRange(start, start + newText.length);
+                                }, 0);
+                            }
+                        }}
+                        onTextInsertBefore={(text) => {
+                            const textarea = textareaRef.current;
+                            if (textarea) {
+                                const start = textarea.selectionStart;
+                                const before = localContent.substring(0, start);
+                                const after = localContent.substring(start);
+                                const insertText = text + '\n\n';
+                                handleContentChange(before + insertText + after);
+                                
+                                setTimeout(() => {
+                                    textarea.focus();
+                                    textarea.setSelectionRange(start + insertText.length, start + insertText.length);
+                                }, 0);
+                            }
+                        }}
+                        onTextInsertAfter={(text) => {
+                            const textarea = textareaRef.current;
+                            if (textarea) {
+                                const end = textarea.selectionEnd;
+                                const before = localContent.substring(0, end);
+                                const after = localContent.substring(end);
+                                const insertText = '\n\n' + text;
+                                handleContentChange(before + insertText + after);
+                                
+                                setTimeout(() => {
+                                    textarea.focus();
+                                    textarea.setSelectionRange(end + insertText.length, end + insertText.length);
+                                }, 0);
+                            }
+                        }}
+                        onContentInserted={() => {
+                            // Content block was inserted - already handled by content change
+                        }}
+                    >
+                        <Textarea
+                            ref={textareaRef}
+                            value={localContent}
+                            onChange={(e) => handleContentChange(e.target.value)}
+                            placeholder="Start typing your note..."
+                            className="absolute inset-0 w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3"
+                        />
+                    </UnifiedContextMenu>
                 )}
 
                 {editorMode === 'wysiwyg' && (
-                    <div className="absolute inset-0 w-full h-full">
-                        <TuiEditorContent
-                            ref={tuiEditorRef}
-                            content={localContent}
-                            onChange={handleTuiChange}
-                            isActive={true}
-                            editMode="wysiwyg"
-                            className="w-full h-full"
-                        />
-                    </div>
+                    <UnifiedContextMenu
+                        uiContext={{
+                            context: localContent,
+                            editorContent: localContent,
+                            fullContent: localContent,
+                        }}
+                        isEditable={true}
+                        onTextReplace={(newText) => {
+                            if (tuiEditorRef.current?.getInstance) {
+                                const editor = tuiEditorRef.current.getInstance();
+                                const range = editor.getSelection();
+                                editor.replaceSelection(newText);
+                            }
+                        }}
+                        onTextInsertBefore={(text) => {
+                            if (tuiEditorRef.current?.getInstance) {
+                                const editor = tuiEditorRef.current.getInstance();
+                                editor.insertText(text + '\n\n');
+                            }
+                        }}
+                        onTextInsertAfter={(text) => {
+                            if (tuiEditorRef.current?.getInstance) {
+                                const editor = tuiEditorRef.current.getInstance();
+                                const currentContent = tuiEditorRef.current.getCurrentMarkdown();
+                                handleTuiChange(currentContent + '\n\n' + text);
+                            }
+                        }}
+                        onContentInserted={() => {
+                            // Content block inserted via TUI editor
+                        }}
+                    >
+                        <div className="absolute inset-0 w-full h-full">
+                            <TuiEditorContent
+                                ref={tuiEditorRef}
+                                content={localContent}
+                                onChange={handleTuiChange}
+                                isActive={true}
+                                editMode="wysiwyg"
+                                className="w-full h-full"
+                            />
+                        </div>
+                    </UnifiedContextMenu>
                 )}
 
                 {editorMode === 'markdown' && (
-                    <div className="absolute inset-0 w-full h-full">
-                        <TuiEditorContent
-                            ref={tuiEditorRef}
-                            content={localContent}
-                            onChange={handleTuiChange}
-                            isActive={true}
-                            editMode="markdown"
-                            className="w-full h-full"
-                        />
-                    </div>
+                    <UnifiedContextMenu
+                        uiContext={{
+                            context: localContent,
+                            editorContent: localContent,
+                            fullContent: localContent,
+                        }}
+                        isEditable={true}
+                        onTextReplace={(newText) => {
+                            if (tuiEditorRef.current?.getInstance) {
+                                const editor = tuiEditorRef.current.getInstance();
+                                editor.replaceSelection(newText);
+                            }
+                        }}
+                        onTextInsertBefore={(text) => {
+                            if (tuiEditorRef.current?.getInstance) {
+                                const editor = tuiEditorRef.current.getInstance();
+                                editor.insertText(text + '\n\n');
+                            }
+                        }}
+                        onTextInsertAfter={(text) => {
+                            if (tuiEditorRef.current?.getInstance) {
+                                const editor = tuiEditorRef.current.getInstance();
+                                const currentContent = tuiEditorRef.current.getCurrentMarkdown();
+                                handleTuiChange(currentContent + '\n\n' + text);
+                            }
+                        }}
+                        onContentInserted={() => {
+                            // Content block inserted
+                        }}
+                    >
+                        <div className="absolute inset-0 w-full h-full">
+                            <TuiEditorContent
+                                ref={tuiEditorRef}
+                                content={localContent}
+                                onChange={handleTuiChange}
+                                isActive={true}
+                                editMode="markdown"
+                                className="w-full h-full"
+                            />
+                        </div>
+                    </UnifiedContextMenu>
                 )}
 
                 {editorMode === 'preview' && (
-                    <ScrollArea className="absolute inset-0 w-full h-full">
-                        <div className="p-6 bg-textured">
-                            {localContent.trim() ? (
-                                <EnhancedChatMarkdown content={localContent} />
-                            ) : (
-                                <div className="text-center py-12 text-muted-foreground">
-                                    No content to preview
-                                </div>
-                            )}
-                        </div>
-                    </ScrollArea>
+                    <UnifiedContextMenu
+                        uiContext={{
+                            context: localContent,
+                            editorContent: localContent,
+                            fullContent: localContent,
+                        }}
+                        enableContentBlocks={false}
+                        enableAITools={true}
+                        enableQuickActions={true}
+                    >
+                        <ScrollArea className="absolute inset-0 w-full h-full">
+                            <div className="p-6 bg-textured">
+                                {localContent.trim() ? (
+                                    <EnhancedChatMarkdown content={localContent} />
+                                ) : (
+                                    <div className="text-center py-12 text-muted-foreground">
+                                        No content to preview
+                                    </div>
+                                )}
+                            </div>
+                        </ScrollArea>
+                    </UnifiedContextMenu>
                 )}
             </div>
         </div>

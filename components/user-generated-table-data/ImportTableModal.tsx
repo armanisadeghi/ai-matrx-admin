@@ -39,6 +39,11 @@ interface ImportTableModalProps {
   onSuccess: (tableId: string) => void;
 }
 
+// Extended field definition with inclusion flag
+interface ImportFieldDefinition extends FieldDefinition {
+  included: boolean;
+}
+
 // Helper function to infer data type from value
 function inferDataType(value: any): string {
   if (value === null || value === undefined || value === '') return 'string';
@@ -79,11 +84,11 @@ function inferDataType(value: any): string {
 }
 
 // Helper function to analyze columns and infer types
-function analyzeData(data: Record<string, any>[]): FieldDefinition[] {
+function analyzeData(data: Record<string, any>[]): ImportFieldDefinition[] {
   if (data.length === 0) return [];
   
   const columns = Object.keys(data[0]);
-  const fields: FieldDefinition[] = [];
+  const fields: ImportFieldDefinition[] = [];
   
   columns.forEach((column, index) => {
     // Collect sample values (non-empty)
@@ -111,7 +116,8 @@ function analyzeData(data: Record<string, any>[]): FieldDefinition[] {
       display_name: column,
       data_type: inferredType,
       field_order: index,
-      is_required: false
+      is_required: false,
+      included: true // Include by default
     });
   });
   
@@ -139,7 +145,7 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
   // Preview state
   const [fullData, setFullData] = useState<Record<string, any>[]>([]);
   const [previewData, setPreviewData] = useState<Record<string, any>[]>([]);
-  const [detectedFields, setDetectedFields] = useState<FieldDefinition[]>([]);
+  const [detectedFields, setDetectedFields] = useState<ImportFieldDefinition[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   
   // Loading/submission
@@ -297,6 +303,12 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
     setDetectedFields(updated);
   };
 
+  const toggleFieldInclusion = (index: number) => {
+    const updated = [...detectedFields];
+    updated[index].included = !updated[index].included;
+    setDetectedFields(updated);
+  };
+
   const handleSubmit = async () => {
     if (!tableName.trim()) {
       setError('Please enter a table name');
@@ -312,13 +324,28 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
       setLoading(true);
       setError(null);
 
-      // Create the table with detected fields
+      // Filter to only included fields
+      const includedFields = detectedFields.filter(f => f.included).map(f => ({
+        field_name: f.field_name,
+        display_name: f.display_name,
+        data_type: f.data_type,
+        field_order: f.field_order,
+        is_required: f.is_required
+      }));
+
+      if (includedFields.length === 0) {
+        setError('Please select at least one column to import');
+        setLoading(false);
+        return;
+      }
+
+      // Create the table with included fields only
       const createResult = await createTable(supabase, {
         tableName: tableName.trim(),
         description: description.trim() || `Imported table with ${fullData.length} rows`,
         isPublic,
         authenticatedRead,
-        fields: detectedFields
+        fields: includedFields
       });
 
       if (!createResult.success || !createResult.tableId) {
@@ -331,9 +358,9 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
       const dataToInsert = fullData;
       
       for (const row of dataToInsert) {
-        // Map the row data to field names
+        // Map the row data to field names (only included fields)
         const rowData: Record<string, any> = {};
-        detectedFields.forEach(field => {
+        includedFields.forEach(field => {
           const originalKey = Object.keys(row).find(
             key => key.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '_') === field.field_name
           );
@@ -538,16 +565,28 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
 
                 {/* Field type configuration */}
                 <div className="space-y-2">
-                  <Label>Column Configuration</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Column Configuration</Label>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {detectedFields.filter(f => f.included).length} of {detectedFields.length} columns selected
+                    </span>
+                  </div>
                   <div className="border rounded-lg p-3 space-y-2 max-h-[200px] overflow-y-auto">
                     {detectedFields.map((field, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <span className="text-sm font-medium min-w-[150px] truncate">
+                        <Switch
+                          id={`field-${index}-include`}
+                          checked={field.included}
+                          onCheckedChange={() => toggleFieldInclusion(index)}
+                          className="scale-90"
+                        />
+                        <span className={`text-sm font-medium min-w-[150px] truncate ${!field.included ? 'text-gray-400 line-through' : ''}`}>
                           {field.display_name}
                         </span>
                         <Select
                           value={field.data_type}
                           onValueChange={(value) => updateFieldType(index, value)}
+                          disabled={!field.included}
                         >
                           <SelectTrigger className="w-[140px]">
                             <SelectValue />
@@ -564,18 +603,18 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
                     ))}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Data types are auto-detected but can be changed if needed.
+                    Toggle columns on/off to include or exclude them. Data types are auto-detected but can be changed.
                   </p>
                 </div>
 
                 {/* Data preview */}
                 <div className="space-y-2">
-                  <Label>Data Preview (first 10 rows)</Label>
+                  <Label>Data Preview (first 10 rows - only showing included columns)</Label>
                   <div className="border rounded-lg overflow-auto max-h-[250px]">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
                         <tr>
-                          {detectedFields.map((field, i) => (
+                          {detectedFields.filter(f => f.included).map((field, i) => (
                             <th key={i} className="px-3 py-2 text-left font-medium text-xs">
                               {field.display_name}
                             </th>
@@ -585,7 +624,7 @@ export default function ImportTableModal({ isOpen, onClose, onSuccess }: ImportT
                       <tbody>
                         {previewData.map((row, i) => (
                           <tr key={i} className="border-t dark:border-gray-700">
-                            {detectedFields.map((field, j) => {
+                            {detectedFields.filter(f => f.included).map((field, j) => {
                               const originalKey = Object.keys(row).find(
                                 key => key.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '_') === field.field_name
                               );
