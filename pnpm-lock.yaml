@@ -600,6 +600,9 @@ importers:
       '@next/bundle-analyzer':
         specifier: ^15.3.2
         version: 15.3.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@types/chroma-js':
+        specifier: ^3.1.2
+        version: 3.1.2
       '@types/fabric':
         specifier: latest
         version: 5.3.10
@@ -645,6 +648,9 @@ importers:
       buffer:
         specifier: latest
         version: 6.0.3
+      chroma-js:
+        specifier: ^3.1.2
+        version: 3.1.2
       dotenv:
         specifier: latest
         version: 16.5.0
@@ -4976,6 +4982,9 @@ packages:
 
   '@types/babel__traverse@7.20.7':
     resolution: {integrity: sha512-dkO5fhS7+/oos4ciWxyEyjWe48zmG6wbCheo/G2ZnHx4fs3EU6YC6UM8rk56gAjNJ9P3MTH2jo5jb92/K6wbng==}
+
+  '@types/chroma-js@3.1.2':
+    resolution: {integrity: sha512-YBTQqArPN8A0niHXCwrO1z5x++a+6l0mLBykncUpr23oIPW7L4h39s6gokdK/bDrPmSh8+TjMmrhBPnyiaWPmQ==}
 
   '@types/d3-array@3.2.1':
     resolution: {integrity: sha512-Y2Jn2idRrLzUfAKV2LyRImR+y4oa2AntrgID95SHJxuMUrkNXmanDSed71sRNZysveJVt1hLLemQZIady0FpEg==}
@@ -18906,6 +18915,8 @@ snapshots:
   '@types/babel__traverse@7.20.7':
     dependencies:
       '@babel/types': 7.27.1
+
+  '@types/chroma-js@3.1.2': {}
 
   '@types/d3-array@3.2.1': {}
 

@@ -216,6 +216,7 @@
   "devDependencies": {
     "@iconify/react": "^5.2.1",
     "@next/bundle-analyzer": "^15.3.2",
+    "@types/chroma-js": "^3.1.2",
     "@types/fabric": "latest",
     "@types/jest": "latest",
     "@types/lodash": "^4.17.16",
@@ -231,6 +232,7 @@
     "autoprefixer": "^10.4.21",
     "browserify-zlib": "latest",
     "buffer": "latest",
+    "chroma-js": "^3.1.2",
     "dotenv": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",

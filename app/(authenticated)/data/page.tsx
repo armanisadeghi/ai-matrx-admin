@@ -2,14 +2,16 @@
 import TableCards from "@/components/user-generated-table-data/TableCards";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useState } from "react";
 import CreateTableModal from "@/components/user-generated-table-data/CreateTableModal";
+import ImportTableModal from "@/components/user-generated-table-data/ImportTableModal";
 import { FcTemplate } from "react-icons/fc";
 
 export default function UserGeneratedDataPage() {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Handle the create from template button click
   const handleCreateFromTemplate = () => {
@@ -38,6 +40,14 @@ export default function UserGeneratedDataPage() {
             Create From Template
           </Button>
           <Button 
+            variant="outline"
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center bg-textured text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Import CSV/Excel
+          </Button>
+          <Button 
             onClick={() => setIsCreateModalOpen(true)}
             className="flex items-center bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
           >
@@ -53,6 +63,13 @@ export default function UserGeneratedDataPage() {
       <CreateTableModal 
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleTableCreated}
+      />
+
+      {/* Import Table Modal */}
+      <ImportTableModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
         onSuccess={handleTableCreated}
       />
     </div>
