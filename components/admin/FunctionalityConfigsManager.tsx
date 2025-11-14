@@ -278,7 +278,7 @@ export function FunctionalityConfigsManager() {
                     </TableCell>
                     <TableCell>
                       {config.category ? (
-                        <Badge variant="outline">{config.category.name}</Badge>
+                        <Badge variant="outline">{config.category.label}</Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">No category</span>
                       )}

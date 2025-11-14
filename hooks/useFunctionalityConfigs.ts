@@ -16,7 +16,7 @@ export interface FunctionalityConfig {
   // Joined data from category
   category?: {
     id: string;
-    name: string;
+    label: string;
     color: string;
     icon_name: string;
   };
@@ -64,7 +64,7 @@ export function useFunctionalityConfigs(
             *,
             category:system_prompt_categories(
               id,
-              name,
+              label,
               color,
               icon_name
             )
@@ -81,15 +81,23 @@ export function useFunctionalityConfigs(
         query = query.eq('category_id', categoryId);
       }
 
+      console.log('[useFunctionalityConfigs] Executing query with options:', { activeOnly, categoryId, includeCategory });
+
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
+        console.error('[useFunctionalityConfigs] Supabase query error:', fetchError);
         throw fetchError;
       }
+
+      console.log('[useFunctionalityConfigs] Query returned data:', data?.length, 'configs');
 
       // Merge with hardcoded functionality definitions
       const enrichedConfigs = (data || []).map((config: any) => {
         const hardcodedFunc = SYSTEM_FUNCTIONALITIES[config.functionality_id];
+        if (!hardcodedFunc) {
+          console.warn('[useFunctionalityConfigs] No hardcoded definition for:', config.functionality_id);
+        }
         return {
           ...config,
           requiredVariables: hardcodedFunc?.requiredVariables || [],
@@ -98,9 +106,10 @@ export function useFunctionalityConfigs(
         };
       });
 
+      console.log('[useFunctionalityConfigs] Enriched configs:', enrichedConfigs.length);
       setConfigs(enrichedConfigs);
     } catch (err) {
-      console.error('[useFunctionalityConfigs] Error fetching configs:', err);
+      console.error('[useFunctionalityConfigs] CATCH block - Error type:', err?.constructor?.name, 'Error:', err);
       setError(err as Error);
     } finally {
       setIsLoading(false);
@@ -136,7 +145,7 @@ export function useFunctionalityConfigsByCategory(
     return configs.reduce((acc, config) => {
       if (!config.category) return acc;
       
-      const categoryName = config.category.name;
+      const categoryName = config.category.label;
       if (!acc[categoryName]) {
         acc[categoryName] = {
           category: config.category,

@@ -370,7 +370,7 @@ export function UnifiedContextMenu({
                             <ContextMenuSub>
                               <ContextMenuSubTrigger>
                                 <CategoryIcon className="h-4 w-4 mr-2" style={{ color: category?.color || 'currentColor' }} />
-                                {category?.name}
+                                {category?.label}
                               </ContextMenuSubTrigger>
                               <ContextMenuSubContent className="w-64">
                                 {configs.map(({ config, systemPrompt }) => {

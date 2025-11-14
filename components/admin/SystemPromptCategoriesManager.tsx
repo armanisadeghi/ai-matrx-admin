@@ -62,7 +62,7 @@ const COLOR_OPTIONS = [
 
 interface CategoryForm {
   id?: string;
-  name: string;
+  label: string;
   description: string;
   icon_name: string;
   color: string;
@@ -77,7 +77,7 @@ export function SystemPromptCategoriesManager() {
   const [isSaving, setIsSaving] = useState(false);
 
   const [form, setForm] = useState<CategoryForm>({
-    name: '',
+    label: '',
     description: '',
     icon_name: 'FileText',
     color: 'blue',
@@ -89,7 +89,7 @@ export function SystemPromptCategoriesManager() {
     setEditingCategory(category);
     setForm({
       id: category.id,
-      name: category.name,
+      label: category.label,
       description: category.description || '',
       icon_name: category.icon_name,
       color: category.color,
@@ -102,7 +102,7 @@ export function SystemPromptCategoriesManager() {
   const handleCreate = () => {
     setEditingCategory(null);
     setForm({
-      name: '',
+      label: '',
       description: '',
       icon_name: 'FileText',
       color: 'blue',
@@ -122,7 +122,7 @@ export function SystemPromptCategoriesManager() {
         const { error: updateError } = await supabase
           .from('system_prompt_categories')
           .update({
-            name: form.name,
+            label: form.label,
             description: form.description,
             icon_name: form.icon_name,
             color: form.color,
@@ -138,7 +138,7 @@ export function SystemPromptCategoriesManager() {
         const { error: insertError } = await supabase
           .from('system_prompt_categories')
           .insert({
-            name: form.name,
+            label: form.label,
             description: form.description,
             icon_name: form.icon_name,
             color: form.color,
@@ -241,7 +241,7 @@ export function SystemPromptCategoriesManager() {
                       <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                     </TableCell>
                     <TableCell className="font-medium">
-                      {category.name}
+                      {category.label}
                       {category.description && (
                         <p className="text-xs text-muted-foreground">{category.description}</p>
                       )}
@@ -299,8 +299,8 @@ export function SystemPromptCategoriesManager() {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                value={form.label}
+                onChange={(e) => setForm({ ...form, label: e.target.value })}
                 placeholder="Text Operations"
               />
             </div>

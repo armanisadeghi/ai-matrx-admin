@@ -3,7 +3,8 @@ import { createClient } from '@/utils/supabase/client';
 
 export interface SystemPromptCategory {
   id: string;
-  name: string;
+  category_id: string;
+  label: string;
   description: string | null;
   icon_name: string;
   color: string;
