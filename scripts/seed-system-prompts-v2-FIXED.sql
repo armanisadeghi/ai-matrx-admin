@@ -1,61 +1,65 @@
--- Seed script for System Prompts Database V2
--- This script populates the system_prompt_categories and system_prompt_functionality_configs tables
--- with the initial data based on existing hardcoded SYSTEM_FUNCTIONALITIES
+-- Seed script for System Prompts Database V2 - FIXED
+-- Matches the migration table structure exactly
 
 -- ============================================================================
--- STEP 1: Insert Categories
+-- STEP 1: Clear existing data (if any)
 -- ============================================================================
+DELETE FROM system_prompt_functionality_configs;
+DELETE FROM system_prompt_categories;
 
-INSERT INTO system_prompt_categories (id, name, description, icon_name, color, sort_order, is_active)
+-- ============================================================================
+-- STEP 2: Insert Categories
+-- ============================================================================
+INSERT INTO system_prompt_categories (category_id, label, description, icon_name, color, sort_order, is_active)
 VALUES
   (
-    gen_random_uuid(),
+    'text-operations',
     'Text Operations',
     'AI tools for explaining, summarizing, translating, and improving text',
     'FileText',
-    'blue',
+    'text-blue-600',
     1,
     true
   ),
   (
-    gen_random_uuid(),
+    'code-tools',
     'Code Operations',
     'AI tools for analyzing, fixing, and refactoring code',
     'Code',
-    'purple',
+    'text-purple-600',
     2,
     true
   ),
   (
-    gen_random_uuid(),
+    'content-generation',
     'Content Generation',
     'AI tools for generating new content, flashcards, and quizzes',
     'Sparkles',
-    'green',
+    'text-green-600',
     3,
     true
   ),
   (
-    gen_random_uuid(),
+    'utilities',
     'Utilities',
     'AI tools for searching, brainstorming, and general assistance',
     'Wrench',
-    'orange',
+    'text-orange-600',
     4,
     true
   ),
   (
-    gen_random_uuid(),
+    'content-cards',
     'Content Cards',
     'Interactive cards for expanding and exploring content',
     'LayoutGrid',
-    'indigo',
+    'text-indigo-600',
     5,
     true
   );
 
 -- ============================================================================
--- STEP 2: Insert Functionality Configs
+-- STEP 3: Insert Functionality Configs
 -- ============================================================================
 
 -- Get category IDs for reference
@@ -67,12 +71,12 @@ DECLARE
   cat_utils UUID;
   cat_cards UUID;
 BEGIN
-  -- Get category IDs
-  SELECT id INTO cat_text FROM system_prompt_categories WHERE name = 'Text Operations';
-  SELECT id INTO cat_code FROM system_prompt_categories WHERE name = 'Code Operations';
-  SELECT id INTO cat_content FROM system_prompt_categories WHERE name = 'Content Generation';
-  SELECT id INTO cat_utils FROM system_prompt_categories WHERE name = 'Utilities';
-  SELECT id INTO cat_cards FROM system_prompt_categories WHERE name = 'Content Cards';
+  -- Get category IDs (using the correct column name)
+  SELECT id INTO cat_text FROM system_prompt_categories WHERE category_id = 'text-operations';
+  SELECT id INTO cat_code FROM system_prompt_categories WHERE category_id = 'code-tools';
+  SELECT id INTO cat_content FROM system_prompt_categories WHERE category_id = 'content-generation';
+  SELECT id INTO cat_utils FROM system_prompt_categories WHERE category_id = 'utilities';
+  SELECT id INTO cat_cards FROM system_prompt_categories WHERE category_id = 'content-cards';
 
   -- ===== CONTENT CARDS =====
   INSERT INTO system_prompt_functionality_configs (functionality_id, category_id, label, description, icon_name, sort_order, is_active)
@@ -152,6 +156,42 @@ BEGIN
       'List',
       7,
       true
+    ),
+    (
+      'make-longer',
+      cat_text,
+      'Make Longer',
+      'Expand and elaborate on selected text',
+      'Maximize',
+      8,
+      true
+    ),
+    (
+      'make-shorter',
+      cat_text,
+      'Make Shorter',
+      'Condense and shorten selected text',
+      'Minimize',
+      9,
+      true
+    ),
+    (
+      'change-tone',
+      cat_text,
+      'Change Tone',
+      'Adjust the tone of selected text',
+      'Music',
+      10,
+      true
+    ),
+    (
+      'simplify-language',
+      cat_text,
+      'Simplify Language',
+      'Make text easier to understand',
+      'BookOpen',
+      11,
+      true
     );
 
   -- ===== CODE OPERATIONS =====
@@ -182,6 +222,24 @@ BEGIN
       'Refactor code for better quality',
       'Code',
       3,
+      true
+    ),
+    (
+      'add-comments',
+      cat_code,
+      'Add Comments',
+      'Add helpful comments to code',
+      'MessageSquare',
+      4,
+      true
+    ),
+    (
+      'optimize-code',
+      cat_code,
+      'Optimize Code',
+      'Optimize code for performance',
+      'Zap',
+      5,
       true
     );
 
@@ -214,6 +272,24 @@ BEGIN
       'HelpCircle',
       3,
       true
+    ),
+    (
+      'generate-outline',
+      cat_content,
+      'Generate Outline',
+      'Create an outline from a topic',
+      'List',
+      4,
+      true
+    ),
+    (
+      'expand-bullets',
+      cat_content,
+      'Expand Bullets',
+      'Expand bullet points into full text',
+      'ListOrdered',
+      5,
+      true
     );
 
   -- ===== UTILITIES =====
@@ -236,6 +312,24 @@ BEGIN
       'Lightbulb',
       2,
       true
+    ),
+    (
+      'brainstorm',
+      cat_utils,
+      'Brainstorm',
+      'Generate creative ideas and solutions',
+      'Brain',
+      3,
+      true
+    ),
+    (
+      'ask-ai',
+      cat_utils,
+      'Ask AI',
+      'Ask any question to the AI',
+      'MessageCircle',
+      4,
+      true
     );
 
 END $$;
@@ -247,7 +341,8 @@ END $$;
 -- Verify categories
 SELECT 
   id,
-  name,
+  category_id,
+  label,
   icon_name,
   color,
   sort_order,
@@ -259,7 +354,7 @@ ORDER BY sort_order;
 SELECT 
   fc.functionality_id,
   fc.label,
-  c.name as category_name,
+  c.label as category_label,
   fc.icon_name,
   fc.sort_order,
   fc.is_active
@@ -269,10 +364,10 @@ ORDER BY c.sort_order, fc.sort_order;
 
 -- Count by category
 SELECT 
-  c.name as category,
+  c.label as category,
   COUNT(fc.id) as functionality_count
 FROM system_prompt_categories c
 LEFT JOIN system_prompt_functionality_configs fc ON c.id = fc.category_id
-GROUP BY c.id, c.name
+GROUP BY c.id, c.label, c.sort_order
 ORDER BY c.sort_order;
 

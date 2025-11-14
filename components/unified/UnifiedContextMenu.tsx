@@ -46,20 +46,30 @@ import { useAppSelector } from '@/lib/redux';
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
 import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
-import { QuickChatSheet } from '@/features/quick-actions/components/QuickChatSheet';
-import { QuickDataSheet } from '@/features/quick-actions/components/QuickDataSheet';
-import { QuickFilesSheet } from '@/features/quick-actions/components/QuickFilesSheet';
 import contentBlocksConfig from '@/config/content-blocks';
 import { ContentBlock } from '@/features/rich-text-editor/config/contentBlocks';
 import * as LucideIcons from 'lucide-react';
 
-// Dynamically import these to break circular dependency:
-// UnifiedContextMenu -> QuickNotesSheet -> NoteEditor -> UnifiedContextMenu
+// CRITICAL: All Quick Action sheets must be dynamic imports
+// This prevents them from being bundled into routes that don't use UnifiedContextMenu
+// QuickChatSheet was causing API calls to prompts on every route load!
 const QuickNotesSheet = dynamic(() => import('@/features/notes/components/QuickNotesSheet').then(mod => ({ default: mod.QuickNotesSheet })), {
   ssr: false,
 });
 
 const QuickTasksSheet = dynamic(() => import('@/features/tasks/components/QuickTasksSheet').then(mod => ({ default: mod.QuickTasksSheet })), {
+  ssr: false,
+});
+
+const QuickChatSheet = dynamic(() => import('@/features/quick-actions/components/QuickChatSheet').then(mod => ({ default: mod.QuickChatSheet })), {
+  ssr: false,
+});
+
+const QuickDataSheet = dynamic(() => import('@/features/quick-actions/components/QuickDataSheet').then(mod => ({ default: mod.QuickDataSheet })), {
+  ssr: false,
+});
+
+const QuickFilesSheet = dynamic(() => import('@/features/quick-actions/components/QuickFilesSheet').then(mod => ({ default: mod.QuickFilesSheet })), {
   ssr: false,
 });
 
@@ -507,25 +517,37 @@ export function UnifiedContextMenu({
       )}
 
       {/* Floating Sheets for Quick Actions */}
-      <FloatingSheet isOpen={isNotesOpen} onClose={() => setIsNotesOpen(false)} title="Quick Notes" position="right" width="xl" height="full">
-        <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
-      </FloatingSheet>
+      {/* CRITICAL: Conditionally render to prevent mounting when closed */}
+      {/* This prevents API calls from PromptRunner on page load */}
+      {isNotesOpen && (
+        <FloatingSheet isOpen={true} onClose={() => setIsNotesOpen(false)} title="Quick Notes" position="right" width="xl" height="full">
+          <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
+        </FloatingSheet>
+      )}
 
-      <FloatingSheet isOpen={isTasksOpen} onClose={() => setIsTasksOpen(false)} title="Quick Tasks" position="right" width="xl" height="full">
-        <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
-      </FloatingSheet>
+      {isTasksOpen && (
+        <FloatingSheet isOpen={true} onClose={() => setIsTasksOpen(false)} title="Quick Tasks" position="right" width="xl" height="full">
+          <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
+        </FloatingSheet>
+      )}
 
-      <FloatingSheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
-        <QuickChatSheet onClose={() => setIsChatOpen(false)} />
-      </FloatingSheet>
+      {isChatOpen && (
+        <FloatingSheet isOpen={true} onClose={() => setIsChatOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
+          <QuickChatSheet onClose={() => setIsChatOpen(false)} />
+        </FloatingSheet>
+      )}
 
-      <FloatingSheet isOpen={isDataOpen} onClose={() => setIsDataOpen(false)} title="Data Tables" position="right" width="xl" height="full">
-        <QuickDataSheet onClose={() => setIsDataOpen(false)} />
-      </FloatingSheet>
+      {isDataOpen && (
+        <FloatingSheet isOpen={true} onClose={() => setIsDataOpen(false)} title="Data Tables" position="right" width="xl" height="full">
+          <QuickDataSheet onClose={() => setIsDataOpen(false)} />
+        </FloatingSheet>
+      )}
 
-      <FloatingSheet isOpen={isFilesOpen} onClose={() => setIsFilesOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
-        <QuickFilesSheet onClose={() => setIsFilesOpen(false)} />
-      </FloatingSheet>
+      {isFilesOpen && (
+        <FloatingSheet isOpen={true} onClose={() => setIsFilesOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
+          <QuickFilesSheet onClose={() => setIsFilesOpen(false)} />
+        </FloatingSheet>
+      )}
     </>
   );
 }

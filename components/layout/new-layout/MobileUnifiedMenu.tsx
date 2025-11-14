@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,12 +18,29 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { RootState } from '@/lib/redux/store';
 import { brokerSelectors } from '@/lib/redux/brokerSlice';
 import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
-import { QuickNotesSheet } from '@/features/notes';
-import { QuickTasksSheet } from '@/features/tasks';
-import { QuickChatSheet } from '@/features/quick-actions/components/QuickChatSheet';
-import { QuickDataSheet } from '@/features/quick-actions/components/QuickDataSheet';
-import { UtilitiesOverlay } from '@/features/quick-actions/components/UtilitiesOverlay';
 import { Notification } from '@/types/notification.types';
+
+// CRITICAL: Dynamic imports to prevent loading heavy components on all routes
+// This layout component is used globally, so we must lazy-load feature components
+const QuickNotesSheet = dynamic(() => import('@/features/notes/components/QuickNotesSheet').then(mod => ({ default: mod.QuickNotesSheet })), {
+  ssr: false,
+});
+
+const QuickTasksSheet = dynamic(() => import('@/features/tasks/components/QuickTasksSheet').then(mod => ({ default: mod.QuickTasksSheet })), {
+  ssr: false,
+});
+
+const QuickChatSheet = dynamic(() => import('@/features/quick-actions/components/QuickChatSheet').then(mod => ({ default: mod.QuickChatSheet })), {
+  ssr: false,
+});
+
+const QuickDataSheet = dynamic(() => import('@/features/quick-actions/components/QuickDataSheet').then(mod => ({ default: mod.QuickDataSheet })), {
+  ssr: false,
+});
+
+const UtilitiesOverlay = dynamic(() => import('@/features/quick-actions/components/UtilitiesOverlay').then(mod => ({ default: mod.UtilitiesOverlay })), {
+  ssr: false,
+});
 
 export function MobileUnifiedMenu() {
   const router = useRouter();
@@ -175,70 +193,81 @@ export function MobileUnifiedMenu() {
     </DropdownMenu>
     
     {/* Quick Action Sheets */}
-    <FloatingSheet
-      isOpen={isNotesOpen}
-      onClose={() => setIsNotesOpen(false)}
-      title="Quick Notes"
-      description="Quickly capture or retrieve notes without losing focus"
-      position="right"
-      width="xl"
-      height="full"
-      closeOnBackdropClick={true}
-      closeOnEsc={true}
-      showCloseButton={true}
-    >
-      <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
-    </FloatingSheet>
+    {/* CRITICAL: Conditionally render to prevent API calls on page load */}
+    {isNotesOpen && (
+      <FloatingSheet
+        isOpen={true}
+        onClose={() => setIsNotesOpen(false)}
+        title="Quick Notes"
+        description="Quickly capture or retrieve notes without losing focus"
+        position="right"
+        width="xl"
+        height="full"
+        closeOnBackdropClick={true}
+        closeOnEsc={true}
+        showCloseButton={true}
+      >
+        <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
+      </FloatingSheet>
+    )}
 
-    <FloatingSheet
-      isOpen={isTasksOpen}
-      onClose={() => setIsTasksOpen(false)}
-      title="Quick Tasks"
-      description="Manage tasks and projects without losing context"
-      position="right"
-      width="xl"
-      height="full"
-      closeOnBackdropClick={true}
-      closeOnEsc={true}
-      showCloseButton={true}
-    >
-      <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
-    </FloatingSheet>
+    {isTasksOpen && (
+      <FloatingSheet
+        isOpen={true}
+        onClose={() => setIsTasksOpen(false)}
+        title="Quick Tasks"
+        description="Manage tasks and projects without losing context"
+        position="right"
+        width="xl"
+        height="full"
+        closeOnBackdropClick={true}
+        closeOnEsc={true}
+        showCloseButton={true}
+      >
+        <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
+      </FloatingSheet>
+    )}
 
-    <FloatingSheet
-      isOpen={isChatOpen}
-      onClose={() => setIsChatOpen(false)}
-      title=""
-      position="right"
-      width="xl"
-      height="full"
-      closeOnBackdropClick={true}
-      closeOnEsc={true}
-      showCloseButton={false}
-      contentClassName="p-0"
-    >
-      <QuickChatSheet onClose={() => setIsChatOpen(false)} />
-    </FloatingSheet>
+    {isChatOpen && (
+      <FloatingSheet
+        isOpen={true}
+        onClose={() => setIsChatOpen(false)}
+        title=""
+        position="right"
+        width="xl"
+        height="full"
+        closeOnBackdropClick={true}
+        closeOnEsc={true}
+        showCloseButton={false}
+        contentClassName="p-0"
+      >
+        <QuickChatSheet onClose={() => setIsChatOpen(false)} />
+      </FloatingSheet>
+    )}
 
-    <FloatingSheet
-      isOpen={isDataOpen}
-      onClose={() => setIsDataOpen(false)}
-      title="Data Tables"
-      description="View and manage your data tables"
-      position="right"
-      width="xl"
-      height="full"
-      closeOnBackdropClick={true}
-      closeOnEsc={true}
-      showCloseButton={true}
-    >
-      <QuickDataSheet onClose={() => setIsDataOpen(false)} />
-    </FloatingSheet>
+    {isDataOpen && (
+      <FloatingSheet
+        isOpen={true}
+        onClose={() => setIsDataOpen(false)}
+        title="Data Tables"
+        description="View and manage your data tables"
+        position="right"
+        width="xl"
+        height="full"
+        closeOnBackdropClick={true}
+        closeOnEsc={true}
+        showCloseButton={true}
+      >
+        <QuickDataSheet onClose={() => setIsDataOpen(false)} />
+      </FloatingSheet>
+    )}
 
-    <UtilitiesOverlay
-      isOpen={isUtilitiesOpen}
-      onClose={() => setIsUtilitiesOpen(false)}
-    />
+    {isUtilitiesOpen && (
+      <UtilitiesOverlay
+        isOpen={true}
+        onClose={() => setIsUtilitiesOpen(false)}
+      />
+    )}
   </>
   );
 }
