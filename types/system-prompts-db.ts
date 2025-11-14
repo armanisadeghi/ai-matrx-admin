@@ -80,53 +80,59 @@ export interface PlacementConfig {
 }
 
 /**
- * Main system prompt database record
+ * Main system prompt database record (NEW SCHEMA)
  */
 export interface SystemPromptDB {
   id: string;
-  system_prompt_id: string;
-  name: string;
+  prompt_id: string;              // Human-readable ID (e.g., "debug-and-fix")
+  label: string;                  // Display name (e.g., "Debug & Fix")
   description: string | null;
+  icon_name: string;              // Icon for UI display
   
   // Prompt reference & versioning
   source_prompt_id: string | null;
   version: number;
   prompt_snapshot: PromptSnapshot;
   
-  // Display configuration
-  display_config: DisplayConfig;
+  // Category relationship (FK to system_prompt_categories)
+  category_id: string;            // UUID FK (placement_type is in category now!)
   
-  // Placement configuration
-  placement_config?: PlacementConfig;
-  
-  // CRITICAL: Where and what this is for
-  placement_type: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
-  functionality_id: string | null; // Ties to REAL CODE (e.g., 'content-expander-card')
-  category: string;
-  subcategory: string | null;
-  placement_settings: Record<string, any>; // Simple flags ONLY (requiresSelection, allowChat, etc.)
-  
-  tags: string[];
+  // Organization & display
   sort_order: number;
-  
-  // Status
   is_active: boolean;
   is_featured: boolean;
-  status: SystemPromptStatus;
+  tags: string[];
   
-  // Publishing metadata
+  // Publishing workflow
+  status: SystemPromptStatus;
   published_by: string | null;
   published_at: string;
+  
+  // Change tracking
   last_updated_by: string | null;
   last_updated_at: string | null;
   update_notes: string | null;
   
-  // Metadata
+  // Flexible storage
   metadata: Record<string, any>;
   
   // Timestamps
   created_at: string;
   updated_at: string;
+  
+  // Populated via JOIN when needed
+  category?: {
+    id: string;
+    category_id: string;
+    placement_type: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
+    parent_category_id: string | null;
+    label: string;
+    description: string | null;
+    icon_name: string;
+    color: string | null;
+    sort_order: number;
+    is_active: boolean;
+  };
 }
 
 /**
@@ -146,20 +152,16 @@ export interface SystemPromptExecutionDB {
 }
 
 /**
- * Input for creating a new system prompt
+ * Input for creating a new system prompt (NEW SCHEMA)
  */
 export interface CreateSystemPromptInput {
-  system_prompt_id: string;
-  name: string;
+  prompt_id: string;              // Human-readable ID (e.g., "debug-and-fix")
+  category_id: string;            // UUID FK to system_prompt_categories
+  label: string;                  // Display name
   description?: string;
-  source_prompt_id?: string;
+  icon_name: string;              // Lucide icon name
   prompt_snapshot: PromptSnapshot;
-  display_config?: DisplayConfig;
-  placement_type: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
-  functionality_id: string | null;
-  category: string;
-  subcategory?: string;
-  placement_settings?: Record<string, any>;
+  source_prompt_id?: string;
   tags?: string[];
   sort_order?: number;
   is_active?: boolean;
@@ -169,17 +171,14 @@ export interface CreateSystemPromptInput {
 }
 
 /**
- * Input for updating an existing system prompt
+ * Input for updating an existing system prompt (NEW SCHEMA)
  */
 export interface UpdateSystemPromptInput {
-  name?: string;
+  prompt_id?: string;
+  category_id?: string;
+  label?: string;
   description?: string;
-  display_config?: Partial<DisplayConfig>;
-  placement_type?: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
-  functionality_id?: string | null;
-  category?: string;
-  subcategory?: string;
-  placement_settings?: Record<string, any>;
+  icon_name?: string;
   tags?: string[];
   sort_order?: number;
   is_active?: boolean;
@@ -198,13 +197,11 @@ export interface PublishSystemPromptUpdateInput {
 }
 
 /**
- * Query options for fetching system prompts
+ * Query options for fetching system prompts (NEW SCHEMA)
  */
 export interface SystemPromptQueryOptions {
   placement_type?: 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
-  functionality_id?: string;
-  category?: string;
-  subcategory?: string;
+  category_id?: string;           // UUID FK to system_prompt_categories
   status?: SystemPromptStatus;
   is_active?: boolean;
   tags?: string[];

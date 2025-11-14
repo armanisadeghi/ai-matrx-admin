@@ -17,19 +17,19 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 interface DynamicButtonsProps {
-  category?: string;
+  categoryId?: string; // NEW SCHEMA: category UUID
   context?: UIContext;
   renderAs?: 'inline' | 'grid' | 'stack';
   className?: string;
 }
 
 export function DynamicButtons({
-  category,
+  categoryId, // NEW SCHEMA: category UUID
   context: uiContext = {},
   renderAs = 'inline',
   className,
 }: DynamicButtonsProps) {
-  const { systemPrompts, loading } = useButtonPrompts(category);
+  const { systemPrompts, loading } = useButtonPrompts(categoryId);
   const [executingId, setExecutingId] = React.useState<string | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalConfig, setModalConfig] = React.useState<any>(null);
@@ -43,10 +43,10 @@ export function DynamicButtons({
     try {
       setExecutingId(systemPrompt.id);
 
-      // Resolve variables
+      // Resolve variables (NEW SCHEMA: use prompt_id)
       const variables = PromptContextResolver.resolve(
         systemPrompt.prompt_snapshot,
-        systemPrompt.functionality_id,
+        systemPrompt.prompt_id,
         'button',
         uiContext
       );
@@ -54,27 +54,28 @@ export function DynamicButtons({
       // Check if can resolve
       const canResolve = PromptContextResolver.canResolve(
         systemPrompt.prompt_snapshot,
-        systemPrompt.functionality_id,
+        systemPrompt.prompt_id,
         'button',
         uiContext
       );
 
       if (!canResolve.canResolve) {
-        console.warn(`Cannot resolve variables for ${systemPrompt.name}:`, canResolve.missingVariables);
+        console.warn(`Cannot resolve variables for ${systemPrompt.label}:`, canResolve.missingVariables);
         return;
       }
 
-      // Get placement settings
-      const settings = systemPrompt.placement_settings || {};
+      // Get placement settings (NEW SCHEMA: in metadata)
+      const settings = systemPrompt.metadata?.placement_settings || {};
       const allowChat = settings.allowChat ?? true;
       const allowInitialMessage = settings.allowInitialMessage ?? false;
 
       // Open modal with the prompt
       setModalConfig({
-        promptData: systemPrompt.prompt_snapshot,
+        promptId: systemPrompt.source_prompt_id,
+        promptData: !systemPrompt.source_prompt_id ? systemPrompt.prompt_snapshot : undefined,
         variables,
         mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
-        title: systemPrompt.name,
+        title: systemPrompt.label,
         initialMessage: allowInitialMessage ? undefined : '',
       });
       setModalOpen(true);
@@ -112,7 +113,7 @@ export function DynamicButtons({
         {systemPrompts.map((systemPrompt) => {
           const isPlaceholder = systemPrompt.prompt_snapshot?.placeholder;
           const isExecutingThis = executingId === systemPrompt.id;
-          const settings = systemPrompt.placement_settings || {};
+          const settings = systemPrompt.metadata?.placement_settings || {}; // NEW SCHEMA: in metadata
           const variant = settings.variant || 'outline';
           const size = settings.size || 'sm';
           const showIcon = settings.showIcon ?? true;
@@ -131,10 +132,10 @@ export function DynamicButtons({
             >
               {isExecutingThis && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               {isPlaceholder && !isExecutingThis && <Lock className="h-4 w-4 mr-2" />}
-              {showIcon && !isExecutingThis && !isPlaceholder && systemPrompt.display_config?.icon && (
+              {showIcon && !isExecutingThis && !isPlaceholder && systemPrompt.icon_name && (
                 <span className="mr-2">{/* Icon placeholder */}</span>
               )}
-              <span>{systemPrompt.name}</span>
+              <span>{systemPrompt.label}</span>
               {isPlaceholder && (
                 <Badge variant="outline" className="ml-2 text-xs">
                   Soon
@@ -150,6 +151,7 @@ export function DynamicButtons({
         <PromptRunnerModal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
+          promptId={modalConfig.promptId}
           promptData={modalConfig.promptData}
           variables={modalConfig.variables}
           mode={modalConfig.mode}

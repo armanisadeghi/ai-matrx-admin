@@ -1,10 +1,9 @@
 /**
- * ConvertToSystemPromptModal
+ * ConvertToSystemPromptModal (NEW SCHEMA)
  * 
- * 3-Step Wizard for converting a regular prompt to a system prompt:
- * 1. Select Functionality (e.g., "Content Expander Card")
- * 2. Configure Placement (type, category, settings)
- * 3. Confirm and Create
+ * Simplified 2-Step Wizard for converting a regular prompt to a system prompt:
+ * 1. Select Category (determines placement_type)
+ * 2. Configure & Confirm (prompt_id, label, icon)
  */
 
 'use client';
@@ -30,12 +29,12 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useFunctionalityConfigs } from '@/hooks/useFunctionalityConfigs';
-import type { PromptSnapshot } from '@/types/system-prompts-db';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
+import { useSystemPromptCategories } from '@/hooks/useSystemPromptCategories';
 import { cn } from '@/utils';
+import { toast } from 'sonner';
 
 interface ConvertToSystemPromptModalProps {
   isOpen: boolean;
@@ -47,13 +46,7 @@ interface ConvertToSystemPromptModalProps {
   onSuccess?: () => void;
 }
 
-type WizardStep = 'functionality' | 'placement' | 'confirm';
-
-interface FunctionalityValidation {
-  valid: boolean;
-  missing: string[];
-  extra: string[];
-}
+type WizardStep = 'category' | 'configure';
 
 export function ConvertToSystemPromptModal({
   isOpen,
@@ -64,50 +57,39 @@ export function ConvertToSystemPromptModal({
   promptVariables,
   onSuccess,
 }: ConvertToSystemPromptModalProps) {
-  const { configs: functionalityConfigs, isLoading: configsLoading } = useFunctionalityConfigs({ activeOnly: true });
-  const [currentStep, setCurrentStep] = useState<WizardStep>('functionality');
+  const { categories, isLoading: categoriesLoading } = useSystemPromptCategories({ activeOnly: false });
+  
+  const [currentStep, setCurrentStep] = useState<WizardStep>('category');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Step 1: Functionality
-  const [selectedFunctionalityId, setSelectedFunctionalityId] = useState<string>('');
-  const [functionalityValidation, setFunctionalityValidation] = useState<FunctionalityValidation | null>(null);
+  // Step 1: Category Selection
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 
-  // Step 2: Placement
+  // Step 2: Configuration
   const [systemPromptId, setSystemPromptId] = useState('');
-  const [name, setName] = useState(promptName);
+  const [label, setLabel] = useState(promptName);
   const [description, setDescription] = useState(promptDescription || '');
-  const [placementType, setPlacementType] = useState<'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action'>('card');
-  const [category, setCategory] = useState('general');
-  const [subcategory, setSubcategory] = useState('');
-  const [requiresSelection, setRequiresSelection] = useState(false);
-  const [allowChat, setAllowChat] = useState(true);
-  const [allowInitialMessage, setAllowInitialMessage] = useState(false);
+  const [iconName, setIconName] = useState('Sparkles');
 
   // Reset on close
   useEffect(() => {
     if (!isOpen) {
-      setCurrentStep('functionality');
-      setSelectedFunctionalityId('');
-      setFunctionalityValidation(null);
-      setName(promptName);
+      setCurrentStep('category');
+      setSelectedCategoryId('');
+      setLabel(promptName);
       setDescription(promptDescription || '');
       setSystemPromptId('');
-      setPlacementType('card');
-      setCategory('general');
-      setSubcategory('');
-      setRequiresSelection(false);
-      setAllowChat(true);
-      setAllowInitialMessage(false);
+      setIconName('Sparkles');
       setError('');
       setIsSubmitting(false);
     }
   }, [isOpen, promptName, promptDescription]);
 
-  // Generate system_prompt_id when name changes
+  // Auto-generate prompt_id when label changes
   useEffect(() => {
-    if (name) {
-      const generated = name
+    if (label) {
+      const generated = label
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
@@ -115,686 +97,361 @@ export function ConvertToSystemPromptModal({
         .trim();
       setSystemPromptId(generated);
     }
-  }, [name]);
+  }, [label]);
 
-  // Calculate compatibility for all functionalities
-  const functionalityCompatibility = useMemo(() => {
-    const promptVars = new Set(promptVariables);
-    const compatible: Array<{ id: string; functionality: any; validation: FunctionalityValidation }> = [];
-    const incompatible: Array<{ id: string; functionality: any; validation: FunctionalityValidation }> = [];
-
-    functionalityConfigs.forEach((func) => {
-      const required = new Set(func.required_variables || []);
-      const optional = new Set(func.optional_variables || []);
-
-      const missing = Array.from(required).filter((v) => !promptVars.has(v));
-      const extra = Array.from(promptVars).filter(
-        (v) => !required.has(v) && !optional.has(v)
-      );
-
-      const validation: FunctionalityValidation = {
-        valid: missing.length === 0,
-        missing,
-        extra,
-      };
-
-      const item = { id: func.functionality_id, functionality: func, validation };
-
-      if (validation.valid) {
-        compatible.push(item);
-      } else {
-        incompatible.push(item);
+  // Group categories by placement_type
+  const categoriesByPlacement = useMemo(() => {
+    const grouped: Record<string, typeof categories> = {};
+    categories.forEach((cat) => {
+      const placement = cat.placement_type || 'other';
+      if (!grouped[placement]) {
+        grouped[placement] = [];
       }
+      grouped[placement].push(cat);
     });
+    return grouped;
+  }, [categories]);
 
-    return { compatible, incompatible };
-  }, [promptVariables, functionalityConfigs]);
-
-  // Validate functionality when selected
-  useEffect(() => {
-    if (selectedFunctionalityId) {
-      const functionality = functionalityConfigs.find(f => f.functionality_id === selectedFunctionalityId);
-      if (functionality) {
-        // Find validation from compatibility check
-        const compatibleItem = functionalityCompatibility.compatible.find(
-          (item) => item.id === selectedFunctionalityId
-        );
-        const incompatibleItem = functionalityCompatibility.incompatible.find(
-          (item) => item.id === selectedFunctionalityId
-        );
-
-        const validationItem = compatibleItem || incompatibleItem;
-        if (validationItem) {
-          setFunctionalityValidation(validationItem.validation);
-        }
-
-        // Auto-set placement type if only one option
-        if (functionality.placement_types?.length === 1) {
-          setPlacementType(functionality.placement_types[0] as any);
-        }
-      }
-    }
-  }, [selectedFunctionalityId, functionalityCompatibility, functionalityConfigs]);
+  const selectedCategory = useMemo(() => {
+    return categories.find((c) => c.id === selectedCategoryId);
+  }, [categories, selectedCategoryId]);
 
   const handleNext = () => {
-    if (currentStep === 'functionality') {
-      if (!selectedFunctionalityId) {
-        setError('Please select a functionality');
-        return;
-      }
-      if (functionalityValidation && !functionalityValidation.valid) {
-        setError(`Your prompt is missing required variables: ${functionalityValidation.missing.join(', ')}`);
+    if (currentStep === 'category') {
+      if (!selectedCategoryId) {
+        setError('Please select a category');
         return;
       }
       setError('');
-      setCurrentStep('placement');
-    } else if (currentStep === 'placement') {
-      if (!systemPromptId.trim()) {
-        setError('System Prompt ID is required');
-        return;
-      }
-      if (!name.trim()) {
-        setError('Name is required');
-        return;
-      }
-      setError('');
-      setCurrentStep('confirm');
+      setCurrentStep('configure');
     }
   };
 
   const handleBack = () => {
     setError('');
-    if (currentStep === 'confirm') {
-      setCurrentStep('placement');
-    } else if (currentStep === 'placement') {
-      setCurrentStep('functionality');
-    }
+    setCurrentStep('category');
   };
 
   const handleSubmit = async () => {
+    if (!systemPromptId.trim()) {
+      setError('Prompt ID is required');
+      return;
+    }
+    if (!label.trim()) {
+      setError('Label is required');
+      return;
+    }
+    if (!selectedCategoryId) {
+      setError('Category is required');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
 
     try {
-      console.log('Submitting system prompt conversion:', {
-        system_prompt_id: systemPromptId,
-        functionality_id: selectedFunctionalityId,
-        placement_type: placementType,
-        category,
-      });
-
       const response = await fetch(`/api/prompts/${promptId}/convert-to-system-prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_prompt_id: systemPromptId,
-          name: name || promptName,
-          description: description || promptDescription,
-          functionality_id: selectedFunctionalityId,
-          placement_type: placementType,
-          category,
-          subcategory: subcategory || undefined,
-          placement_settings: {
-            requiresSelection,
-            allowChat,
-            allowInitialMessage,
+          prompt_id: systemPromptId,
+          category_id: selectedCategoryId,
+          label,
+          description,
+          icon_name: iconName,
+          tags: [],
+          metadata: {
+            original_prompt_variables: promptVariables,
           },
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Conversion failed:', errorData);
-        const errorMessage = errorData.details 
-          ? `${errorData.error}: ${errorData.details}` 
-          : errorData.error || `Failed to convert (${response.status})`;
-        throw new Error(errorMessage);
+        throw new Error(data.error || data.details || 'Failed to convert prompt');
       }
 
-      const data = await response.json();
-      console.log('System prompt created successfully:', data);
+      toast.success('System prompt created successfully!', {
+        description: 'The prompt has been added as a draft. Enable it in the admin interface.',
+      });
 
-      // Success
-      onSuccess?.();
       onClose();
+      onSuccess?.();
     } catch (err: any) {
-      console.error('Submit error:', err);
-      setError(err.message || 'An unexpected error occurred');
+      setError(err.message || 'Failed to create system prompt');
+      toast.error('Failed to convert prompt', {
+        description: err.message,
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const selectedFunctionality = selectedFunctionalityId
-    ? functionalityConfigs.find(f => f.functionality_id === selectedFunctionalityId)
-    : null;
+  const getIcon = (name?: string) => {
+    if (!name) return Sparkles;
+    const Icon = (LucideIcons as any)[name];
+    return Icon || Sparkles;
+  };
+
+  const Icon = getIcon(iconName);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
         onClick={(e) => e.stopPropagation()}
-        onMouseDown={(e) => e.stopPropagation()}
-        onMouseUp={(e) => e.stopPropagation()}
       >
-        <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>Convert to System Prompt</DialogTitle>
-            <DialogDescription>
-              Step {currentStep === 'functionality' ? '1' : currentStep === 'placement' ? '2' : '3'} of 3
-            </DialogDescription>
-          </DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Convert to System Prompt</DialogTitle>
+          <DialogDescription>
+            Step {currentStep === 'category' ? '1' : '2'} of 2: {currentStep === 'category' ? 'Select Category' : 'Configure Details'}
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="space-y-6 py-4">
-          {/* Error Display */}
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        {categoriesLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Progress Indicator */}
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "h-2 flex-1 rounded",
+                currentStep === 'category' ? 'bg-primary' : 'bg-primary'
+              )} />
+              <div className={cn(
+                "h-2 flex-1 rounded",
+                currentStep === 'configure' ? 'bg-primary' : 'bg-muted'
+              )} />
+            </div>
 
-          {/* Step 1: Functionality */}
-          {currentStep === 'functionality' && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Select Functionality</h3>
-                <p className="text-sm text-muted-foreground">
-                  Choose the functionality this prompt will power. The variables in your prompt must 
-                  match the functionality's requirements.
-                </p>
-              </div>
+            {/* Step 1: Category Selection */}
+            {currentStep === 'category' && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Select Category</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Choose where this system prompt will appear
+                  </p>
+                </div>
 
-              {/* Prompt Info */}
-              <Card className="p-4 bg-muted/50">
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-sm font-medium">Prompt:</span>
-                    <span className="text-sm ml-2">{promptName}</span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium">Variables:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {promptVariables.length > 0 ? (
-                        promptVariables.map((v) => (
-                          <Badge key={v} variant="outline" className="text-xs">
-                            {v}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-xs text-muted-foreground">None</span>
-                      )}
+                {Object.entries(categoriesByPlacement).map(([placementType, cats]) => (
+                  <div key={placementType} className="space-y-2">
+                    <Label className="text-sm font-semibold capitalize">
+                      {placementType.replace('-', ' ')}
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {cats.map((category) => {
+                        const CategoryIcon = getIcon(category.icon_name);
+                        const isSelected = selectedCategoryId === category.id;
+                        
+                        return (
+                          <Card
+                            key={category.id}
+                            className={cn(
+                              "cursor-pointer transition-all hover:border-primary",
+                              isSelected && "border-primary bg-primary/5"
+                            )}
+                            onClick={() => setSelectedCategoryId(category.id)}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-start gap-2">
+                                <CategoryIcon className={cn("h-5 w-5 flex-shrink-0", category.color)} />
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm">{category.label}</div>
+                                  {category.description && (
+                                    <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                                      {category.description}
+                                    </div>
+                                  )}
+                                </div>
+                                {isSelected && (
+                                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
-              </Card>
+                ))}
 
-              {/* Functionality Selection */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label>Select Functionality</Label>
-                  <Badge variant="outline" className="text-xs">
-                    {functionalityCompatibility.compatible.length} compatible
-                  </Badge>
-                </div>
-
-                {/* Compatible Functionalities */}
-                {functionalityCompatibility.compatible.length > 0 ? (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground mb-2">
-                      ✅ These functionalities match your prompt's variables
-                    </p>
-                    {functionalityCompatibility.compatible.map((item) => (
-                      <Card
-                        key={item.id}
-                        className={cn(
-                          'p-3 cursor-pointer transition-all',
-                          selectedFunctionalityId === item.id
-                            ? 'border-primary bg-primary/5'
-                            : 'hover:border-primary/50'
-                        )}
-                        onClick={() => setSelectedFunctionalityId(item.id)}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 mt-0.5">
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm">{item.functionality.label}</h4>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {item.functionality.description}
-                            </p>
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {item.functionality.required_variables.map((v) => (
-                                <Badge key={v} variant="secondary" className="text-[10px] px-1.5 py-0">
-                                  {v}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <Alert variant="destructive">
+                {categories.length === 0 && (
+                  <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      <p className="font-semibold">No compatible functionalities found</p>
-                      <p className="text-sm mt-1">
-                        Your prompt's variables don't match any existing functionality requirements.
-                      </p>
+                      No categories available. Please create categories first.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Configure Details */}
+            {currentStep === 'configure' && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Configure System Prompt</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Customize the details for your system prompt
+                  </p>
+                </div>
+
+                {selectedCategory && (
+                  <Alert>
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>
+                      <div className="flex items-center gap-2">
+                        <span>Category:</span>
+                        <Badge variant="outline">{selectedCategory.label}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          ({selectedCategory.placement_type})
+                        </span>
+                      </div>
                     </AlertDescription>
                   </Alert>
                 )}
 
-                {/* Incompatible Functionalities (Collapsible) */}
-                {functionalityCompatibility.incompatible.length > 0 && (
-                  <details className="mt-4">
-                    <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground flex items-center gap-2">
-                      <span>Show incompatible functionalities ({functionalityCompatibility.incompatible.length})</span>
-                    </summary>
-                    <div className="space-y-2 mt-3">
-                      <p className="text-xs text-muted-foreground mb-2">
-                        ❌ These functionalities require variables your prompt doesn't have
-                      </p>
-                      {functionalityCompatibility.incompatible.map((item) => (
-                        <Card
-                          key={item.id}
-                          className="p-3 opacity-60 border-dashed"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 mt-0.5">
-                              <AlertCircle className="h-5 w-5 text-red-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-sm">{item.functionality.label}</h4>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {item.functionality.description}
-                              </p>
-                              
-                              {/* Missing Variables */}
-                              {item.validation.missing.length > 0 && (
-                                <div className="mt-2">
-                                  <p className="text-xs font-medium text-red-600">Missing variables:</p>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {item.validation.missing.map((v) => (
-                                      <Badge key={v} variant="destructive" className="text-[10px] px-1.5 py-0">
-                                        {v}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Required Variables */}
-                              <div className="mt-2">
-                                <p className="text-xs font-medium">Requires:</p>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {item.functionality.required_variables.map((v) => (
-                                    <Badge key={v} variant="outline" className="text-[10px] px-1.5 py-0">
-                                      {v}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </details>
-                )}
-              </div>
-
-              {/* Functionality Details & Validation */}
-              {selectedFunctionality && (
-                <Card className="p-4">
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-semibold">{selectedFunctionality.label}</h4>
-                      <p className="text-sm text-muted-foreground">{selectedFunctionality.description}</p>
-                    </div>
-
-                    <div>
-                      <span className="text-sm font-medium">Required Variables:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedFunctionality.required_variables.map((v) => (
-                          <Badge
-                            key={v}
-                            variant={functionalityValidation?.missing.includes(v) ? 'destructive' : 'default'}
-                            className="text-xs"
-                          >
-                            {v}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {selectedFunctionality.optional_variables && selectedFunctionality.optional_variables.length > 0 && (
-                      <div>
-                        <span className="text-sm font-medium">Optional Variables:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {selectedFunctionality.optional_variables.map((v) => (
-                            <Badge key={v} variant="secondary" className="text-xs">
-                              {v}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <span className="text-sm font-medium">Placement Types:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedFunctionality.placement_types.map((type) => (
-                          <Badge key={type} variant="outline" className="text-xs">
-                            {type}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Validation Status */}
-                    {functionalityValidation && (
-                      <Alert variant={functionalityValidation.valid ? 'default' : 'destructive'}>
-                        {functionalityValidation.valid ? (
-                          <>
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <AlertDescription>
-                              ✅ Your prompt variables match this functionality!
-                            </AlertDescription>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                              <div className="space-y-1">
-                                <p className="font-semibold">Variable mismatch:</p>
-                                {functionalityValidation.missing.length > 0 && (
-                                  <p className="text-sm">
-                                    Missing Required: <code>{functionalityValidation.missing.join(', ')}</code>
-                                  </p>
-                                )}
-                                {functionalityValidation.extra.length > 0 && (
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Additional variables (OK if they have defaults): <code>{functionalityValidation.extra.join(', ')}</code>
-                                  </p>
-                                )}
-                              </div>
-                            </AlertDescription>
-                          </>
-                        )}
-                      </Alert>
-                    )}
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
-
-          {/* Step 2: Placement */}
-          {currentStep === 'placement' && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Configure Placement</h3>
-                <p className="text-sm text-muted-foreground">
-                  Define where and how this system prompt will appear in the application.
-                </p>
-              </div>
-
-              {/* System Prompt ID */}
-              <div className="space-y-2">
-                <Label htmlFor="system-prompt-id">System Prompt ID*</Label>
-                <Input
-                  id="system-prompt-id"
-                  value={systemPromptId}
-                  onChange={(e) => setSystemPromptId(e.target.value)}
-                  placeholder="e.g., content-expander-educational"
-                />
-                <p className="text-xs text-muted-foreground">
-                  A unique identifier. Use kebab-case (lowercase with dashes).
-                </p>
-              </div>
-
-              {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Display Name*</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Content Expander"
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief description of what this system prompt does..."
-                  rows={3}
-                />
-              </div>
-
-              {/* Placement Type */}
-              <div className="space-y-2">
-                <Label htmlFor="placement-type">Placement Type*</Label>
-                <Select
-                  value={placementType}
-                  onValueChange={(value: any) => setPlacementType(value)}
-                >
-                  <SelectTrigger id="placement-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedFunctionality?.placement_types.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Category */}
-              <div className="space-y-2">
-                <Label htmlFor="category">Category*</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="educational">Educational</SelectItem>
-                    <SelectItem value="text-tools">Text Tools</SelectItem>
-                    <SelectItem value="code-helpers">Code Helpers</SelectItem>
-                    <SelectItem value="content-generation">Content Generation</SelectItem>
-                    <SelectItem value="analysis">Analysis</SelectItem>
-                    <SelectItem value="translation">Translation</SelectItem>
-                    <SelectItem value="formatting">Formatting</SelectItem>
-                    <SelectItem value="custom">Custom/Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Used to organize and filter system prompts in the admin interface
-                </p>
-              </div>
-
-              {/* Subcategory */}
-              <div className="space-y-2">
-                <Label htmlFor="subcategory">Subcategory (Optional)</Label>
-                <Input
-                  id="subcategory"
-                  value={subcategory}
-                  onChange={(e) => setSubcategory(e.target.value)}
-                  placeholder="e.g., vocabulary, grammar"
-                />
-              </div>
-
-              {/* Placement Settings */}
-              <Card className="p-4">
-                <h4 className="font-medium mb-3">Placement Settings</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="requires-selection"
-                      checked={requiresSelection}
-                      onCheckedChange={(checked) => setRequiresSelection(checked as boolean)}
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="label">Label *</Label>
+                    <Input
+                      id="label"
+                      value={label}
+                      onChange={(e) => setLabel(e.target.value)}
+                      placeholder="Display name for this prompt"
                     />
-                    <Label
-                      htmlFor="requires-selection"
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      Requires Text Selection (for context menus)
-                    </Label>
                   </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="allow-chat"
-                      checked={allowChat}
-                      onCheckedChange={(checked) => setAllowChat(checked as boolean)}
-                    />
-                    <Label
-                      htmlFor="allow-chat"
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      Allow Chat Mode (conversational responses)
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="allow-initial-message"
-                      checked={allowInitialMessage}
-                      onCheckedChange={(checked) => setAllowInitialMessage(checked as boolean)}
-                    />
-                    <Label
-                      htmlFor="allow-initial-message"
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      Allow Initial User Message (prompt user before executing)
-                    </Label>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {/* Step 3: Confirm */}
-          {currentStep === 'confirm' && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Confirm & Create</h3>
-                <p className="text-sm text-muted-foreground">
-                  Review your configuration before creating the system prompt.
-                </p>
-              </div>
-
-              <Card className="p-4">
-                <div className="space-y-3 text-sm">
-                  <div className="grid grid-cols-2 gap-2">
-                    <span className="font-medium">System Prompt ID:</span>
-                    <span className="text-muted-foreground">{systemPromptId}</span>
-
-                    <span className="font-medium">Name:</span>
-                    <span className="text-muted-foreground">{name}</span>
-
-                    <span className="font-medium">Functionality:</span>
-                    <span className="text-muted-foreground">{selectedFunctionality?.label}</span>
-
-                    <span className="font-medium">Placement Type:</span>
-                    <span className="text-muted-foreground capitalize">{placementType.replace('-', ' ')}</span>
-
-                    <span className="font-medium">Category:</span>
-                    <span className="text-muted-foreground">{category}</span>
-
-                    {subcategory && (
-                      <>
-                        <span className="font-medium">Subcategory:</span>
-                        <span className="text-muted-foreground">{subcategory}</span>
-                      </>
-                    )}
-                  </div>
-
-                  {description && (
-                    <div>
-                      <span className="font-medium block mb-1">Description:</span>
-                      <p className="text-muted-foreground">{description}</p>
-                    </div>
-                  )}
 
                   <div>
-                    <span className="font-medium block mb-1">Settings:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {requiresSelection && <Badge variant="secondary">Requires Selection</Badge>}
-                      {allowChat && <Badge variant="secondary">Chat Mode</Badge>}
-                      {allowInitialMessage && <Badge variant="secondary">Prompt User</Badge>}
+                    <Label htmlFor="prompt-id">Prompt ID *</Label>
+                    <Input
+                      id="prompt-id"
+                      value={systemPromptId}
+                      onChange={(e) => setSystemPromptId(e.target.value)}
+                      placeholder="unique-identifier"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Auto-generated from label. Must be unique.
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="What does this system prompt do?"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="icon">Icon</Label>
+                    <div className="flex gap-2">
+                      <Select value={iconName} onValueChange={setIconName}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Sparkles">Sparkles</SelectItem>
+                          <SelectItem value="Wand2">Wand</SelectItem>
+                          <SelectItem value="Code2">Code</SelectItem>
+                          <SelectItem value="FileText">FileText</SelectItem>
+                          <SelectItem value="Pencil">Pencil</SelectItem>
+                          <SelectItem value="Zap">Zap</SelectItem>
+                          <SelectItem value="MessageSquare">MessageSquare</SelectItem>
+                          <SelectItem value="Lightbulb">Lightbulb</SelectItem>
+                          <SelectItem value="Bug">Bug</SelectItem>
+                          <SelectItem value="CheckCircle2">CheckCircle</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center justify-center w-10 h-10 border rounded">
+                        <Icon className="h-5 w-5" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
 
+                  {promptVariables.length > 0 && (
+                    <div>
+                      <Label>Detected Variables</Label>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {promptVariables.map((variable) => (
+                          <Badge key={variable} variant="secondary" className="text-xs">
+                            {'{{'}{variable}{'}}'}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Error Display */}
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-between pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={currentStep === 'category' ? onClose : handleBack}
+                disabled={isSubmitting}
+              >
+                {currentStep === 'category' ? (
+                  'Cancel'
+                ) : (
+                  <>
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </>
+                )}
+              </Button>
+
+              {currentStep === 'category' ? (
+                <Button onClick={handleNext} disabled={!selectedCategoryId}>
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              ) : (
+                <Button onClick={handleSubmit} disabled={isSubmitting || !systemPromptId || !label}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Create System Prompt
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {/* Draft Mode Notice */}
+            {currentStep === 'configure' && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  The system prompt will be created in <strong>DRAFT</strong> mode. 
+                <AlertDescription className="text-xs">
+                  The system prompt will be created in <strong>DRAFT</strong> mode and <strong>INACTIVE</strong>. 
                   You can activate it later from the System Prompts Manager.
                 </AlertDescription>
               </Alert>
-            </div>
-          )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-between pt-4 border-t">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={currentStep === 'functionality' ? onClose : handleBack}
-            disabled={isSubmitting}
-          >
-            {currentStep === 'functionality' ? (
-              'Cancel'
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Back
-              </>
             )}
-          </Button>
-
-          {currentStep === 'confirm' ? (
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create System Prompt'
-              )}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleNext}
-              disabled={
-                (currentStep === 'functionality' && (!selectedFunctionalityId || (functionalityValidation && !functionalityValidation.valid))) ||
-                (currentStep === 'placement' && (!systemPromptId.trim() || !name.trim()))
-              }
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          )}
           </div>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

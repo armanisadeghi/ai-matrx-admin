@@ -57,26 +57,10 @@ interface CompatiblePrompt {
   };
 }
 
-interface CompatiblePromptsResponse {
-  system_prompt: {
-    id: string;
-    system_prompt_id: string;
-    name: string;
-    functionality_id: string;
-    source_prompt_id: string | null;
-    current_version: number;
-  };
-  functionality: {
-    id: string;
-    name: string;
-    description: string;
-    required_variables: string[];
-    optional_variables: string[];
-    placement_types: string[];
-  };
-  compatible: CompatiblePrompt[];
-  total_compatible: number;
-  total_prompts: number;
+interface AvailablePromptsResponse {
+  prompts: CompatiblePrompt[];
+  total: number;
+  current_prompt_id: string | null;
 }
 
 export function SelectPromptModal({
@@ -90,39 +74,49 @@ export function SelectPromptModal({
   const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [data, setData] = useState<CompatiblePromptsResponse | null>(null);
+  const [availablePrompts, setAvailablePrompts] = useState<CompatiblePrompt[]>([]);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
-  // Fetch compatible prompts
+  // Fetch user's prompts (NEW SCHEMA - no compatibility check, admin chooses any prompt)
   useEffect(() => {
     if (!isOpen) return;
 
-    async function fetchCompatiblePrompts() {
+    async function fetchUserPrompts() {
       setLoading(true);
       setError('');
       
       try {
-        const response = await fetch(
-          `/api/system-prompts/${systemPrompt.id}/compatible-prompts`
-        );
+        // Fetch all user prompts
+        const response = await fetch('/api/prompts?limit=1000');
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.details || errorData.error || 'Failed to fetch compatible prompts');
+          throw new Error('Failed to fetch prompts');
         }
 
         const result = await response.json();
-        setData(result);
+        
+        // Map to CompatiblePrompt format
+        const prompts: CompatiblePrompt[] = result.prompts.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          variables: p.variables || [],
+          updated_at: p.updated_at,
+          is_current: p.id === systemPrompt.source_prompt_id,
+          validation: { valid: true, missing: [], extra: [] } // No validation in NEW schema
+        }));
+
+        setAvailablePrompts(prompts);
       } catch (err: any) {
-        console.error('Error fetching compatible prompts:', err);
+        console.error('Error fetching prompts:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchCompatiblePrompts();
-  }, [isOpen, systemPrompt.id]);
+    fetchUserPrompts();
+  }, [isOpen, systemPrompt.source_prompt_id]);
 
   const handleSelectPrompt = async (promptId: string, promptName: string) => {
     setAssigning(true);
@@ -178,7 +172,7 @@ export function SelectPromptModal({
   };
 
   // Filter prompts based on search
-  const filteredPrompts = data?.compatible.filter(prompt => {
+  const filteredPrompts = availablePrompts.filter(prompt => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -186,7 +180,7 @@ export function SelectPromptModal({
       prompt.description?.toLowerCase().includes(query) ||
       prompt.variables.some(v => v.toLowerCase().includes(query))
     );
-  }) || [];
+  });
 
   return (
     <>
@@ -196,13 +190,14 @@ export function SelectPromptModal({
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <DialogTitle>
-                {mode === 'select' ? 'Select' : 'Change'} AI Prompt for "{systemPrompt.name}"
+                {mode === 'select' ? 'Select' : 'Change'} AI Prompt for "{systemPrompt.label}"
               </DialogTitle>
               <DialogDescription>
-                Choose a compatible AI prompt to power this system prompt. 
-                {data?.functionality && (
-                  <span className="block mt-1">
-                    Required variables: <code className="text-xs">{data.functionality.required_variables.join(', ')}</code>
+                Choose an AI prompt to power this system prompt.
+                {systemPrompt.category && (
+                  <span className="block mt-1 text-xs">
+                    Category: <strong>{systemPrompt.category.label}</strong> | 
+                    Placement: <strong>{systemPrompt.category.placement_type}</strong>
                   </span>
                 )}
               </DialogDescription>
@@ -229,34 +224,26 @@ export function SelectPromptModal({
           </Alert>
         ) : (
           <div className="space-y-4">
-            {/* Functionality Info */}
-            {data?.functionality && (
+            {/* System Prompt Info */}
+            {systemPrompt.category && (
               <Card className="p-3 bg-muted/50">
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="font-medium">Functionality:</span>
-                    <span className="ml-2">{data.functionality.name}</span>
+                    <span className="font-medium">System Prompt:</span>
+                    <span className="ml-2">{systemPrompt.label}</span>
                   </div>
                   <div>
-                    <span className="font-medium">Required Variables:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {data.functionality.required_variables.map(v => (
-                        <Badge key={v} variant="default" className="text-xs">
-                          {v}
-                        </Badge>
-                      ))}
-                    </div>
+                    <span className="font-medium">Category:</span>
+                    <span className="ml-2">{systemPrompt.category.label}</span>
                   </div>
-                  {data.functionality.optional_variables.length > 0 && (
+                  <div>
+                    <span className="font-medium">Placement:</span>
+                    <span className="ml-2">{systemPrompt.category.placement_type}</span>
+                  </div>
+                  {systemPrompt.description && (
                     <div>
-                      <span className="font-medium">Optional Variables:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {data.functionality.optional_variables.map(v => (
-                          <Badge key={v} variant="secondary" className="text-xs">
-                            {v}
-                          </Badge>
-                        ))}
-                      </div>
+                      <span className="font-medium">Description:</span>
+                      <span className="ml-2 text-muted-foreground">{systemPrompt.description}</span>
                     </div>
                   )}
                 </div>
@@ -277,10 +264,10 @@ export function SelectPromptModal({
             {/* Stats */}
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div>
-                <span className="font-medium text-foreground">{data?.total_compatible || 0}</span> compatible prompts
+                <span className="font-medium text-foreground">{filteredPrompts.length}</span> {searchQuery ? 'matching' : 'available'} prompts
               </div>
               <div>
-                <span className="font-medium text-foreground">{data?.total_prompts || 0}</span> total prompts
+                <span className="font-medium text-foreground">{availablePrompts.length}</span> total prompts
               </div>
             </div>
 
@@ -292,20 +279,20 @@ export function SelectPromptModal({
                   <p className="text-muted-foreground mb-2">
                     {searchQuery ? 'No prompts match your search' : 'No compatible prompts found'}
                   </p>
-                  {!searchQuery && data?.functionality && (
-                    <>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Create a prompt with variables: {data.functionality.required_variables.join(', ')}
-                      </p>
-                      <Button
-                        onClick={() => setShowGenerateModal(true)}
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                      >
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        Generate New Prompt with AI
-                      </Button>
-                    </>
-                  )}
+                {!searchQuery && (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create a new AI prompt for this system prompt
+                    </p>
+                    <Button
+                      onClick={() => setShowGenerateModal(true)}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate New Prompt with AI
+                    </Button>
+                  </>
+                )}
                 </div>
               ) : (
                 <div className="space-y-2">

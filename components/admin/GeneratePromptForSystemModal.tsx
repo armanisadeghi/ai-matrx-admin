@@ -64,69 +64,64 @@ export function GeneratePromptForSystemModal({
     currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
   );
 
-  // Fetch functionality config from database
+  // Fetch category config from database (NEW SCHEMA)
   useEffect(() => {
-    if (isOpen && systemPrompt?.functionality_id) {
-      async function fetchFunctionality() {
+    if (isOpen && systemPrompt?.category_id) {
+      async function fetchCategory() {
         const { data } = await supabase
-          .from('system_prompt_functionality_configs')
+          .from('system_prompt_categories_new')
           .select('*')
-          .eq('functionality_id', systemPrompt.functionality_id)
+          .eq('id', systemPrompt.category_id)
           .single();
-        setFunctionalityConfig(data);
+        setFunctionalityConfig(data); // Reusing same state var for now
       }
-      fetchFunctionality();
+      fetchCategory();
     }
   }, [isOpen, systemPrompt, supabase]);
 
-  // Initialize with system prompt context
+  // Initialize with system prompt context (NEW SCHEMA)
   useEffect(() => {
-    if (isOpen && systemPrompt && functionalityConfig) {
+    if (isOpen && systemPrompt && functionalityConfigConfig) {
       // Build the pre-filled context
       let context = `**System Prompt Details:**\n`;
-      context += `- Name: ${systemPrompt.name}\n`;
+      context += `- Label: ${systemPrompt.label}\n`;
       if (systemPrompt.description) {
         context += `- Description: ${systemPrompt.description}\n`;
       }
-      context += `- Category: ${systemPrompt.category}\n`;
+      if (systemPrompt.category) {
+        context += `- Category: ${systemPrompt.category.label}\n`;
+        context += `- Placement Type: ${systemPrompt.category.placement_type}\n`;
+      }
       
-      if (functionalityConfigConfig) {
-        context += `\n**Functionality: ${functionalityConfigConfig.label}**\n`;
-        context += `${functionalityConfigConfig.description}\n\n`;
-        
-        context += `**Required Variables (MUST be included):**\n`;
-        (functionalityConfigConfig.required_variables || []).forEach((v: string) => {
+      // Note: In new schema, there are no required/optional variables at category level
+      // Variables are determined by the prompt itself
+      
+      if (systemPrompt.prompt_snapshot?.variables) {
+        context += `\n**Current Variables:**\n`;
+        (systemPrompt.prompt_snapshot.variables as string[]).forEach((v: string) => {
           context += `- {{${v}}}\n`;
         });
-        
-        if (functionalityConfigConfig.optional_variables && functionalityConfigConfig.optional_variables.length > 0) {
-          context += `\n**Optional Variables (can be included):**\n`;
-          functionalityConfigConfig.optional_variables.forEach((v: string) => {
-            context += `- {{${v}}}\n`;
-          });
-        }
-
-        context += `\n**Important:** The prompt MUST use exactly these variable names with double curly braces (e.g., {{${(functionalityConfigConfig.required_variables || [])[0]}}}).\n`;
       }
 
-      context += `\n**Placement Type:** ${systemPrompt.placement_type}\n`;
-      
-      if (systemPrompt.placement_settings) {
-        if (systemPrompt.placement_settings.requiresSelection) {
+      // Placement settings are now in metadata
+      const placementSettings = systemPrompt.metadata?.placement_settings as any;
+      if (placementSettings) {
+        context += `\n**Placement Settings:**\n`;
+        if (placementSettings.requiresSelection) {
           context += `- Requires user text selection\n`;
         }
-        if (systemPrompt.placement_settings.allowChat) {
+        if (placementSettings.allowChat) {
           context += `- Supports chat mode / conversational responses\n`;
         }
-        if (systemPrompt.placement_settings.allowInitialMessage) {
+        if (placementSettings.allowInitialMessage) {
           context += `- Allows initial user message before execution\n`;
         }
       }
 
       setAdditionalContext(context);
-      setPromptName(systemPrompt.name + ' (AI Generated)');
+      setPromptName(systemPrompt.label + ' (AI Generated)');
     }
-  }, [isOpen, systemPrompt]);
+  }, [isOpen, systemPrompt, functionalityConfigConfig]);
 
   // Extract JSON from streaming response when it ends
   useEffect(() => {
@@ -343,36 +338,39 @@ export function GeneratePromptForSystemModal({
   const hasGeneratedPrompt = extractedJson !== null;
   const canGenerate = promptPurpose.trim().length > 0;
 
-  // Functionality config is already fetched and available in state (from earlier useEffect)
-  const functionalityConfig = functionalityConfigConfig;
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-7xl h-[95dvh] flex flex-col p-0">
         <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Wand2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
-            Generate AI Prompt for "{systemPrompt.name}"
+            Generate AI Prompt for "{systemPrompt.label}"
           </DialogTitle>
         </DialogHeader>
 
-        {/* System Prompt Info Banner */}
+        {/* System Prompt Info Banner (NEW SCHEMA) */}
         <Card className="mx-4 sm:mx-6 mt-3 p-3 bg-primary/5 border-primary/20">
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
-              <span className="font-semibold">Functionality:</span>
-              <span>{functionalityConfig?.name || 'N/A'}</span>
+              <span className="font-semibold">Category:</span>
+              <span>{systemPrompt.category?.label || functionalityConfigConfig?.label || 'N/A'}</span>
             </div>
-            <div>
-              <span className="font-semibold">Required Variables:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {functionalityConfig?.requiredVariables.map(v => (
-                  <Badge key={v} variant="default" className="text-xs">
-                    {'{{'}{v}{'}}'}
-                  </Badge>
-                )) || <span className="text-xs text-muted-foreground">None specified</span>}
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">Placement:</span>
+              <span>{systemPrompt.category?.placement_type || 'N/A'}</span>
+            </div>
+            {systemPrompt.prompt_snapshot?.variables && (
+              <div>
+                <span className="font-semibold">Current Variables:</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {(systemPrompt.prompt_snapshot.variables as string[]).map(v => (
+                    <Badge key={v} variant="default" className="text-xs">
+                      {'{{'}{v}{'}}'}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </Card>
 

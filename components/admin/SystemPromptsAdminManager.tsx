@@ -1,17 +1,16 @@
 /**
- * Consolidated System Prompts Manager
+ * System Prompts Admin Manager (NEW SCHEMA - FULL FEATURED)
  * 
- * Unified interface for managing AI Tool Functionalities and their prompt connections.
+ * Comprehensive admin interface for managing system prompts using the
+ * consolidated schema (system_prompts_new + system_prompt_categories_new).
  * 
- * Data Model:
- * - Functionality Config (system_prompt_functionality_configs) - The "what" (e.g., "explain-text")
- * - System Prompt (system_prompts) - The connection to an AI prompt (the "how")
- * - Category (system_prompt_categories) - Grouping for UI display
- * 
- * Each row represents a FUNCTIONALITY with:
- * - Core properties: name, description, icon, variables, placement types
- * - Category assignment
- * - Optional connection to an AI prompt
+ * Features:
+ * - Full CRUD operations with complete edit modal
+ * - Connect/change AI prompts via SelectPromptModal
+ * - Update to latest version via UpdatePromptModal
+ * - Advanced filtering & sorting
+ * - Category-based organization
+ * - Status tracking (draft/published)
  */
 
 'use client';
@@ -53,6 +52,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import {
@@ -77,21 +84,21 @@ import {
   Filter,
   X,
   ArrowUpDown,
-  ArrowLeftRight,
   Download,
+  ArrowLeftRight,
   Save,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import { useFunctionalityConfigs } from '@/hooks/useFunctionalityConfigs';
-import { useSystemPromptCategories } from '@/hooks/useSystemPromptCategories';
 import { useAllSystemPrompts } from '@/hooks/useSystemPrompts';
+import { useSystemPromptCategories } from '@/hooks/useSystemPromptCategories';
 import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
+import type { SystemPromptDB } from '@/types/system-prompts-db';
 import { SelectPromptModal } from './SelectPromptModal';
 import { UpdatePromptModal } from './UpdatePromptModal';
 
 type PlacementType = 'context-menu' | 'card' | 'button' | 'modal' | 'link' | 'action';
-type SortField = 'name' | 'category' | 'status' | 'connection';
+type SortField = 'label' | 'category' | 'status' | 'placement' | 'connection';
 type SortDirection = 'asc' | 'desc';
 
 const PLACEMENT_ICONS = {
@@ -107,98 +114,93 @@ const ICON_OPTIONS = [
   'MessageCircleQuestion', 'RefreshCw', 'FileText', 'Languages', 'PenLine',
   'List', 'Search', 'Wrench', 'Code', 'Sparkles', 'CreditCard',
   'HelpCircle', 'Globe', 'Lightbulb', 'LayoutGrid', 'Menu', 'Zap',
+  'Bug', 'Wand2', 'Code2', 'Pencil', 'CheckCircle2'
 ];
 
-interface FunctionalityWithPrompt {
-  // From system_prompt_functionality_configs
-  id: string;
-  functionality_id: string;
-  category_id: string;
+interface ColumnFilters {
+  status: 'all' | 'connected' | 'placeholder';
   label: string;
-  description: string | null;
-  icon_name: string;
-  sort_order: number;
-  is_active: boolean;
-  required_variables: string[];
-  optional_variables: string[];
-  placement_types: string[];
-  examples: string[];
-  category?: {
-    id: string;
-    label: string;
-    color: string;
-    icon_name: string;
-  };
-  // Connected system prompt (if any)
-  systemPrompt?: any;
+  promptId: string;
+  placement: Set<PlacementType>;
+  category: Set<string>;
+  sourcePrompt: 'all' | 'connected' | 'none';
+  active: 'all' | 'active' | 'inactive';
+  publishStatus: 'all' | 'draft' | 'published' | 'archived';
 }
 
-export function ConsolidatedSystemPromptsManager() {
-  const { configs, isLoading: loadingConfigs, error: configsError, refetch: refetchConfigs } = useFunctionalityConfigs({ 
-    activeOnly: false, 
-    includeCategory: true 
-  });
+export function SystemPromptsAdminManager() {
+  const { systemPrompts, loading, refetch } = useAllSystemPrompts();
   const { categories, isLoading: loadingCategories } = useSystemPromptCategories({ activeOnly: false });
-  const { systemPrompts, loading: loadingPrompts, refetch: refetchPrompts } = useAllSystemPrompts();
   
-  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortField, setSortField] = useState<SortField>('label');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  
+  // Filters (matching your original clean UX)
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'connected' | 'unconnected'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'connected' | 'placeholder'>('all');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  
-  const [editingFunctionality, setEditingFunctionality] = useState<FunctionalityWithPrompt | null>(null);
+  const [placementFilter, setPlacementFilter] = useState<string>('all');
+
+  // Modals
+  const [editingPrompt, setEditingPrompt] = useState<SystemPromptDB | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  
-  const [selectingPromptFor, setSelectingPromptFor] = useState<{ functionality: FunctionalityWithPrompt; mode: 'select' | 'change' } | null>(null);
-  const [updatingPrompt, setUpdatingPrompt] = useState<FunctionalityWithPrompt | null>(null);
+  const [selectingPromptFor, setSelectingPromptFor] = useState<{ prompt: SystemPromptDB; mode: 'select' | 'change' } | null>(null);
+  const [updatingPrompt, setUpdatingPrompt] = useState<SystemPromptDB | null>(null);
 
-  // Combine functionality configs with their system prompts
-  const functionalitiesWithPrompts: FunctionalityWithPrompt[] = useMemo(() => {
-    return configs.map(config => {
-      // Find matching system prompt by functionality_id
-      const systemPrompt = systemPrompts.find(sp => sp.functionality_id === config.functionality_id);
-      return {
-        ...config,
-        systemPrompt
-      };
+  // Get unique values for dropdown filters
+  const uniqueValues = useMemo(() => {
+    const placements = new Set<PlacementType>();
+    const categoryIds = new Set<string>();
+
+    systemPrompts.forEach((p) => {
+      if (p.category?.placement_type) placements.add(p.category.placement_type);
+      if (p.category?.id) categoryIds.add(p.category.id);
     });
-  }, [configs, systemPrompts]);
 
-  // Filter and sort
-  const filteredAndSorted = useMemo(() => {
-    let filtered = [...functionalitiesWithPrompts];
+    return {
+      placements: Array.from(placements).sort(),
+      categories: categories.filter(cat => categoryIds.has(cat.id)),
+    };
+  }, [systemPrompts, categories]);
 
-    // Search filter
+  // Filter and sort prompts (matching your original logic)
+  const filteredAndSortedPrompts = useMemo(() => {
+    let filtered = [...systemPrompts];
+
+    // Global search (matches your original: searches label, prompt_id, description)
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(f => 
-        f.label.toLowerCase().includes(query) ||
-        f.functionality_id.toLowerCase().includes(query) ||
-        f.description?.toLowerCase().includes(query)
+      filtered = filtered.filter(p => 
+        p.label.toLowerCase().includes(query) ||
+        p.prompt_id.toLowerCase().includes(query) ||
+        p.description?.toLowerCase().includes(query)
       );
     }
 
     // Category filter
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(f => f.category_id === categoryFilter);
+      filtered = filtered.filter(p => p.category_id === categoryFilter);
     }
 
-    // Status filter
+    // Status filter (connected vs placeholder)
     if (statusFilter === 'connected') {
-      filtered = filtered.filter(f => f.systemPrompt && !f.systemPrompt.prompt_snapshot?.placeholder);
-    } else if (statusFilter === 'unconnected') {
-      filtered = filtered.filter(f => !f.systemPrompt || f.systemPrompt.prompt_snapshot?.placeholder);
+      filtered = filtered.filter(p => !p.prompt_snapshot?.placeholder);
+    } else if (statusFilter === 'placeholder') {
+      filtered = filtered.filter(p => p.prompt_snapshot?.placeholder);
     }
 
     // Active filter
     if (activeFilter === 'active') {
-      filtered = filtered.filter(f => f.is_active);
+      filtered = filtered.filter(p => p.is_active);
     } else if (activeFilter === 'inactive') {
-      filtered = filtered.filter(f => !f.is_active);
+      filtered = filtered.filter(p => !p.is_active);
+    }
+
+    // Placement filter
+    if (placementFilter !== 'all') {
+      filtered = filtered.filter(p => p.category?.placement_type === placementFilter);
     }
 
     // Sort
@@ -206,7 +208,7 @@ export function ConsolidatedSystemPromptsManager() {
       let aVal: any, bVal: any;
 
       switch (sortField) {
-        case 'name':
+        case 'label':
           aVal = a.label.toLowerCase();
           bVal = b.label.toLowerCase();
           break;
@@ -218,9 +220,13 @@ export function ConsolidatedSystemPromptsManager() {
           aVal = a.is_active ? 1 : 0;
           bVal = b.is_active ? 1 : 0;
           break;
+        case 'placement':
+          aVal = a.category?.placement_type || '';
+          bVal = b.category?.placement_type || '';
+          break;
         case 'connection':
-          aVal = (a.systemPrompt && !a.systemPrompt.prompt_snapshot?.placeholder) ? 1 : 0;
-          bVal = (b.systemPrompt && !b.systemPrompt.prompt_snapshot?.placeholder) ? 1 : 0;
+          aVal = a.source_prompt_id ? 1 : 0;
+          bVal = b.source_prompt_id ? 1 : 0;
           break;
         default:
           return 0;
@@ -232,20 +238,17 @@ export function ConsolidatedSystemPromptsManager() {
     });
 
     return filtered;
-  }, [functionalitiesWithPrompts, searchQuery, categoryFilter, statusFilter, activeFilter, sortField, sortDirection]);
+  }, [systemPrompts, searchQuery, categoryFilter, statusFilter, activeFilter, placementFilter, sortField, sortDirection]);
 
   // Stats
   const stats = useMemo(() => {
-    const total = functionalitiesWithPrompts.length;
-    const connected = functionalitiesWithPrompts.filter(f => f.systemPrompt && !f.systemPrompt.prompt_snapshot?.placeholder).length;
-    const active = functionalitiesWithPrompts.filter(f => f.is_active).length;
-    
-    return { total, connected, unconnected: total - connected, active };
-  }, [functionalitiesWithPrompts]);
+    const connected = systemPrompts.filter((p) => !p.prompt_snapshot?.placeholder).length;
+    const placeholders = systemPrompts.filter((p) => p.prompt_snapshot?.placeholder).length;
+    const active = systemPrompts.filter((p) => p.is_active).length;
+    const published = systemPrompts.filter((p) => p.status === 'published').length;
 
-  const refetch = async () => {
-    await Promise.all([refetchConfigs(), refetchPrompts()]);
-  };
+    return { total: systemPrompts.length, connected, placeholders, active, published };
+  }, [systemPrompts]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -256,67 +259,65 @@ export function ConsolidatedSystemPromptsManager() {
     }
   };
 
-  const handleRowClick = (functionality: FunctionalityWithPrompt) => {
-    setEditingFunctionality(functionality);
+  const handleRowClick = (prompt: SystemPromptDB) => {
+    setEditingPrompt(prompt);
     setIsEditModalOpen(true);
   };
 
   const handleCreate = () => {
-    setEditingFunctionality(null);
+    setEditingPrompt(null);
     setIsCreateModalOpen(true);
   };
 
-  const handleToggleActive = async (functionalityId: string, currentState: boolean) => {
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('system_prompt_functionality_configs')
-        .update({ 
-          is_active: !currentState,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', functionalityId);
-
-      if (error) throw error;
-
-      toast.success(`Functionality ${!currentState ? 'activated' : 'deactivated'}`);
-      await refetchConfigs();
-    } catch (error) {
-      toast.error('Failed to update functionality');
-    }
-  };
-
-  const handleDelete = async (functionalityId: string, functionalityLabel: string) => {
-    if (!confirm(`Are you sure you want to delete "${functionalityLabel}"? This will also remove any connected system prompts.`)) return;
-
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('system_prompt_functionality_configs')
-        .delete()
-        .eq('id', functionalityId);
-
-      if (error) throw error;
-
-      toast.success('Functionality deleted');
-      await refetch();
-    } catch (error) {
-      toast.error('Failed to delete functionality');
-    }
-  };
-
-  const clearFilters = () => {
+  const clearAllFilters = () => {
     setSearchQuery('');
     setCategoryFilter('all');
     setStatusFilter('all');
     setActiveFilter('all');
+    setPlacementFilter('all');
   };
 
-  const hasActiveFilters = searchQuery || categoryFilter !== 'all' || statusFilter !== 'all' || activeFilter !== 'all';
+  const hasActiveFilters = 
+    searchQuery || 
+    categoryFilter !== 'all' || 
+    statusFilter !== 'all' || 
+    activeFilter !== 'all' ||
+    placementFilter !== 'all';
 
-  const getIcon = (iconName: string) => {
-    const Icon = (LucideIcons as any)[iconName];
-    return Icon || LucideIcons.Sparkles;
+  const handleToggleActive = async (promptId: string, currentState: boolean) => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('system_prompts_new')
+        .update({ is_active: !currentState })
+        .eq('id', promptId);
+
+      if (error) throw error;
+
+      toast.success(`Prompt ${!currentState ? 'activated' : 'deactivated'}`);
+      refetch();
+    } catch (error) {
+      toast.error('Failed to update prompt');
+    }
+  };
+
+  const handleDelete = async (promptId: string, promptLabel: string) => {
+    if (!confirm(`Are you sure you want to delete "${promptLabel}"?`)) return;
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('system_prompts_new')
+        .delete()
+        .eq('id', promptId);
+
+      if (error) throw error;
+
+      toast.success('System prompt deleted');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to delete prompt');
+    }
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
@@ -328,7 +329,13 @@ export function ConsolidatedSystemPromptsManager() {
     );
   };
 
-  if (loadingConfigs || loadingPrompts) {
+  const getIcon = (iconName?: string) => {
+    if (!iconName) return LucideIcons.Sparkles;
+    const Icon = (LucideIcons as any)[iconName];
+    return Icon || LucideIcons.Sparkles;
+  };
+
+  if (loading || loadingCategories) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -343,12 +350,14 @@ export function ConsolidatedSystemPromptsManager() {
         <div className="flex-shrink-0 p-4 border-b bg-card space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl pl-2 font-bold">AI Tools Manager</h2>
-              <p className="text-sm text-muted-foreground pl-2">Manage functionalities and their AI prompt connections</p>
+              <h2 className="text-2xl pl-2 font-bold">System Prompts Manager</h2>
+              <p className="text-sm text-muted-foreground pl-2">
+                Manage AI prompts organized by categories and placement types
+              </p>
             </div>
             <div className="flex gap-2">
               {hasActiveFilters && (
-                <Button onClick={clearFilters} variant="outline" size="sm">
+                <Button onClick={clearAllFilters} variant="outline" size="sm">
                   <X className="h-4 w-4 mr-2" />
                   Clear Filters
                 </Button>
@@ -359,13 +368,13 @@ export function ConsolidatedSystemPromptsManager() {
               </Button>
               <Button onClick={handleCreate} size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                New Functionality
+                New Prompt
               </Button>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-5 gap-4">
             <Card>
               <CardContent className="p-2">
                 <div className="text-2xl font-bold">{stats.total}</div>
@@ -380,8 +389,8 @@ export function ConsolidatedSystemPromptsManager() {
             </Card>
             <Card>
               <CardContent className="p-2">
-                <div className="text-2xl font-bold text-orange-600">{stats.unconnected}</div>
-                <div className="text-xs text-muted-foreground">Unconnected</div>
+                <div className="text-2xl font-bold text-orange-600">{stats.placeholders}</div>
+                <div className="text-xs text-muted-foreground">Placeholders</div>
               </CardContent>
             </Card>
             <Card>
@@ -390,12 +399,18 @@ export function ConsolidatedSystemPromptsManager() {
                 <div className="text-xs text-muted-foreground">Active</div>
               </CardContent>
             </Card>
+            <Card>
+              <CardContent className="p-2">
+                <div className="text-2xl font-bold text-purple-600">{stats.published}</div>
+                <div className="text-xs text-muted-foreground">Published</div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Filters */}
+          {/* Filters (Your original clean design) */}
           <div className="flex gap-2 items-center">
             <Input
-              placeholder="Search functionalities..."
+              placeholder="Search prompts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="max-w-xs"
@@ -413,6 +428,18 @@ export function ConsolidatedSystemPromptsManager() {
               </SelectContent>
             </Select>
 
+            <Select value={placementFilter} onValueChange={setPlacementFilter}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="All Placements" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Placements</SelectItem>
+                {uniqueValues.placements.map(placement => (
+                  <SelectItem key={placement} value={placement}>{placement}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue />
@@ -420,7 +447,7 @@ export function ConsolidatedSystemPromptsManager() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="connected">Connected</SelectItem>
-                <SelectItem value="unconnected">Unconnected</SelectItem>
+                <SelectItem value="placeholder">Placeholder</SelectItem>
               </SelectContent>
             </Select>
 
@@ -444,14 +471,14 @@ export function ConsolidatedSystemPromptsManager() {
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
                   <TableHead className="w-[50px]">Status</TableHead>
-                  <TableHead className="min-w-[200px]" onClick={() => handleSort('name')}>
+                  <TableHead className="min-w-[200px]" onClick={() => handleSort('label')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
-                      <span className="font-semibold">Name</span>
+                      <span className="font-semibold">Label</span>
                       <ArrowUpDown className="h-3 w-3" />
-                      <SortIcon field="name" />
+                      <SortIcon field="label" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[150px]">Functionality ID</TableHead>
+                  <TableHead className="min-w-[150px]">Prompt ID</TableHead>
                   <TableHead className="min-w-[130px]" onClick={() => handleSort('category')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Category</span>
@@ -474,19 +501,22 @@ export function ConsolidatedSystemPromptsManager() {
                       <SortIcon field="status" />
                     </div>
                   </TableHead>
-                  <TableHead className="text-right w-[140px]">Actions</TableHead>
+                  <TableHead className="text-right w-[160px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndSorted.map((functionality) => {
-                  const isConnected = functionality.systemPrompt && !functionality.systemPrompt.prompt_snapshot?.placeholder;
-                  const Icon = getIcon(functionality.icon_name);
+                {filteredAndSortedPrompts.map((prompt) => {
+                  const isConnected = prompt.source_prompt_id && !prompt.prompt_snapshot?.placeholder;
+                  const Icon = getIcon(prompt.icon_name);
+                  const PlacementIcon = prompt.category?.placement_type 
+                    ? PLACEMENT_ICONS[prompt.category.placement_type] || Code2
+                    : Code2;
 
                   return (
                     <TableRow 
-                      key={functionality.id} 
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => handleRowClick(functionality)}
+                      key={prompt.id} 
+                      className={cn("cursor-pointer hover:bg-muted/50", !isConnected && 'opacity-60')}
+                      onClick={() => handleRowClick(prompt)}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         {isConnected ? (
@@ -507,42 +537,34 @@ export function ConsolidatedSystemPromptsManager() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4" />
-                          <div>
-                            <div className="font-medium">{functionality.label}</div>
-                            {functionality.description && (
+                          <Icon className="h-4 w-4 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <div className="font-medium">{prompt.label}</div>
+                            {prompt.description && (
                               <div className="text-xs text-muted-foreground line-clamp-1">
-                                {functionality.description}
+                                {prompt.description}
                               </div>
                             )}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <code className="text-xs bg-muted px-2 py-1 rounded">{functionality.functionality_id}</code>
+                        <code className="text-xs bg-muted px-2 py-1 rounded">{prompt.prompt_id}</code>
                       </TableCell>
                       <TableCell>
-                        {functionality.category && (
-                          <Badge variant="outline">{functionality.category.label}</Badge>
+                        {prompt.category && (
+                          <Badge variant="outline" className="text-xs">
+                            {prompt.category.label}
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {functionality.placement_types.map(type => {
-                            const PlacementIcon = PLACEMENT_ICONS[type as PlacementType] || Code2;
-                            return (
-                              <Tooltip key={type}>
-                                <TooltipTrigger>
-                                  <Badge variant="secondary" className="text-xs">
-                                    <PlacementIcon className="h-3 w-3 mr-1" />
-                                    {type}
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>{type}</TooltipContent>
-                              </Tooltip>
-                            );
-                          })}
-                        </div>
+                        {prompt.category?.placement_type && (
+                          <div className="flex items-center gap-1">
+                            <PlacementIcon className="h-3 w-3" />
+                            <span className="text-xs">{prompt.category.placement_type}</span>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         {isConnected ? (
@@ -551,14 +573,14 @@ export function ConsolidatedSystemPromptsManager() {
                               <div className="flex items-center gap-1 text-sm">
                                 <Link2 className="h-3 w-3 text-green-600" />
                                 <span className="font-medium line-clamp-1">
-                                  {functionality.systemPrompt.prompt_snapshot?.name || 'Connected'}
+                                  {prompt.prompt_snapshot?.name || 'Connected'}
                                 </span>
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
                               <div className="space-y-1">
                                 <p className="font-semibold">AI Prompt:</p>
-                                <p className="text-xs">{functionality.systemPrompt.prompt_snapshot?.name}</p>
+                                <p className="text-xs">{prompt.prompt_snapshot?.name}</p>
                               </div>
                             </TooltipContent>
                           </Tooltip>
@@ -567,7 +589,7 @@ export function ConsolidatedSystemPromptsManager() {
                             variant="ghost"
                             size="sm"
                             className="h-6 px-2 text-xs"
-                            onClick={() => setSelectingPromptFor({ functionality, mode: 'select' })}
+                            onClick={() => setSelectingPromptFor({ prompt, mode: 'select' })}
                           >
                             <Unlink className="h-3 w-3 mr-1" />
                             Connect
@@ -575,8 +597,8 @@ export function ConsolidatedSystemPromptsManager() {
                         )}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Badge variant={functionality.is_active ? 'default' : 'secondary'}>
-                          {functionality.is_active ? 'Yes' : 'No'}
+                        <Badge variant={prompt.is_active ? 'default' : 'secondary'} className="text-xs">
+                          {prompt.is_active ? 'Yes' : 'No'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -588,7 +610,7 @@ export function ConsolidatedSystemPromptsManager() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => setSelectingPromptFor({ functionality, mode: 'change' })}
+                                    onClick={() => setSelectingPromptFor({ prompt, mode: 'change' })}
                                   >
                                     <ArrowLeftRight className="h-3 w-3" />
                                   </Button>
@@ -600,7 +622,7 @@ export function ConsolidatedSystemPromptsManager() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => setUpdatingPrompt(functionality)}
+                                    onClick={() => setUpdatingPrompt(prompt)}
                                   >
                                     <Download className="h-3 w-3" />
                                   </Button>
@@ -614,13 +636,13 @@ export function ConsolidatedSystemPromptsManager() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleToggleActive(functionality.id, functionality.is_active)}
+                                onClick={() => handleToggleActive(prompt.id, prompt.is_active)}
                               >
-                                {functionality.is_active ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                {prompt.is_active ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {functionality.is_active ? 'Deactivate' : 'Activate'}
+                              {prompt.is_active ? 'Deactivate' : 'Activate'}
                             </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -628,7 +650,7 @@ export function ConsolidatedSystemPromptsManager() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleDelete(functionality.id, functionality.label)}
+                                onClick={() => handleDelete(prompt.id, prompt.label)}
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -643,12 +665,12 @@ export function ConsolidatedSystemPromptsManager() {
               </TableBody>
             </Table>
 
-            {filteredAndSorted.length === 0 && (
+            {filteredAndSortedPrompts.length === 0 && (
               <div className="text-center py-12">
                 <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No functionalities found</p>
+                <p className="text-muted-foreground">No system prompts found</p>
                 {hasActiveFilters && (
-                  <Button variant="link" onClick={clearFilters} className="mt-2">
+                  <Button variant="link" onClick={clearAllFilters} className="mt-2">
                     Clear filters
                   </Button>
                 )}
@@ -657,30 +679,30 @@ export function ConsolidatedSystemPromptsManager() {
           </ScrollArea>
         </div>
 
-        {/* Edit/Create Modal - Full details */}
-        <FunctionalityEditModal
-          functionality={editingFunctionality}
+        {/* Edit/Create Modal */}
+        <SystemPromptEditModal
+          systemPrompt={editingPrompt}
           isOpen={isEditModalOpen || isCreateModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
             setIsCreateModalOpen(false);
-            setEditingFunctionality(null);
+            setEditingPrompt(null);
           }}
           categories={categories}
           onSuccess={() => {
             setIsEditModalOpen(false);
             setIsCreateModalOpen(false);
-            setEditingFunctionality(null);
+            setEditingPrompt(null);
             refetch();
           }}
         />
 
         {/* Select/Change Prompt Modal */}
-        {selectingPromptFor && selectingPromptFor.functionality.systemPrompt && (
+        {selectingPromptFor && (
           <SelectPromptModal
             isOpen={true}
             onClose={() => setSelectingPromptFor(null)}
-            systemPrompt={selectingPromptFor.functionality.systemPrompt}
+            systemPrompt={selectingPromptFor.prompt}
             mode={selectingPromptFor.mode}
             onSuccess={() => {
               setSelectingPromptFor(null);
@@ -690,11 +712,11 @@ export function ConsolidatedSystemPromptsManager() {
         )}
 
         {/* Update to Latest Modal */}
-        {updatingPrompt && updatingPrompt.systemPrompt && (
+        {updatingPrompt && (
           <UpdatePromptModal
             isOpen={true}
             onClose={() => setUpdatingPrompt(null)}
-            systemPrompt={updatingPrompt.systemPrompt}
+            systemPrompt={updatingPrompt}
             onSuccess={() => {
               setUpdatingPrompt(null);
               refetch();
@@ -706,70 +728,67 @@ export function ConsolidatedSystemPromptsManager() {
   );
 }
 
-// Full Edit Modal for Functionality
-function FunctionalityEditModal({
-  functionality,
+// Full Edit/Create Modal for System Prompts
+function SystemPromptEditModal({
+  systemPrompt,
   isOpen,
   onClose,
   categories,
   onSuccess,
 }: {
-  functionality: FunctionalityWithPrompt | null;
+  systemPrompt: SystemPromptDB | null;
   isOpen: boolean;
   onClose: () => void;
   categories: any[];
   onSuccess: () => void;
 }) {
   const [form, setForm] = useState({
-    functionality_id: '',
+    prompt_id: '',
     category_id: '',
     label: '',
     description: '',
     icon_name: 'Sparkles',
     sort_order: 1,
-    is_active: true,
-    required_variables: [] as string[],
-    optional_variables: [] as string[],
-    placement_types: [] as string[],
-    examples: [] as string[],
+    is_active: false, // Start inactive for safety
+    is_featured: false,
+    status: 'draft' as 'draft' | 'published' | 'archived',
+    tags: [] as string[],
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Reset form when functionality changes
+  // Reset form when systemPrompt changes
   React.useEffect(() => {
-    if (functionality) {
+    if (systemPrompt) {
       setForm({
-        functionality_id: functionality.functionality_id,
-        category_id: functionality.category_id,
-        label: functionality.label,
-        description: functionality.description || '',
-        icon_name: functionality.icon_name,
-        sort_order: functionality.sort_order,
-        is_active: functionality.is_active,
-        required_variables: functionality.required_variables || [],
-        optional_variables: functionality.optional_variables || [],
-        placement_types: functionality.placement_types || [],
-        examples: functionality.examples || [],
+        prompt_id: systemPrompt.prompt_id,
+        category_id: systemPrompt.category_id || '',
+        label: systemPrompt.label,
+        description: systemPrompt.description || '',
+        icon_name: systemPrompt.icon_name || 'Sparkles',
+        sort_order: systemPrompt.sort_order || 1,
+        is_active: systemPrompt.is_active,
+        is_featured: systemPrompt.is_featured || false,
+        status: (systemPrompt.status as any) || 'draft',
+        tags: systemPrompt.tags || [],
       });
     } else {
       setForm({
-        functionality_id: '',
+        prompt_id: '',
         category_id: categories[0]?.id || '',
         label: '',
         description: '',
         icon_name: 'Sparkles',
         sort_order: 1,
-        is_active: true,
-        required_variables: [],
-        optional_variables: [],
-        placement_types: [],
-        examples: [],
+        is_active: false,
+        is_featured: false,
+        status: 'draft',
+        tags: [],
       });
     }
-  }, [functionality, categories]);
+  }, [systemPrompt, categories]);
 
   const handleSave = async () => {
-    if (!form.functionality_id.trim() || !form.category_id || !form.label.trim()) {
+    if (!form.prompt_id.trim() || !form.category_id || !form.label.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -778,10 +797,10 @@ function FunctionalityEditModal({
       setIsSaving(true);
       const supabase = createClient();
 
-      if (functionality) {
+      if (systemPrompt) {
         // Update existing
         const { error } = await supabase
-          .from('system_prompt_functionality_configs')
+          .from('system_prompts_new')
           .update({
             category_id: form.category_id,
             label: form.label,
@@ -789,41 +808,39 @@ function FunctionalityEditModal({
             icon_name: form.icon_name,
             sort_order: form.sort_order,
             is_active: form.is_active,
-            required_variables: form.required_variables,
-            optional_variables: form.optional_variables,
-            placement_types: form.placement_types,
-            examples: form.examples,
-            updated_at: new Date().toISOString(),
+            is_featured: form.is_featured,
+            status: form.status,
+            tags: form.tags,
           })
-          .eq('id', functionality.id);
+          .eq('id', systemPrompt.id);
 
         if (error) throw error;
-        toast.success('Functionality updated successfully');
+        toast.success('System prompt updated successfully');
       } else {
-        // Create new
+        // Create new (as placeholder - admin must connect prompt later)
         const { error } = await supabase
-          .from('system_prompt_functionality_configs')
+          .from('system_prompts_new')
           .insert({
-            functionality_id: form.functionality_id,
+            prompt_id: form.prompt_id,
             category_id: form.category_id,
             label: form.label,
             description: form.description,
             icon_name: form.icon_name,
             sort_order: form.sort_order,
             is_active: form.is_active,
-            required_variables: form.required_variables,
-            optional_variables: form.optional_variables,
-            placement_types: form.placement_types,
-            examples: form.examples,
+            is_featured: form.is_featured,
+            status: form.status,
+            tags: form.tags,
+            prompt_snapshot: { placeholder: true }, // Mark as placeholder
           });
 
         if (error) throw error;
-        toast.success('Functionality created successfully');
+        toast.success('System prompt created as placeholder. Connect an AI prompt to activate.');
       }
 
       onSuccess();
     } catch (err) {
-      console.error('[FunctionalityEditModal] Error saving:', err);
+      console.error('[SystemPromptEditModal] Error saving:', err);
       toast.error(`Failed to save: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
@@ -837,28 +854,28 @@ function FunctionalityEditModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {functionality ? 'Edit Functionality' : 'Create New Functionality'}
+            {systemPrompt ? 'Edit System Prompt' : 'Create New System Prompt'}
           </DialogTitle>
           <DialogDescription>
-            {functionality 
-              ? 'Modify the functionality properties. Changes will apply to all connected system prompts.' 
-              : 'Create a new functionality definition. You can connect it to an AI prompt later.'}
+            {systemPrompt 
+              ? 'Modify the system prompt properties. Changes apply immediately.' 
+              : 'Create a new system prompt placeholder. You can connect it to an AI prompt later.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="functionality_id">Functionality ID *</Label>
+              <Label htmlFor="prompt_id">Prompt ID *</Label>
               <Input
-                id="functionality_id"
-                value={form.functionality_id}
-                onChange={(e) => setForm({ ...form, functionality_id: e.target.value })}
+                id="prompt_id"
+                value={form.prompt_id}
+                onChange={(e) => setForm({ ...form, prompt_id: e.target.value })}
                 placeholder="e.g., explain-text"
-                disabled={!!functionality}
+                disabled={!!systemPrompt}
               />
               <p className="text-xs text-muted-foreground">
                 Unique identifier (kebab-case)
@@ -884,7 +901,7 @@ function FunctionalityEditModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="label">Display Name *</Label>
+            <Label htmlFor="label">Display Label *</Label>
             <Input
               id="label"
               value={form.label}
@@ -940,7 +957,26 @@ function FunctionalityEditModal({
               />
             </div>
 
-            <div className="flex items-end space-x-2 pb-2">
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={form.status}
+                onValueChange={(value: any) => setForm({ ...form, status: value })}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
               <Switch
                 id="is_active"
                 checked={form.is_active}
@@ -948,48 +984,27 @@ function FunctionalityEditModal({
               />
               <Label htmlFor="is_active">Active</Label>
             </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_featured"
+                checked={form.is_featured}
+                onCheckedChange={(checked) => setForm({ ...form, is_featured: checked })}
+              />
+              <Label htmlFor="is_featured">Featured</Label>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Required Variables (comma-separated)</Label>
+            <Label>Tags (comma-separated)</Label>
             <Input
-              value={form.required_variables.join(', ')}
+              value={form.tags.join(', ')}
               onChange={(e) => setForm({ 
                 ...form, 
-                required_variables: e.target.value.split(',').map(v => v.trim()).filter(Boolean)
+                tags: e.target.value.split(',').map(v => v.trim()).filter(Boolean)
               })}
-              placeholder="content_to_explain, text"
+              placeholder="text-manipulation, ai-tools"
             />
-            <p className="text-xs text-muted-foreground">
-              Variables that MUST be present in the prompt
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Optional Variables (comma-separated)</Label>
-            <Input
-              value={form.optional_variables.join(', ')}
-              onChange={(e) => setForm({ 
-                ...form, 
-                optional_variables: e.target.value.split(',').map(v => v.trim()).filter(Boolean)
-              })}
-              placeholder="context, audience_level"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Placement Types (comma-separated)</Label>
-            <Input
-              value={form.placement_types.join(', ')}
-              onChange={(e) => setForm({ 
-                ...form, 
-                placement_types: e.target.value.split(',').map(v => v.trim()).filter(Boolean)
-              })}
-              placeholder="context-menu, card, button"
-            />
-            <p className="text-xs text-muted-foreground">
-              Where this can appear: context-menu, card, button, modal, link, action
-            </p>
           </div>
         </div>
 
@@ -1006,7 +1021,7 @@ function FunctionalityEditModal({
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                {functionality ? 'Save Changes' : 'Create'}
+                {systemPrompt ? 'Save Changes' : 'Create'}
               </>
             )}
           </Button>
@@ -1015,4 +1030,3 @@ function FunctionalityEditModal({
     </Dialog>
   );
 }
-

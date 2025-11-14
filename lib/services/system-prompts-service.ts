@@ -16,30 +16,32 @@ import type {
 } from '@/types/system-prompts-db';
 
 /**
- * Fetch all system prompts with optional filtering
+ * Fetch all system prompts with optional filtering (NEW SCHEMA)
  */
 export async function fetchSystemPrompts(options: SystemPromptQueryOptions = {}) {
   const supabase = getBrowserSupabaseClient();
   
   let query = supabase
-    .from('system_prompts')
-    .select('*');
+    .from('system_prompts_new')
+    .select(`
+      *,
+      category:system_prompt_categories_new!category_id (
+        id,
+        category_id,
+        placement_type,
+        parent_category_id,
+        label,
+        description,
+        icon_name,
+        color,
+        sort_order,
+        is_active
+      )
+    `);
   
   // Apply filters
-  if (options.placement_type) {
-    query = query.eq('placement_type', options.placement_type);
-  }
-  
-  if (options.functionality_id) {
-    query = query.eq('functionality_id', options.functionality_id);
-  }
-  
-  if (options.category) {
-    query = query.eq('category', options.category);
-  }
-  
-  if (options.subcategory) {
-    query = query.eq('subcategory', options.subcategory);
+  if (options.category_id) {
+    query = query.eq('category_id', options.category_id);
   }
   
   if (options.status) {
@@ -55,13 +57,12 @@ export async function fetchSystemPrompts(options: SystemPromptQueryOptions = {})
   }
   
   if (options.search) {
-    query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%,system_prompt_id.ilike.%${options.search}%`);
+    query = query.or(`label.ilike.%${options.search}%,description.ilike.%${options.search}%,prompt_id.ilike.%${options.search}%`);
   }
   
-  // Order by category, then sort_order, then name
-  query = query.order('category', { ascending: true });
+  // Order by category sort_order, then prompt sort_order, then label
   query = query.order('sort_order', { ascending: true });
-  query = query.order('name', { ascending: true });
+  query = query.order('label', { ascending: true });
   
   const { data, error } = await query;
   
@@ -70,18 +71,38 @@ export async function fetchSystemPrompts(options: SystemPromptQueryOptions = {})
     throw error;
   }
   
-  return data as SystemPromptDB[];
+  // Filter by placement_type if specified (done client-side since it's in joined table)
+  let results = data as SystemPromptDB[];
+  if (options.placement_type && results) {
+    results = results.filter(p => p.category?.placement_type === options.placement_type);
+  }
+  
+  return results;
 }
 
 /**
- * Fetch a single system prompt by ID
+ * Fetch a single system prompt by ID (NEW SCHEMA)
  */
 export async function fetchSystemPromptById(id: string) {
   const supabase = getBrowserSupabaseClient();
   
   const { data, error } = await supabase
-    .from('system_prompts')
-    .select('*')
+    .from('system_prompts_new')
+    .select(`
+      *,
+      category:system_prompt_categories_new!category_id (
+        id,
+        category_id,
+        placement_type,
+        parent_category_id,
+        label,
+        description,
+        icon_name,
+        color,
+        sort_order,
+        is_active
+      )
+    `)
     .eq('id', id)
     .single();
   
@@ -94,15 +115,29 @@ export async function fetchSystemPromptById(id: string) {
 }
 
 /**
- * Fetch a single system prompt by system_prompt_id
+ * Fetch a single system prompt by prompt_id (NEW SCHEMA)
  */
-export async function fetchSystemPromptBySystemId(systemPromptId: string) {
+export async function fetchSystemPromptByPromptId(promptId: string) {
   const supabase = getBrowserSupabaseClient();
   
   const { data, error } = await supabase
-    .from('system_prompts')
-    .select('*')
-    .eq('system_prompt_id', systemPromptId)
+    .from('system_prompts_new')
+    .select(`
+      *,
+      category:system_prompt_categories_new!category_id (
+        id,
+        category_id,
+        placement_type,
+        parent_category_id,
+        label,
+        description,
+        icon_name,
+        color,
+        sort_order,
+        is_active
+      )
+    `)
+    .eq('prompt_id', promptId)
     .single();
   
   if (error) {
@@ -114,43 +149,40 @@ export async function fetchSystemPromptBySystemId(systemPromptId: string) {
 }
 
 /**
- * Fetch system prompts for context menu
+ * Fetch system prompts for context menu (NEW SCHEMA)
  */
 export async function fetchContextMenuPrompts() {
-  const prompts = await fetchSystemPrompts({ is_active: true, status: 'published' });
-  
-  // Filter to only those enabled for context menu
-  return prompts.filter(prompt => 
-    prompt.placement_config?.contextMenu?.enabled === true
-  );
+  return await fetchSystemPrompts({
+    placement_type: 'context-menu',
+    is_active: true,
+    status: 'published'
+  });
 }
 
 /**
- * Fetch system prompts for cards
+ * Fetch system prompts for cards (NEW SCHEMA)
  */
 export async function fetchCardPrompts() {
-  const prompts = await fetchSystemPrompts({ is_active: true, status: 'published' });
-  
-  // Filter to only those enabled for cards
-  return prompts.filter(prompt => 
-    prompt.placement_config?.card?.enabled === true
-  );
+  return await fetchSystemPrompts({
+    placement_type: 'card',
+    is_active: true,
+    status: 'published'
+  });
 }
 
 /**
- * Fetch system prompts for buttons
+ * Fetch system prompts for buttons (NEW SCHEMA)
  */
 export async function fetchButtonPrompts() {
-  const prompts = await fetchSystemPrompts({ is_active: true, status: 'published' });
-  
-  // Filter to only those enabled for buttons
-  return prompts.filter(prompt => 
-    prompt.placement_config?.button?.enabled === true
-  );
+  return await fetchSystemPrompts({
+    placement_type: 'button',
+    is_active: true,
+    status: 'published'
+  });
 }
 
 /**
- * Create a new system prompt
+ * Create a new system prompt (NEW SCHEMA)
  */
 export async function createSystemPrompt(input: CreateSystemPromptInput) {
   const supabase = getBrowserSupabaseClient();
@@ -161,29 +193,38 @@ export async function createSystemPrompt(input: CreateSystemPromptInput) {
   }
   
   const { data, error } = await supabase
-    .from('system_prompts')
+    .from('system_prompts_new')
     .insert({
-      system_prompt_id: input.system_prompt_id,
-      name: input.name,
+      prompt_id: input.prompt_id,
+      category_id: input.category_id,
+      label: input.label,
       description: input.description || null,
-      source_prompt_id: input.source_prompt_id || null,
+      icon_name: input.icon_name,
       prompt_snapshot: input.prompt_snapshot,
-      display_config: input.display_config || {},
-      placement_config: input.placement_config || {},
-      category: input.category || 'general',
-      subcategory: input.subcategory || null,
+      source_prompt_id: input.source_prompt_id || null,
       tags: input.tags || [],
       sort_order: input.sort_order || 0,
-      required_variables: input.required_variables || [],
-      optional_variables: input.optional_variables || [],
-      variable_mappings: input.variable_mappings || {},
       is_active: input.is_active !== undefined ? input.is_active : true,
       is_featured: input.is_featured || false,
       status: input.status || 'published',
       metadata: input.metadata || {},
       published_by: user.user.id
     })
-    .select()
+    .select(`
+      *,
+      category:system_prompt_categories_new!category_id (
+        id,
+        category_id,
+        placement_type,
+        parent_category_id,
+        label,
+        description,
+        icon_name,
+        color,
+        sort_order,
+        is_active
+      )
+    `)
     .single();
   
   if (error) {
@@ -195,7 +236,7 @@ export async function createSystemPrompt(input: CreateSystemPromptInput) {
 }
 
 /**
- * Update an existing system prompt
+ * Update an existing system prompt (NEW SCHEMA)
  */
 export async function updateSystemPrompt(id: string, input: UpdateSystemPromptInput) {
   const supabase = getBrowserSupabaseClient();
@@ -211,17 +252,13 @@ export async function updateSystemPrompt(id: string, input: UpdateSystemPromptIn
     last_updated_at: new Date().toISOString()
   };
   
-  if (input.name !== undefined) updateData.name = input.name;
+  if (input.prompt_id !== undefined) updateData.prompt_id = input.prompt_id;
+  if (input.category_id !== undefined) updateData.category_id = input.category_id;
+  if (input.label !== undefined) updateData.label = input.label;
   if (input.description !== undefined) updateData.description = input.description;
-  if (input.display_config !== undefined) updateData.display_config = input.display_config;
-  if (input.placement_config !== undefined) updateData.placement_config = input.placement_config;
-  if (input.category !== undefined) updateData.category = input.category;
-  if (input.subcategory !== undefined) updateData.subcategory = input.subcategory;
+  if (input.icon_name !== undefined) updateData.icon_name = input.icon_name;
   if (input.tags !== undefined) updateData.tags = input.tags;
   if (input.sort_order !== undefined) updateData.sort_order = input.sort_order;
-  if (input.required_variables !== undefined) updateData.required_variables = input.required_variables;
-  if (input.optional_variables !== undefined) updateData.optional_variables = input.optional_variables;
-  if (input.variable_mappings !== undefined) updateData.variable_mappings = input.variable_mappings;
   if (input.is_active !== undefined) updateData.is_active = input.is_active;
   if (input.is_featured !== undefined) updateData.is_featured = input.is_featured;
   if (input.status !== undefined) updateData.status = input.status;
@@ -229,10 +266,24 @@ export async function updateSystemPrompt(id: string, input: UpdateSystemPromptIn
   if (input.metadata !== undefined) updateData.metadata = input.metadata;
   
   const { data, error } = await supabase
-    .from('system_prompts')
+    .from('system_prompts_new')
     .update(updateData)
     .eq('id', id)
-    .select()
+    .select(`
+      *,
+      category:system_prompt_categories_new!category_id (
+        id,
+        category_id,
+        placement_type,
+        parent_category_id,
+        label,
+        description,
+        icon_name,
+        color,
+        sort_order,
+        is_active
+      )
+    `)
     .single();
   
   if (error) {
@@ -244,7 +295,7 @@ export async function updateSystemPrompt(id: string, input: UpdateSystemPromptIn
 }
 
 /**
- * Publish an update to a system prompt (updates prompt_snapshot)
+ * Publish an update to a system prompt (updates prompt_snapshot) (NEW SCHEMA)
  */
 export async function publishSystemPromptUpdate(
   id: string, 
@@ -258,7 +309,7 @@ export async function publishSystemPromptUpdate(
   }
   
   const { data, error } = await supabase
-    .from('system_prompts')
+    .from('system_prompts_new')
     .update({
       prompt_snapshot: input.prompt_snapshot,
       update_notes: input.update_notes,
@@ -267,7 +318,21 @@ export async function publishSystemPromptUpdate(
       // version will be auto-incremented by trigger
     })
     .eq('id', id)
-    .select()
+    .select(`
+      *,
+      category:system_prompt_categories_new!category_id (
+        id,
+        category_id,
+        placement_type,
+        parent_category_id,
+        label,
+        description,
+        icon_name,
+        color,
+        sort_order,
+        is_active
+      )
+    `)
     .single();
   
   if (error) {
@@ -279,13 +344,13 @@ export async function publishSystemPromptUpdate(
 }
 
 /**
- * Delete a system prompt
+ * Delete a system prompt (NEW SCHEMA)
  */
 export async function deleteSystemPrompt(id: string) {
   const supabase = getBrowserSupabaseClient();
   
   const { error } = await supabase
-    .from('system_prompts')
+    .from('system_prompts_new')
     .delete()
     .eq('id', id);
   
@@ -332,24 +397,24 @@ export async function trackSystemPromptExecution(
 }
 
 /**
- * Get system prompt categories
+ * Get system prompt categories (NEW SCHEMA)
+ * Note: Use useSystemPromptCategories hook instead for most cases
  */
 export async function getSystemPromptCategories() {
   const supabase = getBrowserSupabaseClient();
   
   const { data, error } = await supabase
-    .from('system_prompts')
-    .select('category')
-    .eq('is_active', true);
+    .from('system_prompt_categories_new')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
   
   if (error) {
     console.error('Error fetching categories:', error);
     return [];
   }
   
-  // Get unique categories
-  const categories = [...new Set(data.map(p => p.category))].sort();
-  return categories;
+  return data || [];
 }
 
 /**

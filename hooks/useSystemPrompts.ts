@@ -149,42 +149,41 @@ export function useSystemPrompt(
 }
 
 /**
- * Hook specifically for context menu prompts
+ * Hook specifically for context menu prompts (NEW SCHEMA)
  */
-export function useContextMenuPrompts(category?: string, subcategory?: string) {
+export function useContextMenuPrompts(categoryId?: string) {
   return useSystemPrompts({
     placement_type: 'context-menu',
+    category_id: categoryId, // NEW SCHEMA: use category_id (UUID)
     // Removed is_active and status filters to show ALL context menu items
     // Placeholders will show as disabled with "(Coming Soon)"
-    category,
-    subcategory,
-    cacheKey: `context-menu-prompts-${category || 'all'}-${subcategory || 'all'}`
+    cacheKey: `context-menu-prompts-${categoryId || 'all'}`
   });
 }
 
 /**
- * Hook specifically for card prompts
+ * Hook specifically for card prompts (NEW SCHEMA)
  */
-export function useCardPrompts(category?: string) {
+export function useCardPrompts(categoryId?: string) {
   return useSystemPrompts({
     placement_type: 'card',
+    category_id: categoryId, // NEW SCHEMA: use category_id (UUID)
     // Removed is_active and status filters to show ALL cards
     // Placeholders will show as locked with "Coming Soon"
-    category,
-    cacheKey: `card-prompts-${category || 'all'}`
+    cacheKey: `card-prompts-${categoryId || 'all'}`
   });
 }
 
 /**
- * Hook specifically for button prompts
+ * Hook specifically for button prompts (NEW SCHEMA)
  */
-export function useButtonPrompts(category?: string) {
+export function useButtonPrompts(categoryId?: string) {
   return useSystemPrompts({
     placement_type: 'button',
+    category_id: categoryId, // NEW SCHEMA: use category_id (UUID)
     // Removed is_active and status filters to show ALL buttons
     // Placeholders will show as disabled
-    category,
-    cacheKey: `button-prompts-${category || 'all'}`
+    cacheKey: `button-prompts-${categoryId || 'all'}`
   });
 }
 

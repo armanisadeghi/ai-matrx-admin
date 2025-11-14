@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { useContentBlocks } from '@/hooks/useContentBlocks';
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
-import { useFunctionalityConfigsByCategory } from '@/hooks/useFunctionalityConfigs';
+import { useSystemPromptCategories } from '@/hooks/useSystemPromptCategories';
 import { DynamicContextMenuSection } from '@/features/rich-text-editor/components/DynamicContextMenuSection';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
 import { PromptRunnerModal } from '@/features/prompts/components/modal/PromptRunnerModal';
@@ -117,9 +117,13 @@ export function UnifiedContextMenu({
     autoRefresh: contentBlocksConfig.useDatabase,
   });
 
-  // AI Tools state (database-driven)
+  // AI Tools state (database-driven with NEW SCHEMA)
   const { systemPrompts, loading: loadingAITools } = useContextMenuPrompts();
-  const { configsByCategory, isLoading: loadingConfigs } = useFunctionalityConfigsByCategory({ activeOnly: true });
+  const { topLevelCategories, isLoading: loadingCategories } = useSystemPromptCategories({
+    placement_type: 'context-menu',
+    activeOnly: true,
+    includeHierarchy: true
+  });
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -211,22 +215,22 @@ export function UnifiedContextMenu({
 
       const variables = PromptContextResolver.resolve(
         systemPrompt.prompt_snapshot,
-        systemPrompt.functionality_id,
+        systemPrompt.prompt_id, // NEW SCHEMA: use prompt_id instead of functionality_id
         'context-menu',
         contextWithSelection
       );
 
       const canResolve = PromptContextResolver.canResolve(
         systemPrompt.prompt_snapshot,
-        systemPrompt.functionality_id,
+        systemPrompt.prompt_id, // NEW SCHEMA: use prompt_id instead of functionality_id
         'context-menu',
         contextWithSelection
       );
 
       if (isDebugMode) {
         setDebugData({
-          systemPromptName: systemPrompt.name,
-          functionalityId: systemPrompt.functionality_id,
+          systemPromptName: systemPrompt.label, // NEW SCHEMA: label instead of name
+          promptId: systemPrompt.prompt_id, // NEW SCHEMA: prompt_id instead of functionality_id
           placementType: 'context-menu',
           uiContext: contextWithSelection,
           resolvedVariables: variables,
@@ -242,7 +246,8 @@ export function UnifiedContextMenu({
         return;
       }
 
-      const settings = systemPrompt.placement_settings || {};
+      // NEW SCHEMA: settings are stored in metadata
+      const settings = systemPrompt.metadata?.placement_settings || {};
       const allowChat = settings.allowChat ?? true;
       const allowInitialMessage = settings.allowInitialMessage ?? false;
 
@@ -257,7 +262,7 @@ export function UnifiedContextMenu({
         setTextResultData({
           original: selectedText,
           result: 'Processing...',
-          promptName: systemPrompt.name,
+          promptName: systemPrompt.label, // NEW SCHEMA: label instead of name
         });
         setTextResultModalOpen(true);
       } else {
@@ -266,13 +271,13 @@ export function UnifiedContextMenu({
           promptId: systemPrompt.source_prompt_id,
           variables,
           mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
-          title: systemPrompt.name,
+          title: systemPrompt.label, // NEW SCHEMA: label instead of name
           initialMessage: allowInitialMessage ? undefined : '',
         } : {
           promptData: systemPrompt.prompt_snapshot,
           variables,
           mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
-          title: systemPrompt.name,
+          title: systemPrompt.label, // NEW SCHEMA: label instead of name
           initialMessage: allowInitialMessage ? undefined : '',
         };
 
@@ -285,26 +290,43 @@ export function UnifiedContextMenu({
     }
   };
 
-  // Map system prompts to their functionality configs for proper display
-  const aiToolsWithConfigs = React.useMemo(() => {
-    return Object.entries(configsByCategory).map(([categoryName, { category, configs }]) => {
-      // Find system prompts that match functionalities in this category
-      const categoryPrompts = configs.map(config => {
-        const matchingPrompt = systemPrompts.find(
-          p => p.functionality_id === config.functionality_id
-        );
-        return {
-          config,
-          systemPrompt: matchingPrompt,
+  // Group system prompts by category using the NEW SCHEMA
+  const aiToolsByCategory = React.useMemo(() => {
+    return topLevelCategories.map(category => {
+      // Get all prompts in this category (including subcategories)
+      const categoryPrompts = systemPrompts.filter(prompt => {
+        // Direct match to this category
+        if (prompt.category_id === category.id) return true;
+        // Match to any subcategory of this category
+        if (category.subcategories) {
+          return category.subcategories.some(sub => prompt.category_id === sub.id);
+        }
+        return false;
+      });
+
+      // If this category has subcategories, group prompts by subcategory
+      let structure;
+      if (category.subcategories && category.subcategories.length > 0) {
+        structure = {
+          topLevelPrompts: categoryPrompts.filter(p => p.category_id === category.id),
+          subcategories: category.subcategories.map(sub => ({
+            ...sub,
+            prompts: categoryPrompts.filter(p => p.category_id === sub.id)
+          })).filter(sub => sub.prompts.length > 0)
         };
-      }).filter(item => item.systemPrompt); // Only show if a prompt is connected
+      } else {
+        structure = {
+          topLevelPrompts: categoryPrompts,
+          subcategories: []
+        };
+      }
 
       return {
         category,
-        configs: categoryPrompts,
+        ...structure
       };
-    }).filter(cat => cat.configs.length > 0); // Only show categories with connected prompts
-  }, [configsByCategory, systemPrompts]);
+    }).filter(cat => cat.topLevelPrompts.length > 0 || cat.subcategories.length > 0);
+  }, [topLevelCategories, systemPrompts]);
 
   // Helper to get Lucide icon component
   const getIcon = (iconName: string) => {
@@ -348,7 +370,7 @@ export function UnifiedContextMenu({
             </>
           )}
 
-          {/* AI Tools Section - Database Driven */}
+          {/* AI Tools Section - Database Driven (NEW SCHEMA) */}
           {enableAITools && (
             <>
               <ContextMenuSub>
@@ -357,37 +379,71 @@ export function UnifiedContextMenu({
                   AI Tools
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-64">
-                  {(loadingAITools || loadingConfigs) ? (
+                  {(loadingAITools || loadingCategories) ? (
                     <ContextMenuLabel className="text-xs text-muted-foreground">Loading...</ContextMenuLabel>
-                  ) : aiToolsWithConfigs.length === 0 ? (
+                  ) : aiToolsByCategory.length === 0 ? (
                     <ContextMenuLabel className="text-xs text-muted-foreground">No AI tools available</ContextMenuLabel>
                   ) : (
                     <>
-                      {aiToolsWithConfigs.map(({ category, configs }) => {
-                        const CategoryIcon = getIcon(category?.icon_name || 'FileText');
+                      {aiToolsByCategory.map(({ category, topLevelPrompts, subcategories }) => {
+                        const CategoryIcon = getIcon(category.icon_name || 'FileText');
                         return (
-                          <React.Fragment key={category?.id}>
+                          <React.Fragment key={category.id}>
                             <ContextMenuSub>
                               <ContextMenuSubTrigger>
-                                <CategoryIcon className="h-4 w-4 mr-2" style={{ color: category?.color || 'currentColor' }} />
-                                {category?.label}
+                                <CategoryIcon className="h-4 w-4 mr-2" style={{ color: category.color || 'currentColor' }} />
+                                {category.label}
                               </ContextMenuSubTrigger>
                               <ContextMenuSubContent className="w-64">
-                                {configs.map(({ config, systemPrompt }) => {
-                                  if (!systemPrompt) return null;
-                                  const ItemIcon = getIcon(config.icon_name || 'Sparkles');
+                                {/* Top-level prompts in this category */}
+                                {topLevelPrompts.map(prompt => {
+                                  const ItemIcon = getIcon(prompt.icon_name || 'Sparkles');
                                   return (
                                     <ContextMenuItem
-                                      key={systemPrompt.id}
-                                      onSelect={() => handleAIToolTrigger(systemPrompt)}
-                                      disabled={systemPrompt.prompt_snapshot?.placeholder || !systemPrompt.is_active}
+                                      key={prompt.id}
+                                      onSelect={() => handleAIToolTrigger(prompt)}
+                                      disabled={prompt.prompt_snapshot?.placeholder || !prompt.is_active}
                                     >
                                       <ItemIcon className="h-4 w-4 mr-2" />
-                                      {config.label || systemPrompt.name}
-                                      {systemPrompt.prompt_snapshot?.placeholder && (
+                                      {prompt.label}
+                                      {prompt.prompt_snapshot?.placeholder && (
                                         <span className="ml-auto text-xs text-muted-foreground">Coming Soon</span>
                                       )}
                                     </ContextMenuItem>
+                                  );
+                                })}
+
+                                {/* Subcategories with their prompts */}
+                                {subcategories.map(({ id, label, icon_name, color, prompts }) => {
+                                  const SubcategoryIcon = getIcon(icon_name || 'Folder');
+                                  return (
+                                    <React.Fragment key={id}>
+                                      <ContextMenuSeparator />
+                                      <ContextMenuSub>
+                                        <ContextMenuSubTrigger>
+                                          <SubcategoryIcon className="h-4 w-4 mr-2" style={{ color: color || 'currentColor' }} />
+                                          {label}
+                                        </ContextMenuSubTrigger>
+                                        <ContextMenuSubContent className="w-64">
+                                          {prompts.map(prompt => {
+                                            const ItemIcon = getIcon(prompt.icon_name || 'Sparkles');
+                                            return (
+                                              <ContextMenuItem
+                                                key={prompt.id}
+                                                onSelect={() => handleAIToolTrigger(prompt)}
+                                                disabled={prompt.prompt_snapshot?.placeholder || !prompt.is_active}
+                                              >
+                                                <ItemIcon className="h-4 w-4 mr-2" />
+                                                {prompt.label}
+                                                {prompt.prompt_snapshot?.placeholder && (
+                                                  <span className="ml-auto text-xs text-muted-foreground">Coming Soon</span>
+                                                )}
+                                              </ContextMenuItem>
+                                            );
+                                          })}
+                                        </ContextMenuSubContent>
+                                      </ContextMenuSub>
+                                    </React.Fragment>
                                   );
                                 })}
                               </ContextMenuSubContent>

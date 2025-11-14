@@ -33,8 +33,7 @@ import { cn } from '@/lib/utils';
 interface DynamicContextMenuProps {
   children: React.ReactNode;
   uiContext?: UIContext;
-  category?: string;
-  subcategory?: string;
+  categoryId?: string; // NEW SCHEMA: category UUID instead of string name
   className?: string;
   /** For text editors: callbacks to modify text */
   onTextReplace?: (newText: string) => void;
@@ -60,15 +59,14 @@ interface GroupedPrompts {
 export function DynamicContextMenu({
   children,
   uiContext = {},
-  category,
-  subcategory,
+  categoryId, // NEW SCHEMA: category UUID
   className,
   onTextReplace,
   onTextInsertBefore,
   onTextInsertAfter,
   isEditable = false,
 }: DynamicContextMenuProps) {
-  const { systemPrompts, loading } = useContextMenuPrompts(category, subcategory);
+  const { systemPrompts, loading } = useContextMenuPrompts(categoryId);
   const [executingId, setExecutingId] = useState<string | null>(null);
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
@@ -133,47 +131,39 @@ export function DynamicContextMenu({
     // The selection data is captured for use in Replace/Insert operations
   };
 
-  // Group prompts by category and subcategory
+  // Group prompts by category (NEW SCHEMA: category is an object with joined data)
   const groupedPrompts = useMemo(() => {
     const groups: GroupedPrompts = {};
 
     systemPrompts.forEach((prompt) => {
-      const cat = prompt.category || 'other';
-      const subcat = prompt.subcategory;
+      // NEW SCHEMA: category is a joined object with placement_type, label, etc.
+      const catId = prompt.category?.category_id || 'other';
+      const catLabel = prompt.category?.label || 'Other';
+      const hasParent = !!prompt.category?.parent_category_id;
 
       // Initialize category if needed
-      if (!groups[cat]) {
-        groups[cat] = {
-          label: formatCategoryName(cat),
+      if (!groups[catId]) {
+        groups[catId] = {
+          label: catLabel,
           items: [],
           subcategories: {},
         };
       }
 
-      // If has subcategory, group there
-      if (subcat) {
-        if (!groups[cat].subcategories![subcat]) {
-          groups[cat].subcategories![subcat] = {
-            label: formatCategoryName(subcat),
-            items: [],
-          };
-        }
-        groups[cat].subcategories![subcat].items.push(prompt);
-      } else {
-        // Add to category directly
-        groups[cat].items.push(prompt);
-      }
+      // In new schema, parent_category_id determines hierarchy
+      // For now, just add all prompts directly to their category
+      groups[catId].items.push(prompt);
     });
 
     return groups;
   }, [systemPrompts]);
 
   const handleActionTrigger = async (systemPrompt: any) => {
-    console.log('[DynamicContextMenu] Action triggered:', systemPrompt.name);
+    console.log('[DynamicContextMenu] Action triggered:', systemPrompt.label); // NEW SCHEMA: use label
     
     // Check if placeholder
     if (systemPrompt.prompt_snapshot?.placeholder) {
-      console.log('[DynamicContextMenu] Skipping placeholder:', systemPrompt.name);
+      console.log('[DynamicContextMenu] Skipping placeholder:', systemPrompt.label);
       return; // Disabled
     }
 
@@ -194,10 +184,10 @@ export function DynamicContextMenu({
         contextKeys: Object.keys(contextWithSelection),
       });
 
-      // Resolve variables using the CODE
+      // Resolve variables using the NEW SCHEMA (no functionality_id)
       const variables = PromptContextResolver.resolve(
         systemPrompt.prompt_snapshot,
-        systemPrompt.functionality_id,
+        systemPrompt.prompt_id, // NEW SCHEMA: use prompt_id
         'context-menu',
         contextWithSelection
       );
@@ -207,7 +197,7 @@ export function DynamicContextMenu({
       // Check if can resolve
       const canResolve = PromptContextResolver.canResolve(
         systemPrompt.prompt_snapshot,
-        systemPrompt.functionality_id,
+        systemPrompt.prompt_id, // NEW SCHEMA: use prompt_id
         'context-menu',
         contextWithSelection
       );
@@ -217,9 +207,9 @@ export function DynamicContextMenu({
       // Show debug modal if debug mode is enabled
       if (isDebugMode) {
         setDebugData({
-          systemPromptName: systemPrompt.name,
-          functionalityId: systemPrompt.functionality_id,
-          placementType: 'context-menu',
+          systemPromptName: systemPrompt.label, // NEW SCHEMA: use label
+          promptId: systemPrompt.prompt_id, // NEW SCHEMA: use prompt_id
+          placementType: systemPrompt.category?.placement_type || 'context-menu', // NEW SCHEMA: on category
           uiContext: contextWithSelection,
           resolvedVariables: variables,
           canResolve,
@@ -230,18 +220,18 @@ export function DynamicContextMenu({
       }
 
       if (!canResolve.canResolve) {
-        console.warn(`[DynamicContextMenu] Cannot resolve variables for ${systemPrompt.name}:`, canResolve.missingVariables);
+        console.warn(`[DynamicContextMenu] Cannot resolve variables for ${systemPrompt.label}:`, canResolve.missingVariables);
         alert(`Cannot execute: Missing variables - ${canResolve.missingVariables.join(', ')}`);
         return;
       }
 
-      // Get placement settings
-      const settings = systemPrompt.placement_settings || {};
+      // Get placement settings (NEW SCHEMA: in metadata)
+      const settings = systemPrompt.metadata?.placement_settings || {};
       const allowChat = settings.allowChat ?? true;
       const allowInitialMessage = settings.allowInitialMessage ?? false;
 
       console.log('[DynamicContextMenu] Opening modal with config:', {
-        title: systemPrompt.name,
+        title: systemPrompt.label, // NEW SCHEMA: use label
         mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
         variableCount: Object.keys(variables).length,
       });
@@ -265,7 +255,7 @@ export function DynamicContextMenu({
         setTextResultData({
           original: selectedText,
           result: 'Processing...', // Will be updated by streaming
-          promptName: systemPrompt.name,
+          promptName: systemPrompt.label, // NEW SCHEMA: use label
         });
         setTextResultModalOpen(true);
       } else {
@@ -274,13 +264,13 @@ export function DynamicContextMenu({
           promptId: systemPrompt.source_prompt_id,
           variables,
           mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
-          title: systemPrompt.name,
+          title: systemPrompt.label, // NEW SCHEMA: use label
           initialMessage: allowInitialMessage ? undefined : '',
         } : {
           promptData: systemPrompt.prompt_snapshot,
           variables,
           mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
-          title: systemPrompt.name,
+          title: systemPrompt.label, // NEW SCHEMA: use label
           initialMessage: allowInitialMessage ? undefined : '',
         };
         
@@ -296,7 +286,7 @@ export function DynamicContextMenu({
   };
 
   const checkRequirements = (systemPrompt: any): boolean => {
-    const settings = systemPrompt.placement_settings || {};
+    const settings = systemPrompt.metadata?.placement_settings || {}; // NEW SCHEMA: in metadata
 
     // If placeholder, disable
     if (systemPrompt.prompt_snapshot?.placeholder) {
@@ -335,10 +325,10 @@ export function DynamicContextMenu({
         )}
       >
         {isExecuting && <Loader2 className="h-3 w-3 animate-spin" />}
-        {item.display_config?.icon && !isExecuting && (
+        {item.icon_name && !isExecuting && !isPlaceholder && (
           <span className="text-muted-foreground">{/* Icon placeholder */}</span>
         )}
-        <span>{item.name}</span>
+        <span>{item.label}</span>
         {isPlaceholder && <span className="text-xs">(Coming Soon)</span>}
       </ContextMenuItem>
     );

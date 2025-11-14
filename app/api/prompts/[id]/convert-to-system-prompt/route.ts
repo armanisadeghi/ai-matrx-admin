@@ -3,17 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminUser } from "@/config/admin.config";
 
 /**
- * Convert a prompt to a system prompt
+ * Convert a prompt to a system prompt (NEW SCHEMA)
  * 
  * POST /api/prompts/[id]/convert-to-system-prompt
  * 
- * Body (optional):
+ * Body (required):
  * {
- *   system_prompt_id?: string,  // Custom ID, defaults to kebab-case of name
- *   name?: string,              // Override name
- *   category?: string,          // Override category
- *   display_config?: {...},     // Custom display config
- *   placement_config?: {...}    // Custom placement config
+ *   prompt_id: string,          // Human-readable ID (e.g., "debug-and-fix")
+ *   category_id: string,        // UUID of category (determines placement_type)
+ *   label?: string,             // Override label (defaults to prompt name)
+ *   icon_name?: string,         // Lucide icon name (defaults to 'Sparkles')
+ *   description?: string,       // Override description
+ *   tags?: string[],            // Optional tags
+ *   metadata?: object           // Optional metadata
  * }
  */
 export async function POST(
@@ -42,8 +44,23 @@ export async function POST(
             );
         }
 
-        // Parse request body (optional overrides)
+        // Parse request body (NEW SCHEMA: prompt_id and category_id required)
         const body = await request.json().catch(() => ({}));
+
+        // Validate required fields
+        if (!body.prompt_id) {
+            return NextResponse.json(
+                { error: "prompt_id is required" },
+                { status: 400 }
+            );
+        }
+
+        if (!body.category_id) {
+            return NextResponse.json(
+                { error: "category_id is required (UUID of the category)" },
+                { status: 400 }
+            );
+        }
 
         // Fetch the original prompt
         const { data: originalPrompt, error: fetchError } = await supabase
@@ -56,29 +73,32 @@ export async function POST(
             return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
         }
 
-        // Generate system_prompt_id (kebab-case from name or use provided)
-        const generateSystemPromptId = (name: string): string => {
-            return name
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '');
-        };
+        // Verify category exists
+        const { data: category, error: categoryError } = await supabase
+            .from("system_prompt_categories_new")
+            .select("id, category_id, placement_type, label")
+            .eq("id", body.category_id)
+            .single();
 
-        const systemPromptId = body.system_prompt_id || 
-            generateSystemPromptId(originalPrompt.name);
+        if (categoryError || !category) {
+            return NextResponse.json(
+                { error: "Invalid category_id - category not found" },
+                { status: 400 }
+            );
+        }
 
         // Check if a system prompt with this ID already exists
         const { data: existingSystemPrompt } = await supabase
-            .from("system_prompts")
-            .select("id, system_prompt_id")
-            .eq("system_prompt_id", systemPromptId)
+            .from("system_prompts_new")
+            .select("id, prompt_id")
+            .eq("prompt_id", body.prompt_id)
             .single();
 
         if (existingSystemPrompt) {
             return NextResponse.json(
                 { 
                     error: "System prompt with this ID already exists",
-                    details: `A system prompt with ID "${systemPromptId}" already exists. Please choose a different name or ID.`,
+                    details: `A system prompt with ID "${body.prompt_id}" already exists. Please choose a different ID.`,
                     existing_id: existingSystemPrompt.id
                 },
                 { status: 409 }
@@ -104,9 +124,7 @@ export async function POST(
 
         const variables = extractVariables(originalPrompt.messages || []);
 
-        // Category is now just a string for organization, no old-style validation needed
-
-        // Build prompt snapshot
+        // Build prompt snapshot (NEW SCHEMA: simplified)
         const promptSnapshot = {
             name: originalPrompt.name,
             description: originalPrompt.description || '',
@@ -116,105 +134,52 @@ export async function POST(
             variables
         };
 
-        // Default display config
-        const defaultDisplayConfig = {
-            icon: 'Sparkles',
-            label: originalPrompt.name,
-            tooltip: originalPrompt.description || `Execute ${originalPrompt.name}`
-        };
-
-        // Validate functionality_id - fetch from database
-        if (!body.functionality_id) {
-            console.error('Missing functionality_id');
-            return NextResponse.json(
-                { error: "functionality_id is required" },
-                { status: 400 }
-            );
-        }
-
-        const { data: functionality, error: funcError } = await supabase
-            .from('system_prompt_functionality_configs')
-            .select('*')
-            .eq('functionality_id', body.functionality_id)
-            .single();
-
-        if (funcError || !functionality) {
-            console.error('Invalid functionality_id:', body.functionality_id, funcError);
-            return NextResponse.json(
-                { error: "Invalid functionality_id provided - not found in database" },
-                { status: 400 }
-            );
-        }
-
-        // Validate variables
-        const promptVars = new Set(promptSnapshot.variables);
-        const missing = (functionality.required_variables || []).filter((v: string) => !promptVars.has(v));
-        const valid = missing.length === 0;
-        const allowed = [
-            ...(functionality.required_variables || []),
-            ...(functionality.optional_variables || [])
-        ];
-        const extra = promptSnapshot.variables.filter((v: string) => !allowed.includes(v));
-
-        if (!valid) {
-            console.error('Validation failed:', { missing, extra });
-            return NextResponse.json(
-                { 
-                    error: "Prompt missing required variables",
-                    details: `Missing required variables: ${missing.join(', ')}. Note: Extra variables are allowed (may have defaults).`,
-                    validation: {
-                        valid,
-                        missing,
-                        extra,
-                        note: "Extra variables are allowed as long as all required variables are present"
-                    }
-                },
-                { status: 400 }
-            );
-        }
-
-        // Create the system prompt with NEW structure
+        // Create the system prompt (NEW SCHEMA)
         console.log('Inserting system prompt:', {
-            system_prompt_id: systemPromptId,
-            name: body.name || originalPrompt.name,
-            placement_type: body.placement_type,
-            functionality_id: body.functionality_id,
-            category: body.category,
+            prompt_id: body.prompt_id,
+            label: body.label || originalPrompt.name,
+            category_id: body.category_id,
+            category_label: category.label,
+            placement_type: category.placement_type,
         });
 
         const { data: newSystemPrompt, error: insertError } = await supabase
-            .from("system_prompts")
+            .from("system_prompts_new")
             .insert({
-                system_prompt_id: systemPromptId,
-                name: body.name || originalPrompt.name,
+                prompt_id: body.prompt_id,
+                category_id: body.category_id,
+                label: body.label || originalPrompt.name,
                 description: body.description || originalPrompt.description || `System prompt created from: ${originalPrompt.name}`,
+                icon_name: body.icon_name || 'Sparkles',
                 source_prompt_id: id,
                 version: 1,
                 prompt_snapshot: promptSnapshot,
-                display_config: body.display_config || defaultDisplayConfig,
-                
-                // NEW STRUCTURE FIELDS
-                placement_type: body.placement_type || 'card',
-                functionality_id: body.functionality_id,
-                category: body.category || 'general',
-                subcategory: body.subcategory || null,
-                placement_settings: body.placement_settings || {},
-                
                 tags: body.tags || [],
                 sort_order: body.sort_order || 0,
                 is_active: false,  // Start as inactive - admin must enable
                 is_featured: false,
                 status: 'draft',   // Start as draft
                 metadata: {
+                    ...(body.metadata || {}),
                     created_from_prompt_id: id,
-                    created_from_prompt_name: originalPrompt.name
+                    created_from_prompt_name: originalPrompt.name,
+                    category_label: category.label,
+                    placement_type: category.placement_type
                 },
                 published_by: user.id,
                 published_at: new Date().toISOString(),
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
             })
-            .select()
+            .select(`
+                *,
+                category:system_prompt_categories_new!category_id (
+                    id,
+                    category_id,
+                    placement_type,
+                    label,
+                    icon_name,
+                    color
+                )
+            `)
             .single();
 
         if (insertError) {
