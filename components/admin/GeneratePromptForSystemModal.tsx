@@ -24,7 +24,6 @@ import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/Enh
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { VoiceInputButton } from '@/features/audio';
 import type { SystemPromptDB } from '@/types/system-prompts-db';
-import { SYSTEM_FUNCTIONALITIES } from '@/types/system-prompt-functionalities';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
@@ -46,6 +45,7 @@ export function GeneratePromptForSystemModal({
   const dispatch = useAppDispatch();
   const supabase = createClient();
   
+  const [functionalityConfigConfig, setFunctionalityConfig] = useState<any>(null);
   const [promptPurpose, setPromptPurpose] = useState('');
   const [additionalContext, setAdditionalContext] = useState('');
   const [promptName, setPromptName] = useState('');
@@ -64,13 +64,24 @@ export function GeneratePromptForSystemModal({
     currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
   );
 
+  // Fetch functionality config from database
+  useEffect(() => {
+    if (isOpen && systemPrompt?.functionality_id) {
+      async function fetchFunctionality() {
+        const { data } = await supabase
+          .from('system_prompt_functionality_configs')
+          .select('*')
+          .eq('functionality_id', systemPrompt.functionality_id)
+          .single();
+        setFunctionalityConfig(data);
+      }
+      fetchFunctionality();
+    }
+  }, [isOpen, systemPrompt, supabase]);
+
   // Initialize with system prompt context
   useEffect(() => {
-    if (isOpen && systemPrompt) {
-      const functionality = systemPrompt.functionality_id 
-        ? SYSTEM_FUNCTIONALITIES[systemPrompt.functionality_id]
-        : null;
-
+    if (isOpen && systemPrompt && functionalityConfig) {
       // Build the pre-filled context
       let context = `**System Prompt Details:**\n`;
       context += `- Name: ${systemPrompt.name}\n`;
@@ -79,23 +90,23 @@ export function GeneratePromptForSystemModal({
       }
       context += `- Category: ${systemPrompt.category}\n`;
       
-      if (functionality) {
-        context += `\n**Functionality: ${functionality.name}**\n`;
-        context += `${functionality.description}\n\n`;
+      if (functionalityConfigConfig) {
+        context += `\n**Functionality: ${functionalityConfigConfig.label}**\n`;
+        context += `${functionalityConfigConfig.description}\n\n`;
         
         context += `**Required Variables (MUST be included):**\n`;
-        functionality.requiredVariables.forEach(v => {
+        (functionalityConfigConfig.required_variables || []).forEach((v: string) => {
           context += `- {{${v}}}\n`;
         });
         
-        if (functionality.optionalVariables && functionality.optionalVariables.length > 0) {
+        if (functionalityConfigConfig.optional_variables && functionalityConfigConfig.optional_variables.length > 0) {
           context += `\n**Optional Variables (can be included):**\n`;
-          functionality.optionalVariables.forEach(v => {
+          functionalityConfigConfig.optional_variables.forEach((v: string) => {
             context += `- {{${v}}}\n`;
           });
         }
 
-        context += `\n**Important:** The prompt MUST use exactly these variable names with double curly braces (e.g., {{${functionality.requiredVariables[0]}}}).\n`;
+        context += `\n**Important:** The prompt MUST use exactly these variable names with double curly braces (e.g., {{${(functionalityConfigConfig.required_variables || [])[0]}}}).\n`;
       }
 
       context += `\n**Placement Type:** ${systemPrompt.placement_type}\n`;
@@ -332,9 +343,8 @@ export function GeneratePromptForSystemModal({
   const hasGeneratedPrompt = extractedJson !== null;
   const canGenerate = promptPurpose.trim().length > 0;
 
-  const functionality = systemPrompt.functionality_id 
-    ? SYSTEM_FUNCTIONALITIES[systemPrompt.functionality_id]
-    : null;
+  // Functionality config is already fetched and available in state (from earlier useEffect)
+  const functionalityConfig = functionalityConfigConfig;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -351,12 +361,12 @@ export function GeneratePromptForSystemModal({
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <span className="font-semibold">Functionality:</span>
-              <span>{functionality?.name || 'N/A'}</span>
+              <span>{functionalityConfig?.name || 'N/A'}</span>
             </div>
             <div>
               <span className="font-semibold">Required Variables:</span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {functionality?.requiredVariables.map(v => (
+                {functionalityConfig?.requiredVariables.map(v => (
                   <Badge key={v} variant="default" className="text-xs">
                     {'{{'}{v}{'}}'}
                   </Badge>

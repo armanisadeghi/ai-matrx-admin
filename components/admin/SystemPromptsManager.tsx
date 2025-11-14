@@ -46,7 +46,6 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import {
   Search,
@@ -74,7 +73,7 @@ import {
   Download,
 } from 'lucide-react';
 import { useAllSystemPrompts } from '@/hooks/useSystemPrompts';
-import { SYSTEM_FUNCTIONALITIES } from '@/types/system-prompt-functionalities';
+import { useFunctionalityConfigs } from '@/hooks/useFunctionalityConfigs';
 import type { SystemPromptDB } from '@/types/system-prompts-db';
 import { cn } from '@/lib/utils';
 import { SelectPromptModal } from './SelectPromptModal';
@@ -106,11 +105,20 @@ const PLACEMENT_ICONS = {
 
 export function SystemPromptsManager() {
   const { systemPrompts, loading, refetch } = useAllSystemPrompts();
+  const { configs: functionalityConfigs } = useFunctionalityConfigs({ activeOnly: false });
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [assigningPrompt, setAssigningPrompt] = useState<SystemPromptDB | null>(null);
   const [selectingPromptFor, setSelectingPromptFor] = useState<{ prompt: SystemPromptDB; mode: 'select' | 'change' } | null>(null);
   const [updatingPrompt, setUpdatingPrompt] = useState<SystemPromptDB | null>(null);
+  
+  // Create a lookup map for functionality configs
+  const functionalityMap = useMemo(() => {
+    return functionalityConfigs.reduce((acc, config) => {
+      acc[config.functionality_id] = config;
+      return acc;
+    }, {} as Record<string, typeof functionalityConfigs[0]>);
+  }, [functionalityConfigs]);
   
   // Column filters
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
@@ -567,7 +575,7 @@ export function SystemPromptsManager() {
                             onCheckedChange={() => toggleSetFilter('functionality', func)}
                             onSelect={(e) => e.preventDefault()}
                           >
-                            {SYSTEM_FUNCTIONALITIES[func]?.name || func}
+                            {functionalityMap[func]?.label || func}
                           </DropdownMenuCheckboxItem>
                         ))}
                       </DropdownMenuContent>
@@ -795,7 +803,7 @@ export function SystemPromptsManager() {
                 const isPlaceholder = prompt.prompt_snapshot?.placeholder;
                 const Icon = PLACEMENT_ICONS[prompt.placement_type];
                 const functionality = prompt.functionality_id
-                  ? SYSTEM_FUNCTIONALITIES[prompt.functionality_id]
+                  ? functionalityMap[prompt.functionality_id]
                   : null;
 
                 return (
@@ -825,12 +833,12 @@ export function SystemPromptsManager() {
                       {functionality ? (
                         <Tooltip>
                           <TooltipTrigger>
-                            <span className="text-sm">{functionality.name}</span>
+                            <span className="text-sm">{functionality.label}</span>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs">
-                            <p className="font-semibold">{functionality.name}</p>
+                            <p className="font-semibold">{functionality.label}</p>
                             <p className="text-xs mt-1">{functionality.description}</p>
-                            <p className="text-xs mt-2">Required: {functionality.requiredVariables.join(', ')}</p>
+                            <p className="text-xs mt-2">Required: {functionality.required_variables.join(', ')}</p>
                           </TooltipContent>
                         </Tooltip>
                       ) : (
@@ -1055,9 +1063,20 @@ function AssignPromptModal({
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
 
-  const functionality = systemPrompt.functionality_id
-    ? SYSTEM_FUNCTIONALITIES[systemPrompt.functionality_id]
-    : null;
+  const [functionality, setFunctionality] = useState<any>(null);
+
+  // Fetch functionality config
+  React.useEffect(() => {
+    if (!systemPrompt.functionality_id) return;
+    
+    async function fetchFunctionality() {
+      const { getFunctionalityById } = await import('@/lib/services/functionality-helpers');
+      const config = await getFunctionalityById(systemPrompt.functionality_id!);
+      setFunctionality(config);
+    }
+
+    fetchFunctionality();
+  }, [systemPrompt.functionality_id]);
 
   // Fetch compatible prompts
   React.useEffect(() => {
@@ -1091,7 +1110,7 @@ function AssignPromptModal({
           });
 
           // Check if all required variables are present
-          const hasAllRequired = functionality.requiredVariables.every((v) => variables.has(v));
+          const hasAllRequired = (functionality.required_variables || []).every((v) => variables.has(v));
           return hasAllRequired;
         });
 
@@ -1172,7 +1191,7 @@ function AssignPromptModal({
           <DialogTitle>Assign Prompt to "{systemPrompt.name}"</DialogTitle>
           <DialogDescription>
             {functionality
-              ? `Select a prompt that has these variables: ${functionality.requiredVariables.join(', ')}`
+              ? `Select a prompt that has these variables: ${functionality.required_variables.join(', ')}`
               : 'Select a prompt to assign to this system prompt'}
           </DialogDescription>
         </DialogHeader>
@@ -1187,7 +1206,7 @@ function AssignPromptModal({
               <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground mb-2">No compatible prompts found</p>
               <p className="text-sm text-muted-foreground">
-                Create a prompt with variables: {functionality?.requiredVariables.join(', ')}
+                Create a prompt with variables: {functionality?.required_variables.join(', ')}
               </p>
             </div>
           ) : (

@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminUser } from "@/config/admin.config";
-import { SYSTEM_FUNCTIONALITIES, validatePromptForFunctionality } from "@/types/system-prompt-functionalities";
+import { extractVariablesFromPrompt } from "@/lib/services/functionality-helpers";
 
 /**
  * GET /api/system-prompts/[id]/compatible-prompts
@@ -58,22 +58,40 @@ export async function GET(
             );
         }
 
-        const functionality = systemPrompt.functionality_id 
-            ? SYSTEM_FUNCTIONALITIES[systemPrompt.functionality_id]
-            : null;
-
-        if (!functionality) {
+        // Fetch functionality config from database
+        if (!systemPrompt.functionality_id) {
             return NextResponse.json(
                 { 
                     error: "No functionality defined for this system prompt",
-                    details: `System prompt has no functionality_id or functionality "${systemPrompt.functionality_id}" not found`,
+                    details: "System prompt has no functionality_id",
+                    system_prompt: {
+                        id: systemPrompt.id,
+                        system_prompt_id: systemPrompt.system_prompt_id,
+                        functionality_id: null
+                    }
+                },
+                { status: 400 }
+            );
+        }
+
+        const { data: functionality, error: funcError } = await supabase
+            .from('system_prompt_functionality_configs')
+            .select('*')
+            .eq('functionality_id', systemPrompt.functionality_id)
+            .single();
+
+        if (funcError || !functionality) {
+            return NextResponse.json(
+                { 
+                    error: "Functionality not found",
+                    details: `Functionality "${systemPrompt.functionality_id}" not found in database`,
                     system_prompt: {
                         id: systemPrompt.id,
                         system_prompt_id: systemPrompt.system_prompt_id,
                         functionality_id: systemPrompt.functionality_id
                     }
                 },
-                { status: 400 }
+                { status: 404 }
             );
         }
 
@@ -123,10 +141,18 @@ export async function GET(
             };
 
             // Validate against functionality
-            const validation = validatePromptForFunctionality(
-                promptSnapshot, 
-                systemPrompt.functionality_id!
-            );
+            const missing = (functionality.required_variables || []).filter((v: string) => !variables.has(v));
+            const allowed = [
+                ...(functionality.required_variables || []),
+                ...(functionality.optional_variables || [])
+            ];
+            const extra = Array.from(variables).filter(v => !allowed.includes(v));
+            
+            const validation = {
+                valid: missing.length === 0,
+                missing,
+                extra
+            };
 
             const promptInfo = {
                 id: prompt.id,

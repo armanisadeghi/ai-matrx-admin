@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminUser } from "@/config/admin.config";
-import { SYSTEM_FUNCTIONALITIES, validatePromptForFunctionality } from "@/types/system-prompt-functionalities";
 
 /**
  * Convert a prompt to a system prompt
@@ -124,24 +123,49 @@ export async function POST(
             tooltip: originalPrompt.description || `Execute ${originalPrompt.name}`
         };
 
-        // Validate functionality_id
-        if (!body.functionality_id || !SYSTEM_FUNCTIONALITIES[body.functionality_id]) {
-            console.error('Invalid functionality_id:', body.functionality_id);
+        // Validate functionality_id - fetch from database
+        if (!body.functionality_id) {
+            console.error('Missing functionality_id');
             return NextResponse.json(
-                { error: "Invalid functionality_id provided" },
+                { error: "functionality_id is required" },
                 { status: 400 }
             );
         }
 
-        const validation = validatePromptForFunctionality(promptSnapshot, body.functionality_id);
-        if (!validation.valid) {
-            console.error('Validation failed:', validation);
+        const { data: functionality, error: funcError } = await supabase
+            .from('system_prompt_functionality_configs')
+            .select('*')
+            .eq('functionality_id', body.functionality_id)
+            .single();
+
+        if (funcError || !functionality) {
+            console.error('Invalid functionality_id:', body.functionality_id, funcError);
+            return NextResponse.json(
+                { error: "Invalid functionality_id provided - not found in database" },
+                { status: 400 }
+            );
+        }
+
+        // Validate variables
+        const promptVars = new Set(promptSnapshot.variables);
+        const missing = (functionality.required_variables || []).filter((v: string) => !promptVars.has(v));
+        const valid = missing.length === 0;
+        const allowed = [
+            ...(functionality.required_variables || []),
+            ...(functionality.optional_variables || [])
+        ];
+        const extra = promptSnapshot.variables.filter((v: string) => !allowed.includes(v));
+
+        if (!valid) {
+            console.error('Validation failed:', { missing, extra });
             return NextResponse.json(
                 { 
                     error: "Prompt missing required variables",
-                    details: `Missing required variables: ${validation.missing.join(', ')}. Note: Extra variables are allowed (may have defaults).`,
+                    details: `Missing required variables: ${missing.join(', ')}. Note: Extra variables are allowed (may have defaults).`,
                     validation: {
-                        ...validation,
+                        valid,
+                        missing,
+                        extra,
                         note: "Extra variables are allowed as long as all required variables are present"
                     }
                 },

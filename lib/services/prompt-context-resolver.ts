@@ -8,7 +8,7 @@
  * 4. Default values defined in the prompt
  */
 
-import { extractVariablesFromPrompt } from '@/types/system-prompt-functionalities';
+import { extractVariablesFromPrompt } from '@/lib/services/functionality-helpers';
 
 export interface UIContext {
   // Text context

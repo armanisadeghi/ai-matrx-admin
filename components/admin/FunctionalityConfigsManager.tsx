@@ -1,8 +1,9 @@
 /**
  * Functionality Configs Manager
  * 
- * Admin UI for managing functionality configurations (linking hardcoded functionalities
- * to database categories with display settings like labels, icons, sort order).
+ * Admin UI for managing functionality configurations with database categories,
+ * display settings (labels, icons, sort order), and variable definitions.
+ * All functionality definitions are now fully database-driven.
  */
 
 'use client';
@@ -40,7 +41,6 @@ import { Plus, Edit, Trash2, GripVertical } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { useFunctionalityConfigs } from '@/hooks/useFunctionalityConfigs';
 import { useSystemPromptCategories } from '@/hooks/useSystemPromptCategories';
-import { getAllFunctionalities } from '@/types/system-prompt-functionalities';
 import { createClient } from '@/utils/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -72,11 +72,7 @@ export function FunctionalityConfigsManager() {
   const [editingConfig, setEditingConfig] = useState<FunctionalityConfigForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const allFunctionalities = getAllFunctionalities();
-  const configuredFunctionalityIds = new Set(configs.map(c => c.functionality_id));
-  const availableFunctionalities = allFunctionalities.filter(
-    f => !configuredFunctionalityIds.has(f.id) || f.id === editingConfig?.functionality_id
-  );
+  // All functionalities are now database-driven - no hardcoded list needed
 
   const [form, setForm] = useState<FunctionalityConfigForm>({
     functionality_id: '',
@@ -117,17 +113,7 @@ export function FunctionalityConfigsManager() {
     setIsDialogOpen(true);
   };
 
-  const handleFunctionalityChange = (functionalityId: string) => {
-    const func = allFunctionalities.find(f => f.id === functionalityId);
-    if (func) {
-      setForm({
-        ...form,
-        functionality_id: functionalityId,
-        label: func.name,
-        description: func.description,
-      });
-    }
-  };
+  // Removed handleFunctionalityChange - no longer needed with database-driven approach
 
   const handleSave = async () => {
     if (!form.functionality_id || !form.category_id || !form.label) {
@@ -229,10 +215,10 @@ export function FunctionalityConfigsManager() {
           <div>
             <CardTitle>Functionality Configs</CardTitle>
             <CardDescription>
-              Link hardcoded functionalities to categories with custom display settings
+              Manage database-driven functionality definitions with categories and display settings
             </CardDescription>
           </div>
-          <Button onClick={handleCreate} disabled={availableFunctionalities.length === 0}>
+          <Button onClick={handleCreate}>
             <Plus className="h-4 w-4 mr-2" />
             Add Config
           </Button>
@@ -324,37 +310,23 @@ export function FunctionalityConfigsManager() {
           <DialogHeader>
             <DialogTitle>{editingConfig ? 'Edit Functionality Config' : 'Create Functionality Config'}</DialogTitle>
             <DialogDescription>
-              Configure how a hardcoded functionality appears in the AI Tools menu.
+              Configure how this functionality appears in the AI Tools menu.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="functionality">Functionality (Hardcoded)</Label>
-              <Select
+              <Label htmlFor="functionality">Functionality ID *</Label>
+              <Input
+                id="functionality"
                 value={form.functionality_id}
-                onValueChange={handleFunctionalityChange}
+                onChange={(e) => setForm({ ...form, functionality_id: e.target.value })}
+                placeholder="e.g., explain-text, fix-code"
                 disabled={!!editingConfig}
-              >
-                <SelectTrigger id="functionality">
-                  <SelectValue placeholder="Select a functionality" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableFunctionalities.map((func) => (
-                    <SelectItem key={func.id} value={func.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{func.name}</span>
-                        <span className="text-xs text-muted-foreground">{func.id}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.functionality_id && (
-                <p className="text-xs text-muted-foreground">
-                  Required vars: {allFunctionalities.find(f => f.id === form.functionality_id)?.requiredVariables.join(', ') || 'none'}
-                </p>
-              )}
+              />
+              <p className="text-xs text-muted-foreground">
+                Unique identifier for this functionality (kebab-case recommended)
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -369,7 +341,7 @@ export function FunctionalityConfigsManager() {
                 <SelectContent>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
+                      {cat.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { SYSTEM_FUNCTIONALITIES } from '@/types/system-prompt-functionalities';
 
 export interface FunctionalityConfig {
   id: string;
@@ -20,10 +19,11 @@ export interface FunctionalityConfig {
     color: string;
     icon_name: string;
   };
-  // Metadata from hardcoded SYSTEM_FUNCTIONALITIES
-  requiredVariables?: string[];
-  optionalVariables?: string[];
-  placementTypes?: string[];
+  // Complete functionality data from database
+  required_variables: string[];
+  optional_variables: string[];
+  placement_types: string[];
+  examples: string[];
 }
 
 interface UseFunctionalityConfigsOptions {
@@ -41,7 +41,7 @@ interface UseFunctionalityConfigsReturn {
 
 /**
  * Hook to fetch functionality configs from the database
- * Merges database config with hardcoded functionality definitions
+ * ALL data comes from database now - no more hardcoded definitions!
  */
 export function useFunctionalityConfigs(
   options: UseFunctionalityConfigsOptions = {}
@@ -71,7 +71,7 @@ export function useFunctionalityConfigs(
           `
           : '*'
         )
-        .order('sort_order', { ascending: true });
+        .order('sort_order', { ascending: true});
 
       if (activeOnly) {
         query = query.eq('is_active', true);
@@ -81,35 +81,17 @@ export function useFunctionalityConfigs(
         query = query.eq('category_id', categoryId);
       }
 
-      console.log('[useFunctionalityConfigs] Executing query with options:', { activeOnly, categoryId, includeCategory });
-
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
-        console.error('[useFunctionalityConfigs] Supabase query error:', fetchError);
+        console.error('[useFunctionalityConfigs] Database error:', fetchError);
         throw fetchError;
       }
 
-      console.log('[useFunctionalityConfigs] Query returned data:', data?.length, 'configs');
-
-      // Merge with hardcoded functionality definitions
-      const enrichedConfigs = (data || []).map((config: any) => {
-        const hardcodedFunc = SYSTEM_FUNCTIONALITIES[config.functionality_id];
-        if (!hardcodedFunc) {
-          console.warn('[useFunctionalityConfigs] No hardcoded definition for:', config.functionality_id);
-        }
-        return {
-          ...config,
-          requiredVariables: hardcodedFunc?.requiredVariables || [],
-          optionalVariables: hardcodedFunc?.optionalVariables || [],
-          placementTypes: hardcodedFunc?.placementTypes || []
-        };
-      });
-
-      console.log('[useFunctionalityConfigs] Enriched configs:', enrichedConfigs.length);
-      setConfigs(enrichedConfigs);
+      // Data now comes directly from database with all fields
+      setConfigs((data || []) as unknown as FunctionalityConfig[]);
     } catch (err) {
-      console.error('[useFunctionalityConfigs] CATCH block - Error type:', err?.constructor?.name, 'Error:', err);
+      console.error('[useFunctionalityConfigs] Error:', err);
       setError(err as Error);
     } finally {
       setIsLoading(false);

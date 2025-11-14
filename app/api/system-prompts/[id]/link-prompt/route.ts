@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminUser } from "@/config/admin.config";
-import { SYSTEM_FUNCTIONALITIES, validatePromptForFunctionality, extractVariablesFromPrompt } from "@/types/system-prompt-functionalities";
 
 /**
  * POST /api/system-prompts/[id]/link-prompt
@@ -110,13 +109,18 @@ export async function POST(
 
         // Validate against functionality requirements if functionality_id exists
         if (systemPrompt.functionality_id) {
-            const functionality = SYSTEM_FUNCTIONALITIES[systemPrompt.functionality_id];
+            // Fetch functionality config from database
+            const { data: functionality, error: funcError } = await supabase
+                .from('system_prompt_functionality_configs')
+                .select('*')
+                .eq('functionality_id', systemPrompt.functionality_id)
+                .single();
             
-            if (!functionality) {
+            if (funcError || !functionality) {
                 return NextResponse.json(
                     { 
                         error: "Invalid functionality_id on system prompt",
-                        details: `functionality_id "${systemPrompt.functionality_id}" not found in SYSTEM_FUNCTIONALITIES`,
+                        details: `functionality_id "${systemPrompt.functionality_id}" not found in database`,
                         system_prompt: {
                             id: systemPrompt.id,
                             functionality_id: systemPrompt.functionality_id
@@ -126,23 +130,30 @@ export async function POST(
                 );
             }
 
-            const validation = validatePromptForFunctionality(newPromptSnapshot, systemPrompt.functionality_id);
+            // Validate variables
+            const missing = (functionality.required_variables || []).filter((v: string) => !variables.has(v));
+            const valid = missing.length === 0;
+            const allowed = [
+                ...(functionality.required_variables || []),
+                ...(functionality.optional_variables || [])
+            ];
+            const extra = Array.from(variables).filter(v => !allowed.includes(v));
             
-            if (!validation.valid) {
+            if (!valid) {
                 return NextResponse.json(
                     { 
                         error: "Prompt missing required variables",
-                        details: `The selected AI prompt is missing required variables: ${validation.missing.join(', ')}. Extra variables are allowed.`,
+                        details: `The selected AI prompt is missing required variables: ${missing.join(', ')}. Extra variables are allowed.`,
                         validation: {
                             functionality_id: systemPrompt.functionality_id,
-                            functionality_name: functionality.name,
-                            required_variables: functionality.requiredVariables,
-                            optional_variables: functionality.optionalVariables || [],
+                            functionality_name: functionality.label,
+                            required_variables: functionality.required_variables,
+                            optional_variables: functionality.optional_variables || [],
                             prompt_variables: Array.from(variables),
-                            missing_variables: validation.missing,
-                            extra_variables: validation.extra,
+                            missing_variables: missing,
+                            extra_variables: extra,
                             extra_variables_note: "Extra variables are allowed (may have defaults)",
-                            valid: validation.valid
+                            valid
                         },
                         system_prompt: {
                             id: systemPrompt.id,

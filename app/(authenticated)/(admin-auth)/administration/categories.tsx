@@ -72,6 +72,22 @@ export const adminCategories = [
                 link: "/administration/system-prompts",
                 isNew: true,
             },
+            {
+                title: "System Prompt Categories",
+                description:
+                    "Manage AI Tools categories (Text Operations, Code Operations, etc.) with icons, colors, and hierarchy",
+                icon: <IconAdjustmentsBolt />,
+                link: "/administration/system-prompt-categories",
+                isNew: true,
+            },
+            {
+                title: "Functionality Configs",
+                description:
+                    "Manage system prompt functionality definitions, variable requirements, and category assignments",
+                icon: <IconSettings />,
+                link: "/administration/functionality-configs",
+                isNew: true,
+            },
         ],
     },
     {

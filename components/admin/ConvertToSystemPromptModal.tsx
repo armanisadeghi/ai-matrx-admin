@@ -33,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { SYSTEM_FUNCTIONALITIES, validatePromptForFunctionality } from '@/types/system-prompt-functionalities';
+import { useFunctionalityConfigs } from '@/hooks/useFunctionalityConfigs';
 import type { PromptSnapshot } from '@/types/system-prompts-db';
 import { cn } from '@/utils';
 
@@ -64,6 +64,7 @@ export function ConvertToSystemPromptModal({
   promptVariables,
   onSuccess,
 }: ConvertToSystemPromptModalProps) {
+  const { configs: functionalityConfigs, isLoading: configsLoading } = useFunctionalityConfigs({ activeOnly: true });
   const [currentStep, setCurrentStep] = useState<WizardStep>('functionality');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -122,9 +123,9 @@ export function ConvertToSystemPromptModal({
     const compatible: Array<{ id: string; functionality: any; validation: FunctionalityValidation }> = [];
     const incompatible: Array<{ id: string; functionality: any; validation: FunctionalityValidation }> = [];
 
-    Object.values(SYSTEM_FUNCTIONALITIES).forEach((func) => {
-      const required = new Set(func.requiredVariables);
-      const optional = new Set(func.optionalVariables || []);
+    functionalityConfigs.forEach((func) => {
+      const required = new Set(func.required_variables || []);
+      const optional = new Set(func.optional_variables || []);
 
       const missing = Array.from(required).filter((v) => !promptVars.has(v));
       const extra = Array.from(promptVars).filter(
@@ -137,7 +138,7 @@ export function ConvertToSystemPromptModal({
         extra,
       };
 
-      const item = { id: func.id, functionality: func, validation };
+      const item = { id: func.functionality_id, functionality: func, validation };
 
       if (validation.valid) {
         compatible.push(item);
@@ -147,12 +148,12 @@ export function ConvertToSystemPromptModal({
     });
 
     return { compatible, incompatible };
-  }, [promptVariables]);
+  }, [promptVariables, functionalityConfigs]);
 
   // Validate functionality when selected
   useEffect(() => {
     if (selectedFunctionalityId) {
-      const functionality = SYSTEM_FUNCTIONALITIES[selectedFunctionalityId];
+      const functionality = functionalityConfigs.find(f => f.functionality_id === selectedFunctionalityId);
       if (functionality) {
         // Find validation from compatibility check
         const compatibleItem = functionalityCompatibility.compatible.find(
@@ -168,12 +169,12 @@ export function ConvertToSystemPromptModal({
         }
 
         // Auto-set placement type if only one option
-        if (functionality.placementTypes.length === 1) {
-          setPlacementType(functionality.placementTypes[0] as any);
+        if (functionality.placement_types?.length === 1) {
+          setPlacementType(functionality.placement_types[0] as any);
         }
       }
     }
-  }, [selectedFunctionalityId, functionalityCompatibility]);
+  }, [selectedFunctionalityId, functionalityCompatibility, functionalityConfigs]);
 
   const handleNext = () => {
     if (currentStep === 'functionality') {
@@ -265,7 +266,7 @@ export function ConvertToSystemPromptModal({
   };
 
   const selectedFunctionality = selectedFunctionalityId
-    ? SYSTEM_FUNCTIONALITIES[selectedFunctionalityId]
+    ? functionalityConfigs.find(f => f.functionality_id === selectedFunctionalityId)
     : null;
 
   return (
@@ -361,12 +362,12 @@ export function ConvertToSystemPromptModal({
                             <CheckCircle2 className="h-5 w-5 text-green-600" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm">{item.functionality.name}</h4>
+                            <h4 className="font-semibold text-sm">{item.functionality.label}</h4>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {item.functionality.description}
                             </p>
                             <div className="flex flex-wrap gap-1 mt-2">
-                              {item.functionality.requiredVariables.map((v) => (
+                              {item.functionality.required_variables.map((v) => (
                                 <Badge key={v} variant="secondary" className="text-[10px] px-1.5 py-0">
                                   {v}
                                 </Badge>
@@ -409,7 +410,7 @@ export function ConvertToSystemPromptModal({
                               <AlertCircle className="h-5 w-5 text-red-600" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-sm">{item.functionality.name}</h4>
+                              <h4 className="font-semibold text-sm">{item.functionality.label}</h4>
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {item.functionality.description}
                               </p>
@@ -432,7 +433,7 @@ export function ConvertToSystemPromptModal({
                               <div className="mt-2">
                                 <p className="text-xs font-medium">Requires:</p>
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {item.functionality.requiredVariables.map((v) => (
+                                  {item.functionality.required_variables.map((v) => (
                                     <Badge key={v} variant="outline" className="text-[10px] px-1.5 py-0">
                                       {v}
                                     </Badge>
@@ -453,14 +454,14 @@ export function ConvertToSystemPromptModal({
                 <Card className="p-4">
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-semibold">{selectedFunctionality.name}</h4>
+                      <h4 className="font-semibold">{selectedFunctionality.label}</h4>
                       <p className="text-sm text-muted-foreground">{selectedFunctionality.description}</p>
                     </div>
 
                     <div>
                       <span className="text-sm font-medium">Required Variables:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedFunctionality.requiredVariables.map((v) => (
+                        {selectedFunctionality.required_variables.map((v) => (
                           <Badge
                             key={v}
                             variant={functionalityValidation?.missing.includes(v) ? 'destructive' : 'default'}
@@ -472,11 +473,11 @@ export function ConvertToSystemPromptModal({
                       </div>
                     </div>
 
-                    {selectedFunctionality.optionalVariables && selectedFunctionality.optionalVariables.length > 0 && (
+                    {selectedFunctionality.optional_variables && selectedFunctionality.optional_variables.length > 0 && (
                       <div>
                         <span className="text-sm font-medium">Optional Variables:</span>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {selectedFunctionality.optionalVariables.map((v) => (
+                          {selectedFunctionality.optional_variables.map((v) => (
                             <Badge key={v} variant="secondary" className="text-xs">
                               {v}
                             </Badge>
@@ -488,7 +489,7 @@ export function ConvertToSystemPromptModal({
                     <div>
                       <span className="text-sm font-medium">Placement Types:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedFunctionality.placementTypes.map((type) => (
+                        {selectedFunctionality.placement_types.map((type) => (
                           <Badge key={type} variant="outline" className="text-xs">
                             {type}
                           </Badge>
@@ -592,7 +593,7 @@ export function ConvertToSystemPromptModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {selectedFunctionality?.placementTypes.map((type) => (
+                    {selectedFunctionality?.placement_types.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                       </SelectItem>
@@ -706,7 +707,7 @@ export function ConvertToSystemPromptModal({
                     <span className="text-muted-foreground">{name}</span>
 
                     <span className="font-medium">Functionality:</span>
-                    <span className="text-muted-foreground">{selectedFunctionality?.name}</span>
+                    <span className="text-muted-foreground">{selectedFunctionality?.label}</span>
 
                     <span className="font-medium">Placement Type:</span>
                     <span className="text-muted-foreground capitalize">{placementType.replace('-', ' ')}</span>
