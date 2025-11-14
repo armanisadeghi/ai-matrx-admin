@@ -52,6 +52,7 @@ Route: app/(authenticated)/notes/page.tsx
 │   ├── folderUtils.ts
 │   ├── noteUtils.ts
 
+NOTE: Avoid local Types for anything that is likely to be used in multiple files. Centralize Types to avoid problems later.
 
 When working on features that are already build, respect whatever folder structure is already in place.
 - Never save random files to the root of the project
@@ -61,6 +62,11 @@ React:
 - Write high-quality, efficient code
 - Create reusable utility functions wherever possible to avoid highly complex hooks
 - We have a vast number of high quality reusable components, includig ShadCN and many custom-built items. Find them and use them.
+
+Database:
+- Supabase is our primary database.
+- Client: import { supabase } from "@/utils/supabase/client";
+- Server Client: import { createClient } from '@/utils/supabase/server'
 
 Modern UI/UX Framework:
 - This is an extermely modern application so use modern, professional, beautiful and elegant design principles

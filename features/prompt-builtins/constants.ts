@@ -1,0 +1,126 @@
+/**
+ * Placement types for prompt shortcuts
+ * These define where and how shortcuts can be triggered
+ */
+export const PLACEMENT_TYPES = {
+  MENU: 'menu',           // Context menu for ai-actions
+  BUTTON: 'button',       // Pre-programmed buttons that trigger builtin prompts
+  CARD: 'card',           // Pre-programmed cards with auto-scoped title/description
+  QUICK_ACTION: 'quick-action', // Trigger specific functionality
+  MODAL: 'modal',         // Render a given modal
+} as const;
+
+export type PlacementType = typeof PLACEMENT_TYPES[keyof typeof PLACEMENT_TYPES];
+
+/**
+ * Placement type metadata for UI display
+ */
+export const PLACEMENT_TYPE_META: Record<PlacementType, {
+  label: string;
+  description: string;
+  icon: string; // Lucide icon name
+}> = {
+  [PLACEMENT_TYPES.MENU]: {
+    label: 'Context Menu',
+    description: 'AI actions available in context menus',
+    icon: 'Menu',
+  },
+  [PLACEMENT_TYPES.BUTTON]: {
+    label: 'Button',
+    description: 'Pre-programmed buttons that trigger prompts',
+    icon: 'MousePointerClick',
+  },
+  [PLACEMENT_TYPES.CARD]: {
+    label: 'Card',
+    description: 'Cards with auto-scoped title and description',
+    icon: 'LayoutGrid',
+  },
+  [PLACEMENT_TYPES.QUICK_ACTION]: {
+    label: 'Quick Action',
+    description: 'Trigger specific functionality quickly',
+    icon: 'Zap',
+  },
+  [PLACEMENT_TYPES.MODAL]: {
+    label: 'Modal',
+    description: 'Render a modal interface',
+    icon: 'Square',
+  },
+};
+
+/**
+ * Scope levels - hardcoded in the application
+ * These are the three scopes that the app always provides
+ */
+export const SCOPE_LEVELS = {
+  SELECTION: 'selection',
+  CONTENT: 'content',
+  CONTEXT: 'context',
+} as const;
+
+export type ScopeLevel = typeof SCOPE_LEVELS[keyof typeof SCOPE_LEVELS];
+
+/**
+ * Default values for unavailable scopes
+ */
+export const SCOPE_UNAVAILABLE_VALUES = {
+  EMPTY: '',
+  NOT_AVAILABLE: 'NOT AVAILABLE',
+} as const;
+
+/**
+ * Common scope configurations for different placement types
+ * These define what scope keys are available in different contexts
+ */
+export const COMMON_SCOPE_CONFIGURATIONS = {
+  // Context menu - typically has selection, content, and context
+  MENU_FULL: ['selection', 'content', 'context'],
+  MENU_SELECTION_ONLY: ['selection'],
+  MENU_CONTENT_ONLY: ['content'],
+  
+  // Button - typically no selection, just content and context
+  BUTTON_STANDARD: ['content', 'context'],
+  BUTTON_CONTENT_ONLY: ['content'],
+  
+  // Card - title as selection, description as content, visible cards as context
+  CARD_FULL: ['selection', 'content', 'context'],
+  CARD_TITLE_ONLY: ['selection'],
+  
+  // Quick action - varies by implementation
+  QUICK_ACTION_FULL: ['selection', 'content', 'context'],
+  QUICK_ACTION_NO_SELECTION: ['content', 'context'],
+  
+  // Modal - typically has access to all scopes
+  MODAL_FULL: ['selection', 'content', 'context'],
+} as const;
+
+/**
+ * Descriptions for scope configurations
+ * Helps admins understand what each scope represents in different contexts
+ */
+export const SCOPE_CONFIGURATION_DESCRIPTIONS: Record<string, Record<string, string>> = {
+  menu: {
+    selection: 'Highlighted/selected text or item',
+    content: 'Current item or primary content',
+    context: 'Surrounding data or additional context',
+  },
+  button: {
+    content: 'Button\'s associated data',
+    context: 'Page or component context',
+  },
+  card: {
+    selection: 'Card title',
+    content: 'Card description',
+    context: 'All visible cards and page content',
+  },
+  'quick-action': {
+    selection: 'Selected item (if applicable)',
+    content: 'Current item or data',
+    context: 'Application context',
+  },
+  modal: {
+    selection: 'Selected content in modal',
+    content: 'Modal\'s primary data',
+    context: 'Modal and application context',
+  },
+};
+

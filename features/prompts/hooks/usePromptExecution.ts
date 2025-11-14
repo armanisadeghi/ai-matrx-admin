@@ -6,6 +6,7 @@
  * Features:
  * - Accept either promptId (fetch from DB) or promptData object (skip fetch)
  * - Support all variable source types (hardcoded, runtime, functions, etc.)
+ * - Flexible variable formats: simple strings, full format, or mixed
  * - Handle user input / initial message
  * - Model config overrides
  * - Real-time streaming via Socket.IO
@@ -15,7 +16,16 @@
  * ```tsx
  * const { execute, streamingText, isExecuting } = usePromptExecution();
  * 
- * // With prompt ID (will fetch)
+ * // Simplest format - just strings (recommended)
+ * execute({
+ *   promptData: myPromptObject,
+ *   variables: {
+ *     selected_text: "Your text here",
+ *     expansion_style: "Comprehensive - Add extensive detail"
+ *   }
+ * });
+ * 
+ * // Full format (explicit control)
  * execute({
  *   promptId: 'my-prompt-id',
  *   variables: { 
@@ -24,11 +34,12 @@
  *   userInput: 'Additional context here'
  * });
  * 
- * // With prompt data object (skip fetch)
+ * // Mixed format (best of both worlds)
  * execute({
  *   promptData: myPromptObject,
- *   variables: { 
- *     topic: { type: 'hardcoded', value: 'AI' } 
+ *   variables: {
+ *     selected_text: "Some text", // Simple
+ *     timestamp: { type: 'runtime', getValue: () => new Date().toISOString() } // Advanced
  *   }
  * });
  * ```
@@ -122,13 +133,35 @@ export function usePromptExecution(): UsePromptExecutionReturn {
         throw new Error('Either promptId or promptData must be provided');
       }
 
-      // === 2. Resolve Variables ===
+      // === 2. Normalize Variables (convert simple format to full format) ===
+      let normalizedVariables = config.variables;
+      
+      if (config.variables) {
+        normalizedVariables = {};
+        
+        Object.entries(config.variables).forEach(([key, value]) => {
+          // If already in full format { type: 'hardcoded', value: 'x' }, keep it
+          if (typeof value === 'object' && value !== null && 'type' in value) {
+            normalizedVariables![key] = value;
+          } 
+          // If simple format (just a string), convert it to hardcoded
+          else if (typeof value === 'string') {
+            normalizedVariables![key] = { type: 'hardcoded', value };
+          }
+          // Otherwise keep as-is (for function/runtime variables or other formats)
+          else {
+            normalizedVariables![key] = value;
+          }
+        });
+      }
+
+      // === 3. Resolve Variables ===
       let resolvedVariables: Record<string, string> = {};
       
-      if (config.variables && promptData.variables.length > 0) {
+      if (normalizedVariables && promptData.variables.length > 0) {
         const { values, errors } = await resolveVariables(
           promptData.variables,
-          config.variables,
+          normalizedVariables,
           config.context
         );
         
@@ -140,7 +173,7 @@ export function usePromptExecution(): UsePromptExecutionReturn {
         }
       }
 
-      // === 3. Build Messages with Variable Substitution ===
+      // === 4. Build Messages with Variable Substitution ===
       let messages = promptData.messages.map((msg: any) => {
         let content = msg.content;
         
@@ -157,7 +190,7 @@ export function usePromptExecution(): UsePromptExecutionReturn {
         };
       });
 
-      // === 4. Add User Input / Initial Message ===
+      // === 5. Add User Input / Initial Message ===
       if (config.userInput) {
         const userInputContent = typeof config.userInput === 'function' 
           ? await config.userInput() 
@@ -172,7 +205,7 @@ export function usePromptExecution(): UsePromptExecutionReturn {
         }
       }
 
-      // === 5. Build Chat Config with Model Overrides ===
+      // === 6. Build Chat Config with Model Overrides ===
       const modelId = config.modelConfig?.modelId 
         || config.modelConfig?.model_id 
         || promptData.settings?.model_id;
@@ -196,7 +229,7 @@ export function usePromptExecution(): UsePromptExecutionReturn {
         if (config.modelConfig.max_tokens) chatConfig.max_tokens = config.modelConfig.max_tokens;
       }
 
-      // === 6. Submit Task via Socket.IO ===
+      // === 7. Submit Task via Socket.IO ===
       const taskId = uuidv4();
       setCurrentTaskId(taskId);
 
@@ -207,7 +240,7 @@ export function usePromptExecution(): UsePromptExecutionReturn {
         customTaskId: taskId
       })).unwrap();
 
-      // === 7. Return Result (streaming happens via selectors) ===
+      // === 8. Return Result (streaming happens via selectors) ===
       const duration = Math.round(performance.now() - startTime);
       
       return {
