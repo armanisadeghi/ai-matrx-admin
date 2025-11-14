@@ -1,12 +1,16 @@
 /**
- * SystemPromptsManager
+ * SystemPromptsManager (Consolidated)
  * 
- * Table-based admin interface for managing system prompts.
+ * Unified admin interface for managing AI Tool functionalities and their prompt connections.
+ * 
+ * Primary Entity: Functionality Configs (from system_prompt_functionality_configs)
+ * Secondary: System Prompts connections (from system_prompts)
+ * 
  * Features:
+ * - Manage functionality definitions (name, icon, variables, placement types)
+ * - Connect functionalities to AI prompts
+ * - Full CRUD operations
  * - Sortable/filterable table
- * - Assign prompts to placeholders
- * - Enable/disable prompts
- * - Clear connection status
  */
 
 'use client';
@@ -16,6 +20,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -24,6 +31,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Tooltip,
   TooltipContent,
@@ -453,9 +467,10 @@ export function SystemPromptsManager() {
         </div>
 
         {/* Table */}
-        <ScrollArea className="flex-1 pr-4">
-          <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
+        <div className="flex-1 flex flex-col overflow-hidden border-t">
+          <div className="pr-4">
+            <Table>
+              <TableHeader className="bg-card border-b">
               <TableRow>
                 {/* Status Column - Dropdown filter */}
                 <TableHead className="min-w-[40px]">
@@ -798,8 +813,13 @@ export function SystemPromptsManager() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {filteredAndSortedPrompts.map((prompt) => {
+            </Table>
+          </div>
+
+          <ScrollArea className="flex-1 pr-4">
+            <Table>
+              <TableBody>
+                {filteredAndSortedPrompts.map((prompt) => {
                 const isPlaceholder = prompt.prompt_snapshot?.placeholder;
                 const Icon = PLACEMENT_ICONS[prompt.placement_type];
                 const functionality = prompt.functionality_id
@@ -995,16 +1015,17 @@ export function SystemPromptsManager() {
                   </TableRow>
                 );
               })}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
 
-          {filteredAndSortedPrompts.length === 0 && (
-            <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No system prompts found</p>
-            </div>
-          )}
-        </ScrollArea>
+            {filteredAndSortedPrompts.length === 0 && (
+              <div className="text-center py-12">
+                <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No system prompts found</p>
+              </div>
+            )}
+          </ScrollArea>
+        </div>
 
         {/* Assign Prompt Modal (Legacy - kept for compatibility) */}
         {assigningPrompt && (

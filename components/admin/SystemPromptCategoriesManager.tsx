@@ -42,6 +42,7 @@ import { useSystemPromptCategories } from '@/hooks/useSystemPromptCategories';
 import { createClient } from '@/utils/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 
 const ICON_OPTIONS = [
   'FileText', 'Code', 'Sparkles', 'Wrench', 'LayoutGrid',
@@ -62,12 +63,24 @@ const COLOR_OPTIONS = [
 
 interface CategoryForm {
   id?: string;
+  category_id?: string;
   label: string;
   description: string;
   icon_name: string;
   color: string;
   sort_order: number;
   is_active: boolean;
+}
+
+/**
+ * Generate a category_id slug from a label
+ * e.g., "Text Operations" -> "text-operations"
+ */
+function generateCategoryId(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 export function SystemPromptCategoriesManager() {
@@ -89,6 +102,7 @@ export function SystemPromptCategoriesManager() {
     setEditingCategory(category);
     setForm({
       id: category.id,
+      category_id: category.category_id,
       label: category.label,
       description: category.description || '',
       icon_name: category.icon_name,
@@ -102,6 +116,7 @@ export function SystemPromptCategoriesManager() {
   const handleCreate = () => {
     setEditingCategory(null);
     setForm({
+      category_id: '',
       label: '',
       description: '',
       icon_name: 'FileText',
@@ -113,6 +128,12 @@ export function SystemPromptCategoriesManager() {
   };
 
   const handleSave = async () => {
+    // Validation
+    if (!form.label.trim()) {
+      toast.error('Please enter a category name');
+      return;
+    }
+
     try {
       setIsSaving(true);
       const supabase = createClient();
@@ -133,11 +154,29 @@ export function SystemPromptCategoriesManager() {
           .eq('id', editingCategory.id);
 
         if (updateError) throw updateError;
+        
+        toast.success('Category updated successfully');
       } else {
-        // Create new
+        // Create new - generate category_id from label
+        const categoryId = generateCategoryId(form.label);
+        
+        // Check if category_id already exists
+        const { data: existing } = await supabase
+          .from('system_prompt_categories')
+          .select('id')
+          .eq('category_id', categoryId)
+          .single();
+        
+        if (existing) {
+          toast.error(`A category with ID "${categoryId}" already exists. Please use a different name.`);
+          setIsSaving(false);
+          return;
+        }
+
         const { error: insertError } = await supabase
           .from('system_prompt_categories')
           .insert({
+            category_id: categoryId,
             label: form.label,
             description: form.description,
             icon_name: form.icon_name,
@@ -147,6 +186,8 @@ export function SystemPromptCategoriesManager() {
           });
 
         if (insertError) throw insertError;
+        
+        toast.success('Category created successfully');
       }
 
       await refetch();
@@ -154,14 +195,14 @@ export function SystemPromptCategoriesManager() {
       setEditingCategory(null);
     } catch (err) {
       console.error('[SystemPromptCategoriesManager] Error saving category:', err);
-      alert(`Error: ${(err as Error).message}`);
+      toast.error(`Failed to save category: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this category? This cannot be undone.')) return;
+  const handleDelete = async (id: string, categoryLabel: string) => {
+    if (!confirm(`Are you sure you want to delete "${categoryLabel}"? This cannot be undone.`)) return;
 
     try {
       const supabase = createClient();
@@ -172,10 +213,11 @@ export function SystemPromptCategoriesManager() {
 
       if (deleteError) throw deleteError;
 
+      toast.success('Category deleted successfully');
       await refetch();
     } catch (err) {
       console.error('[SystemPromptCategoriesManager] Error deleting category:', err);
-      alert(`Error: ${(err as Error).message}`);
+      toast.error(`Failed to delete category: ${(err as Error).message}`);
     }
   };
 
@@ -271,7 +313,7 @@ export function SystemPromptCategoriesManager() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(category.id)}
+                        onClick={() => handleDelete(category.id, category.label)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -296,13 +338,23 @@ export function SystemPromptCategoriesManager() {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Name *</Label>
               <Input
                 id="name"
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
                 placeholder="Text Operations"
               />
+              {form.label && !editingCategory && (
+                <p className="text-xs text-muted-foreground">
+                  Category ID will be: <code className="bg-muted px-1 py-0.5 rounded">{generateCategoryId(form.label)}</code>
+                </p>
+              )}
+              {editingCategory && (
+                <p className="text-xs text-muted-foreground">
+                  Category ID: <code className="bg-muted px-1 py-0.5 rounded">{editingCategory.category_id}</code> (cannot be changed)
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">

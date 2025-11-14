@@ -1,15 +1,18 @@
 'use client';
 
-import { FunctionalityConfigsManager } from '@/components/admin/FunctionalityConfigsManager';
+import { ConsolidatedSystemPromptsManager } from '@/components/admin/ConsolidatedSystemPromptsManager';
 
+/**
+ * Functionality Configs Page (now redirects to consolidated manager)
+ * 
+ * Previously managed functionality configs separately.
+ * Now uses the unified AI Tools Manager that handles both
+ * functionalities and their prompt connections in one place.
+ */
 export default function FunctionalityConfigsPage() {
   return (
-    <div className="h-full w-full overflow-y-auto">
-      <div className="py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
-        <div className="w-full px-4">
-          <FunctionalityConfigsManager />
-        </div>
-      </div>
+    <div className="h-full w-full overflow-hidden">
+      <ConsolidatedSystemPromptsManager />
     </div>
   );
 }

@@ -44,6 +44,7 @@ import { useSystemPromptCategories } from '@/hooks/useSystemPromptCategories';
 import { createClient } from '@/utils/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 
 const ICON_OPTIONS = [
   'MessageCircleQuestion', 'RefreshCw', 'FileText', 'Languages', 'PenLine',
@@ -116,8 +117,9 @@ export function FunctionalityConfigsManager() {
   // Removed handleFunctionalityChange - no longer needed with database-driven approach
 
   const handleSave = async () => {
-    if (!form.functionality_id || !form.category_id || !form.label) {
-      alert('Please fill in all required fields');
+    // Validation
+    if (!form.functionality_id.trim() || !form.category_id || !form.label.trim()) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -142,8 +144,22 @@ export function FunctionalityConfigsManager() {
           .eq('id', editingConfig.id);
 
         if (updateError) throw updateError;
+        
+        toast.success('Functionality config updated successfully');
       } else {
-        // Create new
+        // Create new - check for duplicate functionality_id
+        const { data: existing } = await supabase
+          .from('system_prompt_functionality_configs')
+          .select('id')
+          .eq('functionality_id', form.functionality_id)
+          .single();
+        
+        if (existing) {
+          toast.error(`A functionality with ID "${form.functionality_id}" already exists`);
+          setIsSaving(false);
+          return;
+        }
+
         const { error: insertError } = await supabase
           .from('system_prompt_functionality_configs')
           .insert({
@@ -157,6 +173,8 @@ export function FunctionalityConfigsManager() {
           });
 
         if (insertError) throw insertError;
+        
+        toast.success('Functionality config created successfully');
       }
 
       await refetch();
@@ -164,14 +182,14 @@ export function FunctionalityConfigsManager() {
       setEditingConfig(null);
     } catch (err) {
       console.error('[FunctionalityConfigsManager] Error saving config:', err);
-      alert(`Error: ${(err as Error).message}`);
+      toast.error(`Failed to save config: ${(err as Error).message}`);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this functionality config? This cannot be undone.')) return;
+  const handleDelete = async (id: string, functionalityLabel: string) => {
+    if (!confirm(`Are you sure you want to delete "${functionalityLabel}"? This cannot be undone.`)) return;
 
     try {
       const supabase = createClient();
@@ -182,10 +200,11 @@ export function FunctionalityConfigsManager() {
 
       if (deleteError) throw deleteError;
 
+      toast.success('Functionality config deleted successfully');
       await refetch();
     } catch (err) {
       console.error('[FunctionalityConfigsManager] Error deleting config:', err);
-      alert(`Error: ${(err as Error).message}`);
+      toast.error(`Failed to delete config: ${(err as Error).message}`);
     }
   };
 
@@ -291,7 +310,7 @@ export function FunctionalityConfigsManager() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(config.id)}
+                        onClick={() => handleDelete(config.id, config.label)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
