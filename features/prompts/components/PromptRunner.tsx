@@ -21,7 +21,7 @@ import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-genera
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PromptRunnerModalSidebarTester } from "..";
+import { PromptRunnerModalSidebarTester } from "../components/modal/PromptRunnerModalSidebarTester";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
