@@ -12,6 +12,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -35,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useContentBlocks } from '@/hooks/useContentBlocks';
 import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
+import { useFunctionalityConfigsByCategory } from '@/hooks/useFunctionalityConfigs';
 import { DynamicContextMenuSection } from '@/features/rich-text-editor/components/DynamicContextMenuSection';
 import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
 import { PromptRunnerModal } from '@/features/prompts/components/modal/PromptRunnerModal';
@@ -44,13 +46,22 @@ import { useAppSelector } from '@/lib/redux';
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
 import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
-import { QuickNotesSheet } from '@/features/notes';
-import { QuickTasksSheet } from '@/features/tasks';
 import { QuickChatSheet } from '@/features/quick-actions/components/QuickChatSheet';
 import { QuickDataSheet } from '@/features/quick-actions/components/QuickDataSheet';
 import { QuickFilesSheet } from '@/features/quick-actions/components/QuickFilesSheet';
 import contentBlocksConfig from '@/config/content-blocks';
 import { ContentBlock } from '@/features/rich-text-editor/config/contentBlocks';
+import * as LucideIcons from 'lucide-react';
+
+// Dynamically import these to break circular dependency:
+// UnifiedContextMenu -> QuickNotesSheet -> NoteEditor -> UnifiedContextMenu
+const QuickNotesSheet = dynamic(() => import('@/features/notes/components/QuickNotesSheet').then(mod => ({ default: mod.QuickNotesSheet })), {
+  ssr: false,
+});
+
+const QuickTasksSheet = dynamic(() => import('@/features/tasks/components/QuickTasksSheet').then(mod => ({ default: mod.QuickTasksSheet })), {
+  ssr: false,
+});
 
 interface UnifiedContextMenuProps {
   children: React.ReactNode;
@@ -96,8 +107,9 @@ export function UnifiedContextMenu({
     autoRefresh: contentBlocksConfig.useDatabase,
   });
 
-  // AI Tools state
+  // AI Tools state (database-driven)
   const { systemPrompts, loading: loadingAITools } = useContextMenuPrompts();
+  const { configsByCategory, isLoading: loadingConfigs } = useFunctionalityConfigsByCategory({ activeOnly: true });
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -263,16 +275,32 @@ export function UnifiedContextMenu({
     }
   };
 
-  // Group AI Tools by category
-  const groupedAITools = React.useMemo(() => {
-    const groups: Record<string, any[]> = {};
-    systemPrompts.forEach((prompt) => {
-      const cat = prompt.category || 'other';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(prompt);
-    });
-    return groups;
-  }, [systemPrompts]);
+  // Map system prompts to their functionality configs for proper display
+  const aiToolsWithConfigs = React.useMemo(() => {
+    return Object.entries(configsByCategory).map(([categoryName, { category, configs }]) => {
+      // Find system prompts that match functionalities in this category
+      const categoryPrompts = configs.map(config => {
+        const matchingPrompt = systemPrompts.find(
+          p => p.functionality_id === config.functionality_id
+        );
+        return {
+          config,
+          systemPrompt: matchingPrompt,
+        };
+      }).filter(item => item.systemPrompt); // Only show if a prompt is connected
+
+      return {
+        category,
+        configs: categoryPrompts,
+      };
+    }).filter(cat => cat.configs.length > 0); // Only show categories with connected prompts
+  }, [configsByCategory, systemPrompts]);
+
+  // Helper to get Lucide icon component
+  const getIcon = (iconName: string) => {
+    const Icon = (LucideIcons as any)[iconName];
+    return Icon || LucideIcons.FileText;
+  };
 
   return (
     <>
@@ -310,7 +338,7 @@ export function UnifiedContextMenu({
             </>
           )}
 
-          {/* AI Tools Section */}
+          {/* AI Tools Section - Database Driven */}
           {enableAITools && (
             <>
               <ContextMenuSub>
@@ -319,32 +347,44 @@ export function UnifiedContextMenu({
                   AI Tools
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-64">
-                  {loadingAITools ? (
+                  {(loadingAITools || loadingConfigs) ? (
                     <ContextMenuLabel className="text-xs text-muted-foreground">Loading...</ContextMenuLabel>
-                  ) : systemPrompts.length === 0 ? (
+                  ) : aiToolsWithConfigs.length === 0 ? (
                     <ContextMenuLabel className="text-xs text-muted-foreground">No AI tools available</ContextMenuLabel>
                   ) : (
                     <>
-                      {Object.entries(groupedAITools).map(([categoryName, prompts]) => (
-                        <React.Fragment key={categoryName}>
-                          <ContextMenuLabel className="text-xs text-muted-foreground">
-                            {categoryName.charAt(0).toUpperCase() + categoryName.slice(1).replace('-', ' ')}
-                          </ContextMenuLabel>
-                          {prompts.map((prompt) => (
-                            <ContextMenuItem
-                              key={prompt.id}
-                              onSelect={() => handleAIToolTrigger(prompt)}
-                              disabled={prompt.prompt_snapshot?.placeholder || !prompt.is_active}
-                            >
-                              {prompt.display_config?.label || prompt.name}
-                              {prompt.prompt_snapshot?.placeholder && (
-                                <span className="ml-auto text-xs text-muted-foreground">Coming Soon</span>
-                              )}
-                            </ContextMenuItem>
-                          ))}
-                          <ContextMenuSeparator />
-                        </React.Fragment>
-                      ))}
+                      {aiToolsWithConfigs.map(({ category, configs }) => {
+                        const CategoryIcon = getIcon(category?.icon_name || 'FileText');
+                        return (
+                          <React.Fragment key={category?.id}>
+                            <ContextMenuSub>
+                              <ContextMenuSubTrigger>
+                                <CategoryIcon className="h-4 w-4 mr-2" style={{ color: category?.color || 'currentColor' }} />
+                                {category?.name}
+                              </ContextMenuSubTrigger>
+                              <ContextMenuSubContent className="w-64">
+                                {configs.map(({ config, systemPrompt }) => {
+                                  if (!systemPrompt) return null;
+                                  const ItemIcon = getIcon(config.icon_name || 'Sparkles');
+                                  return (
+                                    <ContextMenuItem
+                                      key={systemPrompt.id}
+                                      onSelect={() => handleAIToolTrigger(systemPrompt)}
+                                      disabled={systemPrompt.prompt_snapshot?.placeholder || !systemPrompt.is_active}
+                                    >
+                                      <ItemIcon className="h-4 w-4 mr-2" />
+                                      {config.label || systemPrompt.name}
+                                      {systemPrompt.prompt_snapshot?.placeholder && (
+                                        <span className="ml-auto text-xs text-muted-foreground">Coming Soon</span>
+                                      )}
+                                    </ContextMenuItem>
+                                  );
+                                })}
+                              </ContextMenuSubContent>
+                            </ContextMenuSub>
+                          </React.Fragment>
+                        );
+                      })}
                     </>
                   )}
                 </ContextMenuSubContent>
