@@ -6,8 +6,7 @@ export interface ContentBlockDB {
     label: string;
     description: string | null;
     icon_name: string;
-    category: 'structure' | 'formatting' | 'special' | 'ai-prompts';
-    subcategory: string | null;
+    category_id: string | null; // NEW: UUID FK to shortcut_categories
     template: string;
     sort_order: number;
     is_active: boolean;
@@ -45,8 +44,7 @@ export interface CreateContentBlockInput {
     label: string;
     description?: string;
     icon_name: string;
-    category: 'structure' | 'formatting' | 'special' | 'ai-prompts';
-    subcategory?: string;
+    category_id: string; // NEW: UUID FK to shortcut_categories
     template: string;
     sort_order?: number;
     is_active?: boolean;
@@ -102,8 +100,7 @@ export interface ContentBlocksResponse {
 
 // Query options
 export interface ContentBlockQueryOptions {
-    category?: string;
-    subcategory?: string;
+    category_id?: string; // UUID
     is_active?: boolean;
     search?: string;
     limit?: number;

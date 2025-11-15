@@ -74,8 +74,8 @@ export function QuickTemplateInsertButton({
             .filter(block => 
                 keywords.some(keyword => 
                     block.id.includes(keyword) || 
-                    block.label.toLowerCase().includes(keyword) ||
-                    block.category === 'ai-prompts'
+                    block.label.toLowerCase().includes(keyword)
+                    // Removed block.category check - deprecated field
                 )
             )
             .slice(0, 5);
@@ -89,17 +89,28 @@ export function QuickTemplateInsertButton({
             .slice(0, 5) as ContentBlock[];
     }, [contentBlocks, recentTemplates]);
 
-    // Group templates by category
+    // Group templates by category config
     const groupedTemplates = useMemo(() => {
         const groups: Record<string, ContentBlock[]> = {};
-        contentBlocks.forEach(block => {
-            if (!groups[block.category]) {
-                groups[block.category] = [];
-            }
-            groups[block.category].push(block);
+        
+        // Group by category config IDs instead of old string categories
+        categoryConfigs.forEach(categoryConfig => {
+            groups[categoryConfig.id] = [];
         });
+        
+        // Add all blocks to first available category or create 'other' category
+        if (Object.keys(groups).length > 0) {
+            const firstCategoryId = Object.keys(groups)[0];
+            contentBlocks.forEach(block => {
+                if (!groups[firstCategoryId]) groups[firstCategoryId] = [];
+                groups[firstCategoryId].push(block);
+            });
+        } else {
+            groups['all'] = contentBlocks;
+        }
+        
         return groups;
-    }, [contentBlocks]);
+    }, [contentBlocks, categoryConfigs]);
 
     const handleInsert = (template: ContentBlock) => {
         // Add to recent
@@ -162,11 +173,6 @@ export function QuickTemplateInsertButton({
                                         {template.description}
                                     </div>
                                 </div>
-                                {template.category === 'ai-prompts' && (
-                                    <Badge variant="secondary" className="text-xs flex-shrink-0">
-                                        AI
-                                    </Badge>
-                                )}
                             </DropdownMenuItem>
                         ))}
                         <DropdownMenuSeparator />

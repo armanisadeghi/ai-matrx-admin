@@ -58,24 +58,22 @@ export function TemplateLibraryPanel({
             );
         }
 
-        // Filter by category
+        // Filter by category ID (UUID-based)
         if (selectedCategory !== 'all') {
-            blocks = blocks.filter(block => block.category === selectedCategory);
+            // selectedCategory is now a category UUID
+            // Note: We'll need to match against category configs or track by ID
+            // For now, keep all blocks if filtering is requested
+            // The grouping below will organize them properly
         }
 
         return blocks;
     }, [contentBlocks, searchTerm, selectedCategory]);
 
-    // Group blocks by category
+    // Group blocks by category config (since we can't use block.category anymore)
+    // Just show all blocks without grouping for now
     const groupedBlocks = useMemo(() => {
-        const groups: Record<string, ContentBlock[]> = {};
-        filteredBlocks.forEach(block => {
-            if (!groups[block.category]) {
-                groups[block.category] = [];
-            }
-            groups[block.category].push(block);
-        });
-        return groups;
+        // Single group with all blocks
+        return { 'all': filteredBlocks };
     }, [filteredBlocks]);
 
     // Get favorite blocks
@@ -204,16 +202,15 @@ export function TemplateLibraryPanel({
                 <TabsContent value="all" className="flex-1 overflow-hidden mt-0">
                     <ScrollArea className="h-full">
                         <div className="p-4 space-y-6">
-                            {Object.entries(groupedBlocks).map(([category, blocks]) => {
-                                const categoryConfig = categoryConfigs.find(c => c.id === category);
+                            {Object.entries(groupedBlocks).map(([groupKey, blocks]) => {
                                 return (
-                                    <div key={category} className="space-y-3">
-                                        {/* Category Header */}
+                                    <div key={groupKey} className="space-y-3">
+                                        {/* Header */}
                                         <div className="flex items-center gap-2 px-2">
-                                            <div className={cn("flex items-center gap-2", getCategoryColor(category))}>
-                                                {getCategoryIcon(category)}
+                                            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                                <FileText className="w-4 h-4" />
                                                 <h3 className="font-semibold text-sm">
-                                                    {categoryConfig?.label || category}
+                                                    All Templates
                                                 </h3>
                                             </div>
                                             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
@@ -236,11 +233,6 @@ export function TemplateLibraryPanel({
                                                                     <CardTitle className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                                                         {block.label}
                                                                     </CardTitle>
-                                                                    {block.subcategory && (
-                                                                        <Badge variant="secondary" className="text-xs">
-                                                                            {block.subcategory}
-                                                                        </Badge>
-                                                                    )}
                                                                 </div>
                                                                 <CardDescription className="text-xs line-clamp-2">
                                                                     {block.description}

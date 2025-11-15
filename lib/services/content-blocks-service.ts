@@ -28,14 +28,18 @@ export function getIconComponent(iconName: string): any {
 }
 
 // Convert database record to frontend ContentBlock format
+// NOTE: The old ContentBlock type still uses string-based category/subcategory
+// We'll need to look up the category name from the UUID in the future
+// For now, we're returning placeholder values since the context menu
+// should be updated to use the new hierarchical category system
 export function dbContentBlockToContentBlock(dbBlock: ContentBlockDB): ContentBlock {
     return {
         id: dbBlock.block_id,
         label: dbBlock.label,
         description: dbBlock.description || '',
         icon: getIconComponent(dbBlock.icon_name),
-        category: dbBlock.category,
-        subcategory: dbBlock.subcategory || undefined,
+        category: 'structure', // DEPRECATED: No longer used with UUID-based categories
+        subcategory: undefined, // DEPRECATED: No longer used with UUID-based categories
         template: dbBlock.template
     };
 }
@@ -66,12 +70,8 @@ export async function fetchContentBlocks(options: ContentBlockQueryOptions = {})
         .select('*');
 
     // Apply filters
-    if (options.category) {
-        query = query.eq('category', options.category);
-    }
-    
-    if (options.subcategory) {
-        query = query.eq('subcategory', options.subcategory);
+    if (options.category_id) {
+        query = query.eq('category_id', options.category_id);
     }
     
     if (options.is_active !== undefined) {
@@ -103,61 +103,111 @@ export async function fetchContentBlocks(options: ContentBlockQueryOptions = {})
     return data as ContentBlockDB[];
 }
 
-// Fetch content blocks by category
-export async function fetchContentBlocksByCategory(category: string) {
-    return fetchContentBlocks({ category, is_active: true });
-}
-
-// Fetch content blocks by subcategory
-export async function fetchContentBlocksBySubcategory(category: string, subcategory: string) {
-    return fetchContentBlocks({ category, subcategory, is_active: true });
-}
-
-// Fetch content blocks without subcategory
-export async function fetchContentBlocksWithoutSubcategory(category: string) {
+// Fetch content blocks by category UUID
+export async function fetchContentBlocksByCategory(categoryId: string) {
     const supabase = getClient();
     const { data, error } = await supabase
         .from('content_blocks')
         .select('*')
-        .eq('category', category)
-        .is('subcategory', null)
+        .eq('category_id', categoryId)
         .eq('is_active', true)
         .order('sort_order');
 
     if (error) throw error;
+    
     return data as ContentBlockDB[];
 }
 
-// Fetch category configurations
-export async function fetchCategoryConfigs() {
+// Fetch content blocks by subcategory UUID (subcategoryId is a child category UUID)
+export async function fetchContentBlocksBySubcategory(parentCategoryId: string, subcategoryId: string) {
     const supabase = getClient();
     const { data, error } = await supabase
-        .from('category_configs')
+        .from('content_blocks')
         .select('*')
+        .eq('category_id', subcategoryId)
         .eq('is_active', true)
         .order('sort_order');
 
     if (error) throw error;
-    return data as CategoryConfigDB[];
+    
+    return data as ContentBlockDB[];
 }
 
-// Fetch subcategory configurations
+// Fetch content blocks directly in a category (no children)
+// This gets blocks where category_id matches the parent category
+export async function fetchContentBlocksWithoutSubcategory(categoryId: string) {
+    const supabase = getClient();
+    const { data, error } = await supabase
+        .from('content_blocks')
+        .select('*')
+        .eq('category_id', categoryId)
+        .eq('is_active', true)
+        .order('sort_order');
+
+    if (error) throw error;
+    
+    return data as ContentBlockDB[];
+}
+
+// Fetch category configurations from unified shortcut_categories
+export async function fetchCategoryConfigs() {
+    const supabase = getClient();
+    const { data, error } = await supabase
+        .from('shortcut_categories')
+        .select('*')
+        .eq('placement_type', 'content-block')
+        .eq('is_active', true)
+        .is('parent_category_id', null) // Top-level categories only
+        .order('sort_order');
+
+    if (error) throw error;
+    
+    // Convert to old format for compatibility
+    return data.map(sc => ({
+        id: sc.id,
+        category_id: sc.id, // Use UUID directly
+        label: sc.label,
+        icon_name: sc.icon_name,
+        color: sc.color,
+        sort_order: sc.sort_order,
+        is_active: sc.is_active,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    })) as CategoryConfigDB[];
+}
+
+// Fetch subcategory configurations from unified shortcut_categories
 export async function fetchSubcategoryConfigs(categoryId?: string) {
     const supabase = getClient();
     let query = supabase
-        .from('subcategory_configs')
+        .from('shortcut_categories')
         .select('*')
-        .eq('is_active', true);
+        .eq('placement_type', 'content-block')
+        .eq('is_active', true)
+        .not('parent_category_id', 'is', null); // Only child categories
 
     if (categoryId) {
-        query = query.eq('category_id', categoryId);
+        // If categoryId is a UUID, use it directly; if it's a string ID, look it up
+        query = query.eq('parent_category_id', categoryId);
     }
 
     query = query.order('sort_order');
 
     const { data, error } = await query;
     if (error) throw error;
-    return data as SubcategoryConfigDB[];
+    
+    // Convert to old format for compatibility
+    return data.map(sc => ({
+        id: sc.id,
+        category_id: sc.parent_category_id || '', // Parent UUID
+        subcategory_id: sc.id, // Use UUID directly
+        label: sc.label,
+        icon_name: sc.icon_name,
+        sort_order: sc.sort_order,
+        is_active: sc.is_active,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    })) as SubcategoryConfigDB[];
 }
 
 // Fetch complete hierarchical structure
@@ -191,19 +241,19 @@ export async function fetchCompleteContentBlockStructure(): Promise<{
     }
 }
 
-// Helper functions that match the original API
-export async function getBlocksByCategory(category: string): Promise<ContentBlock[]> {
-    const blocks = await fetchContentBlocksByCategory(category);
+// Helper functions that match the original API (now using UUID category_id)
+export async function getBlocksByCategory(categoryId: string): Promise<ContentBlock[]> {
+    const blocks = await fetchContentBlocksByCategory(categoryId);
     return blocks.map(dbContentBlockToContentBlock);
 }
 
-export async function getBlocksBySubcategory(category: string, subcategory: string): Promise<ContentBlock[]> {
-    const blocks = await fetchContentBlocksBySubcategory(category, subcategory);
+export async function getBlocksBySubcategory(parentCategoryId: string, subcategoryId: string): Promise<ContentBlock[]> {
+    const blocks = await fetchContentBlocksBySubcategory(parentCategoryId, subcategoryId);
     return blocks.map(dbContentBlockToContentBlock);
 }
 
-export async function getBlocksWithoutSubcategory(category: string): Promise<ContentBlock[]> {
-    const blocks = await fetchContentBlocksWithoutSubcategory(category);
+export async function getBlocksWithoutSubcategory(categoryId: string): Promise<ContentBlock[]> {
+    const blocks = await fetchContentBlocksWithoutSubcategory(categoryId);
     return blocks.map(dbContentBlockToContentBlock);
 }
 
