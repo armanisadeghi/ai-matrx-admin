@@ -437,6 +437,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                             content: localContent,
                             context: localContent,
                         }}
+                        enabledPlacements={['ai-action', 'content-block', 'quick-action']}
                         isEditable={true}
                         onTextReplace={(newText) => {
                             const textarea = textareaRef.current;
@@ -505,6 +506,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                             content: localContent,
                             context: localContent,
                         }}
+                        enabledPlacements={['ai-action', 'content-block', 'quick-action']}
                         isEditable={true}
                         onTextReplace={(newText) => {
                             if (tuiEditorRef.current?.getInstance) {
@@ -549,6 +551,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                             content: localContent,
                             context: localContent,
                         }}
+                        enabledPlacements={['ai-action', 'content-block', 'quick-action']}
                         isEditable={true}
                         onTextReplace={(newText) => {
                             if (tuiEditorRef.current?.getInstance) {
@@ -592,7 +595,7 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                             content: localContent,
                             context: localContent,
                         }}
-                        enabledPlacements={['ai-action', 'quick-action']}
+                        enabledPlacements={['ai-action', 'content-block', 'quick-action', 'organization-tool', 'user-tool']}
                     >
                         <ScrollArea className="absolute inset-0 w-full h-full">
                             <div className="p-6 bg-textured">

@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Plus,
@@ -51,6 +52,7 @@ import {
   fetchShortcutsWithRelations,
 } from '../services/admin-service';
 import { PLACEMENT_TYPES, getPlacementTypeMeta, COMMON_SCOPE_CONFIGURATIONS } from '../constants';
+import { RESULT_DISPLAY_META, type ResultDisplay } from '../types/execution-modes';
 import { getUserFriendlyError } from '../utils/error-handler';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
@@ -1070,6 +1072,76 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                           />
                           <span className="text-sm">Active (visible in menus)</span>
                         </label>
+                      </CardContent>
+                    </Card>
+
+                    {/* Execution Configuration */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Execution Configuration</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2.5">
+                        {/* Result Display */}
+                        <div className="flex items-center gap-3">
+                          <Label className="text-xs flex-shrink-0 w-28">Display</Label>
+                          <Select
+                            value={editShortcutData.result_display || 'modal'}
+                            onValueChange={(value: ResultDisplay) => handleShortcutChange('result_display', value)}
+                          >
+                            <SelectTrigger className="h-7 text-xs flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="text-xs">
+                              {Object.entries(RESULT_DISPLAY_META).map(([key, meta]) => (
+                                <SelectItem key={key} value={key} className="text-xs py-1">
+                                  {meta.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="pt-1 border-t border-gray-200 dark:border-gray-800" />
+
+                        {/* Boolean switches in compact grid */}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                          {/* Auto Run */}
+                          <div className="flex items-center justify-between gap-2">
+                            <Label className="text-xs">Auto run</Label>
+                            <Switch
+                              checked={editShortcutData.auto_run ?? true}
+                              onCheckedChange={(checked) => handleShortcutChange('auto_run', checked)}
+                            />
+                          </div>
+
+                          {/* Allow Chat */}
+                          <div className="flex items-center justify-between gap-2">
+                            <Label className="text-xs">Allow chat</Label>
+                            <Switch
+                              checked={editShortcutData.allow_chat ?? true}
+                              onCheckedChange={(checked) => handleShortcutChange('allow_chat', checked)}
+                            />
+                          </div>
+
+                          {/* Show Variables */}
+                          <div className="flex items-center justify-between gap-2">
+                            <Label className="text-xs">Show variables</Label>
+                            <Switch
+                              checked={editShortcutData.show_variables ?? false}
+                              onCheckedChange={(checked) => handleShortcutChange('show_variables', checked)}
+                            />
+                          </div>
+
+                          {/* Apply Variables */}
+                          <div className="flex items-center justify-between gap-2">
+                            <Label className="text-xs">Apply variables</Label>
+                            <Switch
+                              checked={editShortcutData.apply_variables ?? true}
+                              onCheckedChange={(checked) => handleShortcutChange('apply_variables', checked)}
+                            />
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
 

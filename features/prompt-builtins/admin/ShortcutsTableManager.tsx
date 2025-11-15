@@ -467,7 +467,11 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       <SortIcon field="placement" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[100px]">Mode</TableHead>
+                  <TableHead className="min-w-[100px]">Display</TableHead>
+                  <TableHead className="w-[70px] text-center">Auto</TableHead>
+                  <TableHead className="w-[70px] text-center">Chat</TableHead>
+                  <TableHead className="w-[70px] text-center">Show Vars</TableHead>
+                  <TableHead className="w-[70px] text-center">Apply Vars</TableHead>
                   <TableHead className="min-w-[120px]">Keyboard</TableHead>
                   <TableHead className="min-w-[140px]" onClick={() => handleSort('connection')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
@@ -546,16 +550,37 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <div className="space-y-1 text-xs">
-                              <p className="font-semibold">{RESULT_DISPLAY_META[shortcut.result_display || 'modal'].description}</p>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <span>{shortcut.auto_run ? '⚡ Auto' : '⏸️ Manual'}</span>
-                                <span>•</span>
-                                <span>{shortcut.allow_chat ? '💬 Chat' : '🎯 One-shot'}</span>
-                              </div>
-                            </div>
+                            <p className="text-xs">{RESULT_DISPLAY_META[shortcut.result_display || 'modal'].description}</p>
                           </TooltipContent>
                         </Tooltip>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {shortcut.auto_run ?? true ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                        ) : (
+                          <X className="h-4 w-4 text-gray-400 mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {shortcut.allow_chat ?? true ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                        ) : (
+                          <X className="h-4 w-4 text-gray-400 mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {shortcut.show_variables ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                        ) : (
+                          <X className="h-4 w-4 text-gray-400 mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {shortcut.apply_variables ?? true ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                        ) : (
+                          <X className="h-4 w-4 text-gray-400 mx-auto" />
+                        )}
                       </TableCell>
                       <TableCell>
                         {shortcut.keyboard_shortcut && (

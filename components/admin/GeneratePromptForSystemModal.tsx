@@ -36,6 +36,8 @@ interface GeneratePromptForSystemModalProps {
 
 const PROMPT_GENERATOR_PROMPT_ID = 'fbdb6b57-8b4e-44fe-8354-6286251f638a';
 
+// TODO: Replace with builtin prompt and an official 'button' shortcut
+
 export function GeneratePromptForSystemModal({
   isOpen,
   onClose,

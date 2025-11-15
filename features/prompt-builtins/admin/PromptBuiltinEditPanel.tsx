@@ -280,79 +280,65 @@ export function PromptBuiltinEditPanel({
 
         {/* Execution Configuration */}
         <Card>
-          <CardHeader>
-            <CardTitle>Execution Configuration</CardTitle>
-            <CardDescription>Control how this shortcut executes</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Execution Configuration</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-6">
-              {/* Result Display */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Result Display</Label>
-                <Select
-                  value={editShortcutData.result_display || 'modal'}
-                  onValueChange={(value: ResultDisplay) => onShortcutChange('result_display', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(RESULT_DISPLAY_META).map(([key, meta]) => (
-                      <SelectItem key={key} value={key}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{meta.label}</span>
-                          <span className="text-xs text-muted-foreground">{meta.description}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Boolean switches in a compact grid */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Auto Run</Label>
-                    <p className="text-xs text-muted-foreground">Run immediately on open</p>
-                  </div>
-                  <Switch
-                    checked={editShortcutData.auto_run ?? true}
-                    onCheckedChange={(checked) => onShortcutChange('auto_run', checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Allow Chat</Label>
-                    <p className="text-xs text-muted-foreground">Enable conversation mode</p>
-                  </div>
-                  <Switch
-                    checked={editShortcutData.allow_chat ?? true}
-                    onCheckedChange={(checked) => onShortcutChange('allow_chat', checked)}
-                  />
-                </div>
-              </div>
+          <CardContent className="space-y-2.5">
+            {/* Result Display */}
+            <div className="flex items-center gap-3">
+              <Label className="text-xs flex-shrink-0 w-28">Display</Label>
+              <Select
+                value={editShortcutData.result_display || 'modal'}
+                onValueChange={(value: ResultDisplay) => onShortcutChange('result_display', value)}
+              >
+                <SelectTrigger className="h-7 text-xs flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="text-xs">
+                  {Object.entries(RESULT_DISPLAY_META).map(([key, meta]) => (
+                    <SelectItem key={key} value={key} className="text-xs py-1">
+                      {meta.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Additional switches in a single row */}
-            <div className="grid grid-cols-2 gap-6 pt-2 border-t">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">Show Variables</Label>
-                  <p className="text-xs text-muted-foreground">Display variable form to user</p>
-                </div>
+            {/* Divider */}
+            <div className="pt-1 border-t border-gray-200 dark:border-gray-800" />
+
+            {/* Boolean switches in compact grid */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {/* Auto Run */}
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs">Auto run</Label>
+                <Switch
+                  checked={editShortcutData.auto_run ?? true}
+                  onCheckedChange={(checked) => onShortcutChange('auto_run', checked)}
+                />
+              </div>
+
+              {/* Allow Chat */}
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs">Allow chat</Label>
+                <Switch
+                  checked={editShortcutData.allow_chat ?? true}
+                  onCheckedChange={(checked) => onShortcutChange('allow_chat', checked)}
+                />
+              </div>
+
+              {/* Show Variables */}
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs">Show variables</Label>
                 <Switch
                   checked={editShortcutData.show_variables ?? false}
                   onCheckedChange={(checked) => onShortcutChange('show_variables', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">Apply Variables</Label>
-                  <p className="text-xs text-muted-foreground">Apply variable values</p>
-                </div>
+              {/* Apply Variables */}
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs">Apply variables</Label>
                 <Switch
                   checked={editShortcutData.apply_variables ?? true}
                   onCheckedChange={(checked) => onShortcutChange('apply_variables', checked)}

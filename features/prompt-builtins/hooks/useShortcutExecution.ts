@@ -101,6 +101,18 @@ export function useShortcutExecution() {
           }
         }
 
+        console.log('[useShortcutExecution] Modal execution config:', {
+          shortcut_label: shortcut.label,
+          boolean_flags: {
+            auto_run: shortcut.auto_run,
+            allow_chat: shortcut.allow_chat,
+            show_variables: shortcut.show_variables,
+            apply_variables: shortcut.apply_variables,
+          },
+          calculated_mode: mode,
+          variables: finalVariables,
+        });
+
         // Open in modal via Redux prompt runner
         openPrompt({
           promptData,

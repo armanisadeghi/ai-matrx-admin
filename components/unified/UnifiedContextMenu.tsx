@@ -38,9 +38,10 @@ import {
   Building,
   User,
 } from 'lucide-react';
-import { useContextMenuShortcuts } from '@/features/prompt-builtins/hooks';
+import { useUnifiedContextMenu } from '@/features/prompt-builtins/hooks';
 import { useShortcutExecution } from '@/features/prompt-builtins/hooks';
 import { PLACEMENT_TYPES, PLACEMENT_TYPE_META } from '@/features/prompt-builtins/constants';
+import type { MenuItem, ContentBlockItem, ShortcutItem } from '@/features/prompt-builtins/hooks/useUnifiedContextMenu';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
 import { useAppSelector } from '@/lib/redux';
@@ -88,11 +89,11 @@ export function UnifiedContextMenu({
   contextData = {},
   className,
 }: UnifiedContextMenuProps) {
-  // Determine which placement types to load from DB
+  // Determine which placement types to load from DB (everything except quick-action)
   const dbPlacementTypes = enabledPlacements.filter(p => p !== 'quick-action');
   
-  // Load shortcuts from database
-  const { categoryGroups, loading } = useContextMenuShortcuts(
+  // Load ALL menu items (shortcuts + content blocks) from unified view - ONE QUERY!
+  const { categoryGroups, loading } = useUnifiedContextMenu(
     dbPlacementTypes,
     dbPlacementTypes.length > 0
   );
@@ -135,19 +136,23 @@ export function UnifiedContextMenu({
   }, []);
 
   const handleContextMenu = (e: React.MouseEvent) => {
-    const selection = window.getSelection();
-    const text = selection?.toString().trim() || '';
-
     const target = e.target as HTMLElement;
+    let text = '';
     let start = 0;
     let end = 0;
     let element: HTMLElement | null = null;
 
+    // For textareas and inputs, get selection directly from the element
     if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
       start = target.selectionStart || 0;
       end = target.selectionEnd || 0;
       element = target;
+      // Get the actual selected text from the textarea value
+      text = target.value.substring(start, end).trim();
     } else {
+      // For contenteditable elements, use window selection
+      const selection = window.getSelection();
+      text = selection?.toString().trim() || '';
       const range = selection?.getRangeAt(0);
       if (range) {
         start = range.startOffset;
@@ -156,20 +161,24 @@ export function UnifiedContextMenu({
       }
     }
 
+    // Store the selection immediately, before the menu opens and selection is cleared
     setSelectedText(text);
     setSelectionRange({ start, end, element });
+    
+    console.log('[UnifiedContextMenu] Selection captured:', { text, start, end });
   };
 
   // Handle shortcut execution
   const handleShortcutTrigger = async (shortcut: any, placementType: string) => {
     try {
-      // Build scope context
+      // Build scope context - selection is ALWAYS the highlighted text
       const scopes: Record<string, string> = {
-        selection: selectedText,
-        content: selectedText, // Can be overridden by contextData
-        context: '', // Can be overridden by contextData
-        ...contextData, // Allow external context to override
+        selection: selectedText || '', // The actual highlighted/selected text
+        content: contextData.content || '', // Full content from parent
+        context: contextData.context || '', // Additional context from parent
       };
+
+      console.log('[UnifiedContextMenu] Executing with scopes:', JSON.stringify(scopes, null, 2));
 
       if (isDebugMode) {
         setDebugData({
@@ -218,12 +227,8 @@ export function UnifiedContextMenu({
   };
 
   // Handle content block insertion
-  const handleContentBlockTrigger = (shortcut: any) => {
-    if (!shortcut.prompt_builtin) return;
-
-    // For content blocks, the "template" should be in the prompt builtin
-    // This is a simplified implementation - you may need to adjust based on your data structure
-    const template = shortcut.prompt_builtin.messages?.[0]?.content || '';
+  const handleContentBlockInsert = (block: ContentBlockItem) => {
+    const template = block.template;
 
     if (editorId) {
       // Use editor insertion
@@ -238,6 +243,21 @@ export function UnifiedContextMenu({
         const success = insertTextAtTextareaCursor(textarea, template);
         if (success) onContentInserted?.();
       }
+    }
+  };
+
+  // Handle menu item selection (handles BOTH shortcuts and content blocks!)
+  const handleMenuItemSelect = (item: MenuItem, placementType: string) => {
+    if (item.type === 'prompt_shortcut') {
+      // Convert to the format expected by handleShortcutTrigger
+      const shortcutData = {
+        ...item,
+        prompt_builtin: item.prompt_builtin,
+        is_active: true,
+      };
+      handleShortcutTrigger(shortcutData as any, placementType);
+    } else if (item.type === 'content_block') {
+      handleContentBlockInsert(item);
     }
   };
 
@@ -280,6 +300,64 @@ export function UnifiedContextMenu({
     return enabledPlacements.includes(placementType);
   };
 
+  // Recursive function to render category hierarchy
+  const renderCategoryGroup = (group: typeof categoryGroups[0], placementType: string) => {
+    const { category, items, children } = group;
+    const CategoryIcon = getIcon(category.icon_name);
+    
+    // Skip if no items and no children
+    if (items.length === 0 && (!children || children.length === 0)) return null;
+
+    return (
+      <React.Fragment key={category.id}>
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <CategoryIcon 
+              className="h-4 w-4 mr-2" 
+              style={{ color: category.color || 'currentColor' }} 
+            />
+            {category.label}
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-64">
+            {/* Render items in this category */}
+            {items.map(item => {
+              // Get icon based on item type
+              const ItemIcon = item.type === 'content_block'
+                ? item.icon
+                : getIcon(item.icon_name);
+              
+              // Check if disabled (only for shortcuts)
+              const isDisabled = item.type === 'prompt_shortcut' 
+                && (!item.prompt_builtin || !item.prompt_builtin_id);
+
+              return (
+                <ContextMenuItem
+                  key={item.id}
+                  onSelect={() => handleMenuItemSelect(item, placementType)}
+                  disabled={isDisabled}
+                >
+                  <ItemIcon className="h-4 w-4 mr-2" />
+                  {item.label}
+                  {isDisabled && (
+                    <span className="ml-auto text-xs text-muted-foreground">Not configured</span>
+                  )}
+                </ContextMenuItem>
+              );
+            })}
+
+            {/* Recursively render child categories */}
+            {children && children.length > 0 && (
+              <>
+                {items.length > 0 && <ContextMenuSeparator />}
+                {children.map(childGroup => renderCategoryGroup(childGroup, placementType))}
+              </>
+            )}
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+      </React.Fragment>
+    );
+  };
+
   return (
     <>
       <ContextMenu>
@@ -316,52 +394,8 @@ export function UnifiedContextMenu({
                       </ContextMenuLabel>
                     ) : (
                       <>
-                        {groups.map(({ category, shortcuts }) => {
-                          const CategoryIcon = getIcon(category.icon_name);
-                          
-                          // If category has no shortcuts, skip it
-                          if (shortcuts.length === 0) return null;
-
-                          return (
-                            <React.Fragment key={category.id}>
-                              <ContextMenuSub>
-                                <ContextMenuSubTrigger>
-                                  <CategoryIcon 
-                                    className="h-4 w-4 mr-2" 
-                                    style={{ color: category.color || 'currentColor' }} 
-                                  />
-                                  {category.label}
-                                </ContextMenuSubTrigger>
-                                <ContextMenuSubContent className="w-64">
-                                  {shortcuts.map(shortcut => {
-                                    const ShortcutIcon = getIcon(shortcut.icon_name);
-                                    const isDisabled = !shortcut.prompt_builtin || !shortcut.is_active;
-
-                                    return (
-                                      <ContextMenuItem
-                                        key={shortcut.id}
-                                        onSelect={() => {
-                                          if (placementType === PLACEMENT_TYPES.CONTENT_BLOCK) {
-                                            handleContentBlockTrigger(shortcut);
-                                          } else {
-                                            handleShortcutTrigger(shortcut, placementType);
-                                          }
-                                        }}
-                                        disabled={isDisabled}
-                                      >
-                                        <ShortcutIcon className="h-4 w-4 mr-2" />
-                                        {shortcut.label}
-                                        {isDisabled && (
-                                          <span className="ml-auto text-xs text-muted-foreground">Not configured</span>
-                                        )}
-                                      </ContextMenuItem>
-                                    );
-                                  })}
-                                </ContextMenuSubContent>
-                              </ContextMenuSub>
-                            </React.Fragment>
-                          );
-                        })}
+                        {/* Render hierarchical categories recursively */}
+                        {groups.map(group => renderCategoryGroup(group, placementType))}
                       </>
                     )}
                   </ContextMenuSubContent>
