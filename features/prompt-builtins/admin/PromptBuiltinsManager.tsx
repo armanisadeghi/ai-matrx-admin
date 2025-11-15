@@ -55,6 +55,7 @@ import { getUserFriendlyError } from '../utils/error-handler';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
+import { PromptBuiltinEditPanel } from './PromptBuiltinEditPanel';
 
 interface PromptBuiltinsManagerProps {
   className?: string;
@@ -82,6 +83,9 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   
   // Tree expansion state
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  
+  // View state
+  const [viewMode, setViewMode] = useState<'tree' | 'shortcuts'>('tree');
   
   // Dialog state
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
@@ -218,6 +222,15 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
 
   const isExpanded = (categoryId: string) => expandedCategories.has(categoryId);
 
+  const expandAll = () => {
+    const allCategoryIds = new Set(categories.map(c => c.id));
+    setExpandedCategories(allCategoryIds);
+  };
+
+  const collapseAll = () => {
+    setExpandedCategories(new Set());
+  };
+
   // CRUD handlers for categories
   const handleCategoryChange = (field: string, value: any) => {
     setEditCategoryData(prev => ({ ...prev, [field]: value }));
@@ -243,7 +256,17 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       
       toast({ title: 'Success', description: 'Category updated successfully' });
       setHasUnsavedChanges(false);
-      await loadData();
+      
+      // Reload data without showing full loading state
+      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+        fetchShortcutCategories(),
+        fetchShortcutsWithRelations(),
+        fetchPromptBuiltins({ is_active: true }),
+      ]);
+      
+      setCategories(categoriesData);
+      setShortcuts(shortcutsData);
+      setBuiltins(builtinsData);
     } catch (error) {
       console.error('Error updating category:', error);
       toast({ title: 'Error', description: 'Failed to update category', variant: 'destructive' });
@@ -298,7 +321,17 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       
       toast({ title: 'Success', description: 'Shortcut updated successfully' });
       setHasUnsavedChanges(false);
-      await loadData();
+      
+      // Reload data without showing full loading state
+      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+        fetchShortcutCategories(),
+        fetchShortcutsWithRelations(),
+        fetchPromptBuiltins({ is_active: true }),
+      ]);
+      
+      setCategories(categoriesData);
+      setShortcuts(shortcutsData);
+      setBuiltins(builtinsData);
     } catch (error) {
       console.error('Error updating shortcut:', error);
       toast({ title: 'Error', description: 'Failed to update shortcut', variant: 'destructive' });
@@ -340,7 +373,17 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       toast({ title: 'Success', description: 'Category created successfully' });
       setIsCreateCategoryOpen(false);
       setCreateCategoryData({});
-      await loadData();
+      
+      // Reload data without showing full loading state
+      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+        fetchShortcutCategories(),
+        fetchShortcutsWithRelations(),
+        fetchPromptBuiltins({ is_active: true }),
+      ]);
+      
+      setCategories(categoriesData);
+      setShortcuts(shortcutsData);
+      setBuiltins(builtinsData);
     } catch (error) {
       console.error('Error creating category:', error);
       toast({ title: 'Error', description: 'Failed to create category', variant: 'destructive' });
@@ -354,11 +397,31 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
     }
     
     try {
-      await createPromptShortcut(createShortcutData as CreatePromptShortcutInput);
+      const newShortcut = await createPromptShortcut(createShortcutData as CreatePromptShortcutInput);
       toast({ title: 'Success', description: 'Shortcut created successfully' });
       setIsCreateShortcutOpen(false);
       setCreateShortcutData({});
-      await loadData();
+      
+      // Reload data without showing full loading state
+      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+        fetchShortcutCategories(),
+        fetchShortcutsWithRelations(),
+        fetchPromptBuiltins({ is_active: true }),
+      ]);
+      
+      setCategories(categoriesData);
+      setShortcuts(shortcutsData);
+      setBuiltins(builtinsData);
+      
+      // Find and select the newly created shortcut
+      const createdShortcut = shortcutsData.find((s: any) => s.id === newShortcut.id);
+      if (createdShortcut) {
+        setSelectedItem({ type: 'shortcut', data: createdShortcut });
+        // Expand the category to show the new shortcut
+        if (createdShortcut.category_id) {
+          setExpandedCategories(prev => new Set(prev).add(createdShortcut.category_id));
+        }
+      }
     } catch (error: any) {
       const errorMessage = getUserFriendlyError(error);
       toast({ 
@@ -401,7 +464,17 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       }
 
       toast({ title: 'Success', description: 'Prompt builtin updated successfully' });
-      await loadData();
+      
+      // Reload data without showing full loading state
+      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+        fetchShortcutCategories(),
+        fetchShortcutsWithRelations(),
+        fetchPromptBuiltins({ is_active: true }),
+      ]);
+      
+      setCategories(categoriesData);
+      setShortcuts(shortcutsData);
+      setBuiltins(builtinsData);
     } catch (error: any) {
       const errorMessage = getUserFriendlyError(error);
       toast({ 
@@ -488,8 +561,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Prompt Builtins</h2>
+        <h2 className="text-lg font-semibold">Prompt Builtins</h2>
+        <div className="flex items-center justify-between mb-4">
             <div className="flex gap-2">
               <Button onClick={() => setIsCreateCategoryOpen(true)} size="sm" variant="outline">
                 <Folder className="w-4 h-4 mr-1" />
@@ -512,6 +585,49 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               </Button>
             </div>
           </div>
+          
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2 mb-3">
+            <Button
+              variant={viewMode === 'tree' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('tree')}
+              className="flex-1"
+            >
+              <Folder className="w-4 h-4 mr-1" />
+              Tree
+            </Button>
+            <Button
+              variant={viewMode === 'shortcuts' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('shortcuts')}
+              className="flex-1"
+            >
+              <Zap className="w-4 h-4 mr-1" />
+              Shortcuts
+            </Button>
+          </div>
+          
+          {viewMode === 'tree' && (
+            <div className="flex items-center gap-2 mb-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={expandAll}
+                className="flex-1 text-xs"
+              >
+                Expand All
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={collapseAll}
+                className="flex-1 text-xs"
+              >
+                Collapse All
+              </Button>
+            </div>
+          )}
           
           {/* Search */}
           <div className="relative mb-3">
@@ -540,16 +656,68 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           </Select>
         </div>
 
-        {/* Tree View */}
+        {/* Tree/Shortcuts View */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {tree.length === 0 ? (
-              <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                <Folder className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No categories found</p>
-              </div>
+            {viewMode === 'tree' ? (
+              tree.length === 0 ? (
+                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                  <Folder className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No categories found</p>
+                </div>
+              ) : (
+                tree.map(node => renderTreeNode(node))
+              )
             ) : (
-              tree.map(node => renderTreeNode(node))
+              // Shortcuts-only view
+              shortcuts.filter(s => {
+                const category = categories.find(c => c.id === s.category_id);
+                const matchesPlacement = selectedPlacement === 'all' || category?.placement_type === selectedPlacement;
+                const matchesSearch = searchTerm === '' || s.label.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchesPlacement && matchesSearch && s.is_active;
+              }).length === 0 ? (
+                <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                  <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No shortcuts found</p>
+                </div>
+              ) : (
+                shortcuts
+                  .filter(s => {
+                    const category = categories.find(c => c.id === s.category_id);
+                    const matchesPlacement = selectedPlacement === 'all' || category?.placement_type === selectedPlacement;
+                    const matchesSearch = searchTerm === '' || s.label.toLowerCase().includes(searchTerm.toLowerCase());
+                    return matchesPlacement && matchesSearch && s.is_active;
+                  })
+                  .sort((a, b) => {
+                    // Sort by category label then by sort_order
+                    const catA = categories.find(c => c.id === a.category_id);
+                    const catB = categories.find(c => c.id === b.category_id);
+                    const catCompare = (catA?.label || '').localeCompare(catB?.label || '');
+                    if (catCompare !== 0) return catCompare;
+                    return a.sort_order - b.sort_order;
+                  })
+                  .map(shortcut => {
+                    const isShortcutSelected = selectedItem?.type === 'shortcut' && selectedItem.data.id === shortcut.id;
+                    const category = categories.find(c => c.id === shortcut.category_id);
+                    return (
+                      <div
+                        key={shortcut.id}
+                        className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors mb-1
+                          ${isShortcutSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                        onClick={() => setSelectedItem({ type: 'shortcut', data: shortcut })}
+                      >
+                        <Zap className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">{shortcut.label}</div>
+                          {category && (
+                            <div className="text-xs text-gray-500 truncate">{category.label}</div>
+                          )}
+                        </div>
+                        {!shortcut.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
+                      </div>
+                    );
+                  })
+              )
             )}
           </div>
         </ScrollArea>
@@ -663,7 +831,6 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                               onChange={(e) => handleCategoryChange('icon_name', e.target.value)}
                               placeholder="Folder"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Lucide icon name</p>
                           </div>
                           <div>
                             <Label>Color</Label>
@@ -708,13 +875,13 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                           </Select>
                         </div>
 
-                        <div className="flex items-center space-x-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
                           <Checkbox
                             checked={editCategoryData.is_active}
                             onCheckedChange={(checked) => handleCategoryChange('is_active', checked)}
                           />
-                          <Label>Active (visible in menus)</Label>
-                        </div>
+                          <span className="text-sm">Active (visible in menus)</span>
+                        </label>
                       </CardContent>
                     </Card>
 
@@ -817,30 +984,26 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
                           <Checkbox
                             checked={editShortcutData.is_active}
                             onCheckedChange={(checked) => handleShortcutChange('is_active', checked)}
                           />
-                          <Label>Active (visible in menus)</Label>
-                        </div>
+                          <span className="text-sm">Active (visible in menus)</span>
+                        </label>
                       </CardContent>
                     </Card>
 
                     {/* Available Scope Keys - Primary Section */}
                     <Card className="border-blue-200 dark:border-blue-800">
                       <CardHeader>
-                        <CardTitle>Available Scope Keys</CardTitle>
-                        <CardDescription>
-                          Define which scope keys are available where this shortcut is used
-                        </CardDescription>
+                        <CardTitle>Scopes</CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent className="space-y-4 pl-4">
                         <div className="space-y-3">
-                          <Label className="text-sm font-semibold">Common Scopes</Label>
                           <div className="flex flex-col gap-2">
                             {['selection', 'content', 'context'].map(scope => (
-                              <div key={scope} className="flex items-center space-x-2">
+                              <label key={scope} className="flex items-center space-x-2 cursor-pointer">
                                 <Checkbox
                                   checked={(editShortcutData.available_scopes || []).includes(scope)}
                                   onCheckedChange={(checked) => {
@@ -851,8 +1014,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                                     handleShortcutChange('available_scopes', newScopes);
                                   }}
                                 />
-                                <Label className="font-normal capitalize">{scope}</Label>
-                              </div>
+                                <span className="font-normal capitalize text-sm">{scope}</span>
+                              </label>
                             ))}
                           </div>
                         </div>
@@ -892,7 +1055,6 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                       <Card>
                         <CardHeader>
                           <CardTitle>Prompt Builtin</CardTitle>
-                          <CardDescription>Select or create a prompt for this shortcut</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
@@ -1043,7 +1205,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                                     }
                                   }}
                                 >
-                                  <SelectTrigger className="flex-1">
+                                  <SelectTrigger className="w-48">
                                     <SelectValue placeholder="Select variable" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -1055,7 +1217,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                                           </SelectItem>
                                         ))}
                                         <SelectItem value="_none_" className="text-gray-500">
-                                          (clear)
+                                          Custom
                                         </SelectItem>
                                       </>
                                     ) : (
@@ -1182,8 +1344,9 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           onSuccess={async (builtinId) => {
             // Update the shortcut with the new builtin
             handleShortcutChange('prompt_builtin_id', builtinId);
-            // Reload data to get the latest builtins
-            await loadData();
+            // Reload data to get the latest builtins without showing full loading state
+            const builtinsData = await fetchPromptBuiltins({ is_active: true });
+            setBuiltins(builtinsData);
             setIsSelectPromptModalOpen(false);
           }}
         />
