@@ -59,7 +59,7 @@ export function useShortcutExecution() {
       );
 
       // Use the shortcut's configured result_display to determine behavior
-      const resultDisplay = shortcut.result_display || 'modal';
+      const resultDisplay = shortcut.result_display || 'modal-full';
 
       // Build the prompt data object
       const promptData = {
@@ -84,28 +84,19 @@ export function useShortcutExecution() {
 
         return result;
       } else if (requiresModalUI(resultDisplay)) {
-        // Determine modal mode based on boolean flags
-        let mode: 'auto-run' | 'auto-run-one-shot' | 'manual-with-hidden-variables' | 'manual-with-visible-variables' | 'manual';
-        
-        if (shortcut.auto_run) {
-          // Auto-run modes
-          mode = shortcut.allow_chat ? 'auto-run' : 'auto-run-one-shot';
-        } else {
-          // Manual modes
-          if (shortcut.show_variables) {
-            mode = 'manual-with-visible-variables';
-          } else if (shortcut.apply_variables) {
-            mode = 'manual-with-hidden-variables';
-          } else {
-            mode = 'manual';
-          }
-        }
+        // Use new execution config directly (no legacy mode conversion)
+        const executionConfig = {
+          auto_run: shortcut.auto_run,
+          allow_chat: shortcut.allow_chat,
+          show_variables: shortcut.show_variables,
+          apply_variables: shortcut.apply_variables,
+        };
 
         // Open in modal via Redux prompt runner
         openPrompt({
           promptData,
           variables: finalVariables,
-          mode,
+          executionConfig,
           title: shortcut.label,
           initialMessage: '', // Always set to empty for now
         });

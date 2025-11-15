@@ -40,12 +40,25 @@ export type {
 
 // Modal Types
 export type {
-  PromptExecutionMode,
+  PromptExecutionMode, // @deprecated - use NewExecutionConfig instead
   PromptRunnerModalProps,
   PromptData,
   ExecutionResult as ModalExecutionResult,
   UsePromptRunnerModalReturn,
-  PromptRunnerModalConfig
+  PromptRunnerModalConfig,
+  // New execution config system
+  NewExecutionConfig,
+  ResultDisplay,
+  PromptExecutionRequest,
+  PromptExecutionConfiguration
+} from './types/modal';
+
+// Execution Config Utilities
+export {
+  resolveExecutionConfig,
+  getExecutionConfigFromModalConfig,
+  convertLegacyModeToConfig,
+  convertConfigToLegacyMode
 } from './types/modal';
 
 // Core Types
@@ -62,7 +75,6 @@ export type {
 export type { PromptRunnerProps } from './components/modal/PromptRunner';
 
 // Services
-export { PromptExecutionService, promptExecutionService, executePrompt } from './services/prompt-execution-service';
 export { importPrompt, importPromptBatch, exportPromptAsJSON } from './services/prompt-import-service';
 
 // Utilities
@@ -98,12 +110,10 @@ export { usePromptRunner } from './hooks/usePromptRunner'; // NEW: Redux-based p
 // Components
 export { PromptExecutionButton, PromptExecutionIconButton } from './components/actions/PromptExecutionButton';
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
-export { PromptExecutionModal } from './components/actions/PromptExecutionModal';
 export { ConvertToBuiltinModal } from './components/actions/ConvertToBuiltinModal';
 export { PromptImporter } from './components/common/PromptImporter';
 export { PromptRunner } from './components/modal/PromptRunner';
 export { PromptRunnerModal } from './components/modal/PromptRunnerModal';
-export { PromptRunnerModalTester } from './components/modal/PromptRunnerModalTester';
 export { PromptRunnerModalSidebarTester } from './components/modal/PromptRunnerModalSidebarTester';
 
 // System Prompts Components

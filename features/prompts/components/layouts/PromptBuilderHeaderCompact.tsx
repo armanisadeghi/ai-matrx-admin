@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal, Edit3, Play } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal, Edit3, Play, Route, Copy, AppWindow, LayoutTemplate, Code2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/redux";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/SystemPromptOptimizer";
+import { PromptActionsMenu } from "@/features/prompts/components/actions/PromptActionsMenu";
+import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 
 interface PromptBuilderHeaderCompactProps {
     promptName: string;
@@ -41,6 +44,8 @@ export function PromptBuilderHeaderCompact({
     mobileActiveTab = 'edit',
     onMobileTabChange,
 }: PromptBuilderHeaderCompactProps) {
+    const router = useRouter();
+    const { openPrompt } = usePromptRunner();
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
     const isAdminMode = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
 
@@ -90,6 +95,50 @@ export function PromptBuilderHeaderCompact({
                                     <BarChart className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
                                     <span className="text-amber-600 dark:text-amber-400">Evaluate</span>
                                 </DropdownMenuItem>
+                            </>
+                        )}
+                        {/* Prompt Actions Group */}
+                        {fullPromptObject?.id && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => {
+                                    openPrompt({
+                                        promptId: fullPromptObject.id,
+                                        executionConfig: {
+                                            auto_run: false,
+                                            allow_chat: true,
+                                            show_variables: true,
+                                            apply_variables: false,
+                                        },
+                                    });
+                                }}>
+                                    <Play className="h-4 w-4 mr-2" />
+                                    Open Run Modal
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                    router.push(`/ai/prompts/run/${fullPromptObject.id}`);
+                                }}>
+                                    <Route className="h-4 w-4 mr-2" />
+                                    Go To Run Page
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                    router.push(`/prompt-apps/new?promptId=${fullPromptObject.id}`);
+                                }}>
+                                    <AppWindow className="h-4 w-4 mr-2" />
+                                    Create App
+                                </DropdownMenuItem>
+                                {isAdminMode && (
+                                    <>
+                                        <DropdownMenuItem>
+                                            <LayoutTemplate className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                                            <span className="text-amber-600 dark:text-amber-400">Convert to Template</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            <Code2 className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                                            <span className="text-amber-600 dark:text-amber-400">Convert to Builtin</span>
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </>
                         )}
                         <DropdownMenuSeparator />
@@ -231,6 +280,20 @@ export function PromptBuilderHeaderCompact({
                             </>
                         )}
                     </div>
+
+                    {/* Actions Menu - visible on all screens */}
+                    {fullPromptObject?.id && (
+                        <PromptActionsMenu
+                            promptId={fullPromptObject.id}
+                            promptData={{
+                                name: fullPromptObject.name,
+                                messages: fullPromptObject.messages,
+                                variableDefaults: fullPromptObject.variableDefaults,
+                                settings: fullPromptObject.settings,
+                            }}
+                            triggerClassName=""
+                        />
+                    )}
 
                     {/* Save button - always visible */}
                     <Button

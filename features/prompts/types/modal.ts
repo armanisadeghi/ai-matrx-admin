@@ -5,32 +5,61 @@
  */
 
 import { PromptVariable, PromptMessage } from "@/features/prompts/types/core";
+import type { 
+  PromptExecutionConfig as NewExecutionConfig,
+  ResultDisplay,
+  LegacyPromptExecutionMode
+} from "@/features/prompt-builtins/types/execution-modes";
+import { 
+  convertLegacyModeToConfig,
+  convertConfigToLegacyMode
+} from "@/features/prompt-builtins/types/execution-modes";
+
+// Re-export new types for convenience
+export type { NewExecutionConfig, ResultDisplay };
+export { convertLegacyModeToConfig, convertConfigToLegacyMode };
 
 // ============================================================================
-// Execution Modes
+// Execution Modes (LEGACY - Deprecated)
 // ============================================================================
 
 /**
- * Execution mode determines how the modal behaves
+ * @deprecated Use PromptExecutionConfig with separate flags instead
  * 
- * - auto-run: Automatically starts execution with pre-filled variables, allows conversation
- * - auto-run-one-shot: Automatically starts execution, no follow-up conversation
- * - manual-with-hidden-variables: User can add instructions, variables are hidden
- * - manual-with-visible-variables: User can edit variables and add instructions
- * - manual: Standard prompt runner behavior, no pre-filled values
+ * Legacy execution mode that combined multiple concerns into a single enum.
+ * This is now split into separate flags for better flexibility:
+ * - auto_run: boolean
+ * - allow_chat: boolean
+ * - show_variables: boolean
+ * - apply_variables: boolean
+ * - result_display: ResultDisplay
  */
-export type PromptExecutionMode = 
-  | 'auto-run'
-  | 'auto-run-one-shot'
-  | 'manual-with-hidden-variables'
-  | 'manual-with-visible-variables'
-  | 'manual';
+export type PromptExecutionMode = LegacyPromptExecutionMode;
 
-// auto-run: true/false (True = No Initial message)
-// allow-chat: true/false (False = one-shot)
-// show-variables: true/false (False = variables are hidden, but still applied if available)
-// manual: True = no variables applied.
 
+/**
+ * Execution configuration for prompt runner
+ * Supports both new (preferred) and legacy (deprecated) formats
+ */
+export interface PromptExecutionConfiguration {
+  /** NEW: Execution configuration (preferred) */
+  executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
+  
+  /** LEGACY: Execution mode (deprecated, use executionConfig instead) */
+  mode?: PromptExecutionMode;
+  
+  /** Auto-run flag (can be used directly for simple cases) */
+  autoRun?: boolean;
+  
+  /** Allow chat flag (can be used directly for simple cases) */
+  allowChat?: boolean;
+  
+  /** Show variables flag (can be used directly for simple cases) */
+  showVariables?: boolean;
+  
+  /** Apply variables flag (can be used directly for simple cases) */
+  applyVariables?: boolean;
+}
 
 export interface PromptRunnerModalProps {
   /** Controls whether the modal is open */
@@ -43,7 +72,10 @@ export interface PromptRunnerModalProps {
   promptId?: string;
   promptData?: PromptData;
   
-  /** Execution mode */
+  /** Execution configuration (NEW preferred approach) */
+  executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
+  
+  /** @deprecated Use executionConfig instead */
   mode?: PromptExecutionMode;
   
   /** Pre-filled variable values */
@@ -101,15 +133,108 @@ export interface UsePromptRunnerModalReturn {
 
 /**
  * Configuration passed to the modal hook
+ * Supports both new (preferred) and legacy (deprecated) formats
  */
 export interface PromptRunnerModalConfig {
   promptId?: string;
   promptData?: PromptData;
+  
+  /** NEW: Execution configuration with separate flags (preferred) */
+  executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
+  
+  /** @deprecated Use executionConfig instead */
   mode?: PromptExecutionMode;
+  
   variables?: Record<string, string>;
   initialMessage?: string;
   title?: string;
   runId?: string;
   onExecutionComplete?: (result: ExecutionResult) => void;
+}
+
+/**
+ * Unified prompt execution request
+ * This is the new single entry point for executing prompts
+ */
+export interface PromptExecutionRequest {
+  /** Prompt identifier or data */
+  promptId?: string;
+  promptData?: PromptData;
+  
+  /** Full execution configuration including display type */
+  config: NewExecutionConfig;
+  
+  /** Pre-filled variable values */
+  variables?: Record<string, string>;
+  
+  /** Optional initial user message */
+  initialMessage?: string;
+  
+  /** Optional custom title */
+  title?: string;
+  
+  /** Optional run ID to load existing conversation */
+  runId?: string;
+  
+  /** Optional callback when execution completes */
+  onExecutionComplete?: (result: ExecutionResult) => void;
+}
+
+// ============================================================================
+// Conversion Utilities
+// ============================================================================
+
+/**
+ * Resolve execution config from various input formats
+ * Handles legacy mode, new config, or individual flags
+ */
+export function resolveExecutionConfig(
+  config?: Omit<NewExecutionConfig, 'result_display'>,
+  legacyMode?: PromptExecutionMode,
+  individualFlags?: {
+    autoRun?: boolean;
+    allowChat?: boolean;
+    showVariables?: boolean;
+    applyVariables?: boolean;
+  }
+): Omit<NewExecutionConfig, 'result_display'> {
+  // Priority: config > legacyMode > individualFlags > defaults
+  
+  if (config) {
+    return config;
+  }
+  
+  if (legacyMode) {
+    return convertLegacyModeToConfig(legacyMode);
+  }
+  
+  if (individualFlags && Object.keys(individualFlags).length > 0) {
+    return {
+      auto_run: individualFlags.autoRun ?? true,
+      allow_chat: individualFlags.allowChat ?? true,
+      show_variables: individualFlags.showVariables ?? false,
+      apply_variables: individualFlags.applyVariables ?? true,
+    };
+  }
+  
+  // Default: modal-full behavior
+  return {
+    auto_run: true,
+    allow_chat: true,
+    show_variables: false,
+    apply_variables: true,
+  };
+}
+
+/**
+ * Convert PromptRunnerModalConfig to the resolved execution config
+ */
+export function getExecutionConfigFromModalConfig(
+  modalConfig: PromptRunnerModalConfig
+): Omit<NewExecutionConfig, 'result_display'> {
+  return resolveExecutionConfig(
+    modalConfig.executionConfig,
+    modalConfig.mode
+  );
 }
 

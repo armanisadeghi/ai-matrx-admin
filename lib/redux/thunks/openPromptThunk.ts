@@ -30,17 +30,27 @@ import { PromptRunnerModalConfig } from '@/features/prompts/types/modal';
  * 
  * @example
  * ```tsx
- * // With prompt ID (will cache automatically)
+ * // With prompt ID (will cache automatically) - New execution config
  * dispatch(openPrompt({
  *   promptId: 'text-analyzer',
- *   mode: 'auto-run',
+ *   executionConfig: {
+ *     auto_run: true,
+ *     allow_chat: true,
+ *     show_variables: false,
+ *     apply_variables: true
+ *   },
  *   variables: { text: selectedText }
  * }));
  * 
  * // With prompt data (skip cache/fetch)
  * dispatch(openPrompt({
  *   promptData: myPromptObject,
- *   mode: 'manual'
+ *   executionConfig: {
+ *     auto_run: false,
+ *     allow_chat: true,
+ *     show_variables: true,
+ *     apply_variables: false
+ *   }
  * }));
  * ```
  */

@@ -1,116 +1,95 @@
 /**
  * Execution Configuration Types
  * 
- * Boolean-based execution configuration for prompt shortcuts.
- * Much clearer than string-based modes!
+ * Defines how LLM recipe execution results are displayed to the user.
  */
 
 // ============================================================================
 // Result Display Types
 // ============================================================================
 
-/**
- * Result display determines WHERE/HOW the prompt results are shown
- */
 export type ResultDisplay = 
-  | 'modal'      // Opens in PromptRunnerModal (default)
-  | 'inline'     // Executes inline, shows result modal with replace/insert options
-  | 'background' // Executes silently, no UI (for automation)
-  | 'sidebar'    // Opens in sidebar panel
-  | 'toast';     // Shows result in a toast notification
+  | 'modal-full'    // Full modal with chat interface (PromptRunnerModal)
+  | 'modal-compact' // Compact modal with essential controls only
+  | 'inline'        // Minimal overlay with replace/insert/cancel (VSCode-style)
+  | 'sidebar'       // Sidebar panel using FloatingSheet component
+  | 'toast'         // Toast notification for simple responses
+  | 'direct'        // Streams directly to target location (no intermediate UI)
+  | 'background';   // Silent execution, state-only updates (automation)
 
-/**
- * Metadata for result display types
- */
 export const RESULT_DISPLAY_META = {
-  modal: {
-    label: 'Modal',
-    description: 'Opens in a full modal dialog with chat interface',
+  'modal-full': {
+    label: 'Full Modal',
+    description: 'Full-featured modal dialog with chat interface and history',
     icon: 'Square',
+    useCases: ['Complex interactions', 'Multi-turn conversations', 'Review before action'],
+  },
+  'modal-compact': {
+    label: 'Compact Modal',
+    description: 'Streamlined modal with essential controls and preview',
+    icon: 'RectangleVertical',
+    useCases: ['Quick edits', 'Single responses', 'Simple previews'],
   },
   inline: {
     label: 'Inline',
-    description: 'Executes and shows result with text manipulation options',
+    description: 'Minimal overlay at cursor/selection with immediate action options',
     icon: 'FileEdit',
-  },
-  background: {
-    label: 'Background',
-    description: 'Executes silently without showing UI',
-    icon: 'Loader',
+    useCases: ['Text manipulation', 'In-place edits', 'Quick replacements'],
   },
   sidebar: {
     label: 'Sidebar',
-    description: 'Opens in a sidebar panel',
+    description: 'Persistent sidebar panel (FloatingSheet) with contextual results',
     icon: 'PanelRight',
+    useCases: ['Parallel workflows', 'Reference while working', 'Multi-document tasks'],
   },
   toast: {
     label: 'Toast',
-    description: 'Shows result in a toast notification',
+    description: 'Brief notification with result summary or confirmation',
     icon: 'MessageSquare',
+    useCases: ['Simple confirmations', 'Status updates', 'Quick answers'],
+  },
+  direct: {
+    label: 'Direct Stream',
+    description: 'Streams output directly to target component with no intermediate UI',
+    icon: 'Zap',
+    useCases: ['Live updates', 'Real-time collaboration', 'Embedded outputs'],
+  },
+  background: {
+    label: 'Background',
+    description: 'Silent execution with state updates only, no UI shown',
+    icon: 'Loader',
+    useCases: ['Automation', 'Batch processing', 'Pre-computation'],
   },
 } as const;
+
+export const hasVisibleUI = (display: ResultDisplay): boolean => {
+  return display !== 'background' && display !== 'direct';
+};
+
+export const isInteractive = (display: ResultDisplay): boolean => {
+  return display === 'modal-full' || display === 'modal-compact' || display === 'sidebar';
+};
 
 // ============================================================================
 // Execution Configuration
 // ============================================================================
 
-/**
- * Complete execution configuration for a shortcut
- * 
- * This replaces the confusing string-based modes with clear boolean flags:
- * - result_display: WHERE to show results
- * - auto_run: Whether to run immediately or wait for user
- * - allow_chat: Whether to allow conversation or one-shot
- * - show_variables: Whether to show variable form or hide it
- * - apply_variables: Whether to apply variables or ignore them
- */
 export interface PromptExecutionConfig {
-  /**
-   * WHERE/HOW to display results
-   * Default: 'modal'
-   */
   result_display: ResultDisplay;
-  
-  /**
-   * Whether to run immediately on open (true) or wait for user to click run (false)
-   * Default: true
-   */
   auto_run: boolean;
-  
-  /**
-   * Whether to allow conversational mode (true) or one-shot execution (false)
-   * Default: true
-   */
   allow_chat: boolean;
-  
-  /**
-   * Whether to show variable form (true) or hide it (false)
-   * Variables are still applied if available even when hidden
-   * Default: false
-   */
   show_variables: boolean;
-  
-  /**
-   * Whether to apply variables (true) or ignore them entirely (false)
-   * Default: true
-   */
   apply_variables: boolean;
 }
 
-/**
- * Default execution configuration
- */
 export const DEFAULT_EXECUTION_CONFIG: PromptExecutionConfig = {
-  result_display: 'modal',
+  result_display: 'modal-full',
   auto_run: true,
   allow_chat: true,
   show_variables: false,
   apply_variables: true,
 };
 
-/**
- * Parse execution config from database values
- */
 export function parseExecutionConfig(
   result_display?: string | null,
   auto_run?: boolean | null,
@@ -127,35 +106,22 @@ export function parseExecutionConfig(
   };
 }
 
-/**
- * Helper to determine if a display type requires modal UI
- */
 export function requiresModalUI(display: ResultDisplay): boolean {
-  return display === 'modal' || display === 'sidebar';
+  return display === 'modal-full' || display === 'modal-compact' || display === 'sidebar';
 }
 
-/**
- * Helper to determine if a display type requires inline text manipulation UI
- */
 export function requiresInlineUI(display: ResultDisplay): boolean {
   return display === 'inline';
 }
 
-/**
- * Helper to determine if a display type shows results
- */
 export function showsResults(display: ResultDisplay): boolean {
   return display !== 'background';
 }
 
 // ============================================================================
-// Legacy Mode Conversion (for migration)
+// Legacy Mode Conversion
 // ============================================================================
 
-/**
- * Legacy modal execution modes (deprecated, use boolean flags instead)
- * Kept for backward compatibility during migration
- */
 export type LegacyPromptExecutionMode = 
   | 'auto-run'
   | 'auto-run-one-shot'
@@ -163,11 +129,7 @@ export type LegacyPromptExecutionMode =
   | 'manual-with-visible-variables'
   | 'manual';
 
-/**
- * Convert legacy mode string to new boolean config
- * Useful for migration from old system
- */
-export function convertLegacyMode(mode: LegacyPromptExecutionMode): Omit<PromptExecutionConfig, 'result_display'> {
+export function convertLegacyModeToConfig(mode: LegacyPromptExecutionMode): Omit<PromptExecutionConfig, 'result_display'> {
   switch (mode) {
     case 'auto-run':
       return {
@@ -212,3 +174,22 @@ export function convertLegacyMode(mode: LegacyPromptExecutionMode): Omit<PromptE
   }
 }
 
+export function convertConfigToLegacyMode(config: Omit<PromptExecutionConfig, 'result_display'>): LegacyPromptExecutionMode {
+  if (config.auto_run && config.allow_chat && !config.show_variables && config.apply_variables) {
+    return 'auto-run';
+  }
+  
+  if (config.auto_run && !config.allow_chat && !config.show_variables && config.apply_variables) {
+    return 'auto-run-one-shot';
+  }
+  
+  if (!config.auto_run && config.allow_chat && !config.show_variables && config.apply_variables) {
+    return 'manual-with-hidden-variables';
+  }
+  
+  if (!config.auto_run && config.allow_chat && config.show_variables && config.apply_variables) {
+    return 'manual-with-visible-variables';
+  }
+  
+  return 'manual';
+}

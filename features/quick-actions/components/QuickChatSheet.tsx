@@ -72,7 +72,12 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
                 <PromptRunner
                     key={chatKey}
                     promptId={CHAT_PROMPT_ID}
-                    mode="manual-with-visible-variables"
+                    executionConfig={{
+                        auto_run: false,
+                        allow_chat: true,
+                        show_variables: true,
+                        apply_variables: true
+                    }}
                     isActive={true}
                     className="h-full"
                 />

@@ -122,15 +122,6 @@ export function DynamicContextMenu({
     setSelectedText(text);
     setSelectionRange({ start, end, element });
     
-    console.log('[DynamicContextMenu] Captured selection on right-click:', {
-      length: text.length,
-      preview: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
-      range: { start, end },
-      elementType: element?.tagName,
-    });
-
-    // DON'T try to restore selection - let the browser handle it naturally
-    // The selection data is captured for use in Replace/Insert operations
   };
 
   // Group prompts by category and subcategory
@@ -189,11 +180,6 @@ export function DynamicContextMenu({
         current_code: selectedText,
       };
 
-      console.log('[DynamicContextMenu] Context with selection:', {
-        selectedTextLength: selectedText.length,
-        contextKeys: Object.keys(contextWithSelection),
-      });
-
       // Resolve variables using the CODE
       const variables = PromptContextResolver.resolve(
         systemPrompt.prompt_snapshot,
@@ -202,7 +188,6 @@ export function DynamicContextMenu({
         contextWithSelection
       );
 
-      console.log('[DynamicContextMenu] Resolved variables:', variables);
 
       // Check if can resolve
       const canResolve = PromptContextResolver.canResolve(
@@ -212,7 +197,6 @@ export function DynamicContextMenu({
         contextWithSelection
       );
 
-      console.log('[DynamicContextMenu] Can resolve check:', canResolve);
 
       // Show debug modal if debug mode is enabled
       if (isDebugMode) {
@@ -240,11 +224,6 @@ export function DynamicContextMenu({
       const allowChat = settings.allowChat ?? true;
       const allowInitialMessage = settings.allowInitialMessage ?? false;
 
-      console.log('[DynamicContextMenu] Opening modal with config:', {
-        title: systemPrompt.name,
-        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
-        variableCount: Object.keys(variables).length,
-      });
 
       // If this is an editable context (textarea) and has text replace callbacks
       // Execute directly and show replace modal instead of chat modal
@@ -270,16 +249,23 @@ export function DynamicContextMenu({
         setTextResultModalOpen(true);
       } else {
         // Regular modal with chat
+        const executionConfig = {
+          auto_run: true,
+          allow_chat: allowChat,
+          show_variables: false,
+          apply_variables: true
+        };
+        
         const config = systemPrompt.source_prompt_id ? {
           promptId: systemPrompt.source_prompt_id,
           variables,
-          mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+          executionConfig,
           title: systemPrompt.name,
           initialMessage: allowInitialMessage ? undefined : '',
         } : {
           promptData: systemPrompt.prompt_snapshot,
           variables,
-          mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+          executionConfig,
           title: systemPrompt.name,
           initialMessage: allowInitialMessage ? undefined : '',
         };

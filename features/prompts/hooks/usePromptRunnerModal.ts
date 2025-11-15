@@ -17,17 +17,27 @@ import {
  * ```tsx
  * const promptModal = usePromptRunnerModal();
  * 
- * // Auto-run with pre-filled variables
+ * // Auto-run with pre-filled variables (new execution config)
  * promptModal.open({
  *   promptId: 'text-analyzer',
- *   mode: 'auto-run',
+ *   executionConfig: {
+ *     auto_run: true,
+ *     allow_chat: true,
+ *     show_variables: false,
+ *     apply_variables: true
+ *   },
  *   variables: { text: selectedText }
  * });
  * 
- * // Manual mode with editable variables
+ * // Manual mode with editable variables (new execution config)
  * promptModal.open({
  *   promptData: myPrompt,
- *   mode: 'manual-with-visible-variables',
+ *   executionConfig: {
+ *     auto_run: false,
+ *     allow_chat: true,
+ *     show_variables: true,
+ *     apply_variables: true
+ *   },
  *   variables: { topic: 'AI' }
  * });
  * ```

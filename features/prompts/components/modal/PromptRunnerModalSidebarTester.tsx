@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/collapsible';
 import { usePromptRunnerModal } from '../../hooks/usePromptRunnerModal';
 import { PromptRunnerModal } from './PromptRunnerModal';
-import { PromptData, PromptExecutionMode } from '../../types/modal';
-import { ChevronDown, Zap, Eye, EyeOff, Settings, TestTube2 } from 'lucide-react';
+import { PromptData, PromptRunnerModalConfig, type NewExecutionConfig } from '../../types/modal';
+import { ChevronDown, Zap, Eye, EyeOff, Settings, TestTube2, MessageSquare, Ban } from 'lucide-react';
 
 interface PromptRunnerModalSidebarTesterProps {
     promptData: PromptData;
@@ -34,50 +34,57 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
         return vars;
     };
     
-    const openModalWithMode = (mode: PromptExecutionMode) => {
-        const config: any = {
+    const openModalWithConfig = (executionConfig: Omit<NewExecutionConfig, 'result_display'>) => {
+        const config: PromptRunnerModalConfig = {
             promptData: promptData,
-            mode: mode,
+            executionConfig: executionConfig,
         };
         
-        // Add test variables for auto-run modes and hidden variables mode
-        if (mode === 'auto-run' || mode === 'auto-run-one-shot' || mode === 'manual-with-hidden-variables') {
+        // Add test variables if apply_variables is true
+        if (executionConfig.apply_variables) {
             config.variables = getTestVariables();
         }
         
         promptModal.open(config);
     };
     
-    const modes = [
+    // New config-based test options
+    const testConfigs = [
         {
-            id: 'auto-run' as PromptExecutionMode,
-            name: 'Auto-Run',
+            name: 'Auto + Chat',
             icon: Zap,
             color: 'text-purple-600 dark:text-purple-400',
+            config: { auto_run: true, allow_chat: true, show_variables: false, apply_variables: true }
         },
         {
-            id: 'auto-run-one-shot' as PromptExecutionMode,
             name: 'Auto One-Shot',
-            icon: Zap,
+            icon: Ban,
             color: 'text-pink-600 dark:text-pink-400',
+            config: { auto_run: true, allow_chat: false, show_variables: false, apply_variables: true }
         },
         {
-            id: 'manual-with-hidden-variables' as PromptExecutionMode,
-            name: 'Hidden Vars',
+            name: 'Manual + Hidden',
             icon: EyeOff,
             color: 'text-blue-600 dark:text-blue-400',
+            config: { auto_run: false, allow_chat: true, show_variables: false, apply_variables: true }
         },
         {
-            id: 'manual-with-visible-variables' as PromptExecutionMode,
-            name: 'Visible Vars',
+            name: 'Manual + Visible',
             icon: Eye,
             color: 'text-green-600 dark:text-green-400',
+            config: { auto_run: false, allow_chat: true, show_variables: true, apply_variables: true }
         },
         {
-            id: 'manual' as PromptExecutionMode,
-            name: 'Manual',
+            name: 'Manual (No Vars)',
             icon: Settings,
             color: 'text-orange-600 dark:text-orange-400',
+            config: { auto_run: false, allow_chat: true, show_variables: false, apply_variables: false }
+        },
+        {
+            name: 'Chat Only',
+            icon: MessageSquare,
+            color: 'text-cyan-600 dark:text-cyan-400',
+            config: { auto_run: false, allow_chat: true, show_variables: true, apply_variables: false }
         },
     ];
     
@@ -102,21 +109,21 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                     <CollapsibleContent className="space-y-1.5">
                         <Separator className="my-1" />
                         <div className="space-y-1">
-                            {modes.map(mode => (
+                            {testConfigs.map((testConfig, idx) => (
                                 <Button
-                                    key={mode.id}
+                                    key={idx}
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => openModalWithMode(mode.id)}
+                                    onClick={() => openModalWithConfig(testConfig.config)}
                                     className="w-full justify-start h-7 px-2 text-xs hover:bg-accent"
                                 >
-                                    <mode.icon className={`w-3.5 h-3.5 mr-2 ${mode.color}`} />
-                                    <span className="flex-1 text-left">{mode.name}</span>
+                                    <testConfig.icon className={`w-3.5 h-3.5 mr-2 ${testConfig.color}`} />
+                                    <span className="flex-1 text-left">{testConfig.name}</span>
                                 </Button>
                             ))}
                         </div>
                         <div className="px-2 py-1.5 text-[10px] text-muted-foreground leading-tight">
-                            Test prompt in modal with different execution modes
+                            Test with different execution configurations (new system)
                         </div>
                     </CollapsibleContent>
                 </div>

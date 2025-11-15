@@ -40,7 +40,6 @@ export {
   requiresModalUI,
   requiresInlineUI,
   showsResults,
-  convertLegacyMode,
 } from './execution-modes';
 
 // Menu/UI types

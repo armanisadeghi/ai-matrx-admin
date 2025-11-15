@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
@@ -16,10 +16,16 @@ import { useCanvas } from "@/hooks/useCanvas";
 import { useAiRun } from "@/features/ai-runs/hooks/useAiRun";
 import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-generator";
 import { v4 as uuidv4 } from "uuid";
-import { PromptRunnerModalProps, PromptData } from "../../types/modal";
+import {  PromptRunnerModalProps,
+  PromptData,
+  PromptExecutionMode,
+  resolveExecutionConfig,
+  type NewExecutionConfig
+} from "../../types/modal";
 import type { Resource } from "../resource-display";
 import { AdditionalInfoModal } from "./AdditionalInfoModal";
 import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
+import { replaceVariablesInText } from "../../utils/variable-resolver";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -31,7 +37,13 @@ const CanvasRenderer = dynamic(
 export interface PromptRunnerProps {
     promptId?: string;
     promptData?: PromptData | null;
-    mode?: 'auto-run' | 'auto-run-one-shot' | 'manual-with-hidden-variables' | 'manual-with-visible-variables' | 'manual';
+    
+    /** NEW: Execution configuration (preferred) */
+    executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
+    
+    /** @deprecated Use executionConfig instead */
+    mode?: PromptExecutionMode;
+    
     variables?: Record<string, string>;
     initialMessage?: string;
     onExecutionComplete?: (result: { runId: string; response: string; metadata: any }) => void;
@@ -58,6 +70,7 @@ export interface PromptRunnerProps {
 export function PromptRunner({
     promptId,
     promptData: initialPromptData,
+    executionConfig,
     mode = 'manual',
     variables: initialVariables,
     initialMessage,
@@ -71,6 +84,14 @@ export function PromptRunner({
     const dispatch = useAppDispatch();
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
     const { formatMessageWithResources } = useResourceMessageFormatter();
+    
+    // Resolve execution configuration (supports both new and legacy formats)
+    const resolvedConfig = useMemo(() => {
+        return resolveExecutionConfig(executionConfig, mode);
+    }, [executionConfig, mode]);
+    
+    // Extract execution flags for easy access
+    const { auto_run: autoRun, allow_chat: allowChat, show_variables: showVariables, apply_variables: applyVariables } = resolvedConfig;
     
     // Prompt data state
     const [promptData, setPromptData] = useState<PromptData | null>(initialPromptData || null);
@@ -190,10 +211,10 @@ export function PromptRunner({
     
     // Show additional info modal for hidden-variables mode on open
     useEffect(() => {
-        if (isActive && mode === 'manual-with-hidden-variables' && !additionalInfoProvided && promptData) {
+        if (isActive && !autoRun && applyVariables && !showVariables && !additionalInfoProvided && promptData) {
             setShowAdditionalInfoModal(true);
         }
-    }, [isActive, mode, additionalInfoProvided, promptData]);
+    }, [isActive, autoRun, applyVariables, showVariables, additionalInfoProvided, promptData]);
     
     // Reset state when component becomes inactive
     useEffect(() => {
@@ -248,8 +269,8 @@ export function PromptRunner({
     useEffect(() => {
         if (variableDefaultsFromPrompt.length > 0) {
             const mergedVariables = variableDefaultsFromPrompt.map(v => {
-                // For manual mode, don't pre-fill variables - user enters their own
-                if (mode === 'manual') {
+                // If not applying variables, don't pre-fill - user enters their own
+                if (!applyVariables) {
                     return {
                         ...v, // Preserve all properties including customComponent
                         defaultValue: ""
@@ -273,15 +294,19 @@ export function PromptRunner({
         currentTaskId ? selectPrimaryResponseEndedByTaskId(currentTaskId)(state) : false
     );
     
-    // Helper function to replace variables in content
-    const replaceVariables = (content: string): string => {
-        let result = content;
+    // Build variable values map for replacement
+    const variableValues = useMemo(() => {
+        const values: Record<string, string> = {};
         variableDefaults.forEach(({ name, defaultValue }) => {
-            const regex = new RegExp(`\\{\\{${name}\\}\\}`, 'g');
-            result = result.replace(regex, defaultValue);
+            values[name] = defaultValue;
         });
-        return result;
-    };
+        return values;
+    }, [variableDefaults]);
+    
+    // Helper function to replace variables in content (uses shared utility)
+    const replaceVariables = useCallback((content: string): string => {
+        return replaceVariablesInText(content, variableValues);
+    }, [variableValues]);
     
     
     // Build the messages to display
@@ -421,7 +446,7 @@ export function PromptRunner({
     useEffect(() => {
         if (
             isActive && 
-            (mode === 'auto-run' || mode === 'auto-run-one-shot') && 
+            autoRun && 
             !hasAutoExecuted && 
             promptData && 
             variableDefaults.length > 0 &&
@@ -445,7 +470,9 @@ export function PromptRunner({
     useEffect(() => {
         if (
             isActive &&
-            mode === 'manual-with-hidden-variables' &&
+            !autoRun &&
+            applyVariables &&
+            !showVariables &&
             additionalInfoProvided &&
             !hasAutoExecuted &&
             promptData &&
@@ -491,8 +518,8 @@ export function PromptRunner({
 
             displayUserMessage = userMessageContent;
             
-            // Hide first user message for auto-run modes and hidden-variables mode
-            if (mode === 'auto-run' || mode === 'auto-run-one-shot' || mode === 'manual-with-hidden-variables') {
+            // Hide first user message for auto-run and when variables are hidden
+            if (autoRun || (applyVariables && !showVariables)) {
                 shouldDisplayUserMessage = false;
             }
         } else {
@@ -639,10 +666,7 @@ export function PromptRunner({
     // Determine if variables should be shown
     // Hide variables after first message for all modes since they only affect initial prompt
     const shouldShowVariables = 
-        !conversationStarted && (
-            mode === 'manual-with-visible-variables' || 
-            mode === 'manual'
-        );
+        !conversationStarted && showVariables;
     
     // Render loading state
     if (isLoadingPrompt) {
@@ -698,7 +722,7 @@ export function PromptRunner({
     return (
         <>
             {/* Additional Info Modal for hidden-variables mode */}
-            {mode === 'manual-with-hidden-variables' && (
+            {!autoRun && applyVariables && !showVariables && (
                 <AdditionalInfoModal
                     isOpen={showAdditionalInfoModal}
                     onContinue={handleAdditionalInfoContinue}
@@ -779,9 +803,9 @@ export function PromptRunner({
                                             <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
                                                 <div className="text-center max-w-md">
                                                     <p className="text-lg font-medium mb-2">
-                                                        {(mode === 'auto-run' || mode === 'auto-run-one-shot') ? 'Starting execution...' : 'Ready to run your prompt'}
+                                                        {autoRun ? 'Starting execution...' : 'Ready to run your prompt'}
                                                     </p>
-                                                    {(mode === 'auto-run' || mode === 'auto-run-one-shot') ? (
+                                                    {autoRun ? (
                                                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mt-4"></div>
                                                     ) : (
                                                         <p className="text-sm">
@@ -826,8 +850,8 @@ export function PromptRunner({
                                         )}
                                     </div>
                                     
-                                    {/* Front Layer: Input Area - Hide for one-shot mode after execution */}
-                                    {!(mode === 'auto-run-one-shot' && conversationStarted) && (
+                                    {/* Front Layer: Input Area - Hide if chat is disabled after execution */}
+                                    {!(autoRun && !allowChat && conversationStarted) && (
                                         <div className="absolute bottom-0 left-0 right-0 z-10 bg-textured pt-6 pb-4 px-6 pointer-events-none">
                                             <div className="pointer-events-auto max-w-[800px] mx-auto rounded-xl">
                                                 <PromptRunnerInput

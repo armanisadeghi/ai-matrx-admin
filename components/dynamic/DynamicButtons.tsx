@@ -73,7 +73,12 @@ export function DynamicButtons({
       setModalConfig({
         promptData: systemPrompt.prompt_snapshot,
         variables,
-        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+        executionConfig: {
+          auto_run: true,
+          allow_chat: allowChat,
+          show_variables: false,
+          apply_variables: true
+        },
         title: systemPrompt.name,
         initialMessage: allowInitialMessage ? undefined : '',
       });

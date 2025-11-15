@@ -71,16 +71,23 @@ export function DynamicButtons({
 
       // Open modal with the prompt
       // Use source_prompt_id if available, otherwise pass promptData directly
+      const executionConfig = {
+        auto_run: true,
+        allow_chat: allowChat,
+        show_variables: false,
+        apply_variables: true
+      };
+      
       const config = systemPrompt.source_prompt_id ? {
         promptId: systemPrompt.source_prompt_id,
         variables,
-        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+        executionConfig,
         title: systemPrompt.name,
         initialMessage: allowInitialMessage ? undefined : '',
       } : {
         promptData: systemPrompt.prompt_snapshot,
         variables,
-        mode: allowChat ? 'auto-run' : 'auto-run-one-shot',
+        executionConfig,
         title: systemPrompt.name,
         initialMessage: allowInitialMessage ? undefined : '',
       };

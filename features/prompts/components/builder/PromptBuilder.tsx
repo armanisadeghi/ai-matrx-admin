@@ -4,21 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
 import { PromptMessage } from "@/features/prompts/types/core";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { PromptHeader } from "@/components/layout/new-layout/PageSpecificHeader";
-import { PromptBuilderRightPanel } from "./PromptBuilderRightPanel";
-import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
-import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
 import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { AiModelsPreferences, PromptsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
-import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { FullScreenEditor } from "@/features/prompts/components/FullScreenEditor";
-import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
-import { PromptRunnerModal } from "@/features/prompts/components/modal/PromptRunnerModal";
 import { toast } from "sonner";
 import { PromptMessageRole, PromptSettings } from "../../types/core";
 import { PromptVariable, VariableCustomComponent } from "@/features/prompts/types/core";
@@ -26,6 +18,8 @@ import type { Resource } from "../resource-display";
 import { useResourceMessageFormatter } from "../../hooks/useResourceMessageFormatter";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { selectPromptsPreferences } from "@/lib/redux/selectors/userPreferenceSelectors";
+import { PromptBuilderDesktop } from "./PromptBuilderDesktop";
+import { PromptBuilderMobile } from "./PromptBuilderMobile";
 
 interface PromptBuilderProps {
     models: any[];
@@ -221,7 +215,15 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         if (autoRun === 'true' && initialData?.id) {
             // Open the modal after a short delay to ensure the page has loaded
             const timer = setTimeout(() => {
-                openPrompt({ promptId: initialData.id, mode: 'manual' });
+                openPrompt({ 
+                    promptId: initialData.id, 
+                    executionConfig: {
+                        auto_run: false,
+                        allow_chat: true,
+                        show_variables: false,
+                        apply_variables: false
+                    }
+                });
                 
                 // Clean up the URL by removing the query parameter
                 const newUrl = pathname;
@@ -828,472 +830,176 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         }
     };
 
-    // Render mobile version with tabs
+    // Build shared props object
+    const sharedProps = {
+        // Header
+        promptName,
+        onPromptNameChange: (value: string) => {
+            setPromptName(value);
+            setIsDirty(true);
+        },
+        isDirty,
+        isSaving,
+        onSave: handleSave,
+        developerMessage,
+        onDeveloperMessageChange: (value: string) => {
+            setDeveloperMessage(value);
+            setIsDirty(true);
+        },
+        fullPromptObject,
+        handleAcceptFullPrompt,
+        handleAcceptFullPromptAsCopy,
+
+        // Modals
+        isFullScreenEditorOpen,
+        setIsFullScreenEditorOpen,
+        isSettingsModalOpen,
+        setIsSettingsModalOpen,
+        isSettingsOpen,
+        setIsSettingsOpen,
+        setIsDirty,
+
+        // Model
+        models,
+        model,
+        onModelChange: (value: string) => {
+            const newModel = models.find(m => m.id === value);
+            setModel(value);
+            if (newModel) {
+                setModelConfig(prev => {
+                    const defaults = getModelDefaults(newModel);
+                    return {
+                        ...defaults,
+                        tools: prev.tools || []
+                    };
+                });
+            }
+            setIsDirty(true);
+        },
+        modelConfig,
+        setModelConfig,
+
+        // Variables
+        variableDefaults,
+        onAddVariable: handleAddVariable,
+        onUpdateVariable: handleUpdateVariable,
+        onRemoveVariable: handleRemoveVariable,
+        onVariableValueChange: handleUpdateVariableValue,
+        expandedVariable,
+        onExpandedVariableChange: setExpandedVariable,
+
+        // Tools
+        availableTools,
+        isAddingTool,
+        onIsAddingToolChange: setIsAddingTool,
+        onAddTool: handleAddTool,
+        onRemoveTool: handleRemoveTool,
+        modelSupportsTools,
+
+        // Settings
+        showSettingsOnMainPage,
+
+        // Developer message
+        onDeveloperMessageClear: () => setDeveloperMessage(""),
+        systemMessageVariablePopoverOpen,
+        onSystemMessageVariablePopoverOpenChange: setSystemMessageVariablePopoverOpen,
+        onInsertVariableIntoSystemMessage: insertVariableIntoSystemMessage,
+        isEditingSystemMessage,
+        onIsEditingSystemMessageChange: setIsEditingSystemMessage,
+
+        // Messages
+        messages,
+        editingMessageIndex,
+        onEditingMessageIndexChange: setEditingMessageIndex,
+        variablePopoverOpen,
+        onVariablePopoverOpenChange: setVariablePopoverOpen,
+        onMessageRoleChange: (index: number, role: any) => {
+            const updated = [...messages];
+            updated[index] = { ...updated[index], role };
+            setMessages(updated);
+            setIsDirty(true);
+        },
+        onMessageContentChange: updateMessage,
+        onClearMessage: clearMessage,
+        onDeleteMessage: deleteMessage,
+        onInsertVariable: insertVariableIntoMessage,
+        onAddMessage: addMessage,
+
+        // Refs
+        textareaRefs,
+        cursorPositions,
+        onCursorPositionChange: setCursorPositions,
+
+        // Full screen editor
+        onOpenFullScreenEditor: (messageIndex: number) => {
+            if (messageIndex === -1) {
+                setFullScreenEditorInitialSelection({ type: 'system', index: -1 });
+            } else {
+                setFullScreenEditorInitialSelection({ type: 'message', index: messageIndex });
+            }
+            setIsFullScreenEditorOpen(true);
+        },
+        fullScreenEditorInitialSelection,
+        setFullScreenEditorInitialSelection,
+        updateMessage,
+
+        // Conversation
+        conversationMessages,
+        onClearConversation: () => {
+            setConversationMessages([]);
+            setApiConversationHistory([]);
+            setLastMessageStats(null);
+        },
+        chatInput,
+        onChatInputChange: setChatInput,
+        resources,
+        onResourcesChange: setResources,
+        onSendMessage: handleSendTestMessage,
+        isTestingPrompt,
+        submitOnEnter,
+        onSubmitOnEnterChange: setSubmitOnEnter,
+        autoClearResponsesInEditMode,
+        onAutoClearResponsesInEditModeChange: setAutoClearResponsesInEditMode,
+        isStreamingMessage: isTestingPrompt,
+        currentTaskId,
+        messageStartTime,
+        timeToFirstTokenRef,
+        lastMessageStats,
+        attachmentCapabilities: {
+            supportsImageUrls,
+            supportsFileUrls,
+            supportsYoutubeVideos,
+        },
+        onConversationMessageContentChange: (messageIndex: number, newContent: string) => {
+            setConversationMessages(prevMessages => {
+                const updatedMessages = [...prevMessages];
+                if (messageIndex >= 0 && messageIndex < updatedMessages.length) {
+                    updatedMessages[messageIndex] = {
+                        ...updatedMessages[messageIndex],
+                        content: newContent
+                    };
+                }
+                return updatedMessages;
+            });
+        },
+
+        // Settings modal
+        initialData,
+        promptDescription,
+        handleSettingsUpdate,
+        handleLocalStateUpdate,
+    };
+
+    // Render appropriate component based on device type
     if (isMobile) {
         return (
-            <>
-            <div className="h-page w-full bg-textured flex flex-col overflow-hidden">
-                {/* Header */}
-                <PromptHeader
-                    promptName={promptName}
-                    onPromptNameChange={(value) => {
-                        setPromptName(value);
-                        setIsDirty(true);
-                    }}
-                    isDirty={isDirty}
-                    isSaving={isSaving}
-                    onSave={handleSave}
-                    onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
-                    onOpenSettings={() => setIsSettingsModalOpen(true)}
-                    developerMessage={developerMessage}
-                    onDeveloperMessageChange={(value) => {
-                        setDeveloperMessage(value);
-                        setIsDirty(true);
-                    }}
-                    mobileActiveTab={mobileActiveTab}
-                    onMobileTabChange={setMobileActiveTab}
-                />
-
-                {/* Tab Content */}
-                <div className="flex-1 overflow-hidden w-full">
-                    {/* Edit Tab */}
-                    <div className={`h-full w-full overflow-x-hidden ${mobileActiveTab === 'edit' ? 'block' : 'hidden'}`}>
-                        <PromptBuilderLeftPanel
-                            models={models}
-                            model={model}
-                            onModelChange={(value) => {
-                                // value is always the model ID (UUID)
-                                const newModel = models.find(m => m.id === value);
-                                console.log('Model changed to:', value, newModel?.common_name);
-                                setModel(value);
-                                // Update config with new model's defaults while preserving user selections
-                                if (newModel) {
-                                    const defaults = getModelDefaults(newModel);
-                                    setModelConfig((prev) => {
-                                        return {
-                                            ...defaults,
-                                            tools: prev.tools || [] // Always preserve existing tools selection
-                                        };
-                                    });
-                                }
-                                setIsDirty(true);
-                            }}
-                            modelConfig={modelConfig}
-                            onSettingsClick={() => setIsSettingsOpen(true)}
-                            variableDefaults={variableDefaults}
-                            onAddVariable={handleAddVariable}
-                            onUpdateVariable={handleUpdateVariable}
-                            onRemoveVariable={handleRemoveVariable}
-                            selectedTools={modelConfig.tools || []}
-                            availableTools={availableTools}
-                            isAddingTool={isAddingTool}
-                            onIsAddingToolChange={setIsAddingTool}
-                            onAddTool={handleAddTool}
-                            onRemoveTool={handleRemoveTool}
-                            modelSupportsTools={modelSupportsTools}
-                            showSettingsOnMainPage={showSettingsOnMainPage}
-                            developerMessage={developerMessage}
-                            onDeveloperMessageChange={(value) => {
-                                setDeveloperMessage(value);
-                                setIsDirty(true);
-                                // Auto-resize will be handled in the component
-                            }}
-                            onDeveloperMessageClear={() => setDeveloperMessage("")}
-                            systemMessageVariablePopoverOpen={systemMessageVariablePopoverOpen}
-                            onSystemMessageVariablePopoverOpenChange={setSystemMessageVariablePopoverOpen}
-                            onInsertVariableIntoSystemMessage={insertVariableIntoSystemMessage}
-                            isEditingSystemMessage={isEditingSystemMessage}
-                            onIsEditingSystemMessageChange={setIsEditingSystemMessage}
-                            messages={messages}
-                            editingMessageIndex={editingMessageIndex}
-                            onEditingMessageIndexChange={setEditingMessageIndex}
-                            variablePopoverOpen={variablePopoverOpen}
-                            onVariablePopoverOpenChange={setVariablePopoverOpen}
-                            onMessageRoleChange={(index, role) => {
-                                const updated = [...messages];
-                                updated[index] = { ...updated[index], role };
-                                setMessages(updated);
-                                setIsDirty(true);
-                            }}
-                            onMessageContentChange={(index, content) => {
-                                updateMessage(index, content);
-                            }}
-                            onClearMessage={clearMessage}
-                            onDeleteMessage={deleteMessage}
-                            onInsertVariable={insertVariableIntoMessage}
-                            onAddMessage={addMessage}
-                            textareaRefs={textareaRefs}
-                            cursorPositions={cursorPositions}
-                            onCursorPositionChange={setCursorPositions}
-                            onOpenFullScreenEditor={(messageIndex) => {
-                                if (messageIndex === -1) {
-                                    setFullScreenEditorInitialSelection({ type: 'system', index: -1 });
-                                } else {
-                                    setFullScreenEditorInitialSelection({ type: 'message', index: messageIndex });
-                                }
-                                setIsFullScreenEditorOpen(true);
-                            }}
-                        />
-                    </div>
-
-                    {/* Test Tab */}
-                    <div className={`h-full w-full overflow-x-hidden ${mobileActiveTab === 'test' ? 'block' : 'hidden'}`}>
-                        <PromptBuilderRightPanel
-                            conversationMessages={conversationMessages}
-                            onClearConversation={() => {
-                                setConversationMessages([]);
-                                setApiConversationHistory([]);
-                                setLastMessageStats(null);
-                            }}
-                            variableDefaults={variableDefaults}
-                            onVariableValueChange={handleUpdateVariableValue}
-                            expandedVariable={expandedVariable}
-                            onExpandedVariableChange={setExpandedVariable}
-                            chatInput={chatInput}
-                            onChatInputChange={setChatInput}
-                            resources={resources}
-                            onResourcesChange={setResources}
-                            onSendMessage={handleSendTestMessage}
-                            isTestingPrompt={isTestingPrompt}
-                            submitOnEnter={submitOnEnter}
-                            onSubmitOnEnterChange={setSubmitOnEnter}
-                            autoClearResponsesInEditMode={autoClearResponsesInEditMode}
-                            onAutoClearResponsesInEditModeChange={setAutoClearResponsesInEditMode}
-                            messages={messages}
-                            isStreamingMessage={isTestingPrompt}
-                            currentTaskId={currentTaskId}
-                            messageStartTime={messageStartTime}
-                            timeToFirstTokenRef={timeToFirstTokenRef}
-                            lastMessageStats={lastMessageStats}
-                            attachmentCapabilities={{
-                                supportsImageUrls: supportsImageUrls,
-                                supportsFileUrls: supportsFileUrls,
-                                supportsYoutubeVideos: supportsYoutubeVideos,
-                            }}
-                            onMessageContentChange={(messageIndex, newContent) => {
-                                setConversationMessages(prevMessages => {
-                                    const updatedMessages = [...prevMessages];
-                                    if (messageIndex >= 0 && messageIndex < updatedMessages.length) {
-                                        updatedMessages[messageIndex] = {
-                                            ...updatedMessages[messageIndex],
-                                            content: newContent
-                                        };
-                                    }
-                                    return updatedMessages;
-                                });
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Modals - shared between mobile and desktop */}
-            <ModelSettingsDialog
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
-                modelId={model}
-                models={models}
-                settings={modelConfig}
-                onSettingsChange={setModelConfig}
-                availableTools={availableTools}
+            <PromptBuilderMobile
+                {...sharedProps}
+                mobileActiveTab={mobileActiveTab}
+                onMobileTabChange={setMobileActiveTab}
             />
-
-            <FullScreenEditor
-                isOpen={isFullScreenEditorOpen}
-                onClose={() => {
-                    setIsFullScreenEditorOpen(false);
-                    setFullScreenEditorInitialSelection(null);
-                }}
-                developerMessage={developerMessage}
-                onDeveloperMessageChange={(value) => {
-                    setDeveloperMessage(value);
-                    setIsDirty(true);
-                }}
-                messages={messages}
-                onMessageContentChange={(index, content) => {
-                    updateMessage(index, content);
-                }}
-                onMessageRoleChange={(index, role) => {
-                    const updated = [...messages];
-                    updated[index] = { ...updated[index], role };
-                    setMessages(updated);
-                    setIsDirty(true);
-                }}
-                initialSelection={fullScreenEditorInitialSelection}
-                onAddMessage={addMessage}
-                model={model}
-                models={models}
-                modelConfig={modelConfig}
-                onModelChange={(newModel) => {
-                    setModel(newModel);
-                    setIsDirty(true);
-                }}
-                onModelConfigChange={(config) => {
-                    setModelConfig(config);
-                    setIsDirty(true);
-                }}
-                variableDefaults={variableDefaults}
-                onAddVariable={handleAddVariable}
-                onUpdateVariable={handleUpdateVariable}
-                onRemoveVariable={handleRemoveVariable}
-                selectedTools={modelConfig.tools || []}
-                availableTools={availableTools}
-                onAddTool={handleAddTool}
-                onRemoveTool={handleRemoveTool}
-                modelSupportsTools={modelSupportsTools}
-            />
-
-            <PromptSettingsModal
-                isOpen={isSettingsModalOpen}
-                onClose={() => setIsSettingsModalOpen(false)}
-                promptId={initialData?.id}
-                promptName={promptName}
-                promptDescription={promptDescription}
-                variableDefaults={variableDefaults}
-                messages={[{ role: "system", content: developerMessage }, ...messages]}
-                settings={{ model_id: model, ...modelConfig }}
-                models={models}
-                availableTools={availableTools}
-                onUpdate={handleSettingsUpdate}
-                onLocalStateUpdate={handleLocalStateUpdate}
-            />
-            </>
         );
     }
 
-    // Desktop version
-    return (
-        <>
-        <AdaptiveLayout
-            className="h-page bg-textured"
-            mobileBreakpoint={950}
-            leftPanelMaxWidth={640}
-            header={
-                <PromptHeader
-                    promptName={promptName}
-                    onPromptNameChange={(value) => {
-                        setPromptName(value);
-                        setIsDirty(true);
-                    }}
-                    isDirty={isDirty}
-                    isSaving={isSaving}
-                    onSave={handleSave}
-                    onOpenFullScreenEditor={() => setIsFullScreenEditorOpen(true)}
-                    onOpenSettings={() => setIsSettingsModalOpen(true)}
-                    developerMessage={developerMessage}
-                    onDeveloperMessageChange={(value) => {
-                        setDeveloperMessage(value);
-                        setIsDirty(true);
-                    }}
-                    fullPromptObject={fullPromptObject}
-                    onAcceptFullPrompt={handleAcceptFullPrompt}
-                    onAcceptAsCopy={handleAcceptFullPromptAsCopy}
-                />
-            }
-            leftPanel={
-                <PromptBuilderLeftPanel
-                    models={models}
-                    model={model}
-                onModelChange={(value) => {
-                    // value is always the model ID (UUID)
-                    const newModel = models.find(m => m.id === value);
-                    console.log('Model changed to:', value, newModel?.common_name);
-                    setModel(value);
-                    // Update config with new model's defaults while preserving user selections
-                    if (newModel) {
-                        setModelConfig(prev => {
-                            const defaults = getModelDefaults(newModel);
-                            // Preserve user-selected tools and merge with new defaults
-                            // Defaults take precedence for model-specific settings, but tools are preserved
-                            return {
-                                ...defaults,
-                                tools: prev.tools || [] // Always preserve existing tools selection
-                            };
-                        });
-                    }
-                    setIsDirty(true);
-                }}
-                    modelConfig={modelConfig}
-                    onSettingsClick={() => setIsSettingsOpen(true)}
-                    variableDefaults={variableDefaults}
-                    onAddVariable={handleAddVariable}
-                    onUpdateVariable={handleUpdateVariable}
-                    onRemoveVariable={handleRemoveVariable}
-                    selectedTools={modelConfig.tools || []}
-                    availableTools={availableTools}
-                    isAddingTool={isAddingTool}
-                    onIsAddingToolChange={setIsAddingTool}
-                    onAddTool={handleAddTool}
-                    onRemoveTool={handleRemoveTool}
-                    modelSupportsTools={modelSupportsTools}
-                    showSettingsOnMainPage={showSettingsOnMainPage}
-                    developerMessage={developerMessage}
-                    onDeveloperMessageChange={(value) => {
-                        setDeveloperMessage(value);
-                        setIsDirty(true);
-                        // Auto-resize will be handled in the component
-                    }}
-                    onDeveloperMessageClear={() => setDeveloperMessage("")}
-                    systemMessageVariablePopoverOpen={systemMessageVariablePopoverOpen}
-                    onSystemMessageVariablePopoverOpenChange={setSystemMessageVariablePopoverOpen}
-                    onInsertVariableIntoSystemMessage={insertVariableIntoSystemMessage}
-                    isEditingSystemMessage={isEditingSystemMessage}
-                    onIsEditingSystemMessageChange={setIsEditingSystemMessage}
-                    messages={messages}
-                    editingMessageIndex={editingMessageIndex}
-                    onEditingMessageIndexChange={setEditingMessageIndex}
-                    variablePopoverOpen={variablePopoverOpen}
-                    onVariablePopoverOpenChange={setVariablePopoverOpen}
-                    onMessageRoleChange={(index, role) => {
-                        const updated = [...messages];
-                        updated[index] = { ...updated[index], role };
-                        setMessages(updated);
-                        setIsDirty(true);
-                    }}
-                    onMessageContentChange={(index, content) => {
-                        updateMessage(index, content);
-                    }}
-                    onClearMessage={clearMessage}
-                    onDeleteMessage={deleteMessage}
-                    onInsertVariable={insertVariableIntoMessage}
-                    onAddMessage={addMessage}
-                    textareaRefs={textareaRefs}
-                    cursorPositions={cursorPositions}
-                    onCursorPositionChange={setCursorPositions}
-                    onOpenFullScreenEditor={(messageIndex) => {
-                        if (messageIndex === -1) {
-                            setFullScreenEditorInitialSelection({ type: 'system', index: -1 });
-                        } else {
-                            setFullScreenEditorInitialSelection({ type: 'message', index: messageIndex });
-                        }
-                        setIsFullScreenEditorOpen(true);
-                    }}
-                />
-            }
-            rightPanel={
-                <PromptBuilderRightPanel
-                    conversationMessages={conversationMessages}
-                    onClearConversation={() => {
-                        setConversationMessages([]);
-                        setApiConversationHistory([]);
-                        setLastMessageStats(null);
-                    }}
-                    variableDefaults={variableDefaults}
-                    onVariableValueChange={handleUpdateVariableValue}
-                    expandedVariable={expandedVariable}
-                    onExpandedVariableChange={setExpandedVariable}
-                    chatInput={chatInput}
-                    onChatInputChange={setChatInput}
-                    resources={resources}
-                    onResourcesChange={setResources}
-                    onSendMessage={handleSendTestMessage}
-                    isTestingPrompt={isTestingPrompt}
-                    submitOnEnter={submitOnEnter}
-                    onSubmitOnEnterChange={setSubmitOnEnter}
-                    autoClearResponsesInEditMode={autoClearResponsesInEditMode}
-                    onAutoClearResponsesInEditModeChange={setAutoClearResponsesInEditMode}
-                    messages={messages}
-                    isStreamingMessage={isTestingPrompt}
-                    currentTaskId={currentTaskId}
-                    messageStartTime={messageStartTime}
-                    timeToFirstTokenRef={timeToFirstTokenRef}
-                    lastMessageStats={lastMessageStats}
-                    attachmentCapabilities={{
-                        supportsImageUrls: supportsImageUrls,
-                        supportsFileUrls: supportsFileUrls,
-                        supportsYoutubeVideos: supportsYoutubeVideos,
-                    }}
-                    onMessageContentChange={(messageIndex, newContent) => {
-                        setConversationMessages(prevMessages => {
-                            const updatedMessages = [...prevMessages];
-                            if (messageIndex >= 0 && messageIndex < updatedMessages.length) {
-                                updatedMessages[messageIndex] = {
-                                    ...updatedMessages[messageIndex],
-                                    content: newContent
-                                };
-                            }
-                            return updatedMessages;
-                        });
-                    }}
-                />
-            }
-        />
-
-        {/* Model Settings Dialog */}
-        <ModelSettingsDialog
-            isOpen={isSettingsOpen}
-            onClose={() => setIsSettingsOpen(false)}
-            modelId={model}
-            models={models}
-            settings={modelConfig}
-            onSettingsChange={setModelConfig}
-            availableTools={availableTools}
-        />
-
-        {/* Full Screen Editor */}
-        <FullScreenEditor
-            isOpen={isFullScreenEditorOpen}
-            onClose={() => {
-                setIsFullScreenEditorOpen(false);
-                setFullScreenEditorInitialSelection(null);
-            }}
-            developerMessage={developerMessage}
-            onDeveloperMessageChange={(value) => {
-                setDeveloperMessage(value);
-                setIsDirty(true);
-            }}
-            messages={messages}
-            onMessageContentChange={(index, content) => {
-                updateMessage(index, content);
-            }}
-            onMessageRoleChange={(index, role) => {
-                const updated = [...messages];
-                updated[index] = { ...updated[index], role };
-                setMessages(updated);
-                setIsDirty(true);
-            }}
-            initialSelection={fullScreenEditorInitialSelection}
-            onAddMessage={addMessage}
-            model={model}
-            models={models}
-            modelConfig={modelConfig}
-            onModelChange={(newModel) => {
-                setModel(newModel);
-                setIsDirty(true);
-            }}
-            onModelConfigChange={(config) => {
-                setModelConfig(config);
-                setIsDirty(true);
-            }}
-            variableDefaults={variableDefaults}
-            onAddVariable={handleAddVariable}
-            onUpdateVariable={handleUpdateVariable}
-            onRemoveVariable={handleRemoveVariable}
-            selectedTools={modelConfig.tools || []}
-            availableTools={availableTools}
-            onAddTool={handleAddTool}
-            onRemoveTool={handleRemoveTool}
-            modelSupportsTools={modelSupportsTools}
-        />
-
-        {/* Settings Modal */}
-        <PromptSettingsModal
-            isOpen={isSettingsModalOpen}
-            onClose={() => setIsSettingsModalOpen(false)}
-            promptId={initialData?.id}
-            promptName={promptName}
-            promptDescription={promptDescription}
-            variableDefaults={variableDefaults}
-            messages={[{ role: "system", content: developerMessage }, ...messages]}
-            settings={{ model_id: model, ...modelConfig }}
-            models={models}
-            availableTools={availableTools}
-            onUpdate={handleSettingsUpdate}
-            onLocalStateUpdate={handleLocalStateUpdate}
-        />
-
-        {/* Prompt Runner Modal - Now managed globally via Redux in OverlayController */}
-        </>
-    );
+    return <PromptBuilderDesktop {...sharedProps} />;
 }
-

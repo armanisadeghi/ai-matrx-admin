@@ -14,17 +14,27 @@
  * ```tsx
  * const { openPrompt, closePrompt, isOpen } = usePromptRunner();
  * 
- * // Open with prompt ID (auto-caches)
+ * // Open with prompt ID (auto-caches) - New execution config
  * openPrompt({
  *   promptId: 'text-analyzer',
- *   mode: 'auto-run',
+ *   executionConfig: {
+ *     auto_run: true,
+ *     allow_chat: true,
+ *     show_variables: false,
+ *     apply_variables: true
+ *   },
  *   variables: { text: selectedText }
  * });
  * 
  * // Open with prompt data (skip cache)
  * openPrompt({
  *   promptData: myPrompt,
- *   mode: 'manual',
+ *   executionConfig: {
+ *     auto_run: false,
+ *     allow_chat: true,
+ *     show_variables: true,
+ *     apply_variables: false
+ *   },
  *   variables: { topic: 'AI' }
  * });
  * 

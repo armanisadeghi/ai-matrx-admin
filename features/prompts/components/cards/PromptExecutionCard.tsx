@@ -110,7 +110,12 @@ export function PromptExecutionCard({
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 promptId={promptId}
-                mode={allowChat ? 'auto-run' : 'auto-run-one-shot'}
+                executionConfig={{
+                    auto_run: true,
+                    allow_chat: allowChat,
+                    show_variables: false,
+                    apply_variables: true
+                }}
                 variables={{
                     title,
                     description,

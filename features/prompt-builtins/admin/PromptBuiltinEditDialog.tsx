@@ -70,7 +70,7 @@ export function PromptBuiltinEditDialog({
         scope_mappings: {},
         prompt_builtin_id: null,
         // Execution Configuration defaults
-        result_display: 'modal',
+        result_display: 'modal-full',
         auto_run: true,
         allow_chat: true,
         show_variables: false,
