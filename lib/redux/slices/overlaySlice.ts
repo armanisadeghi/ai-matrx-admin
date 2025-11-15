@@ -20,6 +20,13 @@ const initialState: OverlayState = {
     socketAccordion: { isOpen: false, data: null },
     adminStateAnalyzer: { isOpen: false, data: null },
     adminIndicator: { isOpen: false, data: null },
+    // Quick Action Overlays
+    quickNotes: { isOpen: false, data: null },
+    quickTasks: { isOpen: false, data: null },
+    quickChat: { isOpen: false, data: null },
+    quickData: { isOpen: false, data: null },
+    quickFiles: { isOpen: false, data: null },
+    quickUtilities: { isOpen: false, data: null },
     // ... other overlays
   },
 };

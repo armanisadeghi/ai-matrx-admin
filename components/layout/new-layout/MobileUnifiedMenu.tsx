@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,30 +16,8 @@ import { useTheme } from 'next-themes';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { RootState } from '@/lib/redux/store';
 import { brokerSelectors } from '@/lib/redux/brokerSlice';
-import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
 import { Notification } from '@/types/notification.types';
-
-// CRITICAL: Dynamic imports to prevent loading heavy components on all routes
-// This layout component is used globally, so we must lazy-load feature components
-const QuickNotesSheet = dynamic(() => import('@/features/notes/components/QuickNotesSheet').then(mod => ({ default: mod.QuickNotesSheet })), {
-  ssr: false,
-});
-
-const QuickTasksSheet = dynamic(() => import('@/features/tasks/components/QuickTasksSheet').then(mod => ({ default: mod.QuickTasksSheet })), {
-  ssr: false,
-});
-
-const QuickChatSheet = dynamic(() => import('@/features/quick-actions/components/QuickChatSheet').then(mod => ({ default: mod.QuickChatSheet })), {
-  ssr: false,
-});
-
-const QuickDataSheet = dynamic(() => import('@/features/quick-actions/components/QuickDataSheet').then(mod => ({ default: mod.QuickDataSheet })), {
-  ssr: false,
-});
-
-const UtilitiesOverlay = dynamic(() => import('@/features/quick-actions/components/UtilitiesOverlay').then(mod => ({ default: mod.UtilitiesOverlay })), {
-  ssr: false,
-});
+import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
 
 export function MobileUnifiedMenu() {
   const router = useRouter();
@@ -51,12 +28,14 @@ export function MobileUnifiedMenu() {
   
   const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, 'APPLET_USER_IS_ADMIN'));
   
-  // Quick action sheet states
-  const [isNotesOpen, setIsNotesOpen] = useState(false);
-  const [isTasksOpen, setIsTasksOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isDataOpen, setIsDataOpen] = useState(false);
-  const [isUtilitiesOpen, setIsUtilitiesOpen] = useState(false);
+  // Quick Actions via Redux
+  const {
+    openQuickNotes,
+    openQuickTasks,
+    openQuickChat,
+    openQuickData,
+    openQuickUtilities,
+  } = useQuickActions();
   
   // Notifications state (placeholder)
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -113,27 +92,27 @@ export function MobileUnifiedMenu() {
         <DropdownMenuSeparator />
         
         {/* Quick Actions */}
-        <DropdownMenuItem onClick={() => setIsNotesOpen(true)}>
+        <DropdownMenuItem onClick={() => openQuickNotes()}>
           <StickyNote className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
           <span className="text-sm">Quick Note</span>
         </DropdownMenuItem>
         
-        <DropdownMenuItem onClick={() => setIsTasksOpen(true)}>
+        <DropdownMenuItem onClick={() => openQuickTasks()}>
           <CheckSquare className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
           <span className="text-sm">Quick Task</span>
         </DropdownMenuItem>
         
-        <DropdownMenuItem onClick={() => setIsChatOpen(true)}>
+        <DropdownMenuItem onClick={() => openQuickChat()}>
           <MessageSquare className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
           <span className="text-sm">Quick Chat</span>
         </DropdownMenuItem>
         
-        <DropdownMenuItem onClick={() => setIsDataOpen(true)}>
+        <DropdownMenuItem onClick={() => openQuickData()}>
           <Database className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
           <span className="text-sm">Quick Data</span>
         </DropdownMenuItem>
         
-        <DropdownMenuItem onClick={() => setIsUtilitiesOpen(true)}>
+        <DropdownMenuItem onClick={() => openQuickUtilities()}>
           <LayoutGrid className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-400" />
           <span className="text-sm">Utilities Hub</span>
         </DropdownMenuItem>
@@ -191,83 +170,6 @@ export function MobileUnifiedMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-    
-    {/* Quick Action Sheets */}
-    {/* CRITICAL: Conditionally render to prevent API calls on page load */}
-    {isNotesOpen && (
-      <FloatingSheet
-        isOpen={true}
-        onClose={() => setIsNotesOpen(false)}
-        title="Quick Notes"
-        description="Quickly capture or retrieve notes without losing focus"
-        position="right"
-        width="xl"
-        height="full"
-        closeOnBackdropClick={true}
-        closeOnEsc={true}
-        showCloseButton={true}
-      >
-        <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
-      </FloatingSheet>
-    )}
-
-    {isTasksOpen && (
-      <FloatingSheet
-        isOpen={true}
-        onClose={() => setIsTasksOpen(false)}
-        title="Quick Tasks"
-        description="Manage tasks and projects without losing context"
-        position="right"
-        width="xl"
-        height="full"
-        closeOnBackdropClick={true}
-        closeOnEsc={true}
-        showCloseButton={true}
-      >
-        <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
-      </FloatingSheet>
-    )}
-
-    {isChatOpen && (
-      <FloatingSheet
-        isOpen={true}
-        onClose={() => setIsChatOpen(false)}
-        title=""
-        position="right"
-        width="xl"
-        height="full"
-        closeOnBackdropClick={true}
-        closeOnEsc={true}
-        showCloseButton={false}
-        contentClassName="p-0"
-      >
-        <QuickChatSheet onClose={() => setIsChatOpen(false)} />
-      </FloatingSheet>
-    )}
-
-    {isDataOpen && (
-      <FloatingSheet
-        isOpen={true}
-        onClose={() => setIsDataOpen(false)}
-        title="Data Tables"
-        description="View and manage your data tables"
-        position="right"
-        width="xl"
-        height="full"
-        closeOnBackdropClick={true}
-        closeOnEsc={true}
-        showCloseButton={true}
-      >
-        <QuickDataSheet onClose={() => setIsDataOpen(false)} />
-      </FloatingSheet>
-    )}
-
-    {isUtilitiesOpen && (
-      <UtilitiesOverlay
-        isOpen={true}
-        onClose={() => setIsUtilitiesOpen(false)}
-      />
-    )}
   </>
   );
 }

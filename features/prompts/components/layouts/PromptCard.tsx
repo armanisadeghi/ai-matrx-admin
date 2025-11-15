@@ -9,7 +9,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
-import { ConvertToSystemPromptModal } from "@/components/admin/ConvertToSystemPromptModal";
+import { ConvertToBuiltinModal } from "@/features/prompts/components/actions/ConvertToBuiltinModal";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "@/lib/toast-service";
@@ -51,11 +51,10 @@ export function PromptCard({
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
     const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);
-    const [isConvertToSystemPromptModalOpen, setIsConvertToSystemPromptModalOpen] = useState(false);
+    const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] = useState(false);
     const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
     const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
     const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
-    const [promptVariables, setPromptVariables] = useState<string[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
@@ -166,53 +165,18 @@ export function PromptCard({
         }
     };
 
-    const handleMakeGlobalSystemPrompt = async () => {
+    const handleMakeGlobalBuiltin = async () => {
         if (!isSystemAdmin) return;
         
         setIsAdminMenuOpen(false);
-        
-        // Fetch prompt data to extract variables
-        try {
-            const { data: promptData, error } = await supabase
-                .from('prompts')
-                .select('messages')
-                .eq('id', id)
-                .single();
-            
-            if (error) throw error;
-            
-            // Extract variables from messages
-            const extractVariables = (messages: any[]): string[] => {
-                const variableRegex = /\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}/g;
-                const variablesSet = new Set<string>();
-                
-                messages?.forEach((message: any) => {
-                    if (message.content) {
-                        let match;
-                        while ((match = variableRegex.exec(message.content)) !== null) {
-                            variablesSet.add(match[1]);
-                        }
-                    }
-                });
-                
-                return Array.from(variablesSet);
-            };
-            
-            const variables = extractVariables(promptData?.messages || []);
-            setPromptVariables(variables);
-        } catch (error) {
-            console.error('Error fetching prompt variables:', error);
-            setPromptVariables([]);
-        }
-        
-        setIsConvertToSystemPromptModalOpen(true);
+        setIsConvertToBuiltinModalOpen(true);
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
         // Only open modal if clicking the card itself, not if a modal is already open
         // Also prevent reopening if modal was just closed (within 300ms) to avoid click-through from overlay
         const timeSinceClose = Date.now() - lastModalCloseTime;
-        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && !isCreateAppModalOpen && !isConvertToSystemPromptModalOpen && timeSinceClose > 300) {
+        if (!isDisabled && !isShareModalOpen && !isActionModalOpen && !isCreateAppModalOpen && !isConvertToBuiltinModalOpen && timeSinceClose > 300) {
             setIsActionModalOpen(true);
         }
     };
@@ -357,13 +321,13 @@ export function PromptCard({
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setIsAdminMenuOpen(false);
-                                        handleMakeGlobalSystemPrompt();
+                                        handleMakeGlobalBuiltin();
                                     }}
                                     disabled={isDisabled}
                                     className="cursor-pointer"
                                 >
                                     <Globe className="mr-2 h-4 w-4" />
-                                    <span>Make Global System Prompt</span>
+                                    <span>Convert to Prompt Builtin</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -419,16 +383,14 @@ export function PromptCard({
                 promptId={id}
             />
 
-            <ConvertToSystemPromptModal
-                isOpen={isConvertToSystemPromptModalOpen}
+            <ConvertToBuiltinModal
+                isOpen={isConvertToBuiltinModalOpen}
                 onClose={() => {
-                    setIsConvertToSystemPromptModalOpen(false);
+                    setIsConvertToBuiltinModalOpen(false);
                     setLastModalCloseTime(Date.now());
                 }}
                 promptId={id}
                 promptName={name}
-                promptDescription={description}
-                promptVariables={promptVariables}
             />
         </Card>
     );

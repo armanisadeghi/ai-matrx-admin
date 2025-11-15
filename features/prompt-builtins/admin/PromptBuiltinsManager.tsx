@@ -624,7 +624,6 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       <div className="w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold">Prompt Builtins</h2>
         <div className="flex items-center justify-between mb-4">
             <div className="flex gap-2">
               <Button onClick={() => setIsCreateCategoryOpen(true)} size="sm" variant="outline">
@@ -809,10 +808,10 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         {selectedItem ? (
           <>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+            <div className="px-6 py-2 border-b border-gray-200 dark:border-gray-700 bg-textured">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold">
+                  <h1 className="text-lg font-bold">
                     {selectedItem.type === 'category' ? 'Edit Category' : 'Edit Shortcut'}
                   </h1>
                   {hasUnsavedChanges && (

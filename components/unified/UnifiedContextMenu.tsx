@@ -45,33 +45,10 @@ import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution'
 import { useAppSelector } from '@/lib/redux';
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
-import FloatingSheet from '@/components/ui/matrx/FloatingSheet';
 import contentBlocksConfig from '@/config/content-blocks';
 import { ContentBlock } from '@/features/rich-text-editor/config/contentBlocks';
 import * as LucideIcons from 'lucide-react';
-
-// CRITICAL: All Quick Action sheets must be dynamic imports
-// This prevents them from being bundled into routes that don't use UnifiedContextMenu
-// QuickChatSheet was causing API calls to prompts on every route load!
-const QuickNotesSheet = dynamic(() => import('@/features/notes/components/QuickNotesSheet').then(mod => ({ default: mod.QuickNotesSheet })), {
-  ssr: false,
-});
-
-const QuickTasksSheet = dynamic(() => import('@/features/tasks/components/QuickTasksSheet').then(mod => ({ default: mod.QuickTasksSheet })), {
-  ssr: false,
-});
-
-const QuickChatSheet = dynamic(() => import('@/features/quick-actions/components/QuickChatSheet').then(mod => ({ default: mod.QuickChatSheet })), {
-  ssr: false,
-});
-
-const QuickDataSheet = dynamic(() => import('@/features/quick-actions/components/QuickDataSheet').then(mod => ({ default: mod.QuickDataSheet })), {
-  ssr: false,
-});
-
-const QuickFilesSheet = dynamic(() => import('@/features/quick-actions/components/QuickFilesSheet').then(mod => ({ default: mod.QuickFilesSheet })), {
-  ssr: false,
-});
+import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
 
 interface UnifiedContextMenuProps {
   children: React.ReactNode;
@@ -131,12 +108,14 @@ export function UnifiedContextMenu({
   const [debugModalOpen, setDebugModalOpen] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
 
-  // Quick Actions state
-  const [isNotesOpen, setIsNotesOpen] = useState(false);
-  const [isTasksOpen, setIsTasksOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isDataOpen, setIsDataOpen] = useState(false);
-  const [isFilesOpen, setIsFilesOpen] = useState(false);
+  // Quick Actions via Redux
+  const {
+    openQuickNotes,
+    openQuickTasks,
+    openQuickChat,
+    openQuickData,
+    openQuickFiles,
+  } = useQuickActions();
 
   // Track selection
   React.useEffect(() => {
@@ -411,7 +390,7 @@ export function UnifiedContextMenu({
                 Quick Actions
               </ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-56">
-                <ContextMenuItem onSelect={() => setIsNotesOpen(true)}>
+                <ContextMenuItem onSelect={() => openQuickNotes()}>
                   <StickyNote className="h-4 w-4 mr-2" />
                   <div className="flex flex-col">
                     <span>Notes</span>
@@ -419,7 +398,7 @@ export function UnifiedContextMenu({
                   </div>
                 </ContextMenuItem>
 
-                <ContextMenuItem onSelect={() => setIsTasksOpen(true)}>
+                <ContextMenuItem onSelect={() => openQuickTasks()}>
                   <CheckSquare className="h-4 w-4 mr-2" />
                   <div className="flex flex-col">
                     <span>Tasks</span>
@@ -427,7 +406,7 @@ export function UnifiedContextMenu({
                   </div>
                 </ContextMenuItem>
 
-                <ContextMenuItem onSelect={() => setIsChatOpen(true)}>
+                <ContextMenuItem onSelect={() => openQuickChat()}>
                   <MessageSquare className="h-4 w-4 mr-2" />
                   <div className="flex flex-col">
                     <span>Chat</span>
@@ -435,7 +414,7 @@ export function UnifiedContextMenu({
                   </div>
                 </ContextMenuItem>
 
-                <ContextMenuItem onSelect={() => setIsDataOpen(true)}>
+                <ContextMenuItem onSelect={() => openQuickData()}>
                   <Database className="h-4 w-4 mr-2" />
                   <div className="flex flex-col">
                     <span>Data</span>
@@ -443,7 +422,7 @@ export function UnifiedContextMenu({
                   </div>
                 </ContextMenuItem>
 
-                <ContextMenuItem onSelect={() => setIsFilesOpen(true)}>
+                <ContextMenuItem onSelect={() => openQuickFiles()}>
                   <FolderOpen className="h-4 w-4 mr-2" />
                   <div className="flex flex-col">
                     <span>Files</span>
@@ -516,38 +495,6 @@ export function UnifiedContextMenu({
         />
       )}
 
-      {/* Floating Sheets for Quick Actions */}
-      {/* CRITICAL: Conditionally render to prevent mounting when closed */}
-      {/* This prevents API calls from PromptRunner on page load */}
-      {isNotesOpen && (
-        <FloatingSheet isOpen={true} onClose={() => setIsNotesOpen(false)} title="Quick Notes" position="right" width="xl" height="full">
-          <QuickNotesSheet onClose={() => setIsNotesOpen(false)} />
-        </FloatingSheet>
-      )}
-
-      {isTasksOpen && (
-        <FloatingSheet isOpen={true} onClose={() => setIsTasksOpen(false)} title="Quick Tasks" position="right" width="xl" height="full">
-          <QuickTasksSheet onClose={() => setIsTasksOpen(false)} />
-        </FloatingSheet>
-      )}
-
-      {isChatOpen && (
-        <FloatingSheet isOpen={true} onClose={() => setIsChatOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
-          <QuickChatSheet onClose={() => setIsChatOpen(false)} />
-        </FloatingSheet>
-      )}
-
-      {isDataOpen && (
-        <FloatingSheet isOpen={true} onClose={() => setIsDataOpen(false)} title="Data Tables" position="right" width="xl" height="full">
-          <QuickDataSheet onClose={() => setIsDataOpen(false)} />
-        </FloatingSheet>
-      )}
-
-      {isFilesOpen && (
-        <FloatingSheet isOpen={true} onClose={() => setIsFilesOpen(false)} title="" position="right" width="xl" height="full" showCloseButton={false} contentClassName="p-0">
-          <QuickFilesSheet onClose={() => setIsFilesOpen(false)} />
-        </FloatingSheet>
-      )}
     </>
   );
 }

@@ -98,6 +98,7 @@ export { usePromptRunnerModal } from './hooks/usePromptRunnerModal';
 export { PromptExecutionButton, PromptExecutionIconButton } from './components/actions/PromptExecutionButton';
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
 export { PromptExecutionModal } from './components/actions/PromptExecutionModal';
+export { ConvertToBuiltinModal } from './components/actions/ConvertToBuiltinModal';
 export { PromptImporter } from './components/common/PromptImporter';
 export { PromptRunner } from './components/modal/PromptRunner';
 export { PromptRunnerModal } from './components/modal/PromptRunnerModal';

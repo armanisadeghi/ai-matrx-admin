@@ -16,3 +16,6 @@ export { QuickChatSheet } from './components/QuickChatSheet';
 export { QuickDataSheet } from './components/QuickDataSheet';
 export { QuickFilesSheet } from './components/QuickFilesSheet';
 
+// Hooks
+export { useQuickActions } from './hooks/useQuickActions';
+

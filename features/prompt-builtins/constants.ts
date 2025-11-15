@@ -3,7 +3,7 @@
  * These define where and how shortcuts can be triggered
  */
 export const PLACEMENT_TYPES = {
-  MENU: 'menu',           // Context menu for ai-actions
+  AI_ACTION: 'ai-action',           // Context menu for ai-actions
   BUTTON: 'button',       // Pre-programmed buttons that trigger builtin prompts
   CARD: 'card',           // Pre-programmed cards with auto-scoped title/description
   QUICK_ACTION: 'quick-action', // Trigger specific functionality
@@ -18,10 +18,10 @@ export type PlacementType = typeof PLACEMENT_TYPES[keyof typeof PLACEMENT_TYPES]
  * Placement type metadata for UI display
  */
 export const PLACEMENT_TYPE_META = {
-  [PLACEMENT_TYPES.MENU]: {
-    label: 'Context Menu',
+  [PLACEMENT_TYPES.AI_ACTION]: {
+    label: 'AI Actions',
     description: 'AI actions available in context menus',
-    icon: 'Menu',
+    icon: 'Sparkles',
   },
   [PLACEMENT_TYPES.BUTTON]: {
     label: 'Button',
@@ -130,7 +130,7 @@ export const COMMON_SCOPE_CONFIGURATIONS = {
  * Helps admins understand what each scope represents in different contexts
  */
 export const SCOPE_CONFIGURATION_DESCRIPTIONS: Record<string, Record<string, string>> = {
-  menu: {
+  'ai-action': {
     selection: 'Highlighted/selected text or item',
     content: 'Current item or primary content',
     context: 'Surrounding data or additional context',
