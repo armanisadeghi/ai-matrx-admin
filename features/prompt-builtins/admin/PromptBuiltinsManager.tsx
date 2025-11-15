@@ -51,7 +51,10 @@ import {
   fetchShortcutsWithRelations,
 } from '../services/admin-service';
 import { PLACEMENT_TYPES, PLACEMENT_TYPE_META, COMMON_SCOPE_CONFIGURATIONS } from '../constants';
+import { getUserFriendlyError } from '../utils/error-handler';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
+import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
+import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
 
 interface PromptBuiltinsManagerProps {
   className?: string;
@@ -85,6 +88,13 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   const [isCreateShortcutOpen, setIsCreateShortcutOpen] = useState(false);
   const [createCategoryData, setCreateCategoryData] = useState<Partial<CreateShortcutCategoryInput>>({});
   const [createShortcutData, setCreateShortcutData] = useState<Partial<CreatePromptShortcutInput>>({});
+  const [isSelectPromptModalOpen, setIsSelectPromptModalOpen] = useState(false);
+  
+  // Prompt settings modal state
+  const [isPromptSettingsOpen, setIsPromptSettingsOpen] = useState(false);
+  const [editingBuiltinId, setEditingBuiltinId] = useState<string | null>(null);
+  const [models, setModels] = useState<any[]>([]);
+  const [availableTools, setAvailableTools] = useState<any[]>([]);
   
   const { toast } = useToast();
 
@@ -92,15 +102,19 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
+      const [categoriesData, shortcutsData, builtinsData, modelsResponse, toolsResponse] = await Promise.all([
         fetchShortcutCategories(),
         fetchShortcutsWithRelations(),
         fetchPromptBuiltins({ is_active: true }),
+        fetch('/api/ai-models').then(r => r.json()).catch(() => ({ models: [] })),
+        fetch('/api/tools').then(r => r.json()).catch(() => ({ tools: [] })),
       ]);
       
       setCategories(categoriesData);
       setShortcuts(shortcutsData);
       setBuiltins(builtinsData);
+      setModels(modelsResponse?.models || []);
+      setAvailableTools(toolsResponse?.tools || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -176,6 +190,18 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   };
 
   const tree = buildTree();
+
+  // Helper to build category hierarchy label (e.g., "Parent > Child")
+  const getCategoryHierarchyLabel = (category: ShortcutCategory): string => {
+    if (!category.parent_category_id) {
+      return category.label;
+    }
+    const parent = categories.find(c => c.id === category.parent_category_id);
+    if (!parent) {
+      return category.label;
+    }
+    return `${getCategoryHierarchyLabel(parent)} > ${category.label}`;
+  };
 
   // Tree expansion helpers
   const toggleCategory = (categoryId: string) => {
@@ -322,8 +348,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   };
 
   const handleCreateShortcut = async () => {
-    if (!createShortcutData.prompt_builtin_id || !createShortcutData.category_id || !createShortcutData.label) {
-      toast({ title: 'Error', description: 'Prompt, category, and label are required', variant: 'destructive' });
+    if (!createShortcutData.category_id || !createShortcutData.label) {
+      toast({ title: 'Error', description: 'Category and label are required', variant: 'destructive' });
       return;
     }
     
@@ -333,9 +359,57 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       setIsCreateShortcutOpen(false);
       setCreateShortcutData({});
       await loadData();
-    } catch (error) {
-      console.error('Error creating shortcut:', error);
-      toast({ title: 'Error', description: 'Failed to create shortcut', variant: 'destructive' });
+    } catch (error: any) {
+      const errorMessage = getUserFriendlyError(error);
+      toast({ 
+        title: 'Failed to Create Shortcut', 
+        description: errorMessage,
+        variant: 'destructive' 
+      });
+    }
+  };
+
+  // Prompt builtin handlers
+  const handleOpenBuiltinEditor = (builtinId: string) => {
+    setEditingBuiltinId(builtinId);
+    setIsPromptSettingsOpen(true);
+  };
+
+  const handleUpdateBuiltin = async (id: string, data: {
+    name: string;
+    description?: string;
+    variableDefaults: any[];
+    messages?: any[];
+    settings?: Record<string, any>;
+  }) => {
+    try {
+      const response = await fetch(`/api/admin/prompt-builtins/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          description: data.description,
+          messages: data.messages,
+          variable_defaults: data.variableDefaults, // Convert camelCase to snake_case for DB
+          settings: data.settings,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update builtin');
+      }
+
+      toast({ title: 'Success', description: 'Prompt builtin updated successfully' });
+      await loadData();
+    } catch (error: any) {
+      const errorMessage = getUserFriendlyError(error);
+      toast({ 
+        title: 'Failed to Update Builtin', 
+        description: errorMessage,
+        variant: 'destructive' 
+      });
+      throw error;
     }
   };
 
@@ -345,24 +419,25 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
     const expanded = isExpanded(node.id);
     const hasChildren = node.children && node.children.length > 0;
     const hasShortcuts = node.shortcuts && node.shortcuts.length > 0;
+    const hasContent = hasChildren || hasShortcuts;
     
     return (
       <div key={node.id}>
-        {/* Category Row */}
+        {/* Category Row - Clicking anywhere expands AND selects */}
         <div
           className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
             ${isSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
+          onClick={() => {
+            if (hasContent) toggleCategory(node.id);
+            setSelectedItem({ type: 'category', data: node });
+          }}
         >
-          <div onClick={() => toggleCategory(node.id)} className="flex items-center gap-1">
-            {(hasChildren || hasShortcuts) ? (
-              expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
-            ) : <div className="w-4" />}
+          {/* Always show chevron for consistency */}
+          <div className={`flex items-center gap-1 ${!hasContent ? 'opacity-30' : ''}`}>
+            {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </div>
-          <div 
-            className="flex-1 flex items-center gap-2 min-w-0"
-            onClick={() => setSelectedItem({ type: 'category', data: node })}
-          >
+          <div className="flex-1 flex items-center gap-2 min-w-0">
             <Folder className="w-4 h-4 flex-shrink-0" style={{ color: node.color || '#666' }} />
             <span className="text-sm font-medium truncate">{node.label}</span>
             <Badge variant="outline" className="text-xs">{node.placement_type}</Badge>
@@ -420,7 +495,18 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                 <Folder className="w-4 h-4 mr-1" />
                 Category
               </Button>
-              <Button onClick={() => setIsCreateShortcutOpen(true)} size="sm">
+              <Button 
+                onClick={() => {
+                  // Pre-select category if one is currently selected
+                  if (selectedItem?.type === 'category') {
+                    setCreateShortcutData({ category_id: selectedItem.data.id });
+                  } else {
+                    setCreateShortcutData({});
+                  }
+                  setIsCreateShortcutOpen(true);
+                }} 
+                size="sm"
+              >
                 <Plus className="w-4 h-4 mr-1" />
                 Shortcut
               </Button>
@@ -658,6 +744,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                 ) : (
                   /* Shortcut Edit Form */
                   <>
+                    {/* Basic Information */}
                     <Card>
                       <CardHeader>
                         <CardTitle>Basic Information</CardTitle>
@@ -714,7 +801,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                               <SelectContent>
                                 {categories.map(cat => (
                                   <SelectItem key={cat.id} value={cat.id}>
-                                    {cat.label}
+                                    {getCategoryHierarchyLabel(cat)}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -730,25 +817,6 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                           </div>
                         </div>
 
-                        <div>
-                          <Label>Prompt Builtin</Label>
-                          <Select
-                            value={editShortcutData.prompt_builtin_id}
-                            onValueChange={(value) => handleShortcutChange('prompt_builtin_id', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select prompt..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {builtins.map(builtin => (
-                                <SelectItem key={builtin.id} value={builtin.id}>
-                                  {builtin.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             checked={editShortcutData.is_active}
@@ -759,92 +827,252 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                       </CardContent>
                     </Card>
 
-                    {/* CRITICAL: Scope Mapping Configuration */}
-                    <Card className="border-purple-200 dark:border-purple-800">
+                    {/* Available Scope Keys - Primary Section */}
+                    <Card className="border-blue-200 dark:border-blue-800">
                       <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-5 h-5 text-purple-600" />
-                          <CardTitle>Scope Mapping (CRITICAL)</CardTitle>
-                        </div>
+                        <CardTitle>Available Scope Keys</CardTitle>
                         <CardDescription>
-                          Maps the application's scope keys to this prompt's variable names.
-                          The scope keys available depend on where this shortcut is used (button, card, menu, etc.).
+                          Define which scope keys are available where this shortcut is used
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {/* Available Scopes */}
-                        <div>
-                          <Label className="text-sm font-semibold">Available Scope Keys</Label>
-                          <p className="text-xs text-gray-500 mb-2">
-                            Define which scope keys are available for this shortcut (comma-separated)
-                          </p>
-                          <Input
-                            value={(editShortcutData.available_scopes || []).join(', ')}
-                            onChange={(e) => {
-                              const scopes = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
-                              handleShortcutChange('available_scopes', scopes);
-                            }}
-                            placeholder="selection, content, context"
-                          />
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {Object.values(COMMON_SCOPE_CONFIGURATIONS).slice(0, 3).map((config, idx) => (
-                              <Button
-                                key={idx}
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleShortcutChange('available_scopes', [...config])}
-                              >
-                                Preset: {config.join(', ')}
-                              </Button>
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold">Common Scopes</Label>
+                          <div className="flex flex-col gap-2">
+                            {['selection', 'content', 'context'].map(scope => (
+                              <div key={scope} className="flex items-center space-x-2">
+                                <Checkbox
+                                  checked={(editShortcutData.available_scopes || []).includes(scope)}
+                                  onCheckedChange={(checked) => {
+                                    const currentScopes = editShortcutData.available_scopes || [];
+                                    const newScopes = checked
+                                      ? [...currentScopes, scope]
+                                      : currentScopes.filter(s => s !== scope);
+                                    handleShortcutChange('available_scopes', newScopes);
+                                  }}
+                                />
+                                <Label className="font-normal capitalize">{scope}</Label>
+                              </div>
                             ))}
                           </div>
                         </div>
 
-                        {/* Scope Mappings */}
                         <div>
-                          <Label className="text-sm font-semibold">Scope Mappings (JSON)</Label>
-                          <p className="text-xs text-gray-500 mb-2">
-                            Map each available scope to a variable name from the selected prompt
-                          </p>
-                          <Textarea
-                            value={JSON.stringify(editShortcutData.scope_mappings || {}, null, 2)}
+                          <Label className="text-sm font-semibold">Custom Scope Keys (comma-separated)</Label>
+                          <Input
+                            value={(editShortcutData.available_scopes || [])
+                              .filter(s => !['selection', 'content', 'context'].includes(s))
+                              .join(', ')}
                             onChange={(e) => {
-                              try {
-                                const parsed = JSON.parse(e.target.value);
-                                handleShortcutChange('scope_mappings', parsed);
-                              } catch {
-                                // Invalid JSON
-                              }
+                              const customScopes = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                              const commonScopes = (editShortcutData.available_scopes || [])
+                                .filter(s => ['selection', 'content', 'context'].includes(s));
+                              handleShortcutChange('available_scopes', [...commonScopes, ...customScopes]);
                             }}
-                            placeholder='{\n  "selection": "variable_name",\n  "content": "another_variable"\n}'
-                            rows={6}
-                            className="font-mono text-sm"
+                            placeholder="custom_key1, custom_key2"
                           />
                         </div>
 
-                        {/* Show prompt variables if builtin selected */}
-                        {editShortcutData.prompt_builtin_id && (() => {
-                          const selectedBuiltin = builtins.find(b => b.id === editShortcutData.prompt_builtin_id);
-                          if (selectedBuiltin && selectedBuiltin.variableDefaults) {
-                            return (
-                              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                                <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                                  Available Variables in "{selectedBuiltin.name}":
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {selectedBuiltin.variableDefaults.map((v: any) => (
-                                    <Badge key={v.name} variant="secondary">
-                                      {v.name}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
+                        {editShortcutData.available_scopes && editShortcutData.available_scopes.length > 0 && (
+                          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                            <p className="text-sm font-medium mb-2">Current Scopes:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {editShortcutData.available_scopes.map(scope => (
+                                <Badge key={scope} variant="outline">{scope}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
+
+                    {/* Prompt Builtin & Scope Mappings - Independent Bottom Section */}
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Prompt Builtin Selection/Creation */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Prompt Builtin</CardTitle>
+                          <CardDescription>Select or create a prompt for this shortcut</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <Select
+                              value={editShortcutData.prompt_builtin_id || 'none'}
+                              onValueChange={(value) => handleShortcutChange('prompt_builtin_id', value === 'none' ? null : value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="No prompt connected" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">
+                                  <span className="text-gray-500">No prompt connected</span>
+                                </SelectItem>
+                                {builtins.map(builtin => (
+                                  <SelectItem key={builtin.id} value={builtin.id}>
+                                    {builtin.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            {editShortcutData.prompt_builtin_id && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="w-full"
+                                onClick={() => handleOpenBuiltinEditor(editShortcutData.prompt_builtin_id!)}
+                              >
+                                <Edit2 className="w-4 h-4 mr-2" />
+                                View/Edit Builtin
+                              </Button>
+                            )}
+                          </div>
+
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => setIsSelectPromptModalOpen(true)}
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Builtin Prompt
+                          </Button>
+
+                          {!editShortcutData.prompt_builtin_id && (
+                            <p className="text-xs text-orange-600 dark:text-orange-400">
+                              ℹ️ Shortcut won't be functional until a prompt is connected
+                            </p>
+                          )}
+
+                          {/* Show prompt variables if builtin selected */}
+                          {editShortcutData.prompt_builtin_id && (() => {
+                            const selectedBuiltin = builtins.find(b => b.id === editShortcutData.prompt_builtin_id);
+                            if (selectedBuiltin && selectedBuiltin.variableDefaults) {
+                              return (
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                                    Variables in "{selectedBuiltin.name}":
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {selectedBuiltin.variableDefaults.map((v: any) => (
+                                      <Badge key={v.name} variant="secondary" className="text-xs">
+                                        {v.name}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </CardContent>
+                      </Card>
+
+                      {/* Scope Mappings */}
+                      <Card>
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <CardTitle>Scope Mappings</CardTitle>
+                              <CardDescription>Map scope keys to prompt variables</CardDescription>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = '.json';
+                                input.onchange = (e: any) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (event) => {
+                                      try {
+                                        const json = JSON.parse(event.target?.result as string);
+                                        handleShortcutChange('scope_mappings', json);
+                                        toast({ title: 'Success', description: 'Scope mappings imported' });
+                                      } catch (err) {
+                                        toast({ title: 'Error', description: 'Invalid JSON file', variant: 'destructive' });
+                                      }
+                                    };
+                                    reader.readAsText(file);
+                                  }
+                                };
+                                input.click();
+                              }}
+                            >
+                              Upload JSON
+                            </Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {/* Key-Value Pairs */}
+                          <div className="space-y-2">
+                            {(editShortcutData.available_scopes || []).map((scopeKey) => {
+                              const selectedBuiltin = builtins.find(b => b.id === editShortcutData.prompt_builtin_id);
+                              const availableVariables = selectedBuiltin?.variableDefaults?.map((v: any) => v.name) || [];
+                              const currentValue = (editShortcutData.scope_mappings as any)?.[scopeKey] || '';
+                              
+                              return (
+                                <div key={scopeKey} className="flex items-center gap-2">
+                                  <Input
+                                    value={scopeKey}
+                                    disabled
+                                    className="w-32 bg-gray-50 dark:bg-gray-800"
+                                  />
+                                  <span className="text-gray-500">→</span>
+                                  {availableVariables.length > 0 ? (
+                                    <Select
+                                      value={currentValue}
+                                      onValueChange={(value) => {
+                                        const newMappings = { ...(editShortcutData.scope_mappings || {}), [scopeKey]: value === 'none' ? '' : value };
+                                        handleShortcutChange('scope_mappings', newMappings);
+                                      }}
+                                    >
+                                      <SelectTrigger className="flex-1">
+                                        <SelectValue placeholder="Select variable..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="none">
+                                          <span className="text-gray-500">(none)</span>
+                                        </SelectItem>
+                                        {availableVariables.map((varName: string) => (
+                                          <SelectItem key={varName} value={varName}>
+                                            {varName}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <Input
+                                      value={currentValue}
+                                      onChange={(e) => {
+                                        const newMappings = { ...(editShortcutData.scope_mappings || {}), [scopeKey]: e.target.value };
+                                        handleShortcutChange('scope_mappings', newMappings);
+                                      }}
+                                      placeholder="variable_name"
+                                      className="flex-1"
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {(!editShortcutData.available_scopes || editShortcutData.available_scopes.length === 0) && (
+                            <p className="text-sm text-gray-500 text-center py-4">
+                              ℹ️ Add available scope keys above first
+                            </p>
+                          )}
+                          
+                          {editShortcutData.available_scopes && editShortcutData.available_scopes.length > 0 && !editShortcutData.prompt_builtin_id && (
+                            <p className="text-xs text-gray-500 text-center py-2">
+                              💡 Select a prompt builtin to see available variables
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
                   </>
                 )}
               </div>
@@ -928,11 +1156,62 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         </DialogContent>
       </Dialog>
 
+      {/* Select/Generate Prompt for Builtin Modal */}
+      {isSelectPromptModalOpen && selectedItem?.type === 'shortcut' && (
+        <SelectPromptForBuiltinModal
+          isOpen={isSelectPromptModalOpen}
+          onClose={() => setIsSelectPromptModalOpen(false)}
+          shortcutId={selectedItem.data.id}
+          shortcutData={{
+            label: selectedItem.data.label || '',
+            available_scopes: selectedItem.data.available_scopes || []
+          }}
+          onSuccess={async (builtinId) => {
+            // Update the shortcut with the new builtin
+            handleShortcutChange('prompt_builtin_id', builtinId);
+            // Reload data to get the latest builtins
+            await loadData();
+            setIsSelectPromptModalOpen(false);
+          }}
+        />
+      )}
+
+      {/* Prompt Settings Modal for Editing Builtin */}
+      {isPromptSettingsOpen && editingBuiltinId && (() => {
+        const builtin = builtins.find(b => b.id === editingBuiltinId);
+        if (!builtin) return null;
+        
+        return (
+          <PromptSettingsModal
+            isOpen={isPromptSettingsOpen}
+            onClose={() => {
+              setIsPromptSettingsOpen(false);
+              setEditingBuiltinId(null);
+            }}
+            promptId={builtin.id}
+            promptName={builtin.name}
+            promptDescription={builtin.description || ''}
+            variableDefaults={builtin.variableDefaults || []}
+            messages={builtin.messages || []}
+            settings={builtin.settings || {}}
+            models={models}
+            availableTools={availableTools}
+            onUpdate={handleUpdateBuiltin}
+            onLocalStateUpdate={() => {
+              // No-op for builtins, we don't need local state updates
+            }}
+          />
+        );
+      })()}
+
       {/* Create Shortcut Dialog */}
       <Dialog open={isCreateShortcutOpen} onOpenChange={setIsCreateShortcutOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Create New Shortcut</DialogTitle>
+            <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+              Create a shortcut "wishlist" item. You can connect it to a prompt later.
+            </CardDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -943,35 +1222,6 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                   onChange={(e) => setCreateShortcutData({ ...createShortcutData, label: e.target.value })}
                   placeholder="Shortcut name"
                 />
-              </div>
-              <div>
-                <Label>Keyboard Shortcut</Label>
-                <Input
-                  value={createShortcutData.keyboard_shortcut || ''}
-                  onChange={(e) => setCreateShortcutData({ ...createShortcutData, keyboard_shortcut: e.target.value })}
-                  placeholder="Ctrl+Shift+K"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Prompt Builtin *</Label>
-                <Select
-                  value={createShortcutData.prompt_builtin_id}
-                  onValueChange={(value) => setCreateShortcutData({ ...createShortcutData, prompt_builtin_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select prompt..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {builtins.map(builtin => (
-                      <SelectItem key={builtin.id} value={builtin.id}>
-                        {builtin.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
               <div>
                 <Label>Category *</Label>
@@ -985,7 +1235,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                   <SelectContent>
                     {categories.map(cat => (
                       <SelectItem key={cat.id} value={cat.id}>
-                        {cat.label}
+                        {getCategoryHierarchyLabel(cat)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -993,12 +1243,74 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               </div>
             </div>
 
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={createShortcutData.description || ''}
+                onChange={(e) => setCreateShortcutData({ ...createShortcutData, description: e.target.value })}
+                placeholder="What should this shortcut do?"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Keyboard Shortcut</Label>
+                <div className="flex gap-2">
+                  <Select
+                    value="custom"
+                    onValueChange={(prefix) => {
+                      if (prefix !== 'custom') {
+                        const current = createShortcutData.keyboard_shortcut || '';
+                        // Extract the last key if it exists
+                        const lastKey = current.split('+').pop() || '';
+                        setCreateShortcutData({ ...createShortcutData, keyboard_shortcut: `${prefix}${lastKey}` });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Prefix" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="custom">Custom</SelectItem>
+                      <SelectItem value="Ctrl+">Ctrl+</SelectItem>
+                      <SelectItem value="Ctrl+Shift+">Ctrl+Shift+</SelectItem>
+                      <SelectItem value="Ctrl+Alt+">Ctrl+Alt+</SelectItem>
+                      <SelectItem value="Alt+">Alt+</SelectItem>
+                      <SelectItem value="Alt+Shift+">Alt+Shift+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    className="flex-1"
+                    value={createShortcutData.keyboard_shortcut || ''}
+                    onChange={(e) => setCreateShortcutData({ ...createShortcutData, keyboard_shortcut: e.target.value })}
+                    placeholder="K (optional)"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Use prefix dropdown or type full shortcut</p>
+              </div>
+              <div>
+                <Label>Icon Name</Label>
+                <Input
+                  value={createShortcutData.icon_name || ''}
+                  onChange={(e) => setCreateShortcutData({ ...createShortcutData, icon_name: e.target.value })}
+                  placeholder="Zap (optional)"
+                />
+              </div>
+            </div>
+
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                💡 <strong>Note:</strong> After creating this shortcut, you can edit it to configure scope mappings and connect it to a prompt.
+              </p>
+            </div>
+
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsCreateShortcutOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleCreateShortcut}>
-                Create
+                Create Shortcut
               </Button>
             </div>
           </div>

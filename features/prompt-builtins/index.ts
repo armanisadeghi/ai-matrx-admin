@@ -101,3 +101,10 @@ export {
   validateCategoryHierarchy,
 } from './utils/validation';
 
+export {
+  // Error handling utilities
+  formatSupabaseError,
+  logDetailedError,
+  getUserFriendlyError,
+} from './utils/error-handler';
+

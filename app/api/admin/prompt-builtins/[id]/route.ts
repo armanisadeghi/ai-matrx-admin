@@ -1,48 +1,47 @@
-// app/api/admin/prompt-builtins/[id]/route.ts
-
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import {
-  getPromptBuiltinById,
-  updatePromptBuiltin,
-  deletePromptBuiltin,
-} from '@/features/prompt-builtins/services/admin-service';
-import { UpdatePromptBuiltinInput } from '@/features/prompt-builtins/types';
 
 /**
  * GET /api/admin/prompt-builtins/[id]
- * Get a single prompt builtin by ID
+ * 
+ * Fetch a single prompt builtin by ID
  */
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
+    const { id } = await context.params;
+    
+    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { id } = await params;
-    const data = await getPromptBuiltinById(id);
-
-    if (!data) {
       return NextResponse.json(
-        { error: 'Prompt builtin not found' },
-        { status: 404 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    return NextResponse.json({ builtin: data });
+    const { data, error } = await supabase
+      .from('prompt_builtins')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching prompt builtin:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch prompt builtin' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('API error:', error);
+    console.error('Error in GET /api/admin/prompt-builtins/[id]:', error);
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -50,57 +49,61 @@ export async function GET(
 
 /**
  * PUT /api/admin/prompt-builtins/[id]
- * Update a prompt builtin
+ * 
+ * Update an existing prompt builtin
  */
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
+    const { id } = await context.params;
+    
+    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const { id } = await params;
     const body = await request.json();
+    const { name, description, messages, variable_defaults, tools, settings } = body;
 
-    // Validate messages if provided
-    if (body.messages !== undefined) {
-      if (!Array.isArray(body.messages) || body.messages.length === 0) {
-        return NextResponse.json(
-          { error: 'Messages must be a non-empty array' },
-          { status: 400 }
-        );
-      }
-    }
-
-    const input: UpdatePromptBuiltinInput = {
-      id,
-      name: body.name,
-      description: body.description,
-      messages: body.messages,
-      variable_defaults: body.variable_defaults,
-      tools: body.tools,
-      settings: body.settings,
-      is_active: body.is_active,
+    // Build update object
+    const updateData: any = {
+      updated_at: new Date().toISOString(),
     };
 
-    const data = await updatePromptBuiltin(input);
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (messages !== undefined) updateData.messages = messages;
+    if (variable_defaults !== undefined) updateData.variable_defaults = variable_defaults;
+    if (tools !== undefined) updateData.tools = tools;
+    if (settings !== undefined) updateData.settings = settings;
 
-    return NextResponse.json({
-      message: 'Prompt builtin updated successfully',
-      builtin: data,
-    });
+    const { data, error } = await supabase
+      .from('prompt_builtins')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating prompt builtin:', error);
+      return NextResponse.json(
+        { error: `Failed to update prompt builtin: ${error.message}` },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('API error:', error);
+    console.error('Error in PUT /api/admin/prompt-builtins/[id]:', error);
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -108,35 +111,47 @@ export async function PUT(
 
 /**
  * DELETE /api/admin/prompt-builtins/[id]
- * Delete a prompt builtin (hard delete)
+ * 
+ * Soft delete a prompt builtin (set is_active = false)
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
+    const { id } = await context.params;
+    
+    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const { id } = await params;
-    await deletePromptBuiltin(id);
+    const { data, error } = await supabase
+      .from('prompt_builtins')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
 
-    return NextResponse.json({
-      message: 'Prompt builtin deleted successfully',
-    });
+    if (error) {
+      console.error('Error deleting prompt builtin:', error);
+      return NextResponse.json(
+        { error: `Failed to delete prompt builtin: ${error.message}` },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('API error:', error);
+    console.error('Error in DELETE /api/admin/prompt-builtins/[id]:', error);
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
-

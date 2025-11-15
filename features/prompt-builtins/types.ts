@@ -140,7 +140,7 @@ export interface UpdatePromptBuiltinInput {
 
 export interface CreatePromptShortcutInput {
   id?: string; // Optional - will be generated if not provided
-  prompt_builtin_id: string;
+  prompt_builtin_id?: string | null; // Optional - can be connected later
   category_id: string;
   label: string;
   description?: string | null;
@@ -154,7 +154,7 @@ export interface CreatePromptShortcutInput {
 
 export interface UpdatePromptShortcutInput {
   id: string;
-  prompt_builtin_id?: string;
+  prompt_builtin_id?: string | null;
   category_id?: string;
   label?: string;
   description?: string | null;

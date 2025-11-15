@@ -13,6 +13,7 @@ import {
   ContextMenuRow,
   PromptExecutionData,
 } from '../types';
+import { logDetailedError } from '../utils/error-handler';
 
 // Helper to get the right client based on context
 function getClient() {
@@ -55,8 +56,8 @@ export async function fetchShortcutCategories(filters?: {
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching shortcut categories:', error);
-    throw error;
+    logDetailedError('fetchShortcutCategories', error);
+    throw new Error(`Failed to fetch shortcut categories: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   return data as ShortcutCategory[];
@@ -105,8 +106,12 @@ export async function createShortcutCategory(input: CreateShortcutCategoryInput)
     .single();
 
   if (error) {
-    console.error('Error creating shortcut category:', error);
-    throw error;
+    logDetailedError('createShortcutCategory', error);
+    throw new Error(`Failed to create shortcut category: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
+  }
+
+  if (!data) {
+    throw new Error('No data returned after creating shortcut category');
   }
 
   return data as ShortcutCategory;
@@ -134,8 +139,12 @@ export async function updateShortcutCategory(input: UpdateShortcutCategoryInput)
     .single();
 
   if (error) {
-    console.error('Error updating shortcut category:', error);
-    throw error;
+    logDetailedError('updateShortcutCategory', error);
+    throw new Error(`Failed to update shortcut category: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
+  }
+
+  if (!data) {
+    throw new Error('No data returned after updating shortcut category');
   }
 
   return data as ShortcutCategory;
@@ -149,8 +158,8 @@ export async function deleteShortcutCategory(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) {
-    console.error('Error deleting shortcut category:', error);
-    throw error;
+    logDetailedError('deleteShortcutCategory', error);
+    throw new Error(`Failed to delete shortcut category: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 }
 
@@ -198,8 +207,8 @@ export async function fetchPromptBuiltins(filters?: {
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching prompt builtins:', error);
-    throw error;
+    logDetailedError('fetchPromptBuiltins', error);
+    throw new Error(`Failed to fetch prompt builtins: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   return data as PromptBuiltin[];
@@ -249,8 +258,8 @@ export async function createPromptBuiltin(input: CreatePromptBuiltinInput): Prom
     .single();
 
   if (error) {
-    console.error('Error creating prompt builtin:', error);
-    throw error;
+    logDetailedError('createPromptBuiltin', error);
+    throw new Error(`Failed to create prompt builtin: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   return data as PromptBuiltin;
@@ -278,8 +287,8 @@ export async function updatePromptBuiltin(input: UpdatePromptBuiltinInput): Prom
     .single();
 
   if (error) {
-    console.error('Error updating prompt builtin:', error);
-    throw error;
+    logDetailedError('updatePromptBuiltin', error);
+    throw new Error(`Failed to update prompt builtin: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   return data as PromptBuiltin;
@@ -293,8 +302,8 @@ export async function deletePromptBuiltin(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) {
-    console.error('Error deleting prompt builtin:', error);
-    throw error;
+    logDetailedError('deletePromptBuiltin', error);
+    throw new Error(`Failed to delete prompt builtin: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 }
 
@@ -347,8 +356,8 @@ export async function fetchPromptShortcuts(filters?: {
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching prompt shortcuts:', error);
-    throw error;
+    logDetailedError('fetchPromptShortcuts', error);
+    throw new Error(`Failed to fetch prompt shortcuts: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   return data as PromptShortcut[];
@@ -375,7 +384,7 @@ export async function createPromptShortcut(input: CreatePromptShortcutInput): Pr
   const { data: { user } } = await supabase.auth.getUser();
 
   const insertData: any = {
-    prompt_builtin_id: input.prompt_builtin_id,
+    prompt_builtin_id: input.prompt_builtin_id ?? null,
     category_id: input.category_id,
     label: input.label,
     description: input.description ?? null,
@@ -400,8 +409,12 @@ export async function createPromptShortcut(input: CreatePromptShortcutInput): Pr
     .single();
 
   if (error) {
-    console.error('Error creating prompt shortcut:', error);
-    throw error;
+    logDetailedError('createPromptShortcut', error);
+    throw new Error(`Failed to create prompt shortcut: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
+  }
+
+  if (!data) {
+    throw new Error('No data returned after creating prompt shortcut');
   }
 
   return data as PromptShortcut;
@@ -432,8 +445,8 @@ export async function updatePromptShortcut(input: UpdatePromptShortcutInput): Pr
     .single();
 
   if (error) {
-    console.error('Error updating prompt shortcut:', error);
-    throw error;
+    logDetailedError('updatePromptShortcut', error);
+    throw new Error(`Failed to update prompt shortcut: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   return data as PromptShortcut;
@@ -447,8 +460,8 @@ export async function deletePromptShortcut(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) {
-    console.error('Error deleting prompt shortcut:', error);
-    throw error;
+    logDetailedError('deletePromptShortcut', error);
+    throw new Error(`Failed to delete prompt shortcut: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 }
 
@@ -483,8 +496,8 @@ export async function fetchContextMenuView(placementType: string = 'menu'): Prom
     .eq('placement_type', placementType);
 
   if (error) {
-    console.error('Error fetching context menu view:', error);
-    throw error;
+    logDetailedError('fetchContextMenuView', error);
+    throw new Error(`Failed to fetch context menu view: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   return data as ContextMenuRow[];
@@ -501,8 +514,8 @@ export async function getPromptExecutionData(shortcutId: string): Promise<Prompt
     .rpc('get_prompt_execution_data', { p_shortcut_id: shortcutId });
 
   if (error) {
-    console.error('Error getting prompt execution data:', error);
-    throw error;
+    logDetailedError('getPromptExecutionData', error);
+    throw new Error(`Failed to get prompt execution data: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
   if (!data || data.length === 0) {
