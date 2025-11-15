@@ -1,6 +1,6 @@
 import { PromptMessage, PromptSettings, PromptVariable } from "@/features/prompts/types/core"
-import { PlacementType } from "./constants"
-import type { ResultDisplay } from "./types/execution-modes"
+import { PlacementType } from "../constants"
+import type { ResultDisplay } from "./execution-modes"
 
 // ============================================================================
 // Scope Mapping Types
@@ -185,46 +185,6 @@ export interface UpdatePromptShortcutInput {
   show_variables?: boolean; // Show variable form or hide
   apply_variables?: boolean; // Apply variables or ignore
   is_active?: boolean;
-}
-
-// ============================================================================
-// View Types (from database views)
-// ============================================================================
-
-/**
- * Row from context_menu_view
- * Used for rendering the context menu
- */
-export interface ContextMenuRow {
-  // Category info
-  category_id: string;
-  parent_category_id: string | null;
-  category_label: string;
-  category_description: string | null;
-  category_icon: string;
-  category_color: string;
-  category_sort_order: number;
-  category_depth: number;
-  category_sort_path: number[];
-  category_path: string;
-  category_metadata: Record<string, any>;
-  
-  // Shortcut info (null if this is just a category header)
-  shortcut_id: string | null;
-  prompt_builtin_id: string | null;
-  shortcut_label: string | null;
-  shortcut_description: string | null;
-  shortcut_icon: string | null;
-  keyboard_shortcut: string | null;
-  shortcut_sort_order: number | null;
-  scope_mappings: ScopeMapping | null;
-  available_scopes: string[] | null;
-  
-  // Flags
-  is_standalone: boolean;
-  
-  // Preview
-  prompt_name: string | null;
 }
 
 /**

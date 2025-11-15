@@ -7,7 +7,7 @@ import {
   createPromptShortcut,
   fetchShortcutsWithRelations,
 } from '@/features/prompt-builtins/services/admin-service';
-import { CreatePromptShortcutInput } from '@/features/prompt-builtins/types';
+import { CreatePromptShortcutInput } from '@/features/prompt-builtins/core';
 
 /**
  * GET /api/admin/prompt-shortcuts

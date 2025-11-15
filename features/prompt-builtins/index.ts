@@ -4,8 +4,9 @@
  * Provides prompt builtin management and execution capabilities
  */
 
-// Types
+// Types - all exported from types barrel
 export type {
+  // Core types
   ScopeMapping,
   ApplicationScope,
   ShortcutCategory,
@@ -17,16 +18,19 @@ export type {
   UpdatePromptBuiltinInput,
   CreatePromptShortcutInput,
   UpdatePromptShortcutInput,
-  ContextMenuRow,
   PromptExecutionData,
-} from './types';
-
-// Execution Configuration Types
-export type {
+  
+  // Execution types
   ResultDisplay,
   PromptExecutionConfig,
   LegacyPromptExecutionMode,
-} from './types/execution-modes';
+  
+  // Menu types
+  ShortcutItem,
+  ContentBlockItem,
+  MenuItem,
+  CategoryGroup,
+} from './types';
 
 export {
   RESULT_DISPLAY_META,
@@ -36,7 +40,7 @@ export {
   requiresInlineUI,
   showsResults,
   convertLegacyMode,
-} from './types/execution-modes';
+} from './types';
 
 // Constants
 export {

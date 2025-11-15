@@ -52,7 +52,7 @@ import {
   fetchShortcutsWithRelations,
 } from '../services/admin-service';
 import { PLACEMENT_TYPES, getPlacementTypeMeta, COMMON_SCOPE_CONFIGURATIONS } from '../constants';
-import { RESULT_DISPLAY_META, type ResultDisplay } from '../types/execution-modes';
+import { RESULT_DISPLAY_META, type ResultDisplay } from '../types';
 import { getUserFriendlyError } from '../utils/error-handler';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';

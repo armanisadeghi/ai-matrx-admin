@@ -10,7 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import type { ShortcutCategory, PromptShortcut, PromptBuiltin } from '../types';
+import type { ShortcutCategory, PromptShortcut, PromptBuiltin } from '../types/core';
 import { PLACEMENT_TYPES } from '../constants';
 
 interface ShortcutWithBuiltin extends PromptShortcut {
@@ -18,14 +18,18 @@ interface ShortcutWithBuiltin extends PromptShortcut {
   category: ShortcutCategory | null;
 }
 
-interface CategoryGroup {
+/**
+ * Flat category grouping for shortcut lists
+ * Different from CategoryGroup in menu.ts which is hierarchical
+ */
+interface ShortcutCategoryGroup {
   category: ShortcutCategory;
   shortcuts: ShortcutWithBuiltin[];
 }
 
 interface UseContextMenuShortcutsReturn {
   shortcuts: ShortcutWithBuiltin[];
-  categoryGroups: CategoryGroup[];
+  categoryGroups: ShortcutCategoryGroup[];
   loading: boolean;
   error: Error | null;
   refresh: () => Promise<void>;
@@ -47,7 +51,7 @@ export function useContextMenuShortcuts(
   enabled: boolean = true
 ): UseContextMenuShortcutsReturn {
   const [shortcuts, setShortcuts] = useState<ShortcutWithBuiltin[]>([]);
-  const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
+  const [categoryGroups, setCategoryGroups] = useState<ShortcutCategoryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -141,7 +145,7 @@ export function useContextMenuShortcuts(
       setShortcuts(allShortcuts);
 
       // Group by category
-      const categoryMap = new Map<string, CategoryGroup>();
+      const categoryMap = new Map<string, ShortcutCategoryGroup>();
       
       allShortcuts.forEach(shortcut => {
         if (!shortcut.category) return;

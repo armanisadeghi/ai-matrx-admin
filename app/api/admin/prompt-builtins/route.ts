@@ -6,7 +6,7 @@ import {
   fetchPromptBuiltins,
   createPromptBuiltin,
 } from '@/features/prompt-builtins/services/admin-service';
-import { CreatePromptBuiltinInput } from '@/features/prompt-builtins/types';
+import { CreatePromptBuiltinInput } from '@/features/prompt-builtins/core';
 
 /**
  * GET /api/admin/prompt-builtins

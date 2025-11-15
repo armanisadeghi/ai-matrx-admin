@@ -63,20 +63,13 @@ export function formatSupabaseError(error: PostgrestError | any): SupabaseErrorD
 }
 
 /**
- * Logs error with full details to console
+ * Logs error to console (production-safe)
  */
 export function logDetailedError(context: string, error: any) {
-  const formatted = formatSupabaseError(error);
-  
-  console.error(`❌ ERROR in ${context}:`);
-  console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.error(`📋 Message: ${formatted.message}`);
-  console.error(`🔍 Details: ${formatted.details}`);
-  console.error(`💡 Hint: ${formatted.hint}`);
-  console.error(`🏷️  Code: ${formatted.code}`);
-  console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.error('Full error object:', error);
-  console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  // Simple error logging for production
+  if (process.env.NODE_ENV === 'development') {
+    console.error(`Error in ${context}:`, error);
+  }
 }
 
 /**

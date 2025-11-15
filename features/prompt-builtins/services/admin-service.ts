@@ -10,9 +10,8 @@ import {
   UpdatePromptBuiltinInput,
   CreatePromptShortcutInput,
   UpdatePromptShortcutInput,
-  ContextMenuRow,
   PromptExecutionData,
-} from '../types';
+} from '../types/core';
 import { logDetailedError } from '../utils/error-handler';
 
 // Helper to get the right client based on context
@@ -502,29 +501,6 @@ export async function activatePromptShortcut(id: string): Promise<PromptShortcut
   return updatePromptShortcut({ id, is_active: true });
 }
 
-// ============================================================================
-// Context Menu Operations
-// ============================================================================
-
-/**
- * Fetch the context menu view for a specific placement type
- * Used to build the UI for context menus
- */
-export async function fetchContextMenuView(placementType: string = 'menu'): Promise<ContextMenuRow[]> {
-  const supabase = getClient();
-  
-  const { data, error } = await supabase
-    .from('context_menu_view')
-    .select('*')
-    .eq('placement_type', placementType);
-
-  if (error) {
-    logDetailedError('fetchContextMenuView', error);
-    throw new Error(`Failed to fetch context menu view: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
-  }
-
-  return data as ContextMenuRow[];
-}
 
 /**
  * Get execution data for a prompt shortcut

@@ -80,7 +80,6 @@ const _typeCheck: PlacementTypeKeys extends PlacementTypeMetaKeys ? true : never
 export function getPlacementTypeMeta(placementType: string) {
   const meta = PLACEMENT_TYPE_META[placementType as PlacementType];
   if (!meta) {
-    console.warn(`Missing metadata for placement type: ${placementType}`);
     // Return the actual placement type value instead of "Unknown"
     return {
       label: placementType || 'undefined',

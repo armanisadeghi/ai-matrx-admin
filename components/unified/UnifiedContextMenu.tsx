@@ -41,7 +41,7 @@ import {
 import { useUnifiedContextMenu } from '@/features/prompt-builtins/hooks';
 import { useShortcutExecution } from '@/features/prompt-builtins/hooks';
 import { PLACEMENT_TYPES, PLACEMENT_TYPE_META } from '@/features/prompt-builtins/constants';
-import type { MenuItem, ContentBlockItem, ShortcutItem } from '@/features/prompt-builtins/hooks/useUnifiedContextMenu';
+import type { MenuItem, ContentBlockItem, ShortcutItem } from '@/features/prompt-builtins/types/menu';
 import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
 import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions';
 import { useAppSelector } from '@/lib/redux';
@@ -92,7 +92,13 @@ export function UnifiedContextMenu({
   // Determine which placement types to load from DB (everything except quick-action)
   const dbPlacementTypes = enabledPlacements.filter(p => p !== 'quick-action');
   
-  // Load ALL menu items (shortcuts + content blocks) from unified view - ONE QUERY!
+  console.log('[UnifiedContextMenu] Config:', {
+    enabledPlacements,
+    dbPlacementTypes,
+    PLACEMENT_TYPES,
+  });
+  
+  // Load ALL menu items (shortcuts + content blocks) from unified view - THREE QUERIES!
   const { categoryGroups, loading } = useUnifiedContextMenu(
     dbPlacementTypes,
     dbPlacementTypes.length > 0
@@ -201,19 +207,30 @@ export function UnifiedContextMenu({
       // Check if shortcut is configured for inline execution
       const resultDisplay = shortcut.result_display || 'modal';
       
-      if (resultDisplay === 'inline' && isEditable && (onTextReplace || onTextInsertBefore || onTextInsertAfter) && selectedText) {
-        // Execute inline and show result modal
+      if (resultDisplay === 'inline' && isEditable && selectionRange && onTextReplace) {
+        // Execute inline - we'll handle the result with the captured selection range
         const result = await executeShortcut(shortcut, {
           scopes,
-          onTextReplace,
         });
 
-        setTextResultData({
-          original: selectedText,
-          result: 'Processing...',
-          promptName: shortcut.label,
-        });
-        setTextResultModalOpen(true);
+        // If we got a result and have selection range, replace the text
+        if (result && typeof result === 'string') {
+          const resultText: string = result;
+          
+          if (selectionRange.element instanceof HTMLTextAreaElement) {
+            const textarea = selectionRange.element;
+            const { start } = selectionRange;
+            
+            // Update via callback
+            onTextReplace(resultText);
+            
+            // Restore focus and select replaced text
+            setTimeout(() => {
+              textarea.focus();
+              textarea.setSelectionRange(start, start + resultText.length);
+            }, 0);
+          }
+        }
       } else {
         // Execute according to shortcut's configured result_display and boolean flags
         await executeShortcut(shortcut, {
@@ -292,6 +309,20 @@ export function UnifiedContextMenu({
       groups[placementType].push(group);
     });
 
+    console.log('[UnifiedContextMenu] Grouped by placement:', {
+      totalGroups: categoryGroups.length,
+      placementTypes: Object.keys(groups),
+      details: Object.entries(groups).map(([type, grps]) => ({
+        type,
+        categoryCount: grps.length,
+        categories: grps.map(g => ({
+          label: g.category.label,
+          itemCount: g.items.length,
+          itemTypes: [...new Set(g.items.map(i => i.type))],
+        })),
+      })),
+    });
+
     return groups;
   }, [categoryGroups]);
 
@@ -305,8 +336,8 @@ export function UnifiedContextMenu({
     const { category, items, children } = group;
     const CategoryIcon = getIcon(category.icon_name);
     
-    // Skip if no items and no children
-    if (items.length === 0 && (!children || children.length === 0)) return null;
+    // Show category even if empty (user wants this!)
+    const hasContent = items.length > 0 || (children && children.length > 0);
 
     return (
       <React.Fragment key={category.id}>
@@ -319,6 +350,13 @@ export function UnifiedContextMenu({
             {category.label}
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-64">
+            {/* Show message if empty */}
+            {!hasContent && (
+              <ContextMenuLabel className="text-xs text-muted-foreground">
+                No items in {category.label}
+              </ContextMenuLabel>
+            )}
+
             {/* Render items in this category */}
             {items.map(item => {
               // Get icon based on item type

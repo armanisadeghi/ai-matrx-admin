@@ -17,7 +17,7 @@ import {
   PromptShortcut,
 } from '../types';
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
-import { RESULT_DISPLAY_META, type ResultDisplay } from '../types/execution-modes';
+import { RESULT_DISPLAY_META, type ResultDisplay } from '../types';
 
 interface PromptBuiltinEditPanelProps {
   selectedItem: 
