@@ -8,6 +8,8 @@ export const PLACEMENT_TYPES = {
   CARD: 'card',           // Pre-programmed cards with auto-scoped title/description
   QUICK_ACTION: 'quick-action', // Trigger specific functionality
   MODAL: 'modal',         // Render a given modal
+  CONTENT_BLOCK: 'content-block', // Content blocks for insertion in editors
+  
 } as const;
 
 export type PlacementType = typeof PLACEMENT_TYPES[keyof typeof PLACEMENT_TYPES];
@@ -15,11 +17,7 @@ export type PlacementType = typeof PLACEMENT_TYPES[keyof typeof PLACEMENT_TYPES]
 /**
  * Placement type metadata for UI display
  */
-export const PLACEMENT_TYPE_META: Record<PlacementType, {
-  label: string;
-  description: string;
-  icon: string; // Lucide icon name
-}> = {
+export const PLACEMENT_TYPE_META = {
   [PLACEMENT_TYPES.MENU]: {
     label: 'Context Menu',
     description: 'AI actions available in context menus',
@@ -45,7 +43,41 @@ export const PLACEMENT_TYPE_META: Record<PlacementType, {
     description: 'Render a modal interface',
     icon: 'Square',
   },
-};
+  [PLACEMENT_TYPES.CONTENT_BLOCK]: {
+    label: 'Content Block',
+    description: 'Content blocks for insertion in editors',
+    icon: 'FileText',
+  },
+} as const satisfies Record<PlacementType, {
+  label: string;
+  description: string;
+  icon: string;
+}>;
+
+// TypeScript check to ensure all placement types have metadata
+type PlacementTypeMetaKeys = keyof typeof PLACEMENT_TYPE_META;
+type PlacementTypeKeys = typeof PLACEMENT_TYPES[keyof typeof PLACEMENT_TYPES];
+// This will cause a compile error if any placement type is missing from PLACEMENT_TYPE_META
+const _typeCheck: PlacementTypeKeys extends PlacementTypeMetaKeys ? true : never = true;
+
+/**
+ * Safely get placement type metadata with fallback
+ * Prevents runtime errors when a placement type is missing from metadata
+ * Returns the actual placement type value as the label if metadata is missing
+ */
+export function getPlacementTypeMeta(placementType: string) {
+  const meta = PLACEMENT_TYPE_META[placementType as PlacementType];
+  if (!meta) {
+    console.warn(`Missing metadata for placement type: ${placementType}`);
+    // Return the actual placement type value instead of "Unknown"
+    return {
+      label: placementType || 'undefined',
+      description: 'No description available',
+      icon: 'HelpCircle',
+    };
+  }
+  return meta;
+}
 
 /**
  * Scope levels - hardcoded in the application
@@ -121,6 +153,11 @@ export const SCOPE_CONFIGURATION_DESCRIPTIONS: Record<string, Record<string, str
     selection: 'Selected content in modal',
     content: 'Modal\'s primary data',
     context: 'Modal and application context',
+  },
+  'content-block': {
+    selection: 'Selected content in content block',
+    content: 'Content block\'s primary data',
+    context: 'Content block and application context',
   },
 };
 

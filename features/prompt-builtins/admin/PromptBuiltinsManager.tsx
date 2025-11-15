@@ -50,7 +50,7 @@ import {
   fetchPromptBuiltins,
   fetchShortcutsWithRelations,
 } from '../services/admin-service';
-import { PLACEMENT_TYPES, PLACEMENT_TYPE_META, COMMON_SCOPE_CONFIGURATIONS } from '../constants';
+import { PLACEMENT_TYPES, getPlacementTypeMeta, COMMON_SCOPE_CONFIGURATIONS } from '../constants';
 import { getUserFriendlyError } from '../utils/error-handler';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
@@ -155,9 +155,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
     return matchesPlacement && matchesSearch && matchesActive;
   });
 
-  // Build tree structure
+  // Build tree structure grouped by placement type
   const buildTree = () => {
-    const tree: any[] = [];
     const categoryMap = new Map(filteredCategories.map(c => [c.id, { ...c, children: [], shortcuts: [] }]));
     
     // Add shortcuts to categories
@@ -169,21 +168,49 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       }
     });
     
-    // Build hierarchy
+    // Build category hierarchy (children under parents)
+    const rootCategories: any[] = [];
     categoryMap.forEach(category => {
       if (category.parent_category_id) {
         const parent = categoryMap.get(category.parent_category_id);
         if (parent) {
           parent.children.push(category);
         } else {
-          tree.push(category);
+          rootCategories.push(category);
         }
       } else {
-        tree.push(category);
+        rootCategories.push(category);
       }
     });
     
-    // Sort by sort_order
+    // Group root categories by placement type
+    const placementGroups = new Map<string, any[]>();
+    rootCategories.forEach(category => {
+      const placementType = category.placement_type;
+      if (!placementGroups.has(placementType)) {
+        placementGroups.set(placementType, []);
+      }
+      placementGroups.get(placementType)!.push(category);
+    });
+    
+    // Create placement type nodes
+    const tree: any[] = [];
+    Array.from(placementGroups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([placementType, categories]) => {
+        const meta = getPlacementTypeMeta(placementType);
+        tree.push({
+          id: `placement-${placementType}`,
+          label: meta.label,
+          type: 'placement',
+          placement_type: placementType,
+          children: categories,
+          shortcuts: [],
+          is_active: true,
+        });
+      });
+    
+    // Sort items recursively
     const sortItems = (items: any[]) => {
       items.sort((a, b) => a.sort_order - b.sort_order);
       items.forEach(item => {
@@ -191,7 +218,11 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         if (item.shortcuts) item.shortcuts.sort((a: any, b: any) => a.sort_order - b.sort_order);
       });
     };
-    sortItems(tree);
+    
+    // Sort categories within each placement group
+    tree.forEach(placementNode => {
+      sortItems(placementNode.children);
+    });
     
     return tree;
   };
@@ -227,7 +258,12 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
 
   const expandAll = () => {
     const allCategoryIds = new Set(categories.map(c => c.id));
-    setExpandedCategories(allCategoryIds);
+    // Also add placement type node IDs
+    const placementIds = new Set(
+      Array.from(new Set(categories.map(c => c.placement_type)))
+        .map(pt => `placement-${pt}`)
+    );
+    setExpandedCategories(new Set([...allCategoryIds, ...placementIds]));
   };
 
   const collapseAll = () => {
@@ -491,7 +527,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
 
   // Render tree nodes recursively
   const renderTreeNode = (node: any, depth: number = 0): React.ReactNode => {
-    const isSelected = selectedItem?.type === 'category' && selectedItem.data.id === node.id;
+    const isPlacementNode = node.type === 'placement';
+    const isSelected = !isPlacementNode && selectedItem?.type === 'category' && selectedItem.data.id === node.id;
     const expanded = isExpanded(node.id);
     const hasChildren = node.children && node.children.length > 0;
     const hasShortcuts = node.shortcuts && node.shortcuts.length > 0;
@@ -499,25 +536,39 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
     
     return (
       <div key={node.id}>
-        {/* Category Row - Clicking anywhere expands AND selects */}
+        {/* Category/Placement Row */}
         <div
-          className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
-            ${isSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-          style={{ paddingLeft: `${depth * 16 + 8}px` }}
+          className={`flex items-center gap-1.5 px-1.5 py-1 rounded cursor-pointer transition-colors
+            ${isSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}
+            ${isPlacementNode ? 'font-semibold text-gray-700 dark:text-gray-300' : ''}`}
+          style={{ paddingLeft: `${depth * 12 + 4}px` }}
           onClick={() => {
             if (hasContent) toggleCategory(node.id);
-            setSelectedItem({ type: 'category', data: node });
+            if (!isPlacementNode) {
+              setSelectedItem({ type: 'category', data: node });
+            }
           }}
         >
           {/* Always show chevron for consistency */}
           <div className={`flex items-center gap-1 ${!hasContent ? 'opacity-30' : ''}`}>
-            {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </div>
-          <div className="flex-1 flex items-center gap-2 min-w-0">
-            <Folder className="w-4 h-4 flex-shrink-0" style={{ color: node.color || '#666' }} />
-            <span className="text-sm font-medium truncate">{node.label}</span>
-            <Badge variant="outline" className="text-xs">{node.placement_type}</Badge>
-            {!node.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
+          <div className="flex-1 flex items-center gap-1.5 min-w-0">
+            {isPlacementNode ? (
+              <>
+                <Folder className="w-3.5 h-3.5 flex-shrink-0 text-blue-500" />
+                <span className="text-xs truncate">{node.label}</span>
+                <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                  {node.children?.length || 0}
+                </Badge>
+              </>
+            ) : (
+              <>
+                <Folder className="w-3.5 h-3.5 flex-shrink-0" style={{ color: node.color || '#666' }} />
+                <span className="text-xs font-medium truncate">{node.label}</span>
+                {!node.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
+              </>
+            )}
           </div>
         </div>
         
@@ -533,13 +584,13 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               return (
                 <div
                   key={shortcut.id}
-                  className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors
+                  className={`flex items-center gap-1.5 px-1.5 py-1 rounded cursor-pointer transition-colors
                     ${isShortcutSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                  style={{ paddingLeft: `${(depth + 1) * 16 + 24}px` }}
+                  style={{ paddingLeft: `${(depth + 1) * 12 + 20}px` }}
                   onClick={() => setSelectedItem({ type: 'shortcut', data: shortcut })}
                 >
-                  <Zap className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                  <span className="text-sm truncate">{shortcut.label}</span>
+                  <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                  <span className="text-xs truncate">{shortcut.label}</span>
                   {!shortcut.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
                 </div>
               );
@@ -652,14 +703,14 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               <SelectItem value="all">All Placements</SelectItem>
               {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
                 <SelectItem key={value} value={value}>
-                  {PLACEMENT_TYPE_META[value].label}
+                  {getPlacementTypeMeta(value).label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           
           {/* Show Inactive Toggle */}
-          <label className="flex items-center space-x-2 cursor-pointer mt-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+          <label className="flex items-center space-x-2 cursor-pointer mt-1 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
             <Checkbox
               checked={showInactive}
               onCheckedChange={(checked) => setShowInactive(!!checked)}
@@ -670,7 +721,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
 
         {/* Tree/Shortcuts View */}
         <ScrollArea className="flex-1">
-          <div className="p-2">
+          <div className="px-1 py-1">
             {viewMode === 'tree' ? (
               tree.length === 0 ? (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-8">
@@ -716,15 +767,15 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                     return (
                       <div
                         key={shortcut.id}
-                        className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors mb-1
+                        className={`flex items-center gap-1.5 px-1.5 py-1 rounded cursor-pointer transition-colors mb-0.5
                           ${isShortcutSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                         onClick={() => setSelectedItem({ type: 'shortcut', data: shortcut })}
                       >
-                        <Zap className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                        <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{shortcut.label}</div>
+                          <div className="text-xs font-medium truncate">{shortcut.label}</div>
                           {category && (
-                            <div className="text-xs text-gray-500 truncate">{category.label}</div>
+                            <div className="text-[10px] text-gray-500 truncate">{category.label}</div>
                           )}
                         </div>
                         {!shortcut.is_active && <EyeOff className="w-3 h-3 text-gray-400" />}
@@ -819,7 +870,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                               <SelectContent>
                                 {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
                                   <SelectItem key={value} value={value}>
-                                    {PLACEMENT_TYPE_META[value].label}
+                                    {getPlacementTypeMeta(value).label}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1306,7 +1357,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                   <SelectContent>
                     {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
                       <SelectItem key={value} value={value}>
-                        {PLACEMENT_TYPE_META[value].label}
+                        {getPlacementTypeMeta(value).label}
                       </SelectItem>
                     ))}
                   </SelectContent>

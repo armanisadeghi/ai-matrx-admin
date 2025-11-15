@@ -63,7 +63,7 @@ import {
   updateShortcutCategory,
   deleteShortcutCategory,
 } from '../services/admin-service';
-import { PLACEMENT_TYPES, PLACEMENT_TYPE_META } from '../constants';
+import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { getUserFriendlyError } from '../utils/error-handler';
 
@@ -350,7 +350,7 @@ export function ShortcutCategoriesManager({ className }: ShortcutCategoriesManag
                 <SelectContent>
                   {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
                     <SelectItem key={value} value={value}>
-                      {PLACEMENT_TYPE_META[value].label}
+                      {getPlacementTypeMeta(value).label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -478,7 +478,7 @@ export function ShortcutCategoriesManager({ className }: ShortcutCategoriesManag
               <Card key={type}>
                 <CardContent className="p-2">
                   <div className="text-xl font-bold">{count}</div>
-                  <div className="text-xs text-muted-foreground">{PLACEMENT_TYPE_META[type].label}</div>
+                  <div className="text-xs text-muted-foreground">{getPlacementTypeMeta(type).label}</div>
                 </CardContent>
               </Card>
             ))}
@@ -497,14 +497,14 @@ export function ShortcutCategoriesManager({ className }: ShortcutCategoriesManag
               <SelectTrigger className="w-[160px]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Placements</SelectItem>
-                {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
-                  <SelectItem key={value} value={value}>
-                    {PLACEMENT_TYPE_META[value].label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+                <SelectContent>
+                  <SelectItem value="all">All Placements</SelectItem>
+                  {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
+                    <SelectItem key={value} value={value}>
+                      {getPlacementTypeMeta(value).label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
             </Select>
 
             <Select value={activeFilter} onValueChange={(v: any) => setActiveFilter(v)}>
@@ -595,7 +595,7 @@ export function ShortcutCategoriesManager({ className }: ShortcutCategoriesManag
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
-                          {PLACEMENT_TYPE_META[category.placement_type].label}
+                          {getPlacementTypeMeta(category.placement_type).label}
                         </Badge>
                       </TableCell>
                       <TableCell>

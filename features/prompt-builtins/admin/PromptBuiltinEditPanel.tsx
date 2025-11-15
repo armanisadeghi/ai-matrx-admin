@@ -15,7 +15,7 @@ import {
   PromptBuiltin,
   PromptShortcut,
 } from '../types';
-import { PLACEMENT_TYPES, PLACEMENT_TYPE_META } from '../constants';
+import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
 
 interface PromptBuiltinEditPanelProps {
   selectedItem: 
@@ -84,7 +84,7 @@ export function PromptBuiltinEditPanel({
                   <SelectContent>
                     {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
                       <SelectItem key={value} value={value}>
-                        {PLACEMENT_TYPE_META[value].label}
+                        {getPlacementTypeMeta(value).label}
                       </SelectItem>
                     ))}
                   </SelectContent>

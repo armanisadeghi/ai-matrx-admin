@@ -57,7 +57,7 @@ import {
   deletePromptShortcut,
   updatePromptShortcut,
 } from '../services/admin-service';
-import { PLACEMENT_TYPES, PLACEMENT_TYPE_META } from '../constants';
+import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { PromptBuiltinEditDialog } from './PromptBuiltinEditDialog';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
@@ -404,13 +404,13 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
               <SelectTrigger className="w-[160px]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Placements</SelectItem>
-                {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
-                  <SelectItem key={value} value={value}>
-                    {PLACEMENT_TYPE_META[value].label}
-                  </SelectItem>
-                ))}
+                <SelectContent>
+                  <SelectItem value="all">All Placements</SelectItem>
+                  {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
+                    <SelectItem key={value} value={value}>
+                      {getPlacementTypeMeta(value).label}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 
@@ -532,7 +532,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       <TableCell>
                         {shortcut.category?.placement_type && (
                           <Badge variant="secondary" className="text-xs">
-                            {PLACEMENT_TYPE_META[shortcut.category.placement_type].label}
+                            {getPlacementTypeMeta(shortcut.category.placement_type).label}
                           </Badge>
                         )}
                       </TableCell>
