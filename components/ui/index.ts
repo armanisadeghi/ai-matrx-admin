@@ -53,6 +53,7 @@ export {
 } from './dropdown-menu'
 export {Form} from './form'
 export {Input} from './input'
+export {IconPicker, IconValidator, IconInput, validateIcon} from './icon-picker'
 export {Label} from './label'
 export {
     Menubar,

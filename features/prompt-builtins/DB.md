@@ -5,7 +5,7 @@ create table public.prompt_shortcuts (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
-  prompt_builtin_id uuid not null,
+  prompt_builtin_id uuid null,  -- NULLABLE: Shortcuts can exist without a prompt
   category_id uuid not null,
   label text not null,
   description text null,
@@ -13,10 +13,10 @@ create table public.prompt_shortcuts (
   keyboard_shortcut text null,
   sort_order integer not null default 0,
   scope_mappings jsonb null,
+  available_scopes text[] null,  -- NEW: Which scope keys are valid for this shortcut
   is_active boolean not null default true,
   created_by_user_id uuid null,
   constraint prompt_shortcuts_pkey primary key (id),
-  constraint prompt_shortcuts_unique_category_prompt unique (category_id, prompt_builtin_id),
   constraint prompt_shortcuts_category_fkey foreign KEY (category_id) references shortcut_categories (id) on delete CASCADE,
   constraint prompt_shortcuts_created_by_fkey foreign KEY (created_by_user_id) references auth.users (id),
   constraint prompt_shortcuts_prompt_fkey foreign KEY (prompt_builtin_id) references prompt_builtins (id) on delete CASCADE
@@ -46,13 +46,16 @@ create table public.prompt_builtins (
   name character varying not null,
   description text null,
   messages jsonb not null,
-  variable_defaults jsonb null,
+  variable_defaults jsonb null,  -- Array of {name, defaultValue, customComponent}
   tools jsonb null,
   settings jsonb null,
   created_by_user_id uuid null,
   is_active boolean not null default true,
+  source_prompt_id uuid null,  -- NEW: Track if converted from a user prompt
+  source_prompt_snapshot_at timestamp with time zone null,  -- NEW: When source was snapshotted
   constraint prompt_builtins_pkey primary key (id),
-  constraint prompt_builtins_created_by_user_id_fkey foreign KEY (created_by_user_id) references auth.users (id)
+  constraint prompt_builtins_created_by_user_id_fkey foreign KEY (created_by_user_id) references auth.users (id),
+  constraint prompt_builtins_source_prompt_id_fkey foreign KEY (source_prompt_id) references prompts (id) on delete SET NULL
 ) TABLESPACE pg_default;
 
 create index IF not exists idx_prompt_builtins_execution_covering on public.prompt_builtins using btree (id, is_active) INCLUDE (messages, variable_defaults, tools, settings) TABLESPACE pg_default
@@ -62,6 +65,10 @@ where
 create index IF not exists prompt_builtins_active_idx on public.prompt_builtins using btree (is_active) TABLESPACE pg_default
 where
   (is_active = true);
+
+create index IF not exists idx_prompt_builtins_source_prompt on public.prompt_builtins using btree (source_prompt_id) TABLESPACE pg_default
+where
+  (source_prompt_id is not null);
 
 
 create table public.shortcut_categories (

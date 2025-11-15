@@ -20,6 +20,7 @@ import { useAllFolders } from '../utils/folderUtils';
 import { cn } from '@/lib/utils';
 import { useToastManager } from '@/hooks/useToastManager';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
+import { UnifiedContextMenu } from '@/components/unified';
 
 // Dynamic imports for heavy components (only load when needed)
 const TuiEditorContent = dynamic(
@@ -34,12 +35,12 @@ const TuiEditorContent = dynamic(
     }
 );
 
-// CRITICAL: Dynamic import to prevent loading on routes that don't use notes
-// This prevents UnifiedContextMenu and all its hooks from bundling into every route
-const UnifiedContextMenu = dynamic(
-    () => import('@/components/unified').then(mod => ({ default: mod.UnifiedContextMenu })),
-    { ssr: false }
-);
+// // CRITICAL: Dynamic import to prevent loading on routes that don't use notes
+// // This prevents UnifiedContextMenu and all its hooks from bundling into every route
+// const UnifiedContextMenu = dynamic(
+//     () => import('@/components/unified').then(mod => ({ default: mod.UnifiedContextMenu })),
+//     { ssr: false }
+// );
 
 type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'preview';
 

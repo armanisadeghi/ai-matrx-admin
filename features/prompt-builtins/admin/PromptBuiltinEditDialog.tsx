@@ -141,7 +141,7 @@ export function PromptBuiltinEditDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh]">
+      <DialogContent className="max-w-7xl max-h-[90vh]">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export function PromptBuiltinEditDialog({
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pr-4">
               {hasUnsavedChanges && (
                 <Button variant="outline" size="sm" onClick={handleDiscardChanges}>
                   <X className="w-4 h-4 mr-1" />
@@ -184,7 +184,7 @@ export function PromptBuiltinEditDialog({
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(90vh-8rem)]">
-          <div className="p-6">
+          <div className="p-2">
             <PromptBuiltinEditPanel
               selectedItem={{ type: 'shortcut', data: editShortcutData as any }}
               editCategoryData={{}}

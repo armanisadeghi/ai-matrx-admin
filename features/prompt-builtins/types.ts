@@ -66,6 +66,8 @@ export interface PromptBuiltin {
   settings: PromptSettings
   created_by_user_id: string
   is_active: boolean // default true
+  source_prompt_id: string | null // Track if this was converted from a user prompt
+  source_prompt_snapshot_at: string | null // When the source prompt was snapshotted
 }
 
 // prompt_shortcuts

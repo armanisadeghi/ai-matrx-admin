@@ -77,7 +77,7 @@ export const adminCategories = [
                 description:
                     "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions",
                 icon: <IconAdjustmentsBolt />,
-                link: "/administration/prompt-shortcut-categories",
+                link: "/administration/shortcut-categories",
                 isNew: true,
             },
         ],
