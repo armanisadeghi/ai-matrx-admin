@@ -352,7 +352,6 @@ export function ConsolidatedSystemPromptsManager() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl pl-2 font-bold">AI Tools Manager</h2>
-              <p className="text-sm text-muted-foreground pl-2">Manage functionalities and their AI prompt connections</p>
             </div>
             <div className="flex gap-2">
               {hasActiveFilters && (

@@ -86,6 +86,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   
   // View state
   const [viewMode, setViewMode] = useState<'tree' | 'shortcuts'>('tree');
+  const [showInactive, setShowInactive] = useState(false);
   
   // Dialog state
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
@@ -150,7 +151,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   const filteredCategories = categories.filter(cat => {
     const matchesPlacement = selectedPlacement === 'all' || cat.placement_type === selectedPlacement;
     const matchesSearch = searchTerm === '' || cat.label.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesPlacement && matchesSearch && cat.is_active;
+    const matchesActive = showInactive || cat.is_active;
+    return matchesPlacement && matchesSearch && matchesActive;
   });
 
   // Build tree structure
@@ -161,7 +163,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
     // Add shortcuts to categories
     shortcuts.forEach(shortcut => {
       const category = categoryMap.get(shortcut.category_id);
-      if (category && shortcut.is_active) {
+      const shouldShow = showInactive || shortcut.is_active;
+      if (category && shouldShow) {
         category.shortcuts.push(shortcut);
       }
     });
@@ -654,6 +657,15 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               ))}
             </SelectContent>
           </Select>
+          
+          {/* Show Inactive Toggle */}
+          <label className="flex items-center space-x-2 cursor-pointer mt-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+            <Checkbox
+              checked={showInactive}
+              onCheckedChange={(checked) => setShowInactive(!!checked)}
+            />
+            <span className="text-sm">Show inactive items</span>
+          </label>
         </div>
 
         {/* Tree/Shortcuts View */}
@@ -674,7 +686,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                 const category = categories.find(c => c.id === s.category_id);
                 const matchesPlacement = selectedPlacement === 'all' || category?.placement_type === selectedPlacement;
                 const matchesSearch = searchTerm === '' || s.label.toLowerCase().includes(searchTerm.toLowerCase());
-                return matchesPlacement && matchesSearch && s.is_active;
+                const matchesActive = showInactive || s.is_active;
+                return matchesPlacement && matchesSearch && matchesActive;
               }).length === 0 ? (
                 <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                   <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -686,7 +699,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                     const category = categories.find(c => c.id === s.category_id);
                     const matchesPlacement = selectedPlacement === 'all' || category?.placement_type === selectedPlacement;
                     const matchesSearch = searchTerm === '' || s.label.toLowerCase().includes(searchTerm.toLowerCase());
-                    return matchesPlacement && matchesSearch && s.is_active;
+                    const matchesActive = showInactive || s.is_active;
+                    return matchesPlacement && matchesSearch && matchesActive;
                   })
                   .sort((a, b) => {
                     // Sort by category label then by sort_order

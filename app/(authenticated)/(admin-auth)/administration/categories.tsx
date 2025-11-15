@@ -65,38 +65,30 @@ export const adminCategories = [
         iconColor: "text-violet-600",
         features: [
             {
-                title: "System Prompts",
+                title: "Prompt Shortcuts",
                 description:
-                    "Manage global system prompts for context menus, execution cards, and other UI components throughout the application",
+                    "Manage AI prompt shortcuts with keyboard bindings, scope mappings, and prompt connections for context menus, buttons, and cards",
                 icon: <IconRobot />,
-                link: "/administration/system-prompts",
+                link: "/administration/prompt-builtins",
                 isNew: true,
             },
             {
-                title: "System Prompt Categories",
+                title: "Shortcut Categories",
                 description:
-                    "Manage AI Tools categories (Text Operations, Code Operations, etc.) with icons, colors, and hierarchy",
+                    "Manage prompt shortcut categories with placement types, hierarchy, icons, and colors for organizing AI actions",
                 icon: <IconAdjustmentsBolt />,
-                link: "/administration/system-prompt-categories",
-                isNew: true,
-            },
-            {
-                title: "Functionality Configs",
-                description:
-                    "Manage system prompt functionality definitions, variable requirements, and category assignments",
-                icon: <IconSettings />,
-                link: "/administration/functionality-configs",
+                link: "/administration/prompt-shortcut-categories",
                 isNew: true,
             },
         ],
     },
     {
-        name: "Prompt Apps Administration",
+        name: "Prompt Apps",
         icon: <IconRobot className="w-6 h-6" />,
         iconColor: "text-red-600",
         features: [
             {
-                title: "Prompt Apps Admin",
+                title: "Apps Manager",
                 description: "Manage prompt app categories, view errors, monitor analytics, moderate apps, and manage rate limits.",
                 icon: <IconRobot />,
                 link: "/administration/prompt-apps",

@@ -4,9 +4,39 @@ This directory contains components for managing prompt builtins, shortcuts, and 
 
 ## Components
 
-### PromptBuiltinsManager
+### ShortcutsTableManager (Recommended)
 
-The main management interface with a sidebar and edit panel.
+**Primary admin interface** - A comprehensive table-based view focused on shortcuts management, inspired by `ConsolidatedSystemPromptsManager`.
+
+**Features:**
+- Table view with sortable columns
+- Comprehensive filtering (search, category, placement, status, active/inactive)
+- Compact stats dashboard
+- Edit shortcuts in a dialog
+- Connect/create prompts inline
+- Toggle active/inactive status
+- Full CRUD operations
+- Automatic data refresh after saves
+
+```tsx
+import { ShortcutsTableManager } from '@/features/prompt-builtins/admin';
+
+<ShortcutsTableManager />
+```
+
+**Columns:**
+- Status indicator (connected/unconnected)
+- Label & description
+- Category
+- Placement type
+- Keyboard shortcut
+- AI Prompt connection
+- Active status
+- Actions (edit, toggle, delete)
+
+### PromptBuiltinsManager (Alternative)
+
+Tree-based management interface with a sidebar and edit panel.
 
 **Features:**
 - Tree view or flat shortcuts-only view
