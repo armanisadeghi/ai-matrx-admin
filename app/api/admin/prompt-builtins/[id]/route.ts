@@ -37,7 +37,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(data);
+    // Transform from DB format (snake_case) to UI format (camelCase)
+    const transformed = {
+      ...data,
+      variableDefaults: data.variable_defaults || [],
+    };
+
+    return NextResponse.json(transformed);
   } catch (error) {
     console.error('Error in GET /api/admin/prompt-builtins/[id]:', error);
     return NextResponse.json(

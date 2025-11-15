@@ -567,8 +567,8 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         {selectedItem ? (
           <>
             {/* Header */}
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-textured">
-              <div className="flex items-center justify-between mb-4">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-textured">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl font-bold">
                     {selectedItem.type === 'category' ? 'Edit Category' : 'Edit Shortcut'}
@@ -946,21 +946,36 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                           {/* Show prompt variables if builtin selected */}
                           {editShortcutData.prompt_builtin_id && (() => {
                             const selectedBuiltin = builtins.find(b => b.id === editShortcutData.prompt_builtin_id);
-                            if (selectedBuiltin && selectedBuiltin.variableDefaults) {
-                              return (
-                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                                    Variables in "{selectedBuiltin.name}":
-                                  </p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {selectedBuiltin.variableDefaults.map((v: any) => (
-                                      <Badge key={v.name} variant="secondary" className="text-xs">
-                                        {v.name}
-                                      </Badge>
-                                    ))}
+                            if (selectedBuiltin) {
+                              const hasVariables = selectedBuiltin.variableDefaults && selectedBuiltin.variableDefaults.length > 0;
+                              
+                              if (hasVariables) {
+                                return (
+                                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                                      Variables in "{selectedBuiltin.name}":
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {selectedBuiltin.variableDefaults.map((v: any) => (
+                                        <Badge key={v.name} variant="secondary" className="text-xs">
+                                          {v.name}
+                                        </Badge>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
-                              );
+                                );
+                              } else {
+                                return (
+                                  <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-md border border-orange-200 dark:border-orange-800">
+                                    <p className="text-sm font-medium text-orange-900 dark:text-orange-100 mb-1">
+                                      ⚠️ No Variables Defined
+                                    </p>
+                                    <p className="text-xs text-orange-700 dark:text-orange-300">
+                                      This prompt has no variables. You may want to add variables or scope mappings may not be needed.
+                                    </p>
+                                  </div>
+                                );
+                              }
                             }
                             return null;
                           })()}
@@ -1005,69 +1020,67 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                             </Button>
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                          {/* Key-Value Pairs */}
-                          <div className="space-y-2">
-                            {(editShortcutData.available_scopes || []).map((scopeKey) => {
-                              const selectedBuiltin = builtins.find(b => b.id === editShortcutData.prompt_builtin_id);
-                              const availableVariables = selectedBuiltin?.variableDefaults?.map((v: any) => v.name) || [];
-                              const currentValue = (editShortcutData.scope_mappings as any)?.[scopeKey] || '';
-                              
-                              return (
-                                <div key={scopeKey} className="flex items-center gap-2">
-                                  <Input
-                                    value={scopeKey}
-                                    disabled
-                                    className="w-32 bg-gray-50 dark:bg-gray-800"
-                                  />
-                                  <span className="text-gray-500">→</span>
-                                  {availableVariables.length > 0 ? (
-                                    <Select
-                                      value={currentValue}
-                                      onValueChange={(value) => {
-                                        const newMappings = { ...(editShortcutData.scope_mappings || {}), [scopeKey]: value === 'none' ? '' : value };
-                                        handleShortcutChange('scope_mappings', newMappings);
-                                      }}
-                                    >
-                                      <SelectTrigger className="flex-1">
-                                        <SelectValue placeholder="Select variable..." />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="none">
-                                          <span className="text-gray-500">(none)</span>
-                                        </SelectItem>
+                        <CardContent className="space-y-2">
+                          {(editShortcutData.available_scopes || []).map((scopeKey) => {
+                            const selectedBuiltin = builtins.find(b => b.id === editShortcutData.prompt_builtin_id);
+                            const availableVariables = selectedBuiltin?.variableDefaults?.map((v: any) => v.name) || [];
+                            const currentValue = (editShortcutData.scope_mappings as any)?.[scopeKey] || '';
+                            
+                            return (
+                              <div key={scopeKey} className="flex items-center gap-2">
+                                <Label className="w-32 text-sm font-medium">{scopeKey}</Label>
+                                <span className="text-gray-500">→</span>
+                                <Select
+                                  value={currentValue || '_none_'}
+                                  onValueChange={(value) => {
+                                    if (value === '_none_') {
+                                      // Clear the mapping
+                                      const newMappings = { ...(editShortcutData.scope_mappings || {}), [scopeKey]: '' };
+                                      handleShortcutChange('scope_mappings', newMappings);
+                                    } else {
+                                      const newMappings = { ...(editShortcutData.scope_mappings || {}), [scopeKey]: value };
+                                      handleShortcutChange('scope_mappings', newMappings);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="flex-1">
+                                    <SelectValue placeholder="Select variable" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {availableVariables.length > 0 ? (
+                                      <>
                                         {availableVariables.map((varName: string) => (
                                           <SelectItem key={varName} value={varName}>
                                             {varName}
                                           </SelectItem>
                                         ))}
-                                      </SelectContent>
-                                    </Select>
-                                  ) : (
-                                    <Input
-                                      value={currentValue}
-                                      onChange={(e) => {
-                                        const newMappings = { ...(editShortcutData.scope_mappings || {}), [scopeKey]: e.target.value };
-                                        handleShortcutChange('scope_mappings', newMappings);
-                                      }}
-                                      placeholder="variable_name"
-                                      className="flex-1"
-                                    />
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
+                                        <SelectItem value="_none_" className="text-gray-500">
+                                          (clear)
+                                        </SelectItem>
+                                      </>
+                                    ) : (
+                                      <SelectItem value="_none_">
+                                        No variables
+                                      </SelectItem>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                                <Input
+                                  value={currentValue}
+                                  onChange={(e) => {
+                                    const newMappings = { ...(editShortcutData.scope_mappings || {}), [scopeKey]: e.target.value };
+                                    handleShortcutChange('scope_mappings', newMappings);
+                                  }}
+                                  placeholder="or type custom"
+                                  className="flex-1"
+                                />
+                              </div>
+                            );
+                          })}
 
                           {(!editShortcutData.available_scopes || editShortcutData.available_scopes.length === 0) && (
                             <p className="text-sm text-gray-500 text-center py-4">
-                              ℹ️ Add available scope keys above first
-                            </p>
-                          )}
-                          
-                          {editShortcutData.available_scopes && editShortcutData.available_scopes.length > 0 && !editShortcutData.prompt_builtin_id && (
-                            <p className="text-xs text-gray-500 text-center py-2">
-                              💡 Select a prompt builtin to see available variables
+                              Add available scope keys above first
                             </p>
                           )}
                         </CardContent>

@@ -181,6 +181,16 @@ export async function activateShortcutCategory(id: string): Promise<ShortcutCate
 // Prompt Builtins
 // ============================================================================
 
+/**
+ * Transform database prompt builtin (snake_case) to UI format (camelCase)
+ */
+function transformBuiltinFromDB(dbBuiltin: any): PromptBuiltin {
+  return {
+    ...dbBuiltin,
+    variableDefaults: dbBuiltin.variable_defaults || [],
+  };
+}
+
 export async function fetchPromptBuiltins(filters?: {
   is_active?: boolean;
   search?: string;
@@ -211,7 +221,8 @@ export async function fetchPromptBuiltins(filters?: {
     throw new Error(`Failed to fetch prompt builtins: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
   }
 
-  return data as PromptBuiltin[];
+  // Transform from DB format to UI format
+  return (data || []).map(transformBuiltinFromDB);
 }
 
 export async function getPromptBuiltinById(id: string): Promise<PromptBuiltin | null> {
@@ -227,7 +238,7 @@ export async function getPromptBuiltinById(id: string): Promise<PromptBuiltin | 
     throw error;
   }
 
-  return data as PromptBuiltin;
+  return data ? transformBuiltinFromDB(data) : null;
 }
 
 export async function createPromptBuiltin(input: CreatePromptBuiltinInput): Promise<PromptBuiltin> {
@@ -554,14 +565,15 @@ export async function fetchShortcutsWithRelations(filters?: {
     .in('id', categoryIds);
 
   // Fetch related builtins
-  const builtinIds = [...new Set(shortcuts.map(s => s.prompt_builtin_id))];
+  const builtinIds = [...new Set(shortcuts.map(s => s.prompt_builtin_id))].filter(Boolean);
   const { data: builtins } = await supabase
     .from('prompt_builtins')
     .select('*')
     .in('id', builtinIds);
 
   const categoryMap = new Map((categories || []).map(c => [c.id, c]));
-  const builtinMap = new Map((builtins || []).map(b => [b.id, b]));
+  // Transform builtins from DB format to UI format
+  const builtinMap = new Map((builtins || []).map(b => [b.id, transformBuiltinFromDB(b)]));
 
   return shortcuts.map(shortcut => ({
     ...shortcut,
