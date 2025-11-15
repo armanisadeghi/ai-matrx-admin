@@ -72,16 +72,7 @@ export function TemplatePreviewDialog({
                             <DialogDescription className="text-sm">
                                 {template.description}
                             </DialogDescription>
-                            <div className="flex gap-2 mt-3">
-                                <Badge className={cn("text-xs", getCategoryColor(template.category))}>
-                                    {template.category}
-                                </Badge>
-                                {template.subcategory && (
-                                    <Badge variant="outline" className="text-xs">
-                                        {template.subcategory}
-                                    </Badge>
-                                )}
-                            </div>
+                            {/* Removed category/subcategory badges - deprecated fields */}
                         </div>
                     </div>
                 </DialogHeader>
