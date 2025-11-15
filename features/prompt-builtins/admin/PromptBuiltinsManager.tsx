@@ -193,12 +193,20 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       placementGroups.get(placementType)!.push(category);
     });
     
+    // Helper to count all categories recursively
+    const countAllCategories = (categories: any[]): number => {
+      return categories.reduce((total, cat) => {
+        return total + 1 + (cat.children ? countAllCategories(cat.children) : 0);
+      }, 0);
+    };
+    
     // Create placement type nodes
     const tree: any[] = [];
     Array.from(placementGroups.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .forEach(([placementType, categories]) => {
         const meta = getPlacementTypeMeta(placementType);
+        const totalCount = countAllCategories(categories);
         tree.push({
           id: `placement-${placementType}`,
           label: meta.label,
@@ -207,6 +215,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           children: categories,
           shortcuts: [],
           is_active: true,
+          totalCount,
         });
       });
     
@@ -559,7 +568,7 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                 <Folder className="w-3.5 h-3.5 flex-shrink-0 text-blue-500" />
                 <span className="text-xs truncate">{node.label}</span>
                 <Badge variant="secondary" className="text-[10px] h-4 px-1">
-                  {node.children?.length || 0}
+                  {node.totalCount || 0}
                 </Badge>
               </>
             ) : (
