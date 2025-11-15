@@ -433,10 +433,9 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
                 {editorMode === 'plain' && (
                     <UnifiedContextMenu
                         getTextarea={() => textareaRef.current}
-                        uiContext={{
+                        contextData={{
+                            content: localContent,
                             context: localContent,
-                            editorContent: localContent,
-                            fullContent: localContent,
                         }}
                         isEditable={true}
                         onTextReplace={(newText) => {
@@ -502,10 +501,9 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
 
                 {editorMode === 'wysiwyg' && (
                     <UnifiedContextMenu
-                        uiContext={{
+                        contextData={{
+                            content: localContent,
                             context: localContent,
-                            editorContent: localContent,
-                            fullContent: localContent,
                         }}
                         isEditable={true}
                         onTextReplace={(newText) => {
@@ -547,10 +545,9 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
 
                 {editorMode === 'markdown' && (
                     <UnifiedContextMenu
-                        uiContext={{
+                        contextData={{
+                            content: localContent,
                             context: localContent,
-                            editorContent: localContent,
-                            fullContent: localContent,
                         }}
                         isEditable={true}
                         onTextReplace={(newText) => {
@@ -591,14 +588,11 @@ export function NoteEditor({ note, onUpdate, allNotes = [], className, onForceSa
 
                 {editorMode === 'preview' && (
                     <UnifiedContextMenu
-                        uiContext={{
+                        contextData={{
+                            content: localContent,
                             context: localContent,
-                            editorContent: localContent,
-                            fullContent: localContent,
                         }}
-                        enableContentBlocks={false}
-                        enableAITools={true}
-                        enableQuickActions={true}
+                        enabledPlacements={['ai-action', 'quick-action']}
                     >
                         <ScrollArea className="absolute inset-0 w-full h-full">
                             <div className="p-6 bg-textured">

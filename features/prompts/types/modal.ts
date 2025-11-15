@@ -26,13 +26,12 @@ export type PromptExecutionMode =
   | 'manual-with-visible-variables'
   | 'manual';
 
-// ============================================================================
-// Props Interfaces
-// ============================================================================
+// auto-run: true/false (True = No Initial message)
+// allow-chat: true/false (False = one-shot)
+// show-variables: true/false (False = variables are hidden, but still applied if available)
+// manual: True = no variables applied.
 
-/**
- * Configuration for PromptRunnerModal
- */
+
 export interface PromptRunnerModalProps {
   /** Controls whether the modal is open */
   isOpen: boolean;

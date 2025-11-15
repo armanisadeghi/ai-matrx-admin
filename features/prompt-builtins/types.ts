@@ -1,5 +1,6 @@
 import { PromptMessage, PromptSettings, PromptVariable } from "@/features/prompts/types/core"
 import { PlacementType } from "./constants"
+import type { ResultDisplay } from "./types/execution-modes"
 
 // ============================================================================
 // Scope Mapping Types
@@ -83,7 +84,13 @@ export interface PromptShortcut {
   keyboard_shortcut: string | null
   sort_order: number // default 0
   scope_mappings: ScopeMapping | null
-  available_scopes: string[] | null // NEW: Defines which scope keys this shortcut can use
+  available_scopes: string[] | null // Defines which scope keys this shortcut can use
+  // Execution Configuration (Boolean-based system)
+  result_display: ResultDisplay // WHERE to display results - default 'modal'
+  auto_run: boolean // Run immediately (true) or wait for user (false) - default true
+  allow_chat: boolean // Allow conversation (true) or one-shot (false) - default true
+  show_variables: boolean // Show variable form (true) or hide (false) - default false
+  apply_variables: boolean // Apply variables (true) or ignore (false) - default true
   is_active: boolean // default true
   created_by_user_id: string | null
 }
@@ -150,7 +157,13 @@ export interface CreatePromptShortcutInput {
   keyboard_shortcut?: string | null;
   sort_order?: number;
   scope_mappings?: ScopeMapping | null;
-  available_scopes?: string[] | null; // NEW: Which scope keys can be used
+  available_scopes?: string[] | null; // Which scope keys can be used
+  // Execution Configuration (Boolean-based)
+  result_display?: ResultDisplay; // WHERE to display results - default 'modal'
+  auto_run?: boolean; // Run immediately or wait - default true
+  allow_chat?: boolean; // Allow conversation or one-shot - default true
+  show_variables?: boolean; // Show variable form or hide - default false
+  apply_variables?: boolean; // Apply variables or ignore - default true
   is_active?: boolean;
 }
 
@@ -164,7 +177,13 @@ export interface UpdatePromptShortcutInput {
   keyboard_shortcut?: string | null;
   sort_order?: number;
   scope_mappings?: ScopeMapping | null;
-  available_scopes?: string[] | null; // NEW: Which scope keys can be used
+  available_scopes?: string[] | null; // Which scope keys can be used
+  // Execution Configuration (Boolean-based)
+  result_display?: ResultDisplay; // WHERE to display results
+  auto_run?: boolean; // Run immediately or wait
+  allow_chat?: boolean; // Allow conversation or one-shot
+  show_variables?: boolean; // Show variable form or hide
+  apply_variables?: boolean; // Apply variables or ignore
   is_active?: boolean;
 }
 

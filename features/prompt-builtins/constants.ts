@@ -9,6 +9,8 @@ export const PLACEMENT_TYPES = {
   QUICK_ACTION: 'quick-action', // Trigger specific functionality
   MODAL: 'modal',         // Render a given modal
   CONTENT_BLOCK: 'content-block', // Content blocks for insertion in editors
+  ORGANIZATION_TOOL: 'organization-tool', // Organization tools
+  USER_TOOL: 'user-tool', // User tools
   
 } as const;
 
@@ -47,6 +49,16 @@ export const PLACEMENT_TYPE_META = {
     label: 'Content Block',
     description: 'Content blocks for insertion in editors',
     icon: 'FileText',
+  },
+  [PLACEMENT_TYPES.ORGANIZATION_TOOL]: {
+    label: 'Organization Tool',
+    description: 'Organization tools',
+    icon: 'Building',
+  },
+  [PLACEMENT_TYPES.USER_TOOL]: {
+    label: 'User Tool',
+    description: 'User tools',
+    icon: 'User',
   },
 } as const satisfies Record<PlacementType, {
   label: string;
@@ -158,6 +170,16 @@ export const SCOPE_CONFIGURATION_DESCRIPTIONS: Record<string, Record<string, str
     selection: 'Selected content in content block',
     content: 'Content block\'s primary data',
     context: 'Content block and application context',
+  },
+  'organization-tool': {
+    selection: 'Selected organization',
+    content: 'Organization\'s primary data',
+    context: 'Organization and application context',
+  },
+  'user-tool': {
+    selection: 'Selected user',
+    content: 'User\'s primary data',
+    context: 'User and application context',
   },
 };
 

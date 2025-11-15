@@ -58,6 +58,7 @@ import {
   updatePromptShortcut,
 } from '../services/admin-service';
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
+import { RESULT_DISPLAY_META } from '../types/execution-modes';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { PromptBuiltinEditDialog } from './PromptBuiltinEditDialog';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
@@ -466,6 +467,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       <SortIcon field="placement" />
                     </div>
                   </TableHead>
+                  <TableHead className="min-w-[100px]">Mode</TableHead>
                   <TableHead className="min-w-[120px]">Keyboard</TableHead>
                   <TableHead className="min-w-[140px]" onClick={() => handleSort('connection')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
@@ -535,6 +537,25 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                             {getPlacementTypeMeta(shortcut.category.placement_type).label}
                           </Badge>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Badge variant="outline" className="text-xs">
+                              {RESULT_DISPLAY_META[shortcut.result_display || 'modal'].label}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="space-y-1 text-xs">
+                              <p className="font-semibold">{RESULT_DISPLAY_META[shortcut.result_display || 'modal'].description}</p>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <span>{shortcut.auto_run ? '⚡ Auto' : '⏸️ Manual'}</span>
+                                <span>•</span>
+                                <span>{shortcut.allow_chat ? '💬 Chat' : '🎯 One-shot'}</span>
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       </TableCell>
                       <TableCell>
                         {shortcut.keyboard_shortcut && (

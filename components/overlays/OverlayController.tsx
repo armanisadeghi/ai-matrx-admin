@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@/lib/redux/slices/overlaySlice";
+import { closePromptModal, selectIsPromptModalOpen, selectPromptModalConfig } from "@/lib/redux/slices/promptRunnerSlice";
 import dynamic from "next/dynamic";
 
 // Dynamically import the components with ssr: false to prevent them from loading on the server
@@ -56,6 +57,12 @@ const FloatingSheet = dynamic(
   { ssr: false }
 );
 
+// Prompt Runner Modal
+const PromptRunnerModal = dynamic(
+  () => import("@/features/prompts/components/modal/PromptRunnerModal").then(mod => ({ default: mod.PromptRunnerModal })),
+  { ssr: false }
+);
+
 /**
  * OverlayController component renders different overlays based on redux state
  */
@@ -75,6 +82,10 @@ export const OverlayController: React.FC = () => {
   const isQuickDataOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickData"));
   const isQuickFilesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickFiles"));
   const isQuickUtilitiesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickUtilities"));
+  
+  // Prompt Runner Modal
+  const isPromptModalOpen = useAppSelector(selectIsPromptModalOpen);
+  const promptModalConfig = useAppSelector(selectPromptModalConfig);
   
   // Get data for each overlay
   const markdownEditorData = useAppSelector((state) => selectOverlayData(state, "markdownEditor"));
@@ -126,6 +137,11 @@ export const OverlayController: React.FC = () => {
 
   const handleCloseQuickUtilities = () => {
     dispatch(closeOverlay({ overlayId: "quickUtilities" }));
+  };
+
+  // Prompt Runner handler
+  const handleClosePromptModal = () => {
+    dispatch(closePromptModal());
   };
 
   return (
@@ -250,6 +266,22 @@ export const OverlayController: React.FC = () => {
         <UtilitiesOverlay
           isOpen={true}
           onClose={handleCloseQuickUtilities}
+        />
+      )}
+
+      {/* Prompt Runner Modal */}
+      {isPromptModalOpen && promptModalConfig && (
+        <PromptRunnerModal
+          isOpen={true}
+          onClose={handleClosePromptModal}
+          promptId={promptModalConfig.promptId}
+          promptData={promptModalConfig.promptData}
+          mode={promptModalConfig.mode}
+          variables={promptModalConfig.variables}
+          initialMessage={promptModalConfig.initialMessage}
+          title={promptModalConfig.title}
+          runId={promptModalConfig.runId}
+          onExecutionComplete={promptModalConfig.onExecutionComplete}
         />
       )}
     </>

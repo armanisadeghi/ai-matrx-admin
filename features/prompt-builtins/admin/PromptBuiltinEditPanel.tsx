@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Plus, Edit2 } from 'lucide-react';
 import {
   ShortcutCategory,
@@ -16,6 +17,7 @@ import {
   PromptShortcut,
 } from '../types';
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
+import { RESULT_DISPLAY_META, type ResultDisplay } from '../types/execution-modes';
 
 interface PromptBuiltinEditPanelProps {
   selectedItem: 
@@ -273,6 +275,90 @@ export function PromptBuiltinEditPanel({
               />
               <span className="text-sm">Active (visible in menus)</span>
             </label>
+          </CardContent>
+        </Card>
+
+        {/* Execution Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Execution Configuration</CardTitle>
+            <CardDescription>Control how this shortcut executes</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-6">
+              {/* Result Display */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Result Display</Label>
+                <Select
+                  value={editShortcutData.result_display || 'modal'}
+                  onValueChange={(value: ResultDisplay) => onShortcutChange('result_display', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(RESULT_DISPLAY_META).map(([key, meta]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{meta.label}</span>
+                          <span className="text-xs text-muted-foreground">{meta.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Boolean switches in a compact grid */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Auto Run</Label>
+                    <p className="text-xs text-muted-foreground">Run immediately on open</p>
+                  </div>
+                  <Switch
+                    checked={editShortcutData.auto_run ?? true}
+                    onCheckedChange={(checked) => onShortcutChange('auto_run', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Allow Chat</Label>
+                    <p className="text-xs text-muted-foreground">Enable conversation mode</p>
+                  </div>
+                  <Switch
+                    checked={editShortcutData.allow_chat ?? true}
+                    onCheckedChange={(checked) => onShortcutChange('allow_chat', checked)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional switches in a single row */}
+            <div className="grid grid-cols-2 gap-6 pt-2 border-t">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">Show Variables</Label>
+                  <p className="text-xs text-muted-foreground">Display variable form to user</p>
+                </div>
+                <Switch
+                  checked={editShortcutData.show_variables ?? false}
+                  onCheckedChange={(checked) => onShortcutChange('show_variables', checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">Apply Variables</Label>
+                  <p className="text-xs text-muted-foreground">Apply variable values</p>
+                </div>
+                <Switch
+                  checked={editShortcutData.apply_variables ?? true}
+                  onCheckedChange={(checked) => onShortcutChange('apply_variables', checked)}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 

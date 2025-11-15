@@ -364,6 +364,12 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
         sort_order: editShortcutData.sort_order,
         scope_mappings: editShortcutData.scope_mappings,
         available_scopes: editShortcutData.available_scopes,
+        // Execution Configuration
+        result_display: editShortcutData.result_display,
+        auto_run: editShortcutData.auto_run,
+        allow_chat: editShortcutData.allow_chat,
+        show_variables: editShortcutData.show_variables,
+        apply_variables: editShortcutData.apply_variables,
         is_active: editShortcutData.is_active,
       });
       

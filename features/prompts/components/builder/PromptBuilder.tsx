@@ -10,6 +10,7 @@ import { PromptBuilderLeftPanel } from "./PromptBuilderLeftPanel";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
 import { useModelControls, getModelDefaults } from "@/features/prompts/hooks/useModelControls";
 import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
+import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { AiModelsPreferences, PromptsPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 import { updateDebugData } from "@/lib/redux/slices/adminDebugSlice";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
@@ -158,8 +159,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     // Settings modal state
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-    // Prompt runner modal state
-    const [isPromptRunnerOpen, setIsPromptRunnerOpen] = useState(false);
+    // Prompt runner via Redux
+    const { openPrompt } = usePromptRunner();
 
     const [chatInput, setChatInput] = useState("");
     const [resources, setResources] = useState<Resource[]>([]);
@@ -220,7 +221,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         if (autoRun === 'true' && initialData?.id) {
             // Open the modal after a short delay to ensure the page has loaded
             const timer = setTimeout(() => {
-                setIsPromptRunnerOpen(true);
+                openPrompt({ promptId: initialData.id, mode: 'manual' });
                 
                 // Clean up the URL by removing the query parameter
                 const newUrl = pathname;
@@ -1056,15 +1057,6 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                 onUpdate={handleSettingsUpdate}
                 onLocalStateUpdate={handleLocalStateUpdate}
             />
-
-            {initialData?.id && (
-                <PromptRunnerModal
-                    isOpen={isPromptRunnerOpen}
-                    onClose={() => setIsPromptRunnerOpen(false)}
-                    promptId={initialData.id}
-                    mode="manual"
-                />
-            )}
             </>
         );
     }
@@ -1300,15 +1292,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
             onLocalStateUpdate={handleLocalStateUpdate}
         />
 
-        {/* Prompt Runner Modal - Opens automatically after generation */}
-        {initialData?.id && (
-            <PromptRunnerModal
-                isOpen={isPromptRunnerOpen}
-                onClose={() => setIsPromptRunnerOpen(false)}
-                promptId={initialData.id}
-                mode="manual"
-            />
-        )}
+        {/* Prompt Runner Modal - Now managed globally via Redux in OverlayController */}
         </>
     );
 }

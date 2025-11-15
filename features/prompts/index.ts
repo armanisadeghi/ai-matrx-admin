@@ -93,6 +93,7 @@ export {
 export { usePromptExecution } from './hooks/usePromptExecution';
 export { usePromptModal, openPromptModal } from './hooks/usePromptModal';
 export { usePromptRunnerModal } from './hooks/usePromptRunnerModal';
+export { usePromptRunner } from './hooks/usePromptRunner'; // NEW: Redux-based prompt runner
 
 // Components
 export { PromptExecutionButton, PromptExecutionIconButton } from './components/actions/PromptExecutionButton';

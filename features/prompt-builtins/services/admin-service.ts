@@ -404,6 +404,12 @@ export async function createPromptShortcut(input: CreatePromptShortcutInput): Pr
     sort_order: input.sort_order ?? 0,
     scope_mappings: input.scope_mappings ?? null,
     available_scopes: input.available_scopes ?? null,
+    // Execution Configuration
+    result_display: input.result_display ?? 'modal',
+    auto_run: input.auto_run ?? true,
+    allow_chat: input.allow_chat ?? true,
+    show_variables: input.show_variables ?? false,
+    apply_variables: input.apply_variables ?? true,
     is_active: input.is_active ?? true,
     created_by_user_id: user?.id ?? null,
   };
@@ -446,6 +452,12 @@ export async function updatePromptShortcut(input: UpdatePromptShortcutInput): Pr
   if (input.sort_order !== undefined) updateData.sort_order = input.sort_order;
   if (input.scope_mappings !== undefined) updateData.scope_mappings = input.scope_mappings;
   if (input.available_scopes !== undefined) updateData.available_scopes = input.available_scopes;
+  // Execution Configuration
+  if (input.result_display !== undefined) updateData.result_display = input.result_display;
+  if (input.auto_run !== undefined) updateData.auto_run = input.auto_run;
+  if (input.allow_chat !== undefined) updateData.allow_chat = input.allow_chat;
+  if (input.show_variables !== undefined) updateData.show_variables = input.show_variables;
+  if (input.apply_variables !== undefined) updateData.apply_variables = input.apply_variables;
   if (input.is_active !== undefined) updateData.is_active = input.is_active;
 
   const { data, error } = await supabase

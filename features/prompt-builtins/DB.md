@@ -13,13 +13,20 @@ create table public.prompt_shortcuts (
   keyboard_shortcut text null,
   sort_order integer not null default 0,
   scope_mappings jsonb null,
-  available_scopes text[] null,  -- NEW: Which scope keys are valid for this shortcut
+  available_scopes text[] null,  -- Which scope keys are valid for this shortcut
+  -- Execution Configuration (Boolean-based system)
+  result_display text not null default 'modal',  -- WHERE to display results: modal, inline, background, sidebar, toast
+  auto_run boolean not null default true,  -- Run immediately (true) or wait for user (false)
+  allow_chat boolean not null default true,  -- Allow conversation (true) or one-shot (false)
+  show_variables boolean not null default false,  -- Show variable form (true) or hide (false)
+  apply_variables boolean not null default true,  -- Apply variables (true) or ignore (false)
   is_active boolean not null default true,
   created_by_user_id uuid null,
   constraint prompt_shortcuts_pkey primary key (id),
   constraint prompt_shortcuts_category_fkey foreign KEY (category_id) references shortcut_categories (id) on delete CASCADE,
   constraint prompt_shortcuts_created_by_fkey foreign KEY (created_by_user_id) references auth.users (id),
-  constraint prompt_shortcuts_prompt_fkey foreign KEY (prompt_builtin_id) references prompt_builtins (id) on delete CASCADE
+  constraint prompt_shortcuts_prompt_fkey foreign KEY (prompt_builtin_id) references prompt_builtins (id) on delete CASCADE,
+  constraint prompt_shortcuts_result_display_check check (result_display IN ('modal', 'inline', 'background', 'sidebar', 'toast'))
 ) TABLESPACE pg_default;
 
 create index IF not exists prompt_shortcuts_category_active_idx on public.prompt_shortcuts using btree (category_id, sort_order) TABLESPACE pg_default
@@ -291,4 +298,94 @@ CREATE INDEX IF NOT EXISTS idx_prompt_builtins_execution_covering
 ON public.prompt_builtins (id, is_active)
 INCLUDE (name, messages, variable_defaults, tools, settings)
 WHERE is_active = TRUE;
+```
+
+```sql
+-- =====================================================
+-- SHORTCUTS BY PLACEMENT VIEW
+-- =====================================================
+-- Optimized view for loading shortcuts grouped by placement type
+-- Includes all necessary data for context menus, buttons, cards, etc.
+-- Replaces the need for API routes - direct client access!
+
+CREATE OR REPLACE VIEW public.shortcuts_by_placement_view AS
+SELECT 
+  -- Shortcut fields
+  ps.id AS shortcut_id,
+  ps.created_at AS shortcut_created_at,
+  ps.updated_at AS shortcut_updated_at,
+  ps.prompt_builtin_id,
+  ps.label AS shortcut_label,
+  ps.description AS shortcut_description,
+  ps.icon_name AS shortcut_icon,
+  ps.keyboard_shortcut,
+  ps.sort_order AS shortcut_sort_order,
+  ps.scope_mappings,
+  ps.available_scopes,
+  ps.is_active AS shortcut_is_active,
+  
+  -- Category fields
+  sc.id AS category_id,
+  sc.placement_type,
+  sc.parent_category_id,
+  sc.label AS category_label,
+  sc.description AS category_description,
+  sc.icon_name AS category_icon,
+  sc.color AS category_color,
+  sc.sort_order AS category_sort_order,
+  sc.is_active AS category_is_active,
+  sc.metadata AS category_metadata,
+  
+  -- Prompt Builtin fields (for execution)
+  pb.id AS builtin_id,
+  pb.name AS builtin_name,
+  pb.description AS builtin_description,
+  pb.messages AS builtin_messages,
+  pb.variable_defaults AS builtin_variable_defaults,
+  pb.tools AS builtin_tools,
+  pb.settings AS builtin_settings,
+  pb.is_active AS builtin_is_active,
+  pb.source_prompt_id,
+  pb.source_prompt_snapshot_at
+
+FROM prompt_shortcuts ps
+INNER JOIN shortcut_categories sc ON ps.category_id = sc.id
+LEFT JOIN prompt_builtins pb ON ps.prompt_builtin_id = pb.id
+
+WHERE ps.is_active = TRUE
+  AND sc.is_active = TRUE
+
+ORDER BY 
+  sc.placement_type,
+  sc.sort_order,
+  ps.sort_order;
+
+-- Grant access to authenticated users
+GRANT SELECT ON public.shortcuts_by_placement_view TO authenticated;
+
+-- =====================================================
+-- OPTIMIZING INDEX (if not already exists)
+-- =====================================================
+-- This ensures the view query is lightning fast
+CREATE INDEX IF NOT EXISTS idx_prompt_shortcuts_placement_covering
+ON public.prompt_shortcuts (category_id, is_active, sort_order)
+INCLUDE (
+  id, 
+  prompt_builtin_id, 
+  label, 
+  description, 
+  icon_name, 
+  keyboard_shortcut, 
+  scope_mappings, 
+  available_scopes,
+  result_display,
+  auto_run,
+  allow_chat,
+  show_variables,
+  apply_variables
+)
+WHERE is_active = TRUE;
+
+COMMENT ON VIEW public.shortcuts_by_placement_view IS 
+'Optimized view for loading shortcuts by placement type with boolean-based execution configuration. Used by UnifiedContextMenu and other placement-specific components. Direct client access - no API route needed.';
 ```

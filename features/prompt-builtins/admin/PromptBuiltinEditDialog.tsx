@@ -69,6 +69,12 @@ export function PromptBuiltinEditDialog({
         available_scopes: [],
         scope_mappings: {},
         prompt_builtin_id: null,
+        // Execution Configuration defaults
+        result_display: 'modal',
+        auto_run: true,
+        allow_chat: true,
+        show_variables: false,
+        apply_variables: true,
       });
       setHasUnsavedChanges(false);
     }
@@ -101,6 +107,12 @@ export function PromptBuiltinEditDialog({
           sort_order: editShortcutData.sort_order,
           scope_mappings: editShortcutData.scope_mappings,
           available_scopes: editShortcutData.available_scopes,
+          // Execution Configuration
+          result_display: editShortcutData.result_display,
+          auto_run: editShortcutData.auto_run,
+          allow_chat: editShortcutData.allow_chat,
+          show_variables: editShortcutData.show_variables,
+          apply_variables: editShortcutData.apply_variables,
           is_active: editShortcutData.is_active,
         });
         toast({ title: 'Success', description: 'Shortcut updated successfully' });

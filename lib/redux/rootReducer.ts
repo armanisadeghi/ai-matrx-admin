@@ -42,6 +42,8 @@ import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSli
 // import brokersSlice from "./app-runner/slices/brokerSlice";
 import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
+import promptCacheReducer from "./slices/promptCacheSlice";
+import promptRunnerReducer from "./slices/promptRunnerSlice";
 import dbFunctionNodeSlice from "./workflows/db-function-node/dbFunctionNodeSlice";
 import workflowSlice from "./workflow/slice";
 import workflowNodeSlice from "./workflow-nodes/slice";
@@ -132,6 +134,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         broker: brokerSlice, // Concept broker implementation
         overlays: overlaySlice,
+        promptCache: promptCacheReducer,
+        promptRunner: promptRunnerReducer,
 
         dbFunctionNode: dbFunctionNodeSlice,
 

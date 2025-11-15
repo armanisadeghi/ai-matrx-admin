@@ -7,8 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { usePromptRunnerModal } from '../../hooks/usePromptRunnerModal';
-import { PromptRunnerModal } from './PromptRunnerModal';
+import { usePromptRunner } from '../../hooks/usePromptRunner';
 import { PromptData, PromptExecutionMode } from '../../types/modal';
 import { Play, Settings, Eye, EyeOff, Zap } from 'lucide-react';
 
@@ -21,7 +20,7 @@ interface PromptRunnerModalTesterProps {
  * Allows testing all execution modes with different configurations
  */
 export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterProps) {
-    const promptModal = usePromptRunnerModal();
+    const { openPrompt } = usePromptRunner();
     const [selectedMode, setSelectedMode] = useState<PromptExecutionMode>('manual');
     
     // Test variables
@@ -56,7 +55,7 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
             config.initialMessage = testMessage;
         }
         
-        promptModal.open(config);
+        openPrompt(config);
     };
     
     const modes = [
@@ -213,18 +212,8 @@ export function PromptRunnerModalTester({ promptData }: PromptRunnerModalTesterP
                 </div>
             </Card>
             
-            {/* The Modal */}
-            {promptModal.config && (
-                <PromptRunnerModal
-                    isOpen={promptModal.isOpen}
-                    onClose={promptModal.close}
-                    {...promptModal.config}
-                    onExecutionComplete={(result) => {
-                        console.log('✅ Execution completed:', result);
-                        // Keep modal open to see results
-                    }}
-                />
-            )}
+            {/* Modal is now managed globally via Redux in OverlayController */}
+            {/* No need to render PromptRunnerModal here anymore! */}
         </>
     );
 }
