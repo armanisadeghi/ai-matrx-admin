@@ -116,7 +116,8 @@ export function usePromptRunner(): UsePromptRunnerReturn {
   }, [dispatch]);
 
   const closePromptModalHandler = useCallback(() => {
-    dispatch(closePromptModal());
+    // Note: OverlayController passes responseText when closing; this is for manual/programmatic closes
+    dispatch(closePromptModal(undefined));
   }, [dispatch]);
 
   return {

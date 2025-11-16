@@ -114,15 +114,25 @@ const promptRunnerSlice = createSlice({
         openedAt: Date.now(),
       };
     },
-    closePromptModal: (state) => {
-      // Save to recent results before closing
+    closePromptModal: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+      // Save to recent results before closing (with response text for persistence)
       if (state.activeModal.config && state.activeModal.openedAt) {
+        const responseText = action.payload?.responseText ?? '';
+        
         const recent = {
           id: `result-${Date.now()}`,
           promptName: state.activeModal.config.promptData?.name || state.activeModal.config.title || 'Unknown Prompt',
           displayType: 'modal-full' as const,
           timestamp: state.activeModal.openedAt,
-          config: state.activeModal.config,
+          taskId: state.activeModal.taskId, // Keep taskId for reference
+          responseText, // CRITICAL: Save actual response text for restore
+          config: {
+            ...state.activeModal.config,
+            executionConfig: {
+              ...state.activeModal.config.executionConfig,
+              auto_run: false, // CRITICAL: Prevent re-execution on restore
+            },
+          },
         };
         
         // Save to session storage
@@ -165,15 +175,25 @@ const promptRunnerSlice = createSlice({
         openedAt: Date.now(),
       };
     },
-    closeCompactModal: (state) => {
-      // Save to recent results before closing
+    closeCompactModal: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+      // Save to recent results before closing (with response text for persistence)
       if (state.compactModal.config && state.compactModal.openedAt) {
+        const responseText = action.payload?.responseText ?? '';
+        
         const recent = {
           id: `result-${Date.now()}`,
           promptName: state.compactModal.config.promptData?.name || state.compactModal.config.title || 'Unknown Prompt',
           displayType: 'modal-compact' as const,
           timestamp: state.compactModal.openedAt,
-          config: state.compactModal.config,
+          taskId: state.compactModal.taskId, // Keep taskId for reference
+          responseText, // CRITICAL: Save actual response text for restore
+          config: {
+            ...state.compactModal.config,
+            executionConfig: {
+              ...state.compactModal.config.executionConfig,
+              auto_run: false, // CRITICAL: Prevent re-execution on restore
+            },
+          },
         };
         
         // Save to session storage
@@ -259,15 +279,25 @@ const promptRunnerSlice = createSlice({
         openedAt: Date.now(),
       };
     },
-    closeSidebarResult: (state) => {
-      // Save to recent results before closing
+    closeSidebarResult: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+      // Save to recent results before closing (with response text for persistence)
       if (state.sidebarResult.config && state.sidebarResult.openedAt) {
+        const responseText = action.payload?.responseText ?? '';
+        
         const recent = {
           id: `result-${Date.now()}`,
           promptName: state.sidebarResult.config.promptData?.name || state.sidebarResult.config.title || 'Unknown Prompt',
           displayType: 'sidebar' as const,
           timestamp: state.sidebarResult.openedAt,
-          config: state.sidebarResult.config,
+          taskId: state.sidebarResult.taskId, // Keep taskId for reference
+          responseText, // CRITICAL: Save actual response text for restore
+          config: {
+            ...state.sidebarResult.config,
+            executionConfig: {
+              ...state.sidebarResult.config.executionConfig,
+              auto_run: false, // CRITICAL: Prevent re-execution on restore
+            },
+          },
         };
         
         // Save to session storage

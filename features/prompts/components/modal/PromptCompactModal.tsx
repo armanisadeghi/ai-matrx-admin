@@ -60,6 +60,13 @@ export default function PromptCompactModal({
     taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : true
   );
   
+  // SAFETY: Warn if taskId provided but no data found (result may have expired)
+  useEffect(() => {
+    if (taskId && !stateResponse && stateResponseEnded && !preloadedResult) {
+      console.warn(`[PromptCompactModal] TaskId ${taskId} provided but result not found in state. Result may have expired. Use auto_run: true to re-execute if needed.`);
+    }
+  }, [taskId, stateResponse, stateResponseEnded, preloadedResult]);
+  
   // Only use execution hook if we don't have a preloaded result or taskId
   const executionHook = usePromptExecutionCore({
     promptData: promptData || { id: '', name: '', messages: [], variableDefaults: [], settings: {} },

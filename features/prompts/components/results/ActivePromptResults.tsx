@@ -89,16 +89,23 @@ export function ActivePromptResults() {
   };
   
   const handleRestoreResult = (result: any) => {
+    // CRITICAL: Use saved responseText as preloadedResult to prevent re-execution
+    const configWithPreloadedResult = {
+      ...result.config,
+      preloadedResult: result.responseText || '', // Load saved response from sessionStorage
+      // Note: auto_run is already false in saved config to prevent re-execution
+    };
+    
     // Restore based on display type
     switch (result.displayType) {
       case 'modal-full':
-        dispatch(openPromptModal(result.config));
+        dispatch(openPromptModal(configWithPreloadedResult));
         break;
       case 'modal-compact':
-        dispatch(openCompactModal(result.config));
+        dispatch(openCompactModal(configWithPreloadedResult));
         break;
       case 'sidebar':
-        dispatch(openSidebarResult(result.config));
+        dispatch(openSidebarResult(configWithPreloadedResult));
         break;
     }
   };

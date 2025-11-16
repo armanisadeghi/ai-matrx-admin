@@ -6,9 +6,11 @@ import {
   closePromptModal, 
   selectIsPromptModalOpen, 
   selectPromptModalConfig,
+  selectPromptModalTaskId,
   closeCompactModal,
   selectIsCompactModalOpen,
   selectCompactModalConfig,
+  selectCompactModalTaskId,
   closeInlineOverlay,
   selectIsInlineOverlayOpen,
   selectInlineOverlayData,
@@ -17,9 +19,11 @@ import {
   selectSidebarResultConfig,
   selectSidebarPosition,
   selectSidebarSize,
+  selectSidebarTaskId,
   selectToastQueue,
   removeToast,
 } from "@/lib/redux/slices/promptRunnerSlice";
+import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import dynamic from "next/dynamic";
 
 // Dynamically import the components with ssr: false to prevent them from loading on the server
@@ -136,7 +140,7 @@ export const OverlayController: React.FC = () => {
   
   const isCompactModalOpen = useAppSelector(selectIsCompactModalOpen);
   const compactModalConfig = useAppSelector(selectCompactModalConfig);
-  const compactModalTaskId = useAppSelector((state) => state.promptRunner?.compactModal?.taskId || null);
+  const compactModalTaskId = useAppSelector(selectCompactModalTaskId);
   
   const isInlineOverlayOpen = useAppSelector(selectIsInlineOverlayOpen);
   const inlineOverlayData = useAppSelector(selectInlineOverlayData);
@@ -148,10 +152,25 @@ export const OverlayController: React.FC = () => {
   
   const toastQueue = useAppSelector(selectToastQueue);
   
+  // Get taskIds for saving response text on close
+  const promptModalTaskId = useAppSelector(selectPromptModalTaskId);
+  const sidebarTaskId = useAppSelector(selectSidebarTaskId);
+  
   // Get data for each overlay
   const markdownEditorData = useAppSelector((state) => selectOverlayData(state, "markdownEditor"));
   const socketAccordionData = useAppSelector((state) => selectOverlayData(state, "socketAccordion"));
 
+    // Get response texts from Redux (for saving on close)
+    const promptModalResponseText = useAppSelector((state) =>
+      promptModalTaskId ? selectPrimaryResponseTextByTaskId(promptModalTaskId)(state) : ''
+    );
+    const compactModalResponseText = useAppSelector((state) =>
+      compactModalTaskId ? selectPrimaryResponseTextByTaskId(compactModalTaskId)(state) : ''
+    );
+    const sidebarResponseText = useAppSelector((state) =>
+      sidebarTaskId ? selectPrimaryResponseTextByTaskId(sidebarTaskId)(state) : ''
+    );
+  
   // Only render after component has mounted on the client
   useEffect(() => {
     setIsMounted(true);
@@ -204,13 +223,16 @@ export const OverlayController: React.FC = () => {
     dispatch(closeOverlay({ overlayId: "quickAIResults" }));
   };
 
+  
   // Prompt Runner handlers
   const handleClosePromptModal = () => {
-    dispatch(closePromptModal());
+    // Save response text to sessionStorage before closing
+    dispatch(closePromptModal({ responseText: promptModalResponseText }));
   };
   
   const handleCloseCompactModal = () => {
-    dispatch(closeCompactModal());
+    // Save response text to sessionStorage before closing
+    dispatch(closeCompactModal({ responseText: compactModalResponseText }));
   };
   
   const handleCloseInlineOverlay = () => {
@@ -218,7 +240,8 @@ export const OverlayController: React.FC = () => {
   };
   
   const handleCloseSidebarResult = () => {
-    dispatch(closeSidebarResult());
+    // Save response text to sessionStorage before closing
+    dispatch(closeSidebarResult({ responseText: sidebarResponseText }));
   };
   
   const handleDismissToast = (toastId: string) => {
