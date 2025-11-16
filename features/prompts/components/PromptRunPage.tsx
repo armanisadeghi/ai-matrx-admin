@@ -22,6 +22,7 @@ import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSideb
 import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
+import { generateRunNameFromVariables } from "@/features/ai-runs/utils/name-generator";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -205,14 +206,15 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
     }, [urlRunId]);
     
     // Helper function to replace variables in content
-    const replaceVariables = (content: string): string => {
+    // CRITICAL: Must use useCallback to avoid stale closure bug
+    const replaceVariables = useCallback((content: string): string => {
         let result = content;
         variableDefaults.forEach(({ name, defaultValue }) => {
             const regex = new RegExp(`\\{\\{${name}\\}\\}`, 'g');
             result = result.replace(regex, defaultValue);
         });
         return result;
-    };
+    }, [variableDefaults]);
     
     // Calculate live stats during streaming
     const liveStats = useMemo(() => {
@@ -431,11 +433,14 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
             // Create AI run on first message
             let currentRun = run;
             if (isFirstMessage && !run) {
-                const runName = generateRunNameFromMessage(displayUserMessage);
                 const variableValues: Record<string, string> = {};
                 variableDefaults.forEach(v => {
                     variableValues[v.name] = v.defaultValue;
                 });
+                
+                // Generate name: prefer variables (just values), fallback to message
+                const runName = generateRunNameFromVariables(variableValues, variableDefaults) 
+                    || generateRunNameFromMessage(displayUserMessage);
                 
                 currentRun = await createRun({
                     source_type: 'prompt',
@@ -609,18 +614,8 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
                                 )}
                             </Button>
                         )}
-                        {/* New Run button */}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleClearConversation}
-                            className="text-muted-foreground hover:text-foreground"
-                            title="Start new run"
-                        >
-                            <FilePlus className="w-4 h-4 sm:mr-1.5" />
-                            <span className="hidden sm:inline text-xs">New</span>
-                        </Button>
-                        {displayMessages.length > 0 && !isMobile && (
+                        {/* Reset conversation button (mobile only) */}
+                        {displayMessages.length > 0 && isMobile && (
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -667,6 +662,10 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
                             // Close sidebar on mobile after selection
                             setShowSidebarOnMobile(false);
                         }}
+                        onNewRun={() => {
+                            handleClearConversation();
+                            setShowSidebarOnMobile(false);
+                        }}
                     />
                 </div>
             ) : (
@@ -682,6 +681,7 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
                                 promptName={promptData.name}
                                 currentRunId={run?.id}
                                 onRunSelect={handleRunSelect}
+                                onNewRun={handleClearConversation}
                                 footer={
                                     <PromptRunnerModalSidebarTester 
                                         promptData={{

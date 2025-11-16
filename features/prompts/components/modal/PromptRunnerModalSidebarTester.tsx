@@ -171,9 +171,9 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                     </Button>
                 </CollapsibleTrigger>
                 
-                <CollapsibleContent className="space-y-2 max-h-[500px] overflow-y-auto">
+                <CollapsibleContent className="space-y-2">
                     {/* Execution Config Toggles */}
-                    <div className="space-y-2 px-2">
+                    <div className="space-y-2 pr-2 pl-4">
                         <div className="flex items-center justify-between">
                             <Label htmlFor="auto-run" className="flex items-center gap-1.5 text-xs cursor-pointer">
                                 <Play className="w-3.5 h-3.5" />
@@ -226,8 +226,8 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                     <Separator />
                     
                     {/* Display Type Buttons */}
-                    <div className="space-y-1.5">                        
-                        <div className="space-y-0.5 px-1">
+                    <div className="space-y-1">                        
+                        <div className="space-y-0 px-1">
                             {displayTypes.map((display, idx) => (
                                 <Button
                                     key={idx}
@@ -239,14 +239,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                                     title={display.note}
                                 >
                                     <display.icon className={`w-3.5 h-3.5 mr-2 flex-shrink-0 ${display.disabled ? 'text-muted-foreground' : display.color}`} />
-                                    <div className="flex-1 text-left flex flex-col">
-                                        <span className="font-medium">{display.name}</span>
-                                        {display.ignores.length > 0 && (
-                                            <span className="text-[9px] text-muted-foreground">
-                                                Ignores: {display.ignores.join(', ')}
-                                            </span>
-                                        )}
-                                    </div>
+                                    <span className="flex-1 text-left font-medium">{display.name}</span>
                                     {(display as any).testMode && (
                                         <Badge variant="outline" className="text-[8px] h-4 px-1">
                                             <TestTube className="w-2.5 h-2.5" />

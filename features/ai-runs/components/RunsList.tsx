@@ -56,7 +56,7 @@ export function RunsList({
   return (
     <div className="h-full flex flex-col">
       {/* Runs list - scrollable */}
-      <div className="flex-1 overflow-y-auto space-y-1 px-2 py-2">
+      <div className="flex-1 overflow-y-auto space-y-0.5 px-2 py-2">
         {runs.map((run) => (
           <RunItem
             key={run.id}
@@ -64,6 +64,7 @@ export function RunsList({
             isActive={run.id === activeRunId}
             onClick={() => onRunClick?.(run.id)}
             onStar={() => onRunStar?.(run.id)}
+            onUpdate={refresh}
             compact={compact}
           />
         ))}

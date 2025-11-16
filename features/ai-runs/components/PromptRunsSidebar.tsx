@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { History, ChevronDown } from "lucide-react";
+import { History, ChevronDown, FilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,6 +21,7 @@ interface PromptRunsSidebarProps {
   promptName: string;
   currentRunId?: string;
   onRunSelect?: (runId: string) => void;
+  onNewRun?: () => void;
   footer?: React.ReactNode; // Optional footer content for testing/additional features
 }
 
@@ -35,6 +36,7 @@ export function PromptRunsSidebar({
   promptName,
   currentRunId,
   onRunSelect,
+  onNewRun,
   footer,
 }: PromptRunsSidebarProps) {
   const router = useRouter();
@@ -88,11 +90,25 @@ export function PromptRunsSidebar({
     <div className="h-full flex flex-col bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-gray-800">
       {/* Compact Header */}
       <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 px-2.5 py-2">
-        <div className="flex items-center gap-1.5 mb-2">
-          <History className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-          <h2 className="text-xs font-semibold text-gray-900 dark:text-gray-100">
-            Runs
-          </h2>
+        <div className="flex items-center justify-between gap-1.5 mb-2">
+          <div className="flex items-center gap-1.5">
+            <History className="w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+            <h2 className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+              Runs
+            </h2>
+          </div>
+          {onNewRun && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onNewRun}
+              className="h-6 px-2 text-xs"
+              title="Start new run"
+            >
+              <FilePlus className="w-3.5 h-3.5 mr-1" />
+              New
+            </Button>
+          )}
         </div>
 
         {/* Prompt selector - shows current prompt with dropdown to switch */}
