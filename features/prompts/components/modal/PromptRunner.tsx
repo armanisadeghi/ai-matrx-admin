@@ -413,7 +413,7 @@ export function PromptRunner({
                                 ...finalStats,
                                 cost: 0, // Server will calculate this
                             }
-                        });
+                        }, run.id); // Pass run ID to ensure message is added to correct run
                     }
                     
                     // Call onExecutionComplete if provided

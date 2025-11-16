@@ -220,8 +220,8 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
                     executionConfig: {
                         auto_run: false,
                         allow_chat: true,
-                        show_variables: false,
-                        apply_variables: false
+                        show_variables: true,
+                        apply_variables: true
                     }
                 });
                 

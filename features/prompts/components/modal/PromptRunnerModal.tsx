@@ -23,6 +23,7 @@ export function PromptRunnerModal({
     onClose,
     promptId,
     promptData,
+    executionConfig,
     mode = 'manual',
     variables,
     initialMessage,
@@ -38,6 +39,7 @@ export function PromptRunnerModal({
                 <PromptRunner
                     promptId={promptId}
                     promptData={promptData}
+                    executionConfig={executionConfig}
                     mode={mode}
                     variables={variables}
                     initialMessage={initialMessage}

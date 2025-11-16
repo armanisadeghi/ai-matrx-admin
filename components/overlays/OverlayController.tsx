@@ -276,6 +276,7 @@ export const OverlayController: React.FC = () => {
           onClose={handleClosePromptModal}
           promptId={promptModalConfig.promptId}
           promptData={promptModalConfig.promptData}
+          executionConfig={promptModalConfig.executionConfig}
           mode={promptModalConfig.mode}
           variables={promptModalConfig.variables}
           initialMessage={promptModalConfig.initialMessage}
