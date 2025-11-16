@@ -62,6 +62,9 @@ export interface PromptRunnerState {
     promptName: string | null;
     duration: number;
     createdAt: number;
+    promptData?: any;
+    executionConfig?: any;
+    taskId?: string;
   }>;
 }
 
@@ -247,6 +250,9 @@ const promptRunnerSlice = createSlice({
       result: string;
       promptName: string | null;
       duration?: number;
+      promptData?: any;
+      executionConfig?: any;
+      taskId?: string;
     }>) => {
       state.toastQueue.push({
         id: `toast-${Date.now()}-${Math.random()}`,
@@ -254,6 +260,9 @@ const promptRunnerSlice = createSlice({
         promptName: action.payload.promptName,
         duration: action.payload.duration || 5000,
         createdAt: Date.now(),
+        promptData: action.payload.promptData,
+        executionConfig: action.payload.executionConfig,
+        taskId: action.payload.taskId,
       });
     },
     removeToast: (state, action: PayloadAction<string>) => {

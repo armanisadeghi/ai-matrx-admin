@@ -8,5 +8,6 @@ export {
 } from './usePromptExecution';
 export { usePromptsWithFetch } from './usePrompts';
 export { usePromptRunnerModal } from './usePromptRunnerModal';
-export { usePromptRunner } from './usePromptRunner'; // NEW: Redux-based prompt runner
+export { usePromptRunner } from './usePromptRunner';
+export { usePromptExecutionCore } from './usePromptExecutionCore'; // NEW: Centralized prompt execution hook
 

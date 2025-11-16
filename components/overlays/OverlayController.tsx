@@ -2,7 +2,24 @@
 import React, { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, selectIsOverlayOpen, selectOverlayData } from "@/lib/redux/slices/overlaySlice";
-import { closePromptModal, selectIsPromptModalOpen, selectPromptModalConfig } from "@/lib/redux/slices/promptRunnerSlice";
+import { 
+  closePromptModal, 
+  selectIsPromptModalOpen, 
+  selectPromptModalConfig,
+  closeCompactModal,
+  selectIsCompactModalOpen,
+  selectCompactModalConfig,
+  closeInlineOverlay,
+  selectIsInlineOverlayOpen,
+  selectInlineOverlayData,
+  closeSidebarResult,
+  selectIsSidebarResultOpen,
+  selectSidebarResultConfig,
+  selectSidebarPosition,
+  selectSidebarSize,
+  selectToastQueue,
+  removeToast,
+} from "@/lib/redux/slices/promptRunnerSlice";
 import dynamic from "next/dynamic";
 
 // Dynamically import the components with ssr: false to prevent them from loading on the server
@@ -57,9 +74,33 @@ const FloatingSheet = dynamic(
   { ssr: false }
 );
 
-// Prompt Runner Modal
+// Prompt Runner Modal (modal-full)
 const PromptRunnerModal = dynamic(
   () => import("@/features/prompts/components/modal/PromptRunnerModal").then(mod => ({ default: mod.PromptRunnerModal })),
+  { ssr: false }
+);
+
+// Prompt Compact Modal (modal-compact)
+const PromptCompactModal = dynamic(
+  () => import("@/features/prompts/components/modal/PromptCompactModal"),
+  { ssr: false }
+);
+
+// Prompt Inline Overlay (inline)
+const PromptInlineOverlay = dynamic(
+  () => import("@/features/prompts/components/inline/PromptInlineOverlay"),
+  { ssr: false }
+);
+
+// Prompt Sidebar Runner (sidebar)
+const PromptSidebarRunner = dynamic(
+  () => import("@/features/prompts/components/sidebar/PromptSidebarRunner"),
+  { ssr: false }
+);
+
+// Prompt Toast (toast)
+const PromptToast = dynamic(
+  () => import("@/features/prompts/components/toast/PromptToast"),
   { ssr: false }
 );
 
@@ -83,9 +124,22 @@ export const OverlayController: React.FC = () => {
   const isQuickFilesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickFiles"));
   const isQuickUtilitiesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickUtilities"));
   
-  // Prompt Runner Modal
+  // Prompt Runner Modals
   const isPromptModalOpen = useAppSelector(selectIsPromptModalOpen);
   const promptModalConfig = useAppSelector(selectPromptModalConfig);
+  
+  const isCompactModalOpen = useAppSelector(selectIsCompactModalOpen);
+  const compactModalConfig = useAppSelector(selectCompactModalConfig);
+  
+  const isInlineOverlayOpen = useAppSelector(selectIsInlineOverlayOpen);
+  const inlineOverlayData = useAppSelector(selectInlineOverlayData);
+  
+  const isSidebarResultOpen = useAppSelector(selectIsSidebarResultOpen);
+  const sidebarResultConfig = useAppSelector(selectSidebarResultConfig);
+  const sidebarPosition = useAppSelector(selectSidebarPosition);
+  const sidebarSize = useAppSelector(selectSidebarSize);
+  
+  const toastQueue = useAppSelector(selectToastQueue);
   
   // Get data for each overlay
   const markdownEditorData = useAppSelector((state) => selectOverlayData(state, "markdownEditor"));
@@ -139,9 +193,25 @@ export const OverlayController: React.FC = () => {
     dispatch(closeOverlay({ overlayId: "quickUtilities" }));
   };
 
-  // Prompt Runner handler
+  // Prompt Runner handlers
   const handleClosePromptModal = () => {
     dispatch(closePromptModal());
+  };
+  
+  const handleCloseCompactModal = () => {
+    dispatch(closeCompactModal());
+  };
+  
+  const handleCloseInlineOverlay = () => {
+    dispatch(closeInlineOverlay());
+  };
+  
+  const handleCloseSidebarResult = () => {
+    dispatch(closeSidebarResult());
+  };
+  
+  const handleDismissToast = (toastId: string) => {
+    dispatch(removeToast(toastId));
   };
 
   return (
@@ -269,7 +339,9 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {/* Prompt Runner Modal */}
+      {/* ========== PROMPT RESULT DISPLAYS ========== */}
+      
+      {/* Modal Full */}
       {isPromptModalOpen && promptModalConfig && (
         <PromptRunnerModal
           isOpen={true}
@@ -285,6 +357,73 @@ export const OverlayController: React.FC = () => {
           onExecutionComplete={promptModalConfig.onExecutionComplete}
         />
       )}
+      
+      {/* Modal Compact */}
+      {isCompactModalOpen && compactModalConfig && (
+        <PromptCompactModal
+          isOpen={true}
+          onClose={handleCloseCompactModal}
+          promptId={compactModalConfig.promptId}
+          promptData={compactModalConfig.promptData}
+          executionConfig={compactModalConfig.executionConfig}
+          variables={compactModalConfig.variables}
+          title={compactModalConfig.title}
+        />
+      )}
+      
+      {/* Inline Overlay */}
+      {isInlineOverlayOpen && inlineOverlayData && (
+        <PromptInlineOverlay
+          isOpen={true}
+          onClose={handleCloseInlineOverlay}
+          result={inlineOverlayData.result || ''}
+          originalText={inlineOverlayData.originalText || ''}
+          promptName={inlineOverlayData.promptName || ''}
+          taskId={inlineOverlayData.taskId || undefined}
+          isStreaming={inlineOverlayData.isStreaming}
+          onReplace={inlineOverlayData.callbacks?.onReplace}
+          onInsertBefore={inlineOverlayData.callbacks?.onInsertBefore}
+          onInsertAfter={inlineOverlayData.callbacks?.onInsertAfter}
+        />
+      )}
+      
+      {/* Sidebar Result */}
+      {isSidebarResultOpen && sidebarResultConfig && (
+        <PromptSidebarRunner
+          isOpen={true}
+          onClose={handleCloseSidebarResult}
+          position={sidebarPosition}
+          size={sidebarSize}
+          promptId={sidebarResultConfig.promptId}
+          promptData={sidebarResultConfig.promptData}
+          executionConfig={sidebarResultConfig.executionConfig}
+          variables={sidebarResultConfig.variables}
+          title={sidebarResultConfig.title}
+        />
+      )}
+      
+      {/* Toast Queue */}
+      {toastQueue.map((toast, index) => (
+        <div
+          key={toast.id}
+          style={{
+            position: 'fixed',
+            bottom: `${16 + (index * 100)}px`, // Stack toasts 100px apart
+            right: '16px',
+            zIndex: 200 + index, // Higher z-index for newer toasts
+          }}
+        >
+          <PromptToast
+            toastId={toast.id}
+            result={toast.result}
+            promptName={toast.promptName || ''}
+            promptData={toast.promptData}
+            executionConfig={toast.executionConfig}
+            taskId={toast.taskId}
+            onDismiss={handleDismissToast}
+          />
+        </div>
+      ))}
     </>
   );
 };

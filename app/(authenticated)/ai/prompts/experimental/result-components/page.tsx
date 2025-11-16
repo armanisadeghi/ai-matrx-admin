@@ -8,6 +8,9 @@ export default function AIResponseDemo() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [copied, setCopied] = useState(false);
   const [hoveredAction, setHoveredAction] = useState(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const aiResponse = `I've created both UI patterns for you:
 
@@ -49,6 +52,41 @@ The VS Code overlay uses authentic VS Code colors (\`#1e1e1e\` background, \`#d4
       .replace(/^[\s]*-\s/gm, '') // Remove bullet points
       .trim();
   };
+
+  const handleMouseDown = (e) => {
+    if (e.target.closest('button')) return; // Don't drag when clicking buttons
+    
+    setIsDragging(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    
+    setPosition({
+      x: e.clientX - dragOffset.x,
+      y: e.clientY - dragOffset.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragOffset]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -93,92 +131,96 @@ The VS Code overlay uses authentic VS Code colors (\`#1e1e1e\` background, \`#d4
 
         {/* VS Code Style Overlay */}
         {showOverlay && (
-          <>
-            <div 
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200"
-              onClick={() => setShowOverlay(false)}
-            />
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl animate-in zoom-in-95 duration-200">
-              <div className="bg-[#1e1e1e] text-[#d4d4d4] rounded-md shadow-2xl border border-[#3e3e42] overflow-hidden">
-                {/* Content */}
-                <div className="px-3 py-2 text-sm leading-relaxed">
-                  {renderMarkdown(aiResponse)}
-                </div>
+          <div 
+            className="fixed w-full max-w-2xl animate-in zoom-in-95 duration-200"
+            style={{
+              left: position.x || '50%',
+              top: position.y || '50%',
+              transform: position.x ? 'none' : 'translate(-50%, -50%)',
+              cursor: isDragging ? 'grabbing' : 'grab',
+              zIndex: 1000
+            }}
+            onMouseDown={handleMouseDown}
+          >
+            <div className="bg-[#1e1e1e] text-[#d4d4d4] rounded-md shadow-2xl border border-[#3e3e42] overflow-hidden">
+              {/* Content */}
+              <div className="px-3 py-2 text-sm leading-relaxed select-none">
+                {renderMarkdown(aiResponse)}
+              </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-0.5 px-1.5 py-1.5 bg-[#252526]">
-                  <div className="relative">
-                    <button
-                      onMouseEnter={() => setHoveredAction('copy')}
-                      onMouseLeave={() => setHoveredAction(null)}
-                      onClick={handleCopy}
-                      className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                    {hoveredAction === 'copy' && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
-                        {copied ? 'Copied!' : 'Copy'}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="relative">
-                    <button
-                      onMouseEnter={() => setHoveredAction('insert')}
-                      onMouseLeave={() => setHoveredAction(null)}
-                      onClick={() => {
-                        setShowOverlay(false);
-                        alert('Insert action triggered');
-                      }}
-                      className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
-                    >
-                      <CornerDownLeft className="w-3.5 h-3.5" />
-                    </button>
-                    {hoveredAction === 'insert' && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
-                        Insert
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="relative">
-                    <button
-                      onMouseEnter={() => setHoveredAction('retry')}
-                      onMouseLeave={() => setHoveredAction(null)}
-                      onClick={() => alert('Retry action triggered')}
-                      className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                    </button>
-                    {hoveredAction === 'retry' && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
-                        Retry
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1" />
-                  
-                  <div className="relative">
-                    <button
-                      onMouseEnter={() => setHoveredAction('cancel')}
-                      onMouseLeave={() => setHoveredAction(null)}
-                      onClick={() => setShowOverlay(false)}
-                      className="p-1.5 text-[#858585] hover:text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                    {hoveredAction === 'cancel' && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
-                        Cancel
-                      </div>
-                    )}
-                  </div>
+              {/* Actions */}
+              <div className="flex items-center gap-0.5 px-1.5 py-1.5 bg-[#252526]">
+                <div className="relative">
+                  <button
+                    onMouseEnter={() => setHoveredAction('copy')}
+                    onMouseLeave={() => setHoveredAction(null)}
+                    onClick={handleCopy}
+                    className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                  {hoveredAction === 'copy' && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
+                      {copied ? 'Copied!' : 'Copy'}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="relative">
+                  <button
+                    onMouseEnter={() => setHoveredAction('insert')}
+                    onMouseLeave={() => setHoveredAction(null)}
+                    onClick={() => {
+                      setShowOverlay(false);
+                      alert('Insert action triggered');
+                    }}
+                    className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
+                  >
+                    <CornerDownLeft className="w-3.5 h-3.5" />
+                  </button>
+                  {hoveredAction === 'insert' && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
+                      Insert
+                    </div>
+                  )}
+                </div>
+                
+                <div className="relative">
+                  <button
+                    onMouseEnter={() => setHoveredAction('retry')}
+                    onMouseLeave={() => setHoveredAction(null)}
+                    onClick={() => alert('Retry action triggered')}
+                    className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                  {hoveredAction === 'retry' && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
+                      Retry
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1" />
+                
+                <div className="relative">
+                  <button
+                    onMouseEnter={() => setHoveredAction('cancel')}
+                    onMouseLeave={() => setHoveredAction(null)}
+                    onClick={() => setShowOverlay(false)}
+                    className="p-1.5 text-[#858585] hover:text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                  {hoveredAction === 'cancel' && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#2d2d30] text-[#cccccc] text-xs rounded shadow-lg whitespace-nowrap">
+                      Cancel
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
