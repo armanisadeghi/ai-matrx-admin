@@ -47,13 +47,35 @@
 
 import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { openPrompt } from '@/lib/redux/thunks/openPromptThunk';
+import { openPromptExecution } from '@/lib/redux/thunks/openPromptExecutionThunk';
 import { closePromptModal, selectIsPromptModalOpen, selectPromptModalConfig } from '@/lib/redux/slices/promptRunnerSlice';
-import { PromptRunnerModalConfig } from '../types/modal';
+import type { PromptRunnerModalConfig } from '../types/modal';
+import type { ResultDisplay, PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
+
+export interface OpenPromptOptions extends Omit<PromptRunnerModalConfig, 'executionConfig'> {
+  /** NEW: Specify which UI to show (defaults to 'modal-full') */
+  result_display?: ResultDisplay;
+  
+  /** NEW: Execution configuration with separate flags */
+  executionConfig?: Omit<PromptExecutionConfig, 'result_display'>;
+  
+  /** Inline-specific: text manipulation callbacks */
+  onTextReplace?: (text: string) => void;
+  onTextInsertBefore?: (text: string) => void;
+  onTextInsertAfter?: (text: string) => void;
+  originalText?: string;
+  
+  /** Sidebar-specific: position and size */
+  sidebarPosition?: 'left' | 'right';
+  sidebarSize?: 'sm' | 'md' | 'lg';
+  
+  /** Callback for non-UI executions */
+  onExecutionComplete?: (result: { response: string; metadata?: any }) => void;
+}
 
 export interface UsePromptRunnerReturn {
-  /** Open a prompt runner modal with configuration */
-  openPrompt: (config: PromptRunnerModalConfig) => Promise<void>;
+  /** Open a prompt with any display type */
+  openPrompt: (options: OpenPromptOptions) => Promise<void>;
   
   /** Close the active prompt runner modal */
   closePrompt: () => void;
@@ -67,14 +89,30 @@ export interface UsePromptRunnerReturn {
 
 /**
  * Hook for managing prompt runner modals via Redux
+ * NOW SUPPORTS ALL 7 DISPLAY TYPES via result_display parameter
  */
 export function usePromptRunner(): UsePromptRunnerReturn {
   const dispatch = useAppDispatch();
   const isOpen = useAppSelector(selectIsPromptModalOpen);
   const config = useAppSelector(selectPromptModalConfig);
 
-  const openPromptModal = useCallback(async (modalConfig: PromptRunnerModalConfig) => {
-    await dispatch(openPrompt(modalConfig)).unwrap();
+  const openPrompt = useCallback(async (options: OpenPromptOptions) => {
+    const {
+      result_display = 'modal-full',
+      executionConfig = {
+        auto_run: true,
+        allow_chat: true,
+        show_variables: false,
+        apply_variables: true,
+      },
+      ...restOptions
+    } = options;
+
+    await dispatch(openPromptExecution({
+      ...restOptions,
+      result_display,
+      executionConfig,
+    })).unwrap();
   }, [dispatch]);
 
   const closePromptModalHandler = useCallback(() => {
@@ -82,7 +120,7 @@ export function usePromptRunner(): UsePromptRunnerReturn {
   }, [dispatch]);
 
   return {
-    openPrompt: openPromptModal,
+    openPrompt,
     closePrompt: closePromptModalHandler,
     isOpen,
     config,
@@ -92,21 +130,26 @@ export function usePromptRunner(): UsePromptRunnerReturn {
 /**
  * Simplified function to open a prompt imperatively
  * For use outside of React components
- * 
- * @example
- * ```tsx
- * import { openPromptImperative, store } from '@/lib/redux/store';
- * 
- * openPromptImperative(store.dispatch, {
- *   promptId: 'text-analyzer',
- *   variables: { text: selectedText }
- * });
- * ```
  */
 export function openPromptImperative(
   dispatch: any,
-  config: PromptRunnerModalConfig
+  options: OpenPromptOptions
 ): Promise<void> {
-  return dispatch(openPrompt(config)).unwrap();
+  const {
+    result_display = 'modal-full',
+    executionConfig = {
+      auto_run: true,
+      allow_chat: true,
+      show_variables: false,
+      apply_variables: true,
+    },
+    ...restOptions
+  } = options;
+
+  return dispatch(openPromptExecution({
+    ...restOptions,
+    result_display,
+    executionConfig,
+  })).unwrap();
 }
 
