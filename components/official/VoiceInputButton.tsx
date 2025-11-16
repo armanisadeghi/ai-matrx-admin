@@ -19,6 +19,8 @@ import { TranscriptionResult } from '@/features/audio/types';
 import { MicrophoneButton } from '@/features/audio/components/MicrophoneButton';
 import { TranscriptionLoader } from '@/features/audio/components/TranscriptionLoader';
 import { RecordingIndicator } from '@/features/audio/components/RecordingIndicator';
+import { VoiceTroubleshootingModal } from '@/features/audio/components/VoiceTroubleshootingModal';
+import { toast } from 'sonner';
 
 export interface VoiceInputButtonProps {
   onTranscriptionComplete: (text: string) => void;
@@ -40,6 +42,8 @@ export function VoiceInputButton({
   disabled = false,
 }: VoiceInputButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showTroubleshooting, setShowTroubleshooting] = useState(false);
+  const [lastError, setLastError] = useState<{ message: string; code: string } | null>(null);
 
   // Handle transcription completion
   const handleTranscriptionComplete = useCallback((result: TranscriptionResult) => {
@@ -50,8 +54,22 @@ export function VoiceInputButton({
   }, [onTranscriptionComplete]);
 
   // Handle errors
-  const handleError = useCallback((error: string) => {
-    console.error('Voice input error:', error);
+  const handleError = useCallback((error: string, errorCode?: string) => {
+    console.error('Voice input error:', error, errorCode);
+    
+    // Store error for troubleshooting modal
+    setLastError({ message: error, code: errorCode || 'UNKNOWN_ERROR' });
+    
+    // Show persistent toast with "Get Help" button
+    toast.error('Voice input failed', {
+      description: error,
+      duration: 10000, // 10 seconds
+      action: {
+        label: 'Get Help',
+        onClick: () => setShowTroubleshooting(true),
+      },
+    });
+    
     onError?.(error);
     setIsExpanded(false);
   }, [onError]);
@@ -83,15 +101,64 @@ export function VoiceInputButton({
   // Inline microphone icon variant
   if (variant === 'inline') {
     return (
+      <>
+        <div className={cn('flex items-center', className)}>
+          {isTranscribing ? (
+            <TranscriptionLoader duration={duration} size={size} />
+          ) : isRecording ? (
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <RecordingIndicator 
+                duration={duration} 
+                audioLevel={audioLevel}
+                size={size}
+                color="blue"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={stopRecording}
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
+              >
+                Stop
+              </Button>
+            </div>
+          ) : (
+            <MicrophoneButton
+              size="icon"
+              onClick={handleClick}
+              disabled={disabled}
+              className={className}
+            />
+          )}
+        </div>
+        
+        {/* Troubleshooting Modal */}
+        <VoiceTroubleshootingModal
+          isOpen={showTroubleshooting}
+          onClose={() => setShowTroubleshooting(false)}
+          error={lastError?.message}
+          errorCode={lastError?.code}
+        />
+      </>
+    );
+  }
+
+  // Button variant with text
+  return (
+    <>
       <div className={cn('flex items-center', className)}>
         {isTranscribing ? (
-          <TranscriptionLoader duration={duration} size={size} />
-        ) : isRecording ? (
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <TranscriptionLoader duration={duration} size={size} />
+          </div>
+        ) : isRecording || isExpanded ? (
+          <div className="flex items-center gap-1.5 sm:gap-3 px-2 py-1 sm:px-4 sm:py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
             <RecordingIndicator 
               duration={duration} 
               audioLevel={audioLevel}
-              size={size}
+              size={size} 
+              showPulse={isRecording}
               color="blue"
             />
             <Button
@@ -101,65 +168,36 @@ export function VoiceInputButton({
               onClick={stopRecording}
               className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
             >
-              Stop
+              <span className="sm:hidden">Stop</span>
+              <span className="hidden sm:inline">Stop Recording</span>
             </Button>
           </div>
         ) : (
-          <MicrophoneButton
-            size="icon"
-            onClick={handleClick}
-            disabled={disabled}
-            className={className}
-          />
-        )}
-      </div>
-    );
-  }
-
-  // Button variant with text
-  return (
-    <div className={cn('flex items-center', className)}>
-      {isTranscribing ? (
-        <div className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-          <TranscriptionLoader duration={duration} size={size} />
-        </div>
-      ) : isRecording || isExpanded ? (
-        <div className="flex items-center gap-1.5 sm:gap-3 px-2 py-1 sm:px-4 sm:py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-          <RecordingIndicator 
-            duration={duration} 
-            audioLevel={audioLevel}
-            size={size} 
-            showPulse={isRecording}
-            color="blue"
-          />
           <Button
             type="button"
-            size="sm"
-            variant="ghost"
-            onClick={stopRecording}
-            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 h-7 px-2 text-xs"
+            onClick={handleClick}
+            disabled={disabled}
+            className={cn(
+              'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white',
+              size === 'sm' && 'h-8 text-xs',
+              size === 'md' && 'h-9 text-sm',
+              size === 'lg' && 'h-10 text-base'
+            )}
           >
-            <span className="sm:hidden">Stop</span>
-            <span className="hidden sm:inline">Stop Recording</span>
+            <AudioLines className="mr-2 h-4 w-4" />
+            {buttonText}
           </Button>
-        </div>
-      ) : (
-        <Button
-          type="button"
-          onClick={handleClick}
-          disabled={disabled}
-          className={cn(
-            'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white',
-            size === 'sm' && 'h-8 text-xs',
-            size === 'md' && 'h-9 text-sm',
-            size === 'lg' && 'h-10 text-base'
-          )}
-        >
-          <AudioLines className="mr-2 h-4 w-4" />
-          {buttonText}
-        </Button>
-      )}
-    </div>
+        )}
+      </div>
+      
+      {/* Troubleshooting Modal */}
+      <VoiceTroubleshootingModal
+        isOpen={showTroubleshooting}
+        onClose={() => setShowTroubleshooting(false)}
+        error={lastError?.message}
+        errorCode={lastError?.code}
+      />
+    </>
   );
 }
 

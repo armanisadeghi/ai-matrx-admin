@@ -8,10 +8,11 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { getErrorSolution } from '../utils/microphone-diagnostics';
 
 export interface UseSimpleRecorderProps {
   onRecordingComplete?: (blob: Blob) => void;
-  onError?: (error: string) => void;
+  onError?: (error: string, errorCode?: string) => void;
 }
 
 export function useSimpleRecorder({
@@ -156,9 +157,9 @@ export function useSimpleRecorder({
       }, 100);
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to start recording';
-      console.error('Recording error:', err);
-      onError?.(errorMessage);
+      const errorSolution = getErrorSolution(err);
+      console.error('Recording error:', err, errorSolution);
+      onError?.(errorSolution.message, errorSolution.code);
       cleanup();
     }
   }, [cleanup, onRecordingComplete, onError]);

@@ -14,7 +14,7 @@ import { TranscriptionOptions, TranscriptionResult } from '../types';
 
 export interface UseRecordAndTranscribeProps {
   onTranscriptionComplete?: (result: TranscriptionResult) => void;
-  onError?: (error: string) => void;
+  onError?: (error: string, errorCode?: string) => void;
   autoTranscribe?: boolean; // Automatically transcribe when recording stops
   transcriptionOptions?: TranscriptionOptions;
 }
@@ -46,11 +46,11 @@ export function useRecordAndTranscribe({
         if (result.success) {
           onTranscriptionComplete?.(result);
         } else {
-          onError?.(result.error || 'Transcription failed');
+          onError?.(result.error || 'Transcription failed', 'TRANSCRIPTION_FAILED');
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Transcription failed';
-        onError?.(errorMsg);
+        onError?.(errorMsg, 'TRANSCRIPTION_ERROR');
       }
     }
   }, [autoTranscribe, transcribe, transcriptionOptions, onTranscriptionComplete, onError]);
@@ -79,12 +79,12 @@ export function useRecordAndTranscribe({
         if (result.success) {
           onTranscriptionComplete?.(result);
         } else {
-          onError?.(result.error || 'Transcription failed');
+          onError?.(result.error || 'Transcription failed', 'TRANSCRIPTION_FAILED');
         }
         return result;
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Transcription failed';
-        onError?.(errorMsg);
+        onError?.(errorMsg, 'TRANSCRIPTION_ERROR');
         return null;
       }
     }

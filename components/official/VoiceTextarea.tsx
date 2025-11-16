@@ -10,11 +10,13 @@
 'use client';
 
 import React, { useCallback, useState, useRef, useEffect } from 'react';
-import { Copy, Check, Mic, Loader2 } from 'lucide-react';
+import { Copy, Check, Mic, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useRecordAndTranscribe } from '@/features/audio/hooks';
 import { TranscriptionResult } from '@/features/audio/types';
+import { VoiceTroubleshootingModal } from '@/features/audio/components/VoiceTroubleshootingModal';
+import { toast } from 'sonner';
 
 export interface VoiceTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   onTranscriptionComplete?: (text: string) => void;
@@ -48,6 +50,8 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
     const [isFocused, setIsFocused] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [isAudioAvailable, setIsAudioAvailable] = useState(true);
+    const [showTroubleshooting, setShowTroubleshooting] = useState(false);
+    const [lastError, setLastError] = useState<{ message: string; code: string } | null>(null);
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
 
@@ -109,8 +113,22 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
     }, [appendTranscript, onTranscriptionComplete]);
 
     // Handle transcription error
-    const handleTranscriptionError = useCallback((error: string) => {
-      console.error('Transcription error:', error);
+    const handleTranscriptionError = useCallback((error: string, errorCode?: string) => {
+      console.error('Transcription error:', error, errorCode);
+      
+      // Store error for troubleshooting modal
+      setLastError({ message: error, code: errorCode || 'UNKNOWN_ERROR' });
+      
+      // Show persistent toast with "Get Help" button
+      toast.error('Voice input failed', {
+        description: error,
+        duration: 10000, // 10 seconds
+        action: {
+          label: 'Get Help',
+          onClick: () => setShowTroubleshooting(true),
+        },
+      });
+      
       onTranscriptionError?.(error);
     }, [onTranscriptionError]);
 
@@ -267,6 +285,14 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
             </span>
           </div>
         )}
+
+        {/* Troubleshooting Modal */}
+        <VoiceTroubleshootingModal
+          isOpen={showTroubleshooting}
+          onClose={() => setShowTroubleshooting(false)}
+          error={lastError?.message}
+          errorCode={lastError?.code}
+        />
       </div>
     );
   }
