@@ -8,14 +8,15 @@ import TaskApp from '@/features/tasks/components/TaskApp';
 import { QuickChatSheet } from './QuickChatSheet';
 import { QuickDataSheet } from './QuickDataSheet';
 import { QuickFilesSheet } from './QuickFilesSheet';
+import { ActivePromptResults } from '@/features/prompts/components/results/ActivePromptResults';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { StickyNote, CheckSquare, MessageSquare, Database, FolderOpen, ExternalLink } from 'lucide-react';
+import { StickyNote, CheckSquare, MessageSquare, Database, FolderOpen, ExternalLink, Sparkles } from 'lucide-react';
 
 interface UtilitiesOverlayProps {
     isOpen: boolean;
     onClose: () => void;
-    initialTab?: 'notes' | 'tasks' | 'chat' | 'data' | 'files';
+    initialTab?: 'notes' | 'tasks' | 'chat' | 'data' | 'files' | 'ai-results';
 }
 
 export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: UtilitiesOverlayProps) {
@@ -89,6 +90,20 @@ export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: Util
             content: (
                 <div className="h-full">
                     <QuickFilesSheet hideHeader />
+                </div>
+            ),
+        },
+        {
+            id: 'ai-results',
+            label: (
+                <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    <span>AI Results</span>
+                </div>
+            ) as any,
+            content: (
+                <div className="h-full">
+                    <ActivePromptResults />
                 </div>
             ),
         },

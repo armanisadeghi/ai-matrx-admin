@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Copy, Loader2, Check } from 'lucide-react';
+import { Copy, Loader2, Check, MessageSquare } from 'lucide-react';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { usePromptExecutionCore } from '../../hooks/usePromptExecutionCore';
+import { PromptRunnerInput } from '../PromptRunnerInput';
 import BasicMarkdownContent from '@/components/mardown-display/chat-markdown/BasicMarkdownContent';
 import type { PromptData } from '../../types/modal';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
+import type { Resource } from '../resource-display';
 
 interface PromptCompactModalProps {
   isOpen: boolean;
@@ -46,6 +48,9 @@ export default function PromptCompactModal({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [showChat, setShowChat] = useState(false);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [expandedVariable, setExpandedVariable] = useState<string | null>(null);
   
   // Load from Redux state if taskId provided
   const stateResponse = useAppSelector((state) => 
@@ -58,7 +63,7 @@ export default function PromptCompactModal({
   // Only use execution hook if we don't have a preloaded result or taskId
   const executionHook = usePromptExecutionCore({
     promptData: promptData || { id: '', name: '', messages: [], variableDefaults: [], settings: {} },
-    executionConfig: (preloadedResult || taskId) ? { ...executionConfig, auto_run: false } : executionConfig,
+    executionConfig: (preloadedResult || taskId) ? { ...executionConfig, auto_run: false, allow_chat: true } : { ...executionConfig, allow_chat: true },
     variables,
   });
 
@@ -73,6 +78,16 @@ export default function PromptCompactModal({
   const isExecuting = taskId 
     ? !stateResponseEnded 
     : (preloadedResult ? false : executionHook.isExecuting);
+  
+  // Show chat if: conversation has started OR user explicitly enabled it OR allow_chat is enabled
+  const shouldShowChatInput = showChat || executionHook.conversationStarted || (executionConfig?.allow_chat !== false && !preloadedResult && !taskId);
+  
+  // Auto-expand to show chat after first response
+  useEffect(() => {
+    if (executionHook.conversationStarted && !showChat) {
+      setShowChat(true);
+    }
+  }, [executionHook.conversationStarted, showChat]);
 
   const handleCopy = () => {
     if (latestResponse) {
@@ -149,24 +164,79 @@ export default function PromptCompactModal({
             </div>
           )}
           
-          {/* Content */}
+          {/* Content - Conversation History */}
           <div className="px-3 py-3 max-h-[60vh] overflow-y-auto">
-            {isExecuting && !latestResponse ? (
-              <div className="flex items-center gap-2 text-sm text-[#858585]">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Generating response...</span>
-              </div>
-            ) : latestResponse ? (
-              <div className="text-sm leading-relaxed">
-                <BasicMarkdownContent 
-                  content={latestResponse}
-                  showCopyButton={false}
-                />
-              </div>
+            {preloadedResult || taskId ? (
+              // Simple display for preloaded/taskId results
+              <>
+                {isExecuting && !latestResponse ? (
+                  <div className="flex items-center gap-2 text-sm text-[#858585]">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Generating response...</span>
+                  </div>
+                ) : latestResponse ? (
+                  <div className="text-sm leading-relaxed">
+                    <BasicMarkdownContent 
+                      content={latestResponse}
+                      showCopyButton={false}
+                    />
+                  </div>
+                ) : (
+                  <div className="text-sm text-[#858585] italic">No response</div>
+                )}
+              </>
             ) : (
-              <div className="text-sm text-[#858585] italic">No response</div>
+              // Full conversation display
+              <div className="space-y-2">
+                {executionHook.displayMessages.length === 0 && !isExecuting ? (
+                  <div className="text-sm text-[#858585] italic">Start a conversation...</div>
+                ) : (
+                  executionHook.displayMessages.map((msg, idx) => (
+                    <div key={idx} className={`text-sm ${msg.role === 'user' ? 'text-[#cccccc]' : 'text-[#d4d4d4]'}`}>
+                      <div className="text-[10px] uppercase tracking-wide text-[#858585] mb-1">
+                        {msg.role === 'user' ? 'You' : 'AI'}
+                      </div>
+                      <div className={`rounded p-2 ${msg.role === 'user' ? 'bg-[#2a2d2e]' : 'bg-[#252526]'}`}>
+                        <BasicMarkdownContent 
+                          content={msg.content}
+                          showCopyButton={false}
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+                {isExecuting && (
+                  <div className="flex items-center gap-2 text-sm text-[#858585] p-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Thinking...</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
+          
+          {/* Chat Input - Only show if conversation mode */}
+          {shouldShowChatInput && !preloadedResult && !taskId && (
+            <div className="border-t border-[#3e3e42] dark:border-[#3e3e42]">
+              <div className="px-2 py-2">
+                <PromptRunnerInput
+                  variableDefaults={executionHook.variableDefaults}
+                  onVariableValueChange={executionHook.handleVariableChange}
+                  expandedVariable={expandedVariable}
+                  onExpandedVariableChange={setExpandedVariable}
+                  chatInput={executionHook.chatInput}
+                  onChatInputChange={executionHook.setChatInput}
+                  onSendMessage={executionHook.executeMessage}
+                  isTestingPrompt={isExecuting}
+                  showVariables={executionHook.shouldShowVariables}
+                  messages={promptData?.messages || []}
+                  resources={resources}
+                  onResourcesChange={setResources}
+                  enablePasteImages={false}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center gap-1 px-2 py-1 bg-[#252526] dark:bg-[#252526] border-t border-[#3e3e42] dark:border-[#3e3e42]">
@@ -182,6 +252,17 @@ export default function PromptCompactModal({
                 <Copy className="w-3.5 h-3.5" />
               )}
             </button>
+            
+            {/* Toggle chat for preloaded/taskId results */}
+            {(preloadedResult || taskId) && !showChat && (
+              <button
+                onClick={() => setShowChat(true)}
+                className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
+                title="Enable chat"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+              </button>
+            )}
             
             <div className="flex-1" />
             

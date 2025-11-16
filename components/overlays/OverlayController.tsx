@@ -130,6 +130,7 @@ export const OverlayController: React.FC = () => {
   
   const isCompactModalOpen = useAppSelector(selectIsCompactModalOpen);
   const compactModalConfig = useAppSelector(selectCompactModalConfig);
+  const compactModalTaskId = useAppSelector((state) => state.promptRunner?.compactModal?.taskId || null);
   
   const isInlineOverlayOpen = useAppSelector(selectIsInlineOverlayOpen);
   const inlineOverlayData = useAppSelector(selectInlineOverlayData);
@@ -368,6 +369,8 @@ export const OverlayController: React.FC = () => {
           executionConfig={compactModalConfig.executionConfig}
           variables={compactModalConfig.variables}
           title={compactModalConfig.title}
+          preloadedResult={(compactModalConfig as any).preloadedResult}
+          taskId={compactModalTaskId || undefined}
         />
       )}
       

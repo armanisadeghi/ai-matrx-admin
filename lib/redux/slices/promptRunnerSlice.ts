@@ -115,6 +115,26 @@ const promptRunnerSlice = createSlice({
       };
     },
     closePromptModal: (state) => {
+      // Save to recent results before closing
+      if (state.activeModal.config && state.activeModal.openedAt) {
+        const recent = {
+          id: `result-${Date.now()}`,
+          promptName: state.activeModal.config.promptData?.name || state.activeModal.config.title || 'Unknown Prompt',
+          displayType: 'modal-full' as const,
+          timestamp: state.activeModal.openedAt,
+          config: state.activeModal.config,
+        };
+        
+        // Save to session storage
+        try {
+          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const updated = [recent, ...existing].slice(0, 20); // Keep last 20
+          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save recent result:', e);
+        }
+      }
+      
       state.activeModal = {
         isOpen: false,
         config: null,
@@ -141,11 +161,31 @@ const promptRunnerSlice = createSlice({
       state.compactModal = {
         isOpen: true,
         config: action.payload,
-        taskId: null,
+        taskId: (action.payload as any).taskId || null,
         openedAt: Date.now(),
       };
     },
     closeCompactModal: (state) => {
+      // Save to recent results before closing
+      if (state.compactModal.config && state.compactModal.openedAt) {
+        const recent = {
+          id: `result-${Date.now()}`,
+          promptName: state.compactModal.config.promptData?.name || state.compactModal.config.title || 'Unknown Prompt',
+          displayType: 'modal-compact' as const,
+          timestamp: state.compactModal.openedAt,
+          config: state.compactModal.config,
+        };
+        
+        // Save to session storage
+        try {
+          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const updated = [recent, ...existing].slice(0, 20); // Keep last 20
+          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save recent result:', e);
+        }
+      }
+      
       state.compactModal = {
         isOpen: false,
         config: null,
@@ -220,6 +260,26 @@ const promptRunnerSlice = createSlice({
       };
     },
     closeSidebarResult: (state) => {
+      // Save to recent results before closing
+      if (state.sidebarResult.config && state.sidebarResult.openedAt) {
+        const recent = {
+          id: `result-${Date.now()}`,
+          promptName: state.sidebarResult.config.promptData?.name || state.sidebarResult.config.title || 'Unknown Prompt',
+          displayType: 'sidebar' as const,
+          timestamp: state.sidebarResult.openedAt,
+          config: state.sidebarResult.config,
+        };
+        
+        // Save to session storage
+        try {
+          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const updated = [recent, ...existing].slice(0, 20); // Keep last 20
+          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save recent result:', e);
+        }
+      }
+      
       state.sidebarResult = {
         isOpen: false,
         config: null,
