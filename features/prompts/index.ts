@@ -107,7 +107,7 @@ export { usePromptRunner } from './hooks/usePromptRunner'; // NEW: Redux-based p
 // Components
 export { PromptExecutionButton, PromptExecutionIconButton } from './components/actions/PromptExecutionButton';
 export { PromptContextMenu, TextSelectionPromptMenu } from './components/PromptContextMenu';
-export { ConvertToBuiltinModal } from './components/actions/ConvertToBuiltinModal';
+export { ConvertToBuiltinModal } from './components/layouts/ConvertToBuiltinModal';
 export { PromptImporter } from './components/common/PromptImporter';
 export { PromptRunner } from './components/modal/PromptRunner';
 export { PromptRunnerModal } from './components/modal/PromptRunnerModal';

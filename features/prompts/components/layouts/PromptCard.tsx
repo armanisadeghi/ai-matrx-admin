@@ -9,7 +9,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components";
-import { ConvertToBuiltinModal } from "@/features/prompts/components/actions/ConvertToBuiltinModal";
+import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
 import { createClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "@/lib/toast-service";

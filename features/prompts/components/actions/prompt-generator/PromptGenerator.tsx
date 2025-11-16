@@ -14,7 +14,6 @@ import { supabase } from '@/utils/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea, CopyTextarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Check, X, Loader2, Copy, AlertTriangle, Wand2 } from 'lucide-react';
@@ -22,7 +21,7 @@ import { toast } from 'sonner';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import { extractJsonFromText } from '@/features/prompts/utils/json-extraction';
 import { useRouter } from 'next/navigation';
-import { VoiceInputButton } from '@/features/audio';
+import { VoiceTextarea } from '@/features/audio';
 import { PromptJsonDisplay } from './PromptJsonDisplay';
 import { extractNonJsonContent } from './progressive-json-parser';
 
@@ -265,37 +264,24 @@ export function PromptGenerator({
           <div className="flex flex-col min-h-0 space-y-3 sm:space-y-4 overflow-y-auto lg:overflow-visible">
             <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
-                    Prompt Purpose
-                    <span className="text-xs text-red-500">*</span>
-                  </Label>
-                  {!isGenerating && !hasGeneratedPrompt && (
-                    <VoiceInputButton
-                      variant="button"
-                      buttonText="Voice"
-                      size="sm"
-                      onTranscriptionComplete={(text) => {
-                        // Append to existing text or replace
-                        const newText = promptPurpose ? `${promptPurpose}\n${text}` : text;
-                        setPromptPurpose(newText);
-                        toast.success('Voice explanation added');
-                      }}
-                      onError={(error) => {
-                        toast.error('Voice input failed', {
-                          description: error,
-                        });
-                      }}
-                    />
-                  )}
-                </div>
-                <CopyTextarea
+                <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                  Prompt Purpose
+                  <span className="text-xs text-red-500">*</span>
+                </Label>
+                <VoiceTextarea
                   value={promptPurpose}
                   onChange={(e) => setPromptPurpose(e.target.value)}
                   placeholder="Describe what you want your prompt or agent to do..."
-                  className="min-h-[120px] sm:min-h-[180px] text-base"
-                  style={{ fontSize: '16px' }}
+                  className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                   disabled={isGenerating || hasGeneratedPrompt}
+                  onTranscriptionComplete={(text) => {
+                    toast.success('Voice explanation added');
+                  }}
+                  onTranscriptionError={(error) => {
+                    toast.error('Voice input failed', {
+                      description: error,
+                    });
+                  }}
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Be specific about the main purpose and goals of your prompt
@@ -303,37 +289,24 @@ export function PromptGenerator({
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="text-xs sm:text-sm font-medium">
-                    Additional Context
-                    <span className="text-xs text-gray-500 ml-1">(Optional)</span>
-                  </Label>
-                  {!isGenerating && !hasGeneratedPrompt && (
-                    <VoiceInputButton
-                      variant="button"
-                      buttonText="Voice"
-                      size="sm"
-                      onTranscriptionComplete={(text) => {
-                        // Append to existing text or replace
-                        const newText = additionalContext ? `${additionalContext}\n${text}` : text;
-                        setAdditionalContext(newText);
-                        toast.success('Voice context added');
-                      }}
-                      onError={(error) => {
-                        toast.error('Voice input failed', {
-                          description: error,
-                        });
-                      }}
-                    />
-                  )}
-                </div>
-                <CopyTextarea
+                <Label className="text-xs sm:text-sm font-medium">
+                  Additional Context
+                  <span className="text-xs text-gray-500 ml-1">(Optional)</span>
+                </Label>
+                <VoiceTextarea
                   value={additionalContext}
                   onChange={(e) => setAdditionalContext(e.target.value)}
                   placeholder="Add any specific requirements, tone, formats, or constraints..."
-                  className="min-h-[120px] sm:min-h-[180px] text-base"
-                  style={{ fontSize: '16px' }}
+                  className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                   disabled={isGenerating || hasGeneratedPrompt}
+                  onTranscriptionComplete={(text) => {
+                    toast.success('Voice context added');
+                  }}
+                  onTranscriptionError={(error) => {
+                    toast.error('Voice input failed', {
+                      description: error,
+                    });
+                  }}
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Any additional context, requirements, or constraints
@@ -351,7 +324,7 @@ export function PromptGenerator({
                     onChange={(e) => setPromptName(e.target.value)}
                     placeholder="Enter a name for your new prompt"
                     className="text-base"
-                    style={{ fontSize: '16px' }}
+                    style={{ fontSize: '14px' }}
                     disabled={isSaving}
                   />
                 </div>

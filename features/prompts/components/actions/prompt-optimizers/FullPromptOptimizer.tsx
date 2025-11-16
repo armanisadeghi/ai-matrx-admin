@@ -221,18 +221,7 @@ export function FullPromptOptimizer({
               EXPERIMENTAL
             </span>
           </DialogTitle>
-          <DialogDescription>
-            AI will analyze and optimize your entire prompt configuration including messages, variables, and settings
-          </DialogDescription>
         </DialogHeader>
-
-        {/* Warning Banner */}
-        <div className="mx-6 mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 text-xs text-amber-700 dark:text-amber-300">
-            <strong>Experimental Feature:</strong> This will optimize your entire prompt structure. Review changes carefully before accepting.
-          </div>
-        </div>
 
         <div className="flex-1 grid grid-cols-2 gap-4 px-6 overflow-hidden min-h-0 mt-4">
           {/* Original Prompt Object */}

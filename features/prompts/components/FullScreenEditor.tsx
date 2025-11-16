@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PromptEditorContextMenu } from './PromptEditorContextMenu';
-import { SystemPromptOptimizer } from '@/features/prompts/components/actions/SystemPromptOptimizer';
+import { SystemPromptOptimizer } from '@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer';
 import { ModelSettings } from './configuration/ModelSettings';
 import { VariableEditor } from './configuration/VariableEditor';
 import { sanitizeVariableName } from '@/features/prompts/utils/variable-utils';

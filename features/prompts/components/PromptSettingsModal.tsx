@@ -13,7 +13,7 @@ import { PromptVariable, PromptMessage, VariableCustomComponent } from "@/featur
 import { VariableEditor } from "./configuration/VariableEditor";
 import { ModelSettings } from "./configuration/ModelSettings";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
-import { FullPromptOptimizer } from "@/features/prompts/components/actions/FullPromptOptimizer";
+import { FullPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/FullPromptOptimizer";
 import StandalonePromptsPreferences from "@/components/user-preferences/StandalonePromptsPreferences";
 
 interface PromptSettingsModalProps {

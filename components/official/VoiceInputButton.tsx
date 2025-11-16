@@ -2,7 +2,10 @@
  * Voice Input Button Component
  * 
  * Complete voice input button with recording and transcription
- * Includes all states: idle, recording, transcribing
+ * Handles all recording, transcription, and state management internally
+ * Available in two variants: 'button' (with text) or 'inline' (icon only)
+ * 
+ * @official-component
  */
 
 'use client';
@@ -11,11 +14,11 @@ import React, { useCallback, useState } from 'react';
 import { AudioLines } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useRecordAndTranscribe } from '../hooks';
-import { TranscriptionResult } from '../types';
-import { MicrophoneButton } from './MicrophoneButton';
-import { TranscriptionLoader } from './TranscriptionLoader';
-import { RecordingIndicator } from './RecordingIndicator';
+import { useRecordAndTranscribe } from '@/features/audio/hooks';
+import { TranscriptionResult } from '@/features/audio/types';
+import { MicrophoneButton } from '@/features/audio/components/MicrophoneButton';
+import { TranscriptionLoader } from '@/features/audio/components/TranscriptionLoader';
+import { RecordingIndicator } from '@/features/audio/components/RecordingIndicator';
 
 export interface VoiceInputButtonProps {
   onTranscriptionComplete: (text: string) => void;

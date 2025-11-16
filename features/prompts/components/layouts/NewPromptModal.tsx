@@ -5,7 +5,7 @@ import { Plus, Upload, Wrench, Wand2, LayoutPanelTop } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileOverlayWrapper } from "@/components/official/MobileOverlayWrapper";
 import { PromptImporter } from "@/features/prompts";
-import { PromptGenerator } from "./PromptGenerator";
+import { PromptGenerator } from "../actions/prompt-generator/PromptGenerator";
 import { PromptBuilderModal } from "./PromptBuilderModal";
 import { useRouter } from "next/navigation";
 
@@ -27,10 +27,10 @@ function ActionButton({ icon, title, description, gradient, onClick }: ActionBut
         <button
             onClick={onClick}
             className={cn(
-                "group relative overflow-hidden w-full rounded-xl p-4 text-left transition-all",
-                "bg-gradient-to-br hover:scale-[1.02] active:scale-[0.98]",
+                "group relative overflow-hidden w-full rounded-xl p-4 text-left transition-all duration-200",
+                "bg-gradient-to-br hover:brightness-105",
                 "border border-border/50 hover:border-border",
-                "shadow-md hover:shadow-lg",
+                "shadow-md hover:shadow-xl",
                 gradient
             )}
         >

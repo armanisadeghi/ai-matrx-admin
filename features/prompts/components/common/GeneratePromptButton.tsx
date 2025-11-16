@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Wand2 } from 'lucide-react';
-import { PromptGenerator } from '../actions/PromptGenerator';
+import { PromptGenerator } from '../actions/prompt-generator/PromptGenerator';
 
 export function GeneratePromptButton() {
   const [isOpen, setIsOpen] = useState(false);

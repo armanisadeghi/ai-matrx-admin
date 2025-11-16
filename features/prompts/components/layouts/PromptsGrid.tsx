@@ -2,10 +2,10 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { PromptCard } from "./PromptCard";
-import { FloatingActionBar } from "../actions/FloatingActionBar";
-import { DesktopSearchBar } from "../actions/DesktopSearchBar";
-import { NewPromptModal } from "../actions/NewPromptModal";
-import { FilterModal } from "../actions/FilterModal";
+import { FloatingActionBar } from "./FloatingActionBar";
+import { DesktopSearchBar } from "./DesktopSearchBar";
+import { NewPromptModal } from "./NewPromptModal";
+import { FilterModal } from "./FilterModal";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast-service";
 import { useIsMobile } from "@/hooks/use-mobile";

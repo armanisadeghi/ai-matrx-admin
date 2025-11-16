@@ -415,6 +415,22 @@ export const componentList: ComponentEntry[] = [
     description: 'Powerful multi-mode content editor with plain text, WYSIWYG, markdown, and preview modes. Built-in copy, export, HTML preview, and Notes integration',
     categories: ['editor', 'inputs', 'interactive'],
     tags: ['editor', 'markdown', 'wysiwyg', 'content', 'text', 'copy', 'export', 'html', 'collapsible', 'notes', 'tui']
+  },
+  {
+    id: 'voice-textarea',
+    name: 'Voice Textarea',
+    path: 'components/official/VoiceTextarea.tsx',
+    description: 'Textarea with built-in voice recording and copy functionality. Icons appear on hover/focus. Handles recording, transcription, and text insertion automatically',
+    categories: ['inputs', 'ai-helpers', 'interactive'],
+    tags: ['textarea', 'voice', 'audio', 'recording', 'transcription', 'copy', 'microphone', 'speech-to-text', 'ai', 'input']
+  },
+  {
+    id: 'voice-input-button',
+    name: 'Voice Input Button',
+    path: 'components/official/VoiceInputButton.tsx',
+    description: 'Complete voice recording button with two variants. Handles recording, transcription, and returns text. Shows recording state with visual feedback and duration',
+    categories: ['buttons', 'ai-helpers', 'interactive'],
+    tags: ['button', 'voice', 'audio', 'recording', 'transcription', 'microphone', 'speech-to-text', 'ai', 'input', 'inline']
   }
 ]; 
 

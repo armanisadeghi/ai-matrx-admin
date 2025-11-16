@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import { usePromptsWithFetch } from "@/features/prompts/hooks/usePrompts";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import { useUser } from "@/lib/hooks/useUser";
-import { ConvertToBuiltinModal } from "@/features/prompts/components/actions/ConvertToBuiltinModal";
+import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
 import type { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
 
 export interface PromptActionsMenuProps {

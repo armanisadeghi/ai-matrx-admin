@@ -6,8 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/redux";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
-import { SystemPromptOptimizer } from "@/features/prompts/components/actions/SystemPromptOptimizer";
-import { PromptActionsMenu } from "@/features/prompts/components/actions/PromptActionsMenu";
+import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
+import { PromptActionsMenu } from "@/features/prompts/components/layouts/PromptActionsMenu";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 
 interface PromptBuilderHeaderCompactProps {
