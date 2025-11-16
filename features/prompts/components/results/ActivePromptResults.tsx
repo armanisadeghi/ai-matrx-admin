@@ -8,6 +8,7 @@ import {
   openPromptModal, 
   openCompactModal, 
   openSidebarResult,
+  openFlexiblePanel,
   selectIsPromptModalOpen,
   selectIsCompactModalOpen,
   selectIsSidebarResultOpen,
@@ -20,7 +21,8 @@ import {
   BellRing, 
   Clock,
   ExternalLink,
-  Trash2
+  Trash2,
+  Maximize2
 } from 'lucide-react';
 import type { ResultDisplay } from '@/features/prompt-builtins/types/execution-modes';
 
@@ -62,6 +64,7 @@ export function ActivePromptResults() {
       case 'modal-full': return <Square className="w-4 h-4" />;
       case 'modal-compact': return <RectangleVertical className="w-4 h-4" />;
       case 'sidebar': return <PanelRight className="w-4 h-4" />;
+      case 'flexible-panel': return <Maximize2 className="w-4 h-4" />;
       case 'toast': return <BellRing className="w-4 h-4" />;
       default: return <ExternalLink className="w-4 h-4" />;
     }
@@ -72,6 +75,7 @@ export function ActivePromptResults() {
       case 'modal-full': return 'text-purple-600 dark:text-purple-400';
       case 'modal-compact': return 'text-blue-600 dark:text-blue-400';
       case 'sidebar': return 'text-teal-600 dark:text-teal-400';
+      case 'flexible-panel': return 'text-emerald-600 dark:text-emerald-400';
       case 'toast': return 'text-orange-600 dark:text-orange-400';
       default: return 'text-gray-600 dark:text-gray-400';
     }
@@ -106,6 +110,9 @@ export function ActivePromptResults() {
         break;
       case 'sidebar':
         dispatch(openSidebarResult(configWithPreloadedResult));
+        break;
+      case 'flexible-panel':
+        dispatch(openFlexiblePanel({ config: configWithPreloadedResult }));
         break;
     }
   };

@@ -6,10 +6,10 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { usePromptExecutionCore } from '../../hooks/usePromptExecutionCore';
 import { PromptRunnerInput } from '../PromptRunnerInput';
-import BasicMarkdownContent from '@/components/mardown-display/chat-markdown/BasicMarkdownContent';
 import type { PromptData } from '../../types/modal';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 import type { Resource } from '../resource-display';
+import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 
 interface PromptCompactModalProps {
   isOpen: boolean;
@@ -59,7 +59,7 @@ export default function PromptCompactModal({
   const stateResponseEnded = useAppSelector((state) =>
     taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : true
   );
-  
+
   // SAFETY: Warn if taskId provided but no data found (result may have expired)
   useEffect(() => {
     if (taskId && !stateResponse && stateResponseEnded && !preloadedResult) {
@@ -183,9 +183,12 @@ export default function PromptCompactModal({
                   </div>
                 ) : latestResponse ? (
                   <div className="text-sm leading-relaxed">
-                    <BasicMarkdownContent 
+                    <EnhancedChatMarkdown 
                       content={latestResponse}
-                      showCopyButton={false}
+                      taskId={taskId}
+                      isStreamActive={isExecuting}
+                      allowFullScreenEditor={false}
+                      hideCopyButton={true}
                     />
                   </div>
                 ) : (
@@ -204,9 +207,12 @@ export default function PromptCompactModal({
                         {msg.role === 'user' ? 'You' : 'AI'}
                       </div>
                       <div className={`rounded p-2 ${msg.role === 'user' ? 'bg-[#2a2d2e]' : 'bg-[#252526]'}`}>
-                        <BasicMarkdownContent 
+                        <EnhancedChatMarkdown 
                           content={msg.content}
-                          showCopyButton={false}
+                          taskId={taskId}
+                          allowFullScreenEditor={false}
+                          hideCopyButton={true}
+                          isStreamActive={isExecuting}
                         />
                       </div>
                     </div>

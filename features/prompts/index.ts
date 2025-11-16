@@ -40,7 +40,6 @@ export type {
 
 // Modal Types
 export type {
-  PromptExecutionMode, // @deprecated - use NewExecutionConfig instead
   PromptRunnerModalProps,
   PromptData,
   ExecutionResult as ModalExecutionResult,
@@ -56,9 +55,7 @@ export type {
 // Execution Config Utilities
 export {
   resolveExecutionConfig,
-  getExecutionConfigFromModalConfig,
-  convertLegacyModeToConfig,
-  convertConfigToLegacyMode
+  getExecutionConfigFromModalConfig
 } from './types/modal';
 
 // Core Types

@@ -20,6 +20,11 @@ import {
   selectSidebarPosition,
   selectSidebarSize,
   selectSidebarTaskId,
+  closeFlexiblePanel,
+  selectIsFlexiblePanelOpen,
+  selectFlexiblePanelConfig,
+  selectFlexiblePanelPosition,
+  selectFlexiblePanelTaskId,
   selectToastQueue,
   removeToast,
 } from "@/lib/redux/slices/promptRunnerSlice";
@@ -107,6 +112,12 @@ const PromptSidebarRunner = dynamic(
   { ssr: false }
 );
 
+// Prompt Flexible Panel (flexible-panel)
+const PromptFlexiblePanel = dynamic(
+  () => import("@/features/prompts/components/flexible-panel/PromptFlexiblePanel"),
+  { ssr: false }
+);
+
 // Prompt Toast (toast)
 const PromptToast = dynamic(
   () => import("@/features/prompts/components/toast/PromptToast"),
@@ -150,11 +161,16 @@ export const OverlayController: React.FC = () => {
   const sidebarPosition = useAppSelector(selectSidebarPosition);
   const sidebarSize = useAppSelector(selectSidebarSize);
   
+  const isFlexiblePanelOpen = useAppSelector(selectIsFlexiblePanelOpen);
+  const flexiblePanelConfig = useAppSelector(selectFlexiblePanelConfig);
+  const flexiblePanelPosition = useAppSelector(selectFlexiblePanelPosition);
+  
   const toastQueue = useAppSelector(selectToastQueue);
   
   // Get taskIds for saving response text on close
   const promptModalTaskId = useAppSelector(selectPromptModalTaskId);
   const sidebarTaskId = useAppSelector(selectSidebarTaskId);
+  const flexiblePanelTaskId = useAppSelector(selectFlexiblePanelTaskId);
   
   // Get data for each overlay
   const markdownEditorData = useAppSelector((state) => selectOverlayData(state, "markdownEditor"));
@@ -169,6 +185,9 @@ export const OverlayController: React.FC = () => {
     );
     const sidebarResponseText = useAppSelector((state) =>
       sidebarTaskId ? selectPrimaryResponseTextByTaskId(sidebarTaskId)(state) : ''
+    );
+    const flexiblePanelResponseText = useAppSelector((state) =>
+      flexiblePanelTaskId ? selectPrimaryResponseTextByTaskId(flexiblePanelTaskId)(state) : ''
     );
   
   // Only render after component has mounted on the client
@@ -242,6 +261,11 @@ export const OverlayController: React.FC = () => {
   const handleCloseSidebarResult = () => {
     // Save response text to sessionStorage before closing
     dispatch(closeSidebarResult({ responseText: sidebarResponseText }));
+  };
+  
+  const handleCloseFlexiblePanel = () => {
+    // Save response text to sessionStorage before closing
+    dispatch(closeFlexiblePanel({ responseText: flexiblePanelResponseText }));
   };
   
   const handleDismissToast = (toastId: string) => {
@@ -401,7 +425,6 @@ export const OverlayController: React.FC = () => {
           promptId={promptModalConfig.promptId}
           promptData={promptModalConfig.promptData}
           executionConfig={promptModalConfig.executionConfig}
-          mode={promptModalConfig.mode}
           variables={promptModalConfig.variables}
           initialMessage={promptModalConfig.initialMessage}
           title={promptModalConfig.title}
@@ -453,6 +476,20 @@ export const OverlayController: React.FC = () => {
           executionConfig={sidebarResultConfig.executionConfig}
           variables={sidebarResultConfig.variables}
           title={sidebarResultConfig.title}
+        />
+      )}
+      
+      {/* Flexible Panel (Advanced Resizable Panel) */}
+      {isFlexiblePanelOpen && flexiblePanelConfig && (
+        <PromptFlexiblePanel
+          isOpen={true}
+          onClose={handleCloseFlexiblePanel}
+          position={flexiblePanelPosition}
+          promptId={flexiblePanelConfig.promptId}
+          promptData={flexiblePanelConfig.promptData}
+          executionConfig={flexiblePanelConfig.executionConfig}
+          variables={flexiblePanelConfig.variables}
+          title={flexiblePanelConfig.title}
         />
       )}
       

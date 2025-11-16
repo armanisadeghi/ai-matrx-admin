@@ -55,6 +55,15 @@ export interface PromptRunnerState {
     openedAt: number | null;
   };
   
+  // Flexible panel (flexible-panel) - Advanced resizable panel with position controls
+  flexiblePanel: {
+    isOpen: boolean;
+    config: PromptRunnerModalConfig | null;
+    taskId: string | null;
+    position: 'left' | 'right' | 'top' | 'bottom';
+    openedAt: number | null;
+  };
+  
   // Toast notification (toast)
   toastQueue: Array<{
     id: string;
@@ -96,6 +105,13 @@ const initialState: PromptRunnerState = {
     taskId: null,
     position: 'right',
     size: 'md',
+    openedAt: null,
+  },
+  flexiblePanel: {
+    isOpen: false,
+    config: null,
+    taskId: null,
+    position: 'right',
     openedAt: null,
   },
   toastQueue: [],
@@ -335,6 +351,69 @@ const promptRunnerSlice = createSlice({
       }
     },
 
+    // ========== FLEXIBLE PANEL ==========
+    openFlexiblePanel: (state, action: PayloadAction<{
+      config: PromptRunnerModalConfig;
+      position?: 'left' | 'right' | 'top' | 'bottom';
+    }>) => {
+      state.flexiblePanel = {
+        isOpen: true,
+        config: action.payload.config,
+        taskId: null,
+        position: action.payload.position || 'right',
+        openedAt: Date.now(),
+      };
+    },
+    closeFlexiblePanel: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+      // Save to recent results before closing (with response text for persistence)
+      if (state.flexiblePanel.config && state.flexiblePanel.openedAt) {
+        const responseText = action.payload?.responseText ?? '';
+        
+        const recent = {
+          id: `result-${Date.now()}`,
+          promptName: state.flexiblePanel.config.promptData?.name || state.flexiblePanel.config.title || 'Unknown Prompt',
+          displayType: 'flexible-panel' as const,
+          timestamp: state.flexiblePanel.openedAt,
+          taskId: state.flexiblePanel.taskId, // Keep taskId for reference
+          responseText, // CRITICAL: Save actual response text for restore
+          config: {
+            ...state.flexiblePanel.config,
+            executionConfig: {
+              ...state.flexiblePanel.config.executionConfig,
+              auto_run: false, // CRITICAL: Prevent re-execution on restore
+            },
+          },
+        };
+        
+        // Save to session storage
+        try {
+          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const updated = [recent, ...existing].slice(0, 20); // Keep last 20
+          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save recent result:', e);
+        }
+      }
+      
+      state.flexiblePanel = {
+        isOpen: false,
+        config: null,
+        taskId: null,
+        position: 'right',
+        openedAt: null,
+      };
+    },
+    setFlexiblePanelTaskId: (state, action: PayloadAction<string>) => {
+      if (state.flexiblePanel.isOpen) {
+        state.flexiblePanel.taskId = action.payload;
+      }
+    },
+    updateFlexiblePanelPosition: (state, action: PayloadAction<'left' | 'right' | 'top' | 'bottom'>) => {
+      if (state.flexiblePanel.isOpen) {
+        state.flexiblePanel.position = action.payload;
+      }
+    },
+
     // ========== TOAST ==========
     addToastResult: (state, action: PayloadAction<{
       result: string;
@@ -406,6 +485,16 @@ export const selectSidebarSize = (state: RootState) =>
 export const selectSidebarTaskId = (state: RootState) =>
   state.promptRunner?.sidebarResult?.taskId || null;
 
+// Flexible Panel
+export const selectIsFlexiblePanelOpen = (state: RootState) =>
+  state.promptRunner?.flexiblePanel?.isOpen || false;
+export const selectFlexiblePanelConfig = (state: RootState) =>
+  state.promptRunner?.flexiblePanel?.config || null;
+export const selectFlexiblePanelPosition = (state: RootState) =>
+  state.promptRunner?.flexiblePanel?.position || 'right';
+export const selectFlexiblePanelTaskId = (state: RootState) =>
+  state.promptRunner?.flexiblePanel?.taskId || null;
+
 // Toast
 export const selectToastQueue = (state: RootState) =>
   state.promptRunner?.toastQueue || [];
@@ -434,6 +523,11 @@ export const {
   setSidebarTaskId,
   updateSidebarPosition,
   updateSidebarSize,
+  // Flexible Panel
+  openFlexiblePanel,
+  closeFlexiblePanel,
+  setFlexiblePanelTaskId,
+  updateFlexiblePanelPosition,
   // Toast
   addToastResult,
   removeToast,

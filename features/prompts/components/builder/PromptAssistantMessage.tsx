@@ -94,8 +94,8 @@ export function PromptAssistantMessage({
     const isError = content.startsWith("Error:");
     
     return (
-        <div className="mr-12">
-            <div className="text-xs font-semibold mb-1 text-muted-foreground">
+        <div >
+            <div className="text-xs font-semibold mb-0.5 text-muted-foreground">
                 Assistant
                 {metadata && metadata.totalTime && (
                     <span className="ml-2 text-muted-foreground font-normal">
@@ -119,7 +119,7 @@ export function PromptAssistantMessage({
                         onContentChange={handleContentChange}
                     />
                     {!isStreamActive && (
-                        <div className="flex items-center gap-1 mt-2">
+                        <div className="flex items-center gap-1 mt-1">
                             <Button
                                 variant="ghost"
                                 size="sm"

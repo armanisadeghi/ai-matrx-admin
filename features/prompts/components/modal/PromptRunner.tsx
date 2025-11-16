@@ -18,7 +18,6 @@ import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-genera
 import { v4 as uuidv4 } from "uuid";
 import {  PromptRunnerModalProps,
   PromptData,
-  PromptExecutionMode,
   resolveExecutionConfig,
   type NewExecutionConfig
 } from "../../types/modal";
@@ -38,11 +37,8 @@ export interface PromptRunnerProps {
     promptId?: string;
     promptData?: PromptData | null;
     
-    /** NEW: Execution configuration (preferred) */
+    /** Execution configuration */
     executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
-    
-    /** @deprecated Use executionConfig instead */
-    mode?: PromptExecutionMode;
     
     variables?: Record<string, string>;
     initialMessage?: string;
@@ -71,7 +67,6 @@ export function PromptRunner({
     promptId,
     promptData: initialPromptData,
     executionConfig,
-    mode = 'manual',
     variables: initialVariables,
     initialMessage,
     onExecutionComplete,
@@ -85,10 +80,10 @@ export function PromptRunner({
     const { isOpen: isCanvasOpen, close: closeCanvas, open: openCanvas, content: canvasContent } = useCanvas();
     const { formatMessageWithResources } = useResourceMessageFormatter();
     
-    // Resolve execution configuration (supports both new and legacy formats)
+    // Resolve execution configuration
     const resolvedConfig = useMemo(() => {
-        return resolveExecutionConfig(executionConfig, mode);
-    }, [executionConfig, mode]);
+        return resolveExecutionConfig(executionConfig);
+    }, [executionConfig]);
     
     // Extract execution flags for easy access
     const { auto_run: autoRun, allow_chat: allowChat, show_variables: showVariables, apply_variables: applyVariables } = resolvedConfig;
@@ -284,7 +279,7 @@ export function PromptRunner({
             });
             setVariableDefaults(mergedVariables);
         }
-    }, [variableDefaultsFromPrompt, initialVariables, mode]);
+    }, [variableDefaultsFromPrompt, initialVariables]);
     
     // Get streaming response from socket
     const streamingText = useAppSelector((state) => 
@@ -464,7 +459,7 @@ export function PromptRunner({
                 }, 100);
             }
         }
-    }, [isActive, mode, hasAutoExecuted, promptData, variableDefaults, isLoadingPrompt]);
+    }, [isActive, hasAutoExecuted, promptData, variableDefaults, isLoadingPrompt]);
     
     // Auto-execute for hidden-variables mode after additional info is provided
     useEffect(() => {
@@ -485,7 +480,7 @@ export function PromptRunner({
                 handleSendTestMessage();
             }, 100);
         }
-    }, [isActive, mode, additionalInfoProvided, hasAutoExecuted, promptData, isLoadingPrompt]);
+    }, [isActive, additionalInfoProvided, hasAutoExecuted, promptData, isLoadingPrompt]);
     
     // Handler to send message
     const handleSendTestMessage = async () => {
@@ -819,7 +814,7 @@ export function PromptRunner({
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex justify-center w-full px-6 pt-6">
+                                            <div className="flex justify-center w-full px-2 pt-6">
                                                 <div className="w-full max-w-[800px] space-y-6">
                                                     {displayMessages.map((msg, idx) => {
                                                         const isLastMessage = idx === displayMessages.length - 1;
@@ -852,7 +847,7 @@ export function PromptRunner({
                                     
                                     {/* Front Layer: Input Area - Hide if chat is disabled after execution */}
                                     {!(autoRun && !allowChat && conversationStarted) && (
-                                        <div className="absolute bottom-0 left-0 right-0 z-10 bg-textured pt-6 pb-4 px-6 pointer-events-none">
+                                        <div className="absolute bottom-0 left-0 right-0 z-10 bg-textured pt-2 pb-4 px-2 pointer-events-none">
                                             <div className="pointer-events-auto max-w-[800px] mx-auto rounded-xl">
                                                 <PromptRunnerInput
                                                     variableDefaults={variableDefaults}

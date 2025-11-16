@@ -7,46 +7,18 @@
 import { PromptVariable, PromptMessage } from "@/features/prompts/types/core";
 import type { 
   PromptExecutionConfig as NewExecutionConfig,
-  ResultDisplay,
-  LegacyPromptExecutionMode
-} from "@/features/prompt-builtins/types/execution-modes";
-import { 
-  convertLegacyModeToConfig,
-  convertConfigToLegacyMode
+  ResultDisplay
 } from "@/features/prompt-builtins/types/execution-modes";
 
 // Re-export new types for convenience
 export type { NewExecutionConfig, ResultDisplay };
-export { convertLegacyModeToConfig, convertConfigToLegacyMode };
-
-// ============================================================================
-// Execution Modes (LEGACY - Deprecated)
-// ============================================================================
-
-/**
- * @deprecated Use PromptExecutionConfig with separate flags instead
- * 
- * Legacy execution mode that combined multiple concerns into a single enum.
- * This is now split into separate flags for better flexibility:
- * - auto_run: boolean
- * - allow_chat: boolean
- * - show_variables: boolean
- * - apply_variables: boolean
- * - result_display: ResultDisplay
- */
-export type PromptExecutionMode = LegacyPromptExecutionMode;
-
 
 /**
  * Execution configuration for prompt runner
- * Supports both new (preferred) and legacy (deprecated) formats
  */
 export interface PromptExecutionConfiguration {
-  /** NEW: Execution configuration (preferred) */
+  /** Execution configuration */
   executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
-  
-  /** LEGACY: Execution mode (deprecated, use executionConfig instead) */
-  mode?: PromptExecutionMode;
   
   /** Auto-run flag (can be used directly for simple cases) */
   autoRun?: boolean;
@@ -72,11 +44,8 @@ export interface PromptRunnerModalProps {
   promptId?: string;
   promptData?: PromptData;
   
-  /** Execution configuration (NEW preferred approach) */
+  /** Execution configuration */
   executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
-  
-  /** @deprecated Use executionConfig instead */
-  mode?: PromptExecutionMode;
   
   /** Pre-filled variable values */
   variables?: Record<string, string>;
@@ -133,17 +102,13 @@ export interface UsePromptRunnerModalReturn {
 
 /**
  * Configuration passed to the modal hook
- * Supports both new (preferred) and legacy (deprecated) formats
  */
 export interface PromptRunnerModalConfig {
   promptId?: string;
   promptData?: PromptData;
   
-  /** NEW: Execution configuration with separate flags (preferred) */
+  /** Execution configuration with separate flags */
   executionConfig?: Omit<NewExecutionConfig, 'result_display'>;
-  
-  /** @deprecated Use executionConfig instead */
-  mode?: PromptExecutionMode;
   
   variables?: Record<string, string>;
   initialMessage?: string;
@@ -186,11 +151,10 @@ export interface PromptExecutionRequest {
 
 /**
  * Resolve execution config from various input formats
- * Handles legacy mode, new config, or individual flags
+ * Handles new config or individual flags
  */
 export function resolveExecutionConfig(
   config?: Omit<NewExecutionConfig, 'result_display'>,
-  legacyMode?: PromptExecutionMode,
   individualFlags?: {
     autoRun?: boolean;
     allowChat?: boolean;
@@ -198,14 +162,10 @@ export function resolveExecutionConfig(
     applyVariables?: boolean;
   }
 ): Omit<NewExecutionConfig, 'result_display'> {
-  // Priority: config > legacyMode > individualFlags > defaults
+  // Priority: config > individualFlags > defaults
   
   if (config) {
     return config;
-  }
-  
-  if (legacyMode) {
-    return convertLegacyModeToConfig(legacyMode);
   }
   
   if (individualFlags && Object.keys(individualFlags).length > 0) {
@@ -232,9 +192,6 @@ export function resolveExecutionConfig(
 export function getExecutionConfigFromModalConfig(
   modalConfig: PromptRunnerModalConfig
 ): Omit<NewExecutionConfig, 'result_display'> {
-  return resolveExecutionConfig(
-    modalConfig.executionConfig,
-    modalConfig.mode
-  );
+  return resolveExecutionConfig(modalConfig.executionConfig);
 }
 

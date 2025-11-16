@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
-import { openPromptModal, openCompactModal, openSidebarResult } from '@/lib/redux/slices/promptRunnerSlice';
+import { openPromptModal, openCompactModal, openSidebarResult, openFlexiblePanel } from '@/lib/redux/slices/promptRunnerSlice';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Square, 
   RectangleVertical, 
-  PanelRight, 
+  PanelRight,
+  Maximize2,
   Clock,
   Trash2,
   ExternalLink
@@ -54,6 +55,7 @@ export function QuickAIResultsSheet() {
       case 'modal-full': return Square;
       case 'modal-compact': return RectangleVertical;
       case 'sidebar': return PanelRight;
+      case 'flexible-panel': return Maximize2;
       default: return ExternalLink;
     }
   };
@@ -63,6 +65,7 @@ export function QuickAIResultsSheet() {
       case 'modal-full': return 'text-purple-600 dark:text-purple-400';
       case 'modal-compact': return 'text-blue-600 dark:text-blue-400';
       case 'sidebar': return 'text-teal-600 dark:text-teal-400';
+      case 'flexible-panel': return 'text-emerald-600 dark:text-emerald-400';
       default: return 'text-gray-600 dark:text-gray-400';
     }
   };
@@ -95,6 +98,9 @@ export function QuickAIResultsSheet() {
         break;
       case 'sidebar':
         dispatch(openSidebarResult(configWithPreloadedResult));
+        break;
+      case 'flexible-panel':
+        dispatch(openFlexiblePanel({ config: configWithPreloadedResult }));
         break;
     }
   };

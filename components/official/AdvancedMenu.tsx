@@ -47,6 +47,8 @@ export interface AdvancedMenuProps {
   className?: string;
   width?: string; // Default "280px"
   maxWidth?: string; // Default "320px"
+  zIndex?: number; // Menu z-index, Default 9999
+  backdropZIndex?: number; // Backdrop z-index, Default 9998
   
   // Behavior
   closeOnAction?: boolean; // Default true for non-async, false for async
@@ -77,6 +79,8 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
   className = "",
   width = "280px",
   maxWidth = "320px",
+  zIndex = 9999,
+  backdropZIndex = 9998,
   closeOnAction = true,
   showBackdrop = true,
   backdropBlur = true,
@@ -304,8 +308,9 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
       {/* Backdrop Overlay */}
       {showBackdrop && (
         <div
+          style={{ zIndex: backdropZIndex }}
           className={cn(
-            "fixed inset-0 z-40 bg-black/20 dark:bg-black/40",
+            "fixed inset-0 bg-black/20 dark:bg-black/40",
             backdropBlur && "backdrop-blur-[2px]"
           )}
           onClick={onClose}
@@ -319,10 +324,11 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           minWidth: width, 
           maxWidth,
           maxHeight: maxMenuHeight,
+          zIndex: zIndex,
           ...getPositionStyles()
         }}
         className={cn(
-          "fixed z-50 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
+          "fixed bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
           "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]",
           "rounded-lg border border-zinc-300 dark:border-zinc-600",
           "overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",

@@ -9,13 +9,14 @@
 // ============================================================================
 
 export type ResultDisplay = 
-  | 'modal-full'    // Full modal with chat interface (PromptRunnerModal)
-  | 'modal-compact' // Compact modal with essential controls only
-  | 'inline'        // Minimal overlay with replace/insert/cancel (VSCode-style)
-  | 'sidebar'       // Sidebar panel using FloatingSheet component
-  | 'toast'         // Toast notification for simple responses
-  | 'direct'        // Streams directly to target location (no intermediate UI)
-  | 'background';   // Silent execution, state-only updates (automation)
+  | 'modal-full'      // Full modal with chat interface (PromptRunnerModal)
+  | 'modal-compact'   // Compact modal with essential controls only
+  | 'inline'          // Minimal overlay with replace/insert/cancel (VSCode-style)
+  | 'sidebar'         // Sidebar panel using FloatingSheet component
+  | 'flexible-panel'  // Advanced resizable panel with position controls (MatrxDynamicPanel)
+  | 'toast'           // Toast notification for simple responses
+  | 'direct'          // Streams directly to target location (no intermediate UI)
+  | 'background';     // Silent execution, state-only updates (automation)
 
 export const RESULT_DISPLAY_META = {
   'modal-full': {
@@ -41,6 +42,12 @@ export const RESULT_DISPLAY_META = {
     description: 'Persistent sidebar panel (FloatingSheet) with contextual results',
     icon: 'PanelRight',
     useCases: ['Parallel workflows', 'Reference while working', 'Multi-document tasks'],
+  },
+  'flexible-panel': {
+    label: 'Flexible Panel',
+    description: 'Advanced resizable panel with full position control and fullscreen mode',
+    icon: 'Maximize2',
+    useCases: ['Complex workflows', 'Full customization', 'Multi-position support', 'Adjustable sizing'],
   },
   toast: {
     label: 'Toast',

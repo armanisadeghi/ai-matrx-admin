@@ -15,7 +15,8 @@ import type { PromptData } from '../../types/modal';
 import type { ResultDisplay, PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 import { 
   ChevronDown, Zap, Eye, Settings, TestTube2, Play, TestTube,
-  Square, RectangleVertical, FileEdit, PanelRight, BellRing, ArrowRight, Loader
+  Square, RectangleVertical, FileEdit, PanelRight, BellRing, ArrowRight, Loader,
+  Maximize2
 } from 'lucide-react';
 
 interface PromptRunnerModalSidebarTesterProps {
@@ -73,7 +74,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
       result_display: resultDisplay,
       executionConfig,
       variables,
-      ...(resultDisplay === 'sidebar' && {
+      ...((resultDisplay === 'sidebar' || resultDisplay === 'flexible-panel') && {
         sidebarPosition,
         sidebarSize,
       }),
@@ -118,6 +119,15 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
             disabled: false,
             ignores: [],
             note: 'Side panel with full features'
+        },
+        {
+            name: 'Flexible Panel',
+            icon: Maximize2,
+            color: 'text-emerald-600 dark:text-emerald-400',
+            resultDisplay: 'flexible-panel' as ResultDisplay,
+            disabled: false,
+            ignores: [],
+            note: 'Advanced resizable panel with position controls'
         },
         {
             name: 'Toast',

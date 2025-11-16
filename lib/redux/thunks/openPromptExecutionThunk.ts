@@ -14,6 +14,7 @@ import {
   openCompactModal,
   openInlineOverlay,
   openSidebarResult,
+  openFlexiblePanel,
   addToastResult,
 } from '../slices/promptRunnerSlice';
 import { cachePrompt } from '../slices/promptCacheSlice';
@@ -163,6 +164,13 @@ export const openPromptExecution = createAsyncThunk(
           config: baseModalConfig,
           position: sidebarPosition || 'right',
           size: sidebarSize || 'md',
+        }));
+        break;
+
+      case 'flexible-panel':
+        dispatch(openFlexiblePanel({
+          config: baseModalConfig,
+          position: sidebarPosition || 'right', // Reuse sidebarPosition for flexible panel
         }));
         break;
 

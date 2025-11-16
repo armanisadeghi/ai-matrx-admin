@@ -126,7 +126,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     const [isFullScreen, setIsFullScreen] = React.useState(false);
     const [lastSize, setLastSize] = React.useState(defaultSize);
     const [preFullScreenSize, setPreFullScreenSize] = React.useState<number | null>(defaultSize);
-    const [panelKey, setPanelKey] = React.useState(0);
     const [currentPosition, setCurrentPosition] = React.useState<PanelPosition>(initialPosition);
     const isExpanded = controlledExpanded ?? localExpanded;
 
@@ -138,15 +137,8 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
         setCurrentPosition(initialPosition);
     }, [initialPosition]);
 
-    React.useEffect(() => {
-        if (!isFullScreen && preFullScreenSize !== null) {
-            setPanelKey(prev => prev + 1);
-        }
-    }, [isFullScreen, preFullScreenSize]);
-
     const handlePositionChange = (newPosition: PanelPosition) => {
         setCurrentPosition(newPosition);
-        setPanelKey(prev => prev + 1);
     };
 
     const handleToggle = () => {
@@ -387,7 +379,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             }}
         >
             <ResizablePanelGroup
-                key={panelKey}
                 ref={panelGroupRef}
                 direction={isVertical ? 'vertical' : 'horizontal'}
                 className="h-full"
