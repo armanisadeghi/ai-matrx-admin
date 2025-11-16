@@ -58,7 +58,7 @@ import {
   updatePromptShortcut,
 } from '../services/admin-service';
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
-import { RESULT_DISPLAY_META } from '../types/execution-modes';
+import { RESULT_DISPLAY_META, ResultDisplay } from '../types/execution-modes';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { PromptBuiltinEditDialog } from './PromptBuiltinEditDialog';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
@@ -75,6 +75,28 @@ interface ShortcutWithRelations extends PromptShortcut {
 
 interface ShortcutsTableManagerProps {
   className?: string;
+}
+
+/**
+ * Safely get result display metadata with proper fallback
+ * Prevents crashes from invalid or legacy display values
+ */
+function getResultDisplayMeta(display: string | null | undefined) {
+  const DEFAULT_DISPLAY: ResultDisplay = 'modal-full';
+  
+  // Handle null/undefined
+  if (!display) {
+    return RESULT_DISPLAY_META[DEFAULT_DISPLAY];
+  }
+  
+  // Check if the display value exists in our metadata
+  if (display in RESULT_DISPLAY_META) {
+    return RESULT_DISPLAY_META[display as ResultDisplay];
+  }
+  
+  // Fallback for invalid values
+  console.warn(`Invalid result_display value: "${display}". Using default: "${DEFAULT_DISPLAY}"`);
+  return RESULT_DISPLAY_META[DEFAULT_DISPLAY];
 }
 
 export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps) {
@@ -546,11 +568,11 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                         <Tooltip>
                           <TooltipTrigger>
                             <Badge variant="outline" className="text-xs">
-                              {RESULT_DISPLAY_META[shortcut.result_display || 'modal'].label}
+                              {getResultDisplayMeta(shortcut.result_display).label}
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="text-xs">{RESULT_DISPLAY_META[shortcut.result_display || 'modal'].description}</p>
+                            <p className="text-xs">{getResultDisplayMeta(shortcut.result_display).description}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TableCell>
