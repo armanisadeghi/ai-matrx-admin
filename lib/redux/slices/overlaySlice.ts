@@ -27,6 +27,7 @@ const initialState: OverlayState = {
     quickData: { isOpen: false, data: null },
     quickFiles: { isOpen: false, data: null },
     quickUtilities: { isOpen: false, data: null },
+    quickAIResults: { isOpen: false, data: null },
     // ... other overlays
   },
 };

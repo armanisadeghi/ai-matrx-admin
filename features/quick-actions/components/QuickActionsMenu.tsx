@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { StickyNote, Zap, LayoutGrid, CheckSquare, MessageSquare, Database, FolderOpen } from 'lucide-react';
+import { StickyNote, Zap, LayoutGrid, CheckSquare, MessageSquare, Database, FolderOpen, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -27,6 +27,7 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
         openQuickData,
         openQuickFiles,
         openQuickUtilities,
+        openQuickAIResults,
     } = useQuickActions();
 
     return (
@@ -107,6 +108,18 @@ export function QuickActionsMenu({ className }: QuickActionsMenuProps) {
                             <div className="flex flex-col">
                                 <span>Files</span>
                                 <span className="text-xs text-zinc-500">Upload & browse files</span>
+                            </div>
+                        </DropdownMenuItem>
+
+                        {/* AI Results Option */}
+                        <DropdownMenuItem
+                            onClick={() => openQuickAIResults()}
+                            className="cursor-pointer"
+                        >
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            <div className="flex flex-col">
+                                <span>AI Results</span>
+                                <span className="text-xs text-zinc-500">Recent prompt results</span>
                             </div>
                         </DropdownMenuItem>
 

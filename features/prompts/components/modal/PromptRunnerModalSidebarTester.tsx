@@ -32,11 +32,15 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
     const [testModalOpen, setTestModalOpen] = useState(false);
     const [testModalType, setTestModalType] = useState<'direct' | 'inline' | 'background'>('direct');
     
-    // Execution config toggles (user controls)
-    const [autoRun, setAutoRun] = useState(true);
-    const [allowChat, setAllowChat] = useState(true);
-    const [showVariables, setShowVariables] = useState(false);
-    const [applyVariables, setApplyVariables] = useState(true);
+  // Execution config toggles (user controls)
+  const [autoRun, setAutoRun] = useState(true);
+  const [allowChat, setAllowChat] = useState(true);
+  const [showVariables, setShowVariables] = useState(false);
+  const [applyVariables, setApplyVariables] = useState(true);
+  
+  // Sidebar specific options
+  const [sidebarPosition, setSidebarPosition] = useState<'left' | 'right'>('right');
+  const [sidebarSize, setSidebarSize] = useState<'sm' | 'md' | 'lg'>('lg');
     
     // Generate test variables with defaults
     const getTestVariables = () => {
@@ -64,13 +68,17 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
         
         const variables = applyVariables ? getTestVariables() : {};
         
-        openPrompt({
-            promptData,
-            result_display: resultDisplay,
-            executionConfig,
-            variables,
-        });
-    };
+    openPrompt({
+      promptData,
+      result_display: resultDisplay,
+      executionConfig,
+      variables,
+      ...(resultDisplay === 'sidebar' && {
+        sidebarPosition,
+        sidebarSize,
+      }),
+    });
+  };
     
     // ResultDisplay types with their characteristics
     const displayTypes = [
@@ -205,6 +213,64 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                             >
                                 <Settings className="w-3 h-3 mr-1" />
                                 Apply Vars
+                            </Button>
+                        </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    {/* Sidebar Options */}
+                    <div className="space-y-1.5">
+                        <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                            Sidebar Options
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-1 px-1">
+                            <Button
+                                variant={sidebarPosition === 'left' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSidebarPosition('left')}
+                                className="h-7 text-[10px] px-2"
+                            >
+                                Left
+                            </Button>
+                            
+                            <Button
+                                variant={sidebarPosition === 'right' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSidebarPosition('right')}
+                                className="h-7 text-[10px] px-2"
+                            >
+                                Right
+                            </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-1 px-1">
+                            <Button
+                                variant={sidebarSize === 'sm' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSidebarSize('sm')}
+                                className="h-7 text-[10px] px-2"
+                            >
+                                Small
+                            </Button>
+                            
+                            <Button
+                                variant={sidebarSize === 'md' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSidebarSize('md')}
+                                className="h-7 text-[10px] px-2"
+                            >
+                                Med
+                            </Button>
+                            
+                            <Button
+                                variant={sidebarSize === 'lg' ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSidebarSize('lg')}
+                                className="h-7 text-[10px] px-2"
+                            >
+                                Large
                             </Button>
                         </div>
                     </div>

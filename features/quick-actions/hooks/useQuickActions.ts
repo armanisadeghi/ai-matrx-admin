@@ -43,6 +43,10 @@ export function useQuickActions() {
     dispatch(openOverlay({ overlayId: 'quickUtilities', data }));
   }, [dispatch]);
 
+  const openQuickAIResults = useCallback((data?: any) => {
+    dispatch(openOverlay({ overlayId: 'quickAIResults', data }));
+  }, [dispatch]);
+
   return {
     openQuickNotes,
     openQuickTasks,
@@ -50,6 +54,7 @@ export function useQuickActions() {
     openQuickData,
     openQuickFiles,
     openQuickUtilities,
+    openQuickAIResults,
   };
 }
 

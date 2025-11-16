@@ -69,6 +69,11 @@ const UtilitiesOverlay = dynamic(
   { ssr: false }
 );
 
+const QuickAIResultsSheet = dynamic(
+  () => import("@/features/prompts/components/results/QuickAIResultsSheet").then(mod => ({ default: mod.QuickAIResultsSheet })),
+  { ssr: false }
+);
+
 const FloatingSheet = dynamic(
   () => import("@/components/ui/matrx/FloatingSheet"),
   { ssr: false }
@@ -123,6 +128,7 @@ export const OverlayController: React.FC = () => {
   const isQuickDataOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickData"));
   const isQuickFilesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickFiles"));
   const isQuickUtilitiesOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickUtilities"));
+  const isQuickAIResultsOpen = useAppSelector((state) => selectIsOverlayOpen(state, "quickAIResults"));
   
   // Prompt Runner Modals
   const isPromptModalOpen = useAppSelector(selectIsPromptModalOpen);
@@ -192,6 +198,10 @@ export const OverlayController: React.FC = () => {
 
   const handleCloseQuickUtilities = () => {
     dispatch(closeOverlay({ overlayId: "quickUtilities" }));
+  };
+
+  const handleCloseQuickAIResults = () => {
+    dispatch(closeOverlay({ overlayId: "quickAIResults" }));
   };
 
   // Prompt Runner handlers
@@ -338,6 +348,24 @@ export const OverlayController: React.FC = () => {
           isOpen={true}
           onClose={handleCloseQuickUtilities}
         />
+      )}
+
+      {/* Quick AI Results Overlay */}
+      {isQuickAIResultsOpen && (
+        <FloatingSheet
+          isOpen={true}
+          onClose={handleCloseQuickAIResults}
+          title=""
+          position="right"
+          width="md"
+          height="full"
+          closeOnBackdropClick={true}
+          closeOnEsc={true}
+          showCloseButton={false}
+          contentClassName="p-0"
+        >
+          <QuickAIResultsSheet />
+        </FloatingSheet>
       )}
 
       {/* ========== PROMPT RESULT DISPLAYS ========== */}
