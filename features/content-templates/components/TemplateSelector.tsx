@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageRole } from "@/types/content-templates-db";
+import { MessageRole } from "@/features/content-templates/types/content-templates-db";
 import { TemplateBrowserModal } from "./TemplateBrowserModal";
 import { SaveTemplateModal } from "./SaveTemplateModal";
 

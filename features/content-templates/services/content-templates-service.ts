@@ -5,7 +5,7 @@ import {
     ContentTemplateQueryOptions,
     MessageRole,
     TemplatesByRole
-} from '@/types/content-templates-db';
+} from '@/features/content-templates/types/content-templates-db';
 import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
 import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient';
 

@@ -748,7 +748,7 @@ export function PromptRunner({
                                     isStreaming={isTestingPrompt}
                                     emptyState={
                                         <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
-                                            <div className="text-center max-w-md">
+                                            <div className="text-center max-w-2xl">
                                                 <p className="text-lg font-medium mb-2">
                                                     {autoRun ? 'Starting execution...' : 'Ready to run your prompt'}
                                                 </p>

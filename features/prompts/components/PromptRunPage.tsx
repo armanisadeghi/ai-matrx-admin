@@ -21,7 +21,7 @@ import { generateRunNameFromMessage } from "@/features/ai-runs/utils/name-genera
 import { PromptRunsSidebar } from "@/features/ai-runs/components/PromptRunsSidebar";
 import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PromptRunnerModalSidebarTester } from "../components/modal/PromptRunnerModalSidebarTester";
+import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -40,7 +40,7 @@ interface PromptRunnerProps {
     };
 }
 
-export function PromptRunner({ models, promptData }: PromptRunnerProps) {
+export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const searchParams = useSearchParams();

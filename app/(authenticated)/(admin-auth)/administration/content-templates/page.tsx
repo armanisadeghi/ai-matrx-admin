@@ -1,4 +1,4 @@
-import { ContentTemplateManager } from '@/components/admin/ContentTemplateManager';
+import { ContentTemplateManager } from '@/features/content-templates/admin/ContentTemplateManager';
 
 export default function ContentTemplatesPage() {
     return (

@@ -1,0 +1,2 @@
+export { ContentTemplateManager } from './ContentTemplateManager';
+

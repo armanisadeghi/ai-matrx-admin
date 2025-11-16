@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Settings as SettingsIcon, Building2, Chrome, ArrowLeft, Menu, Mic } from 'lucide-react';
+import { User, Settings as SettingsIcon, Building2, Chrome, ArrowLeft, Menu, Mic, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -28,6 +28,12 @@ const settingsNavItems: SettingsNavItem[] = [
     href: '/settings/preferences',
     icon: <SettingsIcon className="h-4 w-4" />,
     description: 'Customize your app experience',
+  },
+  {
+    title: 'Content Templates',
+    href: '/settings/content-templates',
+    icon: <FileText className="h-4 w-4" />,
+    description: 'Manage your message templates',
   },
   {
     title: 'Voice & Microphone',

@@ -171,7 +171,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                     </Button>
                 </CollapsibleTrigger>
                 
-                <CollapsibleContent className="space-y-2 max-h-[450px] overflow-y-auto">
+                <CollapsibleContent className="space-y-2 max-h-[500px] overflow-y-auto">
                     {/* Execution Config Toggles */}
                     <div className="space-y-2 px-2">
                         <div className="flex items-center justify-between">

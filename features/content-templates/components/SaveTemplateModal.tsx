@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, X, Tag, PanelLeft, Columns2 } from "lucide-react";
-import { MessageRole } from "@/types/content-templates-db";
+import { MessageRole } from "@/features/content-templates/types/content-templates-db";
 import { useIsMobile } from "@/hooks/use-mobile";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
-import { createTemplate, clearTemplateCache } from "@/lib/services/content-templates-service";
+import { createTemplate, clearTemplateCache } from "@/features/content-templates/services/content-templates-service";
 import { useToast } from "@/components/ui/use-toast";
 import { PromptEditorContextMenu } from "@/features/prompts/components/PromptEditorContextMenu";
 

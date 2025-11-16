@@ -7,7 +7,7 @@ import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { HighlightedText } from "../HighlightedText";
 import { PromptVariable } from "@/features/prompts/types/core";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
-import { TemplateSelector } from "../templates/TemplateSelector";
+import { TemplateSelector } from "../../../content-templates/components/TemplateSelector";
 
 interface SystemMessageProps {
     developerMessage: string;

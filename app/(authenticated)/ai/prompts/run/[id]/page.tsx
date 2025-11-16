@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchAIModels } from "@/lib/api/ai-models-server";
-import { PromptRunner } from "@/features/prompts/components/PromptRunner";
+import { PromptRunPage } from "@/features/prompts/components/PromptRunPage";
 import { Suspense } from "react";
 
 // Cache AI models data for 12 hours
@@ -104,7 +104,7 @@ export default async function RunPromptPage({
                 </div>
             </div>
         }>
-            <PromptRunner models={aiModels} promptData={promptData} />
+            <PromptRunPage models={aiModels} promptData={promptData} />
         </Suspense>
     );
 }

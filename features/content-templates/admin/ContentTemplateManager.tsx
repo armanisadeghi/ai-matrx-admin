@@ -34,7 +34,7 @@ import {
     CreateContentTemplateInput,
     UpdateContentTemplateInput,
     MessageRole
-} from '@/types/content-templates-db';
+} from '@/features/content-templates/types/content-templates-db';
 import {
     fetchContentTemplates,
     createTemplate,
@@ -42,7 +42,7 @@ import {
     deleteTemplate,
     getAllTags,
     clearTemplateCache
-} from '@/lib/services/content-templates-service';
+} from '@/features/content-templates/services/content-templates-service';
 import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 

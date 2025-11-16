@@ -8,8 +8,8 @@ import { PromptMessage } from "@/features/prompts/types/core";
 import { HighlightedText } from "../HighlightedText";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { PromptVariable } from "@/features/prompts/types/core";
-import { TemplateSelector } from "../templates/TemplateSelector";
-import { MessageRole } from "@/types/content-templates-db";
+import { TemplateSelector } from "../../../content-templates/components/TemplateSelector";
+import { MessageRole } from "@/features/content-templates/types/content-templates-db";
 
 interface PromptMessagesProps {
     // Messages
@@ -191,7 +191,7 @@ export function PromptMessages({
                                 </div>
 
                                 {/* Content */}
-                                <div className="p-4">
+                                <div className="px-2 pb-2">
                                     {isEditing ? (
                                         <PromptEditorContextMenu
                                             getTextarea={() => textareaRefs.current[index]}
@@ -239,7 +239,7 @@ export function PromptMessages({
                                                     });
                                                 }}
                                                 placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
-                                                className="w-full bg-card border-none outline-none text-xs text-foreground placeholder:text-muted-foreground p-0 resize-none overflow-hidden leading-normal"
+                                                className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground p-0 resize-none overflow-hidden leading-normal"
                                                 autoFocus
                                                 onBlur={() => {
                                                     // Don't close edit mode if context menu is open
@@ -259,7 +259,7 @@ export function PromptMessages({
                                         </PromptEditorContextMenu>
                                     ) : (
                                         <div
-                                            className="text-xs pb-2 text-muted-foreground whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
+                                            className="text-xs text-muted-foreground whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
                                             onClick={() => onEditingMessageIndexChange(index)}
                                             style={{
                                                 lineHeight: "1.5",
