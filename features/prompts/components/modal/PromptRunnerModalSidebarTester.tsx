@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,10 +40,6 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
   const [allowChat, setAllowChat] = useState(true);
   const [showVariables, setShowVariables] = useState(false);
   const [applyVariables, setApplyVariables] = useState(true);
-  
-  // Sidebar specific options
-  const [sidebarPosition, setSidebarPosition] = useState<'left' | 'right'>('right');
-  const [sidebarSize, setSidebarSize] = useState<'sm' | 'md' | 'lg'>('lg');
     
     // Generate test variables with defaults
     const getTestVariables = () => {
@@ -74,10 +72,6 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
       result_display: resultDisplay,
       executionConfig,
       variables,
-      ...((resultDisplay === 'sidebar' || resultDisplay === 'flexible-panel') && {
-        sidebarPosition,
-        sidebarSize,
-      }),
     });
   };
     
@@ -179,120 +173,60 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                 
                 <CollapsibleContent className="space-y-2 max-h-[450px] overflow-y-auto">
                     {/* Execution Config Toggles */}
-                    <div className="space-y-1.5">
-                        <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                            Execution Config
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-1 px-1">
-                            <Button
-                                variant={autoRun ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setAutoRun(!autoRun)}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                <Play className="w-3 h-3 mr-1" />
+                    <div className="space-y-2 px-2">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="auto-run" className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                <Play className="w-3.5 h-3.5" />
                                 Auto Run
-                            </Button>
-                            
-                            <Button
-                                variant={allowChat ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setAllowChat(!allowChat)}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                <Zap className="w-3 h-3 mr-1" />
-                                Chat
-                            </Button>
-                            
-                            <Button
-                                variant={showVariables ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setShowVariables(!showVariables)}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                <Eye className="w-3 h-3 mr-1" />
-                                Show Vars
-                            </Button>
-                            
-                            <Button
-                                variant={applyVariables ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setApplyVariables(!applyVariables)}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                <Settings className="w-3 h-3 mr-1" />
-                                Apply Vars
-                            </Button>
-                        </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    {/* Sidebar Options */}
-                    <div className="space-y-1.5">
-                        <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                            Sidebar Options
+                            </Label>
+                            <Switch
+                                id="auto-run"
+                                checked={autoRun}
+                                onCheckedChange={setAutoRun}
+                            />
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-1 px-1">
-                            <Button
-                                variant={sidebarPosition === 'left' ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSidebarPosition('left')}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                Left
-                            </Button>
-                            
-                            <Button
-                                variant={sidebarPosition === 'right' ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSidebarPosition('right')}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                Right
-                            </Button>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="allow-chat" className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                <Zap className="w-3.5 h-3.5" />
+                                Allow Chat
+                            </Label>
+                            <Switch
+                                id="allow-chat"
+                                checked={allowChat}
+                                onCheckedChange={setAllowChat}
+                            />
                         </div>
                         
-                        <div className="grid grid-cols-3 gap-1 px-1">
-                            <Button
-                                variant={sidebarSize === 'sm' ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSidebarSize('sm')}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                Small
-                            </Button>
-                            
-                            <Button
-                                variant={sidebarSize === 'md' ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSidebarSize('md')}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                Med
-                            </Button>
-                            
-                            <Button
-                                variant={sidebarSize === 'lg' ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSidebarSize('lg')}
-                                className="h-7 text-[10px] px-2"
-                            >
-                                Large
-                            </Button>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="show-variables" className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                <Eye className="w-3.5 h-3.5" />
+                                Show Variables
+                            </Label>
+                            <Switch
+                                id="show-variables"
+                                checked={showVariables}
+                                onCheckedChange={setShowVariables}
+                            />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="apply-variables" className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                <Settings className="w-3.5 h-3.5" />
+                                Apply Variables
+                            </Label>
+                            <Switch
+                                id="apply-variables"
+                                checked={applyVariables}
+                                onCheckedChange={setApplyVariables}
+                            />
                         </div>
                     </div>
                     
                     <Separator />
                     
                     {/* Display Type Buttons */}
-                    <div className="space-y-1.5">
-                        <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                            Result Display
-                        </div>
-                        
+                    <div className="space-y-1.5">                        
                         <div className="space-y-0.5 px-1">
                             {displayTypes.map((display, idx) => (
                                 <Button
@@ -322,12 +256,7 @@ export function PromptRunnerModalSidebarTester({ promptData }: PromptRunnerModal
                             ))}
                         </div>
                     </div>
-                    
-                    <Separator />
-                    
-                    <div className="px-2 py-1.5 text-[10px] text-muted-foreground leading-tight">
-                        Toggle config, then select display type. System handles invalid combos gracefully. <TestTube className="w-2.5 h-2.5 inline" /> = Test mode with simulated context.
-                    </div>
+
                 </CollapsibleContent>
             </div>
             

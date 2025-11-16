@@ -6,9 +6,7 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { PromptMessage, PromptVariable } from "@/features/prompts/types/core";
-import { PromptRunnerInput } from "../PromptRunnerInput";
-import { PromptUserMessage } from "../builder/PromptUserMessage";
-import { PromptAssistantMessage } from "../builder/PromptAssistantMessage";
+import { ConversationWithInput, type ConversationMessage } from "../conversation";
 import { Button } from "@/components/ui/button";
 import { PanelRightOpen, PanelRightClose, Loader2, AlertCircle, X } from "lucide-react";
 import { AdaptiveLayout } from "@/components/layout/adaptive-layout/AdaptiveLayout";
@@ -104,16 +102,7 @@ export function PromptRunner({
     // Conversation state
     const [chatInput, setChatInput] = useState(initialMessage || "");
     const [resources, setResources] = useState<Resource[]>([]);
-    const [conversationMessages, setConversationMessages] = useState<Array<{ 
-        role: string; 
-        content: string;
-        taskId?: string;
-        metadata?: {
-            timeToFirstToken?: number;
-            totalTime?: number;
-            tokens?: number;
-        }
-    }>>([]);
+    const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
     const [apiConversationHistory, setApiConversationHistory] = useState<PromptMessage[]>([]);
     const [isTestingPrompt, setIsTestingPrompt] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -132,10 +121,6 @@ export function PromptRunner({
     const { run, createRun, createTask, updateTask, completeTask, addMessage } = useAiRun(initialRunId || undefined);
     const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
     const updateTaskTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    
-    // Refs for auto-scrolling
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const messagesContainerRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
         const checkMobile = () => {
@@ -311,31 +296,6 @@ export function PromptRunner({
         }
         return conversationMessages;
     }, [conversationMessages, currentTaskId, streamingText]);
-    
-    // Helper function to scroll to bottom
-    const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
-        messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
-    };
-    
-    // Auto-scroll when messages change
-    useEffect(() => {
-        if (displayMessages.length > 0) {
-            scrollToBottom('smooth');
-        }
-    }, [displayMessages.length]);
-    
-    // Auto-scroll during streaming
-    useEffect(() => {
-        if (isTestingPrompt && streamingText) {
-            const container = messagesContainerRef.current;
-            if (container) {
-                const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 300;
-                if (isNearBottom) {
-                    scrollToBottom('auto');
-                }
-            }
-        }
-    }, [streamingText, isTestingPrompt]);
     
     // Debounced task update during streaming
     useEffect(() => {
@@ -783,91 +743,43 @@ export function PromptRunner({
                             className="h-full bg-textured"
                             disableAutoCanvas={isMobile}
                             rightPanel={
-                                <div className="h-full w-full overflow-hidden relative">
-                                    {/* Back Layer: Messages Area - Scrollable */}
-                                    <div 
-                                        ref={messagesContainerRef}
-                                        className="absolute inset-0 overflow-y-auto scrollbar-hide" 
-                                        style={{ 
-                                            scrollbarWidth: 'none',
-                                            msOverflowStyle: 'none',
-                                            paddingBottom: '240px', // Space for input
-                                        }}
-                                    >
-                                        {displayMessages.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
-                                                <div className="text-center max-w-md">
-                                                    <p className="text-lg font-medium mb-2">
-                                                        {autoRun ? 'Starting execution...' : 'Ready to run your prompt'}
+                                <ConversationWithInput
+                                    messages={displayMessages}
+                                    isStreaming={isTestingPrompt}
+                                    emptyState={
+                                        <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground px-6">
+                                            <div className="text-center max-w-md">
+                                                <p className="text-lg font-medium mb-2">
+                                                    {autoRun ? 'Starting execution...' : 'Ready to run your prompt'}
+                                                </p>
+                                                {autoRun ? (
+                                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mt-4"></div>
+                                                ) : (
+                                                    <p className="text-sm">
+                                                        {variableDefaults.length > 0 
+                                                            ? shouldShowVariables 
+                                                                ? "Fill in the variables below and send your message"
+                                                                : "Type your message to continue"
+                                                            : "Type your message below to get started"}
                                                     </p>
-                                                    {autoRun ? (
-                                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mt-4"></div>
-                                                    ) : (
-                                                        <p className="text-sm">
-                                                            {variableDefaults.length > 0 
-                                                                ? shouldShowVariables 
-                                                                    ? "Fill in the variables below and send your message"
-                                                                    : "Type your message to continue"
-                                                                : "Type your message below to get started"}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex justify-center w-full px-2 pt-6">
-                                                <div className="w-full max-w-[800px] space-y-6">
-                                                    {displayMessages.map((msg, idx) => {
-                                                        const isLastMessage = idx === displayMessages.length - 1;
-                                                        const isStreaming = isLastMessage && msg.role === "assistant" && isTestingPrompt;
-                                                        
-                                                        return (
-                                                            <div key={idx}>
-                                                                {msg.role === "user" ? (
-                                                                    <PromptUserMessage
-                                                                        content={msg.content}
-                                                                        messageIndex={idx}
-                                                                    />
-                                                                ) : (
-                                                                    <PromptAssistantMessage
-                                                                        content={msg.content}
-                                                                        taskId={msg.taskId}
-                                                                        messageIndex={idx}
-                                                                        isStreamActive={isStreaming}
-                                                                        metadata={msg.metadata}
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    <div ref={messagesEndRef} className="h-4" />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    {/* Front Layer: Input Area - Hide if chat is disabled after execution */}
-                                    {!(autoRun && !allowChat && conversationStarted) && (
-                                        <div className="absolute bottom-0 left-0 right-0 z-10 bg-textured pt-2 pb-4 px-2 pointer-events-none">
-                                            <div className="pointer-events-auto max-w-[800px] mx-auto rounded-xl">
-                                                <PromptRunnerInput
-                                                    variableDefaults={variableDefaults}
-                                                    onVariableValueChange={handleVariableValueChange}
-                                                    expandedVariable={expandedVariable}
-                                                    onExpandedVariableChange={setExpandedVariable}
-                                                    chatInput={chatInput}
-                                                    onChatInputChange={setChatInput}
-                                                    onSendMessage={handleSendTestMessage}
-                                                    isTestingPrompt={isTestingPrompt}
-                                                    showVariables={shouldShowVariables}
-                                                    messages={conversationTemplate}
-                                                    resources={resources}
-                                                    onResourcesChange={setResources}
-                                                    enablePasteImages={true}
-                                                />
+                                                )}
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                    }
+                                    variableDefaults={variableDefaults}
+                                    onVariableValueChange={handleVariableValueChange}
+                                    expandedVariable={expandedVariable}
+                                    onExpandedVariableChange={setExpandedVariable}
+                                    chatInput={chatInput}
+                                    onChatInputChange={setChatInput}
+                                    onSendMessage={handleSendTestMessage}
+                                    showVariables={shouldShowVariables}
+                                    templateMessages={conversationTemplate}
+                                    resources={resources}
+                                    onResourcesChange={setResources}
+                                    enablePasteImages={true}
+                                    hideInput={autoRun && !allowChat && conversationStarted}
+                                />
                             }
                         />
                     </div>

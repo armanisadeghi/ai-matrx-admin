@@ -196,7 +196,7 @@ export function parseMarkdownToText(markdown: string): string {
       .replace(/^-\s*\[x\]\s+(.+)$/gm, 'Completed task: $1')
       .replace(/^-\s*\[\s*\]\s+(.+)$/gm, 'Pending task: $1')
       // Replace unordered lists
-      .replace(/^([-*+])\s+(.+)$/gm, 'Bullet point: $2')
+      .replace(/^([-*+])\s+(.+)$/gm, '$2')
       // Replace ordered lists
       .replace(/^(\d+)\.\s+(.+)$/gm, (_match, num, content) => `Number ${numberToWords(num)}: ${content}`)
       // Replace tables (match entire table as one unit)

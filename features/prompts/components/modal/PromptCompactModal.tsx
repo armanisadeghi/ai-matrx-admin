@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Copy, Loader2, Check, MessageSquare } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Copy, Loader2, Check, MessageSquare, GripVertical, X, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectPrimaryResponseTextByTaskId, selectPrimaryResponseEndedByTaskId } from '@/lib/redux/socket-io/selectors/socket-response-selectors';
 import { usePromptExecutionCore } from '../../hooks/usePromptExecutionCore';
 import { PromptRunnerInput } from '../PromptRunnerInput';
+import { ConversationDisplay, type ConversationMessage } from '../conversation';
 import type { PromptData } from '../../types/modal';
 import type { PromptExecutionConfig } from '@/features/prompt-builtins/types/execution-modes';
 import type { Resource } from '../resource-display';
-import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 
 interface PromptCompactModalProps {
   isOpen: boolean;
@@ -86,15 +86,18 @@ export default function PromptCompactModal({
     ? !stateResponseEnded 
     : (preloadedResult ? false : executionHook.isExecuting);
   
-  // Show chat if: conversation has started OR user explicitly enabled it OR allow_chat is enabled
-  const shouldShowChatInput = showChat || executionHook.conversationStarted || (executionConfig?.allow_chat !== false && !preloadedResult && !taskId);
+  // Show chat input only if user explicitly enabled it
+  const shouldShowChatInput = showChat;
   
-  // Auto-expand to show chat after first response
-  useEffect(() => {
-    if (executionHook.conversationStarted && !showChat) {
-      setShowChat(true);
-    }
-  }, [executionHook.conversationStarted, showChat]);
+  // Convert messages for preloaded/taskId scenario
+  const preloadedMessages = useMemo<ConversationMessage[]>(() => {
+    if (!latestResponse || !(preloadedResult || taskId)) return [];
+    return [{
+      role: 'assistant',
+      content: latestResponse,
+      taskId: taskId,
+    }];
+  }, [latestResponse, preloadedResult, taskId]);
 
   const handleCopy = () => {
     if (latestResponse) {
@@ -146,15 +149,27 @@ export default function PromptCompactModal({
 
   return (
     <>
+      {/* Z-index override for Radix portaled components when modal is open */}
+      {isOpen && (
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            [data-radix-popper-content-wrapper],
+            [data-radix-portal] {
+              z-index: 10000 !important;
+            }
+          `
+        }} />
+      )}
+      
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[100]"
+        className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[9998]"
         onClick={onClose}
       />
       
       {/* Compact Modal */}
       <div
-        className="fixed z-[101] w-full max-w-xl"
+        className="fixed z-[9999] w-full max-w-3xl"
         style={{
           left: position.x || '50%',
           top: position.y || '50%',
@@ -163,75 +178,67 @@ export default function PromptCompactModal({
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="bg-[#1e1e1e] dark:bg-[#1e1e1e] text-[#d4d4d4] dark:text-[#d4d4d4] rounded-lg shadow-2xl border border-[#3e3e42] dark:border-[#3e3e42] overflow-hidden">
+        <div className="bg-[#1e1e1e] dark:bg-[#1e1e1e] text-[#d4d4d4] dark:text-[#d4d4d4] rounded-3xl shadow-2xl border border-[#3e3e42] dark:border-[#3e3e42] overflow-hidden">
           {/* Header */}
           {title && (
-            <div className="px-3 py-2 border-b border-[#3e3e42] dark:border-[#3e3e42] flex items-center justify-between">
-              <div className="text-xs font-medium text-[#cccccc] dark:text-[#cccccc]">{title}</div>
+            <div className="relative px-5 py-3.5 border-b border-[#3e3e42] dark:border-[#3e3e42] flex items-center gap-2">
+              <GripVertical className="w-3.5 h-3.5 text-[#888888] flex-shrink-0" />
+              <div className="text-xs font-medium text-[#cccccc] dark:text-[#cccccc] flex-1">{title}</div>
+              <button
+                onClick={onClose}
+                className="p-1 text-[#888888] hover:text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
+                title="Close"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
           
           {/* Content - Conversation History */}
-          <div className="px-3 py-3 max-h-[60vh] overflow-y-auto">
+          <div className="px-2 py-3 min-h-[200px] max-h-[70vh] bg-textured">
             {preloadedResult || taskId ? (
               // Simple display for preloaded/taskId results
-              <>
-                {isExecuting && !latestResponse ? (
-                  <div className="flex items-center gap-2 text-sm text-[#858585]">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Generating response...</span>
-                  </div>
-                ) : latestResponse ? (
-                  <div className="text-sm leading-relaxed">
-                    <EnhancedChatMarkdown 
-                      content={latestResponse}
-                      taskId={taskId}
-                      isStreamActive={isExecuting}
-                      allowFullScreenEditor={false}
-                      hideCopyButton={true}
-                    />
-                  </div>
-                ) : (
-                  <div className="text-sm text-[#858585] italic">No response</div>
-                )}
-              </>
+              <ConversationDisplay
+                messages={preloadedMessages}
+                isStreaming={isExecuting && !!latestResponse}
+                variant="inline"
+                className="min-h-[200px]"
+                emptyState={
+                  isExecuting && !latestResponse ? (
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-8">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Generating response...</span>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic text-center py-8">No response</div>
+                  )
+                }
+              />
             ) : (
               // Full conversation display
-              <div className="space-y-2">
-                {executionHook.displayMessages.length === 0 && !isExecuting ? (
-                  <div className="text-sm text-[#858585] italic">Start a conversation...</div>
-                ) : (
-                  executionHook.displayMessages.map((msg, idx) => (
-                    <div key={idx} className={`text-sm ${msg.role === 'user' ? 'text-[#cccccc]' : 'text-[#d4d4d4]'}`}>
-                      <div className="text-[10px] uppercase tracking-wide text-[#858585] mb-1">
-                        {msg.role === 'user' ? 'You' : 'AI'}
-                      </div>
-                      <div className={`rounded p-2 ${msg.role === 'user' ? 'bg-[#2a2d2e]' : 'bg-[#252526]'}`}>
-                        <EnhancedChatMarkdown 
-                          content={msg.content}
-                          taskId={taskId}
-                          allowFullScreenEditor={false}
-                          hideCopyButton={true}
-                          isStreamActive={isExecuting}
-                        />
-                      </div>
+              <ConversationDisplay
+                messages={executionHook.displayMessages}
+                isStreaming={isExecuting}
+                variant="inline"
+                className="min-h-[200px]"
+                emptyState={
+                  isExecuting && executionHook.streamingText?.length === 0 ? (
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-8">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Thinking...</span>
                     </div>
-                  ))
-                )}
-                {isExecuting && (
-                  <div className="flex items-center gap-2 text-sm text-[#858585] p-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Thinking...</span>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic text-center py-8">Start a conversation...</div>
+                  )
+                }
+              />
             )}
           </div>
           
-          {/* Chat Input - Only show if conversation mode */}
-          {shouldShowChatInput && !preloadedResult && !taskId && (
-            <div className="border-t border-[#3e3e42] dark:border-[#3e3e42]">
-              <div className="px-2 py-2">
+          {/* Chat Input - Only show if toggled on */}
+          {shouldShowChatInput && (
+            <div className="border-t border-[#3e3e42] dark:border-[#3e3e42] bg-textured">
+              <div className="px-2 py-2 max-w-[800px] mx-auto">
                 <PromptRunnerInput
                   variableDefaults={executionHook.variableDefaults}
                   onVariableValueChange={executionHook.handleVariableChange}
@@ -252,12 +259,12 @@ export default function PromptCompactModal({
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-1 px-2 py-1 bg-[#252526] dark:bg-[#252526] border-t border-[#3e3e42] dark:border-[#3e3e42]">
+          <div className="flex items-center gap-1.5 px-3 py-1.5">
             <button
               onClick={handleCopy}
               disabled={!latestResponse}
               className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title={copied ? 'Copied!' : 'Copy'}
+              title={copied ? 'Copied!' : 'Copy response'}
             >
               {copied ? (
                 <Check className="w-3.5 h-3.5 text-green-500" />
@@ -266,24 +273,25 @@ export default function PromptCompactModal({
               )}
             </button>
             
-            {/* Toggle chat for preloaded/taskId results */}
-            {(preloadedResult || taskId) && !showChat && (
-              <button
-                onClick={() => setShowChat(true)}
-                className="p-1.5 text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
-                title="Enable chat"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-              </button>
-            )}
-            
             <div className="flex-1" />
             
+            {/* Toggle chat input */}
             <button
-              onClick={onClose}
-              className="px-2 py-1 text-xs text-[#cccccc] hover:bg-[#2a2d2e] rounded transition-colors"
+              onClick={() => setShowChat(!showChat)}
+              className={`flex items-center gap-1.5 px-3.5 py-1 text-xs rounded transition-colors ${
+                showChat 
+                  ? 'bg-primary/10 text-primary hover:bg-primary/20' 
+                  : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+              }`}
+              title={showChat ? 'Hide chat input' : 'Show chat input'}
             >
-              Close
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span className="font-medium">Chat</span>
+              {showChat ? (
+                <ChevronsDown className="w-3 h-3 ml-0.5" />
+              ) : (
+                <ChevronsUp className="w-3 h-3 ml-0.5" />
+              )}
             </button>
           </div>
         </div>
