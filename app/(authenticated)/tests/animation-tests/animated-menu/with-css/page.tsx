@@ -2,7 +2,7 @@
 
 import "./module.css";
 import { useState } from "react";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants } from "motion/react";
 
 const itemVariants: Variants = {
     open: {

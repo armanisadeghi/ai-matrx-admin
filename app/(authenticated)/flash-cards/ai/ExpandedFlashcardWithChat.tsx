@@ -1,6 +1,6 @@
 // import React from 'react';
 // import {useSelector, useDispatch} from 'react-redux';
-// import {motion, AnimatePresence} from 'framer-motion';
+// import {motion, AnimatePresence} from 'motion/react';
 // import {Card, CardContent} from "@/components/ui/card";
 // import {Button} from "@/components/ui/button";
 // import {X} from 'lucide-react';

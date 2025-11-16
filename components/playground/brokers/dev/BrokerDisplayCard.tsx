@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';

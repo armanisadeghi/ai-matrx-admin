@@ -5,7 +5,7 @@ import {cn} from "@/lib/utils";
 import Link, {LinkProps} from "next/link";
 import {usePathname, useRouter} from 'next/navigation';
 import React, {useState, createContext, useContext, useEffect} from "react";
-import {AnimatePresence, motion} from "framer-motion";
+import {AnimatePresence, motion} from "motion/react";
 import {IconMenu2, IconX, IconMaximize, IconMinimize, IconLogout, IconUser} from "@tabler/icons-react";
 import {Logo} from "@/components/layout/MatrixLogo";
 import {appSidebarLinks} from "@/constants";

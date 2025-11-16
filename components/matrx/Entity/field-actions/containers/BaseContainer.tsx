@@ -2,7 +2,7 @@
 import React from 'react';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/sheet';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui";
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {Popover, PopoverContent} from '@/components/ui/popover';
 import {
     ActionTargetConfig,

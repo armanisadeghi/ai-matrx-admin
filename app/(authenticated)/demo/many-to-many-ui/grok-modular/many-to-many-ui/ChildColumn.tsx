@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { UseCreateManyToManyReturn } from "@/lib/redux/entity/hooks/useCreateManyToMany";
 import { RelationshipMakerConfig } from "./definitions";
 import { renderEntityFields } from "./common";

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { X, Check, AlertCircle, Search, Move, Plus } from "lucide-react";
 import { useCreateManyToMany } from "@/lib/redux/entity/hooks/useCreateManyToMany";
 import { RELATIONSHIP_DEFINITIONS } from "@/app/entities/hooks/relationships/relationshipData";

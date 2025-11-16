@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/styles/themes/utils";
 import { EntityButton, EntitySearchInput } from "./field-components";
 import { cardVariants, containerVariants, densityConfig, spacingConfig, getAnimationVariants } from "@/config/ui/entity-layout-config";

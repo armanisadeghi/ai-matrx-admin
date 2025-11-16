@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { wrap } from "popmotion";
 import { Button } from "@/components/ui/button";
 import { X, Download, Heart, Share2, Info, Check } from "lucide-react";

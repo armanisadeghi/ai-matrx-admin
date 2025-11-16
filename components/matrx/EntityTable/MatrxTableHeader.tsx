@@ -1,6 +1,6 @@
 import React from 'react';
 import {TableHeader, TableRow, TableHead} from "@/components/ui/table";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {ArrowUpDown, ChevronUp, ChevronDown} from "lucide-react";
 import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {TableHeaderProps} from "@/types/entityTableTypes";

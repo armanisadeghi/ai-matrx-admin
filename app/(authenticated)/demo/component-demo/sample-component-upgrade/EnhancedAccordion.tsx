@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useState} from 'react'
-import {motion, AnimatePresence} from 'framer-motion'
+import {motion, AnimatePresence} from 'motion/react'
 import {ChevronDown} from 'lucide-react'
 import {cn} from "@/lib/utils"
 

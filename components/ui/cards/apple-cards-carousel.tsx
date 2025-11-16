@@ -13,7 +13,7 @@ import {
     IconX,
 } from "@tabler/icons-react";
 import { cn } from "@/styles/themes/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import Image, { ImageProps } from "next/image";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 

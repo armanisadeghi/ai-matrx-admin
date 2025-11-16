@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
-import { motion, Variants, AnimatePresence } from "framer-motion";
+import { motion, Variants, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 

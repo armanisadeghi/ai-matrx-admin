@@ -1,5 +1,5 @@
 // components/AnimatedTransition.tsx
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 
 interface AnimatedTransitionProps {
     children: React.ReactNode;

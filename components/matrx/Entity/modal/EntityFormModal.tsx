@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/styles/themes/utils';
 import {EntityFormModalProps, EntityFormState} from "@/components/matrx/Entity/types/entityForm";
 import {EntityForm} from "@/components/matrx/Entity"; // Import cn utility

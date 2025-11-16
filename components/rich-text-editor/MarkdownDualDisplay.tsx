@@ -7,7 +7,7 @@ import 'remirror/styles/all.css';
 import './remirror-editor.css';
 import { Remirror, useRemirror, EditorComponent, useCommands } from '@remirror/react';
 import { MarkdownExtension } from 'remirror/extensions';
-import { motion, MotionStyle } from 'framer-motion';
+import { motion, MotionStyle } from 'motion/react';
 import { useTheme } from '@/styles/themes/ThemeProvider';
 import { Type } from 'lucide-react';
 

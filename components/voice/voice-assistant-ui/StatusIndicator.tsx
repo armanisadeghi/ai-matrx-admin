@@ -1,7 +1,7 @@
 'use client';
 
 import {AlertCircle, Loader2, Mic, Volume2} from "lucide-react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import React from "react";
 import { ProcessState } from "@/types/voice/voiceAssistantTypes";
 

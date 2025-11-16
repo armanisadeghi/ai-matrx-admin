@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Sector, Label } from 'recharts';
 import { ChartConfig, ChartContainer, ChartStyle, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { cn } from "@/lib/utils";
 import { selectPerformanceCounts } from '@/lib/redux/selectors/flashcardSelectors';
 

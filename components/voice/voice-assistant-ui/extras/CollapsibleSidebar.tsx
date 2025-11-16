@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CollapseToggleButton } from '@/components/layout/CollapseToggleButton';

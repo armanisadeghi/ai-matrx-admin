@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import ArmaniLayout from "@/components/matrx/Entity/prewired-components/layouts/ArmaniLayout";
 import { cn } from "@/lib/utils";
 import { UnifiedLayoutProps, UnifiedLayoutHandlers } from "@/components/matrx/Entity/prewired-components/layouts/types";

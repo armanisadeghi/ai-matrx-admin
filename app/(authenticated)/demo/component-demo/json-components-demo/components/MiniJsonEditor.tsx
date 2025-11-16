@@ -4,7 +4,7 @@ import React, { useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Copy, ChevronDown, ChevronRight, Plus, Minus } from "lucide-react";
 
 interface MiniEditableJsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {

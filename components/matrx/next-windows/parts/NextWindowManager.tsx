@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useBackgroundPosition, useWindowSize } from "@/components/matrx/next-windows/parts/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import Window from "@/components/matrx/next-windows/parts/Window";
 import { Command, Minimize2 } from "lucide-react";
 import CommandPalette from "@/components/matrx/next-windows/CommandPallet";

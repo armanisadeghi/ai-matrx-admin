@@ -12,7 +12,7 @@ import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityError} from '@/lib/redux/entity/types/stateTypes';
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 interface EntityQuickReferenceSelectProps<TEntity extends EntityKeys> {

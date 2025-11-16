@@ -10,7 +10,7 @@ import {Plus, CheckSquare} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 
 interface EntityQuickReferenceListProps<TEntity extends EntityKeys> {
     entityKey: TEntity;

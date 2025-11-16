@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import InteractiveFilePreview from "./InteractiveFilePreview";
 

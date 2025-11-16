@@ -1,6 +1,6 @@
 // FlexForm.tsx
 import React, {useState, useRef} from "react";
-import {AnimatePresence, motion} from "framer-motion";
+import {AnimatePresence, motion} from "motion/react";
 import {cn} from "@/styles/themes/utils";
 import {Input} from "@/components/ui/input";
 import {FlexFormField, FormState} from '@/types/componentConfigTypes';

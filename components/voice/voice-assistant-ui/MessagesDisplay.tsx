@@ -1,6 +1,6 @@
 'use client';
 
-import {AnimatePresence, motion} from "framer-motion";
+import {AnimatePresence, motion} from "motion/react";
 import React, {useEffect, useRef} from "react";
 import {Message} from "@/types/voice/voiceAssistantTypes";
 import MessageContentDisplay from "@/components/message-display";

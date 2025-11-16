@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, createContext, useContext, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface CheckboxContextProps {
     id: string;

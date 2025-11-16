@@ -6,7 +6,7 @@ import {Card, CardContent} from '@/components/ui/card';
 import {Check, ChevronDown, Grid2X2} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {
     Accordion,
     AccordionContent,

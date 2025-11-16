@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Icon } from '@iconify/react';
 import FreeFormSelection from './tools/FreeFormSelection';
 import CutPasteTool from './tools/CutPasteTool';

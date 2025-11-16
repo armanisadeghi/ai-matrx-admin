@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Button, Card } from "@/components/ui"; // Assuming these are shadcn/ui components
 import { cn } from "@/lib/utils";
 

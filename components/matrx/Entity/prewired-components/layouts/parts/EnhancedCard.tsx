@@ -1,6 +1,6 @@
 // EnhancedCard.tsx
 import React from 'react';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {Card} from '@/components/ui/card';
 import {cn} from '@/lib/utils';
 

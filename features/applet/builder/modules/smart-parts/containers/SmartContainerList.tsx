@@ -3,7 +3,7 @@ import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallbac
 import { Search, Plus, Grid, List, ArrowUpDown, RefreshCw, LayersIcon, SquareStackIcon, BoxIcon, PackageIcon, BoxesIcon,
   LayoutGridIcon, Boxes, LayoutPanelTopIcon, LayoutTemplateIcon, FolderKanbanIcon, PanelTopIcon, TablePropertiesIcon, 
   TableIcon, BoxSelectIcon, TriangleIcon, CircleIcon, SquareIcon, DiamondIcon, PanelsTopLeftIcon, ArrowUpRightSquareIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Card, 
   CardContent,

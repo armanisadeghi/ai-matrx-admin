@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, useMotionValue } from 'framer-motion';
+import { motion, useMotionValue } from 'motion/react';
 import { Eye, EyeOff, MaximizeIcon, MinimizeIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 

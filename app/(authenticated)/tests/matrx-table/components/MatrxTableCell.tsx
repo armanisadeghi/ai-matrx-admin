@@ -6,7 +6,7 @@ import {TableData} from "@/types/tableTypes";
 import {TableCell} from "@/components/ui/table";
 import {TableActionIcon} from "./MatrixTableActions";
 import {truncateText} from "./StandardTabUtil";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import MatrixTableTooltip from "./MatrixTableTooltip";
 
 

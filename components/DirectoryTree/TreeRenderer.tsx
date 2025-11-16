@@ -1,6 +1,6 @@
 // components/DirectoryTree/TreeRenderer.tsx
 import React from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {shouldShowItem, sortItems, getFileCategory} from './config';
 import type {EnhancedDirectoryTreeConfig} from './config';
 import {renderContextMenu, renderItemContent} from './DirectoryItemRenderers';

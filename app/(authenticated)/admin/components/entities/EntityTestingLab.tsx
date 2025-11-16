@@ -2,7 +2,7 @@
 'use client';
 
 import {useState, useEffect} from 'react';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {
     Card,

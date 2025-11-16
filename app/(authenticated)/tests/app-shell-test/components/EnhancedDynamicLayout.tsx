@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {cn} from "@/lib/utils";
 import {useMeasure} from "@uidotdev/usehooks";
 import SectionInfoModal from './SectionInfoModal';

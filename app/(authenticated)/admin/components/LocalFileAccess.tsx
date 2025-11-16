@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import {Button} from "@/components/ui";
 import {RefreshCcw} from "lucide-react";
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import FullEditableJsonViewer from "@/components/ui/JsonComponents/JsonEditor";
 import MatrxSelect from "@/components/matrx/MatrxSelect";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";

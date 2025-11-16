@@ -156,7 +156,7 @@ Next.JS 15 App Router (Page.tsx, Layout.tsx in the /app directory)
 However, client-side logic should be avoided whenever possible to better optimize the application and ensure SSR.
 State Management: Redux
 React 18
-Tailwind CSS with Shadcn/ui and framer-motion for animation.
+Tailwind CSS with Shadcn/ui and motion/react for animation.
 Light and Dark Mode. Use either both light and dark colors or use a common color variable, such as bg-background, bg-primary, etc.
 
 Next.js:

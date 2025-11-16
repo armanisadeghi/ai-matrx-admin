@@ -1,5 +1,5 @@
 import React from "react";
-import {useMotionTemplate, useMotionValue, motion, MotionValue, HTMLMotionProps} from "framer-motion";
+import {useMotionTemplate, useMotionValue, motion, MotionValue, HTMLMotionProps} from "motion/react";
 import {cn} from "@/lib/utils";
 
 interface MatrxHoverWrapperProps extends Omit<HTMLMotionProps<"div">, "style"> {

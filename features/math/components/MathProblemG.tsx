@@ -4,7 +4,7 @@ import React, {useState, useRef, useEffect, JSX} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import 'katex/dist/katex.min.css';
 import {BlockMath} from 'react-katex';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {Card, CardContent} from '@/components/ui/card';
 import ControlPanel from './ControlPanel';
 import {BackgroundGradient} from "@/components/ui";

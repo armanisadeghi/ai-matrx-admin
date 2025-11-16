@@ -2,7 +2,7 @@
 
 'use client';
 import React from "react";
-import { motion, MotionProps } from "framer-motion";
+import { motion, MotionProps } from "motion/react";
 import { cn } from "@/styles/themes/utils"; // Import cn utility
 
 const AnimatedButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & MotionProps & { disabled?: boolean }> = (

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import { usePlayer } from "@/hooks/tts/usePlayer";
 import { useMicVAD, utils } from "@ricky0123/vad-react";

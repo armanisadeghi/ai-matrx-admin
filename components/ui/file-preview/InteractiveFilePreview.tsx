@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Play, Music, Video, FileText, Film, Headphones, File, Volume2, MousePointer, FileCode, FileImage } from "lucide-react";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 

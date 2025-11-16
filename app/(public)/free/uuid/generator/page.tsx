@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Copy, RefreshCw, Check, AlertCircle, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

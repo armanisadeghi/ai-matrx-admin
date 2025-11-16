@@ -1,6 +1,6 @@
 // Footer.tsx
 import React from 'react';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {Mic, MicOff, Send} from 'lucide-react';
 
 interface FooterProps {

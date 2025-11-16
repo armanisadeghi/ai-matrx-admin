@@ -2,7 +2,7 @@
 'use client';
 
 import React, {useState, useRef, useEffect} from "react";
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {cn} from "@/styles/themes/utils";
 import AnimatedInput from "components/matrx/AnimatedForm/AnimatedInput";
 import AnimatedTextarea from "components/matrx/AnimatedForm/AnimatedTextarea";

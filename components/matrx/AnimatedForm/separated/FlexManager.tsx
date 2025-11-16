@@ -1,6 +1,6 @@
 // FlexManager.tsx
 import React from 'react';
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {cn} from "@/styles/themes/utils";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";

@@ -9,7 +9,7 @@ import {tailwindColors} from "@/constants/tailwind-colors";
 import {Colord, colord, extend} from "colord";
 import namesPlugin from "colord/plugins/names";
 import cmykPlugin from "colord/plugins/cmyk";
-import {motion, useAnimation} from "framer-motion";
+import {motion, useAnimation} from "motion/react";
 import {getColorInfo} from "@/utils/color-utils/color-change-util";
 
 

@@ -5,7 +5,7 @@ import React, {useState} from "react";
 import {Sidebar, SidebarBody, SidebarLink} from "../../ui/sidebar";
 import {cn} from "@/styles/themes/utils";
 import {Infinity, User} from "lucide-react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {ThemeSwitcher} from "@/styles/themes/ThemeSwitcher";
 import StoreProvider from "@/providers/StoreProvider";
 

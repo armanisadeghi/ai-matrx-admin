@@ -3,7 +3,7 @@
 import {cn} from "@/lib/utils";
 import Link, {LinkProps} from "next/link";
 import React, {useState, createContext, useContext, useCallback} from "react";
-import {AnimatePresence, motion, HTMLMotionProps} from "framer-motion";
+import {AnimatePresence, motion, HTMLMotionProps} from "motion/react";
 import {IconMenu2, IconX} from "@tabler/icons-react";
 
 interface Links {

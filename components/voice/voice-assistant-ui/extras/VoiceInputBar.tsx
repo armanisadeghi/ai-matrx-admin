@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef, ChangeEvent, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Mic, MicOff, Send, Brain, Power, Volume2, Upload, Database, Settings2 } from "lucide-react";
 import { useVoiceChat } from "@/hooks/tts/useVoiceChat";
 import { cn } from "@/lib/utils";

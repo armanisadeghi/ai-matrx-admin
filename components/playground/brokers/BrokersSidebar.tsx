@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from "@/app/entities/layout/configs";
 import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from "@/lib/redux";

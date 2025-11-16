@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTheme } from '@/styles/themes/ThemeProvider';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Sun, Moon } from 'lucide-react';
 
 interface ThemeSwitcherProps {

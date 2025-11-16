@@ -1,6 +1,6 @@
 'use client';
 import React, {useState} from 'react';
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Play, Pause, Ban, Volume2, Award, Mic} from "lucide-react";

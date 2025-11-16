@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 // Reusable AI Tool Image component
 const AIToolImage = ({ src, alt, title }) => {

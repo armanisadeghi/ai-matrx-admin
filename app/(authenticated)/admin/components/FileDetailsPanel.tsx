@@ -5,7 +5,7 @@ import {
     Plus,
     RefreshCcw
 } from "lucide-react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import {DirectoryType, fileHelpers} from "@/utils/fileSystemUtil";
 import {FileContentResult, getFileType, loadFileContent} from "@/utils/fileContentHandlers";

@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { X, FileImage } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import FilePreviewSheet from "@/components/ui/file-preview/FilePreviewSheet";
 import QuickFilePreview from "@/components/ui/file-preview/QuickFilePreview";

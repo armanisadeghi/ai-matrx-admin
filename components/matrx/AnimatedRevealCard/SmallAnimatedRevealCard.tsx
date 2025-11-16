@@ -2,7 +2,7 @@
 
 import React, {useState} from "react";
 import Link from "next/link";
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {CanvasRevealEffect} from "@/components/ui/canvas-reveal-effect";
 import {cn} from "@/lib/utils";
 import * as LucideIcons from "lucide-react";

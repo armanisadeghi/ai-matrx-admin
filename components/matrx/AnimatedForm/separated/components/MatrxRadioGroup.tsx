@@ -1,7 +1,7 @@
 // components/MatrxRadioGroup.tsx
 'use client';
 import React from "react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {cn} from "@/utils/cn";
 import {Label} from "@/components/ui/label";
 import {MatrxRadioGroupProps} from "@/types/componentConfigTypes";

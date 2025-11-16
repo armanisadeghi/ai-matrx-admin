@@ -13,7 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Headphones } from 'lucide-react';
 import TextToSpeechPlayer from '@/components/audio/TextToSpeechPlayer';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useWindowSize } from "@uidotdev/usehooks";
 import { cn } from "@/lib/utils";
 import type { AudioPlaybackState } from '@/types/audio';

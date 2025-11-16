@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { DesktopImageCard } from '@/components/image/shared/DesktopImageCard';
 import { SimpleImageViewer } from '@/components/image/gallery/desktop/SimpleImageViewer';
 import { SearchBar } from '@/components/image/shared/SearchBar';

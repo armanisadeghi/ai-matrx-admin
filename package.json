@@ -116,7 +116,6 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "latest",
     "format-duration": "^3.0.2",
-    "framer-motion": "^12.11.3",
     "google-fonts": "latest",
     "groq-sdk": "latest",
     "html2canvas": "^1.4.1",

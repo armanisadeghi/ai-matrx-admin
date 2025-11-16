@@ -10,7 +10,7 @@ import {
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Headphones} from 'lucide-react';
 import TextToSpeechPlayer from './TextToSpeechPlayer';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {useWindowSize} from "@uidotdev/usehooks";
 import {cn} from "@/lib/utils";
 

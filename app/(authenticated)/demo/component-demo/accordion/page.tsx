@@ -22,7 +22,7 @@ import {
     RadioGroup,
     RadioGroupItem,
 } from '@/components/ui';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {Settings, Code, Palette, Layout, Plus} from 'lucide-react';
 import TextDivider from '@/components/matrx/TextDivider';
 

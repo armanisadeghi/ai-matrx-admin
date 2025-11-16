@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import {cn} from "@/lib/utils";
-import {useMotionTemplate, useMotionValue, motion} from "framer-motion";
+import {useMotionTemplate, useMotionValue, motion} from "motion/react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 
 export interface InputProps

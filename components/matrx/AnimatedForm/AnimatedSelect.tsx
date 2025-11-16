@@ -3,7 +3,7 @@
 'use client';
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { cn } from "@/styles/themes/utils";
 import { FormField } from "@/types/AnimatedFormTypes";
 

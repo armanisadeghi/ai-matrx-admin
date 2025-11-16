@@ -1,7 +1,7 @@
 // app/(authenticated)/flash-cards/components/AIChatInterface.tsx
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Button } from "@/components/ui/button";
 import { Flashcard, FlashcardData, ChatMessage } from "@/types/flashcards.types";
 import { useDispatch, useSelector } from 'react-redux';

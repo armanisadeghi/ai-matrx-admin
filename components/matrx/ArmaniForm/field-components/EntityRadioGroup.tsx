@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {cn} from "@/styles/themes/utils";
 import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 import { FormField } from "@/types/AnimatedFormTypes";

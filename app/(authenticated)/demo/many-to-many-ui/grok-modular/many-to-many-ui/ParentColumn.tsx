@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Droppable } from "@hello-pangea/dnd";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { RelationshipMakerConfig } from "./definitions";
 import { renderEntityFields } from "./common";
 import ChildPill from "./pills/ChildPill";

@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, JSX } from "react";
 import { useRouter } from "next/navigation";
 import "katex/dist/katex.min.css";
 import { BlockMath } from "react-katex";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PartyPopper } from "lucide-react";
@@ -92,7 +92,7 @@ const MathProblem: React.FC<MathProblemProps> = ({
                 top: Math.max(0, targetScroll),
                 behavior: 'smooth'
             });
-        }, 350); // Wait for framer-motion animation to complete
+        }, 350); // Wait for motion/react animation to complete
     }, [displayedContent]);
 
     const isLastSolution = (index: number = currentSolutionIndex) => index === solutions.length - 1;

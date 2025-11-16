@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {AnimatePresence, motion} from "framer-motion";
+import {AnimatePresence, motion} from "motion/react";
 import {ChevronDown, ChevronRight, File, Folder} from "lucide-react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui";
 

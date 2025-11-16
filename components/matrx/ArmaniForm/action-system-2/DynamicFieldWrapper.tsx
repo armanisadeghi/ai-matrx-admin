@@ -1,5 +1,5 @@
 import React, {createContext, useContext, useCallback, useMemo} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {cn} from '@/utils/cn';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 import {Label} from '@/components/ui/label';

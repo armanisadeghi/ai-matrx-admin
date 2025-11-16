@@ -21,7 +21,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 import { FieldDefinition } from '@/types/customAppTypes';
 import { getAllFieldComponents, getFieldComponentById } from '@/lib/redux/app-builder/service';

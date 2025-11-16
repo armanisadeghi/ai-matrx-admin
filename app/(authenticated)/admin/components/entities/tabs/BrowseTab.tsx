@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 
 const BrowseTab = ({ entity, handleRecordSelect, selectedRecords }) => {

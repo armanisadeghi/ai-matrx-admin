@@ -2,7 +2,7 @@
 import React, {useState} from "react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui";
 import {X} from "lucide-react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {cn} from "@/lib/utils";
 import {
     cardVariants,

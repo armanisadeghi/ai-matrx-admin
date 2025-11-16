@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MobileOverlayWrapper } from "@/components/official/MobileOverlayWrapper";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { X } from "lucide-react";
 
 interface FilterModalProps {

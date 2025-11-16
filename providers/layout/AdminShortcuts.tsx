@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {Settings, Boxes, TestTube2} from 'lucide-react';
 import {IconApps} from "@tabler/icons-react";
 import {Button} from '@/components/ui/button';

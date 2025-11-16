@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { NewsCard } from './NewsCard';
 import { LoadingSkeleton } from './ProgressiveNewsImage';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';

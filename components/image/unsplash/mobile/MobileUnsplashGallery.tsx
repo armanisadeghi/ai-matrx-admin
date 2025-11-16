@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { useUnsplashGallery } from '@/hooks/images/useUnsplashGallery';
 import { MobileImageCard } from '@/components/image/shared/MobileImageCard';
 import { useToast } from '@/components/ui/use-toast';

@@ -5,7 +5,7 @@ import {
     Cell as TanStackCell,
 } from '@tanstack/react-table';
 import {TableCell} from "@/components/ui/table";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {truncateText} from "../utils";
 import MatrixTableTooltip from "../MatrixTableTooltip";
 import {EntityData, EntityKeys} from "@/types/entityTypes";

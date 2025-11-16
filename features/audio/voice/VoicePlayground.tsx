@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useCartesia } from "@/hooks/tts/useCartesia";
 import { availableVoices } from "@/lib/cartesia/voices";
 import { Button } from "@/components/ui/button";

@@ -5,7 +5,7 @@ import React from "react";
 
 import {TableData} from "@/types/entityTableTypes";
 import {TableCell} from "@/components/ui/table";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import { TableActionIcon } from "../MatrixTableActions";
 import { truncateText } from "../utils";
 import MatrixTableTooltip from "../MatrixTableTooltip";

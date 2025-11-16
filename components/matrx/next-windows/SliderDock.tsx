@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'motion/react';
 import { Settings, Layout, Columns2, Columns3, Columns4 } from 'lucide-react';
 
 const SliderDock = ({

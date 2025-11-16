@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { useUnsplashSearch } from '@/hooks/images/useUnsplashSearch';
 import { DesktopImageCard } from '../../shared/DesktopImageCard';
 import { UnsplashSearch } from '../UnsplashSearch';

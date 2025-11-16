@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { X, StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, FileText, Youtube, Image, Mic } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Resource } from "../../types/resources";
 
 interface ResourceChipsProps {

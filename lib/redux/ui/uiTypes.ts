@@ -1,7 +1,7 @@
 import {AllEntityFieldKeys, AnyEntityDatabaseTable, EntityKeys, Relationship} from "@/types/entityTypes";
 import React from 'react';
 import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types/stateTypes";
-import {TargetAndTransition, VariantLabels} from "framer-motion";
+import {TargetAndTransition, VariantLabels} from "motion/react";
 import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
 import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 

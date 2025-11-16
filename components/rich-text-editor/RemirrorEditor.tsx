@@ -29,7 +29,7 @@ import {
   BlockquoteExtension,
   HorizontalRuleExtension
 } from 'remirror/extensions';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { 
   Bold, Italic, Underline, Code, Link, Image, List, 
   ListOrdered, Quote, Heading1, Heading2, Heading3, 

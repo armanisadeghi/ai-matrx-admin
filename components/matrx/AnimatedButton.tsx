@@ -1,4 +1,4 @@
-import { motion, MotionProps } from 'framer-motion';
+import { motion, MotionProps } from 'motion/react';
 
 const AnimatedButton: React.FC<MotionProps & React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => (
     <motion.button

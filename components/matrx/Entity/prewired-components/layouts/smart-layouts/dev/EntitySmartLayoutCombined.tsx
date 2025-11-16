@@ -3,7 +3,7 @@
 'use client';
 
 import React, {useState, useRef, useEffect} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {CardContent} from '@/components/ui/card';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityError} from '@/lib/redux/entity/types/stateTypes';

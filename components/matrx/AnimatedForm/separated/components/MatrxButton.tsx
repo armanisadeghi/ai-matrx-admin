@@ -1,7 +1,7 @@
 // components/MatrxButton.tsx
 'use client';
 import React from "react";
-import {motion, HTMLMotionProps} from "framer-motion";
+import {motion, HTMLMotionProps} from "motion/react";
 import {cn} from "@/utils/cn";
 import {Loader2} from "lucide-react";
 import {MatrxButtonProps} from "@/types/componentConfigTypes";

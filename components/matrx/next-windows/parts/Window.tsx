@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {motion, useMotionValue, useTransform} from 'framer-motion';
+import {motion, useMotionValue, useTransform} from 'motion/react';
 import {X, Minus, Maximize2} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import Image from 'next/image';

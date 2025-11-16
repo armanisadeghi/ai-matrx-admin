@@ -1,6 +1,6 @@
 // SplitLayout.tsx
 import React, { useState } from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Button} from '@/components/ui/button';

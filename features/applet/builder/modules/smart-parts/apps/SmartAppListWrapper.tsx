@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { X, RefreshCw } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import SmartAppList, { SmartAppListRefType } from './SmartAppList';
 import { CustomAppConfig } from "@/types/customAppTypes";

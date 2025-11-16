@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, Bug, Trash2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

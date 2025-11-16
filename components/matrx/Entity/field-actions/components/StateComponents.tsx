@@ -1,6 +1,6 @@
 import React from 'react';
 import { Loader2, AlertCircle, InboxIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 

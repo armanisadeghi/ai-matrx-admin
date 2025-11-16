@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import {HelpCircle, ChevronDown, ChevronUp, ArrowUpDown, Grip} from 'lucide-react';
-import {motion, AnimatePresence, useDragControls} from 'framer-motion';
+import {motion, AnimatePresence, useDragControls} from 'motion/react';
 import {Card, CardContent} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {cn} from '@/lib/utils';

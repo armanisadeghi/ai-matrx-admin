@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { builderModules } from './build-modules';
-import { AnimatePresence, motion } from "framer-motion"; // Changed to framer-motion
-import { cn } from "@/lib/utils"; // Assuming you have this utility
+import { AnimatePresence, motion } from "motion/react";
+
 
 const BuilderHub = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Copy, Download, Link, X, MinusCircle, PlusCircle } from 'lucide-react';
 import IconButton from "@/components/official/IconButton";
 import { cn } from "@/lib/utils";

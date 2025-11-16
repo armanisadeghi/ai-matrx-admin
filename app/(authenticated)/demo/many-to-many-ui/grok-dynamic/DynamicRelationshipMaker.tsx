@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useCreateManyToMany } from "@/lib/redux/entity/hooks/useCreateManyToMany";
 import { EntityDisplayConfig, RelationshipMakerConfig } from "./definitions";
 

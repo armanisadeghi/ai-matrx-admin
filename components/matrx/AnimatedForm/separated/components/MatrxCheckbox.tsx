@@ -3,7 +3,7 @@
 'use client';
 
 import React from "react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {cn} from "@/utils/cn";
 import { AnimatedCheckboxProps } from "@/types/componentConfigTypes";
 import {densityConfig, getComponentStyles, useComponentAnimation } from "@/config/ui/FlexConfig";

@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useRef} from "react";
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {cn} from "@/styles/themes/utils";
 import AnimatedInput from "./AnimatedInput";
 import AnimatedTextarea from "./AnimatedTextarea";

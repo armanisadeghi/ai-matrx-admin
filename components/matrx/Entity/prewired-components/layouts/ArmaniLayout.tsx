@@ -1,6 +1,6 @@
 // EntityLayout.tsx
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { CardContent } from "@/components/ui/card";
 import { EntityError } from "@/lib/redux/entity/types/stateTypes";
 import { Button } from "@/components/ui/button";

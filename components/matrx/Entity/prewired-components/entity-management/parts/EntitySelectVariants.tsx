@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Card} from "@/components/ui/card";
 import {Input, InputWithPrefix} from "@/components/ui/input";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {Search} from "lucide-react";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Badge} from "@/components/ui/badge";

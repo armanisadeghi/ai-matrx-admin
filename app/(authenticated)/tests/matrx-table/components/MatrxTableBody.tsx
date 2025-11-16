@@ -2,7 +2,7 @@
 'use client';
 
 import React, {useState} from "react";
-import {AnimatePresence, motion} from "framer-motion";
+import {AnimatePresence, motion} from "motion/react";
 import {TableBody} from "@/components/ui/table";
 import {AnimatedTabModal} from "@/components/matrx/AnimatedForm";
 import {TableData} from "@/types/tableTypes";

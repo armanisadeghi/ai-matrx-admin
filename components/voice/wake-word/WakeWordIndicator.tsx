@@ -1,7 +1,7 @@
 // components/WakeWordIndicator.tsx
 'use client';
 
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {Mic} from "lucide-react";
 import {useWakeWord, WakeWord} from "@/hooks/tts/useWakeWord";
 

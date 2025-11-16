@@ -7,7 +7,7 @@ import {Button} from '@/components/ui/button';
 import {Plus, CheckSquare, Grid2X2} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 import SmartCrudWrapper
     from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";

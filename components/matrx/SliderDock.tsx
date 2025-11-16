@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import {motion, MotionValue, useAnimation, useMotionValue, useTransform} from 'framer-motion';
+import {motion, MotionValue, useAnimation, useMotionValue, useTransform} from 'motion/react';
 import { cn } from "@/lib/utils";
 
 const SliderDock = ({

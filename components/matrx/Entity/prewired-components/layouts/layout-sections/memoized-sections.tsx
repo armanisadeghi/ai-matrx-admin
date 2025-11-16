@@ -1,6 +1,6 @@
 // ArmaniLayout.tsx
 import React, {useState, useRef, useEffect, useMemo, useCallback} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {EnhancedCard, EntitySelectionSection, QuickReferenceSection} from './EnhancedMemoizedCard';
 
 import {

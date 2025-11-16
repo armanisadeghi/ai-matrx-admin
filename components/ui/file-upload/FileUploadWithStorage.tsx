@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { MultiFileUpload, MiniFileUpload } from "@/components/ui/file-upload/file-upload";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 type SaveToOption = "public" | "private";
 

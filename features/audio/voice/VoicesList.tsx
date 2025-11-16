@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { listVoices } from '@/lib/cartesia/cartesiaUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { FullJsonViewer } from '@/components/ui/JsonComponents/JsonViewerComponent';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { toast } from '@/components/ui/use-toast';
 import { useAiAudio } from "@/features/audio/voice/AiVoicePage";

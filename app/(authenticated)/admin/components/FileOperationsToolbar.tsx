@@ -6,7 +6,7 @@ import {
     Trash2,
     Plus,
 } from "lucide-react";
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {Card, CardContent} from "@/components/ui/card";
 import {DirectoryType, fileHelpers} from "@/utils/fileSystemUtil";
 import {FileContentResult, getFileType, loadFileContent} from "@/utils/fileContentHandlers";

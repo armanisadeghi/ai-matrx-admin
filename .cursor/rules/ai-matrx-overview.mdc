@@ -18,7 +18,7 @@ Route: app/(authenticated)/notes/page.tsx
 
 /features/notes/
 ├── index.ts
-├── README.md
+├── TASK_STATUS.md
 ├── types.ts
 ├── components/
 │   ├── CreateFolderDialog.tsx
@@ -56,7 +56,7 @@ NOTE: Avoid local Types for anything that is likely to be used in multiple files
 
 When working on features that are already build, respect whatever folder structure is already in place.
 - Never save random files to the root of the project
-- Do not generate random .md files until you are completely done with a task and the code is tested and working. Documentation should represent the final, teting and working version of an app, not the intermediary stagges.
+- Documentation: ONly a SINGLE TASK_STATUS.md file as the ONLY documentation for a feature (Updated Consistently)
 
 React:
 - Write high-quality, efficient code

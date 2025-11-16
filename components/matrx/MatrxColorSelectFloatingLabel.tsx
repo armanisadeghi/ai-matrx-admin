@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { cn } from "@/styles/themes/utils";
 import { FloatingSelectLabel } from "@/app/entities/fields/field-components/add-ons/FloatingFieldLabel";
 

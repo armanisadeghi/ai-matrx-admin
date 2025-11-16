@@ -1,7 +1,7 @@
 // components/MatrxInput.tsx
 'use client';
 import React from "react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {cn} from "@/utils/cn";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";

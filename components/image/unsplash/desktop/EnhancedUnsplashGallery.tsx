@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { useUnsplashGallery } from '@/hooks/images/useUnsplashGallery';
 import { DesktopImageCard } from '../../shared/DesktopImageCard';
 import { EnhancedImageViewer } from './EnhancedImageViewer';

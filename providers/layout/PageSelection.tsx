@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {useRouter, usePathname} from 'next/navigation';
-import {motion} from 'framer-motion';
+import {motion} from 'motion/react';
 import {ChevronLeft, Home} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {

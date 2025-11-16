@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { EntityControlSet } from './entity-control-set';
 import EntityControlSetStacked from './entity-control-set-stacked';
 import ArmaniLayout from '@/components/matrx/Entity/prewired-components/layouts/ArmaniLayout';

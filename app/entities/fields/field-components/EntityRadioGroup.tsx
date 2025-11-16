@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 import { EntityComponentBaseProps } from "../types";

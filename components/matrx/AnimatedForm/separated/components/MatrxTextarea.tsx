@@ -1,7 +1,7 @@
 // components/MatrxTextarea/MatrxTextarea.tsx
 'use client';
 import React, {useEffect, useRef} from "react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 import {cn} from "@/utils/cn";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";

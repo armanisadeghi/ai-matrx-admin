@@ -18,7 +18,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Alert, AlertDescription} from '@/components/ui/alert';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {useToast} from '@/components/ui/use-toast';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {Loader2} from 'lucide-react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {useEntity} from '@/lib/redux/entity/hooks/useEntity';

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {motion, AnimatePresence, useMotionValue, useTransform} from 'framer-motion';
+import {motion, AnimatePresence, useMotionValue, useTransform} from 'motion/react';
 import {X, Minus, Maximize2, Minimize2, Command} from 'lucide-react';
 
 const Window = ({id, title, content, onClose, onMinimize, onMaximize, onClick, isFullScreen, CustomComponent}) => {

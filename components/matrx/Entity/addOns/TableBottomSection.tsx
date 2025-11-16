@@ -2,7 +2,7 @@ import React from "react";
 import MatrxTooltip from "@/components/matrx/MatrxTooltip";
 import {Button} from "@/components/ui/button";
 import {ChevronLeft, ChevronRight} from "lucide-react";
-import {motion} from "framer-motion";
+import { motion } from "motion/react";
 
 interface TableBottomSectionProps {
     currentPage: number;

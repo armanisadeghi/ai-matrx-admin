@@ -2,7 +2,7 @@
 
 import "./module.css";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Input } from "./Input";
 
 export default function App() {

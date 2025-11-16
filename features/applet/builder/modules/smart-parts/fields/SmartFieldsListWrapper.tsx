@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { X, RefreshCw } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import SmartFieldsList, { SmartFieldsListRefType } from './SmartFieldsList';
 import { FieldDefinition } from '@/types/customAppTypes';

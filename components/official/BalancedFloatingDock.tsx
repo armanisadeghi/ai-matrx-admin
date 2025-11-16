@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { cn } from "@/styles/themes/utils";
 import { IconLayoutNavbarExpand, IconChevronRight, IconArrowLeft, IconChevronDown } from "@tabler/icons-react";
-import { AnimatePresence, MotionValue, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, MotionValue, motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
 

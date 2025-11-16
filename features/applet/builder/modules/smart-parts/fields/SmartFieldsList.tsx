@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperat
 import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, LayoutIcon, CopyIcon, FileEditIcon, Trash2Icon, 
     AlignLeftIcon, BoxSelectIcon, CalendarIcon, CheckSquareIcon, ClipboardCheckIcon, ListIcon, TextIcon, TypeIcon,
     ImageIcon, ToggleLeftIcon, SlidersIcon, FileTextIcon, RadioIcon } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

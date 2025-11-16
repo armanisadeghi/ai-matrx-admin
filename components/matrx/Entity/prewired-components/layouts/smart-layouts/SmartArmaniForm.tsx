@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useRef, useState} from "react";
-import {motion, AnimatePresence} from "framer-motion";
+import {motion, AnimatePresence} from "motion/react";
 import {cn} from "@/styles/themes/utils";
 import {useAppSelector} from "@/lib/redux/hooks";
 import {RootState} from "@/lib/redux/store";

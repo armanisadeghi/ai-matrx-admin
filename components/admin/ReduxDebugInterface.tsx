@@ -4,7 +4,7 @@
 import React, {useEffect, useState} from 'react';
 import {useAppSelector, useAppDispatch} from '@/lib/redux/hooks';
 import {Download, Search, Trash2, RefreshCw, MaximizeIcon, MinimizeIcon, Eye, EyeOff, ChevronRight} from 'lucide-react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence} from 'motion/react';
 import {useTheme} from 'next-themes';
 import {Card, CardContent} from "@/components/ui/card";
 import {Tabs, TabsList, TabsTrigger, TabsContent} from "@/components/ui/tabs";

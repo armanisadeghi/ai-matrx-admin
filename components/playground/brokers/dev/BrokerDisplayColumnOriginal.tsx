@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 import { broker as brokerSchema } from "@/utils/schema/initialTableSchemas";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import BrokerEditor from "./BrokerEditor";
