@@ -37,6 +37,8 @@ import CompactTaskItem from './CompactTaskItem';
 import TaskDetailsPanel from './TaskDetailsPanel';
 import TaskSortControl from './TaskSortControl';
 import type { TaskFilterType } from '../types';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectOverlay } from '@/lib/redux/slices/overlaySlice';
 
 interface QuickTasksSheetProps {
     onClose?: () => void;
@@ -72,6 +74,29 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
     const [quickAddDescription, setQuickAddDescription] = useState('');
     const [selectedProjectForTask, setSelectedProjectForTask] = useState<string | null>(null);
     const [showNewProjectForm, setShowNewProjectForm] = useState(false);
+    const [hasPrePopulated, setHasPrePopulated] = useState(false);
+
+    // Access overlay data for pre-population
+    const overlayData = useAppSelector((state) => selectOverlay(state, 'quickTasks'));
+
+    // Pre-populate task fields from overlay data (one-time only)
+    useEffect(() => {
+        if (overlayData?.data?.prePopulate && !hasPrePopulated) {
+            const { title, description, metadataInfo } = overlayData.data.prePopulate;
+            
+            if (title) {
+                setNewTaskTitle(title);
+            }
+            
+            if (description || metadataInfo) {
+                const fullDescription = description + (metadataInfo || '');
+                setQuickAddDescription(fullDescription);
+                setShowQuickAddDescription(true);
+            }
+            
+            setHasPrePopulated(true);
+        }
+    }, [overlayData, hasPrePopulated, setNewTaskTitle]);
 
     // Update selected project when activeProject changes
     useEffect(() => {

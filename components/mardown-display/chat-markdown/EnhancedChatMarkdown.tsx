@@ -363,9 +363,9 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
     );
 
     const containerStyles = cn(
-        "py-3 px-0 space-y-4 font-sans text-md antialiased leading-relaxed tracking-wide",
+        "pt-1 pb-0 px-0 space-y-4 font-sans text-md antialiased leading-relaxed tracking-wide",
         type === "flashcard"
-            ? "text-left mb-1 text-white"
+            ? "text-left mb-0 text-white"
             : `block rounded-lg w-full ${
                   role === "user"
                       ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100"
@@ -383,9 +383,9 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
     if (isWaitingForContent && toolUpdates.length === 0) {
         try {
             return (
-                <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
+                <div className={`${type === "message" ? "mb-1 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
                     <div className={containerStyles}>
-                        <div className="flex items-center justify-start py-10">
+                        <div className="flex items-center justify-start py-6">
                             <MatrxMiniLoader />
                         </div>
                     </div>
@@ -399,7 +399,7 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
 
     try {
         return (
-            <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
+            <div className={`${type === "message" ? "mb-1 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
                 {/* Tool Call Visualization - show if we have tool updates */}
                 {toolUpdates.length > 0 && (
                     <MarkdownErrorBoundary
@@ -409,7 +409,7 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
                         <ToolCallVisualization 
                             toolUpdates={toolUpdates} 
                             hasContent={!!content.trim()}
-                            className="mb-3"
+                            className="mb-2"
                         />
                     </MarkdownErrorBoundary>
                 )}

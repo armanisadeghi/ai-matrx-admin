@@ -2,6 +2,10 @@
 
 Reusable conversation display components for prompt running and chat interfaces.
 
+**Built with:**
+- `react-use` - Advanced scroll detection and tracking
+- `react-remove-scroll` - Body scroll prevention for modals/overlays
+
 ## Components
 
 ### ConversationDisplay
@@ -33,8 +37,11 @@ import { ConversationDisplay } from '@/features/prompts/components/conversation'
 - `variant`: Layout mode - 'overlay' (default, absolute positioned) or 'inline' (regular flow)
 
 **Features:**
-- Auto-scrolls to bottom on new messages
-- Smart scrolling during streaming (only if near bottom)
+- **Smart auto-scroll**: Automatically scrolls to bottom on new messages
+- **User scroll detection**: Instantly disables auto-scroll when user scrolls up
+- **Streaming optimization**: Only auto-scrolls if user is near bottom (< 300px)
+- **Direction-aware**: Detects scroll direction to distinguish user intent
+- **Position tracking**: Uses `react-use` hooks for precise scroll state
 - Optimized for fixed input overlays
 - Uses `PromptUserMessage` and `PromptAssistantMessage` internally
 
@@ -83,6 +90,7 @@ import { ConversationWithInput } from '@/features/prompts/components/conversatio
   - `onResourcesChange`: Resources change handler
   - `enablePasteImages`: Enable paste images functionality
   - `hideInput`: Hide the input field (e.g., for auto-run one-shot mode)
+  - `lockBodyScroll`: Prevent body scroll when component is active (default: false)
 
 **Layout:**
 - **Back layer**: Scrollable messages area
@@ -93,7 +101,9 @@ import { ConversationWithInput } from '@/features/prompts/components/conversatio
 ## Layout Variants
 
 ### Overlay Variant (Default)
-Uses absolute positioning for containers with fixed overlays (like input at bottom).
+Uses absolute positioning with internal overflow for containers with fixed overlays (like input at bottom).
+
+**Scrolling:** ConversationDisplay handles its own scrolling with `overflow-y-auto`.
 
 ```tsx
 <div className="relative h-full">
@@ -106,10 +116,12 @@ Uses absolute positioning for containers with fixed overlays (like input at bott
 ```
 
 ### Inline Variant
-Uses regular flow for inline layouts (like toggled input sections).
+Uses regular flow for inline layouts where the parent container controls scrolling.
+
+**Scrolling:** Parent container must have `overflow-y-auto` and height constraints. ConversationDisplay will expand to fit content, and parent handles scrolling.
 
 ```tsx
-<div className="max-h-[70vh]">
+<div className="max-h-[70vh] overflow-y-auto">
   <ConversationDisplay
     messages={messages}
     variant="inline"
@@ -202,10 +214,45 @@ interface ConversationMessage {
 
 ---
 
+## Advanced Scroll Features
+
+### Auto-Scroll Behavior
+
+The components use `react-use` hooks for robust scroll detection:
+
+1. **Direction Detection**: Distinguishes between scrolling up (user wants to read) vs. down (following conversation)
+2. **Position Tracking**: Uses `useScroll` and `usePrevious` to track exact scroll position
+3. **User Intent Recognition**: Only disables auto-scroll when user scrolls UP, not down
+4. **Programmatic vs. Manual**: Distinguishes between component-initiated scrolls and user-initiated scrolls
+
+### Body Scroll Prevention
+
+`ConversationWithInput` supports body scroll locking via `react-remove-scroll`:
+
+```tsx
+<ConversationWithInput
+  messages={messages}
+  lockBodyScroll={true}  // Prevents body scroll, keeps internal scroll
+  // ... other props
+/>
+```
+
+**Use cases:**
+- Modal conversations (prevent background scrolling)
+- Full-screen chat interfaces
+- Overlay panels
+
+**Benefits:**
+- Touch-move prevention on mobile
+- Proper z-index handling
+- Nested scroll container support
+- No layout shift when scroll locks
+
 ## Notes
 
 - The components use absolute positioning with padding to accommodate fixed input
 - Auto-scrolling is smart: only scrolls during streaming if user is near bottom
 - Empty state is customizable for different contexts
 - All styling respects the app's design system (Tailwind, dark mode, etc.)
+- Built with production-grade scroll libraries (`react-use`, `react-remove-scroll`)
 

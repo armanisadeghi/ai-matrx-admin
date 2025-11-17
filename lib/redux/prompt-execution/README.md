@@ -1,222 +1,67 @@
-# Redux Prompt Execution Engine
+## 📊 Core Prompt Execution System - Current Status
 
-**Status:** ✅ **COMPLETE - Ready for Integration**  
-**Linter Errors:** ✅ **None**  
-**Database Integration:** ✅ **Documented and Ready**
+### ✅ **WORKING**
 
----
+**1. Single-Step Execution:** ✅ YES
+- Call `startPromptInstance()` → gets instanceId
+- Call `executeMessage()` → returns taskId
+- Socket.io handles response streaming
 
-## 🎯 What This Solves
+**2. Prompt Caching:** ✅ YES
+- Takes `promptId` string only (not object)
+- Fetches from DB on first use
+- Cached forever in Redux (`promptCacheSlice`)
+- Never refetches unless explicitly cleared
+- Works for both `prompts` and `prompt_builtins` tables
 
-### The Critical Bug
-Your `PromptRunPage.tsx` had a **closure bug** where `replaceVariables` captured initial variable values and never updated:
+**3. Variable Management:** ✅ YES
+- `updateVariable()` - single variable
+- `updateVariables()` - batch update
+- Redux stores them per instance
+- Selectors merge: user values → scoped → computed → defaults
+- UI doesn't need to maintain them
 
-```typescript
-// OLD - BUG! 🐛
-const replaceVariables = (content: string) => {
-  variableDefaults.forEach(({ name, defaultValue }) => {
-    // ❌ Uses OLD defaultValue captured at function creation!
-  });
-};
-```
+**4. Resources:** ❌ **MISSING**
+- `resources` array exists in state structure
+- **NO actions to add/update resources**
+- Not handled by any thunk
 
-**Result:** User updates variables, but submitted message uses OLD values!
+**5. Message Building & Execution:** ✅ PARTIAL
+- Merges variables via selectors ✅
+- Builds message array ✅
+- Creates run in DB (if `track_in_runs: true`) ✅
+- Returns taskId ✅
+- **BUT: Initial message not merged with user input** (stored separately)
 
-### The Solution
-**Redux-based architecture** where ALL variable access goes through selectors that read fresh state:
+**6. Conversation Storage:** ✅ YES
+- Stores all messages in instance
+- Stores variables per instance
+- `addMessage()` action works
+- Run linked for continued conversations
 
-```typescript
-// NEW - NO BUGS! ✅
-const mergedVariables = selectMergedVariables(getState(), instanceId);
-// ✅ Always reads CURRENT state from Redux!
-```
-
----
-
-## 📦 What's Included
-
-### Core Files (9 files)
-1. **`slice.ts`** - Redux slice with 20+ actions
-2. **`selectors.ts`** - 15+ memoized selectors (CLOSURE-BUG-PROOF!)
-3. **`types.ts`** - Complete TypeScript definitions
-4. **`index.ts`** - Clean barrel exports
-
-### Thunks (4 smart thunks)
-5. **`startInstanceThunk.ts`** - Cache-aware instance creation
-6. **`executeMessageThunk.ts`** - **THE EXECUTION ENGINE** (no closure bugs!)
-7. **`completeExecutionThunk.ts`** - Finalize execution & save to DB
-8. **`fetchScopedVariablesThunk.ts`** - Fetch user/org/project variables
-
-### Hooks (1 convenience hook)
-9. **`usePromptInstance.ts`** - Clean API for components
-
-### Documentation (4 comprehensive guides)
-10. **`ARCHITECTURE.md`** - Full system design
-11. **`IMPLEMENTATION_GUIDE.md`** - Step-by-step migration
-12. **`DATABASE_SCHEMA.md`** - Database requirements
-13. **`VERIFICATION_CHECKLIST.md`** - Complete verification
+**7. Resources in Continued Conversations:** ❌ **MISSING**
+- No resource storage = can't reuse in future messages
 
 ---
 
-## ✅ Key Features
+## 🚨 **WHAT'S MISSING**
 
-### 1. Eliminates Closure Bugs
-- All variable access through Redux selectors
-- Selectors are pure functions (no captured state)
-- **Impossible to use stale variables**
-
-### 2. Smart Caching
-```typescript
-// Prompt fetched ONCE per session
-dispatch(startPromptInstance({ promptId: 'X' })); // Fetches from DB
-dispatch(startPromptInstance({ promptId: 'X' })); // Uses cache!
-```
-
-### 3. Multiple Concurrent Instances
-```typescript
-// Run multiple prompts simultaneously
-const id1 = await dispatch(startPromptInstance({ promptId: 'A' }));
-const id2 = await dispatch(startPromptInstance({ promptId: 'B' }));
-const id3 = await dispatch(startPromptInstance({ promptId: 'A' })); // Different instance!
-```
-
-### 4. Scoped Variables Support
-```typescript
-// User/org/project variables auto-populate
-// {{user_name}}, {{org_name}}, {{project_name}}
-// Fetched once, available everywhere
-```
-
-### 5. Guaranteed Run Tracking
-```typescript
-// If track_in_runs: true, ALWAYS creates run
-// No exceptions, no missed tracking
-// All handled in thunk, not component
-```
-
-### 6. Redux DevTools Integration
-- See every state change
-- Time-travel debugging
-- Export/import state
-- Perfect for debugging
+1. **Resource Management** - No actions/thunks
+2. **Accept Prompt Object** - Only takes ID string
+3. **Initial Message Merge** - Separated from user input
+4. **Resource Persistence** - For multi-turn conversations
 
 ---
 
-## 🚀 Quick Start
+**Bottom Line:** Core execution works. Caching works. Variables work. **Resources don't exist yet.**
 
-### Step 1: Add to Redux Store (15 minutes)
 
-```typescript
-// lib/redux/rootReducer.ts
-import promptExecutionReducer from './prompt-execution/slice';
+# Project Team Leader Feedback
 
-export const createRootReducer = (initialState) => {
-  return combineReducers({
-    // ... existing reducers ...
-    promptExecution: promptExecutionReducer,  // ← ADD THIS
-  });
-};
-```
+1. This should be a 'feature' not in lib/redux -- system should be moved to features/prompt-execution/
 
-### Step 2: Use in Component
+2. Need to be able to handle prompt objects as well - Sometimes, some part of the ui will have a prompt object already, especially in cases where a user is building the prompt or modifying it. In this case, it's typically best for the ui to pass the prompt object for testing and running.
 
-```typescript
-import { useEffect, useState } from 'react';
-import { useAppDispatch } from '@/lib/redux';
-import { startPromptInstance, executeMessage } from '@/lib/redux/prompt-execution';
-import { usePromptInstance } from '@/lib/redux/prompt-execution/hooks';
+3. Resource Management: We have a robust resource management system that should be fairly straightforward to either convert to redux or simply have redux tap into it so they work together directly.
 
-function MyComponent({ promptId }) {
-  const dispatch = useAppDispatch();
-  const [instanceId, setInstanceId] = useState<string | null>(null);
-  
-  // Get state and actions from hook
-  const {
-    instance,
-    displayMessages,
-    variables,
-    sendMessage,
-    updateVariable,
-  } = usePromptInstance(instanceId);
-  
-  // Initialize instance
-  useEffect(() => {
-    dispatch(startPromptInstance({
-      promptId,
-      executionConfig: { track_in_runs: true },
-      variables: { text: 'Initial value' },
-    }))
-      .unwrap()
-      .then(setInstanceId);
-  }, [promptId]);
-  
-  return (
-    <div>
-      <Variables variables={variables} onChange={updateVariable} />
-      <Messages messages={displayMessages} />
-      <Button onClick={() => sendMessage()}>Send</Button>
-    </div>
-  );
-}
-```
-
----
-
-## 📊 Comparison
-
-| Feature | Old (PromptRunPage) | New (Redux Engine) |
-|---------|---------------------|---------------------|
-| Closure bugs | ❌ YES (had the bug!) | ✅ IMPOSSIBLE |
-| Lines of code | ~100 lines state mgmt | ~30 lines |
-| Variable logic | Duplicated everywhere | ✅ Single source |
-| Debugging | console.log | ✅ DevTools time-travel |
-| Caching | Manual | ✅ Automatic |
-| Testing | Hard | ✅ Easy (pure functions) |
-| Multiple instances | Complex | ✅ Built-in |
-| Scoped variables | Not supported | ✅ Built-in |
-
----
-
-## 🔧 Integration Checklist
-
-- [ ] Add `promptExecutionReducer` to `rootReducer.ts`
-- [ ] Create `user_variables` table (see DATABASE_SCHEMA.md)
-- [ ] (Optional) Create `org_variables` table
-- [ ] (Optional) Create `project_variables` table
-- [ ] Migrate `PromptRunPage.tsx` to use Redux engine
-- [ ] Test with Redux DevTools
-- [ ] Migrate other prompt execution components
-- [ ] Remove old execution logic
-
-**Estimated Time:** ~5 hours to first working component
-
----
-
-## 📚 Documentation
-
-- **`ARCHITECTURE.md`** - Read this first for full understanding
-- **`IMPLEMENTATION_GUIDE.md`** - Step-by-step migration guide
-- **`DATABASE_SCHEMA.md`** - All database requirements
-- **`VERIFICATION_CHECKLIST.md`** - Complete verification
-
----
-
-## 🎉 Summary
-
-**This Redux engine:**
-- ✅ Eliminates the closure bug class entirely
-- ✅ Reduces code complexity by 70%
-- ✅ Provides best-in-class debugging
-- ✅ Enables advanced features (scoped variables)
-- ✅ Is production-ready with zero linter errors
-- ✅ Works with your existing infrastructure
-- ✅ Can be deployed gradually (no breaking changes)
-
-**The foundation is solid. Ready to integrate!** 🚀
-
----
-
-## 📞 Questions?
-
-All implementation details are in the documentation files. Start with `ARCHITECTURE.md` for the big picture, then `IMPLEMENTATION_GUIDE.md` for step-by-step instructions.
-
+4. Initial Message Merge: This is VERY CLEAR in the current system... Messages are built

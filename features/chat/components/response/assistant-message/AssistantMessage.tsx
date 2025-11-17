@@ -249,6 +249,10 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                             onShowHtmlPreview={handleShowHtmlPreview}
                             onEditContent={handleEditClick}
                             anchorElement={moreOptionsButtonRef.current}
+                            metadata={{
+                                taskId: taskId,
+                                messageId: message.id,
+                            }}
                         />
                     </div>
                 )}

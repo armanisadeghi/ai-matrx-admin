@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit } from "lucide-react";
+import { Database, BookText, FileText, Briefcase, Copy, FileCode, Eye, Globe, Brain, Save, Volume2, Edit, CheckSquare } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
@@ -8,6 +8,7 @@ import { QuickSaveModal } from "@/features/notes";
 import { useCartesiaWithPreferences } from "@/hooks/tts/simple/useCartesiaWithPreferences";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "sonner";
+import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
 
 interface MessageOptionsMenuProps {
   content: string;
@@ -16,10 +17,17 @@ interface MessageOptionsMenuProps {
   onEditContent?: () => void;
   isOpen: boolean;
   anchorElement?: HTMLElement | null;
+  metadata?: {
+    taskId?: string;
+    runId?: string;
+    messageId?: string;
+    [key: string]: any;
+  };
 }
 
-const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, isOpen, anchorElement }) => {
+const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClose, onShowHtmlPreview, onEditContent, isOpen, anchorElement, metadata }) => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const { openQuickTasks } = useQuickActions();
   
   // Get user's voice preferences (for Cartesia TTS)
   const voicePreferences = useAppSelector((state) => state.userPreferences?.voice);
@@ -50,6 +58,23 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({ content, onClos
 
   const handleSaveToNotes = () => {
     setIsSaveModalOpen(true);
+  };
+
+  // Add to Tasks handler
+  const handleAddToTasks = () => {
+    // Prepare task data with content and metadata
+    const taskData = {
+      content,
+      metadata,
+      prePopulate: {
+        title: 'AI Response',
+        description: content,
+        metadataInfo: metadata ? `\n\n---\n**Origin Info:**\n${JSON.stringify(metadata, null, 2)}` : ''
+      }
+    };
+    
+    openQuickTasks(taskData);
+    onClose();
   };
 
   // TTS handler
@@ -172,6 +197,18 @@ ${cssContent}
       category: "Edit",
       successMessage: "Opening editor...",
       errorMessage: "Failed to open editor",
+      showToast: false
+    },
+    // Add to Tasks
+    { 
+      key: 'add-to-tasks',
+      icon: CheckSquare, 
+      iconColor: "text-blue-500 dark:text-blue-400", 
+      label: "Add to Tasks",
+      action: handleAddToTasks,
+      category: "Actions",
+      successMessage: "Opening Tasks...",
+      errorMessage: "Failed to open Tasks",
       showToast: false
     },
     // Audio Option

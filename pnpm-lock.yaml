@@ -467,6 +467,9 @@ importers:
       react-redux:
         specifier: latest
         version: 9.2.0(@types/react@19.1.4)(react@19.2.0)(redux@5.0.1)
+      react-remove-scroll:
+        specifier: ^2.7.1
+        version: 2.7.1(@types/react@19.1.4)(react@19.2.0)
       react-resizable-panels:
         specifier: latest
         version: 3.0.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -485,6 +488,9 @@ importers:
       react-toastify:
         specifier: latest
         version: 11.0.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react-use:
+        specifier: ^17.6.0
+        version: 17.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-use-websocket:
         specifier: latest
         version: 4.13.0
@@ -5118,6 +5124,9 @@ packages:
   '@types/jest@29.5.14':
     resolution: {integrity: sha512-ZN+4sdnLUbo8EVvVc2ao0GFW6oVrQRPn4K2lglySj7APvSrgzxHiNNK99us4WDMi57xxA2yggblIAMNhXOotLQ==}
 
+  '@types/js-cookie@2.2.7':
+    resolution: {integrity: sha512-aLkWa0C0vO5b4Sr798E26QgOkss68Un0bLjs7u9qxzPT5CG+8DuNTffWES58YzJs3hrVAOs1wonycqEBqNJubA==}
+
   '@types/js-cookie@3.0.6':
     resolution: {integrity: sha512-wkw9yd1kEXOPnvEeEV1Go1MmxtBJL0RR79aOTAApecWFVu7w0NNXNqhcWgvw2YgZDYadliXkl14pa3WXw5jlCQ==}
 
@@ -5505,6 +5514,9 @@ packages:
 
   '@webgpu/types@0.1.60':
     resolution: {integrity: sha512-8B/tdfRFKdrnejqmvq95ogp8tf52oZ51p3f4QD5m5Paey/qlX4Rhhy5Y8tgFMi7Ms70HzcMMw3EQjH/jdhTwlA==}
+
+  '@xobotyi/scrollbar-width@1.9.5':
+    resolution: {integrity: sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==}
 
   '@xpd/tailwind-3dtransforms@1.0.3':
     resolution: {integrity: sha512-LEKfNj57djZAucQ1itu/zinRkYnkhzNjAMhz8DkbguTyBcTDHF1R6CuXO536BFE/YGyHDCYd7tDF5ghSrViUgQ==}
@@ -6444,6 +6456,10 @@ packages:
   css-select@5.1.0:
     resolution: {integrity: sha512-nwoRF1rvRRnnCqqY7updORDsuqKzqYJ28+oSMaJMMgOauh3fvwHqMS7EZpIPqK8GL+g9mKxF1vP/ZjSeNjEVHg==}
 
+  css-tree@1.1.3:
+    resolution: {integrity: sha512-tRpdppF7TRazZrjJ6v3stzv93qxRcSsFmW6cX0Zm2NVKpxE1WV1HblnghVv9TreireHkqI/VDEsfolRF1p6y7Q==}
+    engines: {node: '>=8.0.0'}
+
   css-what@6.1.0:
     resolution: {integrity: sha512-HTUrgRJ7r4dsZKU6GjmpfRK1O76h97Z8MfS1G0FozR+oF2kG6Vfe8JE6zwrkbxigziPHinCJ+gCPjA9EaBDtRw==}
     engines: {node: '>= 6'}
@@ -6992,6 +7008,9 @@ packages:
   error-ex@1.3.2:
     resolution: {integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==}
 
+  error-stack-parser@2.1.4:
+    resolution: {integrity: sha512-Sk5V6wVazPhq5MhpO+AUxJn5x7XSXGl1R93Vn7i+zS15KDVxQijejNCrz8340/2bgLBjR9GtEG8ZVKONDjcqGQ==}
+
   es-abstract@1.23.9:
     resolution: {integrity: sha512-py07lI0wjxAC/DcfK1S6G7iANonniZwTISvdPzk9hzeH0IZIshbuuFxLIU96OyF89Yb9hiqWn8M/bY83KY5vzA==}
     engines: {node: '>= 0.4'}
@@ -7341,6 +7360,9 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
+  fast-shallow-equal@1.0.0:
+    resolution: {integrity: sha512-HPtaa38cPgWvaCFmRNhlc6NG7pv6NUHqjPgVAkWGoB9mQMwYB27/K0CvOM5Czy+qpT3e8XJ6Q4aPAnzpNpzNaw==}
+
   fast-unique-numbers@7.0.2:
     resolution: {integrity: sha512-xnqpsnu889bHbq5cbDMwCJ2BPf6kjFPMu+RHfqKvisRxeEbTOVxY5aW/ZNsZ/r8OlwatxmjdFEVQog2xAhLkvg==}
     engines: {node: '>=14.15.4'}
@@ -7352,6 +7374,9 @@ packages:
   fast-xml-parser@5.2.5:
     resolution: {integrity: sha512-pfX9uG9Ki0yekDHx2SiuRIyFdyAr1kMIMitPvb0YBo8SUfKvia7w7FIyd/l6av85pFYRhZscS75MwMnbvY+hcQ==}
     hasBin: true
+
+  fastest-stable-stringify@2.0.2:
+    resolution: {integrity: sha512-bijHueCGd0LqqNK9b5oCMHc0MluJAx0cwqASgbWMvkO01lCYgIhacVRLcaDz3QnyYIRNJRDwMb41VuT6pHJ91Q==}
 
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
@@ -7998,6 +8023,9 @@ packages:
   inline-style-parser@0.2.4:
     resolution: {integrity: sha512-0aO8FkhNZlj/ZIbNi7Lxxr12obT7cL1moPfE4tg1LkX7LlLfC6DeX4l2ZEud1ukP9jNQyNnfzQVqwbwmAATY4Q==}
 
+  inline-style-prefixer@7.0.1:
+    resolution: {integrity: sha512-lhYo5qNTQp3EvSSp3sRvXMbVQTLrvGV6DycRMJ5dm2BLMiJ30wpXKdDdgX+GmJZ5uQMucwRKHamXSst3Sj/Giw==}
+
   input-otp@1.4.1:
     resolution: {integrity: sha512-+yvpmKYKHi9jIGngxagY9oWiiblPB7+nEO75F2l2o4vs+6vpPZZmUl4tBNYuTCvQjhvEIbdNeJu70bhfYP2nbw==}
     peerDependencies:
@@ -8458,6 +8486,9 @@ packages:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
     hasBin: true
 
+  js-cookie@2.2.1:
+    resolution: {integrity: sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==}
+
   js-cookie@3.0.5:
     resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
     engines: {node: '>=14'}
@@ -8845,6 +8876,9 @@ packages:
   mdast-util-to-string@4.0.0:
     resolution: {integrity: sha512-0H44vDimn51F0YwvxSJSm0eCDOJTRlmN0R1yBh4HLj9wiV1Dn0QoXGbvFAWj2hSItVTlCmBF1hqKlIyUBVFLPg==}
 
+  mdn-data@2.0.14:
+    resolution: {integrity: sha512-dn6wd0uw5GsdswPFfsgMp5NSB0/aDe6fK94YJV/AJDYXL6HVLWBsxeq7js7Ad+mU2K9LAlwpk6kN2D5mwCPVow==}
+
   media-encoder-host-broker@7.1.0:
     resolution: {integrity: sha512-Emu3f45Wbf6AoRJxfvZ8e5nh8fRVviBfkABgYNvVUsVBgJ7+l137gn324g/JmNVQhhVQ89fjmGT1kHIJ9JG5Nw==}
 
@@ -9172,6 +9206,12 @@ packages:
 
   nan@2.23.0:
     resolution: {integrity: sha512-1UxuyYGdoQHcGg87Lkqm3FzefucTa0NAiOcuRsDmysep3c1LVCRK2krrUDafMWtjSG04htvAmvg96+SDknOmgQ==}
+
+  nano-css@5.6.2:
+    resolution: {integrity: sha512-+6bHaC8dSDGALM1HJjOHVXpuastdu2xFoZlC77Jh4cg+33Zcgm+Gxd+1xsnpZK14eyHObSp82+ll5y3SX75liw==}
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
 
   nanoevents@5.1.13:
     resolution: {integrity: sha512-JFAeG9fp0QZnRoESHjkbVFbZ9BkOXkkagUVwZVo/pkSX+Fq1VKlY+5og/8X9CYc6C7vje/CV+bwJ5M2X0+IY9Q==}
@@ -10454,8 +10494,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-remove-scroll@2.6.3:
-    resolution: {integrity: sha512-pnAi91oOk8g8ABQKGF5/M9qxmmOPxaAnopyTHYfqYEwJhyFrbbBtHuSgtKEoH0jpcxx5o3hXqH1mNd9/Oi+8iQ==}
+  react-remove-scroll@2.7.1:
+    resolution: {integrity: sha512-HpMh8+oahmIdOuS5aFKKY6Pyog+FNaZV/XyJOq7b4YFwsFHe5yYfdbIalI4k3vU2nSDql7YskmUseHsRrJqIPA==}
     engines: {node: '>=10'}
     peerDependencies:
       '@types/react': '*'
@@ -10531,6 +10571,12 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
 
+  react-universal-interface@0.6.2:
+    resolution: {integrity: sha512-dg8yXdcQmvgR13RIlZbTRQOoUrDciFVoSBZILwjE2LFISxZZ8loVJKAkuzswl5js8BHda79bIb2b84ehU8IjXw==}
+    peerDependencies:
+      react: '*'
+      tslib: '*'
+
   react-use-measure@2.1.7:
     resolution: {integrity: sha512-KrvcAo13I/60HpwGO5jpW7E9DfusKyLPLvuHlUyP5zqnmAPhNc6qTRjUQrdTADl0lpPpDVU2/Gg51UlOGHXbdg==}
     peerDependencies:
@@ -10542,6 +10588,12 @@ packages:
 
   react-use-websocket@4.13.0:
     resolution: {integrity: sha512-anMuVoV//g2N76Wxqvqjjo1X48r9Np3y1/gMl7arX84tAPXdy5R7sB5lO5hvCzQRYjqXwV8XMAiEBOUbyrZFrw==}
+
+  react-use@17.6.0:
+    resolution: {integrity: sha512-OmedEScUMKFfzn1Ir8dBxiLLSOzhKe/dPZwVxcujweSj45aNM7BEGPb9BEVIgVEqEXx6f3/TsXzwIktNgUR02g==}
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
 
   react-webcam@7.2.0:
     resolution: {integrity: sha512-xkrzYPqa1ag2DP+2Q/kLKBmCIfEx49bVdgCCCcZf88oF+0NPEbkwYk3/s/C7Zy0mhM8k+hpdNkBLzxg8H0aWcg==}
@@ -10859,6 +10911,9 @@ packages:
   rrweb-cssom@0.8.0:
     resolution: {integrity: sha512-guoltQEx+9aMf2gDZ0s62EcV8lsXR+0w8915TC3ITdn2YueuNjdAYh/levpU9nFaoChh9RUS5ZdQMrKfVEN9tw==}
 
+  rtl-css-js@1.16.1:
+    resolution: {integrity: sha512-lRQgou1mu19e+Ya0LsTvKrVJ5TYUbqCVPAiImX3UfLTenarvPUl1QFdvu5Z3PYmHT9RCcwIfbjRQBntExyj3Zg==}
+
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
@@ -10973,6 +11028,10 @@ packages:
   set-function-name@2.0.2:
     resolution: {integrity: sha512-7PGFlmtwsEADb0WYyvCMa1t+yke6daIG4Wirafur5kcf+MhUnPms1UeR0CKQdTZD81yESwMHbtn+TR+dMviakQ==}
     engines: {node: '>= 0.4'}
+
+  set-harmonic-interval@1.0.1:
+    resolution: {integrity: sha512-AhICkFV84tBP1aWqPwLZqFvAwqEoVA9kxNMniGEUvzOlm4vLmOFLiTT3UZ6bziJTy4bOVpzWGTfSCbmaayGx8g==}
+    engines: {node: '>=6.9'}
 
   set-proto@1.0.0:
     resolution: {integrity: sha512-RJRdvCo6IAnPdsvP/7m6bsQqNnn1FCBX5ZNtFL98MmFF/4xAIJTIg1YbHW5DC2W5SKZanrC6i4HsJqlajw/dZw==}
@@ -11105,6 +11164,10 @@ packages:
     resolution: {integrity: sha512-cPiFOTLUKvJFIg4SKVScy4ilPPW6rFgMgfuZJPNoDuMs3nC1HbMUycBoJw77xFIp6z1UJQJOfx6C9GMH80DiTw==}
     deprecated: See https://github.com/lydell/source-map-url#deprecated
 
+  source-map@0.5.6:
+    resolution: {integrity: sha512-MjZkVp0NHr5+TPihLcadqnlVoGIoWo4IBHptutGh9wI3ttUYvCG26HkSuDi+K6lsZ25syXJXcctwgyVCt//xqA==}
+    engines: {node: '>=0.10.0'}
+
   source-map@0.5.7:
     resolution: {integrity: sha512-LbrmJOMUSdEVxIKvdcJzQC+nQhe8FUZQTXQy6+I75skNgn3OoQ0DZA8YnFa7gp8tqtL3KPf1kmo0R5DoApeSGQ==}
     engines: {node: '>=0.10.0'}
@@ -11144,6 +11207,9 @@ packages:
   stable-hash@0.0.5:
     resolution: {integrity: sha512-+L3ccpzibovGXFK+Ap/f8LOS0ahMrHTf3xu7mMLSpEGU0EO9ucaysSylKo9eRDFNhWve/y275iPmIZ4z39a9iA==}
 
+  stack-generator@2.0.10:
+    resolution: {integrity: sha512-mwnua/hkqM6pF4k8SnmZ2zfETsRUpWXREfA/goT8SLCV4iOFa4bzOX2nDipWAZFPTjLvQB82f5yaodMVhK0yJQ==}
+
   stack-utils@2.0.6:
     resolution: {integrity: sha512-XlkWvfIm6RmsWtNJx+uqtKLS8eqFbxUg0ZzLXqY0caEy9l7hruX8IpiDnjsLavoBgqCCR71TqWO8MaXYheJ3RQ==}
     engines: {node: '>=10'}
@@ -11151,6 +11217,15 @@ packages:
   stackblur-canvas@2.7.0:
     resolution: {integrity: sha512-yf7OENo23AGJhBriGx0QivY5JP6Y1HbrrDI6WLt6C5auYZXlQrheoY8hD4ibekFKz1HOfE48Ww8kMWMnJD/zcQ==}
     engines: {node: '>=0.1.14'}
+
+  stackframe@1.3.4:
+    resolution: {integrity: sha512-oeVtt7eWQS+Na6F//S4kJ2K2VbRlS9D43mAlMyVpVWovy9o+jfgH8O9agzANzaiLjclA0oYzUXEM4PurhSUChw==}
+
+  stacktrace-gps@3.1.2:
+    resolution: {integrity: sha512-GcUgbO4Jsqqg6RxfyTHFiPxdPqF+3LFmQhm7MgCuYQOYuWyqxo5pwRPz5d/u6/WYJdEnWfK4r+jGbyD8TSggXQ==}
+
+  stacktrace-js@2.0.2:
+    resolution: {integrity: sha512-Je5vBeY4S1r/RnLydLl0TBTi3F2qdfWmYsGvtfZgEI+SCprPppaIhQf5nGcal4gI4cGpCV/duLcAzT1np6sQqg==}
 
   standardized-audio-context@25.3.77:
     resolution: {integrity: sha512-Ki9zNz6pKcC5Pi+QPjPyVsD9GwJIJWgryji0XL9cAJXMGyn+dPOf6Qik1AHei0+UNVcc4BOCa0hWLBzlwqsW/A==}
@@ -11536,6 +11611,9 @@ packages:
   ts-dedent@2.2.0:
     resolution: {integrity: sha512-q5W7tVM71e2xjHZTlgfTDoPF/SmqKG5hddq9SzR49CH2hayqRKJtQ4mtRlSxKaJlR/+9rEM+mnBHf7I2/BQcpQ==}
     engines: {node: '>=6.10'}
+
+  ts-easing@0.2.0:
+    resolution: {integrity: sha512-Z86EW+fFFh/IFB1fqQ3/+7Zpf9t2ebOAxNI/V6Wo7r5gqiqtxmgTlQ1qbqQcjLKYeSHPTsEmvlJUDg/EuL0uHQ==}
 
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
@@ -15451,7 +15529,7 @@ snapshots:
       aria-hidden: 1.2.4
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      react-remove-scroll: 2.6.3(@types/react@19.1.4)(react@19.2.0)
+      react-remove-scroll: 2.7.1(@types/react@19.1.4)(react@19.2.0)
     optionalDependencies:
       '@types/react': 19.1.4
       '@types/react-dom': 19.1.5(@types/react@19.1.4)
@@ -15578,7 +15656,7 @@ snapshots:
       aria-hidden: 1.2.4
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      react-remove-scroll: 2.6.3(@types/react@19.1.4)(react@19.2.0)
+      react-remove-scroll: 2.7.1(@types/react@19.1.4)(react@19.2.0)
     optionalDependencies:
       '@types/react': 19.1.4
       '@types/react-dom': 19.1.5(@types/react@19.1.4)
@@ -15641,7 +15719,7 @@ snapshots:
       aria-hidden: 1.2.4
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      react-remove-scroll: 2.6.3(@types/react@19.1.4)(react@19.2.0)
+      react-remove-scroll: 2.7.1(@types/react@19.1.4)(react@19.2.0)
     optionalDependencies:
       '@types/react': 19.1.4
       '@types/react-dom': 19.1.5(@types/react@19.1.4)
@@ -15826,7 +15904,7 @@ snapshots:
       aria-hidden: 1.2.4
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      react-remove-scroll: 2.6.3(@types/react@19.1.4)(react@19.2.0)
+      react-remove-scroll: 2.7.1(@types/react@19.1.4)(react@19.2.0)
     optionalDependencies:
       '@types/react': 19.1.4
       '@types/react-dom': 19.1.5(@types/react@19.1.4)
@@ -19057,6 +19135,8 @@ snapshots:
       expect: 29.7.0
       pretty-format: 29.7.0
 
+  '@types/js-cookie@2.2.7': {}
+
   '@types/js-cookie@3.0.6': {}
 
   '@types/json-schema@7.0.15': {}
@@ -19470,6 +19550,8 @@ snapshots:
       '@xtuc/long': 4.2.2
 
   '@webgpu/types@0.1.60': {}
+
+  '@xobotyi/scrollbar-width@1.9.5': {}
 
   '@xpd/tailwind-3dtransforms@1.0.3': {}
 
@@ -20592,7 +20674,7 @@ snapshots:
 
   create-context-state@2.0.3(@types/react@19.1.4)(react@19.2.0):
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       react: 19.2.0
     optionalDependencies:
       '@types/react': 19.1.4
@@ -20684,6 +20766,11 @@ snapshots:
       domhandler: 5.0.3
       domutils: 3.2.2
       nth-check: 2.1.1
+
+  css-tree@1.1.3:
+    dependencies:
+      mdn-data: 2.0.14
+      source-map: 0.6.1
 
   css-what@6.1.0: {}
 
@@ -21213,6 +21300,10 @@ snapshots:
     dependencies:
       is-arrayish: 0.2.1
 
+  error-stack-parser@2.1.4:
+    dependencies:
+      stackframe: 1.3.4
+
   es-abstract@1.23.9:
     dependencies:
       array-buffer-byte-length: 1.0.2
@@ -21722,14 +21813,14 @@ snapshots:
 
   extendable-media-recorder-wav-encoder-broker@7.0.118:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       broker-factory: 3.1.6
       extendable-media-recorder-wav-encoder-worker: 8.0.115
       tslib: 2.8.1
 
   extendable-media-recorder-wav-encoder-worker@8.0.115:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       tslib: 2.8.1
       worker-factory: 7.0.42
 
@@ -21789,6 +21880,8 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
+  fast-shallow-equal@1.0.0: {}
+
   fast-unique-numbers@7.0.2:
     dependencies:
       '@babel/runtime': 7.28.4
@@ -21802,6 +21895,8 @@ snapshots:
   fast-xml-parser@5.2.5:
     dependencies:
       strnum: 2.1.1
+
+  fastest-stable-stringify@2.0.2: {}
 
   fastq@1.19.1:
     dependencies:
@@ -22595,6 +22690,10 @@ snapshots:
 
   inline-style-parser@0.2.4: {}
 
+  inline-style-prefixer@7.0.1:
+    dependencies:
+      css-in-js-utils: 3.1.0
+
   input-otp@1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       react: 19.2.0
@@ -23245,6 +23344,8 @@ snapshots:
 
   jiti@1.21.7: {}
 
+  js-cookie@2.2.1: {}
+
   js-cookie@3.0.5: {}
 
   js-tokens@4.0.0: {}
@@ -23589,7 +23690,7 @@ snapshots:
 
   match-sorter@6.3.4:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       remove-accents: 0.5.0
 
   material-colors@1.2.6: {}
@@ -23782,6 +23883,8 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
 
+  mdn-data@2.0.14: {}
+
   media-encoder-host-broker@7.1.0:
     dependencies:
       '@babel/runtime': 7.28.4
@@ -23799,7 +23902,7 @@ snapshots:
 
   media-encoder-host@8.1.0:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       media-encoder-host-broker: 7.1.0
       media-encoder-host-worker: 9.2.0
       tslib: 2.8.1
@@ -24296,12 +24399,12 @@ snapshots:
 
   multi-buffer-data-view@3.0.24:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       tslib: 2.8.1
 
   multishift@2.0.10(@remirror/pm@3.0.1)(@types/react@19.1.4)(react@19.2.0):
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       '@remirror/core-helpers': 4.0.0
       '@remirror/core-types': 3.0.0(@remirror/pm@3.0.1)
       '@seznam/compose-react-refs': 1.0.6
@@ -24323,6 +24426,19 @@ snapshots:
 
   nan@2.23.0:
     optional: true
+
+  nano-css@5.6.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.0
+      css-tree: 1.1.3
+      csstype: 3.1.3
+      fastest-stable-stringify: 2.0.2
+      inline-style-prefixer: 7.0.1
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      rtl-css-js: 1.16.1
+      stacktrace-js: 2.0.2
+      stylis: 4.3.6
 
   nanoevents@5.1.13: {}
 
@@ -25050,7 +25166,7 @@ snapshots:
 
   prosemirror-resizable-view@3.0.0(@remirror/pm@3.0.1)(@types/node@22.15.18)(jsdom@26.1.0(bufferutil@4.0.9)(canvas@3.1.0)(utf-8-validate@5.0.10)):
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       '@remirror/core-helpers': 4.0.0
       '@remirror/core-utils': 3.0.0(@remirror/pm@3.0.1)(@types/node@22.15.18)(jsdom@26.1.0(bufferutil@4.0.9)(canvas@3.1.0)(utf-8-validate@5.0.10))
       prosemirror-model: 1.25.1
@@ -25847,7 +25963,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.4
 
-  react-remove-scroll@2.6.3(@types/react@19.1.4)(react@19.2.0):
+  react-remove-scroll@2.7.1(@types/react@19.1.4)(react@19.2.0):
     dependencies:
       react: 19.2.0
       react-remove-scroll-bar: 2.3.8(@types/react@19.1.4)(react@19.2.0)
@@ -25928,12 +26044,17 @@ snapshots:
 
   react-transition-group@4.4.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.8.1
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
+
+  react-universal-interface@0.6.2(react@19.2.0)(tslib@2.8.1):
+    dependencies:
+      react: 19.2.0
+      tslib: 2.8.1
 
   react-use-measure@2.1.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
@@ -25942,6 +26063,25 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   react-use-websocket@4.13.0: {}
+
+  react-use@17.6.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+    dependencies:
+      '@types/js-cookie': 2.2.7
+      '@xobotyi/scrollbar-width': 1.9.5
+      copy-to-clipboard: 3.3.3
+      fast-deep-equal: 3.1.3
+      fast-shallow-equal: 1.0.0
+      js-cookie: 2.2.1
+      nano-css: 5.6.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      react-universal-interface: 0.6.2(react@19.2.0)(tslib@2.8.1)
+      resize-observer-polyfill: 1.5.1
+      screenfull: 5.2.0
+      set-harmonic-interval: 1.0.1
+      throttle-debounce: 3.0.1
+      ts-easing: 0.2.0
+      tslib: 2.8.1
 
   react-webcam@7.2.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
@@ -26074,7 +26214,7 @@ snapshots:
 
   recorder-audio-worklet@5.1.39:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       broker-factory: 3.1.6
       fast-unique-numbers: 7.0.2
       recorder-audio-worklet-processor: 4.2.21
@@ -26448,6 +26588,10 @@ snapshots:
 
   rrweb-cssom@0.8.0: {}
 
+  rtl-css-js@1.16.1:
+    dependencies:
+      '@babel/runtime': 7.28.4
+
   run-parallel@1.2.0:
     dependencies:
       queue-microtask: 1.2.3
@@ -26580,6 +26724,8 @@ snapshots:
       es-errors: 1.3.0
       functions-have-names: 1.2.3
       has-property-descriptors: 1.0.2
+
+  set-harmonic-interval@1.0.1: {}
 
   set-proto@1.0.0:
     dependencies:
@@ -26813,6 +26959,8 @@ snapshots:
 
   source-map-url@0.4.1: {}
 
+  source-map@0.5.6: {}
+
   source-map@0.5.7: {}
 
   source-map@0.6.1: {}
@@ -26841,6 +26989,10 @@ snapshots:
 
   stable-hash@0.0.5: {}
 
+  stack-generator@2.0.10:
+    dependencies:
+      stackframe: 1.3.4
+
   stack-utils@2.0.6:
     dependencies:
       escape-string-regexp: 2.0.0
@@ -26848,9 +27000,22 @@ snapshots:
   stackblur-canvas@2.7.0:
     optional: true
 
+  stackframe@1.3.4: {}
+
+  stacktrace-gps@3.1.2:
+    dependencies:
+      source-map: 0.5.6
+      stackframe: 1.3.4
+
+  stacktrace-js@2.0.2:
+    dependencies:
+      error-stack-parser: 2.1.4
+      stack-generator: 2.0.10
+      stacktrace-gps: 3.1.2
+
   standardized-audio-context@25.3.77:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       automation-events: 7.1.10
       tslib: 2.8.1
 
@@ -27024,7 +27189,7 @@ snapshots:
 
   subscribable-things@2.1.52:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       rxjs-interop: 2.0.0
       tslib: 2.8.1
 
@@ -27072,7 +27237,7 @@ snapshots:
 
   svgmoji@3.2.0:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       '@svgmoji/blob': 3.2.0
       '@svgmoji/core': 3.2.0
       '@svgmoji/noto': 3.2.0
@@ -27307,6 +27472,8 @@ snapshots:
       typescript: 5.8.3
 
   ts-dedent@2.2.0: {}
+
+  ts-easing@0.2.0: {}
 
   ts-interface-checker@0.1.13: {}
 

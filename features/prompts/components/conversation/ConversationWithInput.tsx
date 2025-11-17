@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ReactNode } from "react";
+import { RemoveScroll } from "react-remove-scroll";
 import { ConversationDisplay, ConversationMessage } from "./ConversationDisplay";
 import { PromptRunnerInput } from "../PromptRunnerInput";
 import { PromptVariable, PromptMessage } from "@/features/prompts/types/core";
@@ -60,6 +61,9 @@ export interface ConversationWithInputProps {
     
     /** Enable auto-scrolling during streaming */
     enableAutoScroll?: boolean;
+    
+    /** Prevent body scroll when this component is active (default: false) */
+    lockBodyScroll?: boolean;
 }
 
 /**
@@ -93,8 +97,9 @@ export function ConversationWithInput({
     enablePasteImages = true,
     hideInput = false,
     enableAutoScroll = true,
+    lockBodyScroll = false,
 }: ConversationWithInputProps) {
-    return (
+    const content = (
         <div className={`h-full w-full overflow-hidden relative ${className}`}>
             {/* Back Layer: Messages Area - Scrollable */}
             <ConversationDisplay
@@ -129,5 +134,16 @@ export function ConversationWithInput({
             )}
         </div>
     );
+    
+    // Optionally wrap with RemoveScroll to prevent body scrolling
+    if (lockBodyScroll) {
+        return (
+            <RemoveScroll enabled={true} allowPinchZoom>
+                {content}
+            </RemoveScroll>
+        );
+    }
+    
+    return content;
 }
 

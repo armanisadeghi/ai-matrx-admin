@@ -186,6 +186,7 @@ export const selectDisplayMessages = createSelector(
       return {
         taskId: instance?.execution.currentTaskId,
         isStreaming: instance?.status === 'streaming',
+        messageStartTime: instance?.execution.messageStartTime,
       };
     },
   ],
@@ -197,7 +198,9 @@ export const selectDisplayMessages = createSelector(
           role: 'assistant' as const,
           content: streamingText,
           taskId: execution.taskId,
-          timestamp: new Date().toISOString(),
+          timestamp: execution.messageStartTime 
+            ? new Date(execution.messageStartTime).toISOString()
+            : new Date().toISOString(),
         },
       ];
     }

@@ -174,14 +174,16 @@ export default function PromptCompactModal({
           left: position.x || '50%',
           top: position.y || '50%',
           transform: position.x ? 'none' : 'translate(-50%, -50%)',
-          cursor: isDragging ? 'grabbing' : 'grab',
         }}
-        onMouseDown={handleMouseDown}
       >
         <div className="bg-[#1e1e1e] dark:bg-[#1e1e1e] text-[#d4d4d4] dark:text-[#d4d4d4] rounded-3xl shadow-2xl border border-[#3e3e42] dark:border-[#3e3e42] overflow-hidden">
           {/* Header */}
           {title && (
-            <div className="relative px-5 py-3.5 border-b border-[#3e3e42] dark:border-[#3e3e42] flex items-center gap-2">
+            <div 
+              className="relative px-5 py-3.5 border-b border-[#3e3e42] dark:border-[#3e3e42] flex items-center gap-2"
+              style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+              onMouseDown={handleMouseDown}
+            >
               <GripVertical className="w-3.5 h-3.5 text-[#888888] flex-shrink-0" />
               <div className="text-xs font-medium text-[#cccccc] dark:text-[#cccccc] flex-1">{title}</div>
               <button
@@ -195,7 +197,7 @@ export default function PromptCompactModal({
           )}
           
           {/* Content - Conversation History */}
-          <div className="px-2 py-3 min-h-[200px] max-h-[70vh] bg-textured">
+          <div className="px-2 py-3 min-h-[200px] max-h-[70vh] overflow-y-auto bg-textured">
             {preloadedResult || taskId ? (
               // Simple display for preloaded/taskId results
               <ConversationDisplay
