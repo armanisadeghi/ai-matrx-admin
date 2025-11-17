@@ -51,6 +51,7 @@ import canvasReducer from "./slices/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
+import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -138,6 +139,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         promptCache: promptCacheReducer,
         promptRunner: promptRunnerReducer,
         promptExecution: promptExecutionReducer,
+        actionCache: actionCacheReducer,
 
         dbFunctionNode: dbFunctionNodeSlice,
 

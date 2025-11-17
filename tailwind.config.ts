@@ -102,14 +102,101 @@ const config: Config = {
                     css: {
                         fontFamily: 'var(--font-inter), var(--font-opensans), var(--font-roboto), var(--typography-fontFamily-sans), ui-sans-serif, system-ui, sans-serif',
                         lineHeight: 1.6,
+                        color: 'hsl(var(--foreground))',
+                        maxWidth: 'none',
                         p: {
                             marginBottom: '1rem',
+                            color: 'hsl(var(--foreground))',
+                        },
+                        a: {
+                            color: 'hsl(var(--primary))',
+                            textDecoration: 'none',
+                            fontWeight: '500',
+                            '&:hover': {
+                                color: 'hsl(var(--primary))',
+                                textDecoration: 'underline',
+                            },
+                        },
+                        strong: {
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: '600',
+                        },
+                        h1: {
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: '700',
+                        },
+                        h2: {
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: '600',
+                        },
+                        h3: {
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: '600',
+                        },
+                        h4: {
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: '600',
+                        },
+                        code: {
+                            color: 'hsl(var(--foreground))',
+                            backgroundColor: 'hsl(var(--muted))',
+                            borderRadius: '0.25rem',
+                            padding: '0.125rem 0.25rem',
+                            fontWeight: '500',
                         },
                         'code::before': {
                             content: '""',
                         },
                         'code::after': {
                             content: '""',
+                        },
+                        pre: {
+                            backgroundColor: 'hsl(var(--muted))',
+                            color: 'hsl(var(--foreground))',
+                            borderRadius: '0.5rem',
+                            padding: '1rem',
+                        },
+                        'pre code': {
+                            backgroundColor: 'transparent',
+                            padding: '0',
+                        },
+                        blockquote: {
+                            color: 'hsl(var(--muted-foreground))',
+                            borderLeftColor: 'hsl(var(--border))',
+                            fontStyle: 'italic',
+                        },
+                        hr: {
+                            borderColor: 'hsl(var(--border))',
+                        },
+                        ol: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        ul: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        li: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        'ol > li::marker': {
+                            color: 'hsl(var(--muted-foreground))',
+                        },
+                        'ul > li::marker': {
+                            color: 'hsl(var(--muted-foreground))',
+                        },
+                        table: {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        thead: {
+                            borderBottomColor: 'hsl(var(--border))',
+                        },
+                        'thead th': {
+                            color: 'hsl(var(--foreground))',
+                        },
+                        'tbody tr': {
+                            borderBottomColor: 'hsl(var(--border))',
+                        },
+                        'tbody td': {
+                            color: 'hsl(var(--foreground))',
                         },
                     },
                 },

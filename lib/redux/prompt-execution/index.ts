@@ -58,6 +58,8 @@ export { startPromptInstance } from './thunks/startInstanceThunk';
 export { executeMessage } from './thunks/executeMessageThunk';
 export { completeExecutionThunk } from './thunks/completeExecutionThunk';
 export { fetchScopedVariables } from './thunks/fetchScopedVariablesThunk';
+export { startPromptAction } from './thunks/startPromptActionThunk';
+export type { StartActionPayload } from './thunks/startPromptActionThunk';
 
 // Types
 export type {
