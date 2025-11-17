@@ -60,9 +60,9 @@ export function WebpageResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
     const { scrapeUrl, data, isLoading, hasError, error, reset } = useScraperContent();
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Auto-focus the input on mount
+    // Auto-focus the input on mount (preventScroll to avoid auto-scroll)
     useEffect(() => {
-        inputRef.current?.focus();
+        inputRef.current?.focus({ preventScroll: true });
     }, []);
 
     // Auto-scrape if initialUrl is provided

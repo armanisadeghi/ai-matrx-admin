@@ -366,10 +366,10 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         const newCursorPos = cursorPos + variable.length + 4; // +4 for the {{ and }}
         setCursorPositions({ ...cursorPositions, [messageIndex]: newCursorPos });
 
-        // Focus the textarea and set cursor position
+        // Focus the textarea and set cursor position (preventScroll to avoid auto-scroll)
         if (textarea) {
             setTimeout(() => {
-                textarea.focus();
+                textarea.focus({ preventScroll: true });
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
                 // Auto-resize textarea
                 textarea.style.height = "auto";
@@ -396,10 +396,10 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
         const newCursorPos = cursorPos + variable.length + 4; // +4 for the {{ and }}
         setCursorPositions({ ...cursorPositions, [-1]: newCursorPos });
 
-        // Focus the textarea and set cursor position
+        // Focus the textarea and set cursor position (preventScroll to avoid auto-scroll)
         if (textarea) {
             setTimeout(() => {
-                textarea.focus();
+                textarea.focus({ preventScroll: true });
                 textarea.setSelectionRange(newCursorPos, newCursorPos);
                 // Auto-resize textarea
                 textarea.style.height = "auto";

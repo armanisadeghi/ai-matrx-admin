@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React, { RefObject, useRef, useEffect } from "react";
 import { PromptMessage, PromptSettings, PromptVariable } from "@/features/prompts/types/core";
 import { ModelConfiguration } from "../configuration/ModelConfiguration";
 import { VariablesManager } from "../configuration/VariablesManager";
@@ -106,9 +106,83 @@ export function PromptBuilderLeftPanel({
     onCursorPositionChange,
     onOpenFullScreenEditor,
 }: PromptBuilderLeftPanelProps) {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const lockedScrollPosition = useRef<number>(0);
+    const isUserScrolling = useRef<boolean>(false);
+
+    // ABSOLUTE SCROLL LOCK: Prevent ALL non-user scrolling
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        // Initialize locked position
+        lockedScrollPosition.current = container.scrollTop;
+
+        // Mark user scrolling
+        const markUserScrolling = () => {
+            isUserScrolling.current = true;
+            // Clear after a short delay
+            setTimeout(() => {
+                isUserScrolling.current = false;
+            }, 150);
+        };
+
+        // Intercept scroll events
+        const handleScroll = () => {
+            if (isUserScrolling.current) {
+                // User is scrolling - update lock position
+                lockedScrollPosition.current = container.scrollTop;
+            } else {
+                // NOT user scrolling - restore position immediately (synchronously!)
+                container.scrollTop = lockedScrollPosition.current;
+            }
+        };
+
+        // Catch focus events BEFORE they cause scroll
+        const preventFocusScroll = (e: FocusEvent) => {
+            // Save position before focus can scroll
+            const savedPosition = container.scrollTop;
+            
+            // Restore position immediately after focus completes
+            requestAnimationFrame(() => {
+                if (container.scrollTop !== savedPosition) {
+                    container.scrollTop = savedPosition;
+                    lockedScrollPosition.current = savedPosition;
+                }
+            });
+        };
+
+        // User scroll indicators
+        container.addEventListener('wheel', markUserScrolling, { passive: true });
+        container.addEventListener('touchstart', markUserScrolling, { passive: true });
+        container.addEventListener('mousedown', markUserScrolling);
+        
+        // Scroll enforcement
+        container.addEventListener('scroll', handleScroll);
+        
+        // Focus interception (capture phase to catch before scroll)
+        container.addEventListener('focusin', preventFocusScroll, true);
+
+        return () => {
+            container.removeEventListener('wheel', markUserScrolling);
+            container.removeEventListener('touchstart', markUserScrolling);
+            container.removeEventListener('mousedown', markUserScrolling);
+            container.removeEventListener('scroll', handleScroll);
+            container.removeEventListener('focusin', preventFocusScroll, true);
+        };
+    }, []);
+
     return (
         <div className="h-full w-full bg-textured flex flex-col overflow-x-hidden">
-            <div className="flex-1 overflow-y-auto overflow-x-hidden pl-2 pr-1 space-y-3 scrollbar-thin" style={{ scrollbarGutter: "stable" }}>
+            <div 
+                ref={scrollContainerRef}
+                className="flex-1 overflow-y-auto overflow-x-hidden pl-2 pr-1 space-y-3 scrollbar-thin" 
+                style={{ 
+                    scrollbarGutter: "stable",
+                    overflowAnchor: "none", // Prevent scroll anchoring when content changes
+                    scrollBehavior: "auto", // No smooth scrolling animations
+                }}
+            >
                 {/* Model Configuration - Always visible, but details conditionally shown */}
                 <ModelConfiguration
                     models={models}

@@ -195,6 +195,12 @@ export function SystemMessage({
                                     if (textareaRefs?.current) {
                                         textareaRefs.current[systemMessageIndex] = el;
                                     }
+                                    // Focus with preventScroll when textarea mounts
+                                    if (el) {
+                                        setTimeout(() => {
+                                            el.focus({ preventScroll: true });
+                                        }, 0);
+                                    }
                                 }}
                                 value={developerMessage}
                                 onChange={(e) => {
@@ -246,7 +252,6 @@ export function SystemMessage({
                                 }}
                                 placeholder="You're a very helpful assistant"
                                 className="w-full bg-gray-50 dark:bg-gray-800 border-none outline-none text-xs text-gray-900 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-0 resize-none overflow-hidden leading-normal"
-                                autoFocus
                                 style={{
                                     minHeight: "240px",
                                     lineHeight: "1.5",

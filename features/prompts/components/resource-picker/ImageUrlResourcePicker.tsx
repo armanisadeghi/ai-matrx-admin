@@ -118,9 +118,9 @@ export function ImageUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUr
     const [previewImage, setPreviewImage] = useState<ImageUrlData | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Auto-focus the input on mount
+    // Auto-focus the input on mount (preventScroll to avoid auto-scroll)
     useEffect(() => {
-        inputRef.current?.focus();
+        inputRef.current?.focus({ preventScroll: true });
     }, []);
 
     // Auto-validate if initialUrl is provided
