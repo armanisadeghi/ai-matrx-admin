@@ -261,7 +261,21 @@ export function SystemMessage({
                     ) : (
                         <div
                             className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text leading-normal"
-                            onClick={() => onIsEditingChange && onIsEditingChange(true)}
+                            onClick={(e) => {
+                                const scrollContainer = document.querySelector('.scrollbar-thin') as HTMLElement;
+                                const savedScrollPosition = scrollContainer?.scrollTop || 0;
+                                
+                                onIsEditingChange && onIsEditingChange(true);
+                                
+                                // Restore scroll position after React renders the textarea
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        if (scrollContainer) {
+                                            scrollContainer.scrollTop = savedScrollPosition;
+                                        }
+                                    });
+                                });
+                            }}
                             style={{
                                 minHeight: "240px",
                                 lineHeight: "1.5",

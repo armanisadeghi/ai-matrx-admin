@@ -203,6 +203,12 @@ export function PromptMessages({
                                             <textarea
                                                 ref={(el) => {
                                                     textareaRefs.current[index] = el;
+                                                    // Focus with preventScroll when textarea mounts
+                                                    if (el) {
+                                                        setTimeout(() => {
+                                                            el.focus({ preventScroll: true });
+                                                        }, 0);
+                                                    }
                                                 }}
                                                 value={message.content}
                                                 onChange={(e) => {
@@ -240,7 +246,6 @@ export function PromptMessages({
                                                 }}
                                                 placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
                                                 className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground p-0 resize-none overflow-hidden leading-normal"
-                                                autoFocus
                                                 onBlur={() => {
                                                     // Don't close edit mode if context menu is open
                                                     if (!contextMenuOpenRef.current) {
@@ -260,7 +265,21 @@ export function PromptMessages({
                                     ) : (
                                         <div
                                             className="text-xs text-muted-foreground whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
-                                            onClick={() => onEditingMessageIndexChange(index)}
+                                            onClick={() => {
+                                                const scrollContainer = document.querySelector('.scrollbar-thin') as HTMLElement;
+                                                const savedScrollPosition = scrollContainer?.scrollTop || 0;
+                                                
+                                                onEditingMessageIndexChange(index);
+                                                
+                                                // Restore scroll position after React renders the textarea
+                                                requestAnimationFrame(() => {
+                                                    requestAnimationFrame(() => {
+                                                        if (scrollContainer) {
+                                                            scrollContainer.scrollTop = savedScrollPosition;
+                                                        }
+                                                    });
+                                                });
+                                            }}
                                             style={{
                                                 lineHeight: "1.5",
                                             }}
