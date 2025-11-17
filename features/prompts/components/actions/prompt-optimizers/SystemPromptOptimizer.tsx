@@ -19,6 +19,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Wand2, Check, X, Loader2, Copy, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { usePromptsWithFetch } from '@/features/prompts/hooks/usePrompts';
 import { FullPromptOptimizer } from './FullPromptOptimizer';
 
 interface SystemPromptOptimizerProps {
@@ -43,11 +45,15 @@ export function SystemPromptOptimizer({
   onAcceptAsCopy
 }: SystemPromptOptimizerProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { createPrompt } = usePromptsWithFetch();
+  
   const [additionalGuidance, setAdditionalGuidance] = useState('');
   const [showGuidanceInput, setShowGuidanceInput] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const [isFullOptimizerOpen, setIsFullOptimizerOpen] = useState(false);
+  const [isSavingCopy, setIsSavingCopy] = useState(false);
   
   // Watch streaming text - exactly like PromptRunner
   const streamingText = useAppSelector(state => 
@@ -144,11 +150,78 @@ export function SystemPromptOptimizer({
     }
   };
 
+  const handleSaveAsCopy = async () => {
+    if (!streamingText.trim()) {
+      toast.error('No optimized text to save');
+      return;
+    }
+
+    if (!fullPromptObject) {
+      toast.error('Cannot save as copy - full prompt data not available');
+      return;
+    }
+
+    setIsSavingCopy(true);
+    
+    try {
+      // Prepare the name with " (v2)" suffix
+      const newName = `${fullPromptObject.name || 'Untitled'} (v2)`;
+
+      // Get all messages and update the system message
+      const messages = Array.isArray(fullPromptObject.messages) 
+        ? [...fullPromptObject.messages] 
+        : [];
+      
+      // Find and update system message, or add it if it doesn't exist
+      const systemMessageIndex = messages.findIndex((m: any) => m.role === 'system');
+      if (systemMessageIndex !== -1) {
+        messages[systemMessageIndex] = {
+          ...messages[systemMessageIndex],
+          content: streamingText
+        };
+      } else {
+        // Add system message at the beginning if it doesn't exist
+        messages.unshift({ role: 'system', content: streamingText });
+      }
+
+      // Create new prompt data
+      const promptData = {
+        name: newName,
+        description: fullPromptObject.description,
+        messages,
+        variableDefaults: fullPromptObject.variableDefaults || fullPromptObject.variable_defaults || [],
+        settings: fullPromptObject.settings || {},
+      };
+
+      // Create the new prompt
+      const result = await createPrompt(promptData as any);
+      
+      if (result?.id) {
+        toast.success('Copy created successfully', {
+          description: 'Opening the new prompt...'
+        });
+        handleClose();
+        // Route to the newly created prompt's edit page
+        router.push(`/ai/prompts/edit/${result.id}`);
+      } else {
+        throw new Error('Failed to create prompt copy');
+      }
+    } catch (error) {
+      console.error('Error creating prompt copy:', error);
+      toast.error('Failed to create copy', {
+        description: error instanceof Error ? error.message : 'Unknown error'
+      });
+    } finally {
+      setIsSavingCopy(false);
+    }
+  };
+
   const handleClose = () => {
     setCurrentTaskId(null);
     setAdditionalGuidance('');
     setShowGuidanceInput(false);
     setIsOptimizing(false);
+    setIsSavingCopy(false);
     onClose();
   };
 
@@ -308,12 +381,34 @@ export function SystemPromptOptimizer({
                 <Button
                   variant="outline"
                   onClick={handleOptimize}
+                  disabled={isSavingCopy}
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Re-optimize
                 </Button>
+                {fullPromptObject && (
+                  <Button
+                    variant="outline"
+                    onClick={handleSaveAsCopy}
+                    disabled={isSavingCopy}
+                    className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-950"
+                  >
+                    {isSavingCopy ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Save as Copy
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Button
                   onClick={handleAccept}
+                  disabled={isSavingCopy}
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                 >
                   <Check className="h-4 w-4 mr-2" />

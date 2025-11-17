@@ -331,6 +331,27 @@ export async function activatePromptBuiltin(id: string): Promise<PromptBuiltin> 
   return updatePromptBuiltin({ id, is_active: true });
 }
 
+/**
+ * Check if a builtin already exists for a given source prompt
+ * Returns the existing builtin(s) if found
+ */
+export async function getBuiltinsBySourcePromptId(sourcePromptId: string): Promise<PromptBuiltin[]> {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from('prompt_builtins')
+    .select('*')
+    .eq('source_prompt_id', sourcePromptId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    logDetailedError('getBuiltinsBySourcePromptId', error);
+    throw new Error(`Failed to fetch builtins by source prompt: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
+  }
+
+  return (data || []).map(transformBuiltinFromDB);
+}
+
 // ============================================================================
 // Prompt Shortcuts
 // ============================================================================

@@ -715,6 +715,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     const fullPromptObject = {
         id: initialData?.id,
         name: promptName,
+        description: promptDescription,
         messages: [{ role: "system" as PromptMessageRole, content: developerMessage }, ...messages],
         variableDefaults,
         settings: {
