@@ -2,11 +2,6 @@
  * ConvertToBuiltinModal
  * 
  * Enhanced modal for converting a user prompt to a prompt builtin with full shortcut management.
- * Features:
- * - Detects if prompt has already been converted to builtin
- * - Offers update existing or create new option
- * - Allows linking to existing shortcuts or creating new ones
- * - Complete workflow without redirecting
  */
 
 'use client';
@@ -25,13 +20,12 @@ import {
   Loader2, 
   AlertCircle, 
   CheckCircle2, 
-  FileText, 
   ArrowRight,
   RefreshCw,
   Plus,
   Link as LinkIcon,
-  Sparkles,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast-service';
@@ -47,6 +41,7 @@ import {
   ShortcutCategory, 
   PromptShortcut,
   CreatePromptShortcutInput,
+  ScopeMapping,
 } from '@/features/prompt-builtins/types/core';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -65,6 +60,8 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { getPlacementTypeMeta } from '@/features/prompt-builtins/constants';
+import { HierarchicalCategorySelector } from '@/features/prompt-builtins/components/HierarchicalCategorySelector';
+import { ScopeMappingEditor } from '@/features/prompt-builtins/components/ScopeMappingEditor';
 
 interface ConvertToBuiltinModalProps {
   isOpen: boolean;
@@ -80,6 +77,8 @@ interface ShortcutWithRelations extends PromptShortcut {
   category: ShortcutCategory | null;
   builtin: PromptBuiltin | null;
 }
+
+const DEFAULT_AVAILABLE_SCOPES = ['selection', 'content', 'context'];
 
 export function ConvertToBuiltinModal({
   isOpen,
@@ -99,6 +98,7 @@ export function ConvertToBuiltinModal({
   const [selectedBuiltin, setSelectedBuiltin] = useState<PromptBuiltin | null>(null);
   const [builtinAction, setBuiltinAction] = useState<'update' | 'create-new'>('update');
   const [createdBuiltinId, setCreatedBuiltinId] = useState<string | null>(null);
+  const [createdBuiltin, setCreatedBuiltin] = useState<PromptBuiltin | null>(null);
   
   // Shortcut state
   const [categories, setCategories] = useState<ShortcutCategory[]>([]);
@@ -107,6 +107,10 @@ export function ConvertToBuiltinModal({
   const [shortcutAction, setShortcutAction] = useState<'link-existing' | 'create-new' | 'skip'>('link-existing');
   const [selectedShortcutId, setSelectedShortcutId] = useState<string | null>(null);
   const [showOnlyUnlinked, setShowOnlyUnlinked] = useState(true);
+  
+  // Scope mapping for existing shortcut
+  const [existingShortcutScopes, setExistingShortcutScopes] = useState<string[]>(DEFAULT_AVAILABLE_SCOPES);
+  const [existingShortcutMappings, setExistingShortcutMappings] = useState<ScopeMapping>({});
   
   // Create shortcut form state
   const [newShortcutData, setNewShortcutData] = useState<CreatePromptShortcutInput>({
@@ -119,6 +123,8 @@ export function ConvertToBuiltinModal({
     allow_chat: true,
     show_variables: false,
     apply_variables: true,
+    available_scopes: DEFAULT_AVAILABLE_SCOPES,
+    scope_mappings: {},
   });
   
   const [isProcessing, setIsProcessing] = useState(false);
@@ -129,6 +135,35 @@ export function ConvertToBuiltinModal({
       checkForExistingBuiltins();
     }
   }, [isOpen, step]);
+
+  // Load builtin data when created
+  useEffect(() => {
+    if (createdBuiltinId && !createdBuiltin) {
+      loadCreatedBuiltin();
+    }
+  }, [createdBuiltinId, createdBuiltin]);
+
+  const loadCreatedBuiltin = async () => {
+    if (!createdBuiltinId) return;
+    
+    try {
+      const response = await fetch(`/api/admin/prompt-builtins/${createdBuiltinId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCreatedBuiltin(data.builtin);
+        
+        // Pre-fill shortcut label with builtin name
+        if (data.builtin?.name && !newShortcutData.label) {
+          setNewShortcutData(prev => ({
+            ...prev,
+            label: data.builtin.name,
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error loading created builtin:', err);
+    }
+  };
 
   const checkForExistingBuiltins = async () => {
     try {
@@ -147,7 +182,7 @@ export function ConvertToBuiltinModal({
     } catch (err: any) {
       console.error('Error checking for existing builtins:', err);
       setError('Failed to check for existing builtins');
-      setStep('existing-detected'); // Allow user to proceed manually
+      setStep('existing-detected');
     }
   };
 
@@ -196,7 +231,6 @@ export function ConvertToBuiltinModal({
     setStep('converting');
 
     try {
-      // Re-convert will update the existing builtin with current prompt data
       const response = await fetch(`/api/admin/prompt-builtins/convert-from-prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -215,7 +249,6 @@ export function ConvertToBuiltinModal({
       
       toast.success('Builtin updated successfully!');
       
-      // Load shortcuts for next step
       await loadShortcutsAndCategories();
       setStep('shortcut-selection');
       
@@ -264,6 +297,8 @@ export function ConvertToBuiltinModal({
       await updatePromptShortcut({
         id: selectedShortcutId,
         prompt_builtin_id: createdBuiltinId,
+        available_scopes: existingShortcutScopes,
+        scope_mappings: existingShortcutMappings,
       });
 
       toast.success('Shortcut linked successfully!');
@@ -310,8 +345,16 @@ export function ConvertToBuiltinModal({
   const handleComplete = () => {
     onSuccess?.();
     onClose();
-    // Optionally navigate to admin panel
-    // router.push('/administration/prompt-builtins?tab=builtins');
+  };
+
+  const handleOpenInAdmin = () => {
+    onSuccess?.();
+    onClose();
+    router.push(`/administration/prompt-builtins?tab=builtins&highlight=${createdBuiltinId}`);
+  };
+
+  const handleOpenInNewTab = () => {
+    window.open(`/administration/prompt-builtins?tab=builtins&highlight=${createdBuiltinId}`, '_blank');
   };
 
   const handleResetAndClose = () => {
@@ -320,8 +363,11 @@ export function ConvertToBuiltinModal({
     setExistingBuiltins([]);
     setSelectedBuiltin(null);
     setCreatedBuiltinId(null);
+    setCreatedBuiltin(null);
     setShortcutAction('link-existing');
     setSelectedShortcutId(null);
+    setExistingShortcutScopes(DEFAULT_AVAILABLE_SCOPES);
+    setExistingShortcutMappings({});
     setNewShortcutData({
       label: '',
       category_id: '',
@@ -332,9 +378,22 @@ export function ConvertToBuiltinModal({
       allow_chat: true,
       show_variables: false,
       apply_variables: true,
+      available_scopes: DEFAULT_AVAILABLE_SCOPES,
+      scope_mappings: {},
     });
     onClose();
   };
+
+  // Update existing shortcut scope mappings when selection changes
+  useEffect(() => {
+    if (selectedShortcutId) {
+      const shortcut = shortcuts.find(s => s.id === selectedShortcutId);
+      if (shortcut) {
+        setExistingShortcutScopes(shortcut.available_scopes || DEFAULT_AVAILABLE_SCOPES);
+        setExistingShortcutMappings(shortcut.scope_mappings || {});
+      }
+    }
+  }, [selectedShortcutId, shortcuts]);
 
   // Filter shortcuts based on selection
   const filteredShortcuts = useMemo(() => {
@@ -360,14 +419,6 @@ export function ConvertToBuiltinModal({
           <div className="space-y-4 py-4">
             {existingBuiltins.length > 0 && (
               <>
-                <Alert>
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <AlertDescription>
-                    <p className="font-semibold mb-2">This prompt has already been converted to a builtin!</p>
-                    <p className="text-sm">You can update the existing builtin with current prompt data or create a new one.</p>
-                  </AlertDescription>
-                </Alert>
-
                 <div className="space-y-3">
                   <Label>Existing Builtins ({existingBuiltins.length})</Label>
                   <RadioGroup value={selectedBuiltin?.id} onValueChange={(value) => {
@@ -385,7 +436,7 @@ export function ConvertToBuiltinModal({
                                 <div className="text-sm text-muted-foreground">{builtin.description}</div>
                               )}
                               <div className="text-xs text-muted-foreground mt-1">
-                                Created: {new Date(builtin.created_at).toLocaleDateString()}
+                                {new Date(builtin.created_at).toLocaleDateString()}
                               </div>
                             </Label>
                           </div>
@@ -396,21 +447,18 @@ export function ConvertToBuiltinModal({
                 </div>
 
                 <div className="space-y-3">
-                  <Label>What would you like to do?</Label>
                   <RadioGroup value={builtinAction} onValueChange={(value: any) => setBuiltinAction(value)}>
                     <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-muted/50">
                       <RadioGroupItem value="update" id="update" />
-                      <Label htmlFor="update" className="flex-1 cursor-pointer">
-                        <div className="font-medium">Update Selected Builtin</div>
-                        <div className="text-sm text-muted-foreground">Sync the builtin with current prompt data</div>
+                      <Label htmlFor="update" className="flex-1 cursor-pointer font-medium">
+                        Update Selected Builtin
                       </Label>
                       <RefreshCw className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-muted/50">
                       <RadioGroupItem value="create-new" id="create-new" />
-                      <Label htmlFor="create-new" className="flex-1 cursor-pointer">
-                        <div className="font-medium">Create New Builtin</div>
-                        <div className="text-sm text-muted-foreground">Create a separate builtin from this prompt</div>
+                      <Label htmlFor="create-new" className="flex-1 cursor-pointer font-medium">
+                        Create New Builtin
                       </Label>
                       <Plus className="h-4 w-4 text-muted-foreground" />
                     </div>
@@ -441,14 +489,6 @@ export function ConvertToBuiltinModal({
       case 'shortcut-selection':
         return (
           <div className="space-y-4 py-4">
-            <Alert>
-              <Sparkles className="h-4 w-4" />
-              <AlertDescription>
-                <p className="font-semibold mb-1">Builtin created successfully!</p>
-                <p className="text-sm">Now link it to a shortcut to make it accessible in the app.</p>
-              </AlertDescription>
-            </Alert>
-
             <Tabs value={shortcutAction} onValueChange={(value: any) => setShortcutAction(value)} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="link-existing">
@@ -464,7 +504,7 @@ export function ConvertToBuiltinModal({
 
               <TabsContent value="link-existing" className="space-y-4 mt-4">
                 <div className="flex items-center justify-between">
-                  <Label>Select an existing shortcut</Label>
+                  <Label>Select Shortcut</Label>
                   <div className="flex items-center space-x-2">
                     <Label htmlFor="unlinked-filter" className="text-sm font-normal">
                       Unlinked only
@@ -486,12 +526,12 @@ export function ConvertToBuiltinModal({
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
                       {showOnlyUnlinked 
-                        ? 'No unlinked shortcuts available. Toggle off the filter or create a new shortcut.'
-                        : 'No shortcuts available. Create a new one to continue.'}
+                        ? 'No unlinked shortcuts available'
+                        : 'No shortcuts available'}
                     </AlertDescription>
                   </Alert>
                 ) : (
-                  <ScrollArea className="h-[300px] border rounded-md p-2">
+                  <ScrollArea className="h-[250px] border rounded-md p-2">
                     <div className="space-y-2">
                       {filteredShortcuts.map((shortcut) => {
                         const category = shortcut.category;
@@ -524,11 +564,6 @@ export function ConvertToBuiltinModal({
                                       {placementMeta.label}
                                     </Badge>
                                   )}
-                                  {shortcut.prompt_builtin_id && (
-                                    <Badge variant="default" className="text-xs">
-                                      Linked
-                                    </Badge>
-                                  )}
                                 </div>
                               </div>
                               {selectedShortcutId === shortcut.id && (
@@ -541,6 +576,27 @@ export function ConvertToBuiltinModal({
                     </div>
                   </ScrollArea>
                 )}
+
+                {selectedShortcutId && createdBuiltin && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Scope Mappings</Label>
+                      <ScopeMappingEditor
+                        availableScopes={existingShortcutScopes}
+                        scopeMappings={existingShortcutMappings}
+                        variableDefaults={createdBuiltin.variableDefaults}
+                        onMappingChange={(scopeKey, variableName) => {
+                          setExistingShortcutMappings(prev => ({
+                            ...prev,
+                            [scopeKey]: variableName,
+                          }));
+                        }}
+                        compact
+                      />
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="create-new" className="space-y-4 mt-4">
@@ -551,29 +607,16 @@ export function ConvertToBuiltinModal({
                       id="shortcut-label"
                       value={newShortcutData.label}
                       onChange={(e) => setNewShortcutData({ ...newShortcutData, label: e.target.value })}
-                      placeholder="e.g., Analyze Content"
+                      placeholder="Shortcut name"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="shortcut-category">Category *</Label>
-                    <Select
+                    <HierarchicalCategorySelector
+                      categories={categories}
                       value={newShortcutData.category_id}
                       onValueChange={(value) => setNewShortcutData({ ...newShortcutData, category_id: value })}
-                    >
-                      <SelectTrigger id="shortcut-category">
-                        <SelectValue placeholder="Select category..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => {
-                          const meta = getPlacementTypeMeta(cat.placement_type);
-                          return (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              {cat.label} ({meta.label})
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+                    />
                   </div>
                 </div>
 
@@ -583,10 +626,34 @@ export function ConvertToBuiltinModal({
                     id="shortcut-description"
                     value={newShortcutData.description || ''}
                     onChange={(e) => setNewShortcutData({ ...newShortcutData, description: e.target.value || null })}
-                    placeholder="Optional description for the shortcut"
+                    placeholder="Optional description"
                     rows={2}
                   />
                 </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Scope Mappings</Label>
+                  {createdBuiltin && (
+                    <ScopeMappingEditor
+                      availableScopes={newShortcutData.available_scopes || DEFAULT_AVAILABLE_SCOPES}
+                      scopeMappings={newShortcutData.scope_mappings || {}}
+                      variableDefaults={createdBuiltin.variableDefaults}
+                      onMappingChange={(scopeKey, variableName) => {
+                        setNewShortcutData(prev => ({
+                          ...prev,
+                          scope_mappings: {
+                            ...prev.scope_mappings,
+                            [scopeKey]: variableName,
+                          },
+                        }));
+                      }}
+                    />
+                  )}
+                </div>
+
+                <Separator />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -613,57 +680,39 @@ export function ConvertToBuiltinModal({
                         <SelectItem value="inline">Inline</SelectItem>
                         <SelectItem value="sidebar">Sidebar</SelectItem>
                         <SelectItem value="flexible-panel">Flexible Panel</SelectItem>
-                        <SelectItem value="toast">Toast</SelectItem>
-                        <SelectItem value="direct">Direct Stream</SelectItem>
-                        <SelectItem value="background">Background</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <Separator />
-
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">Execution Options</Label>
-                  <div className="space-y-3 pl-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="auto-run" className="font-normal">Auto Run</Label>
-                        <p className="text-xs text-muted-foreground">Run immediately without confirmation</p>
-                      </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center justify-between p-2 border rounded">
+                      <Label htmlFor="auto-run" className="text-sm font-normal cursor-pointer">Auto Run</Label>
                       <Switch
                         id="auto-run"
                         checked={newShortcutData.auto_run}
                         onCheckedChange={(checked) => setNewShortcutData({ ...newShortcutData, auto_run: checked })}
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="allow-chat" className="font-normal">Allow Chat</Label>
-                        <p className="text-xs text-muted-foreground">Enable conversation mode</p>
-                      </div>
+                    <div className="flex items-center justify-between p-2 border rounded">
+                      <Label htmlFor="allow-chat" className="text-sm font-normal cursor-pointer">Allow Chat</Label>
                       <Switch
                         id="allow-chat"
                         checked={newShortcutData.allow_chat}
                         onCheckedChange={(checked) => setNewShortcutData({ ...newShortcutData, allow_chat: checked })}
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="show-variables" className="font-normal">Show Variables</Label>
-                        <p className="text-xs text-muted-foreground">Display variable form to user</p>
-                      </div>
+                    <div className="flex items-center justify-between p-2 border rounded">
+                      <Label htmlFor="show-variables" className="text-sm font-normal cursor-pointer">Show Variables</Label>
                       <Switch
                         id="show-variables"
                         checked={newShortcutData.show_variables}
                         onCheckedChange={(checked) => setNewShortcutData({ ...newShortcutData, show_variables: checked })}
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="apply-variables" className="font-normal">Apply Variables</Label>
-                        <p className="text-xs text-muted-foreground">Use variable values in prompt</p>
-                      </div>
+                    <div className="flex items-center justify-between p-2 border rounded">
+                      <Label htmlFor="apply-variables" className="text-sm font-normal cursor-pointer">Apply Variables</Label>
                       <Switch
                         id="apply-variables"
                         checked={newShortcutData.apply_variables}
@@ -675,13 +724,9 @@ export function ConvertToBuiltinModal({
               </TabsContent>
 
               <TabsContent value="skip" className="mt-4">
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <p className="font-semibold mb-1">Skip shortcut creation</p>
-                    <p className="text-sm">The builtin will be created but won't be linked to any shortcut. You can link it later from the admin panel.</p>
-                  </AlertDescription>
-                </Alert>
+                <div className="text-sm text-muted-foreground p-4 border rounded-md">
+                  Builtin will be created without a shortcut. Link it later from the admin panel.
+                </div>
               </TabsContent>
             </Tabs>
 
@@ -704,16 +749,29 @@ export function ConvertToBuiltinModal({
 
       case 'complete':
         return (
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+          <div className="flex flex-col items-center justify-center py-8 space-y-6">
             <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">All Done!</h3>
+              <h3 className="text-lg font-semibold">Complete</h3>
               <p className="text-sm text-muted-foreground">
-                Your prompt has been successfully converted to a builtin
-                {shortcutAction !== 'skip' && ' and linked to a shortcut'}.
+                {shortcutAction !== 'skip' ? 'Builtin created and linked to shortcut' : 'Builtin created'}
               </p>
+            </div>
+            
+            <div className="flex flex-col gap-2 w-full max-w-xs">
+              <Button onClick={handleOpenInAdmin} variant="default" className="w-full">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open in Admin Panel
+              </Button>
+              <Button onClick={handleOpenInNewTab} variant="outline" className="w-full">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open in New Tab
+              </Button>
+              <Button onClick={handleComplete} variant="ghost" className="w-full">
+                Done
+              </Button>
             </div>
           </div>
         );
@@ -726,6 +784,9 @@ export function ConvertToBuiltinModal({
   const renderActions = () => {
     switch (step) {
       case 'checking':
+      case 'converting':
+      case 'creating-shortcut':
+      case 'complete':
         return null;
 
       case 'existing-detected':
@@ -756,7 +817,7 @@ export function ConvertToBuiltinModal({
                 </>
               ) : (
                 <>
-                  {builtinAction === 'update' ? 'Update & Continue' : 'Create New & Continue'}
+                  Continue
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </>
               )}
@@ -764,19 +825,16 @@ export function ConvertToBuiltinModal({
           </div>
         );
 
-      case 'converting':
-        return null;
-
       case 'shortcut-selection':
         return (
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setStep('existing-detected')}
+              onClick={handleResetAndClose}
               disabled={isProcessing}
             >
-              Back
+              Cancel
             </Button>
             <Button 
               onClick={() => {
@@ -801,22 +859,10 @@ export function ConvertToBuiltinModal({
                 </>
               ) : (
                 <>
-                  {shortcutAction === 'skip' ? 'Complete' : 'Link & Complete'}
+                  {shortcutAction === 'skip' ? 'Complete' : 'Complete'}
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </>
               )}
-            </Button>
-          </div>
-        );
-
-      case 'creating-shortcut':
-        return null;
-
-      case 'complete':
-        return (
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button onClick={handleComplete}>
-              Done
             </Button>
           </div>
         );
@@ -833,14 +879,14 @@ export function ConvertToBuiltinModal({
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Convert to Prompt Builtin</DialogTitle>
+          <DialogTitle>Convert to Builtin</DialogTitle>
           <DialogDescription>
             {step === 'checking' && 'Checking for existing builtins...'}
-            {step === 'existing-detected' && 'Choose how to proceed with the builtin'}
+            {step === 'existing-detected' && 'Choose how to proceed'}
             {step === 'converting' && 'Converting your prompt...'}
-            {step === 'shortcut-selection' && 'Link builtin to a shortcut'}
+            {step === 'shortcut-selection' && 'Link builtin to shortcut'}
             {step === 'creating-shortcut' && 'Creating shortcut...'}
-            {step === 'complete' && 'Conversion complete!'}
+            {step === 'complete' && 'Successfully created'}
           </DialogDescription>
         </DialogHeader>
 
