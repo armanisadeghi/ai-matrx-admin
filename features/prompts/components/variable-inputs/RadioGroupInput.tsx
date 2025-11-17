@@ -11,6 +11,30 @@ interface RadioGroupInputProps {
   allowOther?: boolean;
 }
 
+// Placeholder for empty or whitespace-only values
+const EMPTY_VALUE_PLACEHOLDER = '(empty)';
+
+/**
+ * Checks if a value is empty or contains only whitespace
+ */
+const isEmptyOrWhitespace = (value: string): boolean => {
+  return !value || value.trim() === '';
+};
+
+/**
+ * Converts empty/whitespace values to placeholder for display
+ */
+const toDisplayValue = (value: string): string => {
+  return isEmptyOrWhitespace(value) ? EMPTY_VALUE_PLACEHOLDER : value;
+};
+
+/**
+ * Converts display value back to original value (empty string if placeholder)
+ */
+const fromDisplayValue = (displayValue: string): string => {
+  return displayValue === EMPTY_VALUE_PLACEHOLDER ? '' : displayValue;
+};
+
 /**
  * Radio Group Input - Single select that returns selected option as text
  */
@@ -21,12 +45,16 @@ export function RadioGroupInput({
   variableName,
   allowOther = false
 }: RadioGroupInputProps) {
-  const isValueInOptions = options.includes(value);
+  // Convert options to display values for comparison
+  const displayOptions = options.map(toDisplayValue);
+  const displayValue = toDisplayValue(value);
+  
+  const isValueInOptions = displayOptions.includes(displayValue);
   const isOtherValue = value.startsWith('Other: ');
   const otherText = isOtherValue ? value.substring(7) : ''; // Remove "Other: " prefix
   
   const [selectedOption, setSelectedOption] = useState<string>(() => {
-    if (isValueInOptions) return value;
+    if (isValueInOptions) return displayValue;
     if (isOtherValue) return 'Other';
     return '';
   });
@@ -35,8 +63,9 @@ export function RadioGroupInput({
   
   // Update when value changes externally
   useEffect(() => {
+    const newDisplayValue = toDisplayValue(value);
     if (isValueInOptions) {
-      setSelectedOption(value);
+      setSelectedOption(newDisplayValue);
       setCustomText('');
     } else if (isOtherValue) {
       setSelectedOption('Other');
@@ -44,13 +73,15 @@ export function RadioGroupInput({
     }
   }, [value, isValueInOptions, isOtherValue]);
   
-  const handleOptionChange = (newValue: string) => {
-    setSelectedOption(newValue);
-    if (newValue === 'Other') {
+  const handleOptionChange = (newDisplayValue: string) => {
+    setSelectedOption(newDisplayValue);
+    if (newDisplayValue === 'Other') {
       // When "Other" is selected, send the current custom text
       onChange(customText ? `Other: ${customText}` : 'Other: ');
     } else {
-      onChange(newValue);
+      // Convert display value back to actual value (empty string if placeholder)
+      const actualValue = fromDisplayValue(newDisplayValue);
+      onChange(actualValue);
       setCustomText('');
     }
   };
@@ -71,7 +102,7 @@ export function RadioGroupInput({
             Current value:
           </p>
           <p className="text-sm text-amber-900 dark:text-amber-200">
-            {value}
+            {value || '(empty)'}
           </p>
           <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
             Select an option below to replace
@@ -81,21 +112,28 @@ export function RadioGroupInput({
       
       <RadioGroup value={selectedOption} onValueChange={handleOptionChange}>
         <div className="space-y-2">
-          {options.map((option) => (
-            <div 
-              key={option}
-              className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
-              onClick={() => handleOptionChange(option)}
-            >
-              <RadioGroupItem value={option} id={`${variableName}-${option}`} />
-              <Label 
-                htmlFor={`${variableName}-${option}`}
-                className="flex-1 text-sm cursor-pointer"
+          {options.map((option, index) => {
+            // Convert empty/whitespace values to placeholder for RadioGroupItem
+            const displayOption = toDisplayValue(option);
+            // Use index in key to handle duplicate empty values
+            const itemKey = isEmptyOrWhitespace(option) ? `empty-${index}` : option;
+            
+            return (
+              <div 
+                key={itemKey}
+                className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
+                onClick={() => handleOptionChange(displayOption)}
               >
-                {option}
-              </Label>
-            </div>
-          ))}
+                <RadioGroupItem value={displayOption} id={`${variableName}-${displayOption}-${index}`} />
+                <Label 
+                  htmlFor={`${variableName}-${displayOption}-${index}`}
+                  className="flex-1 text-sm cursor-pointer"
+                >
+                  {displayOption}
+                </Label>
+              </div>
+            );
+          })}
           
           {/* "Other" option */}
           {allowOther && (

@@ -11,6 +11,30 @@ interface SelectInputProps {
   allowOther?: boolean;
 }
 
+// Placeholder for empty or whitespace-only values
+const EMPTY_VALUE_PLACEHOLDER = '(empty)';
+
+/**
+ * Checks if a value is empty or contains only whitespace
+ */
+const isEmptyOrWhitespace = (value: string): boolean => {
+  return !value || value.trim() === '';
+};
+
+/**
+ * Converts empty/whitespace values to placeholder for display in Select
+ */
+const toDisplayValue = (value: string): string => {
+  return isEmptyOrWhitespace(value) ? EMPTY_VALUE_PLACEHOLDER : value;
+};
+
+/**
+ * Converts display value back to original value (empty string if placeholder)
+ */
+const fromDisplayValue = (displayValue: string): string => {
+  return displayValue === EMPTY_VALUE_PLACEHOLDER ? '' : displayValue;
+};
+
 /**
  * Select Input - Dropdown single select that returns selected option as text
  */
@@ -21,22 +45,27 @@ export function SelectInput({
   variableName,
   allowOther = false
 }: SelectInputProps) {
-  const isValueInOptions = options.includes(value);
+  // Convert options to display values for comparison
+  const displayOptions = options.map(toDisplayValue);
+  const displayValue = toDisplayValue(value);
+  
+  const isValueInOptions = displayOptions.includes(displayValue);
   const isOtherValue = value.startsWith('Other: ');
   const otherText = isOtherValue ? value.substring(7) : '';
   
   const [selectedOption, setSelectedOption] = useState<string>(() => {
-    if (isValueInOptions) return value;
+    if (isValueInOptions) return displayValue;
     if (isOtherValue) return 'Other';
-    return value;
+    return displayValue;
   });
   
   const [customText, setCustomText] = useState<string>(otherText);
   
   // Update when value changes externally
   useEffect(() => {
+    const newDisplayValue = toDisplayValue(value);
     if (isValueInOptions) {
-      setSelectedOption(value);
+      setSelectedOption(newDisplayValue);
       setCustomText('');
     } else if (isOtherValue) {
       setSelectedOption('Other');
@@ -44,13 +73,15 @@ export function SelectInput({
     }
   }, [value, isValueInOptions, isOtherValue]);
   
-  const handleSelectChange = (newValue: string) => {
-    setSelectedOption(newValue);
-    if (newValue === 'Other') {
+  const handleSelectChange = (newDisplayValue: string) => {
+    setSelectedOption(newDisplayValue);
+    if (newDisplayValue === 'Other') {
       // When "Other" is selected, send the current custom text
       onChange(customText ? `Other: ${customText}` : 'Other: ');
     } else {
-      onChange(newValue);
+      // Convert display value back to actual value (empty string if placeholder)
+      const actualValue = fromDisplayValue(newDisplayValue);
+      onChange(actualValue);
       setCustomText('');
     }
   };
@@ -71,7 +102,7 @@ export function SelectInput({
             Current value:
           </p>
           <p className="text-sm text-amber-900 dark:text-amber-200">
-            {value}
+            {value || '(empty)'}
           </p>
           <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
             Select an option below to replace
@@ -88,11 +119,18 @@ export function SelectInput({
             <SelectValue placeholder="Choose an option..." />
           </SelectTrigger>
           <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
+            {options.map((option, index) => {
+              // Convert empty/whitespace values to placeholder for SelectItem
+              const displayOption = toDisplayValue(option);
+              // Use index in key to handle duplicate empty values
+              const itemKey = isEmptyOrWhitespace(option) ? `empty-${index}` : option;
+              
+              return (
+                <SelectItem key={itemKey} value={displayOption}>
+                  {displayOption}
+                </SelectItem>
+              );
+            })}
             {allowOther && (
               <SelectItem value="Other">
                 Other

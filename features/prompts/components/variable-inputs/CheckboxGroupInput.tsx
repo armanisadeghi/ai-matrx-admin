@@ -11,6 +11,30 @@ interface CheckboxGroupInputProps {
   allowOther?: boolean;
 }
 
+// Placeholder for empty or whitespace-only values
+const EMPTY_VALUE_PLACEHOLDER = '(empty)';
+
+/**
+ * Checks if a value is empty or contains only whitespace
+ */
+const isEmptyOrWhitespace = (value: string): boolean => {
+  return !value || value.trim() === '';
+};
+
+/**
+ * Converts empty/whitespace values to placeholder for display
+ */
+const toDisplayValue = (value: string): string => {
+  return isEmptyOrWhitespace(value) ? EMPTY_VALUE_PLACEHOLDER : value;
+};
+
+/**
+ * Converts display value back to original value (empty string if placeholder)
+ */
+const fromDisplayValue = (displayValue: string): string => {
+  return displayValue === EMPTY_VALUE_PLACEHOLDER ? '' : displayValue;
+};
+
 /**
  * Checkbox Group Input - Multi-select that returns selected options as newline-separated text
  */
@@ -32,8 +56,12 @@ export function CheckboxGroupInput({
   // Get non-other selected items
   const regularSelectedItems = selectedItems.filter(item => !item.startsWith('Other: '));
   
-  // Check if all regular selected items are in options
-  const hasNonOptionValues = regularSelectedItems.some(item => !options.includes(item));
+  // Check if all regular selected items are in options (considering display values)
+  const displayOptions = options.map(toDisplayValue);
+  const hasNonOptionValues = regularSelectedItems.some(item => {
+    const displayItem = toDisplayValue(item);
+    return !displayOptions.includes(displayItem) && !options.includes(item);
+  });
   
   const [customText, setCustomText] = useState<string>(otherText);
   
@@ -46,19 +74,22 @@ export function CheckboxGroupInput({
     }
   }, [otherItem]);
   
-  const handleToggle = (option: string, checked: boolean) => {
+  const handleToggle = (displayOption: string, checked: boolean) => {
+    // Convert display value back to actual value
+    const actualOption = fromDisplayValue(displayOption);
+    
     let newSelected: string[];
     
     if (checked) {
       // Add option if not already selected
-      newSelected = [...selectedItems.filter(item => item !== option && !item.startsWith('Other: ')), option];
+      newSelected = [...selectedItems.filter(item => item !== actualOption && !item.startsWith('Other: ')), actualOption];
       // Re-add other if it was checked
       if (isOtherChecked) {
         newSelected.push(`Other: ${customText}`);
       }
     } else {
       // Remove option
-      newSelected = selectedItems.filter(item => item !== option);
+      newSelected = selectedItems.filter(item => item !== actualOption);
     }
     
     // Convert back to newline-separated string
@@ -111,25 +142,34 @@ export function CheckboxGroupInput({
       )}
       
       <div className="space-y-2">
-        {options.map((option) => {
-          const isChecked = regularSelectedItems.includes(option);
+        {options.map((option, index) => {
+          // Convert empty/whitespace values to placeholder for display
+          const displayOption = toDisplayValue(option);
+          const actualOption = option; // Keep original for comparison
+          
+          // Check if this option (in its original form) is selected
+          const isChecked = regularSelectedItems.includes(actualOption);
+          
+          // Use index in key and id to handle duplicate empty values
+          const itemKey = isEmptyOrWhitespace(option) ? `empty-${index}` : option;
+          const itemId = `${variableName}-${displayOption}-${index}`;
           
           return (
             <div 
-              key={option}
+              key={itemKey}
               className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
-              onClick={() => handleToggle(option, !isChecked)}
+              onClick={() => handleToggle(displayOption, !isChecked)}
             >
               <Checkbox 
                 checked={isChecked}
-                onCheckedChange={(checked) => handleToggle(option, checked as boolean)}
-                id={`${variableName}-${option}`}
+                onCheckedChange={(checked) => handleToggle(displayOption, checked as boolean)}
+                id={itemId}
               />
               <Label 
-                htmlFor={`${variableName}-${option}`}
+                htmlFor={itemId}
                 className="flex-1 text-sm cursor-pointer"
               >
-                {option}
+                {displayOption}
               </Label>
             </div>
           );

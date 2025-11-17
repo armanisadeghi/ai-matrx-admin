@@ -50,6 +50,7 @@ import workflowNodeSlice from "./workflow-nodes/slice";
 import canvasReducer from "./slices/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
+import promptExecutionReducer from "./prompt-execution/slice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -136,6 +137,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         overlays: overlaySlice,
         promptCache: promptCacheReducer,
         promptRunner: promptRunnerReducer,
+        promptExecution: promptExecutionReducer,
 
         dbFunctionNode: dbFunctionNodeSlice,
 
