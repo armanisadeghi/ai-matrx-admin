@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { ImperativePanelHandle, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { Card } from "@/components/ui";
 import DraggableToolbar, { ToolbarAction } from "../components/DraggableToolbar";
-import EnhancedContentRenderer from "@/components/mardown-display/EnhancedMarkdownRenderer";
+import EnhancedContentRenderer from "@/components/mardown-display/enhanced-rederer-older/EnhancedMarkdownRenderer";
 import { Copy } from "lucide-react";
 import { DisplayTheme } from "@/components/mardown-display/themes";
 

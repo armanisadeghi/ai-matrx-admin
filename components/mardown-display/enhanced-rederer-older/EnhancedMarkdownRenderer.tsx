@@ -1,30 +1,33 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { AlignCenterVertical, Baseline, Braces, Code, Eye, FileText, LayoutDashboard, LayoutTemplate } from "lucide-react";
-import { parseMarkdownSimple } from "./markdown-classification/processors/custom/simple-markdown-parser";
-import EnhancedMarkdownCard from "./EnhancedMarkdownCard";
-import { DisplayTheme, SIMPLE_THEME_OPTIONS, THEMES } from "./themes";
-import { Select, SelectContent, SelectItem } from "@/components/ui/select";
-import { separatedMarkdownParser } from "./markdown-classification/processors/custom/parser-separated";
-import { enhancedMarkdownParser } from "./markdown-classification/processors/custom/enhanced-parser";
-import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
-import JsonDisplay from "./JsonDisplay";
-import MarkdownRenderer from "./MarkdownRenderer";
-import QuestionnaireRenderer from "./QuestionnaireRenderer";
-import { QuestionnaireProvider } from "./context/QuestionnaireContext";
-
+import { Card } from "@/components/ui";
+import { parseMarkdownSimple } from "../markdown-classification/processors/custom/simple-markdown-parser";
+import EnhancedMarkdownCard from "../../playground/results/EnhancedMarkdownCard";
+import { DisplayTheme, SIMPLE_THEME_OPTIONS, THEMES } from "../themes";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { separatedMarkdownParser } from "../markdown-classification/processors/custom/parser-separated";
+import { enhancedMarkdownParser } from "../markdown-classification/processors/custom/enhanced-parser";
+import MultiSectionMarkdownCard from "../../playground/results/MultiSectionMarkdownCard";
+import JsonDisplay from "../../playground/results/JsonDisplay";
+import QuestionnaireRenderer from "../blocks/questionnaire/QuestionnaireRenderer";
+import { QuestionnaireProvider } from "../blocks/questionnaire/QuestionnaireContext";
+import CandidateProfileBlock from "../blocks/candidate-profiles/CandidateProfileBlock";
+import { User } from "lucide-react";
+import ParseExtractorOptions from "../../official/processor-extractor/ParseExtractorOptions";
+import MarkdownRenderer from "../MarkdownRenderer";
 
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
 const VIEW_MODES = {
     raw: {
         icon: Baseline,
-        label: "Raw Text",
+        label: "Raw",
         supportedTypes: ["markdown", "json"],
     },
     rendered: {
         icon: Eye,
-        label: "Rendered",
+        label: "Clean",
         supportedTypes: ["markdown"],
     },
     sectionCards: {
@@ -34,12 +37,12 @@ const VIEW_MODES = {
     },
     enhancedSectionCards: {
         icon: LayoutTemplate,
-        label: "Enhanced Cards",
+        label: "Custom 1",
         supportedTypes: ["markdown"],
     },
     multiSectionCards: {
         icon: AlignCenterVertical,
-        label: "Multi Section Cards",
+        label: "Custom 2",
         supportedTypes: ["markdown"],
     },
     questionnaire: {
@@ -57,6 +60,16 @@ const VIEW_MODES = {
         label: "Structured",
         supportedTypes: ["json"],
     },
+    structuredAnalyzer: {
+        icon: FileText,
+        label: "Analyzer",
+        supportedTypes: ["markdown"],
+    },
+    candidateProfile: {
+        icon: User,
+        label: "Profile",
+        supportedTypes: ["candidateProfile"],
+    },
 };
 
 export interface EnhancedContentRendererProps {
@@ -67,41 +80,26 @@ export interface EnhancedContentRendererProps {
     className?: string;
     theme?: DisplayTheme;
     showTabs?: boolean;
-    mode?: string;
     onModeChange?: (mode: string) => void;
     onThemeChange?: (theme: DisplayTheme) => void;
 }
 
-const EnhancedContentRendererTwo = ({
+const EnhancedContentRenderer = ({
     content,
     type = "message",
     fontSize = 16,
     role = "assistant",
     className = "",
-    theme = "pinkBlue" as DisplayTheme,
-    mode = "rendered",
+    theme = "professional",
     onModeChange = (mode: string) => {},
     onThemeChange = (theme: DisplayTheme) => {},
 }: EnhancedContentRendererProps) => {
     const availableModes = useMemo(() => Object.entries(VIEW_MODES), []);
-    const [options, setOptions] = useState([]);
-
-    useEffect(() => {
-        const loadOptions = async () => {
-            setOptions(SIMPLE_THEME_OPTIONS);
-        };
-
-        loadOptions();
-    }, []);
 
     const [activeMode, setActiveMode] = useState(() => {
-        const defaultMode = availableModes[mode];
+        const defaultMode = availableModes[0]?.[0] || "raw";
         return defaultMode;
     });
-
-    useEffect(() => {
-        setActiveMode(mode);
-    }, []);
 
     const [currentTheme, setCurrentTheme] = useState<DisplayTheme>(theme);
 
@@ -118,9 +116,6 @@ const EnhancedContentRendererTwo = ({
     };
 
     const themeColors = THEMES[currentTheme];
-
-    console.log("Mode", mode);
-    console.log("activeMode", activeMode);
 
     const renderContent = () => {
         switch (activeMode) {
@@ -162,40 +157,82 @@ const EnhancedContentRendererTwo = ({
                 );
             case "structured":
                 return <JsonDisplay content={content} parseFunction={separatedMarkdownParser} />;
+            case "candidateProfile":
+                return (
+                    <div className="flex items-center justify-start p-3 pt-0 w-full">
+                        <CandidateProfileBlock content={content} />
+                    </div>
+                );
 
             case "parsedAsJson":
                 return <JsonDisplay content={content} parseFunction={parseMarkdownSimple} />;
+            case "structuredAnalyzer":
+                return (
+                    <ParseExtractorOptions
+                        content={content}
+                        processors={[
+                            { name: "markdown-content", label: "Markdown Content Parser", fn: parseMarkdownSimple },
+                            { name: "separated-markdown", label: "Separated Markdown Parser", fn: separatedMarkdownParser },
+                        ]}
+                    />
+                );
+
             case "rendered":
-                console.log("rendered");
             default:
                 return (
-                    <div
-                        className={`w-full h-full p-0 overflow-y-auto overflow-x-hidden scrollbar-thin ${themeColors.container.background}`}
-                    >
+                    <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin bg-inherit">
                         <MarkdownRenderer content={content} type="message" role="assistant" fontSize={fontSize} />
                     </div>
-
                 );
         }
     };
 
     return (
-        <div className={`w-full h-full gap-0 p-0 ${themeColors.container.background}`}>
-            <div className="hidden">
-                <Select>
-                    <SelectContent>
-                        {SIMPLE_THEME_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                            </SelectItem>
+        <Card className="w-full h-full flex flex-col">
+            {/* Fixed header section */}
+            <div className="flex-none border-b border-gray-200 dark:border-gray-700 p-2">
+                <div className="flex justify-between items-center">
+                    <div className="flex space-x-1">
+                        {availableModes.map(([mode, { icon: Icon, label }]) => (
+                            <button
+                                key={mode}
+                                onClick={() => handleModeChange(mode)}
+                                className={`flex items-center space-x-2 px-3 py-1 rounded-md transition-colors
+                                    ${
+                                        activeMode === mode
+                                            ? "bg-gray-200 dark:bg-gray-800 text-neutral-700 dark:text-neutral-300"
+                                            : "hover:bg-gray-200 dark:hover:bg-gray-800"
+                                    }`}
+                            >
+                                <Icon className="h-4 w-4" />
+                                <span>{label}</span>
+                            </button>
                         ))}
-                    </SelectContent>
-                </Select>
+                    </div>
+                    <Select value={currentTheme} onValueChange={handleThemeChange}>
+                        <SelectTrigger className="w-[160px] h-8">
+                            <SelectValue placeholder="Select theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {SIMPLE_THEME_OPTIONS.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
-            <div className={`flex-1 overflow-y-auto gap-0 p-0 ${themeColors.container.background}`}>{renderContent()}</div>
-        </div>
+            {/* Scrollable content section */}
+            <div
+                className={`flex-1 h-full w-full overflow-y-auto p-0 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 scrollbar-hide bg-background`}
+            >
+                {renderContent()}
+                <div className="h-10 pb-10"></div>
+            </div>
+        </Card>
     );
 };
 
-export default EnhancedContentRendererTwo;
+export default EnhancedContentRenderer;

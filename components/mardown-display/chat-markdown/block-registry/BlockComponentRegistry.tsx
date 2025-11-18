@@ -5,7 +5,7 @@ import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import BasicMarkdownContent from "../BasicMarkdownContent";
 
 // Static imports for frequently used, lightweight components
-import { QuestionnaireProvider } from "../../context/QuestionnaireContext";
+import { QuestionnaireProvider } from "../../blocks/questionnaire/QuestionnaireContext";
 
 // Lazy load heavier/less common block components
 const ThinkingVisualization = lazy(() => import("../../blocks/thinking-reasoning/ThinkingVisualization"));
@@ -28,7 +28,7 @@ const TroubleshootingBlock = lazy(() => import("../../blocks/troubleshooting/Tro
 const DecisionTreeBlock = lazy(() => import("../../blocks/decision-tree/DecisionTreeBlock"));
 const InteractiveDiagramBlock = lazy(() => import("../../blocks/diagram/InteractiveDiagramBlock"));
 const MathProblemBlock = lazy(() => import("../../blocks/math/MathProblemBlock"));
-const QuestionnaireRenderer = lazy(() => import("../../QuestionnaireRenderer"));
+const QuestionnaireRenderer = lazy(() => import("../../blocks/questionnaire/QuestionnaireRenderer"));
 const MarkdownTable = lazy(() => import("../../tables/MarkdownTable"));
 
 // Lazy load loading visualizations (lightweight but rarely all needed at once)

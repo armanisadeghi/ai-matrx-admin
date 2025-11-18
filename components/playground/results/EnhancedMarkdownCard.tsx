@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import { ParsedContent } from "./types";
-import MarkdownTable from "./tables/MarkdownTable";
-import { DisplayTheme, THEMES } from "./themes";
+import { ParsedContent } from "../../mardown-display/types";
+import MarkdownTable from "../../mardown-display/tables/MarkdownTable";
+import { DisplayTheme, THEMES } from "../../mardown-display/themes";
 import { extractUrls, LinkDisplay } from "./LinkDisplay";
 
 interface EnhancedMarkdownCardProps {

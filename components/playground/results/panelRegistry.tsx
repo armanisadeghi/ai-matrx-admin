@@ -1,7 +1,6 @@
 "use client";
 
 import {
-    MessageSquare,
     FileText,
     Code2,
     Gem,
@@ -32,14 +31,13 @@ import { createDynamicPanelWrapper } from "./DynamicPanelRender";
 // Import Redux hooks and selectors
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 
 // Import the actual rendering components
-import EnhancedMarkdownCard from "@/components/mardown-display/EnhancedMarkdownCard";
-import MultiSectionMarkdownCard from "@/components/mardown-display/MultiSectionMarkdownCard";
-import QuestionnaireRenderer from "@/components/mardown-display/QuestionnaireRenderer";
-import { QuestionnaireProvider } from "@/components/mardown-display/context/QuestionnaireContext";
-import JsonDisplay from "@/components/mardown-display/JsonDisplay";
+import EnhancedMarkdownCard from "@/components/playground/results/EnhancedMarkdownCard";
+import MultiSectionMarkdownCard from "@/components/playground/results/MultiSectionMarkdownCard";
+import QuestionnaireRenderer from "@/components/mardown-display/blocks/questionnaire/QuestionnaireRenderer";
+import { QuestionnaireProvider } from "@/components/mardown-display/blocks/questionnaire/QuestionnaireContext";
+import JsonDisplay from "@/components/playground/results/JsonDisplay";
 import CandidateProfileBlock from "@/components/mardown-display/blocks/candidate-profiles/CandidateProfileBlock";
 import ParseExtractorOptions from "@/components/official/processor-extractor/ParseExtractorOptions";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";

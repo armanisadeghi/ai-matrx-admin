@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Bug } from "lucide-react";
-import { THEMES } from "./themes";
+import { THEMES } from "../../themes";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { useQuestionnaireContext } from "./context/QuestionnaireContext";
+import { useQuestionnaireContext } from "./QuestionnaireContext";
 import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 // Helper function to check if an option is an "Other" option

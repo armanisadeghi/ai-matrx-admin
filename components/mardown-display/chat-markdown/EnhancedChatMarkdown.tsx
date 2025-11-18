@@ -309,14 +309,6 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
         [onContentChange]
     );
 
-    // const preprocessContent = (mdContent: string): string => {
-    //     // Match the format [Image URL: https://example.com/image.png]
-    //     const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
-    //     return mdContent.replace(imageUrlRegex, "![Image]($1)");
-    // };
-
-    // const processedContent = preprocessContent(currentContent);
-
     // Memoize the render block function to prevent unnecessary re-renders
     const renderBlock = useCallback(
         (block: ContentBlock, index: number) => {
