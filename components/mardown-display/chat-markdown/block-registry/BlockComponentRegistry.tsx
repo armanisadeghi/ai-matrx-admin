@@ -30,6 +30,7 @@ const InteractiveDiagramBlock = lazy(() => import("../../blocks/diagram/Interact
 const MathProblemBlock = lazy(() => import("../../blocks/math/MathProblemBlock"));
 const QuestionnaireRenderer = lazy(() => import("../../blocks/questionnaire/QuestionnaireRenderer"));
 const MarkdownTable = lazy(() => import("../../tables/MarkdownTable"));
+const StreamingTableRenderer = lazy(() => import("../../blocks/table/StreamingTableRenderer").then(m => ({ default: m.StreamingTableRenderer })));
 
 // Lazy load loading visualizations (lightweight but rarely all needed at once)
 const QuizLoadingVisualization = lazy(() => import("../../blocks/quiz/QuizLoadingVisualization"));
@@ -181,6 +182,11 @@ export const BlockComponents = {
     MarkdownTable: (props: any) => (
         <LazyBlockWrapper>
             <MarkdownTable {...props} />
+        </LazyBlockWrapper>
+    ),
+    StreamingTableRenderer: (props: any) => (
+        <LazyBlockWrapper>
+            <StreamingTableRenderer {...props} />
         </LazyBlockWrapper>
     ),
 };

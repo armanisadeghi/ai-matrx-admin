@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback } from "react";
-import { ContentBlock } from "../../markdown-classification/processors/utils/content-splitter";
 import { BlockComponents, LoadingComponents } from "./BlockComponentRegistry";
+import { ContentBlock } from "@/components/mardown-display/markdown-classification/processors/utils/content-splitter-v2";
 
 interface BlockRendererProps {
     block: ContentBlock;
@@ -14,8 +14,6 @@ interface BlockRendererProps {
     handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
     handleMatrxBrokerChange: (updatedBrokerContent: string, originalBrokerContent: string) => void;
     handleOpenEditor: () => void;
-    // Table data
-    parsedTableData: Map<number, any>;
 }
 
 /**
@@ -32,7 +30,6 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     handleTableChange,
     handleMatrxBrokerChange,
     handleOpenEditor,
-    parsedTableData,
 }) => {
     const renderFallbackContent = useCallback((content: string, language: string = "json") => {
         return (
@@ -102,20 +99,13 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             );
 
         case "table":
-            const tableInfo = parsedTableData.get(index);
-            if (!tableInfo) {
-                if (!isStreamActive && process.env.NODE_ENV === "development") {
-                    console.warn("Skipping invalid or empty table:", block.content);
-                }
-                return null;
-            }
             return (
-                <BlockComponents.MarkdownTable
-                    key={tableInfo.stableKey}
-                    data={tableInfo.data}
+                <BlockComponents.StreamingTableRenderer
+                    key={index}
                     content={block.content}
-                    onContentChange={onContentChange ? (updatedTable) => handleTableChange(updatedTable, block.content) : undefined}
+                    metadata={block.metadata}
                     isStreamActive={isStreamActive}
+                    onContentChange={isStreamActive ? undefined : (updatedTable) => handleTableChange(updatedTable, block.content)}
                 />
             );
 

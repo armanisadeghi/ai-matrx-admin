@@ -1,9 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback, ErrorInfo } from "react";
 import { cn } from "@/styles/themes/utils";
-import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
-import { ContentBlock, splitContentIntoBlocks } from "../markdown-classification/processors/utils/content-splitter";
-import { splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
+import { ContentBlock, splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
@@ -98,7 +96,6 @@ const SafeBlockRenderer: React.FC<{
     handleTableChange: (updatedTableMarkdown: string, originalBlockContent: string) => void;
     handleMatrxBrokerChange: (updatedBrokerContent: string, originalBrokerContent: string) => void;
     handleOpenEditor: () => void;
-    parsedTableData: Map<number, any>;
 }> = (props) => {
     try {
         return (
@@ -134,7 +131,7 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
     messageId,
     allowFullScreenEditor = true,
     hideCopyButton = false,
-    useV2Parser = false,
+    useV2Parser = true,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [currentContent, setCurrentContent] = useState(content);
@@ -170,10 +167,7 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
         if (isWaitingForContent) return [];
         
         try {
-            // Use V2 parser by default (V1 available via useV2Parser=false if needed for testing/rollback)
-            const result = useV2Parser !== false
-                ? splitContentIntoBlocksV2(currentContent)
-                : splitContentIntoBlocks(currentContent);
+            const result = splitContentIntoBlocksV2(currentContent);
             
             return Array.isArray(result) ? result : [];
         } catch (error) {
@@ -184,50 +178,7 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
         }
     }, [currentContent, isWaitingForContent, useV2Parser]);
 
-    // Memoize parsed table data to prevent infinite loops from new object references
-    // Skip expensive processing if we're in loading state
-    const parsedTableData = useMemo(() => {
-        if (isWaitingForContent) return new Map();
-
-        const tableDataMap = new Map<number, any>();
-
-        try {
-            blocks.forEach((block, index) => {
-                if (!block || typeof block.type !== "string") return;
-                
-                try {
-                    if (block.type === "table") {
-                        const tableData = parseMarkdownTable(block.content, isStreamActive);
-                        if (tableData?.markdown && 
-                            tableData.markdown.headers?.length > 0 && 
-                            tableData.markdown.rows?.length > 0) {
-                            // Create a stable cache key based on table structure, not full content
-                            const rowCount = tableData.markdown.rows.length;
-                            const headerHash = tableData.markdown.headers.join("|");
-                            const stableKey = `table-${index}-${headerHash}-${rowCount}`;
-
-                            // Store both the parsed data and the key for easy lookup
-                            tableDataMap.set(index, {
-                                stableKey,
-                                data: {
-                                    ...tableData.markdown,
-                                    normalizedData: tableData.data,
-                                },
-                            });
-                        }
-                    }
-                } catch (blockError) {
-                    console.error(`[EnhancedChatMarkdown] Error parsing table at block ${index}:`, blockError);
-                    // Continue processing other blocks
-                }
-            });
-        } catch (error) {
-            console.error("[EnhancedChatMarkdown] Error processing table data:", error);
-            // Return empty map as fallback
-        }
-
-        return tableDataMap;
-    }, [blocks, isStreamActive, isWaitingForContent]);
+    // Note: Table parsing removed - StreamingTableRenderer handles it directly from block content
 
     // Handler for code changes within CodeBlock components
     const handleCodeChange = useCallback(
@@ -330,7 +281,6 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
                         handleTableChange={handleTableChange}
                         handleMatrxBrokerChange={handleMatrxBrokerChange}
                         handleOpenEditor={handleOpenEditor}
-                        parsedTableData={parsedTableData}
                     />
                 );
             } catch (error) {
@@ -350,7 +300,6 @@ const EnhancedChatMarkdownInternal: React.FC<ChatMarkdownDisplayProps> = ({
             handleTableChange,
             handleMatrxBrokerChange,
             handleOpenEditor,
-            parsedTableData,
         ]
     );
 

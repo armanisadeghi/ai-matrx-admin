@@ -23,7 +23,40 @@
  */
 
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
-import { ContentBlock } from "./content-splitter";
+export interface ContentBlock {
+    type:
+        | "text"
+        | "code"
+        | "table"
+        | "thinking"
+        | "reasoning"
+        | "image"
+        | "tasks"
+        | "transcript"
+        | "structured_info"
+        | "matrxBroker"
+        | "questionnaire"
+        | "flashcards"
+        | "quiz"
+        | "presentation"
+        | "cooking_recipe"
+        | "timeline"
+        | "progress_tracker"
+        | "comparison_table"
+        | "troubleshooting"
+        | "resources"
+        | "decision_tree"
+        | "research"
+        | "diagram"
+        | "math_problem"
+        | string;
+    content: string;
+    language?: string;
+    src?: string;
+    alt?: string;
+    metadata?: any;
+}
+
 
 // ============================================================================
 // BLOCK TYPE REGISTRY
@@ -489,8 +522,11 @@ function extractTable(startIndex: number, lines: string[]): ExtractionResult {
         };
     }
     
+    // Determine if table has ended: if we hit a non-table line, table is complete
+    const tableHasEnded = i < lines.length;
+    
     // Analyze completion state with caching
-    const result = analyzeTableCompletionWithCache(tableLines);
+    const result = analyzeTableCompletionWithCache(tableLines, tableHasEnded);
     
     return {
         content: result.content,
@@ -499,7 +535,7 @@ function extractTable(startIndex: number, lines: string[]): ExtractionResult {
     };
 }
 
-function analyzeTableCompletionWithCache(tableLines: string[]): { content: string; metadata: any } {
+function analyzeTableCompletionWithCache(tableLines: string[], tableHasEnded: boolean): { content: string; metadata: any } {
     if (tableLines.length < 2) {
         return { 
             content: "", 
@@ -512,24 +548,31 @@ function analyzeTableCompletionWithCache(tableLines: string[]): { content: strin
     const cacheKey = `table-${headerHash}`;
     
     // Analyze table state
-    const state = analyzeTableCompletion(tableLines);
+    const state = analyzeTableCompletion(tableLines, tableHasEnded);
     
     // Determine what content to release
+    // ALWAYS show header + separator if we have valid table structure
+    // Then add complete rows as they arrive
     let contentToRelease = "";
     
-    if (state.isComplete || state.completeRowCount > 0) {
+    if (tableLines.length >= 2) {
         const headerAndSeparator = tableLines.slice(0, 2);
         const dataRows = tableLines.slice(2);
         const completeRows: string[] = [];
         
-        for (let i = 0; i < dataRows.length; i++) {
-            const line = dataRows[i];
-            const trimmedLine = removeMatrxPattern(line).trim();
-            
-            if (trimmedLine.startsWith("|") && trimmedLine.includes("|", 1)) {
-                const isCompleteRow = trimmedLine.endsWith("|") || i < dataRows.length - 1;
-                if (isCompleteRow) {
-                    completeRows.push(line);
+        // Only add data rows that are complete (not the last buffered row)
+        if (dataRows.length > 0) {
+            for (let i = 0; i < dataRows.length; i++) {
+                const line = dataRows[i];
+                const trimmedLine = removeMatrxPattern(line).trim();
+                
+                if (trimmedLine.startsWith("|") && trimmedLine.includes("|", 1)) {
+                    // If table has ended (hit non-table line), include all rows
+                    // Otherwise, only include rows that aren't the last (streaming)
+                    const isCompleteRow = tableHasEnded || i < dataRows.length - 1;
+                    if (isCompleteRow) {
+                        completeRows.push(line);
+                    }
                 }
             }
         }
@@ -566,7 +609,7 @@ function analyzeTableCompletionWithCache(tableLines: string[]): { content: strin
     return result;
 }
 
-function analyzeTableCompletion(tableLines: string[]): {
+function analyzeTableCompletion(tableLines: string[], tableHasEnded: boolean): {
     isComplete: boolean;
     completeRowCount: number;
     totalRows: number;
@@ -585,7 +628,9 @@ function analyzeTableCompletion(tableLines: string[]): {
         const trimmedLine = removeMatrxPattern(line).trim();
         
         if (trimmedLine.startsWith("|") && trimmedLine.includes("|", 1)) {
-            const isCompleteRow = trimmedLine.endsWith("|") || i < dataLines.length - 1;
+            // If table has ended (hit non-table line), all rows are complete
+            // Otherwise, only rows before the last are complete (last is still streaming)
+            const isCompleteRow = tableHasEnded || i < dataLines.length - 1;
             
             if (isCompleteRow) {
                 completeRows.push(line);
@@ -596,7 +641,7 @@ function analyzeTableCompletion(tableLines: string[]): {
     }
     
     return {
-        isComplete: bufferRow.length === 0,
+        isComplete: tableHasEnded || bufferRow.length === 0,
         completeRowCount: completeRows.length,
         totalRows: dataLines.length,
         bufferRow
