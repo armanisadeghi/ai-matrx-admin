@@ -281,7 +281,6 @@ export function SaveTemplateModal({
                         <div className="prose prose-sm dark:prose-invert max-w-none">
                             <EnhancedChatMarkdown 
                                 content={content || ''} 
-                                useV2Parser={true}
                             />
                         </div>
                     </div>

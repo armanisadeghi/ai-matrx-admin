@@ -711,7 +711,6 @@ export function ContentTemplateManager({ className }: ContentTemplateManagerProp
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
                                                         <EnhancedChatMarkdown 
                                                             content={editData.content || ''} 
-                                                            useV2Parser={true}
                                                         />
                                                     </div>
                                                 </div>

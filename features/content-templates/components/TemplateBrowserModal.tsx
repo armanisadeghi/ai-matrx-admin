@@ -286,7 +286,6 @@ export function TemplateBrowserModal({
                             <div className="prose prose-sm dark:prose-invert max-w-none">
                                 <EnhancedChatMarkdown 
                                     content={selectedTemplate.content || ''} 
-                                    useV2Parser={true}
                                 />
                             </div>
                         </ScrollArea>

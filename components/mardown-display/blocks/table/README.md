@@ -15,6 +15,11 @@ Clean, efficient table renderer that properly uses the block structure from `con
 **Root Cause:** `StreamingTableRenderer` accepts an optional `onContentChange` prop that gets called when edits are saved. However, `BlockRenderer` was not passing the callback, even though it had both `onContentChange` and `handleTableChange` available in its props.  
 **Solution:** Added `onContentChange` prop to `StreamingTableRenderer` call in `BlockRenderer.tsx:108`, wrapping `handleTableChange` to pass both updated markdown and original content. Follows same pattern as `CodeBlock` (only enabled when not streaming).
 
+### Bug 3: Dead useV2Parser Parameter Causing Unnecessary Renders
+**Problem:** The `useV2Parser` prop was documented in the interface (line 26) and included in the useMemo dependency array (line 179), but the actual parsing logic unconditionally called `splitContentIntoBlocksV2` without checking the prop. This caused: (1) the prop to be non-functional - callers couldn't fall back to V1 parser, and (2) unnecessary memoization recalculations whenever the prop value changed.  
+**Root Cause:** During migration to V2 parser, the conditional logic was removed but the prop declaration and dependency weren't cleaned up.  
+**Solution:** Removed `useV2Parser` from interface, function parameters, and dependency array in `EnhancedChatMarkdown.tsx`. Also removed all usages across 5 components that were passing `useV2Parser={true}`. V2 parser is now the only parser - cleaner, faster, and no confusion.
+
 ## The Problem We Solved
 The previous table implementation had a **massive redundancy issue**:
 

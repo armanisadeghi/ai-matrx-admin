@@ -647,7 +647,6 @@ export function UserContentTemplateManager({ className }: UserContentTemplateMan
                         <div className="p-4">
                             <EnhancedChatMarkdown 
                                 content={selectedTemplate?.content || ''} 
-                                useV2Parser={true}
                             />
                         </div>
                     </ScrollArea>

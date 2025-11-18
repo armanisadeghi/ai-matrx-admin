@@ -953,7 +953,6 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
                                                     <div className="prose prose-sm dark:prose-invert max-w-none">
                                                         <EnhancedChatMarkdown 
                                                             content={editData.template || ''} 
-                                                            useV2Parser={true}
                                                         />
                                                     </div>
                                                 </div>
