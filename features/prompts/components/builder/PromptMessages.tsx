@@ -1,17 +1,16 @@
 import React, { RefObject, useRef } from "react";
-import { Braces, X, Edit2, Maximize2, Eraser, FileText } from "lucide-react";
+import { Braces, X, Edit2, Maximize2, Eraser, FileText, Eye } from "lucide-react";
 import { VariableSelector } from "../VariableSelector";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PromptMessage } from "@/features/prompts/types/core";
 import { HighlightedText } from "../HighlightedText";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { PromptVariable } from "@/features/prompts/types/core";
 import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
 import { MessageRole } from "@/features/content-templates/types/content-templates-db";
-import { ResponsiveIconButtonGroup, IconButtonConfig } from "@/components/official/ResponsiveIconButtonGroup";
+import { ResponsiveIconButtonGroup } from "@/components/official/ResponsiveIconButtonGroup";
 
 interface PromptMessagesProps {
     // Messages
@@ -91,33 +90,40 @@ export function PromptMessages({
                                                     tooltip: 'Insert Variable',
                                                     mobileLabel: 'Insert Variable',
                                                     render: () => (
-                                                        <span 
-                                                            onMouseDown={(e) => {
-                                                                e.stopPropagation();
-                                                            }}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                            }}
-                                                        >
-                                                            <VariableSelector
-                                                                variables={variableNames}
-                                                                onVariableSelected={(variable) => {
-                                                                    onInsertVariable(index, variable);
-                                                                }}
-                                                                onBeforeOpen={() => {
-                                                                    const textarea = textareaRefs.current[index];
-                                                                    if (textarea) {
-                                                                        onCursorPositionChange({
-                                                                            ...cursorPositions,
-                                                                            [index]: textarea.selectionStart,
-                                                                        });
-                                                                    }
-                                                                    if (!isEditing) {
-                                                                        onEditingMessageIndexChange(index);
-                                                                    }
-                                                                }}
-                                                            />
-                                                        </span>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span 
+                                                                    onMouseDown={(e) => {
+                                                                        e.stopPropagation();
+                                                                    }}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                    }}
+                                                                >
+                                                                    <VariableSelector
+                                                                        variables={variableNames}
+                                                                        onVariableSelected={(variable) => {
+                                                                            onInsertVariable(index, variable);
+                                                                        }}
+                                                                        onBeforeOpen={() => {
+                                                                            const textarea = textareaRefs.current[index];
+                                                                            if (textarea) {
+                                                                                onCursorPositionChange({
+                                                                                    ...cursorPositions,
+                                                                                    [index]: textarea.selectionStart,
+                                                                                });
+                                                                            }
+                                                                            if (!isEditing) {
+                                                                                onEditingMessageIndexChange(index);
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent side="top" className="z-[9999]">
+                                                                Insert Variable
+                                                            </TooltipContent>
+                                                        </Tooltip>
                                                     ),
                                                 },
                                                 {
@@ -127,13 +133,22 @@ export function PromptMessages({
                                                     mobileLabel: 'Templates',
                                                     render: (isMobile) => {
                                                         return (
-                                                            <TemplateSelector
-                                                                role={message.role as MessageRole}
-                                                                currentContent={message.content}
-                                                                onTemplateSelected={(content) => onMessageContentChange(index, content)}
-                                                                onSaveTemplate={() => {}}
-                                                                messageIndex={index}
-                                                            />
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <span>
+                                                                        <TemplateSelector
+                                                                            role={message.role as MessageRole}
+                                                                            currentContent={message.content}
+                                                                            onTemplateSelected={(content) => onMessageContentChange(index, content)}
+                                                                            onSaveTemplate={() => {}}
+                                                                            messageIndex={index}
+                                                                        />
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent side="top" className="z-[9999]">
+                                                                    Templates
+                                                                </TooltipContent>
+                                                            </Tooltip>
                                                         );
                                                     },
                                                 },
@@ -154,9 +169,9 @@ export function PromptMessages({
                                                 },
                                                 {
                                                     id: 'edit',
-                                                    icon: Edit2,
-                                                    tooltip: isEditing ? 'Stop editing' : 'Edit',
-                                                    mobileLabel: isEditing ? 'Stop Editing' : 'Edit',
+                                                    icon: isEditing ? Eye : Edit2,
+                                                    tooltip: isEditing ? 'View' : 'Edit',
+                                                    mobileLabel: isEditing ? 'View' : 'Edit',
                                                     onClick: (e) => {
                                                         e?.stopPropagation();
                                                         onEditingMessageIndexChange(isEditing ? null : index);

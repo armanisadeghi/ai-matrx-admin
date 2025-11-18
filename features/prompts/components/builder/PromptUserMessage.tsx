@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Copy, Edit, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from "../../utils/resource-parsing";
+import { parseResourcesFromMessage, extractMessageWithoutResources, messageContainsResources } from "@/features/prompts/utils/resource-parsing";
 import { ResourcesContainer } from "../resource-display/ResourceDisplay";
 
 interface PromptUserMessageProps {

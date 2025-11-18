@@ -1,9 +1,8 @@
-import React, { RefObject, useRef, useEffect, useState } from "react";
-import { Maximize2, Braces, Edit2, Wand2, Eraser, FileText } from "lucide-react";
+import React, { RefObject, useRef, useState } from "react";
+import { Maximize2, Braces, Edit2, Wand2, Eraser, FileText, Eye } from "lucide-react";
 import { VariableSelector } from "../VariableSelector";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { HighlightedText } from "../HighlightedText";
 import { PromptVariable } from "@/features/prompts/types/core";
@@ -73,35 +72,42 @@ export function SystemMessage({
                 if (!hasVariableSupport) return null;
                 
                 return (
-                    <span 
-                        onMouseDown={(e) => {
-                            e.stopPropagation();
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                        }}
-                    >
-                        <VariableSelector
-                            variables={variableNames}
-                            onVariableSelected={(variable) => {
-                                if (onInsertVariable) {
-                                    onInsertVariable(variable);
-                                }
-                            }}
-                            onBeforeOpen={() => {
-                                const textarea = textareaRefs?.current[systemMessageIndex];
-                                if (textarea && onCursorPositionChange) {
-                                    onCursorPositionChange({
-                                        ...cursorPositions,
-                                        [systemMessageIndex]: textarea.selectionStart,
-                                    });
-                                }
-                                if (!isEditing && onIsEditingChange) {
-                                    onIsEditingChange(true);
-                                }
-                            }}
-                        />
-                    </span>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span 
+                                onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                }}
+                            >
+                                <VariableSelector
+                                    variables={variableNames}
+                                    onVariableSelected={(variable) => {
+                                        if (onInsertVariable) {
+                                            onInsertVariable(variable);
+                                        }
+                                    }}
+                                    onBeforeOpen={() => {
+                                        const textarea = textareaRefs?.current[systemMessageIndex];
+                                        if (textarea && onCursorPositionChange) {
+                                            onCursorPositionChange({
+                                                ...cursorPositions,
+                                                [systemMessageIndex]: textarea.selectionStart,
+                                            });
+                                        }
+                                        if (!isEditing && onIsEditingChange) {
+                                            onIsEditingChange(true);
+                                        }
+                                    }}
+                                />
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="z-[9999]">
+                            Insert Variable
+                        </TooltipContent>
+                    </Tooltip>
                 );
             },
         },
@@ -113,13 +119,22 @@ export function SystemMessage({
             render: (isMobile) => {
                 // On desktop, use icon-only version; on mobile, show in menu
                 return (
-                    <TemplateSelector
-                        role="system"
-                        currentContent={developerMessage}
-                        onTemplateSelected={(content) => onDeveloperMessageChange(content)}
-                        onSaveTemplate={() => {}}
-                        messageIndex={systemMessageIndex}
-                    />
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span>
+                                <TemplateSelector
+                                    role="system"
+                                    currentContent={developerMessage}
+                                    onTemplateSelected={(content) => onDeveloperMessageChange(content)}
+                                    onSaveTemplate={() => {}}
+                                    messageIndex={systemMessageIndex}
+                                />
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="z-[9999]">
+                            Templates
+                        </TooltipContent>
+                    </Tooltip>
                 );
             },
         },
@@ -156,9 +171,9 @@ export function SystemMessage({
         },
         {
             id: 'edit',
-            icon: Edit2,
-            tooltip: isEditing ? 'Stop editing' : 'Edit',
-            mobileLabel: isEditing ? 'Stop Editing' : 'Edit',
+            icon: isEditing ? Eye : Edit2,
+            tooltip: isEditing ? 'View' : 'Edit',
+            mobileLabel: isEditing ? 'View' : 'Edit',
             onClick: (e) => {
                 e?.stopPropagation();
                 onIsEditingChange?.(!isEditing);
