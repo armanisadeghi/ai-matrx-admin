@@ -62,6 +62,7 @@ import { Separator } from '@/components/ui/separator';
 import { getPlacementTypeMeta } from '@/features/prompt-builtins/constants';
 import { HierarchicalCategorySelector } from '@/features/prompt-builtins/components/HierarchicalCategorySelector';
 import { ScopeMappingEditor } from '@/features/prompt-builtins/components/ScopeMappingEditor';
+import { ShortcutFormFields } from '@/features/prompt-builtins/components/ShortcutFormFields';
 
 interface ConvertToBuiltinModalProps {
   isOpen: boolean;
@@ -600,127 +601,15 @@ export function ConvertToBuiltinModal({
               </TabsContent>
 
               <TabsContent value="create-new" className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="shortcut-label">Label *</Label>
-                    <Input
-                      id="shortcut-label"
-                      value={newShortcutData.label}
-                      onChange={(e) => setNewShortcutData({ ...newShortcutData, label: e.target.value })}
-                      placeholder="Shortcut name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="shortcut-category">Category *</Label>
-                    <HierarchicalCategorySelector
-                      categories={categories}
-                      value={newShortcutData.category_id}
-                      onValueChange={(value) => setNewShortcutData({ ...newShortcutData, category_id: value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="shortcut-description">Description</Label>
-                  <Textarea
-                    id="shortcut-description"
-                    value={newShortcutData.description || ''}
-                    onChange={(e) => setNewShortcutData({ ...newShortcutData, description: e.target.value || null })}
-                    placeholder="Optional description"
-                    rows={2}
+                {createdBuiltin && (
+                  <ShortcutFormFields
+                    formData={newShortcutData}
+                    onChange={(updates) => setNewShortcutData(prev => ({ ...prev, ...updates }))}
+                    categories={categories}
+                    builtinVariables={createdBuiltin.variableDefaults || []}
+                    compact
                   />
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Scope Mappings</Label>
-                  {createdBuiltin && (
-                    <ScopeMappingEditor
-                      availableScopes={newShortcutData.available_scopes || DEFAULT_AVAILABLE_SCOPES}
-                      scopeMappings={newShortcutData.scope_mappings || {}}
-                      variableDefaults={createdBuiltin.variableDefaults}
-                      onMappingChange={(scopeKey, variableName) => {
-                        setNewShortcutData(prev => ({
-                          ...prev,
-                          scope_mappings: {
-                            ...prev.scope_mappings,
-                            [scopeKey]: variableName,
-                          },
-                        }));
-                      }}
-                    />
-                  )}
-                </div>
-
-                <Separator />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="shortcut-icon">Icon Name</Label>
-                    <Input
-                      id="shortcut-icon"
-                      value={newShortcutData.icon_name || ''}
-                      onChange={(e) => setNewShortcutData({ ...newShortcutData, icon_name: e.target.value || null })}
-                      placeholder="e.g., Sparkles"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="result-display">Result Display</Label>
-                    <Select
-                      value={newShortcutData.result_display}
-                      onValueChange={(value: any) => setNewShortcutData({ ...newShortcutData, result_display: value })}
-                    >
-                      <SelectTrigger id="result-display">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="modal-full">Full Modal</SelectItem>
-                        <SelectItem value="modal-compact">Compact Modal</SelectItem>
-                        <SelectItem value="inline">Inline</SelectItem>
-                        <SelectItem value="sidebar">Sidebar</SelectItem>
-                        <SelectItem value="flexible-panel">Flexible Panel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center justify-between p-2 border rounded">
-                      <Label htmlFor="auto-run" className="text-sm font-normal cursor-pointer">Auto Run</Label>
-                      <Switch
-                        id="auto-run"
-                        checked={newShortcutData.auto_run}
-                        onCheckedChange={(checked) => setNewShortcutData({ ...newShortcutData, auto_run: checked })}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-2 border rounded">
-                      <Label htmlFor="allow-chat" className="text-sm font-normal cursor-pointer">Allow Chat</Label>
-                      <Switch
-                        id="allow-chat"
-                        checked={newShortcutData.allow_chat}
-                        onCheckedChange={(checked) => setNewShortcutData({ ...newShortcutData, allow_chat: checked })}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-2 border rounded">
-                      <Label htmlFor="show-variables" className="text-sm font-normal cursor-pointer">Show Variables</Label>
-                      <Switch
-                        id="show-variables"
-                        checked={newShortcutData.show_variables}
-                        onCheckedChange={(checked) => setNewShortcutData({ ...newShortcutData, show_variables: checked })}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-2 border rounded">
-                      <Label htmlFor="apply-variables" className="text-sm font-normal cursor-pointer">Apply Variables</Label>
-                      <Switch
-                        id="apply-variables"
-                        checked={newShortcutData.apply_variables}
-                        onCheckedChange={(checked) => setNewShortcutData({ ...newShortcutData, apply_variables: checked })}
-                      />
-                    </div>
-                  </div>
-                </div>
+                )}
               </TabsContent>
 
               <TabsContent value="skip" className="mt-4">

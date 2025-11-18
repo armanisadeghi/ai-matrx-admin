@@ -48,6 +48,7 @@ import {
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
+import { LinkBuiltinToShortcutModal } from '../components/LinkBuiltinToShortcutModal';
 import { getUserFriendlyError } from '../utils/error-handler';
 
 type SortField = 'name' | 'variables' | 'usage' | 'source';
@@ -74,6 +75,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingBuiltinId, setEditingBuiltinId] = useState<string | null>(null);
+  const [linkingShortcutForBuiltinId, setLinkingShortcutForBuiltinId] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -113,6 +115,11 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   // Get usage count for each builtin
   const getUsageCount = (builtinId: string) => {
     return shortcuts.filter(s => s.prompt_builtin_id === builtinId).length;
+  };
+
+  // Get shortcuts using a builtin
+  const getBuiltinShortcuts = (builtinId: string) => {
+    return shortcuts.filter(s => s.prompt_builtin_id === builtinId);
   };
 
   // Filter and sort builtins
@@ -406,7 +413,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                       <SortIcon field="source" />
                     </div>
                   </TableHead>
-                  <TableHead className="text-right w-[100px]">Actions</TableHead>
+                  <TableHead className="text-right w-[140px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -504,6 +511,18 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => setLinkingShortcutForBuiltinId(builtin.id)}
+                              >
+                                <Link2 className="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Link Shortcut</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => setEditingBuiltinId(builtin.id)}
                               >
                                 <Edit2 className="h-3 w-3" />
@@ -584,6 +603,24 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
               availableTools={availableTools}
               onUpdate={handleUpdateBuiltin}
               onLocalStateUpdate={() => {}}
+            />
+          );
+        })()}
+
+        {/* Link Shortcut Modal */}
+        {linkingShortcutForBuiltinId && (() => {
+          const builtin = builtins.find(b => b.id === linkingShortcutForBuiltinId);
+          if (!builtin) return null;
+
+          return (
+            <LinkBuiltinToShortcutModal
+              isOpen={true}
+              onClose={() => setLinkingShortcutForBuiltinId(null)}
+              builtin={builtin}
+              onSuccess={async () => {
+                setLinkingShortcutForBuiltinId(null);
+                await loadData();
+              }}
             />
           );
         })()}

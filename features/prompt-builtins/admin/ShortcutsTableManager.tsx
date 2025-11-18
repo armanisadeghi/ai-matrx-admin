@@ -44,6 +44,7 @@ import {
   Link2,
   Loader2,
   Zap,
+  FileText,
 } from 'lucide-react';
 import {
   ShortcutCategory,
@@ -62,7 +63,14 @@ import { RESULT_DISPLAY_META, ResultDisplay } from '../types/execution-modes';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { PromptBuiltinEditDialog } from './PromptBuiltinEditDialog';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
+import { SelectBuiltinForShortcutModal } from '../components/SelectBuiltinForShortcutModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { getUserFriendlyError } from '../utils/error-handler';
 
 type SortField = 'label' | 'category' | 'status' | 'connection' | 'placement';
@@ -121,6 +129,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectingPromptFor, setSelectingPromptFor] = useState<ShortcutWithRelations | null>(null);
+  const [selectingBuiltinFor, setSelectingBuiltinFor] = useState<ShortcutWithRelations | null>(null);
   const [viewingBuiltinId, setViewingBuiltinId] = useState<string | null>(null);
 
   const { toast } = useToast();
@@ -630,15 +639,28 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                             </TooltipContent>
                           </Tooltip>
                         ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-xs"
-                            onClick={() => setSelectingPromptFor(shortcut)}
-                          >
-                            <Link2 className="h-3 w-3 mr-1" />
-                            Connect
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                              >
+                                <Link2 className="h-3 w-3 mr-1" />
+                                Connect
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setSelectingPromptFor(shortcut)}>
+                                <FileText className="h-4 w-4 mr-2" />
+                                Select Prompt
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setSelectingBuiltinFor(shortcut)}>
+                                <Zap className="h-4 w-4 mr-2" />
+                                Browse Builtins
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -756,6 +778,19 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
             }}
             onSuccess={async () => {
               setSelectingPromptFor(null);
+              await loadData();
+            }}
+          />
+        )}
+
+        {/* Select Existing Builtin Modal */}
+        {selectingBuiltinFor && (
+          <SelectBuiltinForShortcutModal
+            isOpen={true}
+            onClose={() => setSelectingBuiltinFor(null)}
+            shortcut={selectingBuiltinFor}
+            onSuccess={async () => {
+              setSelectingBuiltinFor(null);
               await loadData();
             }}
           />
