@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { GitCompare, Sparkles, BarChart, Save, Maximize2, ArrowLeft, Settings, MoreHorizontal, Edit3, Play, Route, Copy, AppWindow, LayoutTemplate, Code2 } from "lucide-react";
+import { GitCompare, Sparkles, BarChart, Save, Maximize2, Settings, MoreHorizontal, Edit3, Play, Route, AppWindow, LayoutTemplate, Code2, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/redux";
 import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { PromptActionsMenu } from "@/features/prompts/components/layouts/PromptActionsMenu";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
+import { PromptModeNavigation } from "@/features/prompts/components/PromptModeNavigation";
 
 interface PromptBuilderHeaderCompactProps {
     promptName: string;
@@ -26,6 +26,7 @@ interface PromptBuilderHeaderCompactProps {
     // Mobile tab support
     mobileActiveTab?: 'edit' | 'test';
     onMobileTabChange?: (tab: 'edit' | 'test') => void;
+    promptId?: string; // For mode switcher
 }
 
 export function PromptBuilderHeaderCompact({
@@ -43,6 +44,7 @@ export function PromptBuilderHeaderCompact({
     onAcceptAsCopy,
     mobileActiveTab = 'edit',
     onMobileTabChange,
+    promptId,
 }: PromptBuilderHeaderCompactProps) {
     const router = useRouter();
     const { openPrompt } = usePromptRunner();
@@ -61,12 +63,19 @@ export function PromptBuilderHeaderCompact({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-56">
-                        <DropdownMenuItem asChild>
-                            <Link href="/ai/prompts" className="flex items-center w-full">
-                                <ArrowLeft className="h-4 w-4 mr-2" />
-                                Back to Prompts
-                            </Link>
+                        <DropdownMenuItem onClick={() => router.push('/ai/prompts')}>
+                            <LayoutGrid className="h-4 w-4 mr-2" />
+                            Back to Prompts
                         </DropdownMenuItem>
+                        {promptId && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => router.push(`/ai/prompts/run/${promptId}`)}>
+                                    <Play className="h-4 w-4 mr-2" />
+                                    Switch to Run Mode
+                                </DropdownMenuItem>
+                            </>
+                        )}
                         <DropdownMenuSeparator />
                         {onOpenSettings && (
                             <DropdownMenuItem onClick={onOpenSettings}>
@@ -189,27 +198,40 @@ export function PromptBuilderHeaderCompact({
             </div>
 
             {/* Desktop - Inline controls with tighter spacing */}
-            <div className="hidden md:flex items-center gap-1">
-                {/* Back button */}
-                <Link href="/ai/prompts">
-                    <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        title="Back to Prompts"
-                    >
-                        <ArrowLeft className="h-3 w-3" />
-                    </Button>
-                </Link>
-
-                {/* Prompt name input - compact */}
-                <input
-                    type="text"
-                    value={promptName}
-                    onChange={(e) => onPromptNameChange(e.target.value)}
-                    className="text-sm font-medium bg-transparent border border-gray-300 dark:border-gray-700 min-w-0 text-gray-900 dark:text-gray-100 px-2 py-1 max-w-[120px] lg:max-w-[180px] xl:max-w-[240px]"
-                    placeholder="Untitled prompt"
-                />
+            <div className="hidden md:flex items-center gap-1 flex-1 min-w-0">
+                {/* Left: Unified navigation (only if we have promptId) */}
+                {promptId ? (
+                    <div className="flex-1 min-w-0">
+                        <PromptModeNavigation
+                            promptId={promptId}
+                            promptName={promptName}
+                            currentMode="edit"
+                            onPromptNameChange={onPromptNameChange}
+                        />
+                    </div>
+                ) : (
+                    /* Fallback for new prompts without ID */
+                    <>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-9 w-9 p-0 hover:bg-muted text-muted-foreground hover:text-foreground flex-shrink-0"
+                            title="Back to Prompts"
+                            onClick={() => router.push('/ai/prompts')}
+                        >
+                            <LayoutGrid className="h-4 w-4" />
+                        </Button>
+                        <div className="h-6 w-px bg-border flex-shrink-0 mx-1" />
+                        {/* Prompt name input - compact */}
+                        <input
+                            type="text"
+                            value={promptName}
+                            onChange={(e) => onPromptNameChange(e.target.value)}
+                            className="text-sm font-medium bg-transparent border border-gray-300 dark:border-gray-700 min-w-0 text-gray-900 dark:text-gray-100 px-2 py-1 rounded max-w-[180px] xl:max-w-[240px]"
+                            placeholder="Untitled prompt"
+                        />
+                    </>
+                )}
 
                 {/* Status indicators - compact */}
                 <div className="flex items-center gap-1">

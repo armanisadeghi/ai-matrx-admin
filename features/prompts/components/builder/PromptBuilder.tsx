@@ -834,6 +834,7 @@ export function PromptBuilder({ models, initialData, availableTools }: PromptBui
     // Build shared props object
     const sharedProps = {
         // Header
+        promptId: initialData?.id,
         promptName,
         onPromptNameChange: (value: string) => {
             setPromptName(value);

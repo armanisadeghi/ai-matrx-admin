@@ -15,6 +15,7 @@ interface PromptBuilderMobileProps extends PromptBuilderSharedProps {
 export function PromptBuilderMobile(props: PromptBuilderMobileProps) {
     const {
         // Header props
+        promptId,
         promptName,
         onPromptNameChange,
         isDirty,
@@ -113,6 +114,7 @@ export function PromptBuilderMobile(props: PromptBuilderMobileProps) {
         <>
             <div className="h-page w-full bg-textured flex flex-col overflow-hidden">
                 <PromptHeader
+                    promptId={promptId}
                     promptName={promptName}
                     onPromptNameChange={onPromptNameChange}
                     isDirty={isDirty}

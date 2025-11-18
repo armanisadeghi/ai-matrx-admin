@@ -38,6 +38,12 @@ const [value, setValue] = useState('');
   }}
   appendTranscript={true}          // If true, appends to existing text; if false, replaces (default: true)
   
+  // 🛡️ BUILT-IN PROTECTION: Automatically prevents data loss
+  protectTranscription={true}      // Warns before unmounting during recording/transcription (default: true)
+  onRequestClose={() => {          // Called when it's safe to close (after user confirms or process completes)
+    // Handle close logic here (e.g., close modal, popover, etc.)
+  }}
+  
   // Auto-grow props
   autoGrow={false}                 // Enable auto-grow height (default: false)
   minHeight={150}                  // Minimum height in pixels
@@ -56,7 +62,7 @@ const [value, setValue] = useState('');
     <ComponentDisplayWrapper
       component={component}
       code={code}
-      description="Textarea with built-in voice recording and copy functionality. Icons appear on hover/focus for a clean interface. Handles recording, transcription, and text insertion automatically."
+      description="Textarea with built-in voice recording and copy functionality. Icons appear on hover/focus for a clean interface. Handles recording, transcription, and text insertion automatically. 🛡️ Built-in protection prevents data loss by warning users before unmounting during active recording or transcription."
     >
       <div className="w-full max-w-2xl space-y-4">
         <VoiceTextarea
@@ -64,6 +70,8 @@ const [value, setValue] = useState('');
           onChange={(e) => setValue(e.target.value)}
           placeholder="Start typing or use voice input... (hover or click to see controls)"
           className="min-h-[150px]"
+          // Built-in protection enabled by default (try recording and clicking away to see the modal)
+          protectTranscription={true}
           onTranscriptionComplete={(text) => {
             toast.success('Voice input added', {
               description: `Added: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`,

@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PromptRunnerModalSidebarTester } from "./modal/PromptRunnerModalSidebarTester";
 import { generateRunNameFromVariables } from "@/features/ai-runs/utils/name-generator";
+import { PromptModeNavigation } from "./PromptModeNavigation";
 
 // Dynamically import CanvasRenderer to avoid SSR issues
 const CanvasRenderer = dynamic(
@@ -582,29 +583,22 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
             {/* Minimal Header in the top nav area */}
             <PageSpecificHeader>
                 <div className="flex items-center justify-between w-full h-full px-2 sm:px-4">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push('/ai/prompts')}
-                            className="text-muted-foreground hover:text-foreground flex-shrink-0"
-                        >
-                            <ArrowLeft className="w-4 h-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Back</span>
-                        </Button>
-                        <div className="h-6 w-px bg-border flex-shrink-0" />
-                        <h1 className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                            {promptData.name || "Untitled Prompt"}
-                        </h1>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                    {/* Left: Unified 3-icon navigation + name */}
+                    <PromptModeNavigation
+                        promptId={promptData.id}
+                        promptName={promptData.name}
+                        currentMode="run"
+                    />
+
+                    {/* Right: Action buttons */}
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
                         {/* Mobile sidebar toggle */}
                         {isMobile && (
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setShowSidebarOnMobile(!showSidebarOnMobile)}
-                                className="text-muted-foreground hover:text-foreground"
+                                className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 w-9 p-0"
                                 title={showSidebarOnMobile ? "Close runs" : "Show runs"}
                             >
                                 {showSidebarOnMobile ? (
@@ -620,7 +614,7 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleClearConversation}
-                                className="text-muted-foreground hover:text-foreground"
+                                className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 w-9 p-0"
                                 title="Reset conversation"
                             >
                                 <RotateCcw className="w-4 h-4" />
@@ -630,7 +624,7 @@ export function PromptRunPage({ models, promptData }: PromptRunnerProps) {
                             variant="ghost"
                             size="sm"
                             onClick={handleCanvasToggle}
-                            className="text-muted-foreground hover:text-foreground"
+                            className="text-muted-foreground hover:text-foreground hover:bg-muted h-9 w-9 p-0"
                             title={isMobile && showCanvasOnMobile ? "Back to conversation" : isCanvasOpen ? "Close canvas" : "Open canvas"}
                         >
                             {isMobile && showCanvasOnMobile ? (

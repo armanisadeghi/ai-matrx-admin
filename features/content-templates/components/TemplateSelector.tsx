@@ -42,14 +42,17 @@ export function TemplateSelector({
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                         onMouseDown={(e) => {
                             // Prevent textarea from losing focus
                             e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
                         }}
                     >
-                        <FileText className="w-3 h-3" />
-                        Template
+                        <FileText className="w-3.5 h-3.5" />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-48 p-2" align="start">

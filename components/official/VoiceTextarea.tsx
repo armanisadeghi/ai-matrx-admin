@@ -4,6 +4,9 @@
  * Textarea with built-in copy and voice input capabilities
  * Icons appear on hover or focus for a clean interface
  * 
+ * **Built-in Protection:** Automatically warns users before unmounting
+ * during active recording or transcription to prevent data loss.
+ * 
  * @official-component
  */
 
@@ -16,6 +19,16 @@ import { cn } from '@/lib/utils';
 import { useRecordAndTranscribe } from '@/features/audio/hooks';
 import { TranscriptionResult } from '@/features/audio/types';
 import { VoiceTroubleshootingModal } from '@/features/audio/components/VoiceTroubleshootingModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
 
 export interface VoiceTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -26,6 +39,8 @@ export interface VoiceTextareaProps extends React.TextareaHTMLAttributes<HTMLTex
   minHeight?: number;
   maxHeight?: number;
   wrapperClassName?: string;
+  onRequestClose?: () => void; // Called when it's safe to close/unmount (after user confirms or recording/transcription completes)
+  protectTranscription?: boolean; // If true, prevents unmounting during recording/transcription with a warning modal (default: true)
 }
 
 export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextareaProps>(
@@ -42,6 +57,8 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       value,
       onChange,
       disabled,
+      onRequestClose,
+      protectTranscription = true,
       ...props
     },
     ref
@@ -51,9 +68,11 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
     const [isHovered, setIsHovered] = useState(false);
     const [isAudioAvailable, setIsAudioAvailable] = useState(true);
     const [showTroubleshooting, setShowTroubleshooting] = useState(false);
+    const [showTranscriptionWarning, setShowTranscriptionWarning] = useState(false);
     const [lastError, setLastError] = useState<{ message: string; code: string } | null>(null);
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
+    const closeRequestedRef = useRef(false);
 
     // Check if audio is available
     useEffect(() => {
@@ -144,6 +163,33 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
       onError: handleTranscriptionError,
       autoTranscribe: true,
     });
+
+    // Handle close request - check if recording or transcribing and show warning if needed
+    const handleCloseRequest = useCallback(() => {
+      if (protectTranscription && (isRecording || isTranscribing)) {
+        // Show warning modal
+        closeRequestedRef.current = true;
+        setShowTranscriptionWarning(true);
+      } else {
+        // Safe to close immediately
+        onRequestClose?.();
+      }
+    }, [isRecording, isTranscribing, protectTranscription, onRequestClose]);
+
+    // Expose handleCloseRequest via ref so parent can call it
+    React.useImperativeHandle(ref, () => ({
+      ...textareaRef.current!,
+      requestClose: handleCloseRequest,
+      isTranscribing: () => isTranscribing,
+    }));
+
+    // Auto-close modal when recording and transcription complete
+    useEffect(() => {
+      if (!isRecording && !isTranscribing && closeRequestedRef.current && showTranscriptionWarning) {
+        // Recording and transcription completed - allow close now
+        closeRequestedRef.current = false;
+      }
+    }, [isRecording, isTranscribing, showTranscriptionWarning]);
 
     // Handle copy
     const handleCopy = async () => {
@@ -293,6 +339,77 @@ export const VoiceTextarea = React.forwardRef<HTMLTextAreaElement, VoiceTextarea
           error={lastError?.message}
           errorCode={lastError?.code}
         />
+
+        {/* Voice Input Protection Modal - Built-in protection for recording and transcription */}
+        <AlertDialog open={showTranscriptionWarning} onOpenChange={setShowTranscriptionWarning}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                {isRecording || isTranscribing ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                    <AlertDialogTitle>
+                      {isRecording ? "Recording in Progress" : "Transcription in Progress"}
+                    </AlertDialogTitle>
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-5 w-5 text-green-500" />
+                    <AlertDialogTitle>Voice Input Complete</AlertDialogTitle>
+                  </>
+                )}
+              </div>
+              <AlertDialogDescription>
+                {isRecording ? (
+                  <>
+                    Your voice is currently being recorded. 
+                    If you close now, the recording will be stopped and lost.
+                  </>
+                ) : isTranscribing ? (
+                  <>
+                    Your voice recording is currently being transcribed. 
+                    If you close now, the transcription will be lost.
+                  </>
+                ) : (
+                  <>
+                    Your voice input has been processed successfully! 
+                    You can now safely close this panel.
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              {isRecording || isTranscribing ? (
+                <>
+                  <AlertDialogCancel onClick={() => {
+                    setShowTranscriptionWarning(false);
+                    closeRequestedRef.current = false;
+                  }}>
+                    Cancel & Wait
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      setShowTranscriptionWarning(false);
+                      closeRequestedRef.current = false;
+                      onRequestClose?.();
+                    }}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isRecording ? "Stop Recording" : "End Transcription"}
+                  </AlertDialogAction>
+                </>
+              ) : (
+                <AlertDialogAction onClick={() => {
+                  setShowTranscriptionWarning(false);
+                  closeRequestedRef.current = false;
+                  onRequestClose?.();
+                }}>
+                  Close
+                </AlertDialogAction>
+              )}
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }

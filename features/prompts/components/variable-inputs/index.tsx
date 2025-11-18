@@ -25,6 +25,7 @@ interface VariableInputComponentProps {
   onChange: (value: string) => void;
   variableName: string;
   customComponent?: VariableCustomComponent;
+  onRequestClose?: () => void;
 }
 
 /**
@@ -34,7 +35,8 @@ export function VariableInputComponent({
   value, 
   onChange, 
   variableName,
-  customComponent 
+  customComponent,
+  onRequestClose
 }: VariableInputComponentProps) {
   const formattedName = formatText(variableName);
   
@@ -45,6 +47,7 @@ export function VariableInputComponent({
         value={value}
         onChange={onChange}
         variableName={formattedName}
+        onRequestClose={onRequestClose}
       />
     );
   }
@@ -65,7 +68,7 @@ export function VariableInputComponent({
       
     case 'radio':
       if (!customComponent.options || customComponent.options.length === 0) {
-        return <TextareaInput value={value} onChange={onChange} variableName={formattedName} />;
+        return <TextareaInput value={value} onChange={onChange} variableName={formattedName} onRequestClose={onRequestClose} />;
       }
       return (
         <RadioGroupInput
@@ -79,7 +82,7 @@ export function VariableInputComponent({
       
     case 'checkbox':
       if (!customComponent.options || customComponent.options.length === 0) {
-        return <TextareaInput value={value} onChange={onChange} variableName={formattedName} />;
+        return <TextareaInput value={value} onChange={onChange} variableName={formattedName} onRequestClose={onRequestClose} />;
       }
       return (
         <CheckboxGroupInput
@@ -93,7 +96,7 @@ export function VariableInputComponent({
       
     case 'select':
       if (!customComponent.options || customComponent.options.length === 0) {
-        return <TextareaInput value={value} onChange={onChange} variableName={formattedName} />;
+        return <TextareaInput value={value} onChange={onChange} variableName={formattedName} onRequestClose={onRequestClose} />;
       }
       return (
         <SelectInput
@@ -123,6 +126,7 @@ export function VariableInputComponent({
           value={value}
           onChange={onChange}
           variableName={formattedName}
+          onRequestClose={onRequestClose}
         />
       );
   }

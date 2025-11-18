@@ -7,6 +7,7 @@ export type MessageItem = { type: 'system'; index: -1 } | { type: 'message'; ind
 // Shared props interface used by both mobile and desktop components
 export interface PromptBuilderSharedProps {
     // Header props
+    promptId?: string; // For mode switcher
     promptName: string;
     onPromptNameChange: (value: string) => void;
     isDirty: boolean;

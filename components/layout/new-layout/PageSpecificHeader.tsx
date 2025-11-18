@@ -59,6 +59,7 @@ export function CockpitHeader({ cockpitControls }: CockpitHeaderProps) {
 }
 
 interface PromptHeaderProps {
+  promptId?: string;
   promptName: string;
   onPromptNameChange: (value: string) => void;
   isDirty: boolean;

@@ -11,6 +11,7 @@ import { PromptBuilderSharedProps } from "./types";
 export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
     const {
         // Header props
+        promptId,
         promptName,
         onPromptNameChange,
         isDirty,
@@ -114,6 +115,7 @@ export function PromptBuilderDesktop(props: PromptBuilderSharedProps) {
                 leftPanelMaxWidth={640}
                 header={
                     <PromptHeader
+                        promptId={promptId}
                         promptName={promptName}
                         onPromptNameChange={onPromptNameChange}
                         isDirty={isDirty}

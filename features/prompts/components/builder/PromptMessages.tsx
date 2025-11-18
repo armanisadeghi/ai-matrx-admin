@@ -1,5 +1,6 @@
 import React, { RefObject, useRef } from "react";
-import { Plus, X, Edit2, Maximize2 } from "lucide-react";
+import { Braces, X, Edit2, Maximize2, Eraser, FileText } from "lucide-react";
+import { VariableSelector } from "../VariableSelector";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,8 +9,9 @@ import { PromptMessage } from "@/features/prompts/types/core";
 import { HighlightedText } from "../HighlightedText";
 import { PromptEditorContextMenu } from "../PromptEditorContextMenu";
 import { PromptVariable } from "@/features/prompts/types/core";
-import { TemplateSelector } from "../../../content-templates/components/TemplateSelector";
+import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
 import { MessageRole } from "@/features/content-templates/types/content-templates-db";
+import { ResponsiveIconButtonGroup, IconButtonConfig } from "@/components/official/ResponsiveIconButtonGroup";
 
 interface PromptMessagesProps {
     // Messages
@@ -81,112 +83,123 @@ export function PromptMessages({
                                         </SelectContent>
                                     </Select>
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                                        <Popover
-                                            open={variablePopoverOpen === index}
-                                            onOpenChange={(open) => {
-                                                onVariablePopoverOpenChange(open ? index : null);
-                                            }}
-                                        >
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                                                    onMouseDown={(e) => {
-                                                        // Prevent textarea from losing focus
-                                                        e.preventDefault();
-                                                    }}
-                                                    onClick={() => {
-                                                        // Capture cursor position before opening popover
-                                                        const textarea = textareaRefs.current[index];
-                                                        if (textarea) {
-                                                            onCursorPositionChange({
-                                                                ...cursorPositions,
-                                                                [index]: textarea.selectionStart,
-                                                            });
-                                                        }
-                                                        
-                                                        // Ensure message is in edit mode
-                                                        if (!isEditing) {
-                                                            onEditingMessageIndexChange(index);
-                                                        }
-                                                    }}
-                                                >
-                                                    <Plus className="w-3 h-3 mr-1" />
-                                                    Variable
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-56 p-2" align="start">
-                                                <div className="space-y-1">
-                                                    {variableNames.length === 0 ? (
-                                                        <div className="text-xs text-muted-foreground px-2 py-2 italic">
-                                                            No variables defined
-                                                        </div>
-                                                    ) : (
-                                                        variableNames.map((variable) => (
-                                                            <Button
-                                                                key={variable}
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="w-full justify-start h-8 px-2 text-xs text-foreground hover:bg-accent"
-                                                                onMouseDown={(e) => {
-                                                                    // Prevent textarea from losing focus
-                                                                    e.preventDefault();
-                                                                }}
-                                                                onClick={() => {
+                                        <ResponsiveIconButtonGroup
+                                            buttons={[
+                                                {
+                                                    id: 'variable',
+                                                    icon: Braces,
+                                                    tooltip: 'Insert Variable',
+                                                    mobileLabel: 'Insert Variable',
+                                                    render: () => (
+                                                        <span 
+                                                            onMouseDown={(e) => {
+                                                                e.stopPropagation();
+                                                            }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                            }}
+                                                        >
+                                                            <VariableSelector
+                                                                variables={variableNames}
+                                                                onVariableSelected={(variable) => {
                                                                     onInsertVariable(index, variable);
-                                                                    onVariablePopoverOpenChange(null);
                                                                 }}
-                                                            >
-                                                                <span className="font-mono">{variable}</span>
-                                                            </Button>
-                                                        ))
-                                                    )}
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                        <TemplateSelector
-                                            role={message.role as MessageRole}
-                                            currentContent={message.content}
-                                            onTemplateSelected={(content) => onMessageContentChange(index, content)}
-                                            onSaveTemplate={() => {}}
-                                            messageIndex={index}
+                                                                onBeforeOpen={() => {
+                                                                    const textarea = textareaRefs.current[index];
+                                                                    if (textarea) {
+                                                                        onCursorPositionChange({
+                                                                            ...cursorPositions,
+                                                                            [index]: textarea.selectionStart,
+                                                                        });
+                                                                    }
+                                                                    if (!isEditing) {
+                                                                        onEditingMessageIndexChange(index);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </span>
+                                                    ),
+                                                },
+                                                {
+                                                    id: 'template',
+                                                    icon: FileText,
+                                                    tooltip: 'Templates',
+                                                    mobileLabel: 'Templates',
+                                                    render: (isMobile) => {
+                                                        return (
+                                                            <TemplateSelector
+                                                                role={message.role as MessageRole}
+                                                                currentContent={message.content}
+                                                                onTemplateSelected={(content) => onMessageContentChange(index, content)}
+                                                                onSaveTemplate={() => {}}
+                                                                messageIndex={index}
+                                                            />
+                                                        );
+                                                    },
+                                                },
+                                                {
+                                                    id: 'fullscreen',
+                                                    icon: Maximize2,
+                                                    tooltip: 'Open in full screen editor',
+                                                    mobileLabel: 'Full Screen Editor',
+                                                    onClick: (e) => {
+                                                        e?.stopPropagation();
+                                                        onOpenFullScreenEditor?.(index);
+                                                    },
+                                                    onMouseDown: (e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                    },
+                                                    hidden: !onOpenFullScreenEditor,
+                                                },
+                                                {
+                                                    id: 'edit',
+                                                    icon: Edit2,
+                                                    tooltip: isEditing ? 'Stop editing' : 'Edit',
+                                                    mobileLabel: isEditing ? 'Stop Editing' : 'Edit',
+                                                    onClick: (e) => {
+                                                        e?.stopPropagation();
+                                                        onEditingMessageIndexChange(isEditing ? null : index);
+                                                    },
+                                                    onMouseDown: (e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                    },
+                                                },
+                                                {
+                                                    id: 'clear',
+                                                    icon: Eraser,
+                                                    tooltip: 'Clear message',
+                                                    mobileLabel: 'Clear Message',
+                                                    onClick: (e) => {
+                                                        e?.stopPropagation();
+                                                        onClearMessage(index);
+                                                    },
+                                                    onMouseDown: (e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                    },
+                                                },
+                                                {
+                                                    id: 'delete',
+                                                    icon: X,
+                                                    tooltip: 'Delete message',
+                                                    mobileLabel: 'Delete Message',
+                                                    onClick: (e) => {
+                                                        e?.stopPropagation();
+                                                        onDeleteMessage(index);
+                                                    },
+                                                    onMouseDown: (e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                    },
+                                                    iconClassName: 'text-destructive',
+                                                    className: 'hover:text-destructive',
+                                                },
+                                            ]}
+                                            sheetTitle={`${message.role} Message Actions`}
+                                            size="sm"
                                         />
-                                        {onOpenFullScreenEditor && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
-                                                onClick={() => onOpenFullScreenEditor(index)}
-                                                title="Open in full screen editor"
-                                            >
-                                                <Maximize2 className="w-3.5 h-3.5" />
-                                            </Button>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                                            onClick={() => onEditingMessageIndexChange(isEditing ? null : index)}
-                                        >
-                                            <Edit2 className="w-3.5 h-3.5" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-7 text-xs text-muted-foreground hover:text-foreground"
-                                            onClick={() => onClearMessage(index)}
-                                        >
-                                            Clear
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                                            onClick={() => onDeleteMessage(index)}
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </Button>
                                     </div>
                                 </div>
 
@@ -203,8 +216,12 @@ export function PromptMessages({
                                             <textarea
                                                 ref={(el) => {
                                                     textareaRefs.current[index] = el;
-                                                    // Focus with preventScroll when textarea mounts
+                                                    // ⚠️ CRITICAL: preventScroll is required - see ../SCROLL_FIX.md
                                                     if (el) {
+                                                        // Set correct height BEFORE focusing to prevent glitch
+                                                        el.style.height = "auto";
+                                                        el.style.height = el.scrollHeight + "px";
+                                                        
                                                         setTimeout(() => {
                                                             el.focus({ preventScroll: true });
                                                         }, 0);
@@ -230,18 +247,12 @@ export function PromptMessages({
                                                     contextMenuOpenRef.current = true;
                                                 }}
                                                 onFocus={(e) => {
-                                                    // Auto-resize textarea
-                                                    e.target.style.height = "auto";
-                                                    e.target.style.height = e.target.scrollHeight + "px";
-                                                    
-                                                    // Move cursor to end
-                                                    const length = e.target.value.length;
-                                                    e.target.setSelectionRange(length, length);
-                                                    
-                                                    // Track cursor position
+                                                    // Note: Auto-resize handled in ref callback to prevent glitch
+                                                    // Note: Cursor position set by click handler (see SCROLL_FIX.md)
+                                                    // Only track the current cursor position on focus
                                                     onCursorPositionChange({
                                                         ...cursorPositions,
-                                                        [index]: length,
+                                                        [index]: e.target.selectionStart,
                                                     });
                                                 }}
                                                 placeholder={message.role === "assistant" ? "Enter assistant message..." : "Message content..."}
@@ -265,17 +276,40 @@ export function PromptMessages({
                                     ) : (
                                         <div
                                             className="text-xs text-muted-foreground whitespace-pre-wrap cursor-text min-h-[80px] leading-normal"
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                                // ⚠️ CRITICAL: DO NOT MODIFY THIS CLICK HANDLER WITHOUT READING ../SCROLL_FIX.md
+                                                // This prevents browser auto-scroll when transitioning to edit mode.
+                                                // Removing or modifying will break scroll position preservation.
+                                                
                                                 const scrollContainer = document.querySelector('.scrollbar-thin') as HTMLElement;
                                                 const savedScrollPosition = scrollContainer?.scrollTop || 0;
                                                 
+                                                // Calculate approximate cursor position from click
+                                                const target = e.target as HTMLElement;
+                                                const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+                                                let clickPosition = 0;
+                                                
+                                                if (range) {
+                                                    // Get text content up to the click point
+                                                    const preCaretRange = range.cloneRange();
+                                                    preCaretRange.selectNodeContents(target);
+                                                    preCaretRange.setEnd(range.endContainer, range.endOffset);
+                                                    clickPosition = preCaretRange.toString().length;
+                                                }
+                                                
                                                 onEditingMessageIndexChange(index);
                                                 
-                                                // Restore scroll position after React renders the textarea
+                                                // CRITICAL: Double requestAnimationFrame waits for React to render textarea
                                                 requestAnimationFrame(() => {
                                                     requestAnimationFrame(() => {
                                                         if (scrollContainer) {
                                                             scrollContainer.scrollTop = savedScrollPosition;
+                                                        }
+                                                        
+                                                        // Set cursor position in the textarea
+                                                        const textarea = textareaRefs.current[index];
+                                                        if (textarea && clickPosition > 0) {
+                                                            textarea.setSelectionRange(clickPosition, clickPosition);
                                                         }
                                                     });
                                                 });

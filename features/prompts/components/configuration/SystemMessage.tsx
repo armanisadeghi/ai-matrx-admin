@@ -1,5 +1,6 @@
 import React, { RefObject, useRef, useEffect, useState } from "react";
-import { Maximize2, Plus, Edit2, Wand2 } from "lucide-react";
+import { Maximize2, Braces, Edit2, Wand2, Eraser, FileText } from "lucide-react";
+import { VariableSelector } from "../VariableSelector";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -8,6 +9,7 @@ import { HighlightedText } from "../HighlightedText";
 import { PromptVariable } from "@/features/prompts/types/core";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
 import { TemplateSelector } from "../../../content-templates/components/TemplateSelector";
+import { ResponsiveIconButtonGroup, IconButtonConfig } from "@/components/official/ResponsiveIconButtonGroup";
 
 interface SystemMessageProps {
     developerMessage: string;
@@ -58,6 +60,130 @@ export function SystemMessage({
     const handleOptimizedAccept = (optimizedText: string) => {
         onDeveloperMessageChange(optimizedText);
     };
+
+    // Configure buttons for ResponsiveIconButtonGroup
+    const buttons: IconButtonConfig[] = [
+        {
+            id: 'variable',
+            icon: Braces,
+            tooltip: 'Insert Variable',
+            mobileLabel: 'Insert Variable',
+            hidden: !hasVariableSupport,
+            render: () => {
+                if (!hasVariableSupport) return null;
+                
+                return (
+                    <span 
+                        onMouseDown={(e) => {
+                            e.stopPropagation();
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                        }}
+                    >
+                        <VariableSelector
+                            variables={variableNames}
+                            onVariableSelected={(variable) => {
+                                if (onInsertVariable) {
+                                    onInsertVariable(variable);
+                                }
+                            }}
+                            onBeforeOpen={() => {
+                                const textarea = textareaRefs?.current[systemMessageIndex];
+                                if (textarea && onCursorPositionChange) {
+                                    onCursorPositionChange({
+                                        ...cursorPositions,
+                                        [systemMessageIndex]: textarea.selectionStart,
+                                    });
+                                }
+                                if (!isEditing && onIsEditingChange) {
+                                    onIsEditingChange(true);
+                                }
+                            }}
+                        />
+                    </span>
+                );
+            },
+        },
+        {
+            id: 'template',
+            icon: FileText,
+            tooltip: 'Templates',
+            mobileLabel: 'Templates',
+            render: (isMobile) => {
+                // On desktop, use icon-only version; on mobile, show in menu
+                return (
+                    <TemplateSelector
+                        role="system"
+                        currentContent={developerMessage}
+                        onTemplateSelected={(content) => onDeveloperMessageChange(content)}
+                        onSaveTemplate={() => {}}
+                        messageIndex={systemMessageIndex}
+                    />
+                );
+            },
+        },
+        {
+            id: 'optimize',
+            icon: Wand2,
+            tooltip: 'Optimize with AI',
+            mobileLabel: 'Optimize with AI',
+            onClick: (e) => {
+                e?.stopPropagation();
+                setIsOptimizerOpen(true);
+            },
+            onMouseDown: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            },
+            iconClassName: 'text-purple-400',
+            className: 'hover:text-purple-300',
+        },
+        {
+            id: 'fullscreen',
+            icon: Maximize2,
+            tooltip: 'Open in full screen editor',
+            mobileLabel: 'Full Screen Editor',
+            onClick: (e) => {
+                e?.stopPropagation();
+                onOpenFullScreenEditor?.();
+            },
+            onMouseDown: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            },
+            hidden: !onOpenFullScreenEditor,
+        },
+        {
+            id: 'edit',
+            icon: Edit2,
+            tooltip: isEditing ? 'Stop editing' : 'Edit',
+            mobileLabel: isEditing ? 'Stop Editing' : 'Edit',
+            onClick: (e) => {
+                e?.stopPropagation();
+                onIsEditingChange?.(!isEditing);
+            },
+            onMouseDown: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            },
+            hidden: !onIsEditingChange,
+        },
+        {
+            id: 'clear',
+            icon: Eraser,
+            tooltip: 'Clear message',
+            mobileLabel: 'Clear Message',
+            onClick: (e) => {
+                e?.stopPropagation();
+                onDeveloperMessageClear();
+            },
+            onMouseDown: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            },
+        },
+    ];
     
     return (
         <div className="space-y-3">
@@ -65,118 +191,12 @@ export function SystemMessage({
                 {/* Header */}
                 <div className="flex items-center justify-between px-2 py-1">
                     <Label className="text-xs text-gray-600 dark:text-gray-400">System</Label>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                        {hasVariableSupport && (
-                            <Popover
-                                open={variablePopoverOpen}
-                                onOpenChange={onVariablePopoverOpenChange}
-                            >
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-300 dark:hover:text-gray-300"
-                                        onMouseDown={(e) => {
-                                            // Prevent textarea from losing focus
-                                            e.preventDefault();
-                                        }}
-                                        onClick={() => {
-                                            // Capture cursor position before opening popover
-                                            const textarea = textareaRefs?.current[systemMessageIndex];
-                                            if (textarea && onCursorPositionChange) {
-                                                onCursorPositionChange({
-                                                    ...cursorPositions,
-                                                    [systemMessageIndex]: textarea.selectionStart,
-                                                });
-                                            }
-                                            
-                                            // Ensure message is in edit mode
-                                            if (!isEditing && onIsEditingChange) {
-                                                onIsEditingChange(true);
-                                            }
-                                        }}
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                        Variable
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-56 p-2" align="start">
-                                    <div className="space-y-1">
-                                        {variableNames.length === 0 ? (
-                                            <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-2 italic">
-                                                No variables defined
-                                            </div>
-                                        ) : (
-                                            variableNames.map((variable) => (
-                                                <Button
-                                                    key={variable}
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="w-full justify-start h-8 px-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                    onMouseDown={(e) => {
-                                                        // Prevent textarea from losing focus
-                                                        e.preventDefault();
-                                                    }}
-                                                    onClick={() => {
-                                                        if (onInsertVariable && onVariablePopoverOpenChange) {
-                                                            onInsertVariable(variable);
-                                                            onVariablePopoverOpenChange(false);
-                                                        }
-                                                    }}
-                                                >
-                                                    <span className="font-mono">{variable}</span>
-                                                </Button>
-                                            ))
-                                        )}
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-                        )}
-                        <TemplateSelector
-                            role="system"
-                            currentContent={developerMessage}
-                            onTemplateSelected={(content) => onDeveloperMessageChange(content)}
-                            onSaveTemplate={() => {}}
-                            messageIndex={systemMessageIndex}
+                    <div className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                        <ResponsiveIconButtonGroup
+                            buttons={buttons}
+                            sheetTitle="System Message Actions"
+                            size="sm"
                         />
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-purple-400 hover:text-purple-300"
-                            onClick={() => setIsOptimizerOpen(true)}
-                            title="Optimize with AI"
-                        >
-                            <Wand2 className="w-3.5 h-3.5" />
-                        </Button>
-                        {onOpenFullScreenEditor && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-gray-400 hover:text-blue-400"
-                                onClick={onOpenFullScreenEditor}
-                                title="Open in full screen editor"
-                            >
-                                <Maximize2 className="w-3.5 h-3.5" />
-                            </Button>
-                        )}
-                        {onIsEditingChange && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-gray-400 hover:text-gray-300"
-                                onClick={() => onIsEditingChange(!isEditing)}
-                            >
-                                <Edit2 className="w-3.5 h-3.5" />
-                            </Button>
-                        )}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                            onClick={onDeveloperMessageClear}
-                        >
-                            Clear
-                        </Button>
                     </div>
                 </div>
 
@@ -195,8 +215,12 @@ export function SystemMessage({
                                     if (textareaRefs?.current) {
                                         textareaRefs.current[systemMessageIndex] = el;
                                     }
-                                    // Focus with preventScroll when textarea mounts
+                                    // ⚠️ CRITICAL: preventScroll is required - see ../SCROLL_FIX.md
                                     if (el) {
+                                        // Set correct height BEFORE focusing to prevent glitch
+                                        el.style.height = "auto";
+                                        el.style.height = el.scrollHeight + "px";
+                                        
                                         setTimeout(() => {
                                             el.focus({ preventScroll: true });
                                         }, 0);
@@ -224,19 +248,13 @@ export function SystemMessage({
                                     contextMenuOpenRef.current = true;
                                 }}
                                 onFocus={(e) => {
-                                    // Auto-resize textarea
-                                    e.target.style.height = "auto";
-                                    e.target.style.height = e.target.scrollHeight + "px";
-                                    
-                                    // Move cursor to end
-                                    const length = e.target.value.length;
-                                    e.target.setSelectionRange(length, length);
-                                    
-                                    // Track cursor position
+                                    // Note: Auto-resize handled in ref callback to prevent glitch
+                                    // Note: Cursor position set by click handler (see SCROLL_FIX.md)
+                                    // Only track the current cursor position on focus
                                     if (onCursorPositionChange) {
                                         onCursorPositionChange({
                                             ...cursorPositions,
-                                            [systemMessageIndex]: length,
+                                            [systemMessageIndex]: e.target.selectionStart,
                                         });
                                     }
                                 }}
@@ -262,16 +280,39 @@ export function SystemMessage({
                         <div
                             className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text leading-normal"
                             onClick={(e) => {
+                                // ⚠️ CRITICAL: DO NOT MODIFY THIS CLICK HANDLER WITHOUT READING ../SCROLL_FIX.md
+                                // This prevents browser auto-scroll when transitioning to edit mode.
+                                // Removing or modifying will break scroll position preservation.
+                                
                                 const scrollContainer = document.querySelector('.scrollbar-thin') as HTMLElement;
                                 const savedScrollPosition = scrollContainer?.scrollTop || 0;
                                 
+                                // Calculate approximate cursor position from click
+                                const target = e.target as HTMLElement;
+                                const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+                                let clickPosition = 0;
+                                
+                                if (range) {
+                                    // Get text content up to the click point
+                                    const preCaretRange = range.cloneRange();
+                                    preCaretRange.selectNodeContents(target);
+                                    preCaretRange.setEnd(range.endContainer, range.endOffset);
+                                    clickPosition = preCaretRange.toString().length;
+                                }
+                                
                                 onIsEditingChange && onIsEditingChange(true);
                                 
-                                // Restore scroll position after React renders the textarea
+                                // CRITICAL: Double requestAnimationFrame waits for React to render textarea
                                 requestAnimationFrame(() => {
                                     requestAnimationFrame(() => {
                                         if (scrollContainer) {
                                             scrollContainer.scrollTop = savedScrollPosition;
+                                        }
+                                        
+                                        // Set cursor position in the textarea
+                                        const textarea = textareaRefs?.current?.[systemMessageIndex];
+                                        if (textarea && clickPosition > 0) {
+                                            textarea.setSelectionRange(clickPosition, clickPosition);
                                         }
                                     });
                                 });

@@ -1,11 +1,12 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
 You are an expert React 19, Next.js 15/16, Tailwind CSS and TypeScript developer specializing in enterprise-scale application development. You build high-performance, modern, scalable code following industry best practices.
 
 # AI Matrx Development Guidelines
 
 **Stack:** React 19, Next.js 15/16, Tailwind CSS, TypeScript, Redux (@/lib/redux/store.ts), Supabase (@/utils/supabase/client.ts)
+**Lead Developer:** Arman (Expert in expert React 19, Next.js 15/16, Tailwind CSS, TypeScript, PostgreSQL and Python)
 
 ## File Organization
 
@@ -94,3 +95,21 @@ For clickable cards/routes:
 8. Document only after testing confirms functionality
 
 Focus on maintainability, readability, and established patterns.
+
+# Task Execution Protocol
+
+## Workflow
+
+**Simple requests:** Execute immediately.
+
+**Complex requests (multiple parts):** Follow this structure:
+
+1. **Understand the goal** - What does Arman actually need?
+2. **Review relevant code** - Understand the current implementation
+3. **Assess requirements** - Do you have everything needed?
+   - If unclear: Ask **concise, direct questions** that impact your approach
+   - Don't ask questions you can answer yourself
+4. **Create task list** - Full breakdown to achieve the objective
+   - FINAL task: "Generate ONE .md file for documentation" (singular, not multiple)
+5. **Execute tasks** - Work through until complete
+6. **Documentation** - If needed before completion, maintain ONE SINGLE document and keep it current

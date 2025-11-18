@@ -137,6 +137,14 @@ export const componentList: ComponentEntry[] = [
     tags: ['icon', 'tooltip', 'action', 'clickable']
   },
   {
+    id: 'responsive-icon-button-group',
+    name: 'Responsive Icon Button Group',
+    path: 'components/official/ResponsiveIconButtonGroup.tsx',
+    description: 'Responsive button group that adapts between desktop (icon buttons with tooltips) and mobile (iOS-style sheet menu)',
+    categories: ['buttons', 'navigation', 'interactive'],
+    tags: ['icon', 'button', 'group', 'toolbar', 'responsive', 'mobile', 'tooltip', 'menu']
+  },
+  {
     id: 'text-icon-button',
     name: 'Text Icon Button With Tooltip',
     path: 'components/official/TextIconButton.tsx',

@@ -265,7 +265,7 @@ export function PromptInput({
                                                     </div>
                                                 </PopoverTrigger>
                                                 <PopoverContent 
-                                                    className="w-[500px] max-h-[500px] p-4 border-gray-300 dark:border-gray-700 overflow-y-auto scrollbar-thin" 
+                                                    className="w-[500px] max-h-[500px] p-2 border-gray-300 dark:border-gray-700 overflow-y-auto scrollbar-thin" 
                                                     align="center"
                                                     side="top"
                                                     sideOffset={8}
@@ -275,6 +275,7 @@ export function PromptInput({
                                                         onChange={(value) => onVariableValueChange(variable.name, value)}
                                                         variableName={variable.name}
                                                         customComponent={variable.customComponent}
+                                                        onRequestClose={() => onExpandedVariableChange(null)}
                                                     />
                                                 </PopoverContent>
                                             </Popover>
