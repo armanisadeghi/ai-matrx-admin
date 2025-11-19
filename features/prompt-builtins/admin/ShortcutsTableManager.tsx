@@ -57,6 +57,7 @@ import {
   Loader2,
   Zap,
   FileText,
+  Copy,
 } from 'lucide-react';
 import {
   ShortcutCategory,
@@ -78,6 +79,7 @@ import { CategorySelector } from '../components/CategorySelector';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
 import { SelectBuiltinForShortcutModal } from '../components/SelectBuiltinForShortcutModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
+import { DuplicateShortcutModal } from '../components/DuplicateShortcutModal';
 import { getIconComponent } from '@/components/official/IconResolver';
 import {
   DropdownMenu,
@@ -145,6 +147,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   const [selectingPromptFor, setSelectingPromptFor] = useState<ShortcutWithRelations | null>(null);
   const [selectingBuiltinFor, setSelectingBuiltinFor] = useState<ShortcutWithRelations | null>(null);
   const [viewingBuiltinId, setViewingBuiltinId] = useState<string | null>(null);
+  const [duplicatingShortcut, setDuplicatingShortcut] = useState<ShortcutWithRelations | null>(null);
   
   // Confirmation dialog states
   const [deleteConfirmShortcut, setDeleteConfirmShortcut] = useState<{ id: string; label: string } | null>(null);
@@ -506,7 +509,7 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
             />
 
             <Select value={placementFilter} onValueChange={setPlacementFilter}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -850,6 +853,18 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => setDuplicatingShortcut(shortcut)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Duplicate</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => handleToggleActive(shortcut.id, shortcut.is_active)}
                               >
                                 {shortcut.is_active ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
@@ -1002,6 +1017,20 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Duplicate Shortcut Modal */}
+        {duplicatingShortcut && (
+          <DuplicateShortcutModal
+            isOpen={true}
+            onClose={() => setDuplicatingShortcut(null)}
+            onSuccess={async () => {
+              setDuplicatingShortcut(null);
+              await loadData();
+            }}
+            shortcut={duplicatingShortcut}
+            categories={categories}
+          />
+        )}
       </div>
     </TooltipProvider>
   );

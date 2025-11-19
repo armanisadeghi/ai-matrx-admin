@@ -31,10 +31,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Save, X, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Save, X, Trash2, Loader2, AlertCircle, Copy } from 'lucide-react';
 import { ShortcutFormFields } from './ShortcutFormFields';
 import { SelectPromptForBuiltinModal } from '../admin/SelectPromptForBuiltinModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
+import { DuplicateShortcutModal } from './DuplicateShortcutModal';
 import {
   createPromptShortcut,
   updatePromptShortcut,
@@ -88,6 +89,7 @@ export function ShortcutEditModal({
   // Confirmation dialog states
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
 
   // Initialize form data
   useEffect(() => {
@@ -280,15 +282,26 @@ export function ShortcutEditModal({
           <div className="flex items-center justify-between px-4 pb-4 pt-3 border-t">
             <div className="flex gap-2">
               {!isCreating && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={isProcessing}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowDuplicateModal(true)}
+                    disabled={isProcessing}
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Duplicate
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={isProcessing}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </>
               )}
             </div>
 
@@ -417,6 +430,20 @@ export function ShortcutEditModal({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Duplicate Shortcut Modal */}
+      {!isCreating && shortcut && (
+        <DuplicateShortcutModal
+          isOpen={showDuplicateModal}
+          onClose={() => setShowDuplicateModal(false)}
+          onSuccess={() => {
+            setShowDuplicateModal(false);
+            onSuccess(); // Reload data in parent
+          }}
+          shortcut={shortcut}
+          categories={categories}
+        />
+      )}
     </>
   );
 }

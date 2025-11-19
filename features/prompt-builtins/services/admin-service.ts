@@ -538,6 +538,43 @@ export async function createPromptShortcut(input: CreatePromptShortcutInput): Pr
   return data as PromptShortcut;
 }
 
+/**
+ * Duplicate an existing shortcut with a new category
+ * Copies all fields except id, created_at, updated_at
+ */
+export async function duplicatePromptShortcut(
+  shortcutId: string,
+  newCategoryId: string
+): Promise<PromptShortcut> {
+  // First, fetch the existing shortcut
+  const existingShortcut = await getPromptShortcutById(shortcutId);
+  
+  if (!existingShortcut) {
+    throw new Error('Shortcut not found');
+  }
+
+  // Create a new shortcut with all the same fields except the category
+  const duplicateInput: CreatePromptShortcutInput = {
+    prompt_builtin_id: existingShortcut.prompt_builtin_id,
+    category_id: newCategoryId,
+    label: existingShortcut.label,
+    description: existingShortcut.description,
+    icon_name: existingShortcut.icon_name,
+    keyboard_shortcut: existingShortcut.keyboard_shortcut,
+    sort_order: existingShortcut.sort_order,
+    scope_mappings: existingShortcut.scope_mappings,
+    available_scopes: existingShortcut.available_scopes,
+    result_display: existingShortcut.result_display,
+    auto_run: existingShortcut.auto_run,
+    allow_chat: existingShortcut.allow_chat,
+    show_variables: existingShortcut.show_variables,
+    apply_variables: existingShortcut.apply_variables,
+    is_active: existingShortcut.is_active,
+  };
+
+  return createPromptShortcut(duplicateInput);
+}
+
 export async function updatePromptShortcut(input: UpdatePromptShortcutInput): Promise<PromptShortcut> {
   const supabase = getClient();
   const updateData: any = {

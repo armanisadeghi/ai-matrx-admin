@@ -350,7 +350,7 @@ export function ShortcutCategoriesManager({ className }: ShortcutCategoriesManag
             />
 
             <Select value={placementFilter} onValueChange={setPlacementFilter}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
                 <SelectContent>

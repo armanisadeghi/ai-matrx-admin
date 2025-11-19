@@ -405,8 +405,15 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete builtin');
+        let errorMessage = 'Failed to delete builtin';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          // Response is not JSON, use status text or default message
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       toast({ title: 'Success', description: 'Prompt builtin deleted' });

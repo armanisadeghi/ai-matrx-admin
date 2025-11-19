@@ -77,6 +77,7 @@ import { PromptSettingsModal } from '@/features/prompts/components/PromptSetting
 import { ShortcutEditModal } from '../components/ShortcutEditModal';
 import { CategoryFormModal } from '../components/CategoryFormModal';
 import { ContentBlockEditModal } from '../components/ContentBlockEditModal';
+import { DuplicateShortcutModal } from '../components/DuplicateShortcutModal';
 import { 
   CategoryFormFields, 
   CategoryFormData,
@@ -139,6 +140,10 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   // Content block edit modal state
   const [isContentBlockEditModalOpen, setIsContentBlockEditModalOpen] = useState(false);
   const [editingContentBlock, setEditingContentBlock] = useState<(ContentBlockDB & { category?: ShortcutCategory }) | null>(null);
+  
+  // Duplicate shortcut modal state
+  const [isDuplicateShortcutModalOpen, setIsDuplicateShortcutModalOpen] = useState(false);
+  const [duplicatingShortcut, setDuplicatingShortcut] = useState<(PromptShortcut & { category?: ShortcutCategory; builtin?: PromptBuiltin }) | null>(null);
   
   // Prompt settings modal state
   const [isPromptSettingsOpen, setIsPromptSettingsOpen] = useState(false);
@@ -1743,6 +1748,24 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Duplicate Shortcut Modal */}
+      {duplicatingShortcut && (
+        <DuplicateShortcutModal
+          isOpen={isDuplicateShortcutModalOpen}
+          onClose={() => {
+            setIsDuplicateShortcutModalOpen(false);
+            setDuplicatingShortcut(null);
+          }}
+          onSuccess={async () => {
+            setIsDuplicateShortcutModalOpen(false);
+            setDuplicatingShortcut(null);
+            await loadData();
+          }}
+          shortcut={duplicatingShortcut}
+          categories={categories}
+        />
+      )}
     </div>
   );
 }
