@@ -10,13 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Folder, AlertCircle } from 'lucide-react';
 import IconInputWithValidation from '@/components/official/IconInputWithValidation';
 import { ShortcutCategory, CreateShortcutCategoryInput, UpdateShortcutCategoryInput } from '../types';
-import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
+import { PLACEMENT_TYPES, getPlacementTypeMeta, PlacementType } from '../constants';
 import { CategorySelector } from './CategorySelector';
 import { CategoryColorPicker } from './CategoryColorPicker';
 
 export interface CategoryFormData {
   label: string;
-  placement_type: string;
+  placement_type: PlacementType;
   parent_category_id: string | null;
   description: string;
   icon_name: string;

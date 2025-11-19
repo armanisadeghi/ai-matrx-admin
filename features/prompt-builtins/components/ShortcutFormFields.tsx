@@ -23,6 +23,7 @@ import { ScopeMappingEditor } from './ScopeMappingEditor';
 import type { ShortcutCategory, CreatePromptShortcutInput, PromptBuiltin } from '../types/core';
 import type { ResultDisplay } from '../types/execution-modes';
 import type { PromptVariable } from '@/features/prompts/types/core';
+import type { PlacementType } from '../constants';
 
 interface ShortcutFormFieldsProps {
   formData: CreatePromptShortcutInput;
@@ -31,8 +32,8 @@ interface ShortcutFormFieldsProps {
   builtins?: PromptBuiltin[];
   builtinVariables?: PromptVariable[];
   compact?: boolean;
-  excludedPlacementTypes?: string[];
-  allowedPlacementTypes?: string[];
+  excludedPlacementTypes?: PlacementType[];
+  allowedPlacementTypes?: PlacementType[];
   mode?: 'from-builtin' | 'standalone'; // from-builtin = can't change builtin, standalone = full control
   onOpenBuiltinEditor?: (builtinId: string) => void;
   onOpenCreateBuiltin?: () => void;

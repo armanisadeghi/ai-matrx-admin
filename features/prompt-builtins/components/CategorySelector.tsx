@@ -12,7 +12,7 @@
 
 import React, { useMemo } from 'react';
 import { ShortcutCategory } from '../types/core';
-import { getPlacementTypeMeta } from '../constants';
+import { getPlacementTypeMeta, PlacementType } from '../constants';
 import { getIconComponent } from '@/components/official/IconResolver';
 import {
   Select,
@@ -35,9 +35,9 @@ interface CategorySelectorProps {
   disabled?: boolean;
   compact?: boolean;
   /** Array of allowed placement types. If provided, only these types will be shown */
-  allowedPlacementTypes?: string[];
+  allowedPlacementTypes?: PlacementType[];
   /** Array of excluded placement types. If provided, these types will be hidden */
-  excludedPlacementTypes?: string[];
+  excludedPlacementTypes?: PlacementType[];
 }
 
 interface CategoryGroup {

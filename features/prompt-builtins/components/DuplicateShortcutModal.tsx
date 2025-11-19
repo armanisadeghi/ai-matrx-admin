@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Copy, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
 import { CategorySelector } from './CategorySelector';
-import { getPlacementTypeMeta, PLACEMENT_TYPES } from '../constants';
+import { getPlacementTypeMeta, PLACEMENT_TYPES, PlacementType } from '../constants';
 import { getIconComponent } from '@/components/official/IconResolver';
 import type { PromptShortcut, ShortcutCategory } from '../types/core';
 import { duplicatePromptShortcut } from '../services/admin-service';
@@ -203,7 +203,7 @@ export function DuplicateShortcutModal({
               value={selectedCategory}
               onValueChange={setSelectedCategory}
               placeholder={selectedPlacement ? "Choose a category..." : "Select placement type first"}
-              allowedPlacementTypes={selectedPlacement ? [selectedPlacement] : undefined}
+              allowedPlacementTypes={selectedPlacement ? [selectedPlacement as PlacementType] : undefined}
               disabled={!selectedPlacement}
             />
             {selectedPlacement && categories.filter(c => c.placement_type === selectedPlacement).length === 0 && (

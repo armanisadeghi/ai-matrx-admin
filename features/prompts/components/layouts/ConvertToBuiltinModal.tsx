@@ -443,45 +443,46 @@ export function ConvertToBuiltinModal({
         );
 
       case 'builtin-choice':
+        const hasExistingBuiltins = existingBuiltins.length > 0;
+        
         return (
           <div className="space-y-3">
-            {existingBuiltins.length > 0 && (
-              <>
-                <RadioGroup value={builtinAction} onValueChange={(v) => setBuiltinAction(v as 'update' | 'create-new')}>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 p-2 rounded border bg-card">
-                      <RadioGroupItem value="update" id="update" />
-                      <Label htmlFor="update" className="font-medium cursor-pointer flex-1">Update Existing Builtin</Label>
-                    </div>
+            <RadioGroup value={builtinAction} onValueChange={(v) => setBuiltinAction(v as 'update' | 'create-new')}>
+              <div className="space-y-2">
+                <div className={`flex items-center space-x-2 p-2 rounded border ${hasExistingBuiltins ? 'bg-card' : 'bg-muted/50 opacity-60'}`}>
+                  <RadioGroupItem value="update" id="update" disabled={!hasExistingBuiltins} />
+                  <Label htmlFor="update" className={`font-medium flex-1 ${hasExistingBuiltins ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+                    Update Existing Builtin
+                    {!hasExistingBuiltins && <span className="text-xs text-muted-foreground ml-2">(none found)</span>}
+                  </Label>
+                </div>
 
-                    <div className="flex items-center space-x-2 p-2 rounded border bg-card">
-                      <RadioGroupItem value="create-new" id="create-new" />
-                      <Label htmlFor="create-new" className="font-medium cursor-pointer flex-1">Create New Builtin</Label>
-                    </div>
-                  </div>
-                </RadioGroup>
+                <div className="flex items-center space-x-2 p-2 rounded border bg-card">
+                  <RadioGroupItem value="create-new" id="create-new" />
+                  <Label htmlFor="create-new" className="font-medium cursor-pointer flex-1">Create New Builtin</Label>
+                </div>
+              </div>
+            </RadioGroup>
 
-                {builtinAction === 'update' && (
-                  <div className="space-y-1.5">
-                    <Label className="text-sm">Select Builtin</Label>
-                    <Select 
-                      value={selectedBuiltin?.id} 
-                      onValueChange={(id) => setSelectedBuiltin(existingBuiltins.find(b => b.id === id) || null)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {existingBuiltins.map(builtin => (
-                          <SelectItem key={builtin.id} value={builtin.id}>
-                            {builtin.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </>
+            {builtinAction === 'update' && hasExistingBuiltins && (
+              <div className="space-y-1.5">
+                <Label className="text-sm">Select Builtin</Label>
+                <Select 
+                  value={selectedBuiltin?.id} 
+                  onValueChange={(id) => setSelectedBuiltin(existingBuiltins.find(b => b.id === id) || null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingBuiltins.map(builtin => (
+                      <SelectItem key={builtin.id} value={builtin.id}>
+                        {builtin.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
 
             {error && (
@@ -952,7 +953,9 @@ export function ConvertToBuiltinModal({
       case 'checking':
         return 'Checking for existing builtins...';
       case 'builtin-choice':
-        return existingBuiltins.length > 0 ? 'Update existing or create new builtin' : 'Creating new builtin';
+        return existingBuiltins.length > 0 
+          ? `Found ${existingBuiltins.length} existing builtin${existingBuiltins.length > 1 ? 's' : ''} - update or create new` 
+          : 'No existing builtins found - creating new';
       case 'variable-comparison':
         return 'Review variable changes before updating';
       case 'processing-builtin':

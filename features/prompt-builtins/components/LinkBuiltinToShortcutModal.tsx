@@ -271,7 +271,7 @@ export function LinkBuiltinToShortcutModal({
                     }
                     categories={categories}
                     builtinVariables={builtin.variableDefaults || []}
-                    excludedPlacementTypes={['content-blocks', 'quick-actions']}
+                    excludedPlacementTypes={['content-block', 'quick-action']}
                     compact
                   />
                 </TabsContent>
