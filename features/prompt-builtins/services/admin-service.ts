@@ -387,14 +387,52 @@ export async function updatePromptBuiltin(input: UpdatePromptBuiltinInput): Prom
 
 export async function deletePromptBuiltin(id: string): Promise<void> {
   const supabase = getClient();
-  const { error } = await supabase
+  
+  // First, verify the builtin exists
+  const { data: existingBuiltin, error: fetchError } = await supabase
+    .from('prompt_builtins')
+    .select('id, name')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    if (fetchError.code === 'PGRST116') {
+      throw new Error('Prompt builtin not found - it may have already been deleted');
+    }
+    logDetailedError('deletePromptBuiltin - fetch', fetchError);
+    throw new Error(`Failed to verify builtin exists: ${fetchError.message || 'Unknown error'}`);
+  }
+
+  if (!existingBuiltin) {
+    throw new Error('Prompt builtin not found');
+  }
+
+  // Perform the delete
+  const { error: deleteError } = await supabase
     .from('prompt_builtins')
     .delete()
     .eq('id', id);
 
-  if (error) {
-    logDetailedError('deletePromptBuiltin', error);
-    throw new Error(`Failed to delete prompt builtin: ${error.message || 'Unknown error'} (Code: ${error.code || 'UNKNOWN'})`);
+  if (deleteError) {
+    logDetailedError('deletePromptBuiltin - delete', deleteError);
+    
+    // Provide specific error messages for common issues
+    if (deleteError.code === '23503') {
+      throw new Error('Cannot delete: This builtin is still referenced by other records. Please remove all connections first.');
+    }
+    
+    throw new Error(`Failed to delete prompt builtin: ${deleteError.message || 'Unknown error'} (Code: ${deleteError.code || 'UNKNOWN'})`);
+  }
+
+  // Verify deletion succeeded
+  const { data: verifyDeleted } = await supabase
+    .from('prompt_builtins')
+    .select('id')
+    .eq('id', id)
+    .single();
+
+  if (verifyDeleted) {
+    throw new Error('Delete operation completed but record still exists. This may be due to database policies or constraints.');
   }
 }
 

@@ -372,31 +372,18 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   const handleDelete = async (builtinId: string, builtinName: string) => {
     const usageCount = getUsageCount(builtinId);
     
-    if (usageCount > 0) {
-      const shortcutsUsing = shortcuts.filter(s => s.prompt_builtin_id === builtinId);
-      const shortcutNames = shortcutsUsing.map(s => s.label).join(', ');
-      
+    // Confirm deletion
+    try {
       await new Promise<void>((resolve, reject) => {
         setConfirmDialog({
           open: true,
           title: 'Delete Builtin',
-          description: `This builtin is used by ${usageCount} shortcut(s): ${shortcutNames}\n\nDeleting it will disconnect these shortcuts. Continue?`,
+          description: `Are you sure you want to delete "${builtinName}"?${usageCount > 0 ? `\n\nWarning: This builtin is used by ${usageCount} shortcut(s). They will be disconnected.` : ''}`,
           onConfirm: resolve,
         });
-      }).catch(() => {
-        return;
       });
-    } else {
-      await new Promise<void>((resolve, reject) => {
-        setConfirmDialog({
-          open: true,
-          title: 'Delete Builtin',
-          description: `Delete prompt builtin "${builtinName}"?`,
-          onConfirm: resolve,
-        });
-      }).catch(() => {
-        return;
-      });
+    } catch {
+      return; // User cancelled
     }
 
     try {
@@ -405,22 +392,28 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to delete builtin';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (parseError) {
-          // Response is not JSON, use status text or default message
-          errorMessage = response.statusText || errorMessage;
-        }
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `Failed to delete builtin (${response.status}: ${response.statusText})`;
         throw new Error(errorMessage);
       }
 
-      toast({ title: 'Success', description: 'Prompt builtin deleted' });
+      // Verify deletion by checking response
+      const result = await response.json();
+      
+      toast({ 
+        title: 'Success', 
+        description: `Prompt builtin "${builtinName}" has been deleted` 
+      });
+      
+      // Reload data to ensure UI reflects the actual database state
       await loadData();
     } catch (error: any) {
-      const errorMessage = getUserFriendlyError(error);
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      console.error('Delete builtin error:', error);
+      toast({ 
+        title: 'Delete Failed', 
+        description: error.message || 'An unexpected error occurred while deleting the builtin',
+        variant: 'destructive' 
+      });
     }
   };
 
@@ -741,13 +734,12 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDelete(builtin.id, builtin.name)}
-                                disabled={usageCount > 0}
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {usageCount > 0 ? 'In use - cannot delete' : 'Delete'}
+                              Delete
                             </TooltipContent>
                           </Tooltip>
                         </div>

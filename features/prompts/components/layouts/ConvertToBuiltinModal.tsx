@@ -27,6 +27,7 @@ import {
   ChevronRight,
   ExternalLink,
   AlertTriangle,
+  Search,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast-service';
@@ -43,12 +44,10 @@ import {
   ShortcutCategory, 
   PromptShortcut,
   CreatePromptShortcutInput,
-  ScopeMapping,
 } from '@/features/prompt-builtins/types/core';
 import type { PromptVariable } from '@/features/prompts/types/core';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -57,7 +56,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -151,6 +149,8 @@ export function ConvertToBuiltinModal({
   const [shortcutAction, setShortcutAction] = useState<'create' | 'link' | 'skip'>('create');
   const [selectedShortcut, setSelectedShortcut] = useState<PromptShortcut | null>(null);
   const [loadingShortcuts, setLoadingShortcuts] = useState(false);
+  const [shortcutSearch, setShortcutSearch] = useState('');
+  const [shortcutFilter, setShortcutFilter] = useState<'all' | 'unused' | 'in-use'>('unused');
   
   // New shortcut form data
   const [newShortcutData, setNewShortcutData] = useState<Partial<CreatePromptShortcutInput>>({
@@ -158,6 +158,7 @@ export function ConvertToBuiltinModal({
     description: '',
     icon_name: 'Sparkles',
     category_id: '',
+    prompt_builtin_id: null,
     scope_mappings: null,
     is_active: true,
   });
@@ -181,11 +182,14 @@ export function ConvertToBuiltinModal({
       setCategories([]);
       setShortcutAction('create');
       setSelectedShortcut(null);
+      setShortcutSearch('');
+      setShortcutFilter('unused');
       setNewShortcutData({
         label: promptName,
         description: '',
         icon_name: 'Sparkles',
         category_id: '',
+        prompt_builtin_id: null,
         scope_mappings: null,
         is_active: true,
       });
@@ -220,12 +224,10 @@ export function ConvertToBuiltinModal({
       if (builtins.length > 0) {
         setSelectedBuiltin(builtins[0]);
         setBuiltinAction('update');
-        setStep('builtin-choice');
       } else {
         setBuiltinAction('create-new');
-        // Skip straight to processing if no existing builtins
-        handleBuiltinAction();
       }
+      setStep('builtin-choice');
     } catch (err: any) {
       console.error('Error checking for existing builtins:', err);
       setError(err.message || 'Failed to check for existing builtins');
@@ -281,6 +283,12 @@ export function ConvertToBuiltinModal({
       if (!builtin) throw new Error('Failed to fetch builtin data');
       
       setCreatedBuiltin(builtin);
+      
+      // Update the new shortcut data to include the builtin ID
+      setNewShortcutData(prev => ({
+        ...prev,
+        prompt_builtin_id: builtin.id,
+      }));
       
       toast.success(data.is_update ? 'Builtin updated successfully!' : 'Builtin created successfully!');
       
@@ -397,6 +405,32 @@ export function ConvertToBuiltinModal({
     }
   };
 
+  // Filter and search shortcuts
+  const filteredShortcuts = useMemo(() => {
+    if (!createdBuiltin) return [];
+    
+    let filtered = shortcuts;
+    
+    // Apply filter
+    if (shortcutFilter === 'unused') {
+      filtered = filtered.filter(s => !s.prompt_builtin_id);
+    } else if (shortcutFilter === 'in-use') {
+      filtered = filtered.filter(s => !!s.prompt_builtin_id);
+    }
+    
+    // Apply search
+    if (shortcutSearch.trim()) {
+      const search = shortcutSearch.toLowerCase();
+      filtered = filtered.filter(s => 
+        s.label.toLowerCase().includes(search) ||
+        (s.description && s.description.toLowerCase().includes(search)) ||
+        (s.category?.label && s.category.label.toLowerCase().includes(search))
+      );
+    }
+    
+    return filtered;
+  }, [shortcuts, shortcutFilter, shortcutSearch, createdBuiltin]);
+
   // Render content based on step
   const renderContent = () => {
     switch (step) {
@@ -410,45 +444,31 @@ export function ConvertToBuiltinModal({
 
       case 'builtin-choice':
         return (
-          <div className="space-y-4">
-            <div className="bg-muted/50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Step 1: Builtin Management</h3>
-            </div>
-
+          <div className="space-y-3">
             {existingBuiltins.length > 0 && (
               <>
                 <RadioGroup value={builtinAction} onValueChange={(v) => setBuiltinAction(v as 'update' | 'create-new')}>
-                  <div className="space-y-3">
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
-                      <RadioGroupItem value="update" id="update" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="update" className="font-medium cursor-pointer">Update Existing Builtin</Label>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Overwrite the existing builtin with the current prompt data.
-                        </p>
-                      </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 p-2 rounded border bg-card">
+                      <RadioGroupItem value="update" id="update" />
+                      <Label htmlFor="update" className="font-medium cursor-pointer flex-1">Update Existing Builtin</Label>
                     </div>
 
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
-                      <RadioGroupItem value="create-new" id="create-new" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="create-new" className="font-medium cursor-pointer">Create New Builtin</Label>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Create a separate builtin, keeping the existing one.
-                        </p>
-                      </div>
+                    <div className="flex items-center space-x-2 p-2 rounded border bg-card">
+                      <RadioGroupItem value="create-new" id="create-new" />
+                      <Label htmlFor="create-new" className="font-medium cursor-pointer flex-1">Create New Builtin</Label>
                     </div>
                   </div>
                 </RadioGroup>
 
                 {builtinAction === 'update' && (
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <Label className="text-sm font-medium">Select Builtin to Update</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm">Select Builtin</Label>
                     <Select 
                       value={selectedBuiltin?.id} 
                       onValueChange={(id) => setSelectedBuiltin(existingBuiltins.find(b => b.id === id) || null)}
                     >
-                      <SelectTrigger className="mt-2">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -478,34 +498,28 @@ export function ConvertToBuiltinModal({
         const updatedVars = promptVariables || [];
         
         return (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Alert variant="default" className="border-warning bg-warning/10">
               <AlertTriangle className="h-4 w-4 text-warning" />
               <AlertDescription className="text-foreground">
-                <strong>Variable Changes Detected</strong>
-                <p className="mt-1">
-                  The prompt&apos;s variables have changed. <strong>Review carefully before updating</strong> as this may affect existing shortcuts.
-                </p>
+                <strong>Variable Changes Detected</strong> - Review carefully before updating as this may affect existing shortcuts.
               </AlertDescription>
             </Alert>
 
             {/* Side-by-side comparison */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {/* Current Variables */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-sm">Current Variables</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {currentVars.length} variable{currentVars.length !== 1 ? 's' : ''}
-                  </Badge>
+                  <h4 className="font-semibold text-xs">Current ({currentVars.length})</h4>
                 </div>
-                <ScrollArea className="h-[300px] border rounded-lg p-3 bg-muted/30">
+                <ScrollArea className="h-[250px] border rounded p-2 bg-muted/30">
                   {currentVars.length === 0 ? (
-                    <div className="text-sm text-muted-foreground text-center py-8">
-                      No variables in current builtin
+                    <div className="text-xs text-muted-foreground text-center py-8">
+                      No variables
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {currentVars.map((v) => {
                         const isRemoved = variableComparison?.removed.some(rv => rv.name === v.name);
                         const isChanged = variableComparison?.changed.some(cv => cv.old.name === v.name);
@@ -513,7 +527,7 @@ export function ConvertToBuiltinModal({
                         return (
                           <div 
                             key={v.name} 
-                            className={`p-2 rounded border text-sm ${
+                            className={`p-1.5 rounded border text-xs ${
                               isRemoved 
                                 ? 'bg-destructive/10 border-destructive/30' 
                                 : isChanged 
@@ -521,18 +535,18 @@ export function ConvertToBuiltinModal({
                                   : 'bg-background border-border'
                             }`}
                           >
-                            <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start justify-between gap-1.5">
                               <code className="font-mono font-semibold">{v.name}</code>
                               {isRemoved && (
-                                <Badge variant="destructive" className="text-xs">REMOVED</Badge>
+                                <Badge variant="destructive" className="text-[10px] px-1 py-0">REMOVED</Badge>
                               )}
                               {isChanged && (
-                                <Badge variant="outline" className="text-xs bg-warning/20 border-warning">CHANGED</Badge>
+                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-warning/20 border-warning">CHANGED</Badge>
                               )}
                             </div>
                             {v.defaultValue && (
-                              <div className="text-xs text-muted-foreground mt-1">
-                                Default: <span className="font-mono">{v.defaultValue}</span>
+                              <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
+                                {v.defaultValue}
                               </div>
                             )}
                           </div>
@@ -544,20 +558,17 @@ export function ConvertToBuiltinModal({
               </div>
 
               {/* Updated Variables */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-sm">Updated Variables</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {updatedVars.length} variable{updatedVars.length !== 1 ? 's' : ''}
-                  </Badge>
+                  <h4 className="font-semibold text-xs">Updated ({updatedVars.length})</h4>
                 </div>
-                <ScrollArea className="h-[300px] border rounded-lg p-3 bg-muted/30">
+                <ScrollArea className="h-[250px] border rounded p-2 bg-muted/30">
                   {updatedVars.length === 0 ? (
-                    <div className="text-sm text-muted-foreground text-center py-8">
-                      No variables in updated prompt
+                    <div className="text-xs text-muted-foreground text-center py-8">
+                      No variables
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {updatedVars.map((v) => {
                         const isAdded = variableComparison?.added.some(av => av.name === v.name);
                         const isChanged = variableComparison?.changed.some(cv => cv.new.name === v.name);
@@ -565,7 +576,7 @@ export function ConvertToBuiltinModal({
                         return (
                           <div 
                             key={v.name} 
-                            className={`p-2 rounded border text-sm ${
+                            className={`p-1.5 rounded border text-xs ${
                               isAdded 
                                 ? 'bg-success/10 border-success/30' 
                                 : isChanged 
@@ -573,18 +584,18 @@ export function ConvertToBuiltinModal({
                                   : 'bg-background border-border'
                             }`}
                           >
-                            <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start justify-between gap-1.5">
                               <code className="font-mono font-semibold">{v.name}</code>
                               {isAdded && (
-                                <Badge variant="outline" className="text-xs bg-success/20 border-success">NEW</Badge>
+                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-success/20 border-success">NEW</Badge>
                               )}
                               {isChanged && (
-                                <Badge variant="outline" className="text-xs bg-warning/20 border-warning">CHANGED</Badge>
+                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-warning/20 border-warning">CHANGED</Badge>
                               )}
                             </div>
                             {v.defaultValue && (
-                              <div className="text-xs text-muted-foreground mt-1">
-                                Default: <span className="font-mono">{v.defaultValue}</span>
+                              <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
+                                {v.defaultValue}
                               </div>
                             )}
                           </div>
@@ -598,24 +609,23 @@ export function ConvertToBuiltinModal({
 
             {/* Summary of changes */}
             {variableComparison && (variableComparison.added.length > 0 || variableComparison.removed.length > 0 || variableComparison.changed.length > 0) && (
-              <div className="p-3 bg-muted rounded-lg border">
-                <h4 className="font-semibold text-sm mb-2">Change Summary</h4>
-                <div className="flex flex-wrap gap-3 text-sm">
+              <div className="p-2 bg-muted rounded border">
+                <div className="flex flex-wrap gap-2 text-xs">
                   {variableComparison.added.length > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-success" />
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-success" />
                       <span><strong>{variableComparison.added.length}</strong> added</span>
                     </div>
                   )}
                   {variableComparison.removed.length > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-destructive" />
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
                       <span><strong>{variableComparison.removed.length}</strong> removed</span>
                     </div>
                   )}
                   {variableComparison.changed.length > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-warning" />
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-warning" />
                       <span><strong>{variableComparison.changed.length}</strong> modified</span>
                     </div>
                   )}
@@ -643,185 +653,109 @@ export function ConvertToBuiltinModal({
         );
 
       case 'shortcut-choice':
-        const linkedShortcuts = shortcuts.filter(s => s.prompt_builtin_id === createdBuiltin?.id);
-        const unlinkedShortcuts = shortcuts.filter(s => !s.prompt_builtin_id);
-        const otherLinkedShortcuts = shortcuts.filter(s => s.prompt_builtin_id && s.prompt_builtin_id !== createdBuiltin?.id);
         const hasAnyShortcuts = shortcuts.length > 0;
 
         return (
-          <div className="space-y-4">
-            <div className="bg-muted/50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Step 2: Shortcut Management</h3>
-            </div>
-
+          <div className="space-y-3">
             <RadioGroup value={shortcutAction} onValueChange={(v) => setShortcutAction(v as 'create' | 'link' | 'skip')}>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
-                  <RadioGroupItem value="create" id="create" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="create" className="font-medium cursor-pointer">Create New Shortcut</Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Create a fresh shortcut that links to this builtin.
-                    </p>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 p-2 rounded border bg-card">
+                  <RadioGroupItem value="create" id="create" />
+                  <Label htmlFor="create" className="font-medium cursor-pointer flex-1">Create New Shortcut</Label>
                 </div>
 
                 {hasAnyShortcuts && (
-                  <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
-                    <RadioGroupItem value="link" id="link" className="mt-1" />
-                    <div className="flex-1">
-                      <Label htmlFor="link" className="font-medium cursor-pointer">Link Existing Shortcut</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {linkedShortcuts.length > 0 
-                          ? `Update a shortcut already linked to this builtin (${linkedShortcuts.length} available).`
-                          : unlinkedShortcuts.length > 0
-                            ? `Connect an unlinked shortcut to this builtin (${unlinkedShortcuts.length} available).`
-                            : `Reassign a shortcut from another builtin (${otherLinkedShortcuts.length} available).`}
-                      </p>
-                    </div>
+                  <div className="flex items-center space-x-2 p-2 rounded border bg-card">
+                    <RadioGroupItem value="link" id="link" />
+                    <Label htmlFor="link" className="font-medium cursor-pointer flex-1">Link Existing Shortcut</Label>
                   </div>
                 )}
 
-                <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
-                  <RadioGroupItem value="skip" id="skip" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="skip" className="font-medium cursor-pointer">Skip for Now</Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Don't create or link a shortcut at this time.
-                    </p>
-                  </div>
+                <div className="flex items-center space-x-2 p-2 rounded border bg-card">
+                  <RadioGroupItem value="skip" id="skip" />
+                  <Label htmlFor="skip" className="font-medium cursor-pointer flex-1">Skip for Now</Label>
                 </div>
               </div>
             </RadioGroup>
 
             {shortcutAction === 'link' && hasAnyShortcuts && (
-              <div className="mt-4 p-4 bg-muted rounded-lg space-y-3">
-                <Label className="text-sm font-medium">Select Shortcut</Label>
+              <div className="space-y-2">
+                <Label className="text-sm">Select Shortcut</Label>
+                
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search shortcuts..."
+                    value={shortcutSearch}
+                    onChange={(e) => setShortcutSearch(e.target.value)}
+                    className="pl-9 h-9"
+                  />
+                </div>
+
+                {/* Filter Tabs */}
+                <Tabs value={shortcutFilter} onValueChange={(v) => setShortcutFilter(v as 'all' | 'unused' | 'in-use')} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 h-8">
+                    <TabsTrigger value="all" className="text-xs">All ({shortcuts.length})</TabsTrigger>
+                    <TabsTrigger value="unused" className="text-xs">Unused ({shortcuts.filter(s => !s.prompt_builtin_id).length})</TabsTrigger>
+                    <TabsTrigger value="in-use" className="text-xs">In Use ({shortcuts.filter(s => !!s.prompt_builtin_id).length})</TabsTrigger>
+                  </TabsList>
+                </Tabs>
                 
                 {loadingShortcuts ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
                   </div>
+                ) : filteredShortcuts.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    No shortcuts found
+                  </div>
                 ) : (
-                  <ScrollArea className="h-[250px]">
-                    <div className="space-y-2">
-                      {/* Already linked to THIS builtin */}
-                      {linkedShortcuts.length > 0 && (
-                        <>
-                          <div className="text-xs font-semibold text-success uppercase tracking-wide mb-2 flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-success" />
-                            Already Linked to This Builtin
-                          </div>
-                          {linkedShortcuts.map(shortcut => (
-                            <div
-                              key={shortcut.id}
-                              onClick={() => setSelectedShortcut(shortcut)}
-                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                                selectedShortcut?.id === shortcut.id
-                                  ? 'border-primary bg-primary/5'
-                                  : 'hover:border-primary/50 hover:bg-accent/50'
-                              }`}
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="font-medium">{shortcut.label}</div>
-                                <Badge variant="outline" className="text-xs bg-success/10 border-success">
-                                  Current
-                                </Badge>
-                              </div>
-                              {shortcut.description && (
-                                <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                                  {shortcut.description}
-                                </div>
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-1.5">
+                      {filteredShortcuts.map(shortcut => {
+                        const isLinkedToThis = shortcut.prompt_builtin_id === createdBuiltin?.id;
+                        const isLinkedToOther = shortcut.prompt_builtin_id && shortcut.prompt_builtin_id !== createdBuiltin?.id;
+                        
+                        return (
+                          <div
+                            key={shortcut.id}
+                            onClick={() => setSelectedShortcut(shortcut)}
+                            className={`p-2 border rounded cursor-pointer transition-colors ${
+                              selectedShortcut?.id === shortcut.id
+                                ? 'border-primary bg-primary/5'
+                                : 'hover:border-primary/50 hover:bg-accent/50'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="font-medium text-sm">{shortcut.label}</div>
+                              {isLinkedToThis && (
+                                <Badge variant="outline" className="text-xs bg-success/10 border-success">Current</Badge>
                               )}
+                              {isLinkedToOther && (
+                                <Badge variant="outline" className="text-xs bg-warning/10 border-warning">Reassign</Badge>
+                              )}
+                            </div>
+                            {shortcut.description && (
+                              <div className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                                {shortcut.description}
+                              </div>
+                            )}
+                            <div className="flex flex-wrap items-center gap-1 mt-1.5">
                               {shortcut.category && (
-                                <Badge variant="secondary" className="mt-2 text-xs">
+                                <Badge variant="secondary" className="text-xs">
                                   {shortcut.category.label}
                                 </Badge>
                               )}
-                            </div>
-                          ))}
-                        </>
-                      )}
-
-                      {/* Unlinked shortcuts */}
-                      {unlinkedShortcuts.length > 0 && (
-                        <>
-                          {linkedShortcuts.length > 0 && <Separator className="my-3" />}
-                          <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-2 flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                            Available (No Builtin)
-                          </div>
-                          {unlinkedShortcuts.map(shortcut => (
-                            <div
-                              key={shortcut.id}
-                              onClick={() => setSelectedShortcut(shortcut)}
-                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                                selectedShortcut?.id === shortcut.id
-                                  ? 'border-primary bg-primary/5'
-                                  : 'hover:border-primary/50 hover:bg-accent/50'
-                              }`}
-                            >
-                              <div className="font-medium">{shortcut.label}</div>
-                              {shortcut.description && (
-                                <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                                  {shortcut.description}
-                                </div>
-                              )}
-                              {shortcut.category && (
-                                <Badge variant="secondary" className="mt-2 text-xs">
-                                  {shortcut.category.label}
+                              {isLinkedToOther && shortcut.builtin && (
+                                <Badge variant="outline" className="text-xs">
+                                  {shortcut.builtin.name}
                                 </Badge>
                               )}
                             </div>
-                          ))}
-                        </>
-                      )}
-
-                      {/* Linked to OTHER builtins */}
-                      {otherLinkedShortcuts.length > 0 && (
-                        <>
-                          {(linkedShortcuts.length > 0 || unlinkedShortcuts.length > 0) && <Separator className="my-3" />}
-                          <div className="text-xs font-semibold text-warning uppercase tracking-wide mb-2 flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-warning" />
-                            Linked to Other Builtins
                           </div>
-                          {otherLinkedShortcuts.map(shortcut => (
-                            <div
-                              key={shortcut.id}
-                              onClick={() => setSelectedShortcut(shortcut)}
-                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                                selectedShortcut?.id === shortcut.id
-                                  ? 'border-primary bg-primary/5'
-                                  : 'hover:border-primary/50 hover:bg-accent/50'
-                              }`}
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="font-medium">{shortcut.label}</div>
-                                <Badge variant="outline" className="text-xs bg-warning/10 border-warning">
-                                  Will Reassign
-                                </Badge>
-                              </div>
-                              {shortcut.description && (
-                                <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                                  {shortcut.description}
-                                </div>
-                              )}
-                              <div className="flex flex-wrap items-center gap-2 mt-2">
-                                {shortcut.category && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    {shortcut.category.label}
-                                  </Badge>
-                                )}
-                                {shortcut.builtin && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Currently: {shortcut.builtin.name}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </>
-                      )}
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                 )}
@@ -839,19 +773,17 @@ export function ConvertToBuiltinModal({
 
       case 'shortcut-form':
         return (
-          <div className="space-y-4">
-            <div className="bg-muted/50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Step 2: Create Shortcut</h3>
-            </div>
-
+          <div className="space-y-3">
             {createdBuiltin && (
               <ShortcutFormFields
                 formData={newShortcutData as CreatePromptShortcutInput}
                 onChange={(updates) => setNewShortcutData(prev => ({ ...prev, ...updates }))}
                 categories={categories}
+                builtins={[createdBuiltin]}
                 builtinVariables={createdBuiltin.variableDefaults || []}
+                mode="from-builtin"
                 compact
-                excludedPlacementTypes={['user', 'organization', 'quick-actions', 'content-blocks']}
+                excludedPlacementTypes={['user-tool', 'organization-tool', 'quick-action', 'content-block']}
               />
             )}
 
@@ -902,15 +834,16 @@ export function ConvertToBuiltinModal({
       case 'builtin-choice':
         return (
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
+            <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing} size="sm">
               Cancel
             </Button>
             <Button 
               onClick={() => handleBuiltinAction()} 
               disabled={isProcessing || (builtinAction === 'update' && !selectedBuiltin)}
+              size="sm"
             >
-              {builtinAction === 'update' ? 'Update Builtin' : 'Create Builtin'}
-              <ChevronRight className="ml-2 h-4 w-4" />
+              {builtinAction === 'update' ? 'Update' : 'Create'}
+              <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
             </Button>
           </div>
         );
@@ -918,16 +851,16 @@ export function ConvertToBuiltinModal({
       case 'variable-comparison':
         return (
           <div className="flex justify-between">
-            <Button variant="outline" onClick={() => setStep('builtin-choice')} disabled={isProcessing}>
+            <Button variant="outline" onClick={() => setStep('builtin-choice')} disabled={isProcessing} size="sm">
               Back
             </Button>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
+              <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing} size="sm">
                 Cancel
               </Button>
-              <Button onClick={() => handleBuiltinAction()} disabled={isProcessing}>
+              <Button onClick={() => handleBuiltinAction()} disabled={isProcessing} size="sm">
                 Confirm Update
-                <ChevronRight className="ml-2 h-4 w-4" />
+                <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
@@ -939,24 +872,26 @@ export function ConvertToBuiltinModal({
       case 'shortcut-choice':
         return (
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
+            <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing} size="sm">
               Cancel
             </Button>
             {shortcutAction === 'create' ? (
               <Button 
                 onClick={() => setStep('shortcut-form')} 
                 disabled={isProcessing}
+                size="sm"
               >
-                Configure Shortcut
-                <ChevronRight className="ml-2 h-4 w-4" />
+                Configure
+                <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             ) : (
               <Button 
                 onClick={() => handleShortcutAction()} 
                 disabled={isProcessing || (shortcutAction === 'link' && !selectedShortcut)}
+                size="sm"
               >
-                {shortcutAction === 'skip' ? 'Finish' : 'Link Shortcut'}
-                <ChevronRight className="ml-2 h-4 w-4" />
+                {shortcutAction === 'skip' ? 'Finish' : 'Link'}
+                <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             )}
           </div>
@@ -965,19 +900,20 @@ export function ConvertToBuiltinModal({
       case 'shortcut-form':
         return (
           <div className="flex justify-between">
-            <Button variant="outline" onClick={() => setStep('shortcut-choice')} disabled={isProcessing}>
+            <Button variant="outline" onClick={() => setStep('shortcut-choice')} disabled={isProcessing} size="sm">
               Back
             </Button>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
+              <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing} size="sm">
                 Cancel
               </Button>
               <Button 
                 onClick={() => handleShortcutAction()} 
                 disabled={isProcessing || !newShortcutData.category_id}
+                size="sm"
               >
-                Create Shortcut
-                <ChevronRight className="ml-2 h-4 w-4" />
+                Create
+                <ChevronRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
@@ -989,16 +925,17 @@ export function ConvertToBuiltinModal({
       case 'complete':
         return (
           <div className="flex justify-end gap-2">
-            <Button onClick={handleComplete}>
+            <Button onClick={handleComplete} size="sm">
               Close
             </Button>
             {createdBuiltin && (
               <Button 
                 variant="outline"
                 onClick={() => router.push('/administration/prompt-builtins')}
+                size="sm"
               >
                 View Builtins
-                <ExternalLink className="ml-2 h-4 w-4" />
+                <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             )}
           </div>
@@ -1015,19 +952,19 @@ export function ConvertToBuiltinModal({
       case 'checking':
         return 'Checking for existing builtins...';
       case 'builtin-choice':
-        return 'Choose how to save the builtin';
+        return existingBuiltins.length > 0 ? 'Update existing or create new builtin' : 'Creating new builtin';
       case 'variable-comparison':
-        return 'Review variable changes';
+        return 'Review variable changes before updating';
       case 'processing-builtin':
-        return builtinAction === 'update' ? 'Updating builtin...' : 'Creating builtin...';
+        return builtinAction === 'update' ? 'Updating...' : 'Creating...';
       case 'shortcut-choice':
-        return 'Choose shortcut action';
+        return 'Create, link, or skip shortcut';
       case 'shortcut-form':
-        return 'Configure shortcut details';
+        return 'Configure new shortcut';
       case 'processing-shortcut':
-        return shortcutAction === 'create' ? 'Creating shortcut...' : 'Linking shortcut...';
+        return shortcutAction === 'create' ? 'Creating...' : 'Linking...';
       case 'complete':
-        return 'Successfully completed!';
+        return 'Completed successfully';
       default:
         return '';
     }
@@ -1039,18 +976,18 @@ export function ConvertToBuiltinModal({
         className="max-w-2xl max-h-[90vh] flex flex-col p-0"
         onPointerDownOutside={(e) => isProcessing && e.preventDefault()}
       >
-        <DialogHeader className="px-4 pt-4 pb-3 border-b">
+        <DialogHeader className="px-4 pt-3 pb-2 border-b">
           <DialogTitle>Convert to Builtin</DialogTitle>
           <DialogDescription>
             {getStepDescription()}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-3">
           {renderContent()}
         </div>
 
-        <div className="px-4 pb-4 pt-3 border-t">
+        <div className="px-4 pb-3 pt-2 border-t">
           {renderActions()}
         </div>
       </DialogContent>
