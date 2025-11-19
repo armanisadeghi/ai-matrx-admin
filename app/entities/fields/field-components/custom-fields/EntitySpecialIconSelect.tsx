@@ -1,6 +1,6 @@
 import React from 'react';
 import SelectWithIconDisplay from '@/components/matrx/SelectWithIconDisplay';
-import * as LucideIcons from 'lucide-react';
+import { getIconComponent } from '@/components/official/IconResolver';
 
 // Preset configurations for common use cases
 const PRESET_CONFIGURATIONS = {
@@ -46,7 +46,7 @@ const EntitySpecialIconSelect = React.forwardRef<HTMLElement, EntitySpecialIconS
             if (componentProps?.preset && PRESET_CONFIGURATIONS[componentProps.preset]) {
                 return PRESET_CONFIGURATIONS[componentProps.preset].map(item => ({
                     ...item,
-                    icon: item.iconName ? React.createElement(LucideIcons[item.iconName], { size: 16 }) : null
+                    icon: item.iconName ? React.createElement(getIconComponent(item.iconName), { size: 16 }) : null
                 }));
             }
 
@@ -54,10 +54,10 @@ const EntitySpecialIconSelect = React.forwardRef<HTMLElement, EntitySpecialIconS
             if (Array.isArray(componentProps?.items)) {
                 return componentProps.items.map(item => {
                     // Handle items with iconName (string reference to Lucide icon)
-                    if (item.iconName && LucideIcons[item.iconName]) {
+                    if (item.iconName) {
                         return {
                             ...item,
-                            icon: React.createElement(LucideIcons[item.iconName], { size: 16 })
+                            icon: React.createElement(getIconComponent(item.iconName), { size: 16 })
                         };
                     }
                     // Handle items with direct icon component

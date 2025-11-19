@@ -4,7 +4,7 @@ import React, { useState } from "react";
 
 import NodeSelectionOverlay from "./NodeSelectionOverlay";
 import { useCategoryNodeData } from "@/features/workflows-xyflow/hooks/useCategoryNodeData";
-import { getIconComponent } from "@/components/common/IconResolver";
+import { getIconComponent } from "@/components/official/IconResolver";
 import { WorkflowNode } from "@/lib/redux/workflow-nodes/types";
 
 interface CategoryNodeSectionProps {

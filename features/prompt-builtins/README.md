@@ -232,25 +232,127 @@ All functions include error handling via `getUserFriendlyError()`.
 - [ ] Builtin dependency tracking (if one builtin references another)
 - [ ] Scheduled execution for shortcuts
 
-## Critical Enhancements (NOW)
+## Critical Enhancements (Priority Order)
 
-- [ ] Edit Shortcut modal has poor ux, starting with the massive wasted space around the edge of the entire modal with cards that then add more padding.
-- [ ] Reusable Category selection dropdown - universal component that will properly show the actual hierarchy
-    - Update all usage across the app where category is selected
-- [ ] Clean up ui for selection of Scopes and scoope mappings, eliminate massive wasted space and bad ux
-    - Simple checklist, then a single input... if you type into it and click + to add, a new empty input appears
-    - Tabular structure so each scope is a row...
-    - The row includes what we currently have for Scope Mappings, with a column for selecting the variable, et.
-    - One row per scope. Simple, clean, efficient and still does everything the system can do now.
-- [ ] Clean up prompt builtin selection from Edit Shortcut. Better ux that allows easy selection/search of a prompt, possibly via a simple modal that allows search, filter, and other options in an easy way and then has to come back with the one you want. buttons for edit and create can be easily side by side to save space. The list of variables can definitely be shown with a better ui that doens't waste space and is not confusing, especially if it's already being shown elsewhere for selection.
-- [ ] All of the tables in the admin need to have things that they can do directly from the table. Right now
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
-- [ ] 
+### Phase 1: Foundation Components (Build reusable pieces first)
+
+**1.1 Enhanced Category Selector** ⭐ HIGH PRIORITY
+- [ ] Create `CategorySelector.tsx` - Universal dropdown that shows placement_type context
+  - Display format: `[Context Menu] > Parent > Child Category`
+  - Replace `HierarchicalCategorySelector` usage everywhere
+  - Group by placement_type with visual separation
+  - Show placement badge inline with selected category
+  - **Files to update**: `ShortcutFormFields.tsx`, `PromptBuiltinEditPanel.tsx`, `ConvertToBuiltinModal.tsx`
+  - **Current issue**: Duplicate category names across placement types cause confusion
+
+**1.2 Redesigned Scope Mapping Editor** ⭐ HIGH PRIORITY
+- [ ] Rebuild `ScopeMappingEditor.tsx` as compact table format
+  - **Column 1**: Scope checkbox (selection, content, context)
+  - **Column 2**: Arrow icon (→)
+  - **Column 3**: Variable dropdown (from builtin)
+  - One row per available scope, clean and tight
+  - Remove current excessive padding and cards
+  - Add dynamic row addition if custom scopes needed
+  - **Files using it**: `ShortcutFormFields.tsx`, `LinkBuiltinToShortcutModal.tsx`, `SelectBuiltinForShortcutModal.tsx`, `ConvertToBuiltinModal.tsx`
+
+**1.3 Builtin Selector Modal** 
+- [ ] Create `BuiltinSelectorModal.tsx` - Clean builtin browsing interface
+  - Replace inline builtin selection in `PromptBuiltinEditPanel`
+  - Modal with search, filters (converted/generated), preview pane
+  - Show variables as compact badges, not wasteful lists
+  - Side-by-side buttons: "Edit" | "Create New" | "Select"
+  - Reuse in `SelectBuiltinForShortcutModal` logic
+
+### Phase 2: Unified CRUD Architecture (Consolidate edit logic)
+
+**2.1 Category Form Component**
+- [ ] Create `CategoryFormFields.tsx` - Reusable category form
+  - Extract from `PromptBuiltinEditPanel.tsx` (lines 60-200)
+  - Used in: Create modal, Edit modal, Inline editing
+  - Props: `formData`, `onChange`, `compact` mode
+  - Remove Card wrappers for space efficiency
+
+**2.2 Shortcut Form Component** ✅ EXISTS (needs review)
+- [ ] Review `ShortcutFormFields.tsx` for space optimization
+  - Reduce padding in compact mode (3px → 2px)
+  - Execution options: 2x2 grid with tighter switches
+  - Integrate new CategorySelector and ScopeMappingEditor
+
+**2.3 Builtin Form Component**
+- [ ] Create `BuiltinFormFields.tsx` - Reusable builtin form
+  - Extract from various edit panels
+  - Handle messages, variables, settings, tools
+  - Compact mode for modals, full mode for pages
+
+**2.4 Unified Edit Modals**
+- [ ] Create `CategoryEditModal.tsx` - Uses CategoryFormFields
+- [ ] Create `ShortcutEditModal.tsx` - Uses ShortcutFormFields  
+- [ ] Create `BuiltinEditModal.tsx` - Uses BuiltinFormFields
+- [ ] Replace all Dialog implementations to use these modals
+  - **Benefits**: Single source of truth, consistent UX, easier maintenance
+
+### Phase 3: UI Polish & Space Optimization
+
+**3.1 Edit Modal Space Reduction**
+- [ ] Remove excessive padding from `PromptBuiltinEditDialog`
+  - Current: Cards with padding inside padded modals
+  - Target: Direct form fields with minimal padding
+  - DialogContent: p-4 → p-3, max space for content
+  - Remove Card wrappers, use simple dividers
+  - Compact labels and inputs (text-sm consistently)
+
+**3.2 Inline Table Actions** 
+- [ ] `PromptBuiltinsTableManager`: Add inline quick actions
+  - "Link Shortcut" → Opens `LinkBuiltinToShortcutModal` ✅ DONE
+  - "Quick Edit" → Popover with name/description edit
+  - "Toggle Active" → Direct toggle without modal
+- [ ] `ShortcutsTableManager`: Add inline quick actions  
+  - "Connect" dropdown ✅ DONE
+  - "Quick Edit" → Popover for label/category change
+  - "View Builtin" → Quick preview popover
+- [ ] `ShortcutCategoriesManager` (if exists): Inline actions
+  - "Quick Edit" → Name and placement change
+  - "Add Child" → Create subcategory directly
+
+**3.3 Tree Component Enhancement**
+- [ ] Review `PromptBuiltinsManager` tree structure
+  - Verify placement_type is first level (currently correct)
+  - Ensure CategorySelector respects this hierarchy
+  - Add placement_type badge to tree nodes for clarity
+  - Test category selection with duplicate names across placements
+  - Document placement_type importance in code comments
+
+### Phase 4: Testing & Documentation
+
+**4.1 Testing**
+- [ ] Test all three entry point flows with new components
+- [ ] Verify category selection across all forms
+- [ ] Test scope mapping with various builtin configurations
+- [ ] Ensure inline actions work without full page refresh
+- [ ] Mobile responsive testing for all modals
+
+**4.2 Documentation**
+- [ ] Update README with new component architecture
+- [ ] Document CategorySelector usage and placement_type importance
+- [ ] Add comments to ScopeMappingEditor explaining table structure
+- [ ] Update component dependencies diagram
+
+## Implementation Notes
+
+**Current Component Usage Map**:
+- `HierarchicalCategorySelector`: 5 files (needs replacement)
+- `ScopeMappingEditor`: 4 files (needs rebuild)
+- `PromptBuiltinEditPanel`: 2 files (needs extraction to FormFields)
+- `PromptBuiltinEditDialog`: 2 files (needs consolidation)
+
+**Space Savings Target**:
+- Modal padding: 4px → 3px (25% reduction)
+- Card removal: ~64px saved per card
+- Compact inputs: h-10 → h-9 (10% height reduction)
+- Scope mapping: ~200px → ~120px (40% reduction)
+
+**Dependencies**:
+1. Phase 1 must complete before Phase 2 (FormFields need new selectors)
+2. Phase 2 must complete before Phase 3.1 (modals need FormFields)
+3. Phase 3.2 can run parallel to 3.1
+4. Phase 4 runs after all implementation complete 

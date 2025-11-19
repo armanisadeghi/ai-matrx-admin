@@ -47,7 +47,7 @@ import { useQuickActions } from '@/features/quick-actions/hooks/useQuickActions'
 import { useAppSelector } from '@/lib/redux';
 import { selectIsDebugMode } from '@/lib/redux/slices/adminDebugSlice';
 import { SystemPromptDebugModal } from '@/components/debug/SystemPromptDebugModal';
-import * as LucideIcons from 'lucide-react';
+import { getIconComponent } from '@/components/official/IconResolver';
 
 interface UnifiedContextMenuProps {
   children: React.ReactNode;
@@ -281,8 +281,7 @@ export function UnifiedContextMenu({
   // Helper to get Lucide icon component
   const getIcon = (iconName?: string | null) => {
     if (!iconName) return FileText;
-    const Icon = (LucideIcons as any)[iconName];
-    return Icon || FileText;
+    return getIconComponent(iconName, "FileText");
   };
 
   // Get icon for placement type

@@ -7,6 +7,23 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Table,
   TableBody,
   TableCell,
@@ -29,11 +46,13 @@ import {
   ArrowUpDown,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Edit2,
   FileText,
   Link2,
   Loader2,
   AlertCircle,
+  ExternalLink,
 } from 'lucide-react';
 import type {
   PromptBuiltin,
@@ -47,9 +66,12 @@ import {
 } from '../services/admin-service';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
-import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
 import { LinkBuiltinToShortcutModal } from '../components/LinkBuiltinToShortcutModal';
+import { ScopeMappingEditor } from '../components/ScopeMappingEditor';
 import { getUserFriendlyError } from '../utils/error-handler';
+import { UniversalPromptEditor, normalizePromptData, UniversalPromptData } from '@/features/prompts/components/universal-editor';
+import { updatePromptShortcut } from '../services/admin-service';
+import type { ScopeMapping } from '../types/core';
 
 type SortField = 'name' | 'variables' | 'usage' | 'source';
 type SortDirection = 'asc' | 'desc';
@@ -76,6 +98,24 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingBuiltinId, setEditingBuiltinId] = useState<string | null>(null);
   const [linkingShortcutForBuiltinId, setLinkingShortcutForBuiltinId] = useState<string | null>(null);
+  const [usageModalBuiltinId, setUsageModalBuiltinId] = useState<string | null>(null);
+  
+  // Table state
+  const [expandedBuiltinIds, setExpandedBuiltinIds] = useState<Set<string>>(new Set());
+  const [sourcePromptNames, setSourcePromptNames] = useState<Record<string, string>>({});
+  
+  // Confirmation dialogs
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   const { toast } = useToast();
 
@@ -96,6 +136,29 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       setCategories(categoriesData);
       setModels(modelsResponse?.models || []);
       setAvailableTools(toolsResponse?.tools || []);
+      
+      // Fetch source prompt names for builtins with source_prompt_id
+      const sourcePromptIds = builtinsData
+        .filter(b => b.source_prompt_id)
+        .map(b => b.source_prompt_id as string);
+      
+      if (sourcePromptIds.length > 0) {
+        const promptNames: Record<string, string> = {};
+        await Promise.all(
+          sourcePromptIds.map(async (promptId) => {
+            try {
+              const response = await fetch(`/api/prompts/${promptId}`);
+              if (response.ok) {
+                const prompt = await response.json();
+                promptNames[promptId] = prompt.name;
+              }
+            } catch (err) {
+              console.error(`Failed to fetch prompt ${promptId}:`, err);
+            }
+          })
+        );
+        setSourcePromptNames(promptNames);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -120,6 +183,113 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
   // Get shortcuts using a builtin
   const getBuiltinShortcuts = (builtinId: string) => {
     return shortcuts.filter(s => s.prompt_builtin_id === builtinId);
+  };
+
+  // Toggle expansion
+  const toggleExpansion = (builtinId: string) => {
+    setExpandedBuiltinIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(builtinId)) {
+        newSet.delete(builtinId);
+      } else {
+        newSet.add(builtinId);
+      }
+      return newSet;
+    });
+  };
+
+  // Refresh builtin from source
+  const handleRefreshFromSource = async (builtin: PromptBuiltin) => {
+    if (!builtin.source_prompt_id) return;
+
+    try {
+      // Fetch source prompt
+      const response = await fetch(`/api/prompts/${builtin.source_prompt_id}`);
+      if (!response.ok) throw new Error('Failed to fetch source prompt');
+      
+      const sourcePrompt = await response.json();
+      
+      // Compare variables
+      const currentVars = builtin.variableDefaults || [];
+      const newVars = sourcePrompt.variable_defaults || [];
+      
+      const currentVarNames = currentVars.map((v: any) => v.name).sort();
+      const newVarNames = newVars.map((v: any) => v.name).sort();
+      
+      const hasChanges = JSON.stringify(currentVarNames) !== JSON.stringify(newVarNames);
+      
+      if (hasChanges) {
+        const added = newVarNames.filter((n: string) => !currentVarNames.includes(n));
+        const removed = currentVarNames.filter((n: string) => !newVarNames.includes(n));
+        
+        let message = 'Variables will be updated:\n\n';
+        if (added.length) message += `Added: ${added.join(', ')}\n`;
+        if (removed.length) message += `Removed: ${removed.join(', ')}\n`;
+        
+        await new Promise<void>((resolve) => {
+          setConfirmDialog({
+            open: true,
+            title: 'Update Builtin from Source',
+            description: message,
+            onConfirm: resolve,
+          });
+        });
+      } else {
+        await new Promise<void>((resolve) => {
+          setConfirmDialog({
+            open: true,
+            title: 'Update Builtin',
+            description: 'Update builtin with latest prompt content?',
+            onConfirm: resolve,
+          });
+        });
+      }
+      
+      // Update builtin
+      const updateResponse = await fetch(`/api/admin/prompt-builtins/convert-from-prompt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt_id: builtin.source_prompt_id,
+          builtin_id: builtin.id,
+        }),
+      });
+      
+      if (!updateResponse.ok) throw new Error('Failed to refresh builtin');
+      
+      toast({ title: 'Success', description: 'Builtin refreshed from source' });
+      await loadData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: getUserFriendlyError(error),
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // Update shortcut scope mappings
+  const handleUpdateScopeMappings = async (
+    shortcutId: string,
+    availableScopes: string[],
+    scopeMappings: ScopeMapping
+  ) => {
+    try {
+      await updatePromptShortcut({
+        id: shortcutId,
+        available_scopes: availableScopes,
+        scope_mappings: scopeMappings,
+      });
+      
+      toast({ title: 'Success', description: 'Scope mappings updated' });
+      await loadData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: getUserFriendlyError(error),
+        variant: 'destructive'
+      });
+    }
   };
 
   // Filter and sort builtins
@@ -194,23 +364,18 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
     }
   };
 
-  const handleUpdateBuiltin = async (id: string, data: {
-    name: string;
-    description?: string;
-    variableDefaults: any[];
-    messages?: any[];
-    settings?: Record<string, any>;
-  }) => {
+  const handleUpdateBuiltin = async (updated: UniversalPromptData) => {
     try {
-      const response = await fetch(`/api/admin/prompt-builtins/${id}`, {
+      const response = await fetch(`/api/admin/prompt-builtins/${updated.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: data.name,
-          description: data.description,
-          messages: data.messages,
-          variable_defaults: data.variableDefaults,
-          settings: data.settings,
+          name: updated.name,
+          description: updated.description,
+          messages: updated.messages,
+          variable_defaults: updated.variable_defaults,
+          settings: updated.settings,
+          is_active: updated.is_active,
         }),
       });
 
@@ -220,6 +385,7 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       }
 
       toast({ title: 'Success', description: 'Prompt builtin updated successfully' });
+      setEditingBuiltinId(null);
       await loadData();
     } catch (error: any) {
       const errorMessage = getUserFriendlyError(error);
@@ -239,14 +405,27 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
       const shortcutsUsing = shortcuts.filter(s => s.prompt_builtin_id === builtinId);
       const shortcutNames = shortcutsUsing.map(s => s.label).join(', ');
       
-      if (!confirm(
-        `This builtin is used by ${usageCount} shortcut(s): ${shortcutNames}\n\n` +
-        `Deleting it will disconnect these shortcuts. Continue?`
-      )) {
+      await new Promise<void>((resolve, reject) => {
+        setConfirmDialog({
+          open: true,
+          title: 'Delete Builtin',
+          description: `This builtin is used by ${usageCount} shortcut(s): ${shortcutNames}\n\nDeleting it will disconnect these shortcuts. Continue?`,
+          onConfirm: resolve,
+        });
+      }).catch(() => {
         return;
-      }
-    } else if (!confirm(`Delete prompt builtin "${builtinName}"?`)) {
-      return;
+      });
+    } else {
+      await new Promise<void>((resolve, reject) => {
+        setConfirmDialog({
+          open: true,
+          title: 'Delete Builtin',
+          description: `Delete prompt builtin "${builtinName}"?`,
+          onConfirm: resolve,
+        });
+      }).catch(() => {
+        return;
+      });
     }
 
     try {
@@ -421,37 +600,65 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                   const usageCount = getUsageCount(builtin.id);
                   const variableCount = (builtin.variableDefaults || []).length;
 
+                  const isExpanded = expandedBuiltinIds.has(builtin.id);
+                  const linkedShortcuts = getBuiltinShortcuts(builtin.id);
+
                   return (
-                    <TableRow
-                      key={builtin.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => setEditingBuiltinId(builtin.id)}
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-blue-500" />
-                          <div>
-                            <div className="font-medium">{builtin.name}</div>
-                            {builtin.description && (
-                              <div className="text-xs text-muted-foreground line-clamp-1">
-                                {builtin.description}
-                              </div>
+                    <React.Fragment key={builtin.id}>
+                      <TableRow
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setEditingBuiltinId(builtin.id)}
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {linkedShortcuts.length > 0 ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleExpansion(builtin.id);
+                                }}
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                              </Button>
+                            ) : (
+                              <div className="w-6" />
                             )}
+                            <FileText className="h-4 w-4 text-blue-500" />
+                            <div className="font-medium">{builtin.name}</div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
+                        </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         {variableCount > 0 ? (
                           <Tooltip>
                             <TooltipTrigger>
-                              <Badge variant="secondary">{variableCount}</Badge>
+                              <Badge variant="secondary" className="cursor-help">
+                                {variableCount} var{variableCount !== 1 ? 's' : ''}
+                              </Badge>
                             </TooltipTrigger>
-                            <TooltipContent>
-                              <div className="space-y-1">
-                                <p className="font-semibold">Variables:</p>
-                                {builtin.variableDefaults?.map((v: any) => (
-                                  <p key={v.name} className="text-xs">{v.name}</p>
-                                ))}
+                            <TooltipContent className="max-w-sm">
+                              <div className="space-y-2">
+                                <p className="font-semibold text-sm border-b pb-1">Variables:</p>
+                                <div className="grid gap-1">
+                                  {builtin.variableDefaults?.map((v: any) => (
+                                    <div key={v.name} className="flex items-start gap-2 text-xs">
+                                      <code className="bg-muted px-1.5 py-0.5 rounded font-mono">
+                                        {v.name}
+                                      </code>
+                                      {v.default_value && (
+                                        <span className="text-muted-foreground">
+                                          = {v.default_value}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             </TooltipContent>
                           </Tooltip>
@@ -459,44 +666,64 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                           <span className="text-muted-foreground text-sm">None</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         {usageCount > 0 ? (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Badge variant="default" className="bg-green-600">
-                                {usageCount} shortcut{usageCount !== 1 ? 's' : ''}
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <div className="space-y-1">
-                                <p className="font-semibold">Used by:</p>
-                                {shortcuts
-                                  .filter(s => s.prompt_builtin_id === builtin.id)
-                                  .map(s => (
-                                    <p key={s.id} className="text-xs">{s.label}</p>
-                                  ))}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 gap-2"
+                            onClick={() => setUsageModalBuiltinId(builtin.id)}
+                          >
+                            <Badge variant="default" className="bg-green-600">
+                              {usageCount}
+                            </Badge>
+                            <span className="text-xs">shortcut{usageCount !== 1 ? 's' : ''}</span>
+                          </Button>
                         ) : (
-                          <Badge variant="outline" className="text-muted-foreground">
-                            Unused
-                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 gap-2"
+                            onClick={() => setLinkingShortcutForBuiltinId(builtin.id)}
+                          >
+                            <Badge variant="outline" className="text-muted-foreground">
+                              Unused
+                            </Badge>
+                            <Link2 className="h-3 w-3 text-muted-foreground" />
+                          </Button>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         {builtin.source_prompt_id ? (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Badge variant="outline" className="gap-1">
-                                <Link2 className="h-3 w-3" />
-                                Converted
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              From user prompt
-                            </TooltipContent>
-                          </Tooltip>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 gap-2 px-2"
+                              onClick={() => {
+                                window.open(`/ai/prompts/edit/${builtin.source_prompt_id}`, '_blank');
+                              }}
+                            >
+                              <Link2 className="h-3 w-3 text-blue-500" />
+                              <span className="text-xs">
+                                {sourcePromptNames[builtin.source_prompt_id] || 'Source Prompt'}
+                              </span>
+                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleRefreshFromSource(builtin)}
+                                >
+                                  <RefreshCw className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Refresh from source</TooltipContent>
+                            </Tooltip>
+                          </div>
                         ) : (
                           <Badge variant="outline" className="gap-1">
                             <FileText className="h-3 w-3" />
@@ -548,6 +775,85 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
                         </div>
                       </TableCell>
                     </TableRow>
+
+                    {/* Nested Rows for Linked Shortcuts */}
+                    {isExpanded && linkedShortcuts.map((shortcut) => {
+                      const category = categories.find(c => c.id === shortcut.category_id);
+                      
+                      return (
+                        <TableRow key={`${builtin.id}-${shortcut.id}`} className="bg-muted/30">
+                          <TableCell colSpan={5} className="py-4 pr-4">
+                            <div className="ml-10 mr-4 space-y-3">
+                              {/* Shortcut Header */}
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                  <Badge variant="outline" className="gap-1">
+                                    <Link2 className="h-3 w-3" />
+                                    Shortcut
+                                  </Badge>
+                                  <span className="font-medium">{shortcut.label}</span>
+                                  {category && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {category.label}
+                                    </Badge>
+                                  )}
+                                  <Badge variant="outline" className="text-xs">
+                                    {shortcut.result_display}
+                                  </Badge>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-shrink-0"
+                                  onClick={async () => {
+                                    await new Promise<void>((resolve, reject) => {
+                                      setConfirmDialog({
+                                        open: true,
+                                        title: 'Detach Shortcut',
+                                        description: `Detach "${shortcut.label}" from this builtin?`,
+                                        onConfirm: async () => {
+                                          try {
+                                            await updatePromptShortcut({
+                                              id: shortcut.id,
+                                              prompt_builtin_id: null,
+                                            });
+                                            toast({ 
+                                              title: 'Success', 
+                                              description: 'Shortcut detached from builtin' 
+                                            });
+                                            await loadData();
+                                            resolve();
+                                          } catch (error) {
+                                            reject(error);
+                                          }
+                                        },
+                                      });
+                                    });
+                                  }}
+                                >
+                                  <X className="h-3 w-3 mr-1" />
+                                  Detach
+                                </Button>
+                              </div>
+
+                              {/* Scope Mappings Editor */}
+                              <div className="bg-card border rounded-lg p-4">
+                                <ScopeMappingEditor
+                                  availableScopes={shortcut.available_scopes || []}
+                                  scopeMappings={shortcut.scope_mappings || {}}
+                                  variableDefaults={builtin.variableDefaults || []}
+                                  onScopesChange={(scopes, mappings) => {
+                                    handleUpdateScopeMappings(shortcut.id, scopes, mappings);
+                                  }}
+                                  compact
+                                />
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </React.Fragment>
                   );
                 })}
               </TableBody>
@@ -589,20 +895,26 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
           const builtin = builtins.find(b => b.id === editingBuiltinId);
           if (!builtin) return null;
 
+          // Convert builtin to universal format
+          const promptData = normalizePromptData({
+            id: builtin.id,
+            name: builtin.name,
+            description: builtin.description,
+            messages: builtin.messages,
+            variable_defaults: builtin.variableDefaults,
+            settings: builtin.settings,
+            is_active: builtin.is_active,
+            source_prompt_id: builtin.source_prompt_id,
+          }, 'builtin');
+
           return (
-            <PromptSettingsModal
+            <UniversalPromptEditor
               isOpen={true}
               onClose={() => setEditingBuiltinId(null)}
-              promptId={builtin.id}
-              promptName={builtin.name}
-              promptDescription={builtin.description || ''}
-              variableDefaults={builtin.variableDefaults || []}
-              messages={builtin.messages || []}
-              settings={builtin.settings || {}}
+              promptData={promptData}
               models={models}
               availableTools={availableTools}
-              onUpdate={handleUpdateBuiltin}
-              onLocalStateUpdate={() => {}}
+              onSave={handleUpdateBuiltin}
             />
           );
         })()}
@@ -624,6 +936,153 @@ export function PromptBuiltinsTableManager({ className }: PromptBuiltinsTableMan
             />
           );
         })()}
+
+        {/* Usage Modal */}
+        <Dialog open={!!usageModalBuiltinId} onOpenChange={() => setUsageModalBuiltinId(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Shortcut Usage</DialogTitle>
+              <DialogDescription>
+                Shortcuts using this builtin
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh] pr-4">
+              {usageModalBuiltinId && (() => {
+                const builtin = builtins.find(b => b.id === usageModalBuiltinId);
+                const usedByShortcuts = shortcuts.filter(s => s.prompt_builtin_id === usageModalBuiltinId);
+
+                if (!builtin || usedByShortcuts.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No shortcuts found
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-4">
+                    <div className="text-sm text-muted-foreground mb-4">
+                      <strong>{builtin.name}</strong> is used by {usedByShortcuts.length} shortcut{usedByShortcuts.length !== 1 ? 's' : ''}
+                    </div>
+                    {usedByShortcuts.map((shortcut) => {
+                      const category = categories.find(c => c.id === shortcut.category_id);
+                      
+                      return (
+                        <Card key={shortcut.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{shortcut.label}</span>
+                                  {category && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {category.label}
+                                    </Badge>
+                                  )}
+                                  <Badge 
+                                    variant={shortcut.is_active ? "default" : "outline"}
+                                    className="text-xs"
+                                  >
+                                    {shortcut.is_active ? 'Active' : 'Inactive'}
+                                  </Badge>
+                                </div>
+                                {shortcut.description && (
+                                  <p className="text-sm text-muted-foreground">
+                                    {shortcut.description}
+                                  </p>
+                                )}
+                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                  <span>Display: {shortcut.result_display}</span>
+                                  {shortcut.keyboard_shortcut && (
+                                    <span>Key: {shortcut.keyboard_shortcut}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={async () => {
+                                        await new Promise<void>((resolve, reject) => {
+                                          setConfirmDialog({
+                                            open: true,
+                                            title: 'Detach Shortcut',
+                                            description: `Detach "${shortcut.label}" from this builtin?`,
+                                            onConfirm: async () => {
+                                              try {
+                                                await updatePromptShortcut({
+                                                  id: shortcut.id,
+                                                  prompt_builtin_id: null,
+                                                });
+                                                toast({ 
+                                                  title: 'Success', 
+                                                  description: 'Shortcut detached' 
+                                                });
+                                                await loadData();
+                                                resolve();
+                                              } catch (error) {
+                                                reject(error);
+                                              }
+                                            },
+                                          });
+                                        });
+                                      }}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Detach from builtin</TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Confirmation Dialog */}
+        <AlertDialog
+          open={confirmDialog.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              setConfirmDialog({ ...confirmDialog, open: false });
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
+              <AlertDialogDescription className="whitespace-pre-line">
+                {confirmDialog.description}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => {
+                  setConfirmDialog({ ...confirmDialog, open: false });
+                }}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog({ ...confirmDialog, open: false });
+                }}
+              >
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );

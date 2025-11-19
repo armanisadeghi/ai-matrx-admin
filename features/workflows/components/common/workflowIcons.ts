@@ -18,7 +18,7 @@ import {
 
 import { DbNodeData, isUserInputNode, isBrokerRelayNode, isBaseFunctionNode, DbFunctionNode } from "@/features/workflows/types";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
-import { getIconComponent } from "@/components/common/IconResolver";
+import { getIconComponent } from "@/components/official/IconResolver";
 
 /**
  * Mapping of specific function IDs to their custom icons

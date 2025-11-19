@@ -57,7 +57,14 @@ import { getUserFriendlyError } from '../utils/error-handler';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
-import { PromptBuiltinEditPanel } from './PromptBuiltinEditPanel';
+import { ShortcutEditModal } from '../components/ShortcutEditModal';
+import { CategoryFormModal } from '../components/CategoryFormModal';
+import { 
+  CategoryFormFields, 
+  CategoryFormData,
+  formDataToUpdateInput,
+  validateCategoryFormData 
+} from '../components/CategoryFormFields';
 
 interface PromptBuiltinsManagerProps {
   className?: string;
@@ -80,7 +87,17 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   // Edit data
-  const [editCategoryData, setEditCategoryData] = useState<Partial<ShortcutCategory>>({});
+  const [editCategoryData, setEditCategoryData] = useState<CategoryFormData>({
+    label: '',
+    placement_type: Object.values(PLACEMENT_TYPES)[0],
+    parent_category_id: null,
+    description: '',
+    icon_name: 'Folder',
+    color: '#666666',
+    sort_order: 999,
+    is_active: true,
+    metadata: {},
+  });
   const [editShortcutData, setEditShortcutData] = useState<Partial<PromptShortcut>>({});
   
   // Tree expansion state
@@ -93,9 +110,12 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   // Dialog state
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
   const [isCreateShortcutOpen, setIsCreateShortcutOpen] = useState(false);
-  const [createCategoryData, setCreateCategoryData] = useState<Partial<CreateShortcutCategoryInput>>({});
   const [createShortcutData, setCreateShortcutData] = useState<Partial<CreatePromptShortcutInput>>({});
   const [isSelectPromptModalOpen, setIsSelectPromptModalOpen] = useState(false);
+  
+  // Shortcut edit modal state
+  const [isShortcutEditModalOpen, setIsShortcutEditModalOpen] = useState(false);
+  const [editingShortcut, setEditingShortcut] = useState<(PromptShortcut & { category?: ShortcutCategory; builtin?: PromptBuiltin }) | null>(null);
   
   // Prompt settings modal state
   const [isPromptSettingsOpen, setIsPromptSettingsOpen] = useState(false);
@@ -141,7 +161,18 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   // Initialize edit data when item is selected
   useEffect(() => {
     if (selectedItem?.type === 'category') {
-      setEditCategoryData(selectedItem.data);
+      const cat = selectedItem.data;
+      setEditCategoryData({
+        label: cat.label,
+        placement_type: cat.placement_type,
+        parent_category_id: cat.parent_category_id,
+        description: cat.description || '',
+        icon_name: cat.icon_name,
+        color: cat.color,
+        sort_order: cat.sort_order,
+        is_active: cat.is_active,
+        metadata: cat.metadata || {},
+      });
       setHasUnsavedChanges(false);
     } else if (selectedItem?.type === 'shortcut') {
       setEditShortcutData(selectedItem.data);
@@ -282,27 +313,28 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   };
 
   // CRUD handlers for categories
-  const handleCategoryChange = (field: string, value: any) => {
-    setEditCategoryData(prev => ({ ...prev, [field]: value }));
+  const handleCategoryChange = (data: CategoryFormData) => {
+    setEditCategoryData(data);
     setHasUnsavedChanges(true);
   };
 
   const handleSaveCategoryChanges = async () => {
-    if (!editCategoryData.id) return;
+    if (!selectedItem || selectedItem.type !== 'category') return;
+    
+    // Validate
+    const errors = validateCategoryFormData(editCategoryData);
+    if (Object.keys(errors).length > 0) {
+      toast({ 
+        title: 'Validation Error', 
+        description: Object.values(errors)[0],
+        variant: 'destructive' 
+      });
+      return;
+    }
     
     try {
-      await updateShortcutCategory({
-        id: editCategoryData.id,
-        placement_type: editCategoryData.placement_type,
-        parent_category_id: editCategoryData.parent_category_id,
-        label: editCategoryData.label,
-        description: editCategoryData.description,
-        icon_name: editCategoryData.icon_name,
-        color: editCategoryData.color,
-        sort_order: editCategoryData.sort_order,
-        is_active: editCategoryData.is_active,
-        metadata: editCategoryData.metadata,
-      });
+      const updateInput = formDataToUpdateInput(selectedItem.data.id, editCategoryData);
+      await updateShortcutCategory(updateInput);
       
       toast({ title: 'Success', description: 'Category updated successfully' });
       setHasUnsavedChanges(false);
@@ -343,6 +375,11 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       console.error('Error deleting category:', error);
       toast({ title: 'Error', description: 'Failed to delete category', variant: 'destructive' });
     }
+  };
+
+  const handleCategorySuccess = async () => {
+    setIsCreateCategoryOpen(false);
+    await loadData();
   };
 
   // CRUD handlers for shortcuts
@@ -410,7 +447,18 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
 
   const handleDiscardChanges = () => {
     if (selectedItem?.type === 'category') {
-      setEditCategoryData(selectedItem.data);
+      const cat = selectedItem.data;
+      setEditCategoryData({
+        label: cat.label,
+        placement_type: cat.placement_type,
+        parent_category_id: cat.parent_category_id,
+        description: cat.description || '',
+        icon_name: cat.icon_name,
+        color: cat.color,
+        sort_order: cat.sort_order,
+        is_active: cat.is_active,
+        metadata: cat.metadata || {},
+      });
     } else if (selectedItem?.type === 'shortcut') {
       setEditShortcutData(selectedItem.data);
     }
@@ -418,34 +466,6 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
   };
 
   // Create handlers
-  const handleCreateCategory = async () => {
-    if (!createCategoryData.placement_type || !createCategoryData.label) {
-      toast({ title: 'Error', description: 'Placement type and label are required', variant: 'destructive' });
-      return;
-    }
-    
-    try {
-      await createShortcutCategory(createCategoryData as CreateShortcutCategoryInput);
-      toast({ title: 'Success', description: 'Category created successfully' });
-      setIsCreateCategoryOpen(false);
-      setCreateCategoryData({});
-      
-      // Reload data without showing full loading state
-      const [categoriesData, shortcutsData, builtinsData] = await Promise.all([
-        fetchShortcutCategories(),
-        fetchShortcutsWithRelations(),
-        fetchPromptBuiltins({ is_active: true }),
-      ]);
-      
-      setCategories(categoriesData);
-      setShortcuts(shortcutsData);
-      setBuiltins(builtinsData);
-    } catch (error) {
-      console.error('Error creating category:', error);
-      toast({ title: 'Error', description: 'Failed to create category', variant: 'destructive' });
-    }
-  };
-
   const handleCreateShortcut = async () => {
     if (!createShortcutData.category_id || !createShortcutData.label) {
       toast({ title: 'Error', description: 'Category and label are required', variant: 'destructive' });
@@ -604,7 +624,10 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                   className={`flex items-center gap-1.5 px-1.5 py-1 rounded cursor-pointer transition-colors
                     ${isShortcutSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                   style={{ paddingLeft: `${(depth + 1) * 12 + 20}px` }}
-                  onClick={() => setSelectedItem({ type: 'shortcut', data: shortcut })}
+                  onClick={() => {
+                    setEditingShortcut(shortcut);
+                    setIsShortcutEditModalOpen(true);
+                  }}
                 >
                   <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
                   <span className="text-xs truncate">{shortcut.label}</span>
@@ -785,7 +808,10 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
                         key={shortcut.id}
                         className={`flex items-center gap-1.5 px-1.5 py-1 rounded cursor-pointer transition-colors mb-0.5
                           ${isShortcutSelected ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                        onClick={() => setSelectedItem({ type: 'shortcut', data: shortcut })}
+                        onClick={() => {
+                          setEditingShortcut(shortcut);
+                          setIsShortcutEditModalOpen(true);
+                        }}
                       >
                         <Zap className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
@@ -859,136 +885,20 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
               <div className="p-6 space-y-6">
                 {selectedItem.type === 'category' ? (
                   /* Category Edit Form */
-                  <>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Basic Information</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label>Label</Label>
-                            <Input
-                              value={editCategoryData.label || ''}
-                              onChange={(e) => handleCategoryChange('label', e.target.value)}
-                              placeholder="Category name"
-                            />
-                          </div>
-                          <div>
-                            <Label>Placement Type</Label>
-                            <Select
-                              value={editCategoryData.placement_type}
-                              onValueChange={(value) => handleCategoryChange('placement_type', value)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
-                                  <SelectItem key={value} value={value}>
-                                    {getPlacementTypeMeta(value).label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Description</Label>
-                          <Textarea
-                            value={editCategoryData.description || ''}
-                            onChange={(e) => handleCategoryChange('description', e.target.value)}
-                            placeholder="Optional description"
-                            rows={3}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <Label>Icon Name</Label>
-                            <Input
-                              value={editCategoryData.icon_name || ''}
-                              onChange={(e) => handleCategoryChange('icon_name', e.target.value)}
-                              placeholder="Folder"
-                            />
-                          </div>
-                          <div>
-                            <Label>Color</Label>
-                            <Input
-                              value={editCategoryData.color || ''}
-                              onChange={(e) => handleCategoryChange('color', e.target.value)}
-                              placeholder="Color or code (e.g. #3b82f6 or blue)"
-                            />
-                          </div>
-                          <div>
-                            <Label>Sort Order</Label>
-                            <Input
-                              type="number"
-                              value={editCategoryData.sort_order || 0}
-                              onChange={(e) => handleCategoryChange('sort_order', parseInt(e.target.value) || 0)}
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Parent Category</Label>
-                          <Select
-                            value={editCategoryData.parent_category_id || 'none'}
-                            onValueChange={(value) => handleCategoryChange('parent_category_id', value === 'none' ? null : value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">None (Root Level)</SelectItem>
-                              {categories
-                                .filter(c => 
-                                  c.id !== editCategoryData.id && 
-                                  c.placement_type === editCategoryData.placement_type
-                                )
-                                .map(cat => (
-                                  <SelectItem key={cat.id} value={cat.id}>
-                                    {cat.label}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <Checkbox
-                            checked={editCategoryData.is_active}
-                            onCheckedChange={(checked) => handleCategoryChange('is_active', checked)}
-                          />
-                          <span className="text-sm">Active (visible in menus)</span>
-                        </label>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Metadata (JSON)</CardTitle>
-                        <CardDescription>Optional JSON data for advanced use cases</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <Textarea
-                          value={JSON.stringify(editCategoryData.metadata || {}, null, 2)}
-                          onChange={(e) => {
-                            try {
-                              const parsed = JSON.parse(e.target.value);
-                              handleCategoryChange('metadata', parsed);
-                            } catch {
-                              // Invalid JSON, don't update
-                            }
-                          }}
-                          placeholder="{}"
-                          rows={6}
-                          className="font-mono text-sm"
-                        />
-                      </CardContent>
-                    </Card>
-                  </>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Category Details</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CategoryFormFields
+                        initialData={selectedItem.data}
+                        allCategories={categories}
+                        formData={editCategoryData}
+                        onChange={handleCategoryChange}
+                        disabled={false}
+                      />
+                    </CardContent>
+                  </Card>
                 ) : (
                   /* Shortcut Edit Form */
                   <>
@@ -1416,71 +1326,12 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
       </div>
 
       {/* Create Category Dialog */}
-      <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Create New Category</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Label *</Label>
-                <Input
-                  value={createCategoryData.label || ''}
-                  onChange={(e) => setCreateCategoryData({ ...createCategoryData, label: e.target.value })}
-                  placeholder="Category name"
-                />
-              </div>
-              <div>
-                <Label>Placement Type *</Label>
-                <Select
-                  value={createCategoryData.placement_type}
-                  onValueChange={(value) => setCreateCategoryData({ ...createCategoryData, placement_type: value as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
-                      <SelectItem key={value} value={value}>
-                        {getPlacementTypeMeta(value).label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Icon Name</Label>
-                <Input
-                  value={createCategoryData.icon_name || ''}
-                  onChange={(e) => setCreateCategoryData({ ...createCategoryData, icon_name: e.target.value })}
-                  placeholder="Folder"
-                />
-              </div>
-              <div>
-                <Label>Color</Label>
-                <Input
-                  value={createCategoryData.color || ''}
-                  onChange={(e) => setCreateCategoryData({ ...createCategoryData, color: e.target.value })}
-                  placeholder="#3b82f6"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsCreateCategoryOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateCategory}>
-                Create
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CategoryFormModal
+        isOpen={isCreateCategoryOpen}
+        onClose={() => setIsCreateCategoryOpen(false)}
+        allCategories={categories}
+        onSuccess={handleCategorySuccess}
+      />
 
       {/* Select/Generate Prompt for Builtin Modal */}
       {isSelectPromptModalOpen && selectedItem?.type === 'shortcut' && (
@@ -1643,6 +1494,26 @@ export function PromptBuiltinsManager({ className }: PromptBuiltinsManagerProps)
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Shortcut Edit Modal */}
+      <ShortcutEditModal
+        isOpen={isShortcutEditModalOpen}
+        onClose={() => {
+          setIsShortcutEditModalOpen(false);
+          setEditingShortcut(null);
+        }}
+        onSuccess={() => {
+          setIsShortcutEditModalOpen(false);
+          setEditingShortcut(null);
+          loadData();
+        }}
+        shortcut={editingShortcut}
+        categories={categories}
+        builtins={builtins}
+        mode="standalone"
+        models={models}
+        availableTools={availableTools}
+      />
     </div>
   );
 }

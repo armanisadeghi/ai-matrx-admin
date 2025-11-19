@@ -151,8 +151,8 @@ export function SelectBuiltinForShortcutModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-4 pt-4 pb-3 border-b">
           <DialogTitle>Link Builtin to &quot;{shortcut.label}&quot;</DialogTitle>
           <DialogDescription>
             Browse and select a prompt builtin to link to this shortcut
@@ -164,7 +164,7 @@ export function SelectBuiltinForShortcutModal({
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="flex-1 flex gap-4 overflow-hidden">
+          <div className="flex-1 flex gap-4 px-4 py-3 overflow-hidden">
             {/* Left: Builtin List */}
             <div className="flex-1 flex flex-col gap-3 overflow-hidden">
               {/* Search & Filters */}
@@ -318,11 +318,9 @@ export function SelectBuiltinForShortcutModal({
                           availableScopes={availableScopes}
                           scopeMappings={scopeMappings}
                           variableDefaults={selectedBuiltin.variableDefaults || []}
-                          onMappingChange={(scopeKey, variableName) => {
-                            setScopeMappings((prev) => ({
-                              ...prev,
-                              [scopeKey]: variableName,
-                            }));
+                          onScopesChange={(scopes, mappings) => {
+                            setAvailableScopes(scopes);
+                            setScopeMappings(mappings);
                           }}
                           compact
                         />
@@ -348,7 +346,7 @@ export function SelectBuiltinForShortcutModal({
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-4 border-t">
+        <div className="flex justify-end gap-2 px-4 pb-4 pt-3 border-t">
           <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
             Cancel
           </Button>

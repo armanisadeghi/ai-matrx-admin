@@ -1,6 +1,6 @@
 import React from 'react';
 import MultiSwitchToggle from "@/components/matrx/MultiSwitchToggle";
-import * as LucideIcons from 'lucide-react';
+import { getIconComponent } from '@/components/official/IconResolver';
 import {
     MessageSquare,
     Braces,
@@ -63,18 +63,18 @@ const EntitySpecialMultiSwitch = React.forwardRef<HTMLElement, EntitySpecialMult
             if (componentProps?.preset && PRESET_CONFIGURATIONS[componentProps.preset]) {
                 return PRESET_CONFIGURATIONS[componentProps.preset].map(state => ({
                     ...state,
-                    icon: state.iconName ? React.createElement(LucideIcons[state.iconName], { size: 14 }) : null
+                    icon: state.iconName ? React.createElement(getIconComponent(state.iconName), { size: 14 }) : null
                 }));
             }
 
             // Handle custom states from componentProps
             if (Array.isArray(componentProps?.states)) {
                 return componentProps.states.map(state => {
-                    if (state.iconName && LucideIcons[state.iconName]) {
+                    if (state.iconName) {
                         // Create element from Lucide icon
                         return {
                             ...state,
-                            icon: React.createElement(LucideIcons[state.iconName], { size: 14 })
+                            icon: React.createElement(getIconComponent(state.iconName), { size: 14 })
                         };
                     }
                     return state;

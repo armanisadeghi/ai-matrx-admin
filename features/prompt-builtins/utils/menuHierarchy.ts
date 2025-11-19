@@ -1,4 +1,5 @@
-import * as LucideIcons from 'lucide-react';
+import { getIconComponent } from '@/components/official/IconResolver';
+import { FileText } from 'lucide-react';
 import type { CategoryGroup, MenuItem } from '@/features/prompt-builtins/types/menu';
 import type { PlacementType } from '@/features/prompt-builtins/constants';
 
@@ -75,7 +76,7 @@ export function buildCategoryHierarchy(flatData: FlatCategory[]): CategoryGroup[
 function hydrateIcons(items: any[]): MenuItem[] {
   return items.map((item: any) => {
     if (item.type === 'content_block' && item.icon_name) {
-      const IconComponent = (LucideIcons as any)[item.icon_name] || LucideIcons.FileText;
+      const IconComponent = getIconComponent(item.icon_name, "FileText");
       return { ...item, icon: IconComponent };
     }
     return item;

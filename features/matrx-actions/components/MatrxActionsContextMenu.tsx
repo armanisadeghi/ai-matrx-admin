@@ -19,7 +19,8 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import * as LucideIcons from 'lucide-react';
+import { getIconComponent as resolveIcon } from '@/components/official/IconResolver';
+import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AvailableContext } from '../types';
 import { buildContextMenu, getStandaloneActions, getGroupedActions } from '../utils/menu-builder';
@@ -40,11 +41,8 @@ interface MatrxActionsContextMenuProps {
  * Get Lucide icon component by name
  */
 function getIconComponent(iconName?: string): React.ComponentType<{ className?: string }> {
-  if (!iconName) return LucideIcons.Sparkles;
-  
-  // @ts-ignore - Dynamic icon lookup
-  const Icon = LucideIcons[iconName as keyof typeof LucideIcons];
-  return Icon as React.ComponentType<{ className?: string }> || LucideIcons.Sparkles;
+  if (!iconName) return Sparkles;
+  return resolveIcon(iconName, "Sparkles") as React.ComponentType<{ className?: string }>;
 }
 
 /**

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toTitleCase } from "@/utils/dataUtils";
 import { RegisteredNodeData } from "@/types";
 import { useNodeCategoryWithFetch, useRegisteredNodeWithFetch } from "@/lib/redux/entity/hooks/entityMainHooks";
-import { DynamicIcon } from "@/components/common/IconResolver";
+import { DynamicIcon } from "@/components/official/IconResolver";
 
 
 interface NodeDefinitionTabProps {

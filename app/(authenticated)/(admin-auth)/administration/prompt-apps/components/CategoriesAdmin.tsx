@@ -21,7 +21,6 @@ import {
     ArrowDown,
     Sparkles
 } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
 import {
     fetchCategories,
@@ -32,6 +31,7 @@ import {
     CreateCategoryInput,
     UpdateCategoryInput
 } from '@/lib/services/prompt-apps-admin-service';
+import { getIconComponent as resolveIcon } from '@/components/official/IconResolver';
 
 export function CategoriesAdmin() {
     const [categories, setCategories] = useState<PromptAppCategory[]>([]);
@@ -243,9 +243,8 @@ export function CategoriesAdmin() {
     };
 
     const getIconComponent = (iconName?: string) => {
-        if (!iconName) return <Tag className="w-4 h-4" />;
-        const Icon = (LucideIcons as any)[iconName];
-        return Icon ? <Icon className="w-4 h-4" /> : <Tag className="w-4 h-4" />;
+        if (!iconName) return Tag;
+        return resolveIcon(iconName, "Tag");
     };
 
     const selectedCategory = selectedCategoryId ? categories.find(c => c.id === selectedCategoryId) : null;

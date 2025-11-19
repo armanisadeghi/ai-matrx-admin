@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench } from 'lucide-react';
+import { X, FileText, MessageSquare, Plus, Wand2, Settings2, Variable, Wrench, Save, Eye, Edit2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,8 @@ import { sanitizeVariableName } from '@/features/prompts/utils/variable-utils';
 import { formatText } from '@/utils/text/text-case-converter';
 import { mapIcon } from '@/utils/icons/icon-mapper';
 import { PromptMessage, PromptVariable, VariableCustomComponent, PromptSettings } from '@/features/prompts/types/core';
+import { HighlightedText } from './HighlightedText';
+import EnhancedChatMarkdown from '@/components/mardown-display/chat-markdown/EnhancedChatMarkdown';
 
 type MessageItem = 
     | { type: 'system'; index: -1 }
@@ -49,6 +51,10 @@ interface FullScreenEditorProps {
     onAddTool?: (tool: string) => void;
     onRemoveTool?: (tool: string) => void;
     modelSupportsTools?: boolean;
+    // Optional save functionality
+    onSave?: () => void;
+    isSaving?: boolean;
+    isDirty?: boolean;
 }
 
 export function FullScreenEditor({
@@ -75,12 +81,16 @@ export function FullScreenEditor({
     onAddTool,
     onRemoveTool,
     modelSupportsTools = false,
+    onSave,
+    isSaving = false,
+    isDirty = false,
 }: FullScreenEditorProps) {
     const [selectedItem, setSelectedItem] = useState<MessageItem>({ type: 'system', index: -1 });
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isOptimizerOpen, setIsOptimizerOpen] = useState(false);
     const [selectedVariableIndex, setSelectedVariableIndex] = useState<number | null>(null);
     const [isAddingVariable, setIsAddingVariable] = useState(false);
+    const [viewMode, setViewMode] = useState<'view' | 'edit' | 'pretty'>('edit');
     
     // State for variable being edited/added
     const [editingVariableName, setEditingVariableName] = useState("");
@@ -176,19 +186,33 @@ export function FullScreenEditor({
                     {/* Sidebar */}
                     <div className="w-80 bg-textured border-r border-gray-200 dark:border-gray-800 flex flex-col">
                         {/* Sidebar Header */}
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+                        <div className="p-3 border-b border-gray-200 dark:border-gray-800">
                             <div className="flex items-center justify-between">
-                                <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                <DialogTitle className="text-base font-semibold text-gray-900 dark:text-gray-100">
                                     Full Screen Editor
                                 </DialogTitle>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                    onClick={onClose}
-                                >
-                                    <X className="w-4 h-4" />
-                                </Button>
+                                <div className="flex items-center gap-1.5">
+                                    {onSave && (
+                                        <Button
+                                            variant="default"
+                                            size="sm"
+                                            className="h-7 text-xs"
+                                            onClick={onSave}
+                                            disabled={isSaving || !isDirty}
+                                        >
+                                            <Save className="w-3 h-3 mr-1" />
+                                            {isSaving ? 'Saving...' : 'Save'}
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 w-7 p-0"
+                                        onClick={onClose}
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </Button>
+                                </div>
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Select a message to edit
@@ -197,9 +221,9 @@ export function FullScreenEditor({
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setIsOptimizerOpen(true)}
-                                className="w-full mt-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
+                                className="w-full mt-2 h-8 text-xs bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
                             >
-                                <Wand2 className="h-4 w-4 mr-2" />
+                                <Wand2 className="h-3.5 w-3.5 mr-1.5" />
                                 Optimize System Prompt
                             </Button>
                         </div>
@@ -209,22 +233,22 @@ export function FullScreenEditor({
                             {/* System Message */}
                             <button
                                 onClick={() => setSelectedItem({ type: 'system', index: -1 })}
-                                className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
+                                className={`w-full text-left p-2 rounded-md mb-1.5 transition-colors ${
                                     selectedItem.type === 'system'
                                         ? 'bg-purple-100 dark:bg-purple-900/30 border-2 border-purple-500 dark:border-purple-500'
                                         : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
                                 }`}
                             >
-                                <div className="flex items-center gap-2 mb-1">
-                                    <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
                                         Message 0
                                     </span>
-                                    <span className={`text-xs px-2 py-0.5 rounded ${getRoleBadgeColor('system')}`}>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${getRoleBadgeColor('system')}`}>
                                         system
                                     </span>
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2">
                                     {developerMessage || 'No content'}
                                 </p>
                             </button>
@@ -234,7 +258,7 @@ export function FullScreenEditor({
                                 <button
                                     key={index}
                                     onClick={() => setSelectedItem({ type: 'message', index })}
-                                    className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
+                                    className={`w-full text-left p-2 rounded-md mb-1.5 transition-colors ${
                                         selectedItem.type === 'message' && selectedItem.index === index
                                             ? `border-2 ${
                                                 message.role === 'user'
@@ -244,16 +268,16 @@ export function FullScreenEditor({
                                             : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <MessageSquare className={`w-4 h-4 ${getRoleColor(message.role)}`} />
-                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <MessageSquare className={`w-3.5 h-3.5 ${getRoleColor(message.role)}`} />
+                                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
                                             Message {index + 1}
                                         </span>
-                                        <span className={`text-xs px-2 py-0.5 rounded ${getRoleBadgeColor(message.role)}`}>
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${getRoleBadgeColor(message.role)}`}>
                                             {message.role}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2">
                                         {message.content || 'No content'}
                                     </p>
                                 </button>
@@ -261,26 +285,26 @@ export function FullScreenEditor({
 
                             {/* Special Tabs Divider */}
                             {(models || variableDefaults.length > 0) && (
-                                <div className="my-2 border-t border-gray-300 dark:border-gray-700" />
+                                <div className="my-1.5 border-t border-gray-300 dark:border-gray-700" />
                             )}
 
                             {/* Model Settings Tab */}
                             {models && model && modelConfig && (
                                 <button
                                     onClick={() => setSelectedItem({ type: 'settings' })}
-                                    className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
+                                    className={`w-full text-left p-2 rounded-md mb-1.5 transition-colors ${
                                         selectedItem.type === 'settings'
                                             ? 'bg-orange-100 dark:bg-orange-900/30 border-2 border-orange-500 dark:border-orange-500'
                                             : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Settings2 className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Settings2 className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
                                             Model Settings
                                         </span>
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1">
                                         {models.find(m => m.id === model)?.common_name || model}
                                     </p>
                                 </button>
@@ -290,22 +314,22 @@ export function FullScreenEditor({
                             {variableDefaults && variableDefaults.length >= 0 && onAddVariable && (
                                 <button
                                     onClick={() => setSelectedItem({ type: 'variables' })}
-                                    className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
+                                    className={`w-full text-left p-2 rounded-md mb-1.5 transition-colors ${
                                         selectedItem.type === 'variables'
                                             ? 'bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-500 dark:border-cyan-500'
                                             : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Variable className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Variable className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
                                             Variables
                                         </span>
-                                        <span className="text-xs px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
                                             {variableDefaults.length}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1">
                                         {variableDefaults.length === 0 ? 'No variables' : variableDefaults.map(v => v.name).join(', ')}
                                     </p>
                                 </button>
@@ -315,27 +339,27 @@ export function FullScreenEditor({
                             {availableTools && availableTools.length > 0 && onAddTool && onRemoveTool && (
                                 <button
                                     onClick={() => setSelectedItem({ type: 'tools' })}
-                                    className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
+                                    className={`w-full text-left p-2 rounded-md mb-1.5 transition-colors ${
                                         selectedItem.type === 'tools'
                                             ? 'bg-emerald-100 dark:bg-emerald-900/30 border-2 border-emerald-500 dark:border-emerald-500'
                                             : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Wrench className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
                                             Tools
                                         </span>
-                                        <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
                                             {selectedTools.length}
                                         </span>
                                         {!modelSupportsTools && (
-                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                                            <span className="text-[9px] px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
                                                 N/A
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1">
                                         {selectedTools.length === 0 ? 'No tools' : `${selectedTools.length} selected`}
                                     </p>
                                 </button>
@@ -344,14 +368,14 @@ export function FullScreenEditor({
 
                         {/* Add Message Button */}
                         {onAddMessage && (
-                            <div className="p-4 pt-1 border-t border-gray-200 dark:border-gray-800">
+                            <div className="p-2 border-t border-gray-200 dark:border-gray-800">
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={onAddMessage}
-                                    className="w-full text-gray-400 hover:text-gray-300 border border-dashed border-gray-600 hover:border-gray-500"
+                                    className="w-full h-8 text-xs text-gray-400 hover:text-gray-300 border border-dashed border-gray-600 hover:border-gray-500"
                                 >
-                                    <Plus className="w-4 h-4 mr-2" />
+                                    <Plus className="w-3.5 h-3.5 mr-1.5" />
                                     Add message
                                 </Button>
                             </div>
@@ -361,10 +385,10 @@ export function FullScreenEditor({
                     {/* Editor Area */}
                     <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950">
                         {/* Editor Header */}
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-800 bg-textured">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-textured">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         {selectedItem.type === 'system' 
                                             ? `Message 0` 
                                             : selectedItem.type === 'message'
@@ -376,116 +400,198 @@ export function FullScreenEditor({
                                             : 'Tools'}
                                     </h3>
                                     {(selectedItem.type === 'system' || selectedItem.type === 'message') && (
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">Role:</span>
-                                            {selectedItem.type === 'system' ? (
-                                                <span className="px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md">
-                                                    Developer
-                                                </span>
-                                            ) : (
-                                                <select
-                                                    value={getCurrentRole()}
-                                                    onChange={(e) => {
-                                                        if (selectedItem.type === 'message') {
-                                                            onMessageRoleChange(selectedItem.index, e.target.value);
-                                                        }
-                                                    }}
-                                                    className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-textured text-gray-900 dark:text-gray-100"
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">Role:</span>
+                                                {selectedItem.type === 'system' ? (
+                                                    <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">
+                                                        Developer
+                                                    </span>
+                                                ) : (
+                                                    <select
+                                                        value={getCurrentRole()}
+                                                        onChange={(e) => {
+                                                            if (selectedItem.type === 'message') {
+                                                                onMessageRoleChange(selectedItem.index, e.target.value);
+                                                            }
+                                                        }}
+                                                        className="px-2 py-0.5 text-xs border border-gray-300 dark:border-gray-700 rounded bg-textured text-gray-900 dark:text-gray-100"
+                                                    >
+                                                        <option value="user">User</option>
+                                                        <option value="assistant">Assistant</option>
+                                                    </select>
+                                                )}
+                                            </div>
+                                            
+                                            {/* 3-way toggle */}
+                                            <div className="flex items-center gap-0.5 bg-gray-200 dark:bg-gray-800 rounded p-0.5">
+                                                <button
+                                                    onClick={() => setViewMode('view')}
+                                                    className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded transition-colors ${
+                                                        viewMode === 'view'
+                                                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                                                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                                                    }`}
                                                 >
-                                                    <option value="user">User</option>
-                                                    <option value="assistant">Assistant</option>
-                                                </select>
-                                            )}
+                                                    <Eye className="w-3 h-3" />
+                                                    <span>View</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => setViewMode('edit')}
+                                                    className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded transition-colors ${
+                                                        viewMode === 'edit'
+                                                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                                                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                                                    }`}
+                                                >
+                                                    <Edit2 className="w-3 h-3" />
+                                                    <span>Edit</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => setViewMode('pretty')}
+                                                    className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded transition-colors ${
+                                                        viewMode === 'pretty'
+                                                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                                                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                                                    }`}
+                                                >
+                                                    <Sparkles className="w-3 h-3" />
+                                                    <span>Pretty</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                     {selectedItem.type === 'settings' && model && models && (
                                         <div className="flex items-center gap-2 mt-2">
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">Model:</span>
-                                            <span className="px-3 py-1 text-sm bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-md">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">Model:</span>
+                                            <span className="px-2 py-0.5 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded">
                                                 {models.find(m => m.id === model)?.common_name || model}
                                             </span>
                                         </div>
                                     )}
                                     {selectedItem.type === 'variables' && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                             Manage prompt variables and their default values
                                         </p>
                                     )}
                                     {selectedItem.type === 'tools' && (
                                         <div className="flex items-center gap-2 mt-2">
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
                                                 {modelSupportsTools ? 'Manage available tools for this prompt' : 'Tools not supported by current model'}
                                             </span>
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-3 pr-12">
-                                    {(selectedItem.type === 'system' || selectedItem.type === 'message') && (
-                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                            Right-click for content blocks
-                                        </div>
-                                    )}
-                                </div>
+                                {(selectedItem.type === 'system' || selectedItem.type === 'message') && viewMode === 'edit' && (
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 pr-12">
+                                        Right-click for content blocks
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 overflow-hidden p-6">
+                        <div className="flex-1 overflow-hidden min-h-0">
                             {(selectedItem.type === 'system' || selectedItem.type === 'message') && (
-                                <PromptEditorContextMenu getTextarea={() => textareaRef.current}>
-                                    <textarea
-                                        ref={textareaRef}
-                                        value={getCurrentContent()}
-                                        onChange={(e) => {
-                                            handleContentChange(e.target.value);
-                                        }}
-                                        placeholder={
-                                            selectedItem.type === 'system'
-                                                ? "Enter system instructions for the AI..."
-                                                : "Enter message content..."
-                                        }
-                                        className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-6 text-base text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 overflow-y-auto"
-                                        autoFocus
-                                    />
-                                </PromptEditorContextMenu>
+                                <>
+                                    {viewMode === 'edit' && (
+                                        <div className="h-full p-4">
+                                            <PromptEditorContextMenu getTextarea={() => textareaRef.current}>
+                                                <textarea
+                                                    ref={textareaRef}
+                                                    value={getCurrentContent()}
+                                                    onChange={(e) => {
+                                                        handleContentChange(e.target.value);
+                                                    }}
+                                                    placeholder={
+                                                        selectedItem.type === 'system'
+                                                            ? "Enter system instructions for the AI..."
+                                                            : "Enter message content..."
+                                                    }
+                                                    className="w-full h-full bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 overflow-y-auto"
+                                                    autoFocus
+                                                />
+                                            </PromptEditorContextMenu>
+                                        </div>
+                                    )}
+                                    {viewMode === 'view' && (
+                                        <div className="h-full p-4 overflow-y-auto min-h-0">
+                                            <div className="bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+                                                {getCurrentContent() ? (
+                                                    <HighlightedText 
+                                                        text={getCurrentContent()} 
+                                                        validVariables={variableDefaults.map(v => v.name)}
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-400 dark:text-gray-500 italic">
+                                                        {selectedItem.type === 'system'
+                                                            ? "No system instructions"
+                                                            : "No message content"}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {viewMode === 'pretty' && (
+                                        <div className="h-full p-4 overflow-y-auto min-h-0">
+                                            <div className="bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+                                                {getCurrentContent() ? (
+                                                    <EnhancedChatMarkdown
+                                                        content={getCurrentContent()}
+                                                        hideCopyButton={false}
+                                                        allowFullScreenEditor={false}
+                                                    />
+                                                ) : (
+                                                    <span className="text-sm text-gray-400 dark:text-gray-500 italic">
+                                                        {selectedItem.type === 'system'
+                                                            ? "No system instructions"
+                                                            : "No message content"}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
 
                             {selectedItem.type === 'settings' && model && models && modelConfig && onModelConfigChange && onModelChange && (
-                                <div className="h-full overflow-y-auto bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-6">
-                                    <div className="max-w-3xl mx-auto space-y-6">
-                                        {/* Model Selection */}
-                                        <div className="pb-4 border-b border-gray-200 dark:border-gray-800">
-                                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
-                                                Select Model
-                                            </Label>
-                                            <Select value={model} onValueChange={onModelChange}>
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue>
-                                                        {models.find(m => m.id === model)?.common_name || model}
-                                                    </SelectValue>
-                                                </SelectTrigger>
-                                                <SelectContent className="max-h-[400px]">
-                                                    {models.map((m) => (
-                                                        <SelectItem key={m.id} value={m.id}>
-                                                            {m.common_name || m.id}
-                                                            {m.is_deprecated && <span className="text-xs text-gray-400 ml-2">(deprecated)</span>}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                <div className="h-full p-4 overflow-y-auto min-h-0">
+                                    <div className="bg-textured border border-gray-300 dark:border-gray-700 rounded-lg p-4">
+                                        <div className="space-y-4">
+                                            {/* Model Selection */}
+                                            <div className="pb-3 border-b border-gray-200 dark:border-gray-800">
+                                                <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                                    Select Model
+                                                </Label>
+                                                <Select value={model} onValueChange={onModelChange}>
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue>
+                                                            {models.find(m => m.id === model)?.common_name || model}
+                                                        </SelectValue>
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-[400px]">
+                                                        {models.map((m) => (
+                                                            <SelectItem key={m.id} value={m.id}>
+                                                                {m.common_name || m.id}
+                                                                {m.is_deprecated && <span className="text-xs text-gray-400 ml-2">(deprecated)</span>}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
 
-                                        {/* Model Settings */}
-                                        <div>
-                                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
-                                                Model Configuration
-                                            </Label>
-                                            <ModelSettings
-                                                modelId={model}
-                                                models={models}
-                                                settings={modelConfig}
-                                                onSettingsChange={onModelConfigChange}
-                                            />
+                                            {/* Model Settings */}
+                                            <div>
+                                                <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                                    Model Configuration
+                                                </Label>
+                                                <ModelSettings
+                                                    modelId={model}
+                                                    models={models}
+                                                    settings={modelConfig}
+                                                    onSettingsChange={onModelConfigChange}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

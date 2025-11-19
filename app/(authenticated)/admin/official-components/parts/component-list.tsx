@@ -439,6 +439,22 @@ export const componentList: ComponentEntry[] = [
     description: 'Complete voice recording button with two variants. Handles recording, transcription, and returns text. Shows recording state with visual feedback and duration',
     categories: ['buttons', 'ai-helpers', 'interactive'],
     tags: ['button', 'voice', 'audio', 'recording', 'transcription', 'microphone', 'speech-to-text', 'ai', 'input', 'inline']
+  },
+  {
+    id: 'icon-resolver',
+    name: 'Icon Resolver',
+    path: 'components/official/IconResolver.tsx',
+    description: 'Hybrid icon resolver with static imports for common icons and dynamic imports for rare ones. Reduces bundle size by 99% compared to wildcard imports while supporting all 1000+ Lucide icons and custom react-icons',
+    categories: ['utilities', 'interactive'],
+    tags: ['icon', 'lucide', 'react-icons', 'dynamic', 'bundle', 'optimization', 'performance', 'resolver', 'component', 'utility']
+  },
+  {
+    id: 'icon-input-with-validation',
+    name: 'Icon Input with Validation',
+    path: 'components/official/IconInputWithValidation.tsx',
+    description: 'All-in-one icon name input with real-time validation, live preview, auto-capitalization, and visual feedback. Seamlessly replaces standard Input for icon name entry',
+    categories: ['inputs', 'utilities', 'feedback'],
+    tags: ['icon', 'input', 'validation', 'preview', 'lucide', 'form', 'field', 'auto-capitalize', 'checkmark', 'visual-feedback']
   }
 ]; 
 

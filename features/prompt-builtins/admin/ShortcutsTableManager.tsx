@@ -4,8 +4,20 @@ import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Table,
   TableBody,
@@ -61,10 +73,12 @@ import {
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from '../constants';
 import { RESULT_DISPLAY_META, ResultDisplay } from '../types/execution-modes';
 import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
-import { PromptBuiltinEditDialog } from './PromptBuiltinEditDialog';
+import { ShortcutEditModal } from '../components/ShortcutEditModal';
+import { CategorySelector } from '../components/CategorySelector';
 import { SelectPromptForBuiltinModal } from './SelectPromptForBuiltinModal';
 import { SelectBuiltinForShortcutModal } from '../components/SelectBuiltinForShortcutModal';
 import { PromptSettingsModal } from '@/features/prompts/components/PromptSettingsModal';
+import { getIconComponent } from '@/components/official/IconResolver';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -131,6 +145,9 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   const [selectingPromptFor, setSelectingPromptFor] = useState<ShortcutWithRelations | null>(null);
   const [selectingBuiltinFor, setSelectingBuiltinFor] = useState<ShortcutWithRelations | null>(null);
   const [viewingBuiltinId, setViewingBuiltinId] = useState<string | null>(null);
+  
+  // Confirmation dialog states
+  const [deleteConfirmShortcut, setDeleteConfirmShortcut] = useState<{ id: string; label: string } | null>(null);
 
   const { toast } = useToast();
 
@@ -166,6 +183,69 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
   React.useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Calculate available filters from actual data
+  const availablePlacements = useMemo(() => {
+    const placements = new Set<string>();
+    shortcuts.forEach(s => {
+      if (s.category?.placement_type) {
+        placements.add(s.category.placement_type);
+      }
+    });
+    return Array.from(placements);
+  }, [shortcuts]);
+
+  const availableCategories = useMemo(() => {
+    // If placement filter is active, only show categories for that placement
+    if (placementFilter !== 'all') {
+      return categories.filter(cat => 
+        cat.placement_type === placementFilter &&
+        shortcuts.some(s => s.category_id === cat.id)
+      );
+    }
+    // Otherwise, only show categories that have shortcuts
+    return categories.filter(cat => 
+      shortcuts.some(s => s.category_id === cat.id)
+    );
+  }, [categories, shortcuts, placementFilter]);
+
+  // Reset category filter when placement changes and category is no longer valid
+  React.useEffect(() => {
+    if (categoryFilter !== 'all') {
+      const categoryExists = availableCategories.some(cat => cat.id === categoryFilter);
+      if (!categoryExists) {
+        setCategoryFilter('all');
+      }
+    }
+  }, [placementFilter, categoryFilter, availableCategories]);
+
+  // Optimistic update helper
+  const optimisticUpdate = React.useCallback(async (
+    shortcutId: string,
+    updates: Partial<PromptShortcut>,
+    successMessage: string
+  ) => {
+    // Optimistically update local state
+    setShortcuts(prev => prev.map(s => 
+      s.id === shortcutId ? { ...s, ...updates } : s
+    ));
+
+    try {
+      await updatePromptShortcut({
+        id: shortcutId,
+        ...updates,
+      });
+      toast({ title: 'Success', description: successMessage });
+    } catch (error: any) {
+      // Revert on error
+      toast({
+        title: 'Failed',
+        description: getUserFriendlyError(error),
+        variant: 'destructive'
+      });
+      loadData(); // Reload to get correct state
+    }
+  }, [toast, loadData]);
 
   // Filter and sort shortcuts
   const filteredAndSorted = useMemo(() => {
@@ -280,12 +360,17 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
     }
   };
 
-  const handleDelete = async (shortcutId: string, shortcutLabel: string) => {
-    if (!confirm(`Are you sure you want to delete "${shortcutLabel}"?`)) return;
+  const handleDelete = (shortcutId: string, shortcutLabel: string) => {
+    setDeleteConfirmShortcut({ id: shortcutId, label: shortcutLabel });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmShortcut) return;
 
     try {
-      await deletePromptShortcut(shortcutId);
+      await deletePromptShortcut(deleteConfirmShortcut.id);
       toast({ title: 'Success', description: 'Shortcut deleted' });
+      setDeleteConfirmShortcut(null);
       await loadData();
     } catch (error) {
       const errorMessage = getUserFriendlyError(error);
@@ -420,29 +505,38 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
               className="max-w-xs"
             />
 
+            <Select value={placementFilter} onValueChange={setPlacementFilter}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Placements</SelectItem>
+                {availablePlacements.map((placement) => {
+                  const meta = getPlacementTypeMeta(placement);
+                  const IconComponent = getIconComponent(meta.icon as any);
+                  return (
+                    <SelectItem key={placement} value={placement}>
+                      <div className="flex items-center gap-2">
+                        <IconComponent className="h-3.5 w-3.5" />
+                        {meta.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map(cat => (
+                <SelectItem value="all">
+                  {placementFilter === 'all' ? 'All Categories' : 'All in Placement'}
+                </SelectItem>
+                {availableCategories.map(cat => (
                   <SelectItem key={cat.id} value={cat.id}>{cat.label}</SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={placementFilter} onValueChange={setPlacementFilter}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue />
-              </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Placements</SelectItem>
-                  {Object.entries(PLACEMENT_TYPES).map(([key, value]) => (
-                    <SelectItem key={value} value={value}>
-                      {getPlacementTypeMeta(value).label}
-                    </SelectItem>
-                  ))}
               </SelectContent>
             </Select>
 
@@ -484,18 +578,18 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       <SortIcon field="label" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[130px]" onClick={() => handleSort('category')}>
-                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
-                      <span className="font-semibold">Category</span>
-                      <ArrowUpDown className="h-3 w-3" />
-                      <SortIcon field="category" />
-                    </div>
-                  </TableHead>
                   <TableHead className="min-w-[120px]" onClick={() => handleSort('placement')}>
                     <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
                       <span className="font-semibold">Placement</span>
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="placement" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="min-w-[130px]" onClick={() => handleSort('category')}>
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                      <span className="font-semibold">Category</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="category" />
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[100px]">Display</TableHead>
@@ -551,67 +645,113 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Zap className="h-4 w-4 text-purple-500" />
-                          <div>
-                            <div className="font-medium">{shortcut.label}</div>
-                            {shortcut.description && (
-                              <div className="text-xs text-muted-foreground line-clamp-1">
-                                {shortcut.description}
-                              </div>
-                            )}
-                          </div>
+                          <div className="font-medium">{shortcut.label}</div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {shortcut.category && (
-                          <Badge variant="outline">{shortcut.category.label}</Badge>
-                        )}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={shortcut.category?.placement_type || ''}
+                          onValueChange={(value) => {
+                            // Find a category with this placement type
+                            const targetCategory = categories.find(c => c.placement_type === value);
+                            if (!targetCategory) return;
+                            
+                            optimisticUpdate(
+                              shortcut.id,
+                              { category_id: targetCategory.id },
+                              'Placement updated'
+                            );
+                          }}
+                        >
+                          <SelectTrigger className="h-7 text-xs">
+                            <SelectValue placeholder="Select placement...">
+                              {shortcut.category?.placement_type && 
+                                getPlacementTypeMeta(shortcut.category.placement_type).label}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(PLACEMENT_TYPES).map(([key, value]) => {
+                              const meta = getPlacementTypeMeta(value);
+                              const IconComponent = getIconComponent(meta.icon as any);
+                              return (
+                                <SelectItem key={value} value={value} className="text-xs">
+                                  <div className="flex items-center gap-2">
+                                    <IconComponent className="h-3.5 w-3.5" />
+                                    {meta.label}
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell>
-                        {shortcut.category?.placement_type && (
-                          <Badge variant="secondary" className="text-xs">
-                            {getPlacementTypeMeta(shortcut.category.placement_type).label}
-                          </Badge>
-                        )}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <CategorySelector
+                          categories={categories}
+                          value={shortcut.category_id}
+                          onValueChange={(value) => {
+                            optimisticUpdate(shortcut.id, { category_id: value }, 'Category updated');
+                          }}
+                          allowedPlacementTypes={shortcut.category?.placement_type ? [shortcut.category.placement_type] : undefined}
+                          compact
+                        />
                       </TableCell>
-                      <TableCell>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Badge variant="outline" className="text-xs">
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={shortcut.result_display || 'modal-full'}
+                          onValueChange={(value: any) => {
+                            optimisticUpdate(shortcut.id, { result_display: value }, 'Display updated');
+                          }}
+                        >
+                          <SelectTrigger className="h-7 text-xs">
+                            <SelectValue>
                               {getResultDisplayMeta(shortcut.result_display).label}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">{getResultDisplayMeta(shortcut.result_display).description}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(RESULT_DISPLAY_META).map(([key, value]) => (
+                              <SelectItem key={key} value={key} className="text-xs">
+                                {value.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell className="text-center">
-                        {shortcut.auto_run ?? true ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="h-4 w-4 text-gray-400 mx-auto" />
-                        )}
+                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={shortcut.auto_run ?? true}
+                          onCheckedChange={(checked) => {
+                            optimisticUpdate(shortcut.id, { auto_run: !!checked }, 'Auto-run updated');
+                          }}
+                          className="mx-auto"
+                        />
                       </TableCell>
-                      <TableCell className="text-center">
-                        {shortcut.allow_chat ?? true ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="h-4 w-4 text-gray-400 mx-auto" />
-                        )}
+                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={shortcut.allow_chat ?? true}
+                          onCheckedChange={(checked) => {
+                            optimisticUpdate(shortcut.id, { allow_chat: !!checked }, 'Allow chat updated');
+                          }}
+                          className="mx-auto"
+                        />
                       </TableCell>
-                      <TableCell className="text-center">
-                        {shortcut.show_variables ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="h-4 w-4 text-gray-400 mx-auto" />
-                        )}
+                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={shortcut.show_variables ?? false}
+                          onCheckedChange={(checked) => {
+                            optimisticUpdate(shortcut.id, { show_variables: !!checked }, 'Show variables updated');
+                          }}
+                          className="mx-auto"
+                        />
                       </TableCell>
-                      <TableCell className="text-center">
-                        {shortcut.apply_variables ?? true ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
-                        ) : (
-                          <X className="h-4 w-4 text-gray-400 mx-auto" />
-                        )}
+                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={shortcut.apply_variables ?? true}
+                          onCheckedChange={(checked) => {
+                            optimisticUpdate(shortcut.id, { apply_variables: !!checked }, 'Apply variables updated');
+                          }}
+                          className="mx-auto"
+                        />
                       </TableCell>
                       <TableCell>
                         {shortcut.keyboard_shortcut && (
@@ -621,52 +761,75 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
                         )}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        {isConnected ? (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <div className="flex items-center gap-1 text-sm">
-                                <Link2 className="h-3 w-3 text-green-600" />
-                                <span className="font-medium line-clamp-1">
-                                  {shortcut.builtin?.name || 'Connected'}
-                                </span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <div className="space-y-1">
-                                <p className="font-semibold">AI Prompt:</p>
-                                <p className="text-xs">{shortcut.builtin?.name}</p>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 px-2 text-xs"
-                              >
-                                <Link2 className="h-3 w-3 mr-1" />
-                                Connect
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setSelectingPromptFor(shortcut)}>
-                                <FileText className="h-4 w-4 mr-2" />
-                                Select Prompt
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setSelectingBuiltinFor(shortcut)}>
-                                <Zap className="h-4 w-4 mr-2" />
-                                Browse Builtins
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant={isConnected ? "ghost" : "ghost"}
+                              size="sm"
+                              className={`h-6 px-2 text-xs ${isConnected ? 'justify-start' : ''}`}
+                            >
+                              {isConnected ? (
+                                <>
+                                  <Link2 className="h-3 w-3 mr-1 flex-shrink-0 text-green-600" />
+                                  <span className="font-medium truncate">
+                                    {shortcut.builtin?.name || 'Connected'}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Lock className="h-3 w-3 mr-1 text-orange-600" />
+                                  Connect
+                                </>
+                              )}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {isConnected ? (
+                              <>
+                                <DropdownMenuItem onClick={() => setViewingBuiltinId(shortcut.prompt_builtin_id!)}>
+                                  <Edit2 className="h-4 w-4 mr-2" />
+                                  Edit Builtin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setSelectingBuiltinFor(shortcut)}>
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  Change Builtin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => {
+                                    optimisticUpdate(shortcut.id, { prompt_builtin_id: null }, 'Builtin detached');
+                                  }}
+                                  className="text-destructive"
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  Detach Builtin
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              <>
+                                <DropdownMenuItem onClick={() => setSelectingBuiltinFor(shortcut)}>
+                                  <Zap className="h-4 w-4 mr-2" />
+                                  Select Existing Builtin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setSelectingPromptFor(shortcut)}>
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  Create from Prompt
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Badge variant={shortcut.is_active ? 'default' : 'secondary'}>
-                          {shortcut.is_active ? 'Yes' : 'No'}
-                        </Badge>
+                      <TableCell onClick={(e) => e.stopPropagation()} className="text-center">
+                        <Switch
+                          checked={shortcut.is_active ?? true}
+                          onCheckedChange={(checked) => {
+                            optimisticUpdate(
+                              shortcut.id,
+                              { is_active: checked },
+                              `Shortcut ${checked ? 'activated' : 'deactivated'}`
+                            );
+                          }}
+                        />
                       </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
@@ -731,39 +894,39 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
         </div>
 
         {/* Edit Dialog */}
-        {editingShortcut && (
-          <PromptBuiltinEditDialog
-            shortcut={editingShortcut}
-            categories={categories}
-            builtins={builtins}
-            isOpen={isEditDialogOpen}
-            onClose={() => {
-              setIsEditDialogOpen(false);
-              setEditingShortcut(null);
-            }}
-            onSuccess={() => {
-              setIsEditDialogOpen(false);
-              setEditingShortcut(null);
-              loadData();
-            }}
-            onOpenPromptModal={() => setSelectingPromptFor(editingShortcut)}
-            onOpenBuiltinEditor={(id) => setViewingBuiltinId(id)}
-          />
-        )}
-
-        {/* Create Dialog */}
-        <PromptBuiltinEditDialog
-          shortcut={null}
+        <ShortcutEditModal
+          isOpen={isEditDialogOpen && !!editingShortcut}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setEditingShortcut(null);
+          }}
+          onSuccess={() => {
+            setIsEditDialogOpen(false);
+            setEditingShortcut(null);
+            loadData();
+          }}
+          shortcut={editingShortcut}
           categories={categories}
           builtins={builtins}
+          mode="standalone"
+          models={models}
+          availableTools={availableTools}
+        />
+
+        {/* Create Dialog */}
+        <ShortcutEditModal
           isOpen={isCreateDialogOpen}
           onClose={() => setIsCreateDialogOpen(false)}
           onSuccess={() => {
             setIsCreateDialogOpen(false);
             loadData();
           }}
-          onOpenPromptModal={() => {}}
-          onOpenBuiltinEditor={() => {}}
+          shortcut={null}
+          categories={categories}
+          builtins={builtins}
+          mode="standalone"
+          models={models}
+          availableTools={availableTools}
         />
 
         {/* Select/Connect Prompt Modal */}
@@ -818,6 +981,27 @@ export function ShortcutsTableManager({ className }: ShortcutsTableManagerProps)
             />
           );
         })()}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteConfirmShortcut} onOpenChange={(open) => !open && setDeleteConfirmShortcut(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Shortcut</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete &quot;{deleteConfirmShortcut?.label}&quot;? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );

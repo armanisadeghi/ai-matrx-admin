@@ -236,8 +236,8 @@ export function LinkBuiltinToShortcutModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-4 pt-4 pb-3 border-b">
           <DialogTitle>Link Shortcut to &quot;{builtin.name}&quot;</DialogTitle>
           <DialogDescription>
             Create a new shortcut or link an existing one to this builtin
@@ -250,7 +250,7 @@ export function LinkBuiltinToShortcutModal({
           </div>
         ) : (
           <>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'create' | 'link')} className="flex-1 flex flex-col overflow-hidden">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'create' | 'link')} className="flex-1 flex flex-col overflow-hidden px-4 pt-3">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="create">
                   <Plus className="h-4 w-4 mr-2" />
@@ -382,11 +382,9 @@ export function LinkBuiltinToShortcutModal({
                         availableScopes={existingShortcutScopes}
                         scopeMappings={existingShortcutMappings}
                         variableDefaults={builtin.variableDefaults || []}
-                        onMappingChange={(scopeKey, variableName) => {
-                          setExistingShortcutMappings((prev) => ({
-                            ...prev,
-                            [scopeKey]: variableName,
-                          }));
+                        onScopesChange={(scopes, mappings) => {
+                          setExistingShortcutScopes(scopes);
+                          setExistingShortcutMappings(mappings);
                         }}
                         compact
                       />
@@ -404,8 +402,8 @@ export function LinkBuiltinToShortcutModal({
               </Alert>
             )}
 
-            {/* Actions */}
-            <div className="flex justify-end gap-2 pt-4 border-t">
+        {/* Actions */}
+        <div className="flex justify-end gap-2 px-4 pb-4 pt-3 border-t">
               <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
                 Cancel
               </Button>

@@ -1,23 +1,21 @@
 // utils/icon-mapper.tsx
 
-import * as LucideIcons from "lucide-react";
 import React from "react";
-
-// Type for Lucide icon names
-type LucideIconName = keyof typeof LucideIcons;
+import { getIconComponent } from "@/components/official/IconResolver";
+import { Code, Zap, Settings, Globe, Database, Search, Type, MapPin, FileText, Wrench } from "lucide-react";
 
 // Simple fallback icons based on category
 const FALLBACK_ICONS: Record<string, React.ReactNode> = {
-  'code': <LucideIcons.Code size={20} />,
-  'api': <LucideIcons.Zap size={20} />,
-  'core': <LucideIcons.Settings size={20} />,
-  'web': <LucideIcons.Globe size={20} />,
-  'data': <LucideIcons.Database size={20} />,
-  'seo': <LucideIcons.Search size={20} />,
-  'text': <LucideIcons.Type size={20} />,
-  'location': <LucideIcons.MapPin size={20} />,
-  'files': <LucideIcons.FileText size={20} />,
-  'default': <LucideIcons.Wrench size={20} />,
+  'code': <Code size={20} />,
+  'api': <Zap size={20} />,
+  'core': <Settings size={20} />,
+  'web': <Globe size={20} />,
+  'data': <Database size={20} />,
+  'seo': <Search size={20} />,
+  'text': <Type size={20} />,
+  'location': <MapPin size={20} />,
+  'files': <FileText size={20} />,
+  'default': <Wrench size={20} />,
 };
 
 /**
@@ -38,28 +36,11 @@ export function mapIcon(
     // Clean the icon name - ensure it's in PascalCase format
     const cleanIconName = iconName.trim().replace(/^\w/, c => c.toUpperCase());
     
-    // Check if it's a valid Lucide icon
-    if (cleanIconName in LucideIcons) {
-      const IconComponent = LucideIcons[cleanIconName as LucideIconName] as React.ComponentType<{ size?: number }>;
+    // Get icon component from IconResolver
+    const IconComponent = getIconComponent(cleanIconName, "Wrench");
+    
+    if (IconComponent) {
       return <IconComponent size={size} />;
-    }
-    
-    // Try with different case variations if direct match fails
-    const variations = [
-      cleanIconName,
-      cleanIconName.toLowerCase(),
-      cleanIconName.charAt(0).toUpperCase() + cleanIconName.slice(1).toLowerCase()
-    ];
-    
-    for (const variation of variations) {
-      const matchingIcon = Object.keys(LucideIcons).find(
-        key => key.toLowerCase() === variation.toLowerCase()
-      );
-      
-      if (matchingIcon) {
-        const IconComponent = LucideIcons[matchingIcon as LucideIconName] as React.ComponentType<{ size?: number }>;
-        return <IconComponent size={size} />;
-      }
     }
   }
   
@@ -74,17 +55,29 @@ export function mapIcon(
 
 /**
  * Get all available Lucide icon names for reference
+ * Note: This function now uses dynamic imports. If you need synchronous access,
+ * consider using the icon-picker component which handles this internally.
  */
-export function getAvailableIconNames(): string[] {
+export async function getAvailableIconNames(): Promise<string[]> {
+  const LucideIcons = await import('lucide-react');
   return Object.keys(LucideIcons).filter(key => 
-    typeof LucideIcons[key as LucideIconName] === 'function'
+    typeof (LucideIcons as any)[key] === 'function' &&
+    key !== 'default' &&
+    key !== 'createLucideIcon'
   );
 }
 
 /**
  * Check if an icon name is valid
+ * Note: This function now uses dynamic imports. For synchronous validation,
+ * use getIconComponent and check if it returns a component.
  */
-export function isValidIconName(iconName: string): boolean {
+export async function isValidIconName(iconName: string): Promise<boolean> {
   const cleanIconName = iconName.replace(/\s+/g, '').replace(/^\w/, c => c.toUpperCase());
-  return cleanIconName in LucideIcons;
+  try {
+    const LucideIcons = await import('lucide-react');
+    return cleanIconName in LucideIcons && typeof (LucideIcons as any)[cleanIconName] === 'function';
+  } catch {
+    return false;
+  }
 }

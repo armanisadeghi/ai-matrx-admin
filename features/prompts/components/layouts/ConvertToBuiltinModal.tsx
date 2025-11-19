@@ -1,7 +1,7 @@
 /**
  * ConvertToBuiltinModal
  * 
- * Enhanced modal for converting a user prompt to a prompt builtin with full shortcut management.
+ * Step-based flow for converting/updating a prompt builtin and managing shortcuts.
  */
 
 'use client';
@@ -26,6 +26,7 @@ import {
   Link as LinkIcon,
   ChevronRight,
   ExternalLink,
+  AlertTriangle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast-service';
@@ -35,6 +36,7 @@ import {
   fetchShortcutsWithRelations,
   createPromptShortcut,
   updatePromptShortcut,
+  getPromptBuiltinById,
 } from '@/features/prompt-builtins/services/admin-service';
 import { 
   PromptBuiltin, 
@@ -43,6 +45,7 @@ import {
   CreatePromptShortcutInput,
   ScopeMapping,
 } from '@/features/prompt-builtins/types/core';
+import type { PromptVariable } from '@/features/prompts/types/core';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -60,9 +63,8 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { getPlacementTypeMeta } from '@/features/prompt-builtins/constants';
-import { HierarchicalCategorySelector } from '@/features/prompt-builtins/components/HierarchicalCategorySelector';
-import { ScopeMappingEditor } from '@/features/prompt-builtins/components/ScopeMappingEditor';
 import { ShortcutFormFields } from '@/features/prompt-builtins/components/ShortcutFormFields';
+import { ScopeMappingEditor } from '@/features/prompt-builtins/components/ScopeMappingEditor';
 
 interface ConvertToBuiltinModalProps {
   isOpen: boolean;
@@ -72,7 +74,15 @@ interface ConvertToBuiltinModalProps {
   onSuccess?: () => void;
 }
 
-type FlowStep = 'checking' | 'existing-detected' | 'converting' | 'shortcut-selection' | 'creating-shortcut' | 'complete';
+type FlowStep = 
+  | 'checking'                    // Checking for existing builtins
+  | 'builtin-choice'              // Choose: create new or update existing
+  | 'variable-comparison'         // Show variable changes (if updating)
+  | 'processing-builtin'          // Creating/updating the builtin
+  | 'shortcut-choice'             // Choose: create new, link existing, or skip
+  | 'shortcut-form'               // Create/edit shortcut
+  | 'processing-shortcut'         // Saving shortcut
+  | 'complete';                   // Done!
 
 interface ShortcutWithRelations extends PromptShortcut {
   category: ShortcutCategory | null;
@@ -80,6 +90,38 @@ interface ShortcutWithRelations extends PromptShortcut {
 }
 
 const DEFAULT_AVAILABLE_SCOPES = ['selection', 'content', 'context'];
+
+// Helper to compare variables
+function compareVariables(
+  oldVars: PromptVariable[] | undefined, 
+  newVars: PromptVariable[] | undefined
+): { added: PromptVariable[]; removed: PromptVariable[]; changed: Array<{ old: PromptVariable; new: PromptVariable }> } {
+  const oldMap = new Map((oldVars || []).map(v => [v.name, v]));
+  const newMap = new Map((newVars || []).map(v => [v.name, v]));
+
+  const added: PromptVariable[] = [];
+  const removed: PromptVariable[] = [];
+  const changed: Array<{ old: PromptVariable; new: PromptVariable }> = [];
+
+  // Find added and changed
+  for (const [name, newVar] of newMap) {
+    const oldVar = oldMap.get(name);
+    if (!oldVar) {
+      added.push(newVar);
+    } else if (JSON.stringify(oldVar) !== JSON.stringify(newVar)) {
+      changed.push({ old: oldVar, new: newVar });
+    }
+  }
+
+  // Find removed
+  for (const [name, oldVar] of oldMap) {
+    if (!newMap.has(name)) {
+      removed.push(oldVar);
+    }
+  }
+
+  return { added, removed, changed };
+}
 
 export function ConvertToBuiltinModal({
   isOpen,
@@ -93,104 +135,129 @@ export function ConvertToBuiltinModal({
   // Flow state
   const [step, setStep] = useState<FlowStep>('checking');
   const [error, setError] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  // Builtin state
+  // Step 1: Builtin management
   const [existingBuiltins, setExistingBuiltins] = useState<PromptBuiltin[]>([]);
   const [selectedBuiltin, setSelectedBuiltin] = useState<PromptBuiltin | null>(null);
   const [builtinAction, setBuiltinAction] = useState<'update' | 'create-new'>('update');
-  const [createdBuiltinId, setCreatedBuiltinId] = useState<string | null>(null);
   const [createdBuiltin, setCreatedBuiltin] = useState<PromptBuiltin | null>(null);
+  const [variableComparison, setVariableComparison] = useState<ReturnType<typeof compareVariables> | null>(null);
+  const [promptVariables, setPromptVariables] = useState<PromptVariable[]>([]);
   
-  // Shortcut state
-  const [categories, setCategories] = useState<ShortcutCategory[]>([]);
+  // Step 2: Shortcut management
   const [shortcuts, setShortcuts] = useState<ShortcutWithRelations[]>([]);
+  const [categories, setCategories] = useState<ShortcutCategory[]>([]);
+  const [shortcutAction, setShortcutAction] = useState<'create' | 'link' | 'skip'>('create');
+  const [selectedShortcut, setSelectedShortcut] = useState<PromptShortcut | null>(null);
   const [loadingShortcuts, setLoadingShortcuts] = useState(false);
-  const [shortcutAction, setShortcutAction] = useState<'link-existing' | 'create-new' | 'skip'>('link-existing');
-  const [selectedShortcutId, setSelectedShortcutId] = useState<string | null>(null);
-  const [showOnlyUnlinked, setShowOnlyUnlinked] = useState(true);
   
-  // Scope mapping for existing shortcut
-  const [existingShortcutScopes, setExistingShortcutScopes] = useState<string[]>(DEFAULT_AVAILABLE_SCOPES);
-  const [existingShortcutMappings, setExistingShortcutMappings] = useState<ScopeMapping>({});
-  
-  // Create shortcut form state
-  const [newShortcutData, setNewShortcutData] = useState<CreatePromptShortcutInput>({
-    label: '',
+  // New shortcut form data
+  const [newShortcutData, setNewShortcutData] = useState<Partial<CreatePromptShortcutInput>>({
+    label: promptName,
+    description: '',
+    icon_name: 'Sparkles',
     category_id: '',
-    description: null,
-    icon_name: null,
-    result_display: 'modal-full',
-    auto_run: true,
-    allow_chat: true,
-    show_variables: false,
-    apply_variables: true,
-    available_scopes: DEFAULT_AVAILABLE_SCOPES,
-    scope_mappings: {},
+    scope_mappings: null,
+    is_active: true,
   });
-  
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Check for existing builtins on mount
+  // Reset state when modal opens/closes
   useEffect(() => {
-    if (isOpen && step === 'checking') {
+    if (isOpen) {
+      setStep('checking');
+      setError('');
+      setCreatedBuiltin(null);
+      setSelectedBuiltin(null);
+      setVariableComparison(null);
       checkForExistingBuiltins();
+    } else {
+      // Reset all state
+      setExistingBuiltins([]);
+      setSelectedBuiltin(null);
+      setBuiltinAction('update');
+      setCreatedBuiltin(null);
+      setShortcuts([]);
+      setCategories([]);
+      setShortcutAction('create');
+      setSelectedShortcut(null);
+      setNewShortcutData({
+        label: promptName,
+        description: '',
+        icon_name: 'Sparkles',
+        category_id: '',
+        scope_mappings: null,
+        is_active: true,
+      });
     }
-  }, [isOpen, step]);
+  }, [isOpen, promptId, promptName]);
 
-  // Load builtin data when created
-  useEffect(() => {
-    if (createdBuiltinId && !createdBuiltin) {
-      loadCreatedBuiltin();
-    }
-  }, [createdBuiltinId, createdBuiltin]);
-
-  const loadCreatedBuiltin = async () => {
-    if (!createdBuiltinId) return;
-    
+  // Fetch prompt data to get variables
+  const fetchPromptData = async () => {
     try {
-      const response = await fetch(`/api/admin/prompt-builtins/${createdBuiltinId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCreatedBuiltin(data.builtin);
-        
-        // Pre-fill shortcut label with builtin name
-        if (data.builtin?.name && !newShortcutData.label) {
-          setNewShortcutData(prev => ({
-            ...prev,
-            label: data.builtin.name,
-          }));
-        }
-      }
-    } catch (err) {
-      console.error('Error loading created builtin:', err);
+      const response = await fetch(`/api/prompts/${promptId}`);
+      if (!response.ok) throw new Error('Failed to fetch prompt data');
+      
+      const data = await response.json();
+      const variables = data.variable_defaults || [];
+      console.log('📊 Fetched prompt variables:', variables);
+      setPromptVariables(variables);
+    } catch (err: any) {
+      console.error('Error fetching prompt data:', err);
+      setPromptVariables([]);
     }
   };
 
+  // Check for existing builtins
   const checkForExistingBuiltins = async () => {
     try {
-      setError('');
+      // Fetch prompt variables first
+      await fetchPromptData();
+      
       const builtins = await getBuiltinsBySourcePromptId(promptId);
+      setExistingBuiltins(builtins);
       
       if (builtins.length > 0) {
-        setExistingBuiltins(builtins);
-        setSelectedBuiltin(builtins[0]); // Default to most recent
-        setStep('existing-detected');
+        setSelectedBuiltin(builtins[0]);
+        setBuiltinAction('update');
+        setStep('builtin-choice');
       } else {
-        // No existing builtin, proceed to convert
-        setStep('converting');
-        await handleConvert();
+        setBuiltinAction('create-new');
+        // Skip straight to processing if no existing builtins
+        handleBuiltinAction();
       }
     } catch (err: any) {
       console.error('Error checking for existing builtins:', err);
-      setError('Failed to check for existing builtins');
-      setStep('existing-detected');
+      setError(err.message || 'Failed to check for existing builtins');
+      setBuiltinAction('create-new');
+      setStep('builtin-choice');
     }
   };
 
-  const handleConvert = async (forceNew: boolean = false) => {
+  // Handle builtin creation/update
+  const handleBuiltinAction = async () => {
+    if (builtinAction === 'update' && !selectedBuiltin) return;
+
+    // If updating, check variables first
+    if (builtinAction === 'update' && selectedBuiltin && step === 'builtin-choice') {
+      const currentVars = (selectedBuiltin.variableDefaults as PromptVariable[] | undefined) || [];
+      console.log('🔍 Comparing variables:');
+      console.log('  Current builtin variables:', currentVars);
+      console.log('  Updated prompt variables:', promptVariables);
+      
+      const comparison = compareVariables(currentVars, promptVariables);
+      console.log('  Comparison result:', comparison);
+      
+      if (comparison.added.length > 0 || comparison.removed.length > 0 || comparison.changed.length > 0) {
+        setVariableComparison(comparison);
+        setStep('variable-comparison');
+        return;
+      }
+    }
+
     setIsProcessing(true);
     setError('');
-    setStep('converting');
+    setStep('processing-builtin');
 
     try {
       const response = await fetch(`/api/admin/prompt-builtins/convert-from-prompt`, {
@@ -198,149 +265,125 @@ export function ConvertToBuiltinModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt_id: promptId,
+          builtin_id: builtinAction === 'update' ? selectedBuiltin?.id : undefined,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Conversion failed (${response.status})`);
+        throw new Error(errorData.error || `Operation failed (${response.status})`);
       }
 
       const data = await response.json();
-      setCreatedBuiltinId(data.builtin_id);
       
-      toast.success(`"${promptName}" converted to builtin successfully!`);
+      // Fetch the full builtin data
+      const builtin = await getPromptBuiltinById(data.builtin_id);
+      if (!builtin) throw new Error('Failed to fetch builtin data');
+      
+      setCreatedBuiltin(builtin);
+      
+      toast.success(data.is_update ? 'Builtin updated successfully!' : 'Builtin created successfully!');
       
       // Load shortcuts for next step
-      await loadShortcutsAndCategories();
-      setStep('shortcut-selection');
+      await loadShortcutsAndCategories(data.builtin_id);
+      setStep('shortcut-choice');
       
     } catch (err: any) {
-      console.error('Conversion error:', err);
+      console.error('Builtin operation error:', err);
       setError(err.message || 'An unexpected error occurred');
-      setStep('existing-detected');
+      setStep('builtin-choice');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleUpdateExisting = async () => {
-    if (!selectedBuiltin) return;
-
-    setIsProcessing(true);
-    setError('');
-    setStep('converting');
-
-    try {
-      const response = await fetch(`/api/admin/prompt-builtins/convert-from-prompt`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt_id: promptId,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Update failed (${response.status})`);
-      }
-
-      const data = await response.json();
-      setCreatedBuiltinId(data.builtin_id);
-      
-      toast.success('Builtin updated successfully!');
-      
-      await loadShortcutsAndCategories();
-      setStep('shortcut-selection');
-      
-    } catch (err: any) {
-      console.error('Update error:', err);
-      setError(err.message || 'An unexpected error occurred');
-      setStep('existing-detected');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const loadShortcutsAndCategories = async () => {
+  // Load shortcuts and categories
+  const loadShortcutsAndCategories = async (builtinId: string) => {
     setLoadingShortcuts(true);
     try {
       const [categoriesData, shortcutsData] = await Promise.all([
         fetchShortcutCategories({ is_active: true }),
         fetchShortcutsWithRelations({ is_active: true }),
       ]);
-      
+
       setCategories(categoriesData);
-      setShortcuts(shortcutsData as ShortcutWithRelations[]);
       
-      // Auto-select first category if available
-      if (categoriesData.length > 0 && !newShortcutData.category_id) {
-        setNewShortcutData(prev => ({
-          ...prev,
-          category_id: categoriesData[0].id,
-        }));
+      // Store ALL shortcuts so user can link to any of them
+      setShortcuts(shortcutsData);
+      
+      // Find shortcuts linked to this builtin
+      const linkedShortcuts = shortcutsData.filter(s => s.prompt_builtin_id === builtinId);
+      
+      console.log('📋 Loaded shortcuts:', {
+        total: shortcutsData.length,
+        linkedToThisBuiltin: linkedShortcuts.length,
+        unlinked: shortcutsData.filter(s => !s.prompt_builtin_id).length,
+        linkedToOther: shortcutsData.filter(s => s.prompt_builtin_id && s.prompt_builtin_id !== builtinId).length,
+      });
+      
+      // If there are linked shortcuts, default to updating them
+      if (linkedShortcuts.length > 0) {
+        setSelectedShortcut(linkedShortcuts[0]);
+        setShortcutAction('link');
+      } else if (shortcutsData.length > 0) {
+        // If there are any shortcuts at all, default to link option
+        setShortcutAction('link');
+      } else {
+        setShortcutAction('create');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading shortcuts:', err);
-      toast.error('Failed to load shortcuts data');
+      setError(err.message || 'Failed to load shortcuts');
     } finally {
       setLoadingShortcuts(false);
     }
   };
 
-  const handleLinkToExistingShortcut = async () => {
-    if (!selectedShortcutId || !createdBuiltinId) return;
+  // Handle shortcut creation/linking
+  const handleShortcutAction = async () => {
+    if (!createdBuiltin) return;
 
-    setIsProcessing(true);
-    setError('');
-
-    try {
-      await updatePromptShortcut({
-        id: selectedShortcutId,
-        prompt_builtin_id: createdBuiltinId,
-        available_scopes: existingShortcutScopes,
-        scope_mappings: existingShortcutMappings,
-      });
-
-      toast.success('Shortcut linked successfully!');
+    if (shortcutAction === 'skip') {
       setStep('complete');
-    } catch (err: any) {
-      console.error('Error linking shortcut:', err);
-      setError(err.message || 'Failed to link shortcut');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleCreateNewShortcut = async () => {
-    if (!newShortcutData.label || !newShortcutData.category_id || !createdBuiltinId) {
-      toast.error('Please fill in all required fields');
       return;
     }
 
     setIsProcessing(true);
     setError('');
-    setStep('creating-shortcut');
+    setStep('processing-shortcut');
 
     try {
-      await createPromptShortcut({
-        ...newShortcutData,
-        prompt_builtin_id: createdBuiltinId,
-      });
+      if (shortcutAction === 'create') {
+        // Create new shortcut
+        const shortcutInput: CreatePromptShortcutInput = {
+          label: newShortcutData.label || promptName,
+          description: newShortcutData.description || '',
+          icon_name: newShortcutData.icon_name || 'Sparkles',
+          category_id: newShortcutData.category_id || '',
+          prompt_builtin_id: createdBuiltin.id,
+          scope_mappings: newShortcutData.scope_mappings,
+          is_active: newShortcutData.is_active,
+        };
 
-      toast.success('Shortcut created and linked successfully!');
+        await createPromptShortcut(shortcutInput);
+        toast.success('Shortcut created successfully!');
+      } else if (shortcutAction === 'link' && selectedShortcut) {
+        // Link existing shortcut
+        await updatePromptShortcut({
+          id: selectedShortcut.id,
+          prompt_builtin_id: createdBuiltin.id,
+        });
+        toast.success('Shortcut linked successfully!');
+      }
+
       setStep('complete');
     } catch (err: any) {
-      console.error('Error creating shortcut:', err);
-      setError(err.message || 'Failed to create shortcut');
-      setStep('shortcut-selection');
+      console.error('Shortcut operation error:', err);
+      setError(err.message || 'An unexpected error occurred');
+      setStep('shortcut-choice');
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const handleSkipShortcut = () => {
-    setStep('complete');
   };
 
   const handleComplete = () => {
@@ -348,123 +391,76 @@ export function ConvertToBuiltinModal({
     onClose();
   };
 
-  const handleOpenInAdmin = () => {
-    onSuccess?.();
-    onClose();
-    router.push(`/administration/prompt-builtins?tab=builtins&highlight=${createdBuiltinId}`);
-  };
-
-  const handleOpenInNewTab = () => {
-    window.open(`/administration/prompt-builtins?tab=builtins&highlight=${createdBuiltinId}`, '_blank');
-  };
-
   const handleResetAndClose = () => {
-    setStep('checking');
-    setError('');
-    setExistingBuiltins([]);
-    setSelectedBuiltin(null);
-    setCreatedBuiltinId(null);
-    setCreatedBuiltin(null);
-    setShortcutAction('link-existing');
-    setSelectedShortcutId(null);
-    setExistingShortcutScopes(DEFAULT_AVAILABLE_SCOPES);
-    setExistingShortcutMappings({});
-    setNewShortcutData({
-      label: '',
-      category_id: '',
-      description: null,
-      icon_name: null,
-      result_display: 'modal-full',
-      auto_run: true,
-      allow_chat: true,
-      show_variables: false,
-      apply_variables: true,
-      available_scopes: DEFAULT_AVAILABLE_SCOPES,
-      scope_mappings: {},
-    });
-    onClose();
+    if (!isProcessing) {
+      onClose();
+    }
   };
 
-  // Update existing shortcut scope mappings when selection changes
-  useEffect(() => {
-    if (selectedShortcutId) {
-      const shortcut = shortcuts.find(s => s.id === selectedShortcutId);
-      if (shortcut) {
-        setExistingShortcutScopes(shortcut.available_scopes || DEFAULT_AVAILABLE_SCOPES);
-        setExistingShortcutMappings(shortcut.scope_mappings || {});
-      }
-    }
-  }, [selectedShortcutId, shortcuts]);
-
-  // Filter shortcuts based on selection
-  const filteredShortcuts = useMemo(() => {
-    if (showOnlyUnlinked) {
-      return shortcuts.filter(s => !s.prompt_builtin_id);
-    }
-    return shortcuts;
-  }, [shortcuts, showOnlyUnlinked]);
-
-  // Render different steps
+  // Render content based on step
   const renderContent = () => {
     switch (step) {
       case 'checking':
         return (
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
             <p className="text-sm text-muted-foreground">Checking for existing builtins...</p>
           </div>
         );
 
-      case 'existing-detected':
+      case 'builtin-choice':
         return (
-          <div className="space-y-4 py-4">
+          <div className="space-y-4">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h3 className="font-semibold mb-2">Step 1: Builtin Management</h3>
+            </div>
+
             {existingBuiltins.length > 0 && (
               <>
-                <div className="space-y-3">
-                  <Label>Existing Builtins ({existingBuiltins.length})</Label>
-                  <RadioGroup value={selectedBuiltin?.id} onValueChange={(value) => {
-                    const builtin = existingBuiltins.find(b => b.id === value);
-                    setSelectedBuiltin(builtin || null);
-                  }}>
-                    <ScrollArea className="max-h-[200px]">
-                      {existingBuiltins.map((builtin) => (
-                        <div key={builtin.id} className="flex items-start space-x-2 p-3 border rounded-md mb-2 hover:bg-muted/50">
-                          <RadioGroupItem value={builtin.id} id={builtin.id} className="mt-1" />
-                          <div className="flex-1">
-                            <Label htmlFor={builtin.id} className="cursor-pointer">
-                              <div className="font-medium">{builtin.name}</div>
-                              {builtin.description && (
-                                <div className="text-sm text-muted-foreground">{builtin.description}</div>
-                              )}
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {new Date(builtin.created_at).toLocaleDateString()}
-                              </div>
-                            </Label>
-                          </div>
-                        </div>
-                      ))}
-                    </ScrollArea>
-                  </RadioGroup>
-                </div>
+                <RadioGroup value={builtinAction} onValueChange={(v) => setBuiltinAction(v as 'update' | 'create-new')}>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
+                      <RadioGroupItem value="update" id="update" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="update" className="font-medium cursor-pointer">Update Existing Builtin</Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Overwrite the existing builtin with the current prompt data.
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="space-y-3">
-                  <RadioGroup value={builtinAction} onValueChange={(value: any) => setBuiltinAction(value)}>
-                    <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-muted/50">
-                      <RadioGroupItem value="update" id="update" />
-                      <Label htmlFor="update" className="flex-1 cursor-pointer font-medium">
-                        Update Selected Builtin
-                      </Label>
-                      <RefreshCw className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
+                      <RadioGroupItem value="create-new" id="create-new" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="create-new" className="font-medium cursor-pointer">Create New Builtin</Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Create a separate builtin, keeping the existing one.
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-muted/50">
-                      <RadioGroupItem value="create-new" id="create-new" />
-                      <Label htmlFor="create-new" className="flex-1 cursor-pointer font-medium">
-                        Create New Builtin
-                      </Label>
-                      <Plus className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </RadioGroup>
-                </div>
+                  </div>
+                </RadioGroup>
+
+                {builtinAction === 'update' && (
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <Label className="text-sm font-medium">Select Builtin to Update</Label>
+                    <Select 
+                      value={selectedBuiltin?.id} 
+                      onValueChange={(id) => setSelectedBuiltin(existingBuiltins.find(b => b.id === id) || null)}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {existingBuiltins.map(builtin => (
+                          <SelectItem key={builtin.id} value={builtin.id}>
+                            {builtin.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </>
             )}
 
@@ -477,147 +473,155 @@ export function ConvertToBuiltinModal({
           </div>
         );
 
-      case 'converting':
+      case 'variable-comparison':
+        const currentVars = (selectedBuiltin?.variableDefaults as PromptVariable[] | undefined) || [];
+        const updatedVars = promptVariables || [];
+        
         return (
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">
-              {builtinAction === 'update' ? 'Updating builtin...' : 'Converting to builtin...'}
-            </p>
-          </div>
-        );
+          <div className="space-y-4">
+            <Alert variant="default" className="border-warning bg-warning/10">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <AlertDescription className="text-foreground">
+                <strong>Variable Changes Detected</strong>
+                <p className="mt-1">
+                  The prompt&apos;s variables have changed. <strong>Review carefully before updating</strong> as this may affect existing shortcuts.
+                </p>
+              </AlertDescription>
+            </Alert>
 
-      case 'shortcut-selection':
-        return (
-          <div className="space-y-4 py-4">
-            <Tabs value={shortcutAction} onValueChange={(value: any) => setShortcutAction(value)} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="link-existing">
-                  <LinkIcon className="h-4 w-4 mr-2" />
-                  Link Existing
-                </TabsTrigger>
-                <TabsTrigger value="create-new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New
-                </TabsTrigger>
-                <TabsTrigger value="skip">Skip</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="link-existing" className="space-y-4 mt-4">
+            {/* Side-by-side comparison */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Current Variables */}
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Select Shortcut</Label>
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="unlinked-filter" className="text-sm font-normal">
-                      Unlinked only
-                    </Label>
-                    <Switch
-                      id="unlinked-filter"
-                      checked={showOnlyUnlinked}
-                      onCheckedChange={setShowOnlyUnlinked}
-                    />
-                  </div>
+                  <h4 className="font-semibold text-sm">Current Variables</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {currentVars.length} variable{currentVars.length !== 1 ? 's' : ''}
+                  </Badge>
                 </div>
-
-                {loadingShortcuts ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                ) : filteredShortcuts.length === 0 ? (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {showOnlyUnlinked 
-                        ? 'No unlinked shortcuts available'
-                        : 'No shortcuts available'}
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <ScrollArea className="h-[250px] border rounded-md p-2">
+                <ScrollArea className="h-[300px] border rounded-lg p-3 bg-muted/30">
+                  {currentVars.length === 0 ? (
+                    <div className="text-sm text-muted-foreground text-center py-8">
+                      No variables in current builtin
+                    </div>
+                  ) : (
                     <div className="space-y-2">
-                      {filteredShortcuts.map((shortcut) => {
-                        const category = shortcut.category;
-                        const placementMeta = category ? getPlacementTypeMeta(category.placement_type) : null;
+                      {currentVars.map((v) => {
+                        const isRemoved = variableComparison?.removed.some(rv => rv.name === v.name);
+                        const isChanged = variableComparison?.changed.some(cv => cv.old.name === v.name);
                         
                         return (
-                          <div
-                            key={shortcut.id}
-                            onClick={() => setSelectedShortcutId(shortcut.id)}
-                            className={`p-3 border rounded-md cursor-pointer transition-colors ${
-                              selectedShortcutId === shortcut.id
-                                ? 'bg-primary/10 border-primary'
-                                : 'hover:bg-muted/50'
+                          <div 
+                            key={v.name} 
+                            className={`p-2 rounded border text-sm ${
+                              isRemoved 
+                                ? 'bg-destructive/10 border-destructive/30' 
+                                : isChanged 
+                                  ? 'bg-warning/10 border-warning/30'
+                                  : 'bg-background border-border'
                             }`}
                           >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="font-medium">{shortcut.label}</div>
-                                {shortcut.description && (
-                                  <div className="text-sm text-muted-foreground mt-1">{shortcut.description}</div>
-                                )}
-                                <div className="flex items-center gap-2 mt-2">
-                                  {category && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {category.label}
-                                    </Badge>
-                                  )}
-                                  {placementMeta && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      {placementMeta.label}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              {selectedShortcutId === shortcut.id && (
-                                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 ml-2" />
+                            <div className="flex items-start justify-between gap-2">
+                              <code className="font-mono font-semibold">{v.name}</code>
+                              {isRemoved && (
+                                <Badge variant="destructive" className="text-xs">REMOVED</Badge>
+                              )}
+                              {isChanged && (
+                                <Badge variant="outline" className="text-xs bg-warning/20 border-warning">CHANGED</Badge>
                               )}
                             </div>
+                            {v.defaultValue && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Default: <span className="font-mono">{v.defaultValue}</span>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
                     </div>
-                  </ScrollArea>
-                )}
+                  )}
+                </ScrollArea>
+              </div>
 
-                {selectedShortcutId && createdBuiltin && (
-                  <>
-                    <Separator />
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium">Scope Mappings</Label>
-                      <ScopeMappingEditor
-                        availableScopes={existingShortcutScopes}
-                        scopeMappings={existingShortcutMappings}
-                        variableDefaults={createdBuiltin.variableDefaults}
-                        onMappingChange={(scopeKey, variableName) => {
-                          setExistingShortcutMappings(prev => ({
-                            ...prev,
-                            [scopeKey]: variableName,
-                          }));
-                        }}
-                        compact
-                      />
-                    </div>
-                  </>
-                )}
-              </TabsContent>
-
-              <TabsContent value="create-new" className="space-y-4 mt-4">
-                {createdBuiltin && (
-                  <ShortcutFormFields
-                    formData={newShortcutData}
-                    onChange={(updates) => setNewShortcutData(prev => ({ ...prev, ...updates }))}
-                    categories={categories}
-                    builtinVariables={createdBuiltin.variableDefaults || []}
-                    compact
-                  />
-                )}
-              </TabsContent>
-
-              <TabsContent value="skip" className="mt-4">
-                <div className="text-sm text-muted-foreground p-4 border rounded-md">
-                  Builtin will be created without a shortcut. Link it later from the admin panel.
+              {/* Updated Variables */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Updated Variables</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {updatedVars.length} variable{updatedVars.length !== 1 ? 's' : ''}
+                  </Badge>
                 </div>
-              </TabsContent>
-            </Tabs>
+                <ScrollArea className="h-[300px] border rounded-lg p-3 bg-muted/30">
+                  {updatedVars.length === 0 ? (
+                    <div className="text-sm text-muted-foreground text-center py-8">
+                      No variables in updated prompt
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {updatedVars.map((v) => {
+                        const isAdded = variableComparison?.added.some(av => av.name === v.name);
+                        const isChanged = variableComparison?.changed.some(cv => cv.new.name === v.name);
+                        
+                        return (
+                          <div 
+                            key={v.name} 
+                            className={`p-2 rounded border text-sm ${
+                              isAdded 
+                                ? 'bg-success/10 border-success/30' 
+                                : isChanged 
+                                  ? 'bg-warning/10 border-warning/30'
+                                  : 'bg-background border-border'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <code className="font-mono font-semibold">{v.name}</code>
+                              {isAdded && (
+                                <Badge variant="outline" className="text-xs bg-success/20 border-success">NEW</Badge>
+                              )}
+                              {isChanged && (
+                                <Badge variant="outline" className="text-xs bg-warning/20 border-warning">CHANGED</Badge>
+                              )}
+                            </div>
+                            {v.defaultValue && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Default: <span className="font-mono">{v.defaultValue}</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+            </div>
+
+            {/* Summary of changes */}
+            {variableComparison && (variableComparison.added.length > 0 || variableComparison.removed.length > 0 || variableComparison.changed.length > 0) && (
+              <div className="p-3 bg-muted rounded-lg border">
+                <h4 className="font-semibold text-sm mb-2">Change Summary</h4>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  {variableComparison.added.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-success" />
+                      <span><strong>{variableComparison.added.length}</strong> added</span>
+                    </div>
+                  )}
+                  {variableComparison.removed.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-destructive" />
+                      <span><strong>{variableComparison.removed.length}</strong> removed</span>
+                    </div>
+                  )}
+                  {variableComparison.changed.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-warning" />
+                      <span><strong>{variableComparison.changed.length}</strong> modified</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {error && (
               <Alert variant="destructive">
@@ -628,40 +632,259 @@ export function ConvertToBuiltinModal({
           </div>
         );
 
-      case 'creating-shortcut':
+      case 'processing-builtin':
         return (
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Creating shortcut...</p>
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+            <p className="text-sm text-muted-foreground">
+              {builtinAction === 'update' ? 'Updating builtin...' : 'Creating builtin...'}
+            </p>
+          </div>
+        );
+
+      case 'shortcut-choice':
+        const linkedShortcuts = shortcuts.filter(s => s.prompt_builtin_id === createdBuiltin?.id);
+        const unlinkedShortcuts = shortcuts.filter(s => !s.prompt_builtin_id);
+        const otherLinkedShortcuts = shortcuts.filter(s => s.prompt_builtin_id && s.prompt_builtin_id !== createdBuiltin?.id);
+        const hasAnyShortcuts = shortcuts.length > 0;
+
+        return (
+          <div className="space-y-4">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h3 className="font-semibold mb-2">Step 2: Shortcut Management</h3>
+            </div>
+
+            <RadioGroup value={shortcutAction} onValueChange={(v) => setShortcutAction(v as 'create' | 'link' | 'skip')}>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
+                  <RadioGroupItem value="create" id="create" className="mt-1" />
+                  <div className="flex-1">
+                    <Label htmlFor="create" className="font-medium cursor-pointer">Create New Shortcut</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Create a fresh shortcut that links to this builtin.
+                    </p>
+                  </div>
+                </div>
+
+                {hasAnyShortcuts && (
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
+                    <RadioGroupItem value="link" id="link" className="mt-1" />
+                    <div className="flex-1">
+                      <Label htmlFor="link" className="font-medium cursor-pointer">Link Existing Shortcut</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {linkedShortcuts.length > 0 
+                          ? `Update a shortcut already linked to this builtin (${linkedShortcuts.length} available).`
+                          : unlinkedShortcuts.length > 0
+                            ? `Connect an unlinked shortcut to this builtin (${unlinkedShortcuts.length} available).`
+                            : `Reassign a shortcut from another builtin (${otherLinkedShortcuts.length} available).`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start space-x-3 p-3 rounded-lg border bg-card">
+                  <RadioGroupItem value="skip" id="skip" className="mt-1" />
+                  <div className="flex-1">
+                    <Label htmlFor="skip" className="font-medium cursor-pointer">Skip for Now</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Don't create or link a shortcut at this time.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </RadioGroup>
+
+            {shortcutAction === 'link' && hasAnyShortcuts && (
+              <div className="mt-4 p-4 bg-muted rounded-lg space-y-3">
+                <Label className="text-sm font-medium">Select Shortcut</Label>
+                
+                {loadingShortcuts ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[250px]">
+                    <div className="space-y-2">
+                      {/* Already linked to THIS builtin */}
+                      {linkedShortcuts.length > 0 && (
+                        <>
+                          <div className="text-xs font-semibold text-success uppercase tracking-wide mb-2 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-success" />
+                            Already Linked to This Builtin
+                          </div>
+                          {linkedShortcuts.map(shortcut => (
+                            <div
+                              key={shortcut.id}
+                              onClick={() => setSelectedShortcut(shortcut)}
+                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                                selectedShortcut?.id === shortcut.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'hover:border-primary/50 hover:bg-accent/50'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="font-medium">{shortcut.label}</div>
+                                <Badge variant="outline" className="text-xs bg-success/10 border-success">
+                                  Current
+                                </Badge>
+                              </div>
+                              {shortcut.description && (
+                                <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                                  {shortcut.description}
+                                </div>
+                              )}
+                              {shortcut.category && (
+                                <Badge variant="secondary" className="mt-2 text-xs">
+                                  {shortcut.category.label}
+                                </Badge>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+
+                      {/* Unlinked shortcuts */}
+                      {unlinkedShortcuts.length > 0 && (
+                        <>
+                          {linkedShortcuts.length > 0 && <Separator className="my-3" />}
+                          <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-2 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                            Available (No Builtin)
+                          </div>
+                          {unlinkedShortcuts.map(shortcut => (
+                            <div
+                              key={shortcut.id}
+                              onClick={() => setSelectedShortcut(shortcut)}
+                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                                selectedShortcut?.id === shortcut.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'hover:border-primary/50 hover:bg-accent/50'
+                              }`}
+                            >
+                              <div className="font-medium">{shortcut.label}</div>
+                              {shortcut.description && (
+                                <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                                  {shortcut.description}
+                                </div>
+                              )}
+                              {shortcut.category && (
+                                <Badge variant="secondary" className="mt-2 text-xs">
+                                  {shortcut.category.label}
+                                </Badge>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+
+                      {/* Linked to OTHER builtins */}
+                      {otherLinkedShortcuts.length > 0 && (
+                        <>
+                          {(linkedShortcuts.length > 0 || unlinkedShortcuts.length > 0) && <Separator className="my-3" />}
+                          <div className="text-xs font-semibold text-warning uppercase tracking-wide mb-2 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-warning" />
+                            Linked to Other Builtins
+                          </div>
+                          {otherLinkedShortcuts.map(shortcut => (
+                            <div
+                              key={shortcut.id}
+                              onClick={() => setSelectedShortcut(shortcut)}
+                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                                selectedShortcut?.id === shortcut.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'hover:border-primary/50 hover:bg-accent/50'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="font-medium">{shortcut.label}</div>
+                                <Badge variant="outline" className="text-xs bg-warning/10 border-warning">
+                                  Will Reassign
+                                </Badge>
+                              </div>
+                              {shortcut.description && (
+                                <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                                  {shortcut.description}
+                                </div>
+                              )}
+                              <div className="flex flex-wrap items-center gap-2 mt-2">
+                                {shortcut.category && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {shortcut.category.label}
+                                  </Badge>
+                                )}
+                                {shortcut.builtin && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Currently: {shortcut.builtin.name}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+            )}
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+        );
+
+      case 'shortcut-form':
+        return (
+          <div className="space-y-4">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h3 className="font-semibold mb-2">Step 2: Create Shortcut</h3>
+            </div>
+
+            {createdBuiltin && (
+              <ShortcutFormFields
+                formData={newShortcutData as CreatePromptShortcutInput}
+                onChange={(updates) => setNewShortcutData(prev => ({ ...prev, ...updates }))}
+                categories={categories}
+                builtinVariables={createdBuiltin.variableDefaults || []}
+                compact
+                excludedPlacementTypes={['user', 'organization', 'quick-actions', 'content-blocks']}
+              />
+            )}
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+        );
+
+      case 'processing-shortcut':
+        return (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+            <p className="text-sm text-muted-foreground">
+              {shortcutAction === 'create' ? 'Creating shortcut...' : 'Linking shortcut...'}
+            </p>
           </div>
         );
 
       case 'complete':
         return (
-          <div className="flex flex-col items-center justify-center py-8 space-y-6">
-            <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="bg-success/10 rounded-full p-4 mb-4">
+              <CheckCircle2 className="h-8 w-8 text-success" />
             </div>
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">Complete</h3>
-              <p className="text-sm text-muted-foreground">
-                {shortcutAction !== 'skip' ? 'Builtin created and linked to shortcut' : 'Builtin created'}
-              </p>
-            </div>
-            
-            <div className="flex flex-col gap-2 w-full max-w-xs">
-              <Button onClick={handleOpenInAdmin} variant="default" className="w-full">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open in Admin Panel
-              </Button>
-              <Button onClick={handleOpenInNewTab} variant="outline" className="w-full">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open in New Tab
-              </Button>
-              <Button onClick={handleComplete} variant="ghost" className="w-full">
-                Done
-              </Button>
-            </div>
+            <h3 className="text-lg font-semibold mb-2">All Done!</h3>
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              {builtinAction === 'update' ? 'Builtin updated' : 'Builtin created'}
+              {shortcutAction !== 'skip' && (shortcutAction === 'create' ? ' and shortcut created' : ' and shortcut linked')} successfully!
+            </p>
           </div>
         );
 
@@ -670,120 +893,166 @@ export function ConvertToBuiltinModal({
     }
   };
 
+  // Render action buttons
   const renderActions = () => {
     switch (step) {
       case 'checking':
-      case 'converting':
-      case 'creating-shortcut':
-      case 'complete':
         return null;
 
-      case 'existing-detected':
+      case 'builtin-choice':
         return (
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleResetAndClose}
-              disabled={isProcessing}
-            >
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
               Cancel
             </Button>
             <Button 
-              onClick={() => {
-                if (builtinAction === 'update') {
-                  handleUpdateExisting();
-                } else {
-                  handleConvert(true);
-                }
-              }} 
-              disabled={isProcessing || !selectedBuiltin}
+              onClick={() => handleBuiltinAction()} 
+              disabled={isProcessing || (builtinAction === 'update' && !selectedBuiltin)}
             >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Continue
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </>
-              )}
+              {builtinAction === 'update' ? 'Update Builtin' : 'Create Builtin'}
+              <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         );
 
-      case 'shortcut-selection':
+      case 'variable-comparison':
         return (
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleResetAndClose}
-              disabled={isProcessing}
-            >
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setStep('builtin-choice')} disabled={isProcessing}>
+              Back
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
+                Cancel
+              </Button>
+              <Button onClick={() => handleBuiltinAction()} disabled={isProcessing}>
+                Confirm Update
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'processing-builtin':
+        return null;
+
+      case 'shortcut-choice':
+        return (
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
               Cancel
             </Button>
-            <Button 
-              onClick={() => {
-                if (shortcutAction === 'link-existing') {
-                  handleLinkToExistingShortcut();
-                } else if (shortcutAction === 'create-new') {
-                  handleCreateNewShortcut();
-                } else {
-                  handleSkipShortcut();
-                }
-              }}
-              disabled={
-                isProcessing || 
-                (shortcutAction === 'link-existing' && !selectedShortcutId) ||
-                (shortcutAction === 'create-new' && (!newShortcutData.label || !newShortcutData.category_id))
-              }
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  {shortcutAction === 'skip' ? 'Complete' : 'Complete'}
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </>
-              )}
+            {shortcutAction === 'create' ? (
+              <Button 
+                onClick={() => setStep('shortcut-form')} 
+                disabled={isProcessing}
+              >
+                Configure Shortcut
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => handleShortcutAction()} 
+                disabled={isProcessing || (shortcutAction === 'link' && !selectedShortcut)}
+              >
+                {shortcutAction === 'skip' ? 'Finish' : 'Link Shortcut'}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        );
+
+      case 'shortcut-form':
+        return (
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setStep('shortcut-choice')} disabled={isProcessing}>
+              Back
             </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleResetAndClose} disabled={isProcessing}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => handleShortcutAction()} 
+                disabled={isProcessing || !newShortcutData.category_id}
+              >
+                Create Shortcut
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'processing-shortcut':
+        return null;
+
+      case 'complete':
+        return (
+          <div className="flex justify-end gap-2">
+            <Button onClick={handleComplete}>
+              Close
+            </Button>
+            {createdBuiltin && (
+              <Button 
+                variant="outline"
+                onClick={() => router.push('/administration/prompt-builtins')}
+              >
+                View Builtins
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            )}
           </div>
         );
 
       default:
         return null;
+    }
+  };
+
+  // Get step description
+  const getStepDescription = () => {
+    switch (step) {
+      case 'checking':
+        return 'Checking for existing builtins...';
+      case 'builtin-choice':
+        return 'Choose how to save the builtin';
+      case 'variable-comparison':
+        return 'Review variable changes';
+      case 'processing-builtin':
+        return builtinAction === 'update' ? 'Updating builtin...' : 'Creating builtin...';
+      case 'shortcut-choice':
+        return 'Choose shortcut action';
+      case 'shortcut-form':
+        return 'Configure shortcut details';
+      case 'processing-shortcut':
+        return shortcutAction === 'create' ? 'Creating shortcut...' : 'Linking shortcut...';
+      case 'complete':
+        return 'Successfully completed!';
+      default:
+        return '';
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleResetAndClose}>
       <DialogContent 
-        className="max-w-2xl max-h-[90vh] flex flex-col"
-        onPointerDownOutside={(e) => e.preventDefault()}
+        className="max-w-2xl max-h-[90vh] flex flex-col p-0"
+        onPointerDownOutside={(e) => isProcessing && e.preventDefault()}
       >
-        <DialogHeader>
+        <DialogHeader className="px-4 pt-4 pb-3 border-b">
           <DialogTitle>Convert to Builtin</DialogTitle>
           <DialogDescription>
-            {step === 'checking' && 'Checking for existing builtins...'}
-            {step === 'existing-detected' && 'Choose how to proceed'}
-            {step === 'converting' && 'Converting your prompt...'}
-            {step === 'shortcut-selection' && 'Link builtin to shortcut'}
-            {step === 'creating-shortcut' && 'Creating shortcut...'}
-            {step === 'complete' && 'Successfully created'}
+            {getStepDescription()}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-4 py-4">
           {renderContent()}
         </div>
 
-        {renderActions()}
+        <div className="px-4 pb-4 pt-3 border-t">
+          {renderActions()}
+        </div>
       </DialogContent>
     </Dialog>
   );

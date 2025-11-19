@@ -35,7 +35,7 @@ alwaysApply: true
 <ui_ux_guidelines>
 - Modern, professional, elegant interfaces
 - Lucide React icons only (no emojis)
-- Custom components for notifications (no browser alerts/confirms)
+- **NEVER use browser alerts, confirms, prompts** - Always use custom components for notifications, confirmations, and user input (eg. @/components/ui/alert-dialog)
 - `bg-textured` for main backgrounds (textured bg-zinc-100 dark:bg-zinc-850)
 - Consistent light/dark theme with proper contrast
 - Space-efficient layouts (minimal padding/gaps, maintain readability)

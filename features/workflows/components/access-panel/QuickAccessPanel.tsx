@@ -6,7 +6,7 @@ import CollapsibleNodeSection from "./CollapsibleNodeSection";
 import NodeSelectionOverlay from "./NodeSelectionOverlay";
 import CategoryNodeSection from "./CategoryNodeSection";
 import CategoryNodeOverlay from "./CategoryNodeOverlay";
-import { getIconComponent } from "@/components/common/IconResolver";
+import { getIconComponent } from "@/components/official/IconResolver";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
 import { CATEGORY_DEFINITIONS, INTEGRATION_NODES } from "./constants";
 import { DbFunctionNode } from "@/features/workflows/types";

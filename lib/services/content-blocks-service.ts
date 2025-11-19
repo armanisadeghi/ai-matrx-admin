@@ -1,4 +1,3 @@
-import * as Icons from 'lucide-react';
 import { 
     ContentBlockDB, 
     CategoryConfigDB, 
@@ -9,6 +8,7 @@ import {
 import { ContentBlock, CategoryConfig, SubcategoryConfig } from '@/features/rich-text-editor/config/contentBlocks';
 import { getBrowserSupabaseClient } from '@/utils/supabase/getBrowserClient';
 import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient';
+import { getIconComponent as resolveIconComponent } from '@/components/official/IconResolver';
 
 // Helper to get the right client based on context
 function getClient() {
@@ -22,9 +22,10 @@ function getClient() {
 }
 
 // Helper function to get Lucide icon component from name
+// Now uses IconResolver for optimal bundle size
 export function getIconComponent(iconName: string): any {
     // Default to FileText if icon not found
-    return (Icons as any)[iconName] || Icons.FileText;
+    return resolveIconComponent(iconName, "FileText");
 }
 
 // Convert database record to frontend ContentBlock format
